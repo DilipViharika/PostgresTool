@@ -1,7 +1,3 @@
-// ==========================================================================
-//  VIGIL — Advanced PostgreSQL Monitoring Backend (v2.2 - Enhanced Alerts)
-// ==========================================================================
-
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
@@ -805,8 +801,13 @@ app.use((req, res) => {
 // ---------------------------------------------------------------------------
 async function startup() {
     try {
-        await fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true });
-        log('INFO', 'Repository directory ready', { path: CONFIG.REPOSITORY_PATH });
+        // Skip mkdir on serverless environments (Vercel)
+        try {
+            await fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true });
+            log('INFO', 'Repository directory ready', { path: CONFIG.REPOSITORY_PATH });
+        } catch (mkdirError) {
+            log('WARN', 'Could not create repository directory (serverless env)', { error: mkdirError.message });
+        }
 
         await pool.query('SELECT 1');
         log('INFO', 'Database connection successful');
