@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-{"name":"postgrestool-backend","version":"1.0.0"}
-=======
 {
   "name": "postgrestool-backend",
   "version": "1.0.0",
@@ -102,4 +99,3 @@
   "author": "",
   "license": "ISC"
 }
->>>>>>> 9226787 (Fix uuid + deps for backend/server.js)
