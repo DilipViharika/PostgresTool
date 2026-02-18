@@ -108,11 +108,11 @@ const pool = new Pool({
     database: process.env.PGDATABASE || 'postgres',
     password: process.env.PGPASSWORD || 'Foxsense123',
     port:     Number(process.env.PGPORT) || 5432,
-    max:      3,                          // ✅ lowered for serverless
-    idleTimeoutMillis: 10000,             // ✅ lowered
-    connectionTimeoutMillis: 10000,       // ✅ increased
+    max:      3,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 15000,
     statement_timeout: 30000,
-    ssl: { rejectUnauthorized: false },   // ✅ always use SSL for RDS
+    ssl: { rejectUnauthorized: false },  // ✅ always SSL, no condition
 });
 pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
 
