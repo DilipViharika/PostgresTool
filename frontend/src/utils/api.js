@@ -1,4 +1,9 @@
-const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+
+export const fetchMetrics = async () => {
+    const res = await fetch(`${API_BASE}/api/metrics`);
+    return res.json();
+};
 
 function getAuthHeaders() {
     const token = localStorage.getItem('vigil_token');
