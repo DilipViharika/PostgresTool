@@ -108,13 +108,12 @@ const pool = new Pool({
     database: process.env.PGDATABASE || 'postgres',
     password: process.env.PGPASSWORD || 'Foxsense123',
     port:     Number(process.env.PGPORT) || 5432,
-    max:      25,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    max:      3,                          // ✅ lowered for serverless
+    idleTimeoutMillis: 10000,             // ✅ lowered
+    connectionTimeoutMillis: 10000,       // ✅ increased
     statement_timeout: 30000,
-    ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined,
+    ssl: { rejectUnauthorized: false },   // ✅ always use SSL for RDS
 });
-
 pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
 
 // ---------------------------------------------------------------------------
@@ -809,7 +808,9 @@ async function startup() {
             log('WARN', 'Could not create repository directory (serverless env)', { error: mkdirError.message });
         }
 
-        await pool.query('SELECT 1');
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        client.release();
         log('INFO', 'Database connection successful');
 
         await alerts.initializeDatabase();
