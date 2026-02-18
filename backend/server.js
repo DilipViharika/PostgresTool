@@ -808,16 +808,25 @@ async function startup() {
             log('WARN', 'Could not create repository directory (serverless env)', { error: mkdirError.message });
         }
 
-        const client = await pool.connect();
-        await client.query('SELECT 1');
-        client.release();
-        log('INFO', 'Database connection successful');
+        // Don't crash if DB is unreachable at startup
+        try {
+            const client = await pool.connect();
+            await client.query('SELECT 1');
+            client.release();
+            log('INFO', 'Database connection successful');
+        } catch (dbError) {
+            log('WARN', 'Database unreachable at startup - will retry on requests', { error: dbError.message });
+        }
 
-        await alerts.initializeDatabase();
-        log('INFO', 'Alert system initialized');
-
-        alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
-        log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
+        // Don't crash if alert DB init fails
+        try {
+            await alerts.initializeDatabase();
+            log('INFO', 'Alert system initialized');
+            alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
+            log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
+        } catch (alertError) {
+            log('WARN', 'Alert system could not initialize', { error: alertError.message });
+        }
 
         server.listen(CONFIG.PORT, '0.0.0.0', () => {
             console.log(`🚀 VIGIL Backend running on port ${CONFIG.PORT}`);
