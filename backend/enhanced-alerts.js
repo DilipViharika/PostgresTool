@@ -2,7 +2,7 @@
 //  VIGIL — Enhanced Alert System Module
 // ==========================================================================
 
-const { v4: uuid } = require('uuid');
+import { v4 as uuid } from 'uuid';
 
 class EnhancedAlertEngine {
     constructor(pool, config, emailService = null) {
@@ -15,7 +15,6 @@ class EnhancedAlertEngine {
         this.alertRules = this.initializeAlertRules();
     }
 
-    // Initialize alert rules based on thresholds
     initializeAlertRules() {
         return [
             {
@@ -60,8 +59,8 @@ class EnhancedAlertEngine {
                 category: 'performance',
                 severity: 'warning',
                 condition: (metrics) => {
-                    return metrics.cacheHitRatio && 
-                           parseFloat(metrics.cacheHitRatio) < this.config.ALERT_THRESHOLDS.CACHE_HIT_RATIO;
+                    return metrics.cacheHitRatio &&
+                        parseFloat(metrics.cacheHitRatio) < this.config.ALERT_THRESHOLDS.CACHE_HIT_RATIO;
                 },
                 message: (metrics) => `Cache hit ratio is ${metrics.cacheHitRatio}% (threshold: ${this.config.ALERT_THRESHOLDS.CACHE_HIT_RATIO}%)`
             },
@@ -70,9 +69,7 @@ class EnhancedAlertEngine {
                 name: 'High Table Bloat',
                 category: 'maintenance',
                 severity: 'warning',
-                condition: (metrics) => {
-                    return metrics.bloatedTables && metrics.bloatedTables.length > 0;
-                },
+                condition: (metrics) => metrics.bloatedTables && metrics.bloatedTables.length > 0,
                 message: (metrics) => {
                     const count = metrics.bloatedTables.length;
                     const worst = metrics.bloatedTables[0];
@@ -85,8 +82,8 @@ class EnhancedAlertEngine {
                 category: 'reliability',
                 severity: 'critical',
                 condition: (metrics) => {
-                    return metrics.replicationLag && 
-                           metrics.replicationLag > this.config.ALERT_THRESHOLDS.REPLICATION_LAG_MB * 1024 * 1024;
+                    return metrics.replicationLag &&
+                        metrics.replicationLag > this.config.ALERT_THRESHOLDS.REPLICATION_LAG_MB * 1024 * 1024;
                 },
                 message: (metrics) => {
                     const lagMB = (metrics.replicationLag / (1024 * 1024)).toFixed(2);
@@ -99,8 +96,8 @@ class EnhancedAlertEngine {
                 category: 'reliability',
                 severity: 'critical',
                 condition: (metrics) => {
-                    return metrics.blockingLocks && 
-                           metrics.blockingLocks >= this.config.ALERT_THRESHOLDS.LOCK_COUNT;
+                    return metrics.blockingLocks &&
+                        metrics.blockingLocks >= this.config.ALERT_THRESHOLDS.LOCK_COUNT;
                 },
                 message: (metrics) => `${metrics.blockingLocks} blocking locks detected`
             },
@@ -109,31 +106,26 @@ class EnhancedAlertEngine {
                 name: 'High Disk Usage',
                 category: 'resources',
                 severity: 'warning',
-                condition: (metrics) => {
-                    // Alert if database size is growing rapidly or approaching limits
-                    return metrics.diskUsedGB && metrics.diskUsedGB > 50; // Example threshold
-                },
+                condition: (metrics) => metrics.diskUsedGB && metrics.diskUsedGB > 50,
                 message: (metrics) => `Database size: ${metrics.diskUsedGB} GB`
             }
         ];
     }
 
-    // Fire a new alert
     async fire(severity, category, message, data = {}) {
         const key = `${category}:${severity}:${message}`;
-        
-        // Deduplication: Don't fire same alert within 5 minutes
+
         if (this.dedup.get(key) && Date.now() - this.dedup.get(key) < 300000) {
             return null;
         }
-        
+
         this.dedup.set(key, Date.now());
 
         const alert = {
             id: uuid(),
             timestamp: new Date().toISOString(),
-            severity, // info, warning, critical
-            category, // performance, resources, reliability, maintenance, security
+            severity,
+            category,
             message,
             data,
             acknowledged: false,
@@ -142,18 +134,15 @@ class EnhancedAlertEngine {
         };
 
         try {
-            // Save to database
             await this.pool.query(
                 `INSERT INTO alerts (id, timestamp, severity, category, message, data, acknowledged)
                  VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                [alert.id, alert.timestamp, alert.severity, alert.category, alert.message, 
-                 JSON.stringify(alert.data), alert.acknowledged]
+                [alert.id, alert.timestamp, alert.severity, alert.category, alert.message,
+                    JSON.stringify(alert.data), alert.acknowledged]
             );
 
-            // Broadcast to WebSocket subscribers
             this.broadcast({ type: 'alert', payload: alert });
 
-            // Send email notification if enabled
             if (this.emailService) {
                 this.emailService.sendAlert(alert).catch(err => {
                     console.error('Failed to send alert email:', err);
@@ -163,17 +152,16 @@ class EnhancedAlertEngine {
             return alert;
         } catch (error) {
             console.error('Failed to save alert:', error);
-            return alert; // Return even if DB save fails
+            return alert;
         }
     }
 
-    // Get recent alerts
     async getRecent(limit = 50, includeAcknowledged = false) {
         try {
             const query = includeAcknowledged
                 ? `SELECT * FROM alerts ORDER BY timestamp DESC LIMIT $1`
                 : `SELECT * FROM alerts WHERE acknowledged = false ORDER BY timestamp DESC LIMIT $1`;
-            
+
             const result = await this.pool.query(query, [limit]);
             return result.rows.map(row => ({
                 ...row,
@@ -185,7 +173,6 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Acknowledge an alert
     async acknowledge(alertId, userId, username) {
         try {
             const result = await this.pool.query(
@@ -199,13 +186,13 @@ class EnhancedAlertEngine {
             );
 
             if (result.rows.length > 0) {
-                this.broadcast({ 
-                    type: 'alert_acknowledged', 
-                    payload: { 
-                        alertId, 
+                this.broadcast({
+                    type: 'alert_acknowledged',
+                    payload: {
+                        alertId,
                         acknowledgedBy: username,
                         acknowledgedAt: new Date().toISOString()
-                    } 
+                    }
                 });
                 return result.rows[0];
             }
@@ -216,7 +203,6 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Bulk acknowledge alerts
     async bulkAcknowledge(alertIds, userId, username) {
         try {
             const result = await this.pool.query(
@@ -229,13 +215,13 @@ class EnhancedAlertEngine {
                 [alertIds, username]
             );
 
-            this.broadcast({ 
-                type: 'alerts_acknowledged', 
-                payload: { 
+            this.broadcast({
+                type: 'alerts_acknowledged',
+                payload: {
                     alertIds: result.rows.map(r => r.id),
                     acknowledgedBy: username,
                     acknowledgedAt: new Date().toISOString()
-                } 
+                }
             });
 
             return result.rows;
@@ -245,13 +231,12 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Get alert statistics
     async getStatistics(timeRange = '24h') {
         try {
             const timeCondition = {
-                '1h': "timestamp > NOW() - INTERVAL '1 hour'",
+                '1h':  "timestamp > NOW() - INTERVAL '1 hour'",
                 '24h': "timestamp > NOW() - INTERVAL '24 hours'",
-                '7d': "timestamp > NOW() - INTERVAL '7 days'",
+                '7d':  "timestamp > NOW() - INTERVAL '7 days'",
                 '30d': "timestamp > NOW() - INTERVAL '30 days'"
             }[timeRange] || "timestamp > NOW() - INTERVAL '24 hours'";
 
@@ -286,7 +271,6 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Delete old alerts
     async cleanup(daysToKeep = 30) {
         try {
             const result = await this.pool.query(
@@ -301,12 +285,10 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Collect metrics for monitoring
     async collectMetrics() {
         try {
             const metrics = {};
 
-            // Connection metrics
             const connResult = await this.pool.query(`
                 SELECT
                     (SELECT count(*) FROM pg_stat_activity WHERE state='active') as active,
@@ -316,7 +298,6 @@ class EnhancedAlertEngine {
             metrics.activeConnections = Number(connResult.rows[0].active);
             metrics.maxConnections = Number(connResult.rows[0].max_conn);
 
-            // Slow queries
             const slowResult = await this.pool.query(`
                 SELECT pid, usename, query, extract(epoch FROM (now()-query_start))::int as duration_sec
                 FROM pg_stat_activity 
@@ -327,14 +308,12 @@ class EnhancedAlertEngine {
             `);
             metrics.slowQueries = slowResult.rows;
 
-            // Cache hit ratio
             const cacheResult = await this.pool.query(`
                 SELECT round(sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100, 1) as hit_ratio
                 FROM pg_statio_user_tables
             `);
             metrics.cacheHitRatio = cacheResult.rows[0]?.hit_ratio || 100;
 
-            // Table bloat
             const bloatResult = await this.pool.query(`
                 SELECT relname as table_name, 
                        n_dead_tup as dead_tuples,
@@ -350,14 +329,12 @@ class EnhancedAlertEngine {
             `);
             metrics.bloatedTables = bloatResult.rows;
 
-            // Replication lag
             const replResult = await this.pool.query(`
                 SELECT MAX(pg_wal_lsn_diff(sent_lsn, replay_lsn)) as max_lag
                 FROM pg_stat_replication
             `);
             metrics.replicationLag = replResult.rows[0]?.max_lag || 0;
 
-            // Blocking locks
             const lockResult = await this.pool.query(`
                 SELECT COUNT(*) as count
                 FROM pg_locks bl 
@@ -366,7 +343,6 @@ class EnhancedAlertEngine {
             `);
             metrics.blockingLocks = Number(lockResult.rows[0].count);
 
-            // Disk usage
             const diskResult = await this.pool.query(`
                 SELECT pg_database_size(current_database()) as db_size_bytes
             `);
@@ -379,12 +355,10 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Run monitoring checks
     async runMonitoring() {
         const metrics = await this.collectMetrics();
         if (!metrics) return;
 
-        // Check each alert rule
         for (const rule of this.alertRules) {
             try {
                 if (rule.condition(metrics)) {
@@ -401,24 +375,17 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Start automatic monitoring
     startMonitoring(intervalMs = 30000) {
         if (this.monitoringInterval) {
             clearInterval(this.monitoringInterval);
         }
-
         console.log(`Starting alert monitoring (interval: ${intervalMs}ms)`);
-        
-        // Run immediately
         this.runMonitoring();
-
-        // Then run at intervals
         this.monitoringInterval = setInterval(() => {
             this.runMonitoring();
         }, intervalMs);
     }
 
-    // Stop automatic monitoring
     stopMonitoring() {
         if (this.monitoringInterval) {
             clearInterval(this.monitoringInterval);
@@ -427,27 +394,23 @@ class EnhancedAlertEngine {
         }
     }
 
-    // Broadcast to WebSocket subscribers
     broadcast(message) {
         const payload = JSON.stringify(message);
         this.subscribers.forEach(ws => {
-            if (ws.readyState === 1) { // WebSocket.OPEN
+            if (ws.readyState === 1) {
                 ws.send(payload);
             }
         });
     }
 
-    // Add WebSocket subscriber
     addSubscriber(ws) {
         this.subscribers.add(ws);
     }
 
-    // Remove WebSocket subscriber
     removeSubscriber(ws) {
         this.subscribers.delete(ws);
     }
 
-    // Initialize database table
     async initializeDatabase() {
         try {
             await this.pool.query(`
@@ -477,4 +440,4 @@ class EnhancedAlertEngine {
     }
 }
 
-module.exports = EnhancedAlertEngine;
+export default EnhancedAlertEngine;

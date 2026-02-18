@@ -1,27 +1,32 @@
 // ==========================================================================
 //  VIGIL — Advanced PostgreSQL Monitoring Backend (v2.2 - Enhanced Alerts)
-//  Now with comprehensive alert system and monitoring
 // ==========================================================================
 
-const express      = require('express');
-const cors         = require('cors');
-const http         = require('http');
-const { Pool }     = require('pg');
-const jwt          = require('jsonwebtoken');
-const bcrypt       = require('bcryptjs');
-const { v4: uuid } = require('uuid');
-const { WebSocketServer } = require('ws');
-const fs           = require('fs').promises;
-const path         = require('path');
+import express from 'express';
+import cors from 'cors';
+import http from 'http';
+import { Pool } from 'pg';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { v4 as uuid } from 'uuid';
+import { WebSocketServer } from 'ws';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// ESM equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Import repository routes
-const repoRoutes = require('./routes/repoRoutes');
+import repoRoutes from './routes/repoRoutes.js';
 
 // Import enhanced alert system
-const EnhancedAlertEngine = require('./enhanced-alerts');
+import EnhancedAlertEngine from './enhanced-alerts.js';
 
 // Import email notification service
-const EmailNotificationService = require('./email-notification-service');
+import EmailNotificationService from './email-notification-service.js';
 
 // ---------------------------------------------------------------------------
 // CONFIG
@@ -30,10 +35,10 @@ const CONFIG = Object.freeze({
     PORT:            Number(process.env.PORT) || 5000,
     JWT_SECRET:      process.env.JWT_SECRET || 'vigil-change-me-in-production',
     JWT_EXPIRES_IN:  process.env.JWT_EXPIRES_IN || '8h',
-    CORS_ORIGINS: [  // ✅ PRODUCTION FRONTEND ADDED
-        'http://localhost:5173',     // Vite dev (React)
-        'http://localhost:3000',     // CRA dev
-        'https://postgres-tool.vercel.app',  // ✅ PROD FRONTEND
+    CORS_ORIGINS: [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'https://postgres-tool.vercel.app',
         process.env.CORS_ORIGIN,
     ].filter(Boolean),
     SLOW_QUERY_MIN:  Number(process.env.SLOW_QUERY_MINUTES) || 5,
@@ -60,28 +65,24 @@ const CONFIG = Object.freeze({
     },
     EMAIL: {
         enabled: process.env.EMAIL_ENABLED === 'true',
-        provider: process.env.EMAIL_PROVIDER || 'smtp', // smtp, gmail, sendgrid, ses
-        minSeverity: process.env.EMAIL_MIN_SEVERITY || 'warning', // info, warning, critical
+        provider: process.env.EMAIL_PROVIDER || 'smtp',
+        minSeverity: process.env.EMAIL_MIN_SEVERITY || 'warning',
         recipients: process.env.EMAIL_RECIPIENTS?.split(',').map(e => e.trim()) || [],
         from: process.env.EMAIL_FROM || '"VIGIL Alert System" <alerts@vigil.local>',
         dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:5173',
         databaseName: process.env.PGDATABASE || 'postgres',
-        // Gmail configuration
         gmail: {
             user: process.env.GMAIL_USER,
             appPassword: process.env.GMAIL_APP_PASSWORD
         },
-        // SendGrid configuration
         sendgrid: {
             apiKey: process.env.SENDGRID_API_KEY
         },
-        // AWS SES configuration
         ses: {
             region: process.env.AWS_SES_REGION || 'us-east-1',
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
         },
-        // Generic SMTP configuration
         smtp: {
             host: process.env.SMTP_HOST,
             port: Number(process.env.SMTP_PORT) || 587,
@@ -209,7 +210,7 @@ let USERS = [
     },
 ];
 
-// In-memory storage for connections (in production, use database)
+// In-memory storage for connections
 let CONNECTIONS = [
     {
         id: 1,
@@ -237,7 +238,6 @@ app.use(cors({ origin: CONFIG.CORS_ORIGINS, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(rateLimiter);
 
-// Request logging (development)
 if (process.env.NODE_ENV !== 'production') {
     app.use((req, res, next) => {
         log('INFO', `${req.method} ${req.path}`, { ip: req.ip });
@@ -245,7 +245,6 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-// Auth Middleware
 function authenticate(req, res, next) {
     const header = req.headers.authorization;
     if (!header?.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
@@ -264,20 +263,16 @@ function requireScreen(screen) {
 // ROUTES
 // ---------------------------------------------------------------------------
 
-// >>> HEALTH CHECK <<<
 app.get('/health', (req, res) => {
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         version: '2.2.0',
-        alerts: {
-            monitoring: alerts.monitoringInterval !== null
-        }
+        alerts: { monitoring: alerts.monitoringInterval !== null }
     });
 });
 
-// >>> AUTH <<<
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
     const user = USERS.find(u => u.username === username);
@@ -288,16 +283,15 @@ app.post('/api/auth/login', (req, res) => {
     res.json({ user, token });
 });
 
-// >>> OVERVIEW <<<
 app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
     const { rows: [d] } = await pool.query(`
         SELECT
-                (SELECT count(*) FROM pg_stat_activity WHERE state='active') as active,
-                (SELECT count(*) FROM pg_stat_activity) as total_conn,
-                (SELECT setting::int FROM pg_settings WHERE name='max_connections') as max_conn,
-                (SELECT pg_database_size(current_database())) as db_size_bytes,
-                (SELECT date_part('epoch', now() - pg_postmaster_start_time())) as uptime_seconds,
-                (SELECT sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100 FROM pg_statio_user_tables) as hit_ratio
+            (SELECT count(*) FROM pg_stat_activity WHERE state='active') as active,
+            (SELECT count(*) FROM pg_stat_activity) as total_conn,
+            (SELECT setting::int FROM pg_settings WHERE name='max_connections') as max_conn,
+            (SELECT pg_database_size(current_database())) as db_size_bytes,
+            (SELECT date_part('epoch', now() - pg_postmaster_start_time())) as uptime_seconds,
+            (SELECT sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100 FROM pg_statio_user_tables) as hit_ratio
     `);
     res.json({
         activeConnections: Number(d.active),
@@ -313,12 +307,10 @@ app.get('/api/overview/traffic', authenticate, cached('ov:traffic', CONFIG.CACHE
     res.json(r.rows[0]);
 });
 
-// >>> PERFORMANCE <<<
 app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
     try {
         const ext = await pool.query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace = n.oid WHERE e.extname='pg_stat_statements'");
         if(ext.rowCount===0) return res.json({ available: false, slowQueries: [] });
-
         const schema = ext.rows[0].nspname;
         const q = await pool.query(`SELECT query, calls, mean_exec_time as mean_time_ms, round((shared_blks_hit::numeric/NULLIF(shared_blks_hit+shared_blks_read,0))*100,1) as cache_hit_pct FROM "${schema}".pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10`);
         res.json({ available: true, slowQueries: q.rows });
@@ -330,7 +322,6 @@ app.get('/api/performance/table-io', authenticate, cached('perf:io', CONFIG.CACH
     res.json(r.rows);
 });
 
-// >>> RELIABILITY <<<
 app.get('/api/reliability/active-connections', authenticate, async (req, res) => {
     const r = await pool.query(`
         SELECT pid, usename, state, query, extract(epoch FROM (now()-query_start))::int as duration_sec,
@@ -354,22 +345,17 @@ app.get('/api/reliability/replication', authenticate, async (req, res) => {
     res.json(r.rows);
 });
 
-// >>> QUERY OPTIMIZER (EXPLAIN ANALYZE) <<<
 app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
     try {
         const { query } = req.body;
         if (!query) return res.status(400).json({ error: 'Query is required' });
-
-        // Use the pool to run explain analyze with JSON output
         const result = await pool.query(`EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) ${query}`);
-        // Postgres returns [[ { "Plan": ... } ]] structure for JSON format
         res.json(result.rows[0]);
     } catch (e) {
         res.status(400).json({ error: e.message });
     }
 });
 
-// >>> ALERTS ENDPOINTS (Enhanced) <<<
 app.get('/api/alerts', authenticate, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 50;
@@ -397,9 +383,7 @@ app.post('/api/alerts/:id/acknowledge', authenticate, async (req, res) => {
     try {
         const alertId = req.params.id;
         const result = await alerts.acknowledge(alertId, req.user.id, req.user.username);
-        if (!result) {
-            return res.status(404).json({ error: 'Alert not found' });
-        }
+        if (!result) return res.status(404).json({ error: 'Alert not found' });
         res.json(result);
     } catch (error) {
         log('ERROR', 'Failed to acknowledge alert', { error: error.message });
@@ -428,9 +412,7 @@ app.post('/api/alerts/manual', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
         const alert = await alerts.fire(severity, category, message, {
-            ...data,
-            manual: true,
-            createdBy: req.user.username
+            ...data, manual: true, createdBy: req.user.username
         });
         res.json(alert);
     } catch (error) {
@@ -450,14 +432,10 @@ app.delete('/api/alerts/cleanup', authenticate, requireScreen('admin'), async (r
     }
 });
 
-// >>> EMAIL NOTIFICATION ENDPOINTS <<<
 app.post('/api/alerts/email/test', authenticate, requireScreen('admin'), async (req, res) => {
     try {
         const { recipient } = req.body;
-        if (!recipient) {
-            return res.status(400).json({ error: 'Recipient email required' });
-        }
-
+        if (!recipient) return res.status(400).json({ error: 'Recipient email required' });
         const result = await emailService.sendTestEmail(recipient);
         res.json(result);
     } catch (error) {
@@ -488,7 +466,6 @@ app.post('/api/alerts/email/digest', authenticate, requireScreen('admin'), async
     }
 });
 
-// >>> RESOURCES <<<
 app.get('/api/resources/growth', authenticate, cached('res:growth', CONFIG.CACHE_TTL.GROWTH), async (req, res) => {
     const r = await pool.query("SELECT relname as table_name, round(pg_total_relation_size(relid)/(1024.0*1024*1024),2) as total_size_gb, pg_size_pretty(pg_total_relation_size(relid)) as total_size_pretty FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 10");
     res.json(r.rows);
@@ -499,14 +476,12 @@ app.get('/api/resources/vacuum-status', authenticate, cached('res:vac', CONFIG.C
     res.json(r.rows);
 });
 
-// >>> INDEXES <<<
 app.get('/api/indexes/analysis', authenticate, cached('idx:an', CONFIG.CACHE_TTL.INDEXES), async (req, res) => {
     const missing = await pool.query("SELECT relname as table, seq_scan, idx_scan FROM pg_stat_user_tables WHERE seq_scan > idx_scan AND pg_relation_size(relid) > 1000000 LIMIT 10");
     const unused = await pool.query("SELECT indexrelname as indexName, pg_size_pretty(pg_relation_size(indexrelid)) as size FROM pg_stat_user_indexes WHERE idx_scan=0 LIMIT 10");
     res.json({ missing: missing.rows, unused: unused.rows, lowHit: [] });
 });
 
-// >>> ADMIN <<<
 app.get('/api/admin/settings', authenticate, cached('admin:settings', CONFIG.CACHE_TTL.SETTINGS), async (req, res) => {
     const r = await pool.query("SELECT name, setting, unit, short_desc FROM pg_settings");
     res.json(r.rows);
@@ -520,7 +495,6 @@ app.get('/api/admin/extensions', authenticate, cached('admin:ext', CONFIG.CACHE_
 app.get('/api/admin/cache/stats', authenticate, (req, res) => res.json(cache.stats()));
 app.post('/api/admin/cache/clear', authenticate, (req, res) => { cache.clear(); res.json({ success: true }); });
 
-// >>> QUERY CONSOLE <<<
 app.post('/api/query', authenticate, async (req, res) => {
     try {
         const client = await pool.connect();
@@ -534,19 +508,11 @@ app.post('/api/query', authenticate, async (req, res) => {
     }
 });
 
-// >>> REPOSITORY MANAGEMENT <<<
 app.use('/api/repo', authenticate, requireScreen('repository'), repoRoutes);
 
-// >>> CONNECTION MANAGEMENT ENDPOINTS <<<
-
-// Get all connections
 app.get('/api/connections', authenticate, (req, res) => {
     try {
-        // Return connections without passwords
-        const safeConnections = CONNECTIONS.map(conn => ({
-            ...conn,
-            password: undefined // Never send passwords to frontend
-        }));
+        const safeConnections = CONNECTIONS.map(conn => ({ ...conn, password: undefined }));
         res.json(safeConnections);
     } catch (error) {
         log('ERROR', 'Failed to fetch connections', { error: error.message });
@@ -554,16 +520,11 @@ app.get('/api/connections', authenticate, (req, res) => {
     }
 });
 
-// Get single connection
 app.get('/api/connections/:id', authenticate, (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const connection = CONNECTIONS.find(c => c.id === id);
-
-        if (!connection) {
-            return res.status(404).json({ error: 'Connection not found' });
-        }
-
+        if (!connection) return res.status(404).json({ error: 'Connection not found' });
         res.json({ ...connection, password: undefined });
     } catch (error) {
         log('ERROR', 'Failed to fetch connection', { error: error.message });
@@ -571,45 +532,24 @@ app.get('/api/connections/:id', authenticate, (req, res) => {
     }
 });
 
-// Create new connection
 app.post('/api/connections', authenticate, async (req, res) => {
     try {
         const { name, host, port, database, username, password, ssl, isDefault } = req.body;
-
-        // Validation
         if (!name || !host || !port || !database || !username || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
-
-        // Check if name already exists
         if (CONNECTIONS.find(c => c.name === name)) {
             return res.status(400).json({ error: 'Connection name already exists' });
         }
+        if (isDefault) CONNECTIONS.forEach(c => c.isDefault = false);
 
-        // If setting as default, unset other defaults
-        if (isDefault) {
-            CONNECTIONS.forEach(c => c.isDefault = false);
-        }
-
-        // Create new connection
         const newConnection = {
             id: Math.max(...CONNECTIONS.map(c => c.id), 0) + 1,
-            name,
-            host,
-            port: parseInt(port),
-            database,
-            username,
-            password, // In production, encrypt this!
-            ssl: ssl || false,
-            isDefault: isDefault || false,
-            status: null,
-            lastTested: null,
-            createdAt: new Date().toISOString()
+            name, host, port: parseInt(port), database, username, password,
+            ssl: ssl || false, isDefault: isDefault || false,
+            status: null, lastTested: null, createdAt: new Date().toISOString()
         };
-
         CONNECTIONS.push(newConnection);
-
-        // Return without password
         res.json({ ...newConnection, password: undefined });
     } catch (error) {
         log('ERROR', 'Failed to create connection', { error: error.message });
@@ -617,24 +557,15 @@ app.post('/api/connections', authenticate, async (req, res) => {
     }
 });
 
-// Update connection
 app.put('/api/connections/:id', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const { name, host, port, database, username, password, ssl } = req.body;
-
         const index = CONNECTIONS.findIndex(c => c.id === id);
-        if (index === -1) {
-            return res.status(404).json({ error: 'Connection not found' });
-        }
-
-        // Check if name conflicts with another connection
-        const nameConflict = CONNECTIONS.find(c => c.name === name && c.id !== id);
-        if (nameConflict) {
+        if (index === -1) return res.status(404).json({ error: 'Connection not found' });
+        if (CONNECTIONS.find(c => c.name === name && c.id !== id)) {
             return res.status(400).json({ error: 'Connection name already exists' });
         }
-
-        // Update connection
         CONNECTIONS[index] = {
             ...CONNECTIONS[index],
             name: name || CONNECTIONS[index].name,
@@ -642,12 +573,10 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
             port: port ? parseInt(port) : CONNECTIONS[index].port,
             database: database || CONNECTIONS[index].database,
             username: username || CONNECTIONS[index].username,
-            password: password || CONNECTIONS[index].password, // Keep old if not provided
+            password: password || CONNECTIONS[index].password,
             ssl: ssl !== undefined ? ssl : CONNECTIONS[index].ssl,
-            status: null, // Reset status
-            lastTested: null
+            status: null, lastTested: null
         };
-
         res.json({ ...CONNECTIONS[index], password: undefined });
     } catch (error) {
         log('ERROR', 'Failed to update connection', { error: error.message });
@@ -655,21 +584,12 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
     }
 });
 
-// Delete connection
 app.delete('/api/connections/:id', authenticate, (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const connection = CONNECTIONS.find(c => c.id === id);
-
-        if (!connection) {
-            return res.status(404).json({ error: 'Connection not found' });
-        }
-
-        // Cannot delete default connection
-        if (connection.isDefault) {
-            return res.status(403).json({ error: 'Cannot delete default connection' });
-        }
-
+        if (!connection) return res.status(404).json({ error: 'Connection not found' });
+        if (connection.isDefault) return res.status(403).json({ error: 'Cannot delete default connection' });
         CONNECTIONS = CONNECTIONS.filter(c => c.id !== id);
         res.json({ success: true });
     } catch (error) {
@@ -678,22 +598,13 @@ app.delete('/api/connections/:id', authenticate, (req, res) => {
     }
 });
 
-// Set default connection
 app.post('/api/connections/:id/default', authenticate, (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const connection = CONNECTIONS.find(c => c.id === id);
-
-        if (!connection) {
-            return res.status(404).json({ error: 'Connection not found' });
-        }
-
-        // Unset all defaults
+        if (!connection) return res.status(404).json({ error: 'Connection not found' });
         CONNECTIONS.forEach(c => c.isDefault = false);
-
-        // Set new default
         connection.isDefault = true;
-
         res.json({ success: true });
     } catch (error) {
         log('ERROR', 'Failed to set default connection', { error: error.message });
@@ -701,18 +612,13 @@ app.post('/api/connections/:id/default', authenticate, (req, res) => {
     }
 });
 
-// Test connection
+// ⚠️ Fixed: removed require('pg') inside handler — use top-level import instead
 app.post('/api/connections/:id/test', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const connection = CONNECTIONS.find(c => c.id === id);
+        if (!connection) return res.status(404).json({ error: 'Connection not found' });
 
-        if (!connection) {
-            return res.status(404).json({ error: 'Connection not found' });
-        }
-
-        // Create temporary pool for testing
-        const { Pool } = require('pg');
         const testPool = new Pool({
             host: connection.host,
             port: connection.port,
@@ -724,22 +630,16 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
         });
 
         try {
-            // Try to connect
             const client = await testPool.connect();
             await client.query('SELECT 1');
             client.release();
             await testPool.end();
-
-            // Update connection status
             connection.status = 'success';
             connection.lastTested = new Date().toISOString();
-
             res.json({ success: true, message: 'Connection successful' });
         } catch (testError) {
-            // Update connection status
             connection.status = 'failed';
             connection.lastTested = new Date().toISOString();
-
             await testPool.end().catch(() => {});
             res.json({ success: false, error: testError.message });
         }
@@ -749,37 +649,20 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
     }
 });
 
-// Switch active connection (changes the main pool)
 app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const connection = CONNECTIONS.find(c => c.id === id);
-
-        if (!connection) {
-            return res.status(404).json({ error: 'Connection not found' });
-        }
-
-        // In production, you would:
-        // 1. Close the current pool
-        // 2. Create a new pool with these credentials
-        // 3. Update environment variables or app state
-
-        // For now, just set as default
+        if (!connection) return res.status(404).json({ error: 'Connection not found' });
         CONNECTIONS.forEach(c => c.isDefault = false);
         connection.isDefault = true;
-
-        res.json({
-            success: true,
-            message: 'Connection switched. Please restart the server to apply changes.'
-        });
+        res.json({ success: true, message: 'Connection switched. Please restart the server to apply changes.' });
     } catch (error) {
         log('ERROR', 'Failed to switch connection', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
 
-
-// >>> USER MANAGEMENT <<<
 app.get('/api/users', authenticate, requireScreen('UserManagement'), (req, res) => {
     const safeUsers = USERS.map(u => ({ ...u, passwordHash: undefined }));
     res.json(safeUsers);
@@ -788,17 +671,11 @@ app.get('/api/users', authenticate, requireScreen('UserManagement'), (req, res) 
 app.post('/api/users', authenticate, requireScreen('UserManagement'), async (req, res) => {
     try {
         const { username, password, name, email, role, allowedScreens, status = 'active' } = req.body;
-
         if (!username || !password || !name || !email || !role) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
-
-        if (USERS.find(u => u.username === username)) {
-            return res.status(400).json({ error: 'Username already exists' });
-        }
-        if (USERS.find(u => u.email === email)) {
-            return res.status(400).json({ error: 'Email already exists' });
-        }
+        if (USERS.find(u => u.username === username)) return res.status(400).json({ error: 'Username already exists' });
+        if (USERS.find(u => u.email === email)) return res.status(400).json({ error: 'Email already exists' });
 
         const newUser = {
             id: Math.max(...USERS.map(u => u.id), 0) + 1,
@@ -807,7 +684,6 @@ app.post('/api/users', authenticate, requireScreen('UserManagement'), async (req
             status, allowedScreens: allowedScreens || [],
             createdAt: new Date().toISOString(),
         };
-
         USERS.push(newUser);
         res.json({ ...newUser, passwordHash: undefined });
     } catch (error) {
@@ -820,19 +696,14 @@ app.put('/api/users/:id', authenticate, requireScreen('UserManagement'), async (
     try {
         const userId = parseInt(req.params.id);
         const userIndex = USERS.findIndex(u => u.id === userId);
-
-        if (userIndex === -1) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
 
         const { name, email, role, allowedScreens, status } = req.body;
-
         if (email && email !== USERS[userIndex].email) {
             if (USERS.find(u => u.email === email && u.id !== userId)) {
                 return res.status(400).json({ error: 'Email already exists' });
             }
         }
-
         USERS[userIndex] = {
             ...USERS[userIndex],
             name: name || USERS[userIndex].name,
@@ -842,7 +713,6 @@ app.put('/api/users/:id', authenticate, requireScreen('UserManagement'), async (
             status: status !== undefined ? status : USERS[userIndex].status,
             accessLevel: role === 'super_admin' || role === 'admin' ? 'write' : 'read',
         };
-
         res.json({ ...USERS[userIndex], passwordHash: undefined });
     } catch (error) {
         log('ERROR', 'Failed to update user', { error: error.message });
@@ -853,15 +723,9 @@ app.put('/api/users/:id', authenticate, requireScreen('UserManagement'), async (
 app.delete('/api/users/:id', authenticate, requireScreen('UserManagement'), (req, res) => {
     try {
         const userId = parseInt(req.params.id);
-        if (userId === 1) {
-            return res.status(403).json({ error: 'Cannot delete system administrator' });
-        }
-
+        if (userId === 1) return res.status(403).json({ error: 'Cannot delete system administrator' });
         const userIndex = USERS.findIndex(u => u.id === userId);
-        if (userIndex === -1) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
+        if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
         USERS.splice(userIndex, 1);
         res.json({ success: true });
     } catch (error) {
@@ -873,15 +737,8 @@ app.delete('/api/users/:id', authenticate, requireScreen('UserManagement'), (req
 app.post('/api/users/bulk-delete', authenticate, requireScreen('UserManagement'), (req, res) => {
     try {
         const { ids } = req.body;
-
-        if (!Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({ error: 'Invalid user IDs' });
-        }
-
-        if (ids.includes(1)) {
-            return res.status(403).json({ error: 'Cannot delete system administrator' });
-        }
-
+        if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'Invalid user IDs' });
+        if (ids.includes(1)) return res.status(403).json({ error: 'Cannot delete system administrator' });
         USERS = USERS.filter(u => !ids.includes(u.id));
         res.json({ success: true, deleted: ids.length });
     } catch (error) {
@@ -894,16 +751,9 @@ app.post('/api/users/:id/reset-password', authenticate, requireScreen('UserManag
     try {
         const userId = parseInt(req.params.id);
         const { newPassword } = req.body;
-
-        if (!newPassword) {
-            return res.status(400).json({ error: 'New password required' });
-        }
-
+        if (!newPassword) return res.status(400).json({ error: 'New password required' });
         const userIndex = USERS.findIndex(u => u.id === userId);
-        if (userIndex === -1) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
+        if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
         USERS[userIndex].passwordHash = bcrypt.hashSync(newPassword, 10);
         res.json({ success: true, password: newPassword });
     } catch (error) {
@@ -920,7 +770,6 @@ wss.on('connection', (ws) => {
     log('INFO', 'WebSocket connection established');
     alerts.addSubscriber(ws);
 
-    // Send initial alert summary
     alerts.getRecent(10, false).then(recent => {
         ws.send(JSON.stringify({
             type: 'alert_summary',
@@ -946,7 +795,6 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-// 404 Handler
 app.use((req, res) => {
     log('WARN', '404 Not Found', { path: req.path, method: req.method });
     res.status(404).json({ error: 'Endpoint not found' });
@@ -957,58 +805,20 @@ app.use((req, res) => {
 // ---------------------------------------------------------------------------
 async function startup() {
     try {
-        // Ensure repository directory exists
         await fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true });
         log('INFO', 'Repository directory ready', { path: CONFIG.REPOSITORY_PATH });
 
-        // Test database connection
         await pool.query('SELECT 1');
         log('INFO', 'Database connection successful');
 
-        // Initialize alert system database
         await alerts.initializeDatabase();
         log('INFO', 'Alert system initialized');
 
-        // Start alert monitoring
         alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
         log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
 
-        // Start server
         server.listen(CONFIG.PORT, '0.0.0.0', () => {
-            console.log('\n╔═══════════════════════════════════════════════════════════╗');
-            console.log('║        VIGIL Backend   - Enhanced Alerts                  ║');
-            console.log('╚═══════════════════════════════════════════════════════════╝\n');
-            console.log(`🚀 Server running on port ${CONFIG.PORT}`);
-            console.log(`📡 API available at http://localhost:${CONFIG.PORT}`);
-            console.log(`🏥 Health check: http://localhost:${CONFIG.PORT}/health`);
-            console.log(`🌐 WebSocket: ws://localhost:${CONFIG.PORT}/ws`);
-            console.log(`📁 Repository path: ${CONFIG.REPOSITORY_PATH}`);
-            console.log(`\n🔐 Default credentials:`);
-            console.log(`   Username: admin`);
-            console.log(`   Password: admin`);
-            console.log(`\n🚨 Alert System Endpoints:`);
-            console.log('   GET    /api/alerts                    - Get recent alerts');
-            console.log('   GET    /api/alerts/statistics         - Get alert statistics');
-            console.log('   POST   /api/alerts/:id/acknowledge    - Acknowledge alert');
-            console.log('   POST   /api/alerts/bulk-acknowledge   - Bulk acknowledge alerts');
-            console.log('   POST   /api/alerts/manual             - Create manual alert');
-            console.log('   DELETE /api/alerts/cleanup            - Cleanup old alerts');
-            console.log(`\n🔌 Connection Management Endpoints:`);
-            console.log('   GET    /api/connections               - Get all connections');
-            console.log('   POST   /api/connections               - Create connection');
-            console.log('   PUT    /api/connections/:id           - Update connection');
-            console.log('   DELETE /api/connections/:id           - Delete connection');
-            console.log('   POST   /api/connections/:id/test      - Test connection');
-            console.log('   POST   /api/connections/:id/default   - Set default connection');
-            console.log(`\n📊 Alert Thresholds:`);
-            console.log(`   Connection Usage: ${CONFIG.ALERT_THRESHOLDS.CONNECTION_USAGE_PCT}%`);
-            console.log(`   Long Query: ${CONFIG.ALERT_THRESHOLDS.LONG_QUERY_SEC}s`);
-            console.log(`   Cache Hit Ratio: ${CONFIG.ALERT_THRESHOLDS.CACHE_HIT_RATIO}%`);
-            console.log(`   Dead Tuple Ratio: ${CONFIG.ALERT_THRESHOLDS.DEAD_TUPLE_RATIO}%`);
-            console.log(`   Replication Lag: ${CONFIG.ALERT_THRESHOLDS.REPLICATION_LAG_MB} MB`);
-            console.log(`   Lock Count: ${CONFIG.ALERT_THRESHOLDS.LOCK_COUNT}`);
-            console.log(`\n⚙️  Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log('');
+            console.log(`🚀 VIGIL Backend running on port ${CONFIG.PORT}`);
         });
     } catch (error) {
         log('ERROR', 'Startup failed', { error: error.message });
@@ -1016,16 +826,11 @@ async function startup() {
     }
 }
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
     log('INFO', 'SIGTERM received, shutting down gracefully');
     alerts.stopMonitoring();
     server.close(() => {
-        log('INFO', 'HTTP server closed');
-        pool.end(() => {
-            log('INFO', 'Database pool closed');
-            process.exit(0);
-        });
+        pool.end(() => { process.exit(0); });
     });
 });
 
@@ -1033,15 +838,10 @@ process.on('SIGINT', async () => {
     log('INFO', 'SIGINT received, shutting down gracefully');
     alerts.stopMonitoring();
     server.close(() => {
-        log('INFO', 'HTTP server closed');
-        pool.end(() => {
-            log('INFO', 'Database pool closed');
-            process.exit(0);
-        });
+        pool.end(() => { process.exit(0); });
     });
 });
 
-// Start the server
 startup();
 
-module.exports = app;
+export default app;

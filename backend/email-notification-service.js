@@ -2,7 +2,7 @@
 //  VIGIL — Email Notification Service for Alerts
 // ==========================================================================
 
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 /**
  * Email Notification Service
@@ -16,7 +16,6 @@ class EmailNotificationService {
         this.initialize();
     }
 
-    // Initialize email transporter based on provider
     initialize() {
         if (!this.enabled) {
             console.log('Email notifications disabled');
@@ -50,18 +49,16 @@ class EmailNotificationService {
         }
     }
 
-    // Gmail transporter
     createGmailTransporter() {
         return nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: this.config.gmail.user,
-                pass: this.config.gmail.appPassword // Use App Password, not regular password
+                pass: this.config.gmail.appPassword
             }
         });
     }
 
-    // SendGrid transporter
     createSendGridTransporter() {
         return nodemailer.createTransport({
             host: 'smtp.sendgrid.net',
@@ -74,7 +71,6 @@ class EmailNotificationService {
         });
     }
 
-    // AWS SES transporter
     createSESTransporter() {
         return nodemailer.createTransport({
             host: `email-smtp.${this.config.ses.region}.amazonaws.com`,
@@ -87,12 +83,11 @@ class EmailNotificationService {
         });
     }
 
-    // Generic SMTP transporter
     createSMTPTransporter() {
         return nodemailer.createTransport({
             host: this.config.smtp.host,
             port: this.config.smtp.port || 587,
-            secure: this.config.smtp.secure || false, // true for 465, false for other ports
+            secure: this.config.smtp.secure || false,
             auth: {
                 user: this.config.smtp.user,
                 pass: this.config.smtp.password
@@ -103,7 +98,6 @@ class EmailNotificationService {
         });
     }
 
-    // Verify email connection
     async verifyConnection() {
         if (!this.transporter) return false;
 
@@ -117,7 +111,6 @@ class EmailNotificationService {
         }
     }
 
-    // Get severity color for HTML emails
     getSeverityColor(severity) {
         const colors = {
             critical: '#dc2626',
@@ -127,7 +120,6 @@ class EmailNotificationService {
         return colors[severity] || '#6b7280';
     }
 
-    // Get severity emoji
     getSeverityEmoji(severity) {
         const emojis = {
             critical: '🔴',
@@ -137,7 +129,6 @@ class EmailNotificationService {
         return emojis[severity] || '📢';
     }
 
-    // Generate HTML email template
     generateHTMLEmail(alert) {
         const color = this.getSeverityColor(alert.severity);
         const emoji = this.getSeverityEmoji(alert.severity);
@@ -189,9 +180,9 @@ class EmailNotificationService {
                 <h3 style="margin: 0 0 10px 0; color: #374151; font-size: 16px;">Key Metrics</h3>
                 <table style="width: 100%; border-collapse: collapse;">
                     ${Object.entries(alert.data.metrics)
-                        .filter(([key]) => !key.includes('Queries') && !key.includes('Tables'))
-                        .slice(0, 6)
-                        .map(([key, value]) => `
+            .filter(([key]) => !key.includes('Queries') && !key.includes('Tables'))
+            .slice(0, 6)
+            .map(([key, value]) => `
                     <tr>
                         <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">${this.formatMetricName(key)}</td>
                         <td style="padding: 8px 0; color: #1f2937; font-weight: 600; text-align: right; font-size: 14px;">${this.formatMetricValue(key, value)}</td>
@@ -204,7 +195,7 @@ class EmailNotificationService {
             <!-- Actions -->
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
                 <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">Take action on this alert:</p>
-                <a href="${this.config.dashboardUrl || 'http://localhost:5173'}/alerts" 
+                <a href="${this.config.dashboardUrl || 'http://localhost:5173'}/alerts"
                    style="display: inline-block; background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">
                     View in Dashboard
                 </a>
@@ -234,10 +225,9 @@ class EmailNotificationService {
         `;
     }
 
-    // Generate plain text email
     generatePlainTextEmail(alert) {
         const emoji = this.getSeverityEmoji(alert.severity);
-        
+
         let text = `
 ═══════════════════════════════════════════════════════
   VIGIL Database Monitoring Alert
@@ -275,7 +265,6 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
         return text.trim();
     }
 
-    // Format metric names for display
     formatMetricName(key) {
         return key
             .replace(/([A-Z])/g, ' $1')
@@ -283,17 +272,10 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
             .trim();
     }
 
-    // Format metric values
     formatMetricValue(key, value) {
-        if (key.includes('Connections') || key.includes('Count')) {
-            return value.toString();
-        }
-        if (key.includes('Ratio') || key.includes('Pct')) {
-            return `${parseFloat(value).toFixed(1)}%`;
-        }
-        if (key.includes('GB') || key.includes('Size')) {
-            return `${parseFloat(value).toFixed(2)} GB`;
-        }
+        if (key.includes('Connections') || key.includes('Count')) return value.toString();
+        if (key.includes('Ratio') || key.includes('Pct')) return `${parseFloat(value).toFixed(1)}%`;
+        if (key.includes('GB') || key.includes('Size')) return `${parseFloat(value).toFixed(2)} GB`;
         if (key.includes('Seconds') || key.includes('Uptime')) {
             const hours = Math.floor(value / 3600);
             return `${hours}h`;
@@ -301,20 +283,13 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
         return value.toString();
     }
 
-    // Send email for alert
     async sendAlert(alert, recipients) {
         if (!this.enabled || !this.transporter) {
             console.log('Email notifications disabled, skipping email send');
             return { success: false, reason: 'disabled' };
         }
 
-        // Check if this severity should trigger email
-        const severityLevels = {
-            info: 1,
-            warning: 2,
-            critical: 3
-        };
-
+        const severityLevels = { info: 1, warning: 2, critical: 3 };
         const minLevel = severityLevels[this.config.minSeverity || 'warning'];
         const alertLevel = severityLevels[alert.severity];
 
@@ -323,7 +298,6 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
             return { success: false, reason: 'below_threshold' };
         }
 
-        // Get recipients list
         const to = recipients || this.config.recipients || [];
         if (!Array.isArray(to) || to.length === 0) {
             console.log('No email recipients configured');
@@ -342,22 +316,13 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
 
             const info = await this.transporter.sendMail(mailOptions);
             console.log(`Alert email sent: ${info.messageId}`);
-            
-            return {
-                success: true,
-                messageId: info.messageId,
-                recipients: to
-            };
+            return { success: true, messageId: info.messageId, recipients: to };
         } catch (error) {
             console.error('Failed to send alert email:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            return { success: false, error: error.message };
         }
     }
 
-    // Send test email
     async sendTestEmail(recipient) {
         const testAlert = {
             id: 'test-alert',
@@ -379,20 +344,17 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
         return this.sendAlert(testAlert, [recipient]);
     }
 
-    // Send digest email (summary of multiple alerts)
     async sendDigest(alerts, recipients) {
         if (!this.enabled || !this.transporter) {
             return { success: false, reason: 'disabled' };
         }
 
         const to = recipients || this.config.recipients || [];
-        if (to.length === 0) {
-            return { success: false, reason: 'no_recipients' };
-        }
+        if (to.length === 0) return { success: false, reason: 'no_recipients' };
 
         const critical = alerts.filter(a => a.severity === 'critical').length;
-        const warning = alerts.filter(a => a.severity === 'warning').length;
-        const info = alerts.filter(a => a.severity === 'info').length;
+        const warning  = alerts.filter(a => a.severity === 'warning').length;
+        const info     = alerts.filter(a => a.severity === 'info').length;
 
         const html = `
 <!DOCTYPE html>
@@ -407,7 +369,7 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
             <h1 style="margin: 0; font-size: 24px;">VIGIL Alert Digest</h1>
             <p style="margin: 10px 0 0 0;">Summary of Recent Alerts</p>
         </div>
-        
+
         <div style="padding: 30px;">
             <div style="display: flex; justify-content: space-around; margin-bottom: 30px;">
                 <div style="text-align: center;">
@@ -433,7 +395,7 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
             `).join('')}
 
             <div style="text-align: center; margin-top: 30px;">
-                <a href="${this.config.dashboardUrl || 'http://localhost:5173'}/alerts" 
+                <a href="${this.config.dashboardUrl || 'http://localhost:5173'}/alerts"
                    style="display: inline-block; background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                     View All Alerts
                 </a>
@@ -461,4 +423,4 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
     }
 }
 
-module.exports = EmailNotificationService;
+export default EmailNotificationService;
