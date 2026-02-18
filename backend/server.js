@@ -30,9 +30,10 @@ const CONFIG = Object.freeze({
     PORT:            Number(process.env.PORT) || 5000,
     JWT_SECRET:      process.env.JWT_SECRET || 'vigil-change-me-in-production',
     JWT_EXPIRES_IN:  process.env.JWT_EXPIRES_IN || '8h',
-    CORS_ORIGINS:    [
-        'http://localhost:5173', // Vite
-        'http://localhost:3000', // CRA
+    CORS_ORIGINS: [  // ✅ PRODUCTION FRONTEND ADDED
+        'http://localhost:5173',     // Vite dev (React)
+        'http://localhost:3000',     // CRA dev
+        'https://postgres-tool.vercel.app',  // ✅ PROD FRONTEND
         process.env.CORS_ORIGIN,
     ].filter(Boolean),
     SLOW_QUERY_MIN:  Number(process.env.SLOW_QUERY_MINUTES) || 5,
