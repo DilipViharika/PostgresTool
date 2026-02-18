@@ -20,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Import repository routes
-import repoRoutes from './routes/repoRoutes.js';
+import repoRoutes from './Routes/repoRoutes.js';
 
 // Import enhanced alert system
 import EnhancedAlertEngine from './enhanced-alerts.js';
