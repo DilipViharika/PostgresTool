@@ -1,0 +1,15 @@
+﻿{
+  "name": "postgrestool-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
+    "frontend:dev": "cd frontend && npm run dev",
+    "backend:dev": "cd backend && npm start",
+    "install": "npm install && npm run workspace:frontend install && npm run workspace:backend install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
