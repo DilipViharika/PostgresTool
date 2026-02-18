@@ -275,7 +275,7 @@ app.post('/api/auth/login', (req, res) => {
         return res.status(401).json({ error: 'Invalid credentials' });
     }
     const token = jwt.sign({ ...user, passwordHash: undefined }, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
-    res.json({ user, token });
+    res.json({ user: { ...user, passwordHash: undefined }, token });
 });
 
 app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
