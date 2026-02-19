@@ -1085,7 +1085,7 @@ const SqlConsoleTab = () => {
                                 ) : result?.rows ? (
                                     <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
                                         {/* Stats bar */}
-                                        <div style={{ display:'flex', alignItems:'center', gap:14, padding:'7px 14px', borderBottom:`1px solid ${THEME.grid}25`, fontSize:10, flexShrink:0, flexWrap:'wrap', gap:10 }}>
+                                        <div style={{ display:'flex', alignItems:'center', gap:14, padding:'7px 14px', borderBottom:`1px solid ${THEME.grid}25`, fontSize:10, flexShrink:0, flexWrap:'wrap' }}>
                                             {[{icon:CheckCircle,label:'Success',color:THEME.success},{icon:Layers,label:`${fmtRows(result.rowCount)} rows`,color:THEME.textMuted},{icon:Columns,label:`${result.fields?.length||0} cols`,color:THEME.textMuted},{icon:Timer,label:fmtMs(result.duration),color:THEME.primary}].map((s,i)=>(
                                                 <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:4, color:s.color, fontWeight:600 }}><s.icon size={10}/>{s.label}</span>
                                             ))}

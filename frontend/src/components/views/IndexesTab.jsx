@@ -966,7 +966,7 @@ const IndexTable = ({ rows, view, onSelect }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: `1px solid ${K.border}`, background: K.void }}>
                 <Search size={11} color={K.textDim} />
                 <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="filter…"
-                       style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: K.textPrimary, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: K.textSub }} />
+                       style={{ flex: 1, background: 'none', border: 'none', outline: 'none',  fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: K.textSub }} />
                 {filter && <button onClick={() => setFilter('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: K.textDim }}><X size={10} /></button>}
                 <span style={{ fontSize: 8.5, color: K.textDim, fontFamily: "'IBM Plex Mono',monospace" }}>{sorted.length} rows</span>
             </div>

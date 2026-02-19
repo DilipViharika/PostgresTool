@@ -313,7 +313,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
             border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
             fontSize: 11,
             flexWrap: 'wrap',
-            gap: 8,
+
         }}>
             {/* Connection indicator */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
