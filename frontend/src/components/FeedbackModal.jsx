@@ -35,7 +35,7 @@ const ACTION_TYPES = [
         label: 'Suggest Improvement',
         icon: Lightbulb,
         color: '#F59E0B',
-        placeholder: 'What exists here that could work better? Describe the current behaviour and how you'd like it changed.',
+        placeholder: "What exists here that could work better? Describe the current behaviour and how you'd like it changed.",
     },
 ];
 
