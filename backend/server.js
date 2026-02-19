@@ -1,15 +1,3 @@
-/**
- * server.js  — VIGIL Backend  v3.0.0
- * ────────────────────────────────────
- * Changes from v2.x:
- *  - In-memory USERS array replaced with pgmonitoringtool.users table
- *  - User routes moved to routes/userRoutes.js (backed by services/userService.js)
- *  - Session routes moved to routes/sessionRoutes.js (backed by services/sessionService.js)
- *  - Audit routes moved to routes/auditRoutes.js (backed by services/auditService.js)
- *  - authenticate middleware upgraded: JWT session revocation + X-API-Key header support
- *  - Login endpoint now writes audit log, records login activity, creates session row
- *  - All other routes (performance, alerts, feedback, connections, etc.) unchanged
- */
 
 import express                from 'express';
 import cors                   from 'cors';
