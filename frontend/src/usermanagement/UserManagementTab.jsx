@@ -2,19 +2,19 @@
  * UserManagementTab — advanced production-ready root component.
  *
  * Architecture:
- *   • useReducer-based state machine (replaces scattered useState)
- *   • Stale-while-revalidate pattern (shows cached data while refreshing)
- *   • Focus trap + Escape key handling for all modals
- *   • Keyboard-navigable tab bar (Arrow keys + Home/End)
- *   • Portal-based overlays (modals render outside component tree)
- *   • Animated tab panel transitions
- *   • Breadcrumb context for navigation history
- *   • Bulk action bar with confirmation dialogs
- *   • Keyboard shortcuts (Ctrl+1-4, Ctrl+N, Ctrl+K, Esc)
+ * • useReducer-based state machine (replaces scattered useState)
+ * • Stale-while-revalidate pattern (shows cached data while refreshing)
+ * • Focus trap + Escape key handling for all modals
+ * • Keyboard-navigable tab bar (Arrow keys + Home/End)
+ * • Portal-based overlays (modals render outside component tree)
+ * • Animated tab panel transitions
+ * • Breadcrumb context for navigation history
+ * • Bulk action bar with confirmation dialogs
+ * • Keyboard shortcuts (Ctrl+1-4, Ctrl+N, Ctrl+K, Esc)
  *
  * Usage:
- *   import UserManagementTab from './usermanagement/UserManagementTab';
- *   <UserManagementTab initialUsers={loaderData} />
+ * import UserManagementTab from './usermanagement/UserManagementTab';
+ * <UserManagementTab initialUsers={loaderData} />
  */
 
 import React, {
@@ -25,35 +25,15 @@ import { createPortal } from 'react-dom';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    IMPORTS — mapped to actual project structure (src/usermanagement/)
-
-   Project layout:
-     src/
-       utils/theme.jsx          ← shared THEME
-       hooks/                   ← app-level hooks
-       components/ui/           ← shared UI atoms
-       components/views/        ← view-level components
-       usermanagement/          ← THIS folder
-         constants/             ← local constants (ROLES, PERMISSIONS, etc.)
-         UserManagementTab.jsx  ← THIS file
-         ...other local modules
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // ── Theme (shared across the entire app) ──
 import { THEME } from '../utils/theme.jsx';
 
-// ── Local constants (inside usermanagement/constants/) ──
-// If your constants/index.js exports ROLES, PERMISSIONS_MAP, DEPARTMENTS:
-// import { ROLES, PERMISSIONS_MAP, DEPARTMENTS } from './constants/index.js';
-
-// ── App-level hooks ──
-// import { useDebounce } from '../hooks/index.js';
-
-// ── Local sub-modules (inside usermanagement/) ──
-// Adjust these if your filenames differ — check your actual exports
-// import { PermissionMatrix }  from './PermissionMatrix';
-// import { useClickOutside }   from './useClickOutside';
-// import { Toggle }            from './Toggle';
-
+// ── Wired up your real components here ──
+import { UsersTable, PermissionMatrix } from './Toggle/TableAndMatrix.jsx';
+import { AuditLog, SecurityPanel } from './PermissionMatrix/AuditAndSecurity.jsx';
+import { UserDrawer, UserFormModal, PasswordModal } from './PermissionMatrix/Modals.jsx';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    THEME ALIAS — use T.xxx shorthand throughout this file
@@ -214,8 +194,9 @@ function useUsers(initialUsers = []) {
     const [error, setError] = useState(null);
     const abortRef = useRef(null);
 
+    // FIXED: Now checks 'token' first before 'auth_token'
     const getAuthHeaders = useCallback(() => {
-        const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('auth_token');
         return {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -948,331 +929,17 @@ AnalyticsHeaderInline.displayName = 'AnalyticsHeaderInline';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SECTION 15 — PLACEHOLDER PANELS
-   These render when the actual sub-components exist in your project.
-   Replace the contents with your real imports once verified.
+   SECTION 15 — WIRED UP COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/**
- * IMPORTANT — WIRING YOUR EXISTING SUB-COMPONENTS
- *
- * Your project has these in src/usermanagement/:
- *   - PermissionMatrix/
- *   - scattered in JSX/     (likely contains AuditLog, SecurityPanel, etc.)
- *   - Toggle/
- *   - SessionAPI, ApiKeyService/
- *   - useClickOutside/
- *   - changecolours/
- *   - generatePassword, relTime.../
- *
- * Uncomment and adjust these imports to wire them in:
- *
- *   import PermissionMatrix from './PermissionMatrix';
- *   import { AuditLog }       from './scattered in JSX';    // rename if needed
- *   import { SecurityPanel }  from './scattered in JSX';    // rename if needed
- *   import { UsersTable }     from './scattered in JSX';    // rename if needed
- *   import { UserDrawer, UserFormModal, PasswordModal } from './scattered in JSX';
- *
- * Then remove the placeholder components below.
- */
-
-const PlaceholderPanel = memo(({ name, icon }) => (
-    <div style={{
-        padding: '60px 24px', textAlign: 'center', color: T.textDim || '#8b8fa3',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-    }}>
-        <div style={{
-            width: 56, height: 56, borderRadius: 14,
-            background: `${T.primary || '#6366f1'}10`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 24,
-        }}>{icon}</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: T.text || '#e2e4eb' }}>{name}</div>
-        <div style={{ fontSize: 13, maxWidth: 400, lineHeight: 1.6 }}>
-            Wire this panel to your existing component. See the import instructions in this file.
-        </div>
-    </div>
-));
-PlaceholderPanel.displayName = 'PlaceholderPanel';
-
-// ── Temporary placeholders — REPLACE with your real components ──
-const UsersTableFallback    = memo(({ users, onSelectUser, onDeleteUsers, onEditUser }) => (
-    <PlaceholderPanel name="Users Table" icon="👥" />
-));
-const PermissionMatrixFallback = memo(() => <PlaceholderPanel name="Permission Matrix" icon="🛡️" />);
-const AuditLogFallback      = memo(() => <PlaceholderPanel name="Audit Log" icon="📋" />);
-const SecurityPanelFallback = memo(({ users }) => <PlaceholderPanel name="Security Panel" icon="🔒" />);
-
-// ── Inline UserFormModal — handles both Create and Edit ──
-const UserFormModalFallback = memo(({ user, onSave, onCancel }) => {
-    const isEdit = Boolean(user?.id);
-    const [form, setForm] = useState({
-        name:     user?.name     || '',
-        email:    user?.email    || '',
-        username: user?.username || '',
-        password: '',
-        role:     user?.role     || 'viewer',
-        status:   user?.status   || 'active',
-    });
-    const [saving, setSaving] = useState(false);
-    const [err, setErr]       = useState(null);
-    const trapRef = useFocusTrap(true);
-
-    const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-    const handleSubmit = async () => {
-        setErr(null);
-        if (!form.name.trim())  return setErr('Name is required');
-        if (!form.email.trim()) return setErr('Email is required');
-        if (!isEdit && !form.username.trim()) return setErr('Username is required');
-        if (!isEdit && !form.password.trim()) return setErr('Password is required');
-        setSaving(true);
-        try {
-            await onSave(isEdit ? { ...form, id: user.id } : form);
-        } catch (e) {
-            setErr(e.message || 'Save failed');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const fieldStyle = {
-        width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 13,
-        background: T.surfaceHigh || '#1a1a2e',
-        border: `1px solid ${T.border || '#2a2a3e'}`,
-        color: T.text || '#e2e4eb', fontFamily: 'inherit', outline: 'none',
-        boxSizing: 'border-box',
-    };
-    const labelStyle = {
-        display: 'block', fontSize: 12, fontWeight: 600,
-        color: T.textDim || '#8b8fa3', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.04em',
-    };
-    const rowStyle = { marginBottom: 16 };
-
-    return (
-        <div style={{
-            position: 'fixed', inset: 0, zIndex: 10000,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-        }} onClick={e => { if (e.target === e.currentTarget) onCancel(); }}>
-            <div ref={trapRef} style={{
-                background: T.surface || '#12121f', border: `1px solid ${T.border || '#2a2a3e'}`,
-                borderRadius: 16, padding: '28px 32px', width: '100%', maxWidth: 480,
-                margin: '0 16px', boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-                animation: 'umSlideUp 0.2s cubic-bezier(0.16,1,0.3,1)',
-                maxHeight: '90vh', overflowY: 'auto',
-            }} role="dialog" aria-modal="true" aria-label={isEdit ? 'Edit user' : 'Create user'}>
-                {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: T.text || '#e2e4eb' }}>
-                        {isEdit ? `Edit ${user.name}` : 'Create New User'}
-                    </div>
-                    <button onClick={onCancel} style={{
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        color: T.textDim || '#8b8fa3', padding: 4, borderRadius: 6,
-                    }}>
-                        <Ico name="x" size={18} />
-                    </button>
-                </div>
-
-                {/* Error */}
-                {err && (
-                    <div style={{
-                        padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13,
-                        background: `${T.danger || '#ef4444'}15`,
-                        border: `1px solid ${T.danger || '#ef4444'}40`,
-                        color: T.danger || '#ef4444', display: 'flex', gap: 8, alignItems: 'center',
-                    }}>
-                        <Ico name="alert" size={14} color={T.danger || '#ef4444'} /> {err}
-                    </div>
-                )}
-
-                {/* Fields */}
-                <div style={rowStyle}>
-                    <label style={labelStyle}>Full Name *</label>
-                    <input style={fieldStyle} value={form.name} onChange={e => set('name', e.target.value)} placeholder="Jane Smith" autoFocus />
-                </div>
-                <div style={rowStyle}>
-                    <label style={labelStyle}>Email *</label>
-                    <input style={fieldStyle} type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="jane@example.com" />
-                </div>
-                {!isEdit && (
-                    <div style={rowStyle}>
-                        <label style={labelStyle}>Username *</label>
-                        <input style={fieldStyle} value={form.username} onChange={e => set('username', e.target.value)} placeholder="jsmith" autoComplete="off" />
-                    </div>
-                )}
-                {!isEdit && (
-                    <div style={rowStyle}>
-                        <label style={labelStyle}>Password *</label>
-                        <input style={fieldStyle} type="password" value={form.password} onChange={e => set('password', e.target.value)} placeholder="Min 8 characters" autoComplete="new-password" />
-                    </div>
-                )}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                    <div>
-                        <label style={labelStyle}>Role</label>
-                        <select style={fieldStyle} value={form.role} onChange={e => set('role', e.target.value)}>
-                            <option value="viewer">Viewer</option>
-                            <option value="editor">Editor</option>
-                            <option value="admin">Admin</option>
-                            <option value="super_admin">Super Admin</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style={labelStyle}>Status</label>
-                        <select style={fieldStyle} value={form.status} onChange={e => set('status', e.target.value)}>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="suspended">Suspended</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
-                    <button className="um-btn um-btn-ghost" onClick={onCancel} disabled={saving}>Cancel</button>
-                    <button className="um-btn um-btn-primary" onClick={handleSubmit} disabled={saving}>
-                        {saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create User')}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-});
-UserFormModalFallback.displayName = 'UserFormModal';
-
-// ── Inline PasswordModal ──
-const PasswordModalFallback = memo(({ user, onConfirm, onClose }) => {
-    const [pw, setPw]         = useState('');
-    const [saving, setSaving] = useState(false);
-    const [err, setErr]       = useState(null);
-    const trapRef = useFocusTrap(true);
-
-    const handleSubmit = async () => {
-        if (pw.length < 8) return setErr('Password must be at least 8 characters');
-        setSaving(true);
-        try { await onConfirm(user.id, pw); }
-        catch (e) { setErr(e.message || 'Failed'); setSaving(false); }
-    };
-
-    return (
-        <div style={{
-            position: 'fixed', inset: 0, zIndex: 10000,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-        }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-            <div ref={trapRef} style={{
-                background: T.surface || '#12121f', border: `1px solid ${T.border || '#2a2a3e'}`,
-                borderRadius: 16, padding: '28px 32px', width: '100%', maxWidth: 400, margin: '0 16px',
-                boxShadow: '0 24px 80px rgba(0,0,0,0.5)', animation: 'umSlideUp 0.2s cubic-bezier(0.16,1,0.3,1)',
-            }} role="dialog" aria-modal="true">
-                <div style={{ fontSize: 17, fontWeight: 700, color: T.text || '#e2e4eb', marginBottom: 6 }}>Reset Password</div>
-                <div style={{ fontSize: 13, color: T.textDim || '#8b8fa3', marginBottom: 20 }}>
-                    Setting new password for <strong style={{ color: T.text || '#e2e4eb' }}>{user?.name}</strong>
-                </div>
-                {err && <div style={{ color: T.danger || '#ef4444', fontSize: 12, marginBottom: 12 }}>{err}</div>}
-                <input autoFocus type="password" value={pw} onChange={e => { setPw(e.target.value); setErr(null); }}
-                       placeholder="New password (min 8 chars)"
-                       style={{
-                           width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 13, marginBottom: 16,
-                           background: T.surfaceHigh || '#1a1a2e', border: `1px solid ${T.border || '#2a2a3e'}`,
-                           color: T.text || '#e2e4eb', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
-                       }} />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                    <button className="um-btn um-btn-ghost" onClick={onClose} disabled={saving}>Cancel</button>
-                    <button className="um-btn um-btn-primary" onClick={handleSubmit} disabled={saving || pw.length < 8}>
-                        {saving ? 'Saving…' : 'Reset Password'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-});
-PasswordModalFallback.displayName = 'PasswordModal';
-
-// ── Inline UserDrawer ──
-const UserDrawerFallback = memo(({ user, onClose, onEdit, onResetPassword }) => {
-    const trapRef = useFocusTrap(true);
-    if (!user) return null;
-    const statusColor = { active: '#22c55e', inactive: '#f59e0b', suspended: T.danger || '#ef4444' }[user.status] || '#6b6f82';
-    const Row = ({ label, value }) => (
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${T.border || '#2a2a3e'}` }}>
-            <span style={{ fontSize: 12, color: T.textDim || '#8b8fa3', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
-            <span style={{ fontSize: 13, color: T.text || '#e2e4eb', fontWeight: 500 }}>{value || '—'}</span>
-        </div>
-    );
-    return (
-        <div style={{
-            position: 'fixed', inset: 0, zIndex: 10000,
-            display: 'flex', alignItems: 'stretch', justifyContent: 'flex-end',
-            background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
-        }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-            <div ref={trapRef} style={{
-                width: 420, maxWidth: '95vw', background: T.surface || '#12121f',
-                borderLeft: `1px solid ${T.border || '#2a2a3e'}`,
-                display: 'flex', flexDirection: 'column',
-                boxShadow: '-20px 0 60px rgba(0,0,0,0.4)',
-                animation: 'umSlideLeft 0.25s cubic-bezier(0.16,1,0.3,1)',
-            }} role="dialog" aria-modal="true">
-                {/* Header */}
-                <div style={{ padding: '24px 24px 20px', borderBottom: `1px solid ${T.border || '#2a2a3e'}` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: T.text || '#e2e4eb' }}>{user.name}</div>
-                            <div style={{ fontSize: 13, color: T.textDim || '#8b8fa3', marginTop: 3 }}>{user.email}</div>
-                            <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, display: 'inline-block' }} />
-                                <span style={{ fontSize: 12, color: statusColor, fontWeight: 600, textTransform: 'capitalize' }}>{user.status}</span>
-                                <span style={{ fontSize: 12, color: T.textDim || '#8b8fa3', background: T.surfaceHigh || '#1a1a2e', padding: '2px 8px', borderRadius: 6 }}>{user.role}</span>
-                            </div>
-                        </div>
-                        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim || '#8b8fa3', padding: 4 }}>
-                            <Ico name="x" size={20} />
-                        </button>
-                    </div>
-                </div>
-                {/* Details */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px' }}>
-                    <Row label="Username"   value={user.username} />
-                    <Row label="Role"       value={user.role} />
-                    <Row label="Status"     value={user.status} />
-                    <Row label="Created"    value={user.created_at ? new Date(user.created_at).toLocaleDateString() : null} />
-                    <Row label="Last Login" value={user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : 'Never'} />
-                </div>
-                {/* Actions */}
-                <div style={{ padding: 24, borderTop: `1px solid ${T.border || '#2a2a3e'}`, display: 'flex', gap: 10 }}>
-                    <button className="um-btn um-btn-primary" style={{ flex: 1 }} onClick={() => onEdit(user)}>
-                        <Ico name="edit" size={14} color="#fff" /> Edit
-                    </button>
-                    <button className="um-btn um-btn-ghost" style={{ flex: 1 }} onClick={() => onResetPassword(user)}>
-                        <Ico name="key" size={14} /> Reset Password
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-});
-UserDrawerFallback.displayName = 'UserDrawer';
-
-/**
- * ┌─────────────────────────────────────────────────────────────────┐
- * │ TO WIRE YOUR REAL COMPONENTS:                                  │
- * │                                                                │
- * │ 1. Import them at the top of this file                         │
- * │ 2. Replace the *Fallback variables below with your imports     │
- * │                                                                │
- * │ Example:                                                        │
- * │   import { UsersTable } from './components/UsersTable';        │
- * │   const UsersTableComponent = UsersTable;                      │
- * └─────────────────────────────────────────────────────────────────┘
- */
-const UsersTableComponent     = UsersTableFallback;
-const PermissionMatrixComponent = PermissionMatrixFallback;
-const AuditLogComponent       = AuditLogFallback;
-const SecurityPanelComponent  = SecurityPanelFallback;
-const UserDrawerComponent     = UserDrawerFallback;
-const UserFormModalComponent  = UserFormModalFallback;
-const PasswordModalComponent  = PasswordModalFallback;
+// ── Wired up to your real imported components ──
+const UsersTableComponent       = UsersTable;
+const PermissionMatrixComponent = PermissionMatrix;
+const AuditLogComponent         = AuditLog;
+const SecurityPanelComponent    = SecurityPanel;
+const UserDrawerComponent       = UserDrawer;
+const UserFormModalComponent    = UserFormModal;
+const PasswordModalComponent    = PasswordModal;
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
