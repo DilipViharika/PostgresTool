@@ -281,12 +281,12 @@ app.post('/api/auth/login', (req, res) => {
 app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
     const { rows: [d] } = await pool.query(`
         SELECT
-            (SELECT count(*) FROM pg_stat_activity WHERE state='active') as active,
-            (SELECT count(*) FROM pg_stat_activity) as total_conn,
-            (SELECT setting::int FROM pg_settings WHERE name='max_connections') as max_conn,
-            (SELECT pg_database_size(current_database())) as db_size_bytes,
-            (SELECT date_part('epoch', now() - pg_postmaster_start_time())) as uptime_seconds,
-            (SELECT sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100 FROM pg_statio_user_tables) as hit_ratio
+                (SELECT count(*) FROM pg_stat_activity WHERE state='active') as active,
+                (SELECT count(*) FROM pg_stat_activity) as total_conn,
+                (SELECT setting::int FROM pg_settings WHERE name='max_connections') as max_conn,
+                (SELECT pg_database_size(current_database())) as db_size_bytes,
+                (SELECT date_part('epoch', now() - pg_postmaster_start_time())) as uptime_seconds,
+                (SELECT sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100 FROM pg_statio_user_tables) as hit_ratio
     `);
     res.json({
         activeConnections: Number(d.active),
@@ -753,6 +753,53 @@ app.post('/api/users/:id/reset-password', authenticate, requireScreen('UserManag
         res.json({ success: true, password: newPassword });
     } catch (error) {
         log('ERROR', 'Failed to reset password', { error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// FEEDBACK ROUTES (NEW ADDITION)
+// ---------------------------------------------------------------------------
+app.post('/api/feedback', authenticate, async (req, res) => {
+    try {
+        const { type, rating, comment } = req.body;
+
+        if (!rating || !comment) {
+            return res.status(400).json({ error: 'Rating and comment are required' });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO "pgmonitoringtool".user_feedback 
+             (username, feedback_type, rating, comment, status) 
+             VALUES ($1, $2, $3, $4, 'new') 
+             RETURNING id, created_at`,
+            [req.user.username, type || 'general', rating, comment]
+        );
+
+        log('INFO', 'Feedback received', {
+            user: req.user.username,
+            id: result.rows[0].id,
+            type
+        });
+
+        res.json({ success: true, feedbackId: result.rows[0].id });
+    } catch (error) {
+        log('ERROR', 'Feedback submission failed', { error: error.message });
+        res.status(500).json({ error: 'Failed to submit feedback' });
+    }
+});
+
+app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 50;
+        const result = await pool.query(
+            `SELECT * FROM "pgmonitoringtool".user_feedback 
+             ORDER BY created_at DESC LIMIT $1`,
+            [limit]
+        );
+        res.json(result.rows);
+    } catch (error) {
+        log('ERROR', 'Failed to fetch feedback', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });

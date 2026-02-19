@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { THEME, ChartDefs } from './utils/theme.jsx';
-import { connectWS } from './utils/api';
+import { connectWS, postData } from './utils/api'; // Ensure postData is imported
 import LoginPage from './components/auth/LoginPage.jsx';
 
 import OverviewTab from './components/views/OverviewTab.jsx';
@@ -26,7 +26,8 @@ import CapacityPlanningTab from './components/views/CapacityPlanningTab.jsx';
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
     LogOut, Database, Wifi, WifiOff, Bell, ChevronLeft, ChevronRight,
-    AlertCircle, X, Menu, Search, Settings, User, GitBranch, Users, Server, TrendingUp
+    AlertCircle, X, Menu, Search, Settings, User, GitBranch, Users, Server, TrendingUp,
+    MessageSquarePlus, Star, Send
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
@@ -51,14 +52,13 @@ const TAB_CONFIG = [
     { id: 'schema', icon: Layers, label: 'Schema & Migrations', component: SchemaVersioningTab },
     { id: 'security', icon: Shield, label: 'Security & Compliance', component: SecurityComplianceTab },
     { id: 'capacity', icon: TrendingUp, label: 'Capacity Planning', component: CapacityPlanningTab },
-
-
 ];
 
 const STORAGE_KEYS = {
     ACTIVE_TAB: 'pg_monitor_active_tab',
     SIDEBAR_COLLAPSED: 'pg_monitor_sidebar_collapsed',
     NOTIFICATIONS_DISMISSED: 'pg_monitor_notifications_dismissed',
+    FEEDBACK_PROMPT: 'pg_monitor_feedback_prompt_shown'
 };
 
 const WS_RECONNECT_INTERVAL = 5000;
@@ -107,12 +107,161 @@ const AppStyles = () => (
         .smooth-transition {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .feedback-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .feedback-modal {
+            background: ${THEME.surface}; border: 1px solid ${THEME.glassBorder};
+            border-radius: 16px; width: 450px; max-width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
     `}</style>
 );
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FEEDBACK MODAL COMPONENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+const FeedbackModal = ({ onClose }) => {
+    const [rating, setRating] = useState(0);
+    const [category, setCategory] = useState('feature'); // feature, bug, improvement
+    const [comment, setComment] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!comment.trim()) return;
+
+        setSubmitting(true);
+        try {
+            // Ensure you have an endpoint /api/feedback in your server
+            await postData('/api/feedback', { rating, category, comment, timestamp: new Date() });
+            setSuccess(true);
+            setTimeout(onClose, 2000); // Close after 2s
+        } catch (error) {
+            console.error('Failed to submit feedback:', error);
+            // Optional: Show error state
+            setSubmitting(false);
+        }
+    };
+
+    if (success) {
+        return (
+            <div className="feedback-overlay">
+                <div className="feedback-modal" style={{ padding: 40, textAlign: 'center' }}>
+                    <div style={{ width: 60, height: 60, borderRadius: '50%', background: `${THEME.success}20`, color: THEME.success, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                        <CheckCircle size={32} />
+                    </div>
+                    <h3 style={{ margin: 0, color: THEME.textMain }}>Thank You!</h3>
+                    <p style={{ color: THEME.textMuted, marginTop: 8 }}>Your feedback helps us improve Vigil.</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="feedback-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+            <div className="feedback-modal">
+                <div style={{ padding: '20px 24px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: THEME.textMain }}>Send Feedback</h3>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer' }}><X size={20} /></button>
+                </div>
+
+                <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+                    {/* Rating */}
+                    <div style={{ marginBottom: 20, textAlign: 'center' }}>
+                        <div style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>How likely are you to recommend us?</div>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => setRating(star)}
+                                    onMouseEnter={() => setRating(star)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, transition: 'transform 0.1s' }}
+                                >
+                                    <Star
+                                        size={28}
+                                        fill={rating >= star ? THEME.warning : 'transparent'}
+                                        color={rating >= star ? THEME.warning : THEME.grid}
+                                        strokeWidth={1.5}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Category */}
+                    <div style={{ marginBottom: 20 }}>
+                        <label style={{ display: 'block', fontSize: 12, color: THEME.textMain, marginBottom: 8, fontWeight: 600 }}>Category</label>
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            {['Feature Request', 'Bug Report', 'General Improvement'].map(cat => {
+                                const val = cat.toLowerCase().split(' ')[0];
+                                const active = category === val;
+                                return (
+                                    <button
+                                        key={val}
+                                        type="button"
+                                        onClick={() => setCategory(val)}
+                                        style={{
+                                            flex: 1, padding: '8px 0', borderRadius: 6, fontSize: 12,
+                                            border: `1px solid ${active ? THEME.primary : THEME.grid}`,
+                                            background: active ? `${THEME.primary}15` : 'transparent',
+                                            color: active ? THEME.primary : THEME.textMuted,
+                                            cursor: 'pointer', transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {cat}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Comment */}
+                    <div style={{ marginBottom: 24 }}>
+                        <label style={{ display: 'block', fontSize: 12, color: THEME.textMain, marginBottom: 8, fontWeight: 600 }}>Comments</label>
+                        <textarea
+                            value={comment}
+                            onChange={e => setComment(e.target.value)}
+                            placeholder="Tell us what you love or what could be better..."
+                            rows={4}
+                            style={{
+                                width: '100%', background: `${THEME.bg}80`, border: `1px solid ${THEME.grid}`,
+                                borderRadius: 8, padding: 12, color: THEME.textMain, fontSize: 13,
+                                outline: 'none', resize: 'none', fontFamily: 'inherit'
+                            }}
+                        />
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        disabled={submitting || !comment}
+                        style={{
+                            width: '100%', padding: '12px', borderRadius: 8, border: 'none',
+                            background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`,
+                            color: '#fff', fontSize: 14, fontWeight: 600, cursor: submitting ? 'wait' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                            opacity: (!comment) ? 0.6 : 1
+                        }}
+                    >
+                        {submitting ? 'Sending...' : <><Send size={16} /> Submit Feedback</>}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
    ERROR BOUNDARY
    ═══════════════════════════════════════════════════════════════════════════ */
+// ... (Previous ErrorBoundary Code remains same)
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
@@ -160,6 +309,7 @@ class ErrorBoundary extends React.Component {
 /* ═══════════════════════════════════════════════════════════════════════════
    NOTIFICATION CENTER
    ═══════════════════════════════════════════════════════════════════════════ */
+// ... (Previous NotificationCenter Code remains same)
 const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
     const [isOpen, setIsOpen] = useState(false);
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -298,9 +448,9 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   COLLAPSIBLE SIDEBAR
+   COLLAPSIBLE SIDEBAR WITH FEEDBACK
    ═══════════════════════════════════════════════════════════════════════════ */
-const Sidebar = ({ tabs, activeTab, onTabChange, onLogout, currentUser, collapsed, onToggleCollapse }) => {
+const Sidebar = ({ tabs, activeTab, onTabChange, onLogout, currentUser, collapsed, onToggleCollapse, onOpenFeedback }) => {
     return (
         <aside style={{
             width: collapsed ? 70 : 240,
@@ -398,7 +548,7 @@ const Sidebar = ({ tabs, activeTab, onTabChange, onLogout, currentUser, collapse
                 })}
             </div>
 
-            {/* User Section */}
+            {/* User Section & Feedback */}
             <div style={{
                 padding: collapsed ? '16px 0' : 20,
                 borderTop: `1px solid ${THEME.grid}`,
@@ -406,8 +556,32 @@ const Sidebar = ({ tabs, activeTab, onTabChange, onLogout, currentUser, collapse
                 flexDirection: 'column',
                 gap: 12
             }}>
+                {/* Feedback Button */}
+                <button
+                    onClick={onOpenFeedback}
+                    className="nav-item-hover"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 10,
+                        background: 'transparent',
+                        border: 'none',
+                        color: THEME.textMuted,
+                        cursor: 'pointer',
+                        padding: collapsed ? '8px 0' : '8px 16px',
+                        fontSize: 13,
+                        fontWeight: 500,
+                        textAlign: 'left'
+                    }}
+                    title="Give Feedback"
+                >
+                    <MessageSquarePlus size={16} />
+                    {!collapsed && 'Feedback'}
+                </button>
+
                 {!collapsed && (
-                    <div>
+                    <div style={{ padding: '0 16px' }}>
                         <div style={{
                             fontSize: 10,
                             color: THEME.textMuted,
@@ -441,9 +615,10 @@ const Sidebar = ({ tabs, activeTab, onTabChange, onLogout, currentUser, collapse
                         border: 'none',
                         color: THEME.textMuted,
                         cursor: 'pointer',
-                        padding: collapsed ? '8px 0' : '8px 0',
+                        padding: collapsed ? '8px 0' : '8px 16px',
                         fontSize: 13,
-                        transition: 'color 0.2s'
+                        transition: 'color 0.2s',
+                        marginTop: collapsed ? 8 : 0
                     }}
                     onMouseEnter={e => e.currentTarget.style.color = THEME.danger}
                     onMouseLeave={e => e.currentTarget.style.color = THEME.textMuted}
@@ -493,8 +668,9 @@ const Sidebar = ({ tabs, activeTab, onTabChange, onLogout, currentUser, collapse
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   WEBSOCKET MANAGER
+   WEBSOCKET MANAGER (Same as before)
    ═══════════════════════════════════════════════════════════════════════════ */
+// ... (useWebSocket logic remains unchanged)
 const useWebSocket = (onMessage) => {
     const [connected, setConnected] = useState(false);
     const [reconnecting, setReconnecting] = useState(false);
@@ -559,6 +735,21 @@ const Dashboard = () => {
 
     const [notifications, setNotifications] = useState([]);
     const [latestAlert, setLatestAlert] = useState(null);
+    const [showFeedback, setShowFeedback] = useState(false);
+
+    // Auto-prompt feedback logic on mount
+    useEffect(() => {
+        // Check if user has seen prompt before
+        const hasSeenPrompt = localStorage.getItem(STORAGE_KEYS.FEEDBACK_PROMPT);
+        if (!hasSeenPrompt) {
+            // Delay for 3 seconds after login to be polite
+            const timer = setTimeout(() => {
+                setShowFeedback(true);
+                localStorage.setItem(STORAGE_KEYS.FEEDBACK_PROMPT, 'true');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     // WebSocket handler
     const handleWSMessage = useCallback((msg) => {
@@ -634,11 +825,6 @@ const Dashboard = () => {
                 e.preventDefault();
                 handleToggleCollapse();
             }
-            // Ctrl/Cmd + K: Focus search (if implemented)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                // Implement global search focus
-            }
         };
 
         window.addEventListener('keydown', handleKeyPress);
@@ -667,6 +853,7 @@ const Dashboard = () => {
                 currentUser={currentUser}
                 collapsed={sidebarCollapsed}
                 onToggleCollapse={handleToggleCollapse}
+                onOpenFeedback={() => setShowFeedback(true)}
             />
 
             {/* Main Content */}
@@ -756,6 +943,9 @@ const Dashboard = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Feedback Modal */}
+            {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
         </div>
     );
 };
