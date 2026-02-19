@@ -964,7 +964,7 @@ const PerformanceTab = () => {
     const ViewTab = ({ id, label, icon: Icon }) => {
         const active = activeView === id;
         return (
-            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', transition: 'all 0.25s', whiteSpace: 'nowrap', background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})` : THEME.surface, color: active ? '#fff' : THEME.textMuted, boxShadow: active ? `0 4px 16px ${THEME.primary}35` : 'none', border: active ? 'none' : `1px solid ${THEME.grid}60` }}>
+            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8,   cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', transition: 'all 0.25s', whiteSpace: 'nowrap', background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})` : THEME.surface, color: active ? '#fff' : THEME.textMuted, boxShadow: active ? `0 4px 16px ${THEME.primary}35` : 'none', border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60` }}>
                 <Icon size={14} style={{ flexShrink: 0 }} /> {label}
             </button>
         );

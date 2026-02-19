@@ -957,7 +957,7 @@ const ResourcesTab = () => {
                                                                         onClick={e => { e.stopPropagation(); setSelectedTable(v); handleRequestConfirm(v.table_name); }}
                                                                         style={{
                                                                             display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                                            padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                                                                            padding: '4px 10px', borderRadius: 6,  cursor: 'pointer',
                                                                             fontSize: 10, fontWeight: 700,
                                                                             background: `${THEME.success}18`, color: THEME.success,
                                                                             border: `1px solid ${THEME.success}30`,
