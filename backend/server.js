@@ -1,4 +1,3 @@
-
 import express                from 'express';
 import cors                   from 'cors';
 import http                   from 'http';
@@ -16,7 +15,6 @@ import repoRoutes             from './routes/repoRoutes.js';
 import EnhancedAlertEngine    from './enhanced-alerts.js';
 import EmailNotificationService from './email-notification-service.js';
 
-// ── New modular imports ────────────────────────────────────────────────────────
 import { buildAuthenticate, requireScreen } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
 import sessionRoutes                        from './routes/sessionRoutes.js';
@@ -112,6 +110,7 @@ const pool = new Pool({
     connectionTimeoutMillis: 15_000,
     statement_timeout:       30_000,
     ssl: { rejectUnauthorized: false },
+    options: '--search_path=pgmonitoringtool,public',
 });
 pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
 
@@ -168,16 +167,16 @@ const emailService = new EmailNotificationService(CONFIG.EMAIL);
 const alerts       = new EnhancedAlertEngine(pool, CONFIG, emailService);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// QUERY HISTORY  (in-memory, intentionally)
+// QUERY HISTORY
 // ─────────────────────────────────────────────────────────────────────────────
 const queryHistory = {
     entries: [],
-    add(e)     { this.entries.unshift({ id: uuid(), ts: new Date().toISOString(), favourite: false, ...e }); if (this.entries.length > 200) this.entries.pop(); },
+    add(e)      { this.entries.unshift({ id: uuid(), ts: new Date().toISOString(), favourite: false, ...e }); if (this.entries.length > 200) this.entries.pop(); },
     list(limit) { return this.entries.slice(0, limit); },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONNECTIONS  (in-memory — acceptable as they're reconfigured via env anyway)
+// CONNECTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 let CONNECTIONS = [
     {
@@ -208,13 +207,11 @@ if (process.env.NODE_ENV !== 'production') {
     app.use((req, _res, next) => { log('INFO', `${req.method} ${req.path}`, { ip: req.ip }); next(); });
 }
 
-// ── Build middleware from pool + config ───────────────────────────────────────
 const authenticate = buildAuthenticate(pool, CONFIG);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUTH ROUTES
+// HEALTH
 // ─────────────────────────────────────────────────────────────────────────────
-
 app.get('/health', (_req, res) => res.json({
     status:    'ok',
     timestamp: new Date().toISOString(),
@@ -223,11 +220,9 @@ app.get('/health', (_req, res) => res.json({
     alerts:    { monitoring: alerts.monitoringInterval !== null },
 }));
 
-/**
- * POST /api/auth/login
- * Authenticates against pgmonitoringtool.users, creates a session row,
- * records login activity, and returns a signed JWT.
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH — POST /api/auth/login
+// ─────────────────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -237,7 +232,6 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const user = await getUserByUsername(pool, username);
 
-        // Failed attempt tracking (user may or may not exist)
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             if (user) {
                 await recordFailedLogin(pool, user.id).catch(() => {});
@@ -257,16 +251,14 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(403).json({ error: `Account is ${user.status}` });
         }
 
-        // Create a session row so admins can revoke individual logins
         const sessionId = await createSession(pool, {
             userId:      user.id,
             ip:          req.ip,
             userAgent:   req.headers['user-agent'],
             deviceLabel: req.headers['user-agent']?.slice(0, 255) ?? 'Unknown',
-            location:    null, // populate with GeoIP in production
+            location:    null,
         });
 
-        // Build JWT payload — never include password_hash
         const payload = {
             id:             user.id,
             username:       user.username,
@@ -275,12 +267,11 @@ app.post('/api/auth/login', async (req, res) => {
             role:           user.role,
             accessLevel:    user.access_level,
             allowedScreens: user.allowed_screens ?? [],
-            sid:            sessionId, // session id for revocation check
+            sid:            sessionId,
         };
 
         const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
 
-        // Fire-and-forget side effects
         Promise.all([
             touchLastLogin(pool, user.id),
             recordLogin(pool, user.id),
@@ -295,32 +286,38 @@ app.post('/api/auth/login', async (req, res) => {
         ]).catch(err => log('WARN', 'Post-login side effects failed', { error: err.message }));
 
         res.json({ token, user: payload });
+
     } catch (err) {
-        log('ERROR', 'Login error', { error: err.message });
-        res.status(500).json({ error: 'Login failed' });
+        // ← FIXED: was malformed/duplicated. Now correctly logs and responds.
+        log('ERROR', 'Login error', {
+            error: err.message,
+            stack: err.stack,
+            code:  err.code,
+        });
+        res.status(500).json({ error: 'Login failed', detail: err.message });
     }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MODULAR ROUTE REGISTRATION
+// MODULAR ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.use('/api', userRoutes(pool, authenticate, requireScreen));
 app.use('/api', sessionRoutes(pool, authenticate, requireScreen));
 app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 
 // ─────────────────────────────────────────────────────────────────────────────
-// POSTGRES MONITORING ROUTES  (unchanged from v2)
+// POSTGRES MONITORING ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
     const { rows: [d] } = await pool.query(`
         SELECT
-            (SELECT count(*) FROM pg_stat_activity WHERE state='active')                             AS active,
-            (SELECT count(*) FROM pg_stat_activity)                                                  AS total_conn,
-            (SELECT setting::int FROM pg_settings WHERE name='max_connections')                      AS max_conn,
-            (SELECT pg_database_size(current_database()))                                            AS db_size_bytes,
-            (SELECT date_part('epoch', now() - pg_postmaster_start_time()))                          AS uptime_seconds,
-            (SELECT sum(heap_blks_hit)/NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100
-             FROM pg_statio_user_tables)                                                             AS hit_ratio
+                (SELECT count(*) FROM pg_stat_activity WHERE state='active')                             AS active,
+                (SELECT count(*) FROM pg_stat_activity)                                                  AS total_conn,
+                (SELECT setting::int FROM pg_settings WHERE name='max_connections')                      AS max_conn,
+                (SELECT pg_database_size(current_database()))                                            AS db_size_bytes,
+                (SELECT date_part('epoch', now() - pg_postmaster_start_time()))                          AS uptime_seconds,
+                (SELECT sum(heap_blks_hit)/NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100
+                 FROM pg_statio_user_tables)                                                             AS hit_ratio
     `);
     res.json({
         activeConnections: Number(d.active),
@@ -355,7 +352,7 @@ app.get('/api/reliability/active-connections', authenticate, async (req, res) =>
     const r = await pool.query(`
         SELECT pid, usename, state, query,
                extract(epoch FROM (now()-query_start))::int AS duration_sec,
-               (now()-query_start > interval '5 minutes') AS is_slow
+            (now()-query_start > interval '5 minutes') AS is_slow
         FROM pg_stat_activity WHERE pid<>pg_backend_pid() ORDER BY duration_sec DESC
     `);
     res.json(r.rows);
@@ -365,8 +362,8 @@ app.get('/api/reliability/locks', authenticate, async (req, res) => {
     const r = await pool.query(`
         SELECT bl.pid AS blocked_pid, kl.pid AS blocking_pid, ka.query AS blocking_query
         FROM   pg_locks bl
-        JOIN   pg_locks kl ON kl.locktype=bl.locktype AND kl.pid<>bl.pid
-        JOIN   pg_stat_activity ka ON ka.pid=kl.pid
+                   JOIN   pg_locks kl ON kl.locktype=bl.locktype AND kl.pid<>bl.pid
+                   JOIN   pg_stat_activity ka ON ka.pid=kl.pid
         WHERE  NOT bl.granted
     `);
     res.json(r.rows);
@@ -387,7 +384,7 @@ app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ALERTS ROUTES  (unchanged from v2)
+// ALERTS ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/alerts', authenticate, async (req, res) => {
     try {
@@ -460,7 +457,7 @@ app.post('/api/alerts/email/digest', authenticate, requireScreen('admin'), async
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ADMIN / CACHE ROUTES  (unchanged)
+// ADMIN / CACHE ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/admin/settings', authenticate, cached('admin:settings', CONFIG.CACHE_TTL.SETTINGS), async (req, res) => {
     const r = await pool.query("SELECT name, setting, unit, context FROM pg_settings WHERE name IN ('max_connections','shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_level','checkpoint_completion_target') ORDER BY name");
@@ -476,7 +473,7 @@ app.get('/api/admin/cache/stats', authenticate, (req, res) => res.json(cache.sta
 app.post('/api/admin/cache/clear', authenticate, (req, res) => { cache.clear(); res.json({ success: true }); });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SQL CONSOLE  (unchanged)
+// SQL CONSOLE
 // ─────────────────────────────────────────────────────────────────────────────
 app.post('/api/query', authenticate, async (req, res) => {
     try {
@@ -494,7 +491,7 @@ app.post('/api/query', authenticate, async (req, res) => {
 app.use('/api/repo', authenticate, requireScreen('repository'), repoRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONNECTIONS  (in-memory, unchanged)
+// CONNECTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/connections', authenticate, (req, res) => {
     res.json(CONNECTIONS.map(c => ({ ...c, password: undefined })));
@@ -529,7 +526,17 @@ app.put('/api/connections/:id', authenticate, (req, res) => {
     if (index === -1) return res.status(404).json({ error: 'Connection not found' });
     const { name, host, port, database, username, password, ssl } = req.body;
     if (CONNECTIONS.find(c => c.name === name && c.id !== id)) return res.status(409).json({ error: 'Connection name already exists' });
-    CONNECTIONS[index] = { ...CONNECTIONS[index], name: name || CONNECTIONS[index].name, host: host || CONNECTIONS[index].host, port: port ? parseInt(port) : CONNECTIONS[index].port, database: database || CONNECTIONS[index].database, username: username || CONNECTIONS[index].username, password: password || CONNECTIONS[index].password, ssl: ssl !== undefined ? ssl : CONNECTIONS[index].ssl, status: null, lastTested: null };
+    CONNECTIONS[index] = {
+        ...CONNECTIONS[index],
+        name:     name     || CONNECTIONS[index].name,
+        host:     host     || CONNECTIONS[index].host,
+        port:     port     ? parseInt(port) : CONNECTIONS[index].port,
+        database: database || CONNECTIONS[index].database,
+        username: username || CONNECTIONS[index].username,
+        password: password || CONNECTIONS[index].password,
+        ssl:      ssl !== undefined ? ssl : CONNECTIONS[index].ssl,
+        status: null, lastTested: null,
+    };
     res.json({ ...CONNECTIONS[index], password: undefined });
 });
 
@@ -553,7 +560,12 @@ app.post('/api/connections/:id/default', authenticate, (req, res) => {
 app.post('/api/connections/:id/test', authenticate, async (req, res) => {
     const c = CONNECTIONS.find(c => c.id === parseInt(req.params.id));
     if (!c) return res.status(404).json({ error: 'Connection not found' });
-    const testPool = new Pool({ host: c.host, port: c.port, database: c.database, user: c.username, password: c.password, ssl: c.ssl ? { rejectUnauthorized: false } : undefined, connectionTimeoutMillis: 5000 });
+    const testPool = new Pool({
+        host: c.host, port: c.port, database: c.database,
+        user: c.username, password: c.password,
+        ssl: c.ssl ? { rejectUnauthorized: false } : undefined,
+        connectionTimeoutMillis: 5000,
+    });
     try {
         const client = await testPool.connect();
         await client.query('SELECT 1');
@@ -577,10 +589,14 @@ app.post('/api/connections/:id/switch', authenticate, (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FEEDBACK ROUTES  (unchanged from v2)
+// FEEDBACK ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 function parseFeedbackBody(body) {
-    const { feedback_type, rating, comment = '', remarks = '', section = 'all', feature_title = '', feature_priority, section_feedback, user_metadata = {} } = body;
+    const {
+        feedback_type, rating, comment = '', remarks = '',
+        section = 'all', feature_title = '', feature_priority,
+        section_feedback, user_metadata = {},
+    } = body;
     const type = (feedback_type || 'general').toLowerCase().trim();
     const ALLOWED_TYPES = new Set(['feature', 'bug', 'general']);
     if (!ALLOWED_TYPES.has(type)) return { valid: false, error: `Invalid feedback_type. Must be one of: ${[...ALLOWED_TYPES].join(', ')}` };
@@ -594,10 +610,23 @@ function parseFeedbackBody(body) {
     let parsedRating = null;
     if (rating !== null && rating !== undefined && rating !== '') {
         parsedRating = Number(rating);
-        if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) return { valid: false, error: 'Rating must be an integer between 1 and 5' };
+        if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5)
+            return { valid: false, error: 'Rating must be an integer between 1 and 5' };
     }
     const cap = (str, max) => String(str || '').trim().slice(0, max);
-    return { valid: true, fields: { type, rating: parsedRating, comment: cap(comment, 2000), remarks: cap(remarks, 2000), section: cap(section, 100), feature_title: cap(feature_title, 120), feature_priority: ['Low','Medium','High'].includes(feature_priority) ? feature_priority : null, section_feedback: Array.isArray(section_feedback) ? section_feedback : null, user_metadata } };
+    return {
+        valid: true,
+        fields: {
+            type, rating: parsedRating,
+            comment:          cap(comment, 2000),
+            remarks:          cap(remarks, 2000),
+            section:          cap(section, 100),
+            feature_title:    cap(feature_title, 120),
+            feature_priority: ['Low','Medium','High'].includes(feature_priority) ? feature_priority : null,
+            section_feedback: Array.isArray(section_feedback) ? section_feedback : null,
+            user_metadata,
+        },
+    };
 }
 
 app.post('/api/feedback', authenticate, async (req, res) => {
@@ -607,9 +636,10 @@ app.post('/api/feedback', authenticate, async (req, res) => {
         const { type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, user_metadata } = parsed.fields;
         const result = await pool.query(
             `INSERT INTO pgmonitoringtool.user_feedback
-                (username, feedback_type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, status, user_metadata)
+             (username, feedback_type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, status, user_metadata)
              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'new',$10) RETURNING id, created_at`,
-            [req.user.username, type, rating, comment, remarks || null, section, feature_title || null, feature_priority || null, section_feedback ? JSON.stringify(section_feedback) : null, JSON.stringify(user_metadata)]
+            [req.user.username, type, rating, comment, remarks || null, section, feature_title || null,
+                feature_priority || null, section_feedback ? JSON.stringify(section_feedback) : null, JSON.stringify(user_metadata)]
         );
         res.status(201).json({ success: true, feedbackId: result.rows[0].id, created_at: result.rows[0].created_at });
     } catch (e) { res.status(500).json({ error: 'Failed to submit feedback' }); }
@@ -630,12 +660,12 @@ app.get('/api/feedback/mine', authenticate, async (req, res) => {
 
 app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req, res) => {
     try {
-        const limit = Math.min(parseInt(req.query.limit) || 50, 200);
-        const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+        const limit  = Math.min(parseInt(req.query.limit)  || 50, 200);
+        const offset = Math.max(parseInt(req.query.offset) || 0,  0);
         const conditions = []; const params = [];
-        if (req.query.type)     { params.push(req.query.type);          conditions.push(`feedback_type = $${params.length}`); }
-        if (req.query.status)   { params.push(req.query.status);        conditions.push(`status = $${params.length}`); }
-        if (req.query.section)  { params.push(req.query.section);       conditions.push(`section = $${params.length}`); }
+        if (req.query.type)     { params.push(req.query.type);            conditions.push(`feedback_type = $${params.length}`); }
+        if (req.query.status)   { params.push(req.query.status);          conditions.push(`status = $${params.length}`); }
+        if (req.query.section)  { params.push(req.query.section);         conditions.push(`section = $${params.length}`); }
         if (req.query.username) { params.push(`%${req.query.username}%`); conditions.push(`username ILIKE $${params.length}`); }
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         params.push(limit, offset);
@@ -651,7 +681,10 @@ app.patch('/api/admin/feedback/:id/status', authenticate, requireScreen('admin')
     try {
         const ALLOWED = ['new','reviewed','implemented','rejected'];
         if (!ALLOWED.includes(req.body.status)) return res.status(400).json({ error: `Status must be one of: ${ALLOWED.join(', ')}` });
-        const result = await pool.query(`UPDATE pgmonitoringtool.user_feedback SET status=$1 WHERE id=$2 RETURNING id,status`, [req.body.status, parseInt(req.params.id)]);
+        const result = await pool.query(
+            `UPDATE pgmonitoringtool.user_feedback SET status=$1 WHERE id=$2 RETURNING id,status`,
+            [req.body.status, parseInt(req.params.id)]
+        );
         if (!result.rowCount) return res.status(404).json({ error: 'Feedback not found' });
         res.json({ success: true, ...result.rows[0] });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -660,17 +693,18 @@ app.patch('/api/admin/feedback/:id/status', authenticate, requireScreen('admin')
 app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT COUNT(*) AS total,
-                   COUNT(*) FILTER (WHERE status='new')         AS new_count,
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE status='new')         AS new_count,
                 COUNT(*) FILTER (WHERE status='reviewed')    AS reviewed_count,
                 COUNT(*) FILTER (WHERE status='implemented') AS implemented_count,
                 ROUND(AVG(rating) FILTER (WHERE rating IS NOT NULL),2) AS avg_rating,
-                   COUNT(*) FILTER (WHERE feedback_type='bug')     AS bug_count,
+                COUNT(*) FILTER (WHERE feedback_type='bug')     AS bug_count,
                 COUNT(*) FILTER (WHERE feedback_type='feature') AS feature_count,
                 COUNT(*) FILTER (WHERE feedback_type='general') AS general_count,
                 COUNT(*) FILTER (WHERE created_at >= NOW()-INTERVAL '7 days') AS last_7_days
-            FROM pgmonitoringtool.user_feedback`
-        );
+            FROM pgmonitoringtool.user_feedback
+        `);
         res.json(result.rows[0]);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
