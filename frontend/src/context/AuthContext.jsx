@@ -15,7 +15,7 @@ import React, {
 //  CONFIG
 // ═══════════════════════════════════════════════════════════════════════════
 
-const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 const STORAGE_KEYS = { TOKEN: 'vigil_token', USER: 'vigil_user' };
 
 // ═══════════════════════════════════════════════════════════════════════════
