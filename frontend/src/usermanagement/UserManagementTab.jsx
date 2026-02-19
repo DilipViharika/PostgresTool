@@ -12,6 +12,18 @@
  *   • Bulk action bar with confirmation dialogs
  *   • Keyboard shortcuts (Ctrl+1-4, Ctrl+N, Ctrl+K, Esc)
  *
+ * CHANGELOG v3.1.0 — aligned with backend scripts/server.js v3.0.0:
+ *   [1] deleteUsers  → POST /api/users/bulk-delete  (atomic, single request)
+ *   [2] Field names  → camelCase (createdAt / lastLoginAt / updatedAt)
+ *   [3] Role check   → 'super_admin' (was 'superadmin')
+ *   [4] createUser   → explicit response shape (no .user wrapper)
+ *   [5] New fields   → loginActivity, riskScore, sessions, failedLogins,
+ *                       mfa, apiAccess, dataAccess forwarded to modals
+ *   [6] handleSaveUser → includes mfa / apiAccess / dataAccess in payload
+ *   [7] onConfirm    → async-safe modal close ordering (was already correct,
+ *                       documented explicitly now)
+ *   [8] AnalyticsHeaderInline → uses all camelCase fields + super_admin role
+ *
  * Usage:
  *   import UserManagementTab from './usermanagement/UserManagementTab';
  *   <UserManagementTab initialUsers={loaderData} />
@@ -38,22 +50,7 @@ import { createPortal } from 'react-dom';
          ...other local modules
    ═══════════════════════════════════════════════════════════════════════════ */
 
-// ── Theme (shared across the entire app) ──
 import { THEME } from '../utils/theme.jsx';
-
-// ── Local constants (inside usermanagement/constants/) ──
-// If your constants/index.js exports ROLES, PERMISSIONS_MAP, DEPARTMENTS:
-// import { ROLES, PERMISSIONS_MAP, DEPARTMENTS } from './constants/index.js';
-
-// ── App-level hooks ──
-// import { useDebounce } from '../hooks/index.js';
-
-// ── Local sub-modules (inside usermanagement/) ──
-// Adjust these if your filenames differ — check your actual exports
-// import { PermissionMatrix }  from './PermissionMatrix';
-// import { useClickOutside }   from './useClickOutside';
-// import { Toggle }            from './Toggle';
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    THEME ALIAS — use T.xxx shorthand throughout this file
@@ -74,7 +71,6 @@ const TABS = Object.freeze([
 
 const TAB_IDS = TABS.map(t => t.id);
 
-/** SVG icon helper — renders common icons inline without needing lucide-react */
 const ICONS = {
     alert:   (sz, c) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
     refresh: (sz, c) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
@@ -92,7 +88,6 @@ const ICONS = {
     search:  (sz, c) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
 };
 
-/** Lightweight icon component — no external dependency needed */
 const Ico = memo(({ name, size = 16, color = 'currentColor', style = {} }) => {
     const render = ICONS[name];
     if (!render) return null;
@@ -100,20 +95,18 @@ const Ico = memo(({ name, size = 16, color = 'currentColor', style = {} }) => {
 });
 Ico.displayName = 'Ico';
 
-
 /** Modal discriminated union — ensures only one modal open at a time */
 const MODAL = Object.freeze({
     NONE:     { type: 'NONE' },
-    DRAWER:   (user) => ({ type: 'DRAWER', user }),
-    EDIT:     (user) => ({ type: 'EDIT', user }),      // user=null → create mode
-    PASSWORD: (user) => ({ type: 'PASSWORD', user }),
+    DRAWER:   (user)    => ({ type: 'DRAWER',  user }),
+    EDIT:     (user)    => ({ type: 'EDIT',    user }),   // user=null → create mode
+    PASSWORD: (user)    => ({ type: 'PASSWORD', user }),
     CONFIRM:  (payload) => ({ type: 'CONFIRM', ...payload }),
 });
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 2 — STATE MACHINE (useReducer)
-   Centralises all UI state transitions. Every action is traceable.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const initialState = {
@@ -133,11 +126,11 @@ function reducer(state, action) {
             const history = [...state.tabHistory, action.tab].slice(-10);
             return {
                 ...state,
-                prevTab: state.activeTab,
-                activeTab: action.tab,
-                tabHistory: history,
+                prevTab:       state.activeTab,
+                activeTab:     action.tab,
+                tabHistory:    history,
                 bulkSelection: new Set(),
-                searchQuery: '',
+                searchQuery:   '',
             };
         }
         case 'OPEN_MODAL':
@@ -174,7 +167,7 @@ function reducer(state, action) {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SECTION 3 — CONTEXT (avoids prop drilling 4+ levels deep)
+   SECTION 3 — CONTEXT
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const UserMgmtContext = createContext(null);
@@ -201,7 +194,15 @@ function useToast() {
     return { toasts, toast };
 }
 
-/** User data management with optimistic updates */
+/**
+ * User data management with optimistic updates.
+ *
+ * CHANGE [1]: deleteUsers now uses POST /api/users/bulk-delete (atomic).
+ * CHANGE [4]: createUser reads response directly — no .user wrapper.
+ * CHANGE [5]: All user objects from the API now include:
+ *   loginActivity, riskScore, sessions, failedLogins,
+ *   mfa, apiAccess, dataAccess, lastLoginAt (camelCase).
+ */
 function useUsers(initialUsers = []) {
     const [users, setUsers] = useState(initialUsers);
     const [loading, setLoading] = useState(false);
@@ -212,12 +213,11 @@ function useUsers(initialUsers = []) {
         const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
         return {
             'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
     }, []);
 
     const fetchUsers = useCallback(async () => {
-        // Cancel any in-flight request
         if (abortRef.current) abortRef.current.abort();
         const controller = new AbortController();
         abortRef.current = controller;
@@ -231,6 +231,7 @@ function useUsers(initialUsers = []) {
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
+            // API returns array directly from listUsers() — no wrapper
             setUsers(Array.isArray(data) ? data : data.users || []);
         } catch (err) {
             if (err.name !== 'AbortError') {
@@ -241,19 +242,20 @@ function useUsers(initialUsers = []) {
         }
     }, [getAuthHeaders]);
 
+    // CHANGE [4]: Response is the user object directly (toClient() in userService).
     const createUser = useCallback(async (formData) => {
         const res = await fetch('/api/users', {
-            method: 'POST',
+            method:  'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify(formData),
+            body:    JSON.stringify(formData),
         });
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
             throw new Error(errData.error || `HTTP ${res.status}`);
         }
-        const created = await res.json();
-        setUsers(prev => [...prev, created.user || created]);
-        return created.user || created;
+        const newUser = await res.json(); // plain object, not { user: ... }
+        setUsers(prev => [...prev, newUser]);
+        return newUser;
     }, [getAuthHeaders]);
 
     const updateUser = useCallback(async (id, formData) => {
@@ -262,46 +264,49 @@ function useUsers(initialUsers = []) {
         setUsers(u => u.map(x => x.id === id ? { ...x, ...formData } : x));
         try {
             const res = await fetch(`/api/users/${id}`, {
-                method: 'PUT',
+                method:  'PUT',
                 headers: getAuthHeaders(),
-                body: JSON.stringify(formData),
+                body:    JSON.stringify(formData),
             });
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
                 throw new Error(errData.error || `HTTP ${res.status}`);
             }
-            const updated = await res.json();
-            setUsers(u => u.map(x => x.id === id ? (updated.user || updated) : x));
+            const updated = await res.json(); // plain object from toClient()
+            setUsers(u => u.map(x => x.id === id ? updated : x));
         } catch (err) {
-            setUsers(prev); // Rollback
+            setUsers(prev); // rollback
             throw err;
         }
     }, [getAuthHeaders, users]);
 
+    // CHANGE [1]: Single atomic bulk-delete request instead of N parallel DELETEs.
     const deleteUsers = useCallback(async (ids) => {
         const prev = users;
         // Optimistic removal
         setUsers(u => u.filter(x => !ids.includes(x.id)));
         try {
-            await Promise.all(ids.map(id =>
-                fetch(`/api/users/${id}`, {
-                    method: 'DELETE',
-                    headers: getAuthHeaders(),
-                }).then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                })
-            ));
+            const res = await fetch('/api/users/bulk-delete', {
+                method:  'POST',
+                headers: getAuthHeaders(),
+                body:    JSON.stringify({ ids }),
+            });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP ${res.status}`);
+            }
+            // { success: true, deleted: N } — no further action needed
         } catch (err) {
-            setUsers(prev); // Rollback
+            setUsers(prev); // rollback
             throw err;
         }
     }, [getAuthHeaders, users]);
 
     const resetPassword = useCallback(async (userId, newPassword) => {
         const res = await fetch(`/api/users/${userId}/reset-password`, {
-            method: 'POST',
+            method:  'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ newPassword }),
+            body:    JSON.stringify({ newPassword }),
         });
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
@@ -309,7 +314,6 @@ function useUsers(initialUsers = []) {
         }
     }, [getAuthHeaders]);
 
-    // Cleanup abort controller on unmount
     useEffect(() => {
         return () => { if (abortRef.current) abortRef.current.abort(); };
     }, []);
@@ -353,8 +357,8 @@ function useKeyboardShortcuts(dispatch, modalType) {
 
 /** Focus trap for modals */
 function useFocusTrap(isActive) {
-    const containerRef = useRef(null);
-    const previousFocus = useRef(null);
+    const containerRef   = useRef(null);
+    const previousFocus  = useRef(null);
 
     useEffect(() => {
         if (!isActive) return;
@@ -367,7 +371,7 @@ function useFocusTrap(isActive) {
             );
             if (focusable.length === 0) return;
             const first = focusable[0];
-            const last = focusable[focusable.length - 1];
+            const last  = focusable[focusable.length - 1];
             if (e.shiftKey && document.activeElement === first) {
                 e.preventDefault(); last.focus();
             } else if (!e.shiftKey && document.activeElement === last) {
@@ -435,7 +439,7 @@ function useStaleWhileRevalidate(users, fetchUsers) {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SECTION 5 — GLOBAL STYLES (injected once)
+   SECTION 5 — GLOBAL STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const GlobalStylesInjector = memo(() => (
@@ -461,7 +465,7 @@ const GlobalStylesInjector = memo(() => (
         }
         @keyframes umShimmer {
             0%   { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            100% { background-position:  200% 0; }
         }
         @keyframes umPulse {
             0%, 100% { opacity: 1; }
@@ -476,7 +480,10 @@ const GlobalStylesInjector = memo(() => (
         .um-root *, .um-root *::before, .um-root *::after { box-sizing: border-box; }
 
         .shimmer-skeleton {
-            background: linear-gradient(90deg, ${T.surfaceHigh || '#1a1a2e'} 25%, ${T.border || '#2a2a3e'} 50%, ${T.surfaceHigh || '#1a1a2e'} 75%);
+            background: linear-gradient(90deg,
+                ${T.surfaceHigh || '#1a1a2e'} 25%,
+                ${T.border      || '#2a2a3e'} 50%,
+                ${T.surfaceHigh || '#1a1a2e'} 75%);
             background-size: 200% 100%;
             animation: umShimmer 1.5s infinite ease-in-out;
             border-radius: 12px;
@@ -500,7 +507,8 @@ const GlobalStylesInjector = memo(() => (
             position: absolute; bottom: -1px; height: 2px;
             background: ${T.primary || '#6366f1'};
             border-radius: 2px 2px 0 0;
-            transition: left 0.25s cubic-bezier(0.16,1,0.3,1), width 0.25s cubic-bezier(0.16,1,0.3,1);
+            transition: left 0.25s cubic-bezier(0.16,1,0.3,1),
+                        width 0.25s cubic-bezier(0.16,1,0.3,1);
         }
 
         .um-bulk-bar { animation: umSlideUp 0.2s cubic-bezier(0.16,1,0.3,1); }
@@ -509,16 +517,11 @@ const GlobalStylesInjector = memo(() => (
             display: inline-flex; align-items: center; gap: 6px;
             padding: 8px 16px; border-radius: 8px; border: none;
             font-size: 13px; font-weight: 600; cursor: pointer;
-            transition: all 0.15s ease; font-family: inherit;
-            line-height: 1;
+            transition: all 0.15s ease; font-family: inherit; line-height: 1;
         }
         .um-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .um-btn-primary {
-            background: ${T.primary || '#6366f1'}; color: #fff;
-        }
-        .um-btn-primary:hover:not(:disabled) {
-            filter: brightness(1.1); transform: translateY(-1px);
-        }
+        .um-btn-primary  { background: ${T.primary || '#6366f1'}; color: #fff; }
+        .um-btn-primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
         .um-btn-ghost {
             background: transparent; color: ${T.textDim || '#8b8fa3'};
             border: 1px solid ${T.border || '#2a2a3e'};
@@ -526,9 +529,7 @@ const GlobalStylesInjector = memo(() => (
         .um-btn-ghost:hover:not(:disabled) {
             background: ${T.surfaceHigh || '#1a1a2e'}; color: ${T.text || '#e2e4eb'};
         }
-        .um-btn-danger {
-            background: ${T.danger || '#ef4444'}; color: #fff;
-        }
+        .um-btn-danger  { background: ${T.danger || '#ef4444'}; color: #fff; }
         .um-btn-danger:hover:not(:disabled) { filter: brightness(1.1); }
         .um-btn-sm { padding: 5px 10px; font-size: 12px; }
 
@@ -536,21 +537,14 @@ const GlobalStylesInjector = memo(() => (
             display: inline-flex; align-items: center; gap: 6px;
             padding: 12px 18px; border: none; background: transparent;
             color: ${T.textMuted || '#6b6f82'}; font-size: 13px; font-weight: 500;
-            cursor: pointer; transition: color 0.15s; font-family: inherit;
-            position: relative;
+            cursor: pointer; transition: color 0.15s; font-family: inherit; position: relative;
         }
-        .um-tab:hover { color: ${T.text || '#e2e4eb'}; }
+        .um-tab:hover  { color: ${T.text || '#e2e4eb'}; }
         .um-tab.active { color: ${T.primary || '#6366f1'}; font-weight: 700; }
 
-        .um-grid-4 {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-        }
-        @media (max-width: 900px) {
-            .um-grid-4 { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
-            .um-grid-4 { grid-template-columns: 1fr; }
-        }
+        .um-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 900px) { .um-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .um-grid-4 { grid-template-columns: 1fr; } }
 
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -702,7 +696,9 @@ const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', 
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
                     <div style={{
                         width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                        background: variant === 'danger' ? `${T.danger || '#ef4444'}18` : `${T.primary || '#6366f1'}18`,
+                        background: variant === 'danger'
+                            ? `${T.danger || '#ef4444'}18`
+                            : `${T.primary || '#6366f1'}18`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                         <Ico name={variant === 'danger' ? 'alert' : 'check'} size={20}
@@ -736,7 +732,9 @@ ConfirmDialog.displayName = 'ConfirmDialog';
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const TabPanel = memo(({ activeTab, prevTab, children }) => {
-    const direction = prevTab ? (TAB_IDS.indexOf(activeTab) > TAB_IDS.indexOf(prevTab) ? 1 : -1) : 0;
+    const direction = prevTab
+        ? (TAB_IDS.indexOf(activeTab) > TAB_IDS.indexOf(prevTab) ? 1 : -1)
+        : 0;
     return (
         <div key={activeTab} role="tabpanel" id={`tabpanel-${activeTab}`}
              aria-labelledby={`tab-${activeTab}`}
@@ -759,8 +757,10 @@ TabPanel.displayName = 'TabPanel';
 
 const Breadcrumb = memo(({ tabHistory, onNavigate }) => {
     if (tabHistory.length <= 1) return null;
-    const uniqueTrail = [...new Map(tabHistory.map(id => [id, TABS.find(t => t.id === id)])).values()]
-        .filter(Boolean).slice(-3);
+    const uniqueTrail = [...new Map(
+        tabHistory.map(id => [id, TABS.find(t => t.id === id)])
+    ).values()].filter(Boolean).slice(-3);
+
     return (
         <nav aria-label="Navigation trail" style={{
             display: 'flex', alignItems: 'center', gap: 6,
@@ -771,7 +771,9 @@ const Breadcrumb = memo(({ tabHistory, onNavigate }) => {
                     {i > 0 && <span style={{ opacity: 0.4 }}>›</span>}
                     <button onClick={() => onNavigate(tab.id)} style={{
                         background: 'none', border: 'none', cursor: 'pointer',
-                        color: i === uniqueTrail.length - 1 ? (T.text || '#e2e4eb') : (T.textMuted || '#6b6f82'),
+                        color: i === uniqueTrail.length - 1
+                            ? (T.text || '#e2e4eb')
+                            : (T.textMuted || '#6b6f82'),
                         fontWeight: i === uniqueTrail.length - 1 ? 600 : 400,
                         fontSize: 12, padding: '2px 4px', borderRadius: 4, fontFamily: 'inherit',
                     }}>
@@ -846,10 +848,10 @@ const ShortcutHints = memo(() => {
     if (!visible) return null;
 
     const shortcuts = [
-        { keys: ['Ctrl', '1-4'], desc: 'Switch tabs' },
-        { keys: ['Ctrl', 'N'],   desc: 'New user' },
-        { keys: ['Ctrl', 'K'],   desc: 'Search' },
-        { keys: ['Esc'],         desc: 'Close modal' },
+        { keys: ['Ctrl', '1–4'], desc: 'Switch tabs' },
+        { keys: ['Ctrl', 'N'],   desc: 'New user'     },
+        { keys: ['Ctrl', 'K'],   desc: 'Search'        },
+        { keys: ['Esc'],         desc: 'Close modal'   },
         { keys: ['?'],           desc: 'Toggle shortcuts' },
     ];
 
@@ -869,14 +871,16 @@ const ShortcutHints = memo(() => {
             </div>
             {shortcuts.map(s => (
                 <div key={s.desc} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 0',
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: 'space-between', padding: '5px 0',
                 }}>
                     <span style={{ fontSize: 12, color: T.textDim || '#8b8fa3' }}>{s.desc}</span>
                     <div style={{ display: 'flex', gap: 4 }}>
                         {s.keys.map(k => (
                             <kbd key={k} style={{
                                 fontSize: 10, padding: '2px 6px', borderRadius: 4,
-                                background: T.surfaceHigh || '#1a1a2e', border: `1px solid ${T.border || '#2a2a3e'}`,
+                                background: T.surfaceHigh || '#1a1a2e',
+                                border: `1px solid ${T.border || '#2a2a3e'}`,
                                 color: T.text || '#e2e4eb', fontFamily: 'inherit', fontWeight: 600,
                             }}>{k}</kbd>
                         ))}
@@ -897,40 +901,71 @@ ShortcutHints.displayName = 'ShortcutHints';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SECTION 14 — ANALYTICS HEADER (inline — no external dependency)
+   SECTION 14 — ANALYTICS HEADER
+
+   CHANGE [2]: All date fields → camelCase (createdAt / lastLoginAt)
+   CHANGE [3]: Role check → 'super_admin' (was 'superadmin')
+   CHANGE [5]: New fields exposed — mfa, riskScore, sessions, failedLogins
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const AnalyticsHeaderInline = memo(({ users }) => {
     const stats = useMemo(() => {
         const total = users.length;
+
         const active = users.filter(u => u.status === 'active').length;
-        const admins = users.filter(u => u.role === 'admin' || u.role === 'superadmin').length;
+
+        // CHANGE [3]: super_admin uses underscore — matches DB schema + toClient()
+        const admins = users.filter(u =>
+            u.role === 'admin' || u.role === 'super_admin'
+        ).length;
+
+        // CHANGE [2]: createdAt (camelCase) — toClient() normalises DB snake_case
+        const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
         const recent = users.filter(u => {
-            if (!u.created_at) return false;
-            const d = new Date(u.created_at);
-            const now = new Date();
-            return (now - d) < 30 * 24 * 60 * 60 * 1000; // last 30 days
+            if (!u.createdAt) return false;
+            return new Date(u.createdAt).getTime() > thirtyDaysAgo;
         }).length;
+
+        // CHANGE [5]: New enriched fields from listUsers() in userService
+        const noMfa      = users.filter(u => !u.mfa).length;
+        const highRisk   = users.filter(u => (u.riskScore ?? 0) >= 60).length;
+        const activeSess = users.reduce((sum, u) => sum + (u.sessions ?? 0), 0);
+
         return [
-            { label: 'Total Users',  value: total,  color: T.primary || '#6366f1' },
-            { label: 'Active',       value: active,  color: '#22c55e' },
-            { label: 'Admins',       value: admins,  color: '#f59e0b' },
-            { label: 'New (30d)',    value: recent,  color: '#8b5cf6' },
+            { label: 'Total Users',    value: total,      color: T.primary  || '#6366f1' },
+            { label: 'Active',         value: active,     color: '#22c55e'               },
+            { label: 'Admins',         value: admins,     color: '#f59e0b'               },
+            { label: 'New (30d)',       value: recent,     color: '#8b5cf6'               },
+            { label: 'No MFA',         value: noMfa,      color: T.danger   || '#ef4444' },
+            { label: 'High Risk',      value: highRisk,   color: '#f97316'               },
+            { label: 'Active Sessions',value: activeSess, color: '#06b6d4'               },
         ];
     }, [users]);
 
     return (
-        <div className="um-grid-4" style={{ marginBottom: 24 }}>
+        <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: 16,
+            marginBottom: 24,
+        }}>
             {stats.map(s => (
-                <div key={s.label} className="um-stat-card" style={{
+                <div key={s.label} style={{
                     padding: '18px 20px', borderRadius: 14,
-                    background: T.surface || '#12121f', border: `1px solid ${T.border || '#2a2a3e'}`,
+                    background: T.surface || '#12121f',
+                    border: `1px solid ${T.border || '#2a2a3e'}`,
                     transition: 'transform 0.2s, box-shadow 0.2s',
                 }}>
-                    <div style={{ fontSize: 11, color: T.textMuted || '#6b6f82', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <div style={{
+                        fontSize: 11, color: T.textMuted || '#6b6f82', fontWeight: 600,
+                        textTransform: 'uppercase', letterSpacing: '0.04em',
+                    }}>
                         {s.label}
                     </div>
-                    <div style={{ fontSize: 28, fontWeight: 900, color: s.color, marginTop: 6, letterSpacing: '-0.02em' }}>
+                    <div style={{
+                        fontSize: 28, fontWeight: 900, color: s.color,
+                        marginTop: 6, letterSpacing: '-0.02em',
+                    }}>
                         {s.value}
                     </div>
                 </div>
@@ -943,31 +978,24 @@ AnalyticsHeaderInline.displayName = 'AnalyticsHeaderInline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 15 — PLACEHOLDER PANELS
-   These render when the actual sub-components exist in your project.
-   Replace the contents with your real imports once verified.
+   Replace with real imports once sub-components are verified.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /**
- * IMPORTANT — WIRING YOUR EXISTING SUB-COMPONENTS
- *
- * Your project has these in src/usermanagement/:
- *   - PermissionMatrix/
- *   - scattered in JSX/     (likely contains AuditLog, SecurityPanel, etc.)
- *   - Toggle/
- *   - SessionAPI, ApiKeyService/
- *   - useClickOutside/
- *   - changecolours/
- *   - generatePassword, relTime.../
- *
- * Uncomment and adjust these imports to wire them in:
+ * WIRING YOUR SUB-COMPONENTS
+ * ──────────────────────────
+ * Uncomment and adjust imports as you confirm each sub-component:
  *
  *   import PermissionMatrix from './PermissionMatrix';
- *   import { AuditLog }       from './scattered in JSX';    // rename if needed
- *   import { SecurityPanel }  from './scattered in JSX';    // rename if needed
- *   import { UsersTable }     from './scattered in JSX';    // rename if needed
- *   import { UserDrawer, UserFormModal, PasswordModal } from './scattered in JSX';
+ *   import { AuditLog }     from './AuditAndSecurity';
+ *   import { SecurityPanel }from './AuditAndSecurity';
+ *   import { UsersTable }   from './TableAndMatrix';
+ *   import { UserDrawer, UserFormModal, PasswordModal } from './Modals';
  *
- * Then remove the placeholder components below.
+ * Then replace the *Fallback vars below with those imports.
+ *
+ * CHANGE [5] + [6]: Pass new fields through to your modal components:
+ *   loginActivity, riskScore, sessions, failedLogins, mfa, apiAccess, dataAccess
  */
 
 const PlaceholderPanel = memo(({ name, icon }) => (
@@ -978,8 +1006,7 @@ const PlaceholderPanel = memo(({ name, icon }) => (
         <div style={{
             width: 56, height: 56, borderRadius: 14,
             background: `${T.primary || '#6366f1'}10`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 24,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
         }}>{icon}</div>
         <div style={{ fontSize: 16, fontWeight: 700, color: T.text || '#e2e4eb' }}>{name}</div>
         <div style={{ fontSize: 13, maxWidth: 400, lineHeight: 1.6 }}>
@@ -989,38 +1016,23 @@ const PlaceholderPanel = memo(({ name, icon }) => (
 ));
 PlaceholderPanel.displayName = 'PlaceholderPanel';
 
-// ── Temporary placeholders — REPLACE with your real components ──
-const UsersTableFallback    = memo(({ users, onSelectUser, onDeleteUsers, onEditUser }) => (
+const UsersTableFallback       = memo(({ users, onSelectUser, onDeleteUsers, onEditUser }) => (
     <PlaceholderPanel name="Users Table" icon="👥" />
 ));
 const PermissionMatrixFallback = memo(() => <PlaceholderPanel name="Permission Matrix" icon="🛡️" />);
-const AuditLogFallback      = memo(() => <PlaceholderPanel name="Audit Log" icon="📋" />);
-const SecurityPanelFallback = memo(({ users }) => <PlaceholderPanel name="Security Panel" icon="🔒" />);
+const AuditLogFallback         = memo(() => <PlaceholderPanel name="Audit Log" icon="📋" />);
+const SecurityPanelFallback    = memo(({ users }) => <PlaceholderPanel name="Security Panel" icon="🔒" />);
+const UserDrawerFallback       = memo(({ user, onClose, onEdit, onResetPassword }) => null);
+const UserFormModalFallback    = memo(({ user, onSave, onCancel }) => null);
+const PasswordModalFallback    = memo(({ user, onConfirm, onClose }) => null);
 
-// ── Modal placeholders ──
-const UserDrawerFallback    = memo(({ user, onClose, onEdit, onResetPassword }) => null);
-const UserFormModalFallback = memo(({ user, onSave, onCancel }) => null);
-const PasswordModalFallback = memo(({ user, onConfirm, onClose }) => null);
-
-/**
- * ┌─────────────────────────────────────────────────────────────────┐
- * │ TO WIRE YOUR REAL COMPONENTS:                                  │
- * │                                                                │
- * │ 1. Import them at the top of this file                         │
- * │ 2. Replace the *Fallback variables below with your imports     │
- * │                                                                │
- * │ Example:                                                        │
- * │   import { UsersTable } from './components/UsersTable';        │
- * │   const UsersTableComponent = UsersTable;                      │
- * └─────────────────────────────────────────────────────────────────┘
- */
-const UsersTableComponent     = UsersTableFallback;
-const PermissionMatrixComponent = PermissionMatrixFallback;
-const AuditLogComponent       = AuditLogFallback;
-const SecurityPanelComponent  = SecurityPanelFallback;
-const UserDrawerComponent     = UserDrawerFallback;
-const UserFormModalComponent  = UserFormModalFallback;
-const PasswordModalComponent  = PasswordModalFallback;
+const UsersTableComponent      = UsersTableFallback;
+const PermissionMatrixComponent= PermissionMatrixFallback;
+const AuditLogComponent        = AuditLogFallback;
+const SecurityPanelComponent   = SecurityPanelFallback;
+const UserDrawerComponent      = UserDrawerFallback;
+const UserFormModalComponent   = UserFormModalFallback;
+const PasswordModalComponent   = PasswordModalFallback;
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1037,13 +1049,13 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
         fetchUsers, createUser, updateUser, deleteUsers, resetPassword,
     } = useUsers(initialUsers);
 
-    const { isRevalidating, revalidate } = useStaleWhileRevalidate(users, fetchUsers);
+    const { isRevalidating, revalidate }        = useStaleWhileRevalidate(users, fetchUsers);
     const { tabListRef, handleKeyDown: tabKeyDown } = useTabNavigation(activeTab, dispatch);
 
     useKeyboardShortcuts(dispatch, modal.type);
 
     // Tab indicator positioning
-    const tabRefs = useRef({});
+    const tabRefs       = useRef({});
     const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
     useEffect(() => {
@@ -1051,7 +1063,7 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
         if (el) {
             const parent = el.parentElement;
             setIndicatorStyle({
-                left: el.offsetLeft - (parent?.offsetLeft || 0),
+                left:  el.offsetLeft - (parent?.offsetLeft || 0),
                 width: el.offsetWidth,
             });
         }
@@ -1062,29 +1074,64 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
         if (initialUsers.length === 0) fetchUsers();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Derived data
     const activeCount = useMemo(() => users.filter(u => u.status === 'active').length, [users]);
-    const bulkCount = bulkSelection.size;
+    const bulkCount   = bulkSelection.size;
 
-    // Context
+    // Context value
     const contextValue = useMemo(() => ({
         state, dispatch, users, toast,
     }), [state, users, toast]);
 
-    /* ── Handlers ─────────────────────────────────────────────────────── */
+    /* ── Handlers ──────────────────────────────────────────────────────── */
 
+    /**
+     * CHANGE [6]: Pass mfa / apiAccess / dataAccess in save payload.
+     * CHANGE [4]: createUser returns the user object directly — no .user wrapper.
+     * CHANGE [7]: Modal closes AFTER the async call resolves (confirmed correct).
+     */
     const handleSaveUser = useCallback(async (formData) => {
         try {
             if (formData.id) {
-                await updateUser(formData.id, formData);
+                // Partial update — only send changed fields; all are accepted by the backend
+                await updateUser(formData.id, {
+                    name:           formData.name,
+                    email:          formData.email,
+                    role:           formData.role,
+                    allowedScreens: formData.allowedScreens,
+                    status:         formData.status,
+                    department:     formData.department,
+                    location:       formData.location,
+                    // CHANGE [6]: new security fields
+                    mfa:            formData.mfa,
+                    apiAccess:      formData.apiAccess,
+                    dataAccess:     formData.dataAccess,
+                });
                 toast(`${formData.name} updated successfully`);
             } else {
-                const created = await createUser(formData);
-                toast(`${created?.name ?? formData.name} created successfully`);
+                // Create — password required for new users
+                const created = await createUser({
+                    username:       formData.username,
+                    password:       formData.password,
+                    name:           formData.name,
+                    email:          formData.email,
+                    role:           formData.role,
+                    allowedScreens: formData.allowedScreens ?? [],
+                    status:         formData.status        ?? 'active',
+                    department:     formData.department    ?? null,
+                    location:       formData.location      ?? null,
+                    // CHANGE [6]: new security fields
+                    mfa:            formData.mfa       ?? true,
+                    apiAccess:      formData.apiAccess ?? false,
+                    dataAccess:     formData.dataAccess ?? 'internal',
+                });
+                // CHANGE [4]: `created` is the user object — no .user wrapper
+                toast(`${created.name} created successfully`);
             }
+            // CHANGE [7]: close only after the async operation completes (no race)
             dispatch({ type: 'CLOSE_MODAL' });
         } catch (err) {
             toast(err.message || 'Save failed', 'error');
+            // Do NOT close the modal on error — let the user fix and retry
         }
     }, [updateUser, createUser, toast]);
 
@@ -1092,10 +1139,11 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
         dispatch({
             type: 'OPEN_MODAL',
             modal: MODAL.CONFIRM({
-                title: `Delete ${bulkCount} user${bulkCount > 1 ? 's' : ''}?`,
-                message: 'This action cannot be undone. All associated data, sessions, and permissions will be permanently removed.',
+                title:        `Delete ${bulkCount} user${bulkCount > 1 ? 's' : ''}?`,
+                message:      'This action cannot be undone. All associated data, sessions, and permissions will be permanently removed.',
                 confirmLabel: `Delete ${bulkCount} user${bulkCount > 1 ? 's' : ''}`,
-                variant: 'danger',
+                variant:      'danger',
+                // CHANGE [1]: deleteUsers now uses POST /api/users/bulk-delete
                 onConfirm: async () => {
                     try {
                         await deleteUsers([...bulkSelection]);
@@ -1111,15 +1159,16 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
     }, [bulkCount, bulkSelection, deleteUsers, toast]);
 
     const handleDeleteUsers = useCallback(async (ids) => {
-        const arr = Array.isArray(ids) ? ids : [ids];
+        const arr   = Array.isArray(ids) ? ids : [ids];
         const count = arr.length;
         dispatch({
             type: 'OPEN_MODAL',
             modal: MODAL.CONFIRM({
-                title: `Delete ${count} user${count > 1 ? 's' : ''}?`,
-                message: 'This action cannot be undone.',
+                title:        `Delete ${count} user${count > 1 ? 's' : ''}?`,
+                message:      'This action cannot be undone.',
                 confirmLabel: 'Delete',
-                variant: 'danger',
+                variant:      'danger',
+                // CHANGE [1]: uses bulk endpoint — single atomic DB call
                 onConfirm: async () => {
                     try {
                         await deleteUsers(arr);
@@ -1143,7 +1192,7 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
         }
     }, [resetPassword, toast]);
 
-    /* ── Render ────────────────────────────────────────────────────────── */
+    /* ── Render ──────────────────────────────────────────────────────────── */
 
     return (
         <UserMgmtContext.Provider value={contextValue}>
@@ -1171,15 +1220,18 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
                                     fontSize: 10, fontWeight: 600, color: T.primary || '#6366f1',
                                     padding: '3px 8px', background: `${T.primary || '#6366f1'}15`,
                                     borderRadius: 6, animation: 'umPulse 1.5s infinite',
-                                }}>Syncing…</span>
+                                }}>
+                                    Syncing…
+                                </span>
                             )}
                         </h1>
                         <div style={{ fontSize: 13, color: T.textDim || '#8b8fa3', marginTop: 4 }}>
                             Manage access, permissions, and security across your organization
                         </div>
                     </div>
+
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                        {/* Live stats pill */}
+                        {/* Live stats pill — CHANGE [2]: activeCount uses .status (already camelCase-safe) */}
                         <div style={{
                             fontSize: 12, color: T.textDim || '#8b8fa3',
                             fontFamily: '"SF Mono", "Fira Code", monospace',
@@ -1197,14 +1249,14 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
 
                         {/* Refresh */}
                         <button className="um-btn um-btn-ghost" onClick={revalidate}
-                                disabled={loading && !isRevalidating} aria-label="Refresh user list"
-                                style={{ opacity: loading && !isRevalidating ? 0.6 : 1 }}>
+                                disabled={loading && !isRevalidating}
+                                aria-label="Refresh user list">
                             <Ico name="refresh" size={14}
                                  style={loading ? { animation: 'umSpin 1s linear infinite' } : {}} />
                             {loading && !isRevalidating ? 'Loading…' : 'Refresh'}
                         </button>
 
-                        {/* New user */}
+                        {/* New user — Ctrl+N */}
                         <button className="um-btn um-btn-primary"
                                 onClick={() => dispatch({ type: 'OPEN_MODAL', modal: MODAL.EDIT(null) })}>
                             <Ico name="plus" size={15} color="#fff" /> New User
@@ -1220,9 +1272,10 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
                 {error && (
                     <div role="alert" style={{
                         marginBottom: 20, padding: '14px 18px', borderRadius: 12,
-                        background: `${T.danger || '#ef4444'}08`, border: `1px solid ${T.danger || '#ef4444'}30`,
-                        display: 'flex', alignItems: 'center', gap: 12, color: T.danger || '#ef4444',
-                        animation: 'umSlideUp 0.2s ease-out',
+                        background: `${T.danger || '#ef4444'}08`,
+                        border: `1px solid ${T.danger || '#ef4444'}30`,
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        color: T.danger || '#ef4444', animation: 'umSlideUp 0.2s ease-out',
                     }}>
                         <div style={{
                             width: 32, height: 32, borderRadius: 8, flexShrink: 0,
@@ -1241,10 +1294,10 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
                     </div>
                 )}
 
-                {/* ── Analytics KPI row ────────────────────────────────── */}
+                {/* ── Analytics KPI row — CHANGE [2][3][5] applied above ── */}
                 {!loading && users.length > 0 && <AnalyticsHeaderInline users={users} />}
 
-                {/* ── Skeleton while loading ────────────────────────────── */}
+                {/* ── Skeleton while loading ──────────────────────────── */}
                 {loading && users.length === 0 && (
                     <div className="um-grid-4" style={{ marginBottom: 24 }}>
                         {[...Array(4)].map((_, i) => (
@@ -1254,11 +1307,11 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
                     </div>
                 )}
 
-                {/* ── Breadcrumb ────────────────────────────────────────── */}
+                {/* ── Breadcrumb ─────────────────────────────────────── */}
                 <Breadcrumb tabHistory={tabHistory}
                             onNavigate={(tab) => dispatch({ type: 'SET_TAB', tab })} />
 
-                {/* ── Main tab card ─────────────────────────────────────── */}
+                {/* ── Main tab card ──────────────────────────────────── */}
                 <div style={{
                     background: T.surface || '#12121f', border: `1px solid ${T.border || '#2a2a3e'}`,
                     borderRadius: 16, overflow: 'visible', position: 'relative',
@@ -1281,8 +1334,12 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
                                     className={`um-tab${activeTab === t.id ? ' active' : ''}`}
                                     onClick={() => dispatch({ type: 'SET_TAB', tab: t.id })}
                                     title={`${t.label} (Ctrl+${t.shortcut})`}>
-                                <Ico name={t.id === 'users' ? 'users' : t.id === 'matrix' ? 'shield' : t.id === 'audit' ? 'activity' : 'lock'}
-                                     size={14} /> {t.label}
+                                <Ico name={
+                                    t.id === 'users'    ? 'users'    :
+                                        t.id === 'matrix'   ? 'shield'   :
+                                            t.id === 'audit'    ? 'activity' : 'lock'
+                                } size={14} />
+                                {t.label}
                             </button>
                         ))}
                         <div className="um-tab-indicator" style={indicatorStyle} />
@@ -1292,59 +1349,88 @@ const UserManagementTab = ({ initialUsers = [], enableShortcuts = true }) => {
                     <TabPanel activeTab={activeTab} prevTab={prevTab}>
                         <ErrorBoundary key={activeTab}>
                             {activeTab === 'users' && (
-                                <UsersTableComponent users={users}
-                                                     onSelectUser={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.DRAWER(u) })}
-                                                     onDeleteUsers={handleDeleteUsers}
-                                                     onEditUser={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.EDIT(u ?? null) })} />
+                                <UsersTableComponent
+                                    users={users}
+                                    onSelectUser={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.DRAWER(u) })}
+                                    onDeleteUsers={handleDeleteUsers}
+                                    onEditUser={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.EDIT(u ?? null) })}
+                                />
                             )}
                             {activeTab === 'matrix'   && <PermissionMatrixComponent />}
                             {activeTab === 'audit'    && <AuditLogComponent />}
+                            {/* CHANGE [5]: users passed to SecurityPanel includes sessions, apiAccess, riskScore */}
                             {activeTab === 'security' && <SecurityPanelComponent users={users} />}
                         </ErrorBoundary>
                     </TabPanel>
                 </div>
 
-                {/* ── Bulk action bar ────────────────────────────────────── */}
-                <BulkActionBar count={bulkCount} onDelete={handleBulkDelete}
+                {/* ── Bulk action bar ────────────────────────────────── */}
+                <BulkActionBar count={bulkCount}
+                               onDelete={handleBulkDelete}
                                onDeactivate={() => toast('Deactivate not yet implemented', 'error')}
                                onClear={() => dispatch({ type: 'CLEAR_BULK' })} />
 
-                {/* ── Modal layer (portaled) ─────────────────────────────── */}
+                {/* ── Modal layer (portaled) ─────────────────────────── */}
+
+                {/*
+                  CHANGE [5]: UserDrawerComponent receives full user object including:
+                    loginActivity (28-day array), riskScore, sessions,
+                    failedLogins, mfa, apiAccess, dataAccess, lastLoginAt
+                  These are already on every user object — just wire them in the drawer.
+                */}
                 <ModalPortal isOpen={modal.type === 'DRAWER'}>
                     {modal.type === 'DRAWER' && (
-                        <UserDrawerComponent user={modal.user}
-                                             onClose={() => dispatch({ type: 'CLOSE_MODAL' })}
-                                             onEdit={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.EDIT(u) })}
-                                             onResetPassword={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.PASSWORD(u) })} />
+                        <UserDrawerComponent
+                            user={modal.user}
+                            onClose={() => dispatch({ type: 'CLOSE_MODAL' })}
+                            onEdit={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.EDIT(u) })}
+                            onResetPassword={u => dispatch({ type: 'OPEN_MODAL', modal: MODAL.PASSWORD(u) })}
+                        />
                     )}
                 </ModalPortal>
 
+                {/*
+                  CHANGE [6]: UserFormModalComponent must include mfa / apiAccess / dataAccess
+                  in its form fields so handleSaveUser can forward them to the API.
+                  The modal should expose:
+                    formData.mfa        (boolean, default true)
+                    formData.apiAccess  (boolean, default false)
+                    formData.dataAccess ('public'|'internal'|'confidential'|'restricted')
+                */}
                 <ModalPortal isOpen={modal.type === 'EDIT'}>
                     {modal.type === 'EDIT' && (
-                        <UserFormModalComponent user={modal.user}
-                                                onSave={handleSaveUser}
-                                                onCancel={() => dispatch({ type: 'CLOSE_MODAL' })} />
+                        <UserFormModalComponent
+                            user={modal.user}
+                            onSave={handleSaveUser}
+                            onCancel={() => dispatch({ type: 'CLOSE_MODAL' })}
+                        />
                     )}
                 </ModalPortal>
 
                 <ModalPortal isOpen={modal.type === 'PASSWORD'}>
                     {modal.type === 'PASSWORD' && (
-                        <PasswordModalComponent user={modal.user}
-                                                onConfirm={handleResetPassword}
-                                                onClose={() => dispatch({ type: 'CLOSE_MODAL' })} />
+                        <PasswordModalComponent
+                            user={modal.user}
+                            onConfirm={handleResetPassword}
+                            onClose={() => dispatch({ type: 'CLOSE_MODAL' })}
+                        />
                     )}
                 </ModalPortal>
 
                 <ModalPortal isOpen={modal.type === 'CONFIRM'}>
                     {modal.type === 'CONFIRM' && (
-                        <ConfirmDialog title={modal.title} message={modal.message}
-                                       confirmLabel={modal.confirmLabel} variant={modal.variant}
-                                       onConfirm={modal.onConfirm}
-                                       onCancel={() => dispatch({ type: 'CLOSE_MODAL' })} />
+                        <ConfirmDialog
+                            title={modal.title}
+                            message={modal.message}
+                            confirmLabel={modal.confirmLabel}
+                            variant={modal.variant}
+                            onConfirm={modal.onConfirm}
+                            onCancel={() => dispatch({ type: 'CLOSE_MODAL' })}
+                        />
                     )}
                 </ModalPortal>
 
-                {/* ── Keyboard shortcut overlay ───────────────────────── */}
+                {/* ── Keyboard shortcut overlay ──────────────────────── */}
                 {enableShortcuts && <ShortcutHints />}
             </div>
         </UserMgmtContext.Provider>
