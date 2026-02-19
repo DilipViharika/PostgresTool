@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { THEME } from '../../utils/theme.jsx';
-import FeedbackModal from './FeedbackModal.jsx';
+
 import {
     GitBranch, GitCommit, GitPullRequest, History, ArrowLeftRight,
     AlertTriangle, CheckCircle, XCircle, FileCode, Database, Layers,

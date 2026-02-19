@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import FeedbackModal from './FeedbackModal.jsx';
+
 import {
   Database,
   Plus,

@@ -19,7 +19,7 @@ import {
     SquareSlash, CircleDot, Siren, Hourglass,
     XCircle, RotateCcw, Award, Percent
 } from 'lucide-react';
-import FeedbackModal from './FeedbackModal.jsx';
+
 /* ═══════════════════════════════════════════════════════════════════════════
    STYLES
    ═══════════════════════════════════════════════════════════════════════════ */

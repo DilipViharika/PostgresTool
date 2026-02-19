@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { THEME } from '../../utils/theme.jsx';
-import FeedbackModal from './FeedbackModal.jsx';
+
 import {
     GlassCard,
     MetricCard,
