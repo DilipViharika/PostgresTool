@@ -19,7 +19,7 @@ const ALL_SECTIONS = [
     { id: 'capacity',      label: 'Capacity' },
     { id: 'pool',          label: 'Pool' },
     { id: 'admin',         label: 'Admin' },
-    { id: 'UserManagement','label': 'User Management' },
+    { id: 'UserManagement', label: 'User Management' },
 ];
 
 const ACTION_TYPES = [
