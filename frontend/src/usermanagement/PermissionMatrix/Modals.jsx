@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { T } from '../constants/theme.js';
 import { ROLES, DEPARTMENTS, LOCATIONS, RESOURCE_ROWS, DEFAULT_PERMISSIONS, PERM_COLORS } from '../constants/index.js';
 import { validateUserForm, generatePassword, passwordStrength, copyToClipboard } from '../utils/index.js';
-import { Ico, RoleBadge, StatusBadge, MfaBadge, RiskRing, LoginHeatmap, FormField, Toggle, } from '../components/ui.jsx';
+import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter } from '../generatePassword, relTime…/components/ui.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────────
    USER DETAIL DRAWER
