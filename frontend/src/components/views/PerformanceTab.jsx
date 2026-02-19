@@ -33,6 +33,7 @@ import {
     CartesianGrid, BarChart, Bar, LineChart, Line, ReferenceLine,
     Cell, ComposedChart
 } from 'recharts';
+import FeedbackModal from './FeedbackModal.jsx';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    STYLES

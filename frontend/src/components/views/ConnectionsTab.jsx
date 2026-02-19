@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import FeedbackModal from './FeedbackModal.jsx';
 import {
   Database,
   Plus,
@@ -17,6 +18,7 @@ import {
   Link as LinkIcon,
   RefreshCw
 } from 'lucide-react';
+
 
 /**
  * Connections Tab - Manage Database Connections

@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { THEME } from '../../utils/theme.jsx';
 import { GlassCard, LiveStatusBadge } from '../ui/SharedComponents.jsx';
 import { fetchData } from '../../utils/api';
+import FeedbackModal from './FeedbackModal.jsx';
 import {
     Zap, Clock, Database, Activity, Server, HardDrive,
     ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown,

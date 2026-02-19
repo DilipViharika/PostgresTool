@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, useReducer } from 'react';
 import { THEME } from '../../utils/theme.jsx';
 import { postData } from '../../utils/api';
+import FeedbackModal from './FeedbackModal.jsx';
 import {
     Play, Eraser, Copy, Check, ChevronDown, ChevronUp,
     Clock, Database, AlertTriangle, CheckCircle, XCircle, Search,

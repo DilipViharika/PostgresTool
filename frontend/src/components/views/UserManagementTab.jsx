@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import FeedbackModal from './FeedbackModal.jsx';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    THEME & DESIGN TOKENS

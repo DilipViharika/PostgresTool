@@ -3,6 +3,7 @@
 // ==========================================================================
 import React, { useState, useMemo } from 'react';
 import { THEME } from '../../utils/theme.jsx';
+import FeedbackModal from './FeedbackModal.jsx';
 import {
     TrendingUp, HardDrive, Database, DollarSign, Calendar,
     AlertTriangle, CheckCircle, ArrowRight, Zap, Layers,

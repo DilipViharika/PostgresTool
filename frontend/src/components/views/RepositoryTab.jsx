@@ -3,6 +3,7 @@
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { THEME } from '../../utils/theme.jsx';
+import FeedbackModal from './FeedbackModal.jsx';
 import { GlassCard } from '../ui/SharedComponents.jsx';
 import { postData } from '../../utils/api';
 import {
