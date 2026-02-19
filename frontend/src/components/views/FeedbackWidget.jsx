@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, X, Send, ThumbsUp, AlertTriangle, Lightbulb, Star } from 'lucide-react';
 import { THEME } from '../utils/theme.jsx';
+import FeedbackButton from '../components/FeedbackButton.jsx';
 
 const FEEDBACK_TYPES = [
     { id: 'feature', label: 'Feature Request', icon: Lightbulb,      color: THEME.primary },

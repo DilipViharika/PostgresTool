@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useReducer } from 'react';
 import { THEME } from '../../utils/theme.jsx';
 import { fetchData, postData } from '../../utils/api';
+import FeedbackButton from '../components/FeedbackButton.jsx';
 import {
     Settings, Puzzle, Database, Trash2, Search, X, Copy, Check,
     Shield, ShieldCheck, ShieldAlert, Zap, Clock, HardDrive,
