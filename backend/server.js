@@ -104,15 +104,15 @@ function log(level, message, meta = {}) {
 // ---------------------------------------------------------------------------
 const pool = new Pool({
     user:     process.env.PGUSER     || 'postgres',
-    host:     process.env.PGHOST     || 'vigil-sandbox.cvzs4t5czgnu.ap-southeast-1.rds.amazonaws.com',
+    host:     process.env.PGHOST,    // ⚠️  Always set via env — never hardcode host in source
     database: process.env.PGDATABASE || 'postgres',
-    password: process.env.PGPASSWORD || 'Foxsense123',
+    password: process.env.PGPASSWORD, // ⚠️  Always set via env — never hardcode passwords in source
     port:     Number(process.env.PGPORT) || 5432,
     max:      3,
-    idleTimeoutMillis: 10000,
-    connectionTimeoutMillis: 15000,
-    statement_timeout: 30000,
-    ssl: { rejectUnauthorized: false },  // ✅ always SSL, no condition
+    idleTimeoutMillis:       10_000,
+    connectionTimeoutMillis: 15_000,
+    statement_timeout:       30_000,
+    ssl: { rejectUnauthorized: false },
 });
 pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
 
@@ -210,11 +210,11 @@ let CONNECTIONS = [
     {
         id: 1,
         name: 'Default Connection',
-        host: process.env.PGHOST || 'vigil-sandbox.cvzs4t5czgnu.ap-southeast-1.rds.amazonaws.com',
-        port: parseInt(process.env.PGPORT) || 5432,
+        host:     process.env.PGHOST     || '',
+        port:     parseInt(process.env.PGPORT) || 5432,
         database: process.env.PGDATABASE || 'postgres',
-        username: process.env.PGUSER || 'postgres',
-        password: process.env.PGPASSWORD || 'Foxsense123',
+        username: process.env.PGUSER     || 'postgres',
+        password: process.env.PGPASSWORD || '',  // ⚠️ Set via env
         ssl: process.env.PGSSL === 'true',
         isDefault: true,
         status: 'success',
@@ -230,7 +230,7 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(cors({ origin: CONFIG.CORS_ORIGINS, credentials: true }));
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '2mb' }));
 app.use(rateLimiter);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -750,7 +750,7 @@ app.post('/api/users/:id/reset-password', authenticate, requireScreen('UserManag
         const userIndex = USERS.findIndex(u => u.id === userId);
         if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
         USERS[userIndex].passwordHash = bcrypt.hashSync(newPassword, 10);
-        res.json({ success: true, password: newPassword });
+        res.json({ success: true });
     } catch (error) {
         log('ERROR', 'Failed to reset password', { error: error.message });
         res.status(500).json({ error: error.message });
@@ -758,48 +758,238 @@ app.post('/api/users/:id/reset-password', authenticate, requireScreen('UserManag
 });
 
 // ---------------------------------------------------------------------------
-// FEEDBACK ROUTES (NEW ADDITION)
+// FEEDBACK ROUTES
 // ---------------------------------------------------------------------------
+
+/**
+ * Validates and sanitises a feedback submission body.
+ * Returns { valid: false, error } or { valid: true, fields }.
+ */
+function parseFeedbackBody(body) {
+    const {
+        feedback_type,
+        rating,
+        comment       = '',
+        remarks       = '',
+        section       = 'all',
+        feature_title = '',
+        feature_priority,
+        section_feedback,
+        user_metadata = {},
+    } = body;
+
+    const type = (feedback_type || 'general').toLowerCase().trim();
+    const ALLOWED_TYPES = new Set(['feature', 'bug', 'general']);
+    if (!ALLOWED_TYPES.has(type)) {
+        return { valid: false, error: `Invalid feedback_type. Must be one of: ${[...ALLOWED_TYPES].join(', ')}` };
+    }
+
+    // Feature requests: title + description required; rating is optional
+    if (type === 'feature') {
+        if (!feature_title?.trim()) return { valid: false, error: 'Feature requests require a feature_title' };
+        if (!comment.trim())        return { valid: false, error: 'Feature requests require a description in the comment field' };
+    } else {
+        // Bug / General: at least a comment is required
+        // In "all-sections" mode the comment is built from section_feedback so may be empty here
+        const hasInlineComments = Array.isArray(section_feedback) &&
+            section_feedback.some(s => s.comment?.trim());
+        if (!comment.trim() && !hasInlineComments) {
+            return { valid: false, error: 'A comment is required' };
+        }
+    }
+
+    // Rating: optional for feature requests, 1-5 integer otherwise
+    let parsedRating = null;
+    if (rating !== null && rating !== undefined && rating !== '') {
+        parsedRating = Number(rating);
+        if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+            return { valid: false, error: 'Rating must be an integer between 1 and 5' };
+        }
+    }
+
+    // Sanitise free-text fields (trim, cap length)
+    const cap = (str, max) => String(str || '').trim().slice(0, max);
+
+    return {
+        valid: true,
+        fields: {
+            type,
+            rating:           parsedRating,
+            comment:          cap(comment, 2000),
+            remarks:          cap(remarks, 2000),
+            section:          cap(section, 100),
+            feature_title:    cap(feature_title, 120),
+            feature_priority: ['Low', 'Medium', 'High'].includes(feature_priority) ? feature_priority : null,
+            section_feedback: Array.isArray(section_feedback) ? section_feedback : null,
+            user_metadata,
+        },
+    };
+}
+
+// POST /api/feedback — submit feedback (any authenticated user)
 app.post('/api/feedback', authenticate, async (req, res) => {
     try {
-        const { type, rating, comment } = req.body;
+        const parsed = parseFeedbackBody(req.body);
+        if (!parsed.valid) return res.status(400).json({ error: parsed.error });
 
-        if (!rating || !comment) {
-            return res.status(400).json({ error: 'Rating and comment are required' });
-        }
+        const { type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, user_metadata } = parsed.fields;
 
         const result = await pool.query(
-            `INSERT INTO "pgmonitoringtool".user_feedback 
-             (username, feedback_type, rating, comment, status) 
-             VALUES ($1, $2, $3, $4, 'new') 
+            `INSERT INTO "pgmonitoringtool".user_feedback
+                (username, feedback_type, rating, comment, remarks,
+                 section, feature_title, feature_priority, section_feedback,
+                 status, user_metadata)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'new',$10)
              RETURNING id, created_at`,
-            [req.user.username, type || 'general', rating, comment]
+            [
+                req.user.username,
+                type,
+                rating,
+                comment,
+                remarks || null,
+                section,
+                feature_title  || null,
+                feature_priority || null,
+                section_feedback ? JSON.stringify(section_feedback) : null,
+                JSON.stringify(user_metadata),
+            ]
         );
 
         log('INFO', 'Feedback received', {
-            user: req.user.username,
-            id: result.rows[0].id,
-            type
+            user:    req.user.username,
+            id:      result.rows[0].id,
+            type,
+            section,
         });
 
-        res.json({ success: true, feedbackId: result.rows[0].id });
+        res.status(201).json({ success: true, feedbackId: result.rows[0].id, created_at: result.rows[0].created_at });
     } catch (error) {
         log('ERROR', 'Feedback submission failed', { error: error.message });
         res.status(500).json({ error: 'Failed to submit feedback' });
     }
 });
 
+// GET /api/feedback/mine — authenticated user's own feedback history
+app.get('/api/feedback/mine', authenticate, async (req, res) => {
+    try {
+        const limit  = Math.min(parseInt(req.query.limit)  || 20, 100);
+        const offset = Math.max(parseInt(req.query.offset) || 0,  0);
+
+        const result = await pool.query(
+            `SELECT id, feedback_type, rating, comment, remarks, section,
+                    feature_title, feature_priority, status, created_at
+             FROM "pgmonitoringtool".user_feedback
+             WHERE username = $1
+             ORDER BY created_at DESC
+             LIMIT $2 OFFSET $3`,
+            [req.user.username, limit, offset]
+        );
+        res.json({ rows: result.rows, limit, offset });
+    } catch (error) {
+        log('ERROR', 'Failed to fetch own feedback', { error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/admin/feedback — admin: list all feedback with filtering & pagination
 app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 50;
-        const result = await pool.query(
-            `SELECT * FROM "pgmonitoringtool".user_feedback 
-             ORDER BY created_at DESC LIMIT $1`,
-            [limit]
-        );
-        res.json(result.rows);
+        const limit    = Math.min(parseInt(req.query.limit)  || 50,  200);
+        const offset   = Math.max(parseInt(req.query.offset) || 0,   0);
+        const type     = req.query.type;
+        const status   = req.query.status;
+        const section  = req.query.section;
+        const username = req.query.username;
+
+        const conditions = [];
+        const params     = [];
+
+        if (type)     { params.push(type);     conditions.push(`feedback_type = $${params.length}`); }
+        if (status)   { params.push(status);   conditions.push(`status = $${params.length}`);        }
+        if (section)  { params.push(section);  conditions.push(`section = $${params.length}`);       }
+        if (username) { params.push(`%${username}%`); conditions.push(`username ILIKE $${params.length}`); }
+
+        const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        params.push(limit, offset);
+
+        const [rows, countRow] = await Promise.all([
+            pool.query(
+                `SELECT id, username, feedback_type, rating, comment, remarks,
+                        section, feature_title, feature_priority,
+                        section_feedback, status, created_at, user_metadata
+                 FROM "pgmonitoringtool".user_feedback
+                 ${where}
+                 ORDER BY created_at DESC
+                 LIMIT $${params.length - 1} OFFSET $${params.length}`,
+                params
+            ),
+            pool.query(
+                `SELECT COUNT(*) as total FROM "pgmonitoringtool".user_feedback ${where}`,
+                params.slice(0, -2)
+            ),
+        ]);
+
+        res.json({
+            rows:   rows.rows,
+            total:  parseInt(countRow.rows[0].total),
+            limit,
+            offset,
+        });
     } catch (error) {
         log('ERROR', 'Failed to fetch feedback', { error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// PATCH /api/admin/feedback/:id/status — admin: update feedback status
+app.patch('/api/admin/feedback/:id/status', authenticate, requireScreen('admin'), async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const { status } = req.body;
+        const ALLOWED_STATUSES = ['new', 'reviewed', 'implemented', 'rejected'];
+
+        if (!ALLOWED_STATUSES.includes(status)) {
+            return res.status(400).json({ error: `Status must be one of: ${ALLOWED_STATUSES.join(', ')}` });
+        }
+
+        const result = await pool.query(
+            `UPDATE "pgmonitoringtool".user_feedback
+             SET status = $1
+             WHERE id = $2
+             RETURNING id, status`,
+            [status, id]
+        );
+
+        if (result.rowCount === 0) return res.status(404).json({ error: 'Feedback not found' });
+
+        log('INFO', 'Feedback status updated', { id, status, by: req.user.username });
+        res.json({ success: true, id: result.rows[0].id, status: result.rows[0].status });
+    } catch (error) {
+        log('ERROR', 'Failed to update feedback status', { error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/admin/feedback/summary — admin: aggregate stats for dashboard
+app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                COUNT(*)                                             AS total,
+                COUNT(*) FILTER (WHERE status = 'new')              AS new_count,
+                COUNT(*) FILTER (WHERE status = 'reviewed')         AS reviewed_count,
+                COUNT(*) FILTER (WHERE status = 'implemented')      AS implemented_count,
+                ROUND(AVG(rating) FILTER (WHERE rating IS NOT NULL), 2) AS avg_rating,
+                COUNT(*) FILTER (WHERE feedback_type = 'bug')       AS bug_count,
+                COUNT(*) FILTER (WHERE feedback_type = 'feature')   AS feature_count,
+                COUNT(*) FILTER (WHERE feedback_type = 'general')   AS general_count,
+                COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days') AS last_7_days
+            FROM "pgmonitoringtool".user_feedback
+        `);
+        res.json(result.rows[0]);
+    } catch (error) {
+        log('ERROR', 'Failed to fetch feedback summary', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -884,21 +1074,17 @@ async function startup() {
     }
 }
 
-process.on('SIGTERM', async () => {
-    log('INFO', 'SIGTERM received, shutting down gracefully');
+// ---------------------------------------------------------------------------
+// GRACEFUL SHUTDOWN
+// ---------------------------------------------------------------------------
+async function shutdown(signal) {
+    log('INFO', `${signal} received, shutting down gracefully`);
     alerts.stopMonitoring();
-    server.close(() => {
-        pool.end(() => { process.exit(0); });
-    });
-});
+    server.close(() => pool.end(() => process.exit(0)));
+}
 
-process.on('SIGINT', async () => {
-    log('INFO', 'SIGINT received, shutting down gracefully');
-    alerts.stopMonitoring();
-    server.close(() => {
-        pool.end(() => { process.exit(0); });
-    });
-});
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
 
 startup();
 
