@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { T } from '../constants/theme.js';
 import { AUDIT_LEVELS, SESSION_RISK_COLORS } from '../constants/index.js';
-import { Ico, RiskRing, TagFilter } from './ui.jsx';
+import { Ico, RiskRing, TagFilter } from '../components/ui.jsx';
 
 /* ─── Mock data — in production, replace with useFetch('/api/audit') ──────── */
 const AUDIT_EVENTS = [
