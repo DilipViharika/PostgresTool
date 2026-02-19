@@ -12,7 +12,7 @@ import IndexesTab from './components/views/IndexesTab.jsx';
 import AdminTab from './components/views/AdminTab.jsx';
 import SqlConsoleTab from './components/views/SqlConsoleTab.jsx';
 import ApiQueriesTab from './components/views/ApiQueriesTab.jsx';
-import UserManagementTab from './components/views/UserManagementTab.jsx';
+import UserManagementTab from './usermanagement/UserManagementTab.jsx';
 import RepositoryTab from './components/views/RepositoryTab.jsx';
 import AlertsComponent from './components/AlertsComponent';
 import ConnectionsTab from './components/views/ConnectionsTab.jsx';
