@@ -95,9 +95,6 @@ const GlobalStyles = () => (
             background: rgba(14,165,233,0.12) !important;
             border-color: rgba(14,165,233,0.3) !important;
         }
-        /* Ticker tape */
-        .ticker-inner { display: flex; animation: tickerMove 22s linear infinite; }
-        .ticker-inner:hover { animation-play-state: paused; }
     `}</style>
 );
 
@@ -152,39 +149,40 @@ const DashboardScreenshot = () => (
     </div>
 );
 
-const ChartsScreenshot = () => (
+const InfraScreenshot = () => (
     <div style={{
         width: '100%', height: '100%',
-        background: 'linear-gradient(145deg, #080412 0%, #100618 100%)',
+        background: 'linear-gradient(145deg, #060e0a 0%, #0a1810 100%)',
         borderRadius: 10, overflow: 'hidden', position: 'relative',
     }}>
-        <div style={{ padding: '9px 11px', borderBottom: '1px solid rgba(168,139,250,0.12)', display: 'flex', alignItems: 'center', gap: 5 }}>
+        <div style={{ padding: '9px 11px', borderBottom: '1px solid rgba(20,184,166,0.12)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
-            <span style={{ marginLeft: 7, fontSize: 7, color: '#1e3a5f', fontFamily: 'JetBrains Mono, monospace' }}>Data Visualization</span>
+            <span style={{ marginLeft: 7, fontSize: 7, color: '#1e3a5f', fontFamily: 'JetBrains Mono, monospace' }}>Infrastructure</span>
+            <div style={{ marginLeft: 'auto', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.22)', borderRadius: 4, padding: '2px 6px' }}>
+                <span style={{ fontSize: 6.5, color: '#14b8a6', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>4 nodes</span>
+            </div>
         </div>
-        <div style={{ padding: '9px 11px' }}>
-            <svg width="100%" height="55" viewBox="0 0 200 55">
-                <defs>
-                    <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
-                    </linearGradient>
-                </defs>
-                <path d="M0,48 C30,42 50,22 80,26 C110,30 130,10 160,14 C180,17 190,9 200,7 L200,55 L0,55 Z" fill="url(#ag)" />
-                <path d="M0,48 C30,42 50,22 80,26 C110,30 130,10 160,14 C180,17 190,9 200,7" fill="none" stroke="#a78bfa" strokeWidth="1.5" />
-                {[20,60,100,140,180].map((x,i) => (
-                    <g key={i}>
-                        <rect x={x-3} y={18+i*2} width={6} height={8+i*2} fill={i%2===0?"#ef4444":"#22c55e"} opacity="0.75" rx="1" />
-                        <line x1={x} y1={15+i*2} x2={x} y2={30+i*3} stroke={i%2===0?"#ef4444":"#22c55e"} strokeWidth="0.8" opacity="0.5" />
-                    </g>
-                ))}
-            </svg>
+        <div style={{ padding: '9px 11px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {[
+                { label: 'CPU',    value: 62, color: '#14b8a6' },
+                { label: 'MEM',    value: 81, color: '#f59e0b' },
+                { label: 'DISK',   value: 44, color: '#22c55e' },
+                { label: 'NET I/O',value: 35, color: '#0ea5e9' },
+            ].map(({ label, value, color }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 6.5, color: '#334155', fontFamily: 'JetBrains Mono, monospace', width: 30, flexShrink: 0 }}>{label}</span>
+                    <div style={{ flex: 1, height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: 3, opacity: 0.85 }} />
+                    </div>
+                    <span style={{ fontSize: 6.5, color, fontFamily: 'JetBrains Mono, monospace', width: 22, textAlign: 'right' }}>{value}%</span>
+                </div>
+            ))}
         </div>
         <div style={{ position: 'absolute', bottom: 7, left: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa', animation: 'pulseDot 2.5s ease infinite' }} />
-            <span style={{ fontSize: 7, color: '#a78bfa', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '.1em', fontWeight: 600 }}>CHARTS & TRENDS</span>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#14b8a6', animation: 'pulseDot 2.5s ease infinite' }} />
+            <span style={{ fontSize: 7, color: '#14b8a6', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '.1em', fontWeight: 600 }}>INFRASTRUCTURE</span>
         </div>
     </div>
 );
@@ -231,48 +229,7 @@ const NetworkScreenshot = () => (
     </div>
 );
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  LIVE STATS TICKER
-// ═══════════════════════════════════════════════════════════════════════════
 
-const TICKER_ITEMS = [
-    { label: 'QPS', value: '12,847', color: '#0ea5e9', change: '+2.3%' },
-    { label: 'P99 Latency', value: '4.2ms', color: '#22c55e', change: '-0.8ms' },
-    { label: 'Cache Hit', value: '97.4%', color: '#14b8a6', change: '+0.2%' },
-    { label: 'Connections', value: '342/500', color: '#a78bfa', change: '' },
-    { label: 'Wal Lag', value: '0.0s', color: '#22c55e', change: 'OK' },
-    { label: 'DB Size', value: '284 GB', color: '#f59e0b', change: '+1.2 GB' },
-];
-
-const StatsTicker = () => {
-    const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
-    return (
-        <div style={{
-            overflow: 'hidden',
-            borderTop: '1px solid rgba(255,255,255,0.04)',
-            borderBottom: '1px solid rgba(255,255,255,0.04)',
-            padding: '8px 0',
-            background: 'rgba(14,165,233,0.02)',
-            position: 'relative',
-        }}>
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 40, background: 'linear-gradient(90deg, #03070e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 40, background: 'linear-gradient(270deg, #03070e, transparent)', zIndex: 2, pointerEvents: 'none' }} />
-            <div className="ticker-inner" style={{ display: 'flex', gap: 0 }}>
-                {items.map((item, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 20px', flexShrink: 0, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize: 8.5, color: '#334155', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '.06em', textTransform: 'uppercase' }}>{item.label}</span>
-                        <span style={{ fontSize: 10, color: item.color, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>{item.value}</span>
-                        {item.change && (
-                            <span style={{ fontSize: 7.5, color: item.change.startsWith('+') ? '#22c55e' : item.change.startsWith('-') ? '#ef4444' : '#334155', fontFamily: 'JetBrains Mono, monospace' }}>
-                                {item.change}
-                            </span>
-                        )}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  FEATURE CARDS
@@ -376,7 +333,7 @@ const LeftPanel = () => (
             {/* Screenshots */}
             <div style={{ padding: '0 24px', flexShrink: 0, animation: 'fadeUp .6s ease .15s backwards' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-                    {[DashboardScreenshot, ChartsScreenshot].map((Comp, i) => (
+                    {[DashboardScreenshot, InfraScreenshot].map((Comp, i) => (
                         <div key={i} className="screenshot-card" style={{ height: 115, borderRadius: 11, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', transition: 'all .3s ease', cursor: 'pointer' }}>
                             <Comp />
                         </div>
@@ -385,11 +342,6 @@ const LeftPanel = () => (
                 <div className="screenshot-card" style={{ height: 95, borderRadius: 11, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', transition: 'all .3s ease', cursor: 'pointer' }}>
                     <NetworkScreenshot />
                 </div>
-            </div>
-
-            {/* Ticker */}
-            <div style={{ margin: '10px 0', flexShrink: 0, animation: 'fadeUp .6s ease .2s backwards' }}>
-                <StatsTicker />
             </div>
 
             {/* Feature grid */}
