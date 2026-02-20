@@ -3,7 +3,7 @@ import React from 'react';
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // THEME SYSTEM — Velvet Protocol
 //
-// Ultra-dark purple-void foundations meet electric rose and aquamarine.
+// Ultra-dark purple-void foundations meet electric cyan and aquamarine.
 // Like a deep-space signal trace — precise, luminous, uncompromising.
 // No other tool uses this palette.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -19,8 +19,8 @@ export const THEME = {
     // ── Glass ─────────────────────────────────────────────────────────────────
     glass:             'rgba(18, 10, 31, 0.65)',
     glassHeavy:        'rgba(7, 3, 13, 0.92)',
-    glassBorder:       'rgba(232, 54, 154, 0.12)',
-    glassBorderHover:  'rgba(232, 54, 154, 0.32)',
+    glassBorder:       'rgba(0, 212, 255, 0.12)',
+    glassBorderHover:  'rgba(0, 212, 255, 0.32)',
 
     // ── Typography ────────────────────────────────────────────────────────────
     textMain:    '#F0ECF8',   // warm violet-white
@@ -28,11 +28,11 @@ export const THEME = {
     textDim:     '#4A3A5E',   // dim velvet
     textInverse: '#07030D',
 
-    // ── Electric Rose — primary pulse ─────────────────────────────────────────
-    primary:      '#E8369A',
-    primaryDark:  '#C2237D',
-    primaryLight: '#FF6DC0',
-    primaryFaint: 'rgba(232, 54, 154, 0.07)',
+    // ── Electric Cyan — primary pulse ─────────────────────────────────────────
+    primary:      '#00D4FF',
+    primaryDark:  '#0099CC',
+    primaryLight: '#66E8FF',
+    primaryFaint: 'rgba(0, 212, 255, 0.07)',
 
     // ── Aquamarine — secondary contrast ──────────────────────────────────────
     secondary:      '#2AFFD4',
@@ -71,7 +71,7 @@ export const THEME = {
     pearl:     '#E8D4F4',
     deepTeal:  '#0A0028',
     inkBlack:  '#030108',
-    phosphor:  '#E8369A',    // primary alias for shimmer animations
+    phosphor:  '#00D4FF',    // primary alias for shimmer animations
     biolume:   '#2AFFD4',    // secondary alias for glow animations
     mariana:   '#05021A',
 
@@ -84,7 +84,7 @@ export const THEME = {
     shadowNeon:       (color) => `0 0 6px ${color}50, 0 0 20px ${color}28, 0 0 50px ${color}12`,
     shadowNeonStrong: (color) => `0 0 6px ${color}90, 0 0 24px ${color}55, 0 0 70px ${color}25`,
     shadowGold:   '0 0 8px rgba(42,255,212,0.45), 0 0 25px rgba(42,255,212,0.20)',
-    shadowTeal:   '0 0 8px rgba(232,54,154,0.55), 0 0 28px rgba(232,54,154,0.22)',
+    shadowTeal:   '0 0 8px rgba(0,212,255,0.55), 0 0 28px rgba(0,212,255,0.22)',
     shadowDeep:   '0 30px 80px rgba(0,0,0,0.95), 0 8px 24px rgba(0,0,0,0.75)',
 
     // ── Border Radius ─────────────────────────────────────────────────────────
@@ -123,11 +123,11 @@ export const ChartDefs = () => (
 
             {/* ── Glow Filters ── */}
 
-            {/* Rose glow — primary #E8369A */}
+            {/* Cyan glow — primary #00D4FF */}
             <filter id="tealGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
                 <feColorMatrix type="matrix"
-                    values="0.91 0 0 0 0  0.21 0 0 0 0  0.60 0 0 0 0  0 0 0 1 0"
+                    values="0 0 0 0 0  0.831 0 0 0 0  1.0 0 0 0 0  0 0 0 1 0"
                     in="blur" result="coloredBlur" />
                 <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
