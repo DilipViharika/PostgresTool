@@ -399,7 +399,7 @@ const VisualPanel = () => (
                 <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
                     <span style={{ fontSize:14 }}>😰</span>
                     <div>
-                        <div style={{ fontSize:9, fontWeight:800, color:'#ef4444', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITHOUT VIGIL</div>
+                        <div style={{ fontSize:9, fontWeight:800, color:'#ef4444', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITHOUT </div>
                         <div style={{ fontSize:7.5, color:'#6b3040', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Flying blind on your database</div>
                     </div>
                 </div>
@@ -537,7 +537,7 @@ const VisualPanel = () => (
                 {/* Pipeline steps */}
                 {[
                     { icon:'🗄', label:'Your Postgres DB', sub:'pg_stat_statements\npg_stat_replication', color:'#0ea5e9' },
-                    { icon:'⚡', label:'Vigil Agent', sub:'Samples every second\nZero schema changes', color:'#a78bfa' },
+                    { icon:'⚡', label:' Agent', sub:'Samples every second\nZero schema changes', color:'#a78bfa' },
                     { icon:'🔍', label:'Analysis Engine', sub:'Anomaly detection\nQuery fingerprinting', color:'#f59e0b' },
                     { icon:'📊', label:'Your Dashboard', sub:'Live metrics & alerts\nEXPLAIN plans', color:'#22c55e' },
                 ].map(({ icon, label, sub, color }, i, arr) => (
@@ -568,7 +568,7 @@ const VisualPanel = () => (
             <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
                 <span style={{ fontSize:14 }}>✅</span>
                 <div>
-                    <div style={{ fontSize:9, fontWeight:800, color:'#22c55e', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITH VIGIL — FULL MONITORING COVERAGE</div>
+                    <div style={{ fontSize:9, fontWeight:800, color:'#22c55e', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITH  — FULL MONITORING COVERAGE</div>
                     <div style={{ fontSize:7.5, color:'#1a3050', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Everything you need to keep Postgres healthy, fast, and available</div>
                 </div>
             </div>
@@ -620,7 +620,7 @@ const LeftPanel = () => (
                 <h2 style={{ fontSize:20, fontWeight:800, color:'#dde8f2', fontFamily:"'Syne',sans-serif", lineHeight:1.25, letterSpacing:'-.03em', marginBottom:5 }}>
                     Database issues with{' '}
                     <span style={{ color:'#ef4444' }}>no visibility?</span>
-                    {' '}Vigil fixes that.
+                    {' '} fixes that.
                 </h2>
                 <p style={{ fontSize:10.5, color:'#1a2e4a', lineHeight:1.6, fontFamily:"'DM Sans',sans-serif" }}>
                     Complete PostgreSQL monitoring — from cluster health to slow-query forensics — in one place, in real time.
@@ -638,7 +638,7 @@ const LeftPanel = () => (
                     <Lock size={9} color="#0f2540" />
                     <span style={{ fontSize:8, color:'#0f2540', fontFamily:"'JetBrains Mono',monospace" }}>End-to-end encrypted · SOC 2 Type II</span>
                 </div>
-                <span style={{ fontSize:8, color:'#0f2540', fontFamily:"'JetBrains Mono',monospace" }}>© 2025 Vigil</span>
+                <span style={{ fontSize:8, color:'#0f2540', fontFamily:"'JetBrains Mono',monospace" }}>© 2025 </span>
             </div>
         </div>
     </div>
@@ -911,7 +911,7 @@ const LoginPage = () => {
                     {/* Footer */}
                     <div style={{ marginTop:18, display:'flex', alignItems:'center', justifyContent:'center', gap:5, animation:'fadeUp .6s ease .6s backwards' }}>
                         <Shield size={9} color="#0a1828" style={{ opacity:.4 }}/>
-                        <span style={{ fontSize:9, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace" }}>Secured by Vigil · PostgreSQL Monitor v2.0</span>
+                        <span style={{ fontSize:9, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace" }}>Secured by  · PostgreSQL Monitor v2.0</span>
                     </div>
                 </div>
             </div>
