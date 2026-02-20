@@ -208,15 +208,16 @@ const AppStyles = () => (
         .sidebar-nav::-webkit-scrollbar-thumb:hover { background: ${DS.cyan}60; }
 
         /* ── Nav hover transition ── */
-        .nav-item { transition: all 0.18s cubic-bezier(0.4,0,0.2,1); }
-        .nav-item:hover { transform: translateX(2px); }
+        .nav-item { transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
+        .nav-item:hover { background: rgba(255,255,255,0.04) !important; }
+        .nav-item:hover .nav-icon { opacity: 1 !important; }
 
         /* ── Section header ── */
-        .section-btn { transition: all 0.18s ease; }
-        .section-btn:hover { background: rgba(255,255,255,0.04) !important; }
+        .section-btn { transition: all 0.15s ease; }
+        .section-btn:hover { background: rgba(255,255,255,0.03) !important; }
 
         /* ── Section tab animation ── */
-        .section-open { animation: sectionOpen 0.2s ease-out both; }
+        .section-open { animation: sectionOpen 0.18s ease-out both; }
 
         /* ── Content tab mount ── */
         .tab-mount { animation: tabIn 0.22s ease-out both; }
@@ -667,7 +668,7 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
 };
 
 /* ─────────────────────────────────────────────────────────────────
-   SIDEBAR — sectioned, collapsible, with accent-colored indicators
+   SIDEBAR
    ───────────────────────────────────────────────────────────────── */
 const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onToggleCollapse, onOpenFeedback, allowedTabIds }) => {
     const [openSections, setOpenSections] = useState(() => {
@@ -694,132 +695,226 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 .filter(g => g.tabs.length > 0),
         [allowedTabIds]);
 
-    const accent = getSectionAccent(activeTab);
+    const W = collapsed ? 64 : 252;
 
     return (
         <aside style={{
-            width: collapsed ? 66 : 248,
-            background: DS.bgDeep,
-            borderRight: `1px solid ${DS.border}`,
-            display: 'flex', flexDirection: 'column',
-            zIndex: 50, flexShrink: 0,
-            transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1)',
+            width: W,
+            minWidth: W,
+            background: '#050810',
+            borderRight: '1px solid rgba(255,255,255,0.07)',
+            display: 'flex',
+            flexDirection: 'column',
+            zIndex: 50,
+            flexShrink: 0,
+            transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1), min-width 0.25s cubic-bezier(0.4,0,0.2,1)',
             position: 'relative',
+            overflow: 'hidden',
         }}>
-            {/* Sidebar inner glow line */}
+
+            {/* Right-edge gradient rule */}
             <div style={{
-                position: 'absolute', top: 0, right: 0, width: 1, height: '100%',
-                background: `linear-gradient(180deg, transparent 0%, ${DS.cyan}30 30%, ${DS.violet}20 70%, transparent 100%)`,
-                pointerEvents: 'none',
+                position: 'absolute', top: 0, right: 0, bottom: 0, width: 1, pointerEvents: 'none',
+                background: 'linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.18) 40%, rgba(129,140,248,0.12) 75%, transparent 100%)',
             }} />
 
-            {/* Logo */}
+            {/* ── LOGO ── */}
             <div style={{
-                padding: collapsed ? '20px 0' : '20px 20px',
+                height: 64, flexShrink: 0,
                 display: 'flex', alignItems: 'center',
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                gap: 11, borderBottom: `1px solid ${DS.border}`,
-                minHeight: 70, flexShrink: 0,
+                padding: collapsed ? 0 : '0 18px',
+                gap: 12,
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}>
+                {/* Icon mark */}
                 <div style={{
-                    width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                    background: `linear-gradient(135deg, ${DS.cyan}, ${DS.violet})`,
+                    width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                    background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 100%)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: DS.glowCyan,
-                    animation: 'glowPulse 4s ease-in-out infinite',
+                    boxShadow: '0 0 16px rgba(56,189,248,0.35)',
                 }}>
-                    <Database color="#fff" size={17} />
+                    <Database color="#fff" size={15} strokeWidth={2.5} />
                 </div>
+
+                {/* Wordmark — hidden when collapsed */}
                 {!collapsed && (
-                    <div>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: DS.textPrimary, letterSpacing: '-0.02em', lineHeight: 1.1 }}>Vigil</div>
-                        <div style={{ fontSize: 9, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.12em', textTransform: 'uppercase' }}>PG MONITOR</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                        <span style={{
+                            fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em',
+                            color: '#f0f4ff',
+                        }}>
+                            PG <span style={{ color: '#38bdf8' }}>Monitor</span>
+                        </span>
+                        <span style={{
+                            fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase',
+                            color: '#475569', fontFamily: DS.fontMono, marginTop: 2,
+                        }}>
+                            Database Intelligence
+                        </span>
                     </div>
                 )}
             </div>
 
-            {/* Nav */}
-            <div className="sidebar-nav" style={{ flex: 1, padding: '10px 8px', overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {visibleGroups.map(group => {
+            {/* ── NAV ── */}
+            <div className="sidebar-nav" style={{
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '8px 0',
+            }}>
+                {visibleGroups.map((group, gi) => {
                     const isOpen = collapsed || openSections.has(group.section);
                     const hasActive = group.tabs.some(t => t.id === activeTab);
 
                     return (
-                        <div key={group.section} style={{ marginBottom: 4 }}>
-                            {/* Section header */}
+                        <div key={group.section} style={{ marginBottom: 2 }}>
+
+                            {/* ── Section label / divider ── */}
                             {collapsed ? (
-                                <div style={{ margin: '8px 10px 4px', height: 1, background: `${group.accent}25`, borderRadius: 1 }} />
+                                /* Icon-only mode: just a thin colored divider */
+                                gi > 0 && (
+                                    <div style={{
+                                        margin: '6px 16px',
+                                        height: '1px',
+                                        background: `linear-gradient(90deg, transparent, ${group.accent}40, transparent)`,
+                                    }} />
+                                )
                             ) : (
-                                <button className="section-btn" onClick={() => toggleSection(group.section)} style={{
-                                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    padding: '5px 10px', borderRadius: 7, border: 'none', cursor: 'pointer',
-                                    background: hasActive ? `${group.accent}10` : 'transparent',
-                                    marginBottom: 2,
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                        {hasActive && (
-                                            <span style={{ width: 4, height: 4, borderRadius: '50%', background: group.accent, flexShrink: 0, boxShadow: `0 0 6px ${group.accent}` }} />
-                                        )}
-                                        <span style={{
-                                            fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em',
-                                            textTransform: 'uppercase', fontFamily: DS.fontMono,
-                                            color: hasActive ? group.accent : DS.textMuted,
-                                        }}>{group.section}</span>
-                                    </div>
-                                    <ChevronDown size={11} color={hasActive ? group.accent : DS.textMuted}
-                                                 style={{ transition: 'transform 0.2s', transform: isOpen ? 'rotate(0)' : 'rotate(-90deg)', flexShrink: 0 }} />
+                                <button
+                                    className="section-btn"
+                                    onClick={() => toggleSection(group.section)}
+                                    style={{
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '7px 16px 5px',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        borderRadius: 0,
+                                        marginTop: gi === 0 ? 2 : 8,
+                                    }}
+                                >
+                                    <span style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        letterSpacing: '0.1em',
+                                        textTransform: 'uppercase',
+                                        fontFamily: DS.fontMono,
+                                        color: hasActive ? group.accent : '#334155',
+                                    }}>
+                                        {group.section}
+                                    </span>
+                                    <ChevronDown
+                                        size={12}
+                                        color={hasActive ? group.accent : '#334155'}
+                                        style={{
+                                            transition: 'transform 0.2s ease',
+                                            transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                            flexShrink: 0,
+                                        }}
+                                    />
                                 </button>
                             )}
 
-                            {/* Tabs */}
+                            {/* ── Tab items ── */}
                             {isOpen && (
-                                <div className={collapsed ? '' : 'section-open'} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                <div className={collapsed ? '' : 'section-open'}>
                                     {group.tabs.map(tab => {
                                         const isActive = activeTab === tab.id;
                                         return (
-                                            <button key={tab.id} className="nav-item"
-                                                    onClick={() => onTabChange(tab.id)}
-                                                    title={collapsed ? tab.label : undefined}
-                                                    data-tip={collapsed ? tab.label : undefined}
-                                                    aria-label={tab.label}
-                                                    aria-current={isActive ? 'page' : undefined}
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => onTabChange(tab.id)}
+                                                aria-label={tab.label}
+                                                aria-current={isActive ? 'page' : undefined}
+                                                title={collapsed ? tab.label : undefined}
+                                                style={{
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: collapsed ? 'center' : 'flex-start',
+                                                    gap: 10,
+                                                    /* Left padding: 16px base + 4px for the active bar space */
+                                                    padding: collapsed
+                                                        ? '9px 0'
+                                                        : isActive
+                                                            ? '8px 14px 8px 13px'
+                                                            : '8px 14px 8px 16px',
+                                                    background: isActive
+                                                        ? `linear-gradient(90deg, ${group.accent}1a 0%, ${group.accent}08 100%)`
+                                                        : 'transparent',
+                                                    border: 'none',
+                                                    borderLeft: isActive
+                                                        ? `3px solid ${group.accent}`
+                                                        : '3px solid transparent',
+                                                    cursor: 'pointer',
+                                                    color: isActive ? group.accent : '#64748b',
+                                                    fontWeight: isActive ? 600 : 400,
+                                                    fontSize: 13,
+                                                    textAlign: 'left',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    fontFamily: DS.fontUI,
+                                                    transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                                                    position: 'relative',
+                                                }}
+                                                onMouseEnter={e => {
+                                                    if (!isActive) {
+                                                        e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                                        e.currentTarget.style.color = '#94a3b8';
+                                                    }
+                                                }}
+                                                onMouseLeave={e => {
+                                                    if (!isActive) {
+                                                        e.currentTarget.style.background = 'transparent';
+                                                        e.currentTarget.style.color = '#64748b';
+                                                    }
+                                                }}
+                                            >
+                                                {/* Icon */}
+                                                <tab.icon
+                                                    size={15}
                                                     style={{
-                                                        display: 'flex', alignItems: 'center',
-                                                        justifyContent: collapsed ? 'center' : 'flex-start',
-                                                        gap: 9,
-                                                        padding: collapsed ? '10px 0' : '8px 10px 8px 20px',
-                                                        background: isActive ? `${group.accent}14` : 'transparent',
-                                                        border: `1px solid ${isActive ? group.accent + '35' : 'transparent'}`,
-                                                        borderRadius: 8, cursor: 'pointer',
-                                                        color: isActive ? group.accent : DS.textMuted,
-                                                        fontWeight: isActive ? 600 : 400,
-                                                        fontSize: 12.5, textAlign: 'left',
-                                                        position: 'relative', whiteSpace: 'nowrap',
-                                                        overflow: 'hidden', width: '100%',
-                                                        fontFamily: DS.fontUI,
-                                                        boxShadow: isActive ? `inset 0 0 20px ${group.accent}08` : 'none',
-                                                    }}>
-                                                {/* Active left accent bar */}
-                                                {isActive && (
-                                                    <div style={{
-                                                        position: 'absolute', left: 0, top: '20%', bottom: '20%',
-                                                        width: 2.5, background: group.accent,
-                                                        borderRadius: '0 2px 2px 0',
-                                                        boxShadow: `0 0 8px ${group.accent}`,
-                                                    }} />
-                                                )}
-                                                <tab.icon size={14} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.65 }} />
+                                                        flexShrink: 0,
+                                                        opacity: isActive ? 1 : 0.6,
+                                                        filter: isActive ? `drop-shadow(0 0 4px ${group.accent}80)` : 'none',
+                                                    }}
+                                                />
+
+                                                {/* Label + badge */}
                                                 {!collapsed && (
                                                     <>
-                                                        <span style={{ flex: 1 }}>{tab.label}</span>
+                                                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                            {tab.label}
+                                                        </span>
                                                         {tab.badge && (
                                                             <span style={{
-                                                                fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10,
-                                                                background: `${DS.rose}22`, color: DS.rose,
-                                                                border: `1px solid ${DS.rose}40`, fontFamily: DS.fontMono,
-                                                            }}>{tab.badge}</span>
+                                                                fontSize: 9, fontWeight: 700,
+                                                                padding: '1px 6px', borderRadius: 10,
+                                                                background: 'rgba(251,113,133,0.15)',
+                                                                color: DS.rose,
+                                                                border: '1px solid rgba(251,113,133,0.3)',
+                                                                fontFamily: DS.fontMono,
+                                                                lineHeight: '16px',
+                                                                flexShrink: 0,
+                                                            }}>
+                                                                {tab.badge}
+                                                            </span>
                                                         )}
                                                     </>
+                                                )}
+
+                                                {/* Active right-side glow smear */}
+                                                {isActive && !collapsed && (
+                                                    <div style={{
+                                                        position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
+                                                        background: `linear-gradient(270deg, ${group.accent}10, transparent)`,
+                                                        pointerEvents: 'none',
+                                                    }} />
                                                 )}
                                             </button>
                                         );
@@ -831,63 +926,113 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 })}
             </div>
 
-            {/* Footer */}
-            <div style={{ padding: collapsed ? '12px 0' : '12px 10px', borderTop: `1px solid ${DS.border}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <button className="nav-item" onClick={onOpenFeedback} title={collapsed ? 'Feedback' : undefined} style={{
-                    display: 'flex', alignItems: 'center',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    gap: 9, background: 'transparent', border: '1px solid transparent',
-                    color: DS.textMuted, cursor: 'pointer',
-                    padding: collapsed ? '8px 0' : '7px 10px',
-                    fontSize: 12.5, fontWeight: 500, borderRadius: 8, width: '100%',
-                    fontFamily: DS.fontUI,
-                }} onMouseEnter={e => { e.currentTarget.style.color = DS.violet; e.currentTarget.style.background = DS.violetDim; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = DS.textMuted; e.currentTarget.style.background = 'transparent'; }}>
-                    <MessageSquarePlus size={14} />
-                    {!collapsed && 'Feedback'}
-                </button>
-
+            {/* ── FOOTER ── */}
+            <div style={{
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                padding: collapsed ? '10px 0' : '10px 8px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+            }}>
+                {/* User info row */}
                 {!collapsed && (
-                    <div style={{ padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 9 }}>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '8px 10px', marginBottom: 2,
+                        background: 'rgba(56,189,248,0.04)',
+                        borderRadius: 8,
+                        border: '1px solid rgba(56,189,248,0.1)',
+                    }}>
                         <div style={{
-                            width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                            background: `linear-gradient(135deg, ${DS.cyan}40, ${DS.violet}40)`,
-                            border: `1px solid ${DS.borderAccent}`,
+                            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                            background: 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(129,140,248,0.25))',
+                            border: '1px solid rgba(56,189,248,0.2)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                            <User size={13} color={DS.cyan} />
+                            <User size={14} color={DS.cyan} />
                         </div>
-                        <div>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: DS.textPrimary }}>{currentUser?.name}</div>
-                            <div style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>DBA · Active</div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: '#f0f4ff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {currentUser?.name}
+                            </div>
+                            <div style={{ fontSize: 10, color: '#38bdf8', fontFamily: DS.fontMono, letterSpacing: '0.06em' }}>
+                                ● Online
+                            </div>
                         </div>
                     </div>
                 )}
 
-                <button className="nav-item" onClick={onLogout} title={collapsed ? 'Logout' : undefined} style={{
-                    display: 'flex', alignItems: 'center',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    gap: 9, background: 'none', border: '1px solid transparent',
-                    color: DS.textMuted, cursor: 'pointer',
-                    padding: collapsed ? '8px 0' : '7px 10px',
-                    fontSize: 12.5, borderRadius: 8, width: '100%', fontFamily: DS.fontUI,
-                }} onMouseEnter={e => { e.currentTarget.style.color = DS.rose; e.currentTarget.style.background = 'rgba(251,113,133,0.08)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = DS.textMuted; e.currentTarget.style.background = 'none'; }}>
-                    <LogOut size={14} />
+                {/* Feedback */}
+                <button
+                    onClick={onOpenFeedback}
+                    title={collapsed ? 'Feedback' : undefined}
+                    style={{
+                        display: 'flex', alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 10, background: 'transparent', border: 'none',
+                        color: '#475569', cursor: 'pointer',
+                        padding: collapsed ? '9px 0' : '8px 10px',
+                        fontSize: 13, fontWeight: 400, borderRadius: 8, width: '100%',
+                        fontFamily: DS.fontUI, transition: 'color 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = DS.violet; e.currentTarget.style.background = 'rgba(129,140,248,0.08)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; }}
+                >
+                    <MessageSquarePlus size={15} style={{ flexShrink: 0 }} />
+                    {!collapsed && 'Feedback'}
+                </button>
+
+                {/* Logout */}
+                <button
+                    onClick={onLogout}
+                    title={collapsed ? 'Sign out' : undefined}
+                    style={{
+                        display: 'flex', alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 10, background: 'none', border: 'none',
+                        color: '#475569', cursor: 'pointer',
+                        padding: collapsed ? '9px 0' : '8px 10px',
+                        fontSize: 13, borderRadius: 8, width: '100%',
+                        fontFamily: DS.fontUI, transition: 'color 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = DS.rose; e.currentTarget.style.background = 'rgba(251,113,133,0.08)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'none'; }}
+                >
+                    <LogOut size={15} style={{ flexShrink: 0 }} />
                     {!collapsed && 'Sign Out'}
                 </button>
             </div>
 
-            {/* Collapse toggle */}
-            <button className="collapse-btn" onClick={onToggleCollapse} aria-label={collapsed ? 'Expand' : 'Collapse'} style={{
-                position: 'absolute', right: -13, top: 84,
-                width: 26, height: 26, borderRadius: '50%',
-                background: DS.surface, border: `1px solid ${DS.border}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: DS.textMuted, zIndex: 51,
-            }} onMouseEnter={e => { e.currentTarget.style.background = DS.cyan; e.currentTarget.style.color = DS.bg; e.currentTarget.style.borderColor = DS.cyan; e.currentTarget.style.boxShadow = DS.glowCyan; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = DS.surface; e.currentTarget.style.color = DS.textMuted; e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.boxShadow = 'none'; }}>
-                {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+            {/* ── COLLAPSE TOGGLE ── */}
+            <button
+                onClick={onToggleCollapse}
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                style={{
+                    position: 'absolute', right: -11, top: 76,
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: '#0a0f1e',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#475569', zIndex: 51,
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                }}
+                onMouseEnter={e => {
+                    e.currentTarget.style.background = DS.cyan;
+                    e.currentTarget.style.color = '#020409';
+                    e.currentTarget.style.borderColor = DS.cyan;
+                    e.currentTarget.style.boxShadow = DS.glowCyan;
+                    e.currentTarget.style.transform = 'scale(1.15)';
+                }}
+                onMouseLeave={e => {
+                    e.currentTarget.style.background = '#0a0f1e';
+                    e.currentTarget.style.color = '#475569';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                }}
+            >
+                {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
             </button>
         </aside>
     );
