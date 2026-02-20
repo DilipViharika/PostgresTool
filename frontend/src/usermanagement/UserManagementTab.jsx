@@ -355,21 +355,27 @@ const GlobalStylesInjector = memo(() => (
       width:100%; padding:9px 12px; border-radius:8px;
       border:1px solid ${T.grid || '#1A0E2B'};
       background:${T.surfaceRaised || '#221535'} !important;
+      background-color:${T.surfaceRaised || '#221535'} !important;
       color:${T.textMain || '#F0ECF8'} !important;
+      -webkit-text-fill-color:${T.textMain || '#F0ECF8'} !important;
       font-size:13px; font-family:inherit; outline:none;
       transition:border-color .15s, box-shadow .15s; -webkit-appearance:none;
+      color-scheme: dark;
     }
     .um-input:focus { border-color:${T.primary || '#00D4FF'}; box-shadow:0 0 0 3px ${T.primary || '#00D4FF'}20; }
-    .um-input::placeholder { color:${T.textDim || '#4A3A5E'}; }
+    .um-input::placeholder { color:${T.textDim || '#4A3A5E'} !important; opacity:1; }
     select.um-input { cursor:pointer; }
+    select.um-input option { background:${T.surface || '#120A1F'} !important; color:${T.textMain || '#F0ECF8'} !important; }
     /* Autofill override */
     .um-root input:-webkit-autofill,
     .um-root input:-webkit-autofill:hover,
     .um-root input:-webkit-autofill:focus,
+    .um-root input:-webkit-autofill:active,
     .um-root select:-webkit-autofill {
       -webkit-box-shadow: 0 0 0 1000px ${T.surfaceRaised || '#221535'} inset !important;
       -webkit-text-fill-color: ${T.textMain || '#F0ECF8'} !important;
       caret-color: ${T.textMain || '#F0ECF8'};
+      transition: background-color 5000s ease-in-out 0s;
     }
     /* Mono */
     .um-mono { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace; letter-spacing:.02em; }
@@ -660,10 +666,13 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
         width: '100%', padding: '9px 12px', borderRadius: 8,
         border: `1px solid ${T.grid || '#1A0E2B'}`,
         background: T.surfaceRaised || '#221535',
+        backgroundColor: T.surfaceRaised || '#221535',
         color: T.textMain || '#F0ECF8',
+        WebkitTextFillColor: T.textMain || '#F0ECF8',
         fontSize: 13, fontFamily: 'inherit', outline: 'none',
         transition: 'border-color .15s, box-shadow .15s',
         WebkitAppearance: 'none', boxSizing: 'border-box',
+        colorScheme: 'dark',
     };
     const inputFocusSx = { borderColor: T.primary || '#00D4FF', boxShadow: `0 0 0 3px ${T.primary || '#00D4FF'}20` };
     const [focusedField, setFocusedField] = useState(null);
@@ -684,7 +693,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
         { key:'suspended', color:'#ef4444', bg:'rgba(239,68,68,0.12)' },
     ];
 
-    return createPortal(
+    return (
         /* ── Backdrop — fixed + flex center ── */
         <div
             onClick={e => e.target === e.currentTarget && onCancel()}
@@ -913,8 +922,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                     </button>
                 </div>
             </div>
-        </div>,
-        document.body
+        </div>
     );
 });
 UserFormModal.displayName = 'UserFormModal';
