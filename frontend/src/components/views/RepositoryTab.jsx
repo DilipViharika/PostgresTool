@@ -264,128 +264,379 @@ const FileTreeNode = ({ node, depth=0, selectedId, onSelect }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    CODE VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const CodeView = ({ activeRepo }) => {
-    const [selFile, setSelFile]   = useState(null);
-    const [editing, setEditing]   = useState(false);
-    const [content, setContent]   = useState('');
-    const [copied,  setCopied]    = useState(false);
-    const [fileCode, setFileCode] = useState('');
-    const ai = useAIAnalysis();
+const LANG_MAP = {
+    js:'js', jsx:'jsx', ts:'ts', tsx:'tsx', py:'py', go:'go', rs:'rs',
+    java:'java', kt:'kt', rb:'rb', php:'php', cs:'cs', cpp:'cpp', c:'c',
+    html:'html', css:'css', scss:'scss', json:'json', md:'md', yaml:'yaml',
+    yml:'yaml', toml:'toml', sh:'sh', env:'env', txt:'txt', sql:'sql',
+};
+const IGNORE_DIRS = new Set([
+    'node_modules','.git','.next','.nuxt','dist','build','out',
+    '__pycache__','.venv','venv','.cache','.idea','.vscode',
+    'vendor','coverage','.turbo','target','.gradle',
+]);
+const FILE_ICONS_MAP = {
+    js:FileCode, jsx:FileCode, ts:FileCode, tsx:FileCode,
+    py:FileCode, go:FileCode, rs:FileCode, java:FileCode,
+    json:FileJson, md:FileText, html:FileCode, css:FileCode,
+    scss:FileCode, sql:Database, sh:Terminal, default:File,
+};
+const getFileIcon = ext => FILE_ICONS_MAP[ext] || FILE_ICONS_MAP.default;
+const getExt = name => name.includes('.') ? name.split('.').pop().toLowerCase() : '';
 
-    const onSel = node => {
-        if (node.type === 'folder') return;
-        setSelFile(node);
-        setEditing(false);
-        ai.reset();
-        const placeholder = `// ${node.name}\n// File content not available in this view.\n// Paste or type code here to enable AI Analysis.`;
-        setContent(placeholder);
-        setFileCode('');
-    };
+/* ── Read a directory handle recursively ─────────────────── */
+async function readDirHandle(handle, depth = 0, maxDepth = 6) {
+    const entries = [];
+    if (depth > maxDepth) return entries;
+    for await (const [name, h] of handle.entries()) {
+        if (h.kind === 'directory') {
+            if (IGNORE_DIRS.has(name)) continue;
+            const children = await readDirHandle(h, depth + 1, maxDepth);
+            entries.push({ id: `${depth}-${name}`, name, kind: 'dir', handle: h, children, depth });
+        } else {
+            const ext = getExt(name);
+            entries.push({ id: `${depth}-${name}`, name, kind: 'file', handle: h, ext, depth });
+        }
+    }
+    // Dirs first, then files — both alphabetically
+    entries.sort((a, b) => {
+        if (a.kind !== b.kind) return a.kind === 'dir' ? -1 : 1;
+        return a.name.localeCompare(b.name);
+    });
+    return entries;
+}
 
-    const onCopy = () => {
-        navigator.clipboard.writeText(content).catch(()=>{});
-        setCopied(true); setTimeout(()=>setCopied(false),1800);
-    };
+/* ── File tree node ──────────────────────────────────────── */
+const FsTreeNode = ({ node, depth, selectedId, onSelect, onToggle, openDirs }) => {
+    const isOpen = openDirs.has(node.id);
+    const isSelected = selectedId === node.id;
+    const Icon = node.kind === 'dir' ? FolderOpen : getFileIcon(node.ext);
+    const accent = isSelected ? THEME.primary : THEME.textDim;
 
-    const handleAnalyze = () => {
-        const code = content;
-        if (!code.trim() || code.startsWith('// File content')) return;
-        ai.analyze({ filename: selFile?.name || 'file', code, repoName: activeRepo?.name, repoPath: activeRepo?.url });
-    };
-
-    const sevColor = s => ({ critical: THEME.danger, high: THEME.danger, medium: THEME.warning, low: THEME.info }[s] || THEME.textDim);
-    const lines = content.split('\n');
+    if (node.kind === 'dir') {
+        return (
+            <div>
+                <div className="r8-tree-item" onClick={() => onToggle(node.id)}
+                     style={{ display:'flex', alignItems:'center', gap:6, padding:`5px 12px 5px ${12 + depth * 14}px`, cursor:'pointer' }}>
+                    {isOpen
+                        ? <ChevronDown size={10} color={THEME.textDim}/>
+                        : <ChevronRight size={10} color={THEME.textDim}/>}
+                    <FolderOpen size={12} color={isOpen ? THEME.warning : THEME.textDim}/>
+                    <span style={{ fontSize:11.5, color:THEME.textMuted, fontWeight:500, flex:1 }}>{node.name}</span>
+                    {node.children?.length > 0 && (
+                        <span style={{ fontSize:9, color:THEME.textDim }}>{node.children.length}</span>
+                    )}
+                </div>
+                {isOpen && node.children?.map(c => (
+                    <FsTreeNode key={c.id} node={c} depth={depth + 1} selectedId={selectedId}
+                                onSelect={onSelect} onToggle={onToggle} openDirs={openDirs}/>
+                ))}
+            </div>
+        );
+    }
 
     return (
-        <div style={{ display:'grid', gridTemplateColumns:'215px 1fr', gap:14, height:'100%' }}>
-            <Panel title="Files" icon={FolderOpen} noPad>
-                <div style={{ paddingTop:6, paddingBottom:8 }}>
-                    {selFile === null && (
-                        <div style={{ padding:'10px 14px 6px', fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>
-                            Select a file or paste code in the editor for AI analysis.
+        <div className={`r8-tree-item${isSelected ? ' r8-sel' : ''}`}
+             onClick={() => onSelect(node)}
+             style={{ display:'flex', alignItems:'center', gap:6, padding:`4px 12px 4px ${12 + depth * 14}px`,
+                 borderLeft: isSelected ? `2px solid ${THEME.primary}` : '2px solid transparent' }}>
+            <Icon size={11} color={isSelected ? THEME.primary : THEME.textDim}/>
+            <span style={{ fontSize:11, color:isSelected ? THEME.primary : THEME.textMuted, flex:1,
+                overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{node.name}</span>
+            {node.ext && (
+                <span style={{ fontSize:8.5, color:THEME.textDim, background:THEME.glass,
+                    padding:'1px 4px', borderRadius:3, flexShrink:0 }}>{node.ext}</span>
+            )}
+        </div>
+    );
+};
+
+/* ── Main CodeView ───────────────────────────────────────── */
+const CodeView = ({ activeRepo }) => {
+    const [fsTree,      setFsTree]      = useState(null);   // real file tree
+    const [dirHandle,   setDirHandle]   = useState(null);   // root dir handle
+    const [loading,     setLoading]     = useState(false);
+    const [openDirs,    setOpenDirs]    = useState(new Set());
+    const [selNode,     setSelNode]     = useState(null);
+    const [fileContent, setFileContent] = useState('');
+    const [fileLoading, setFileLoading] = useState(false);
+    const [editing,     setEditing]     = useState(false);
+    const [copied,      setCopied]      = useState(false);
+    const [search,      setSearch]      = useState('');
+    const ai = useAIAnalysis();
+
+    /* ── Open folder picker ────────────────────────────── */
+    const openFolder = useCallback(async () => {
+        try {
+            const handle = await window.showDirectoryPicker({ mode: 'read' });
+            setLoading(true);
+            setFsTree(null);
+            setSelNode(null);
+            setFileContent('');
+            ai.reset();
+            const tree = await readDirHandle(handle, 0);
+            setDirHandle(handle);
+            setFsTree(tree);
+            // Auto-open first directory level
+            const firstDirs = tree.filter(n => n.kind === 'dir').map(n => n.id);
+            setOpenDirs(new Set(firstDirs.slice(0, 3)));
+            setLoading(false);
+        } catch (e) {
+            if (e.name !== 'AbortError') console.error(e);
+            setLoading(false);
+        }
+    }, []);
+
+    /* ── Toggle dir open/close ─────────────────────────── */
+    const onToggle = useCallback(id => {
+        setOpenDirs(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    }, []);
+
+    /* ── Select & load a file ──────────────────────────── */
+    const onSelect = useCallback(async node => {
+        if (node.kind !== 'file') return;
+        setSelNode(node);
+        setEditing(false);
+        ai.reset();
+        setFileLoading(true);
+        try {
+            const file = await node.handle.getFile();
+            const text = await file.text();
+            setFileContent(text);
+            // Auto-trigger AI analysis
+            ai.analyze({
+                filename: node.name,
+                code: text,
+                repoName: dirHandle?.name || activeRepo?.name || 'repo',
+                repoPath: activeRepo?.url || dirHandle?.name || '',
+            });
+        } catch (e) {
+            setFileContent(`// Could not read file: ${e.message}`);
+        }
+        setFileLoading(false);
+    }, [ai, dirHandle, activeRepo]);
+
+    /* ── Copy ──────────────────────────────────────────── */
+    const onCopy = () => {
+        navigator.clipboard.writeText(fileContent).catch(()=>{});
+        setCopied(true); setTimeout(() => setCopied(false), 1800);
+    };
+
+    /* ── Flatten tree for search ───────────────────────── */
+    const flatFiles = useMemo(() => {
+        if (!fsTree || !search.trim()) return [];
+        const result = [];
+        const walk = nodes => nodes.forEach(n => {
+            if (n.kind === 'file' && n.name.toLowerCase().includes(search.toLowerCase())) result.push(n);
+            if (n.children) walk(n.children);
+        });
+        walk(fsTree);
+        return result.slice(0, 50);
+    }, [fsTree, search]);
+
+    const sevColor = s => ({ critical:THEME.danger, high:THEME.danger, medium:THEME.warning, low:THEME.info }[s] || THEME.textDim);
+    const lines = fileContent.split('\n');
+    const supportsFS = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+
+    return (
+        <div style={{ display:'grid', gridTemplateColumns:'240px 1fr', gap:14, height:'100%', minHeight:0 }}>
+
+            {/* ── Sidebar ── */}
+            <Panel title={dirHandle ? dirHandle.name : 'Files'} icon={FolderOpen} noPad
+                   rightNode={dirHandle && (
+                       <button onClick={openFolder} className="r8-btn r8-btn-g r8-btn-sm" title="Open different folder">
+                           <RefreshCw size={10}/> Change
+                       </button>
+                   )}>
+                <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+
+                    {/* Open folder button — shown when no folder loaded */}
+                    {!fsTree && !loading && (
+                        <div style={{ padding:16, display:'flex', flexDirection:'column', gap:14, alignItems:'center', flex:1, justifyContent:'center' }}>
+                            {!supportsFS ? (
+                                <div style={{ textAlign:'center' }}>
+                                    <div style={{ fontSize:11, color:THEME.danger, marginBottom:8 }}>
+                                        ⚠ File System API not supported in this browser.
+                                    </div>
+                                    <div style={{ fontSize:10.5, color:THEME.textDim, lineHeight:1.6 }}>
+                                        Use Chrome or Edge for local folder access.
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div style={{ width:48, height:48, borderRadius:12, background:`${THEME.info}14`,
+                                        border:`1px solid ${THEME.info}25`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                                        <FolderOpen size={22} color={THEME.info}/>
+                                    </div>
+                                    <div style={{ textAlign:'center' }}>
+                                        <div style={{ fontSize:12.5, fontWeight:700, color:THEME.textMuted, marginBottom:5 }}>Open Your Project</div>
+                                        <div style={{ fontSize:11, color:THEME.textDim, lineHeight:1.6, marginBottom:12 }}>
+                                            Browse your local filesystem and analyze any file with AI
+                                        </div>
+                                        <button onClick={openFolder} className="r8-btn r8-btn-c" style={{ width:'100%', justifyContent:'center' }}>
+                                            <FolderOpen size={13}/> Open Folder
+                                        </button>
+                                    </div>
+                                    {activeRepo?.type === 'local' && activeRepo?.url && (
+                                        <div style={{ padding:'8px 10px', borderRadius:7, background:`${THEME.info}08`,
+                                            border:`1px solid ${THEME.info}18`, width:'100%' }}>
+                                            <div style={{ fontSize:9.5, color:THEME.info, fontWeight:700, marginBottom:3 }}>CONNECTED REPO</div>
+                                            <div style={{ fontSize:10, color:THEME.textDim, fontFamily:'JetBrains Mono,monospace',
+                                                wordBreak:'break-all', lineHeight:1.5 }}>{activeRepo.url}</div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     )}
-                    <div style={{ padding:'6px 10px 4px' }}>
-                        <div style={{ fontSize:9.5, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
-                            Paste or select file
+
+                    {/* Loading spinner */}
+                    {loading && (
+                        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:10 }}>
+                            <Loader size={20} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/>
+                            <span style={{ fontSize:11, color:THEME.textDim }}>Reading directory…</span>
                         </div>
-                        {[
-                            { id:'paste', name:'Paste Code Here', type:'file', lang:'txt', icon: FileCode },
-                        ].map(n => (
-                            <div key={n.id}
-                                 className={`r8-tree-item${selFile?.id===n.id?' r8-sel':''}`}
-                                 onClick={()=>{ setSelFile(n); setContent(''); setEditing(true); ai.reset(); }}
-                                 style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderLeft: selFile?.id===n.id?`2px solid ${THEME.primary}`:'2px solid transparent' }}>
-                                <FileCode size={12} color={selFile?.id===n.id?THEME.primary:THEME.textDim}/>
-                                <span style={{ fontSize:11.5, color:selFile?.id===n.id?THEME.primary:THEME.textMuted, flex:1 }}>Paste code…</span>
+                    )}
+
+                    {/* File tree */}
+                    {fsTree && !loading && (
+                        <>
+                            {/* Search */}
+                            <div style={{ padding:'8px 10px 6px', borderBottom:`1px solid ${THEME.glassBorder}` }}>
+                                <div style={{ position:'relative', display:'flex', alignItems:'center' }}>
+                                    <Search size={11} color={THEME.textDim} style={{ position:'absolute', left:8, pointerEvents:'none' }}/>
+                                    <input value={search} onChange={e => setSearch(e.target.value)}
+                                           placeholder="Search files…"
+                                           style={{ width:'100%', paddingLeft:26, padding:'6px 8px 6px 26px',
+                                               background:THEME.surface, border:`1px solid ${THEME.glassBorder}`,
+                                               borderRadius:7, color:THEME.textMain, outline:'none', fontSize:11 }}/>
+                                    {search && (
+                                        <button onClick={() => setSearch('')} style={{ position:'absolute', right:6, background:'none', border:'none', cursor:'pointer', padding:2, color:THEME.textDim }}>
+                                            <X size={10}/>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                    {activeRepo?.type === 'local' && (
-                        <div style={{ padding:'8px 10px 4px', borderTop:`1px solid ${THEME.glassBorder}`, marginTop:4 }}>
-                            <div style={{ fontSize:9.5, fontWeight:700, color:THEME.info, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6, display:'flex', alignItems:'center', gap:5 }}>
-                                <HardDrive size={9} color={THEME.info}/> {activeRepo.name}
+
+                            {/* Tree or search results */}
+                            <div className="r8-scroll" style={{ flex:1, overflowY:'auto', paddingBottom:8, paddingTop:4 }}>
+                                {search.trim() ? (
+                                    flatFiles.length > 0 ? flatFiles.map(n => (
+                                        <FsTreeNode key={n.id} node={n} depth={0} selectedId={selNode?.id}
+                                                    onSelect={onSelect} onToggle={onToggle} openDirs={openDirs}/>
+                                    )) : (
+                                        <div style={{ padding:14, fontSize:11, color:THEME.textDim, textAlign:'center' }}>No files match "{search}"</div>
+                                    )
+                                ) : (
+                                    fsTree.map(n => (
+                                        <FsTreeNode key={n.id} node={n} depth={0} selectedId={selNode?.id}
+                                                    onSelect={onSelect} onToggle={onToggle} openDirs={openDirs}/>
+                                    ))
+                                )}
                             </div>
-                            <div style={{ fontSize:10.5, color:THEME.textDim, fontFamily:'JetBrains Mono,monospace', wordBreak:'break-all', padding:'4px 6px', background:`${THEME.info}08`, borderRadius:5, border:`1px solid ${THEME.info}18` }}>
-                                {activeRepo.url}
+
+                            {/* Stats footer */}
+                            <div style={{ padding:'6px 12px', borderTop:`1px solid ${THEME.glassBorder}`, fontSize:10, color:THEME.textDim, display:'flex', justifyContent:'space-between' }}>
+                                <span>{dirHandle?.name}</span>
+                                <span>{fsTree.length} items</span>
                             </div>
-                        </div>
+                        </>
                     )}
                 </div>
             </Panel>
 
-            <div style={{ display:'grid', gridTemplateRows: ai.result ? '1fr' : '1fr', gridTemplateColumns: ai.result ? '1fr 380px' : '1fr', gap:14, height:'100%', minHeight:0 }}>
-                <Panel title={selFile ? (selFile.id==='paste' ? 'Code Editor' : selFile.name) : 'Editor'} icon={Code} noPad
+            {/* ── Editor + AI panel ── */}
+            <div style={{ display:'grid', gridTemplateColumns: (ai.result || ai.loading || ai.error) ? '1fr 390px' : '1fr', gap:14, height:'100%', minHeight:0 }}>
+
+                {/* Editor */}
+                <Panel title={selNode ? selNode.name : 'Editor'} icon={Code} noPad
                        rightNode={(
-                           <div style={{ display:'flex', gap:6 }}>
-                               {selFile && content.trim() && !content.startsWith('// File content') && (
-                                   <button onClick={handleAnalyze} disabled={ai.loading} className="r8-btn r8-btn-p r8-btn-sm"
-                                           style={{ background: ai.loading ? THEME.glass : undefined }}>
-                                       {ai.loading
-                                           ? <><Loader size={11} style={{ animation:'rSpin 1s linear infinite' }}/> Analyzing…</>
-                                           : <><Sparkles size={11}/> AI Analysis</>
-                                       }
-                                   </button>
-                               )}
-                               {selFile && <button onClick={onCopy} className="r8-btn r8-btn-g r8-btn-sm">
-                                   {copied?<Check size={11} color={THEME.success}/>:<Copy size={11}/>}
-                                   {copied?'Copied':'Copy'}
-                               </button>}
-                               {selFile && (
-                                   <button onClick={()=>setEditing(e=>!e)} className="r8-btn r8-btn-sm"
-                                           style={{ background:editing?`${THEME.primary}15`:'transparent', color:editing?THEME.primary:THEME.textDim, border:`1px solid ${editing?THEME.primary+'40':THEME.glassBorder}` }}>
-                                       {editing?<><Save size={11}/> Done</>:<><Edit3 size={11}/> Edit</>}
-                                   </button>
+                           <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+                               {fileLoading && <Loader size={12} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/>}
+                               {selNode && fileContent && !fileLoading && (
+                                   <>
+                                       <button onClick={() => ai.analyze({ filename:selNode.name, code:fileContent, repoName:dirHandle?.name||activeRepo?.name, repoPath:activeRepo?.url||'' })}
+                                               disabled={ai.loading} className="r8-btn r8-btn-p r8-btn-sm">
+                                           {ai.loading
+                                               ? <><Loader size={11} style={{ animation:'rSpin 1s linear infinite' }}/> Analyzing…</>
+                                               : <><Sparkles size={11}/> Re-analyze</>}
+                                       </button>
+                                       <button onClick={onCopy} className="r8-btn r8-btn-g r8-btn-sm">
+                                           {copied ? <Check size={11} color={THEME.success}/> : <Copy size={11}/>}
+                                           {copied ? 'Copied' : 'Copy'}
+                                       </button>
+                                       <button onClick={() => setEditing(e => !e)} className="r8-btn r8-btn-sm"
+                                               style={{ background:editing?`${THEME.primary}15`:'transparent', color:editing?THEME.primary:THEME.textDim, border:`1px solid ${editing?THEME.primary+'40':THEME.glassBorder}` }}>
+                                           {editing ? <><Save size={11}/> Done</> : <><Edit3 size={11}/> Edit</>}
+                                       </button>
+                                   </>
                                )}
                            </div>
                        )}>
-                    {!selFile ? (
+                    {/* Empty state */}
+                    {!selNode && !fileLoading && (
                         <div style={{ height:'100%', display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:16 }}>
                             <div style={{ width:56, height:56, borderRadius:14, background:`${THEME.primary}10`, border:`1px solid ${THEME.primary}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                                <Sparkles size={24} color={`${THEME.primary}60`}/>
+                                <Sparkles size={24} color={`${THEME.primary}50`}/>
                             </div>
                             <div style={{ textAlign:'center' }}>
-                                <div style={{ fontSize:14, fontWeight:700, color:THEME.textMuted, marginBottom:6 }}>AI Code Analysis</div>
-                                <div style={{ fontSize:12, color:THEME.textDim, maxWidth:280, lineHeight:1.6 }}>
-                                    Click "Paste code…" in the sidebar, enter your code, then hit AI Analysis for a full review.
+                                <div style={{ fontSize:14, fontWeight:700, color:THEME.textMuted, marginBottom:6 }}>
+                                    {fsTree ? 'Select a file' : 'Open a folder to begin'}
+                                </div>
+                                <div style={{ fontSize:12, color:THEME.textDim, maxWidth:300, lineHeight:1.6 }}>
+                                    {fsTree
+                                        ? 'Click any file in the tree to load it and get instant AI code analysis.'
+                                        : 'Click "Open Folder" in the sidebar to browse your local project files.'}
                                 </div>
                             </div>
+                            {!fsTree && supportsFS && (
+                                <button onClick={openFolder} className="r8-btn r8-btn-c">
+                                    <FolderOpen size={13}/> Open Folder
+                                </button>
+                            )}
                         </div>
-                    ) : editing ? (
-                        <textarea value={content} onChange={e=>setContent(e.target.value)}
-                                  placeholder="Paste your code here…"
-                                  style={{ width:'100%', height:'100%', background:'transparent', border:'none', outline:'none', color:THEME.textMuted, fontFamily:'JetBrains Mono,monospace', fontSize:12.5, lineHeight:1.75, resize:'none', padding:'16px 20px', boxSizing:'border-box' }}/>
-                    ) : (
+                    )}
+
+                    {/* Loading file */}
+                    {fileLoading && (
+                        <div style={{ height:'100%', display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:10 }}>
+                            <Loader size={22} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/>
+                            <span style={{ fontSize:12, color:THEME.textDim }}>Loading {selNode?.name}…</span>
+                        </div>
+                    )}
+
+                    {/* Edit mode */}
+                    {selNode && !fileLoading && editing && (
+                        <textarea value={fileContent} onChange={e => setFileContent(e.target.value)}
+                                  style={{ width:'100%', height:'100%', background:'transparent', border:'none', outline:'none',
+                                      color:THEME.textMuted, fontFamily:'JetBrains Mono,monospace', fontSize:12.5,
+                                      lineHeight:1.75, resize:'none', padding:'16px 20px', boxSizing:'border-box' }}/>
+                    )}
+
+                    {/* View mode */}
+                    {selNode && !fileLoading && !editing && fileContent && (
                         <div className="r8-scroll" style={{ fontFamily:'JetBrains Mono,monospace', fontSize:12.5, lineHeight:1.75, overflowY:'auto', height:'100%' }}>
-                            {lines.map((line,i) => {
-                                const issueOnLine = ai.result?.issues?.find(iss => iss.line === i+1);
+                            {lines.map((line, i) => {
+                                const issueOnLine = ai.result?.issues?.find(iss => iss.line === i + 1);
                                 const isIssue = !!issueOnLine;
                                 return (
-                                    <div key={i} className="r8-line" title={issueOnLine?.title}
-                                         style={{ display:'flex', padding:'0 20px', background:isIssue?`${THEME.danger}08`:'transparent', borderLeft:isIssue?`2px solid ${THEME.danger}60`:'2px solid transparent', cursor: isIssue?'help':'default' }}>
-                                        <span style={{ color:`${THEME.textDim}40`, width:32, flexShrink:0, userSelect:'none', fontSize:11 }}>{i+1}</span>
-                                        <span style={{ color:isIssue?THEME.warning:THEME.textMuted, flex:1 }}>{line}</span>
-                                        {isIssue && <span style={{ fontSize:9.5, color:THEME.danger, marginLeft:8, flexShrink:0, alignSelf:'center', padding:'1px 5px', background:`${THEME.danger}14`, borderRadius:3 }}>⚠ {issueOnLine.type}</span>}
+                                    <div key={i} className="r8-line" title={issueOnLine ? `${issueOnLine.title}: ${issueOnLine.description}` : undefined}
+                                         style={{ display:'flex', padding:'0 20px', minHeight:22,
+                                             background:isIssue ? `${THEME.danger}07` : 'transparent',
+                                             borderLeft:isIssue ? `2px solid ${THEME.danger}55` : '2px solid transparent',
+                                             cursor:isIssue ? 'help' : 'default' }}>
+                                        <span style={{ color:`${THEME.textDim}35`, width:38, flexShrink:0, userSelect:'none', fontSize:10.5, paddingTop:1 }}>{i + 1}</span>
+                                        <span style={{ color:isIssue ? THEME.warning : THEME.textMuted, flex:1, whiteSpace:'pre' }}>{line}</span>
+                                        {isIssue && (
+                                            <span style={{ fontSize:9, color:THEME.danger, marginLeft:8, flexShrink:0, alignSelf:'center',
+                                                padding:'1px 5px', background:`${THEME.danger}14`, borderRadius:3, whiteSpace:'nowrap' }}>
+                                                ⚠ {issueOnLine.type}
+                                            </span>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -393,81 +644,92 @@ const CodeView = ({ activeRepo }) => {
                     )}
                 </Panel>
 
-                {/* AI Analysis Panel */}
+                {/* ── AI Panel ── */}
                 {(ai.loading || ai.result || ai.error) && (
                     <div className="r8-scroll" style={{ overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:12, animation:'rSlideIn .25s ease' }}>
+
+                        {/* Loading skeleton */}
                         {ai.loading && (
                             <Panel title="Analyzing…" icon={Sparkles}>
-                                <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                                    {['Parsing code structure','Detecting issues','Security scan','Performance review'].map((step,i)=>(
+                                <div style={{ display:'flex', flexDirection:'column', gap:11 }}>
+                                    {['Parsing structure','Detecting issues','Security scan','Performance review','Generating recommendations'].map((step, i) => (
                                         <div key={i} style={{ display:'flex', alignItems:'center', gap:10 }}>
-                                            <Loader size={12} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite', flexShrink:0 }}/>
-                                            <div className="r8-shimmer" style={{ height:12, flex:1, borderRadius:4 }}/>
+                                            <Loader size={11} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite', flexShrink:0 }}/>
+                                            <div style={{ flex:1 }}>
+                                                <div className="r8-shimmer" style={{ height:10, borderRadius:4, marginBottom:3 }}/>
+                                                <div style={{ fontSize:10, color:THEME.textDim }}>{step}</div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             </Panel>
                         )}
 
+                        {/* Error */}
                         {ai.error && (
-                            <Panel title="Analysis Error" icon={AlertCircle}>
+                            <Panel title="Analysis Error" icon={AlertCircle}
+                                   rightNode={<button onClick={ai.reset} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:4 }}><X size={13}/></button>}>
                                 <div style={{ padding:12, borderRadius:8, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}20`, fontSize:12, color:THEME.danger }}>{ai.error}</div>
                             </Panel>
                         )}
 
-                        {ai.result && (() => {
+                        {/* Results */}
+                        {ai.result && !ai.loading && (() => {
                             const r = ai.result;
                             const hc = r.healthScore >= 80 ? THEME.success : r.healthScore >= 60 ? THEME.warning : THEME.danger;
                             return (<>
-                                {/* Health Score */}
+                                {/* Score card */}
                                 <Panel title="AI Analysis" icon={Sparkles}
                                        rightNode={<button onClick={ai.reset} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:4, borderRadius:5 }}><X size={13}/></button>}>
-                                    <div style={{ display:'flex', gap:16, padding:14, borderRadius:10, background:`${hc}08`, border:`1px solid ${hc}20`, marginBottom:14 }}>
-                                        <div style={{ fontSize:40, fontWeight:900, color:hc, lineHeight:1, fontFamily:'JetBrains Mono,monospace' }}>{r.healthScore}</div>
-                                        <div style={{ flex:1 }}>
+                                    <div style={{ display:'flex', gap:14, padding:14, borderRadius:10, background:`${hc}08`, border:`1px solid ${hc}20`, marginBottom:14 }}>
+                                        <div style={{ fontSize:42, fontWeight:900, color:hc, lineHeight:1, fontFamily:'JetBrains Mono,monospace', flexShrink:0 }}>{r.healthScore}</div>
+                                        <div style={{ flex:1, minWidth:0 }}>
                                             <div style={{ fontSize:12, fontWeight:700, color:THEME.textMain }}>Health Score</div>
-                                            <div style={{ fontSize:11, color:THEME.textDim, marginTop:2, lineHeight:1.4 }}>{r.summary}</div>
-                                            <div style={{ marginTop:8 }}><ProgressBar value={r.healthScore} color={hc} height={5}/></div>
+                                            <div style={{ fontSize:10.5, color:THEME.textDim, marginTop:2, lineHeight:1.45 }}>{r.summary}</div>
+                                            <div style={{ marginTop:7 }}><ProgressBar value={r.healthScore} color={hc} height={4}/></div>
                                         </div>
                                     </div>
-                                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:12 }}>
+                                    {/* Metrics chips */}
+                                    <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:r.strengths?.length ? 12 : 0 }}>
                                         {[
-                                            { l:'Language', v:r.language },
-                                            { l:'Lines', v:r.linesAnalyzed },
+                                            { l:'Lang',       v:r.language },
+                                            { l:'Lines',      v:r.linesAnalyzed },
                                             { l:'Complexity', v:r.complexityMetrics?.cyclomaticComplexity },
-                                            { l:'Coupling', v:r.complexityMetrics?.coupling },
-                                        ].map((m,i)=> m.v && (
-                                            <div key={i} style={{ padding:'5px 10px', borderRadius:7, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, fontSize:10.5 }}>
+                                            { l:'Coupling',   v:r.complexityMetrics?.coupling },
+                                            { l:'Testability',v:r.complexityMetrics?.testability },
+                                        ].filter(m => m.v).map((m, i) => (
+                                            <div key={i} style={{ padding:'4px 9px', borderRadius:6, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, fontSize:10 }}>
                                                 <span style={{ color:THEME.textDim }}>{m.l}: </span>
                                                 <span style={{ color:THEME.textMain, fontWeight:700, fontFamily:'JetBrains Mono,monospace' }}>{m.v}</span>
                                             </div>
                                         ))}
                                     </div>
+                                    {/* Strengths */}
                                     {r.strengths?.length > 0 && (
-                                        <div style={{ marginBottom:12 }}>
-                                            <div style={{ fontSize:10, fontWeight:700, color:THEME.success, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6 }}>✓ Strengths</div>
-                                            {r.strengths.map((s,i)=>(
-                                                <div key={i} style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, paddingLeft:8, borderLeft:`2px solid ${THEME.success}30` }}>{s}</div>
+                                        <div style={{ marginTop:10 }}>
+                                            <div style={{ fontSize:9.5, fontWeight:700, color:THEME.success, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:5 }}>✓ Strengths</div>
+                                            {r.strengths.map((s, i) => (
+                                                <div key={i} style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, paddingLeft:8, borderLeft:`2px solid ${THEME.success}30`, lineHeight:1.5 }}>{s}</div>
                                             ))}
                                         </div>
                                     )}
                                 </Panel>
 
-                                {/* Issues */}
+                                {/* Issues — highlighted in editor */}
                                 {r.issues?.length > 0 && (
                                     <Panel title={`Issues (${r.issues.length})`} icon={AlertTriangle}>
-                                        {r.issues.map((iss,i)=>(
-                                            <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:`${sevColor(iss.severity)}08`, border:`1px solid ${sevColor(iss.severity)}20` }}>
-                                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
-                                                    <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain }}>{iss.title}</span>
-                                                    <div style={{ display:'flex', gap:6 }}>
-                                                        {iss.line && <span style={{ fontSize:9.5, color:THEME.textDim, fontFamily:'monospace', background:THEME.glass, padding:'1px 5px', borderRadius:3 }}>L{iss.line}</span>}
+                                        {r.issues.map((iss, i) => (
+                                            <div key={i} style={{ marginBottom:10, padding:11, borderRadius:8, background:`${sevColor(iss.severity)}08`, border:`1px solid ${sevColor(iss.severity)}20` }}>
+                                                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:5, gap:6 }}>
+                                                    <span style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain, flex:1 }}>{iss.title}</span>
+                                                    <div style={{ display:'flex', gap:5, flexShrink:0 }}>
+                                                        {iss.line && <span style={{ fontSize:9, color:THEME.textDim, fontFamily:'monospace', background:THEME.glass, padding:'2px 5px', borderRadius:3, alignSelf:'center' }}>L{iss.line}</span>}
                                                         <RiskBadge risk={iss.severity}/>
                                                     </div>
                                                 </div>
-                                                <p style={{ fontSize:11, color:THEME.textDim, margin:'0 0 6px', lineHeight:1.5 }}>{iss.description}</p>
-                                                <div style={{ fontSize:10.5, color:THEME.info, background:`${THEME.info}08`, padding:'6px 9px', borderRadius:6 }}>
-                                                    <b>Fix:</b> {iss.fix}
+                                                <p style={{ fontSize:10.5, color:THEME.textDim, margin:'0 0 7px', lineHeight:1.5 }}>{iss.description}</p>
+                                                <div style={{ fontSize:10.5, color:THEME.info, background:`${THEME.info}08`, padding:'6px 9px', borderRadius:5 }}>
+                                                    <b>Fix: </b>{iss.fix}
                                                 </div>
                                             </div>
                                         ))}
@@ -476,14 +738,14 @@ const CodeView = ({ activeRepo }) => {
 
                                 {/* Security */}
                                 {r.securityFlags?.length > 0 && (
-                                    <Panel title="Security Flags" icon={Shield}>
-                                        {r.securityFlags.map((sf,i)=>(
-                                            <div key={i} style={{ marginBottom:9, padding:11, borderRadius:8, background:`${sevColor(sf.severity)}08`, border:`1px solid ${sevColor(sf.severity)}20` }}>
+                                    <Panel title="Security" icon={Shield}>
+                                        {r.securityFlags.map((sf, i) => (
+                                            <div key={i} style={{ marginBottom:9, padding:10, borderRadius:8, background:`${sevColor(sf.severity)}08`, border:`1px solid ${sevColor(sf.severity)}18` }}>
                                                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                                                    <span style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain }}>{sf.title}</span>
+                                                    <span style={{ fontSize:11, fontWeight:700, color:THEME.textMain }}>{sf.title}</span>
                                                     <RiskBadge risk={sf.severity}/>
                                                 </div>
-                                                <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{sf.description}</p>
+                                                <p style={{ fontSize:10.5, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{sf.description}</p>
                                             </div>
                                         ))}
                                     </Panel>
@@ -491,14 +753,14 @@ const CodeView = ({ activeRepo }) => {
 
                                 {/* Performance */}
                                 {r.performanceInsights?.length > 0 && (
-                                    <Panel title="Performance Insights" icon={Zap}>
-                                        {r.performanceInsights.map((p,i)=>(
-                                            <div key={i} style={{ marginBottom:10, padding:11, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                    <Panel title="Performance" icon={Zap}>
+                                        {r.performanceInsights.map((p, i) => (
+                                            <div key={i} style={{ marginBottom:9, padding:10, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
                                                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                                                    <span style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain }}>{p.title}</span>
-                                                    <StatusBadge label={p.impact.toUpperCase()} color={p.impact==='high'?THEME.danger:p.impact==='medium'?THEME.warning:THEME.success} size="sm"/>
+                                                    <span style={{ fontSize:11, fontWeight:700, color:THEME.textMain }}>{p.title}</span>
+                                                    <StatusBadge label={p.impact} color={p.impact==='high'?THEME.danger:p.impact==='medium'?THEME.warning:THEME.success} size="sm"/>
                                                 </div>
-                                                <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{p.suggestion}</p>
+                                                <p style={{ fontSize:10.5, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{p.suggestion}</p>
                                             </div>
                                         ))}
                                     </Panel>
@@ -507,30 +769,30 @@ const CodeView = ({ activeRepo }) => {
                                 {/* Refactor */}
                                 {r.refactorOpportunities?.length > 0 && (
                                     <Panel title="Refactor Opportunities" icon={Wrench}>
-                                        {r.refactorOpportunities.map((rf,i)=>(
-                                            <div key={i} style={{ marginBottom:10, padding:11, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
-                                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                                                    <span style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain }}>{rf.title}</span>
-                                                    <div style={{ display:'flex', gap:5 }}>
-                                                        <StatusBadge label={`Effort: ${rf.effort}`} color={rf.effort==='low'?THEME.success:rf.effort==='medium'?THEME.warning:THEME.danger} size="sm"/>
-                                                        <StatusBadge label={`Impact: ${rf.impact}`} color={rf.impact==='high'?THEME.primary:rf.impact==='medium'?THEME.secondary:THEME.textDim} size="sm"/>
+                                        {r.refactorOpportunities.map((rf, i) => (
+                                            <div key={i} style={{ marginBottom:9, padding:10, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4, gap:6 }}>
+                                                    <span style={{ fontSize:11, fontWeight:700, color:THEME.textMain, flex:1 }}>{rf.title}</span>
+                                                    <div style={{ display:'flex', gap:4, flexShrink:0 }}>
+                                                        <StatusBadge label={rf.effort} color={rf.effort==='low'?THEME.success:rf.effort==='medium'?THEME.warning:THEME.danger} size="sm"/>
+                                                        <StatusBadge label={rf.impact} color={rf.impact==='high'?THEME.primary:THEME.secondary} size="sm"/>
                                                     </div>
                                                 </div>
-                                                <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{rf.description}</p>
+                                                <p style={{ fontSize:10.5, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{rf.description}</p>
                                             </div>
                                         ))}
                                     </Panel>
                                 )}
 
-                                {/* AI Recommendations */}
+                                {/* Top Recommendations */}
                                 {r.aiRecommendations?.length > 0 && (
-                                    <Panel title="AI Recommendations" icon={Lightbulb}>
-                                        {r.aiRecommendations.sort((a,b)=>a.priority-b.priority).map((rec,i)=>(
-                                            <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}15` }}>
+                                    <Panel title="Recommendations" icon={Lightbulb}>
+                                        {r.aiRecommendations.sort((a, b) => a.priority - b.priority).map((rec, i) => (
+                                            <div key={i} style={{ marginBottom:10, padding:11, borderRadius:8, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}14` }}>
                                                 <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
-                                                    <div style={{ width:20, height:20, borderRadius:6, background:`${THEME.primary}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:9.5, fontWeight:800, color:THEME.primary }}>{rec.priority}</div>
+                                                    <div style={{ width:18, height:18, borderRadius:5, background:`${THEME.primary}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:9, fontWeight:800, color:THEME.primary, marginTop:1 }}>{rec.priority}</div>
                                                     <div>
-                                                        <div style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain, marginBottom:3 }}>{rec.title}</div>
+                                                        <div style={{ fontSize:11, fontWeight:700, color:THEME.textMain, marginBottom:3 }}>{rec.title}</div>
                                                         <p style={{ fontSize:10.5, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{rec.rationale}</p>
                                                     </div>
                                                 </div>
@@ -546,6 +808,7 @@ const CodeView = ({ activeRepo }) => {
         </div>
     );
 };
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CI/CD VIEW
