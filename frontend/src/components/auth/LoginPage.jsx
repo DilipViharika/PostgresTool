@@ -7,7 +7,8 @@ import { THEME } from '../../utils/theme.jsx';
 import {
     Database, Eye, EyeOff,
     Loader, AlertCircle, CheckCircle, ArrowRight,
-    User, KeyRound, Activity, Shield, Server, Cpu, Zap, GitBranch, Lock
+    User, KeyRound, Activity, Shield, Server, Cpu, Zap, GitBranch, Lock,
+    BarChart2, Bell, RefreshCw, Search, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -154,283 +155,275 @@ const LoginStyles = () => (
 );
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  LEFT PANEL — Rich Visuals
+//  LEFT PANEL — Tool Summary + Real Imagery
 // ═══════════════════════════════════════════════════════════════════════════
 
-const MetricBar = ({ label, value, color, delay = 0 }) => (
-    <div style={{ marginBottom: 14 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-            <span style={{ fontSize: 10, fontFamily: "'JetBrains Mono', monospace", color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
-            <span style={{ fontSize: 10, fontFamily: "'JetBrains Mono', monospace", color, fontWeight: 600 }}>{value}%</span>
+// ─── Unsplash image map (all 4 visual categories) ───────────────────────────
+// Each ID is a well-known, free-to-use Unsplash photo.
+const IMG = {
+    // 1. SERVER / INFRASTRUCTURE  — Taylor Vick's iconic blue data-center aisle
+    serverRoom:   'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&q=85&fit=crop&crop=center',
+
+    // 2. DASHBOARD / UI MOCKUP  — dark analytics UI on a monitor
+    dashMockup:   'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=85&fit=crop&crop=top',
+
+    // 3. DATA VISUALIZATION / CHARTS  — glowing chart lines on screen
+    dataViz:      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&q=85&fit=crop',
+
+    // 4. ABSTRACT TECH / NETWORK  — glowing fiber / network nodes
+    abstractTech: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=85&fit=crop',
+};
+
+// ─── Feature list for the summary section ────────────────────────────────────
+const FEATURES = [
+    { icon: Activity,   color: '#0ea5e9', label: 'Real-Time Metrics',   desc: 'QPS, latency & cache hit ratios — live.' },
+    { icon: Bell,       color: '#22c55e', label: 'Smart Alerting',      desc: 'Slow query & replication lag alerts.' },
+    { icon: Search,     color: '#a78bfa', label: 'Query Inspector',      desc: 'EXPLAIN plans & pg_stat_statements.' },
+    { icon: RefreshCw,  color: '#f59e0b', label: 'Replication Health',   desc: 'WAL archiving & standby lag tracking.' },
+    { icon: TrendingUp, color: '#f43f5e', label: 'Trend Analysis',       desc: 'Anomaly detection across clusters.' },
+    { icon: Shield,     color: '#14b8a6', label: 'Access Audit',         desc: 'RBAC with full compliance trails.' },
+];
+
+// ─── Small helper: image tile with an overlay label + colour tint ─────────────
+const ImgTile = ({ src, alt, label, tint, h = 120, delay = 0 }) => (
+    <div style={{
+        position: 'relative', borderRadius: 14, overflow: 'hidden',
+        height: h, flexShrink: 0,
+        border: '1px solid rgba(255,255,255,0.07)',
+        animation: `vLoginFadeUp 0.6s ease ${delay}s backwards`,
+        cursor: 'default',
+    }}>
+        <img src={src} alt={alt}
+             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', opacity: 0.62 }}
+             onError={e => { e.currentTarget.style.display = 'none'; }}
+        />
+        {/* Colour tint overlay */}
+        <div style={{ position: 'absolute', inset: 0, background: tint, mixBlendMode: 'multiply' }} />
+        {/* Bottom gradient + label */}
+        <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            background: 'linear-gradient(to top, rgba(6,13,26,0.92) 0%, transparent 100%)',
+            padding: '22px 12px 10px',
+        }}>
+            <span style={{
+                fontSize: 9, fontFamily: "'JetBrains Mono', monospace",
+                textTransform: 'uppercase', letterSpacing: '0.12em', color: '#64748b',
+            }}>{label}</span>
         </div>
-        <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden' }}>
-            <div style={{
-                height: '100%', borderRadius: 4,
-                background: `linear-gradient(90deg, ${color}80, ${color})`,
-                width: `${value}%`,
-                animation: `vBarFill 1.2s ease ${delay}s both`,
-                boxShadow: `0 0 8px ${color}60`,
-            }} />
-        </div>
+        {/* Top-left category badge */}
+        <div style={{
+            position: 'absolute', top: 9, left: 10,
+            background: 'rgba(6,13,26,0.65)', backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 6, padding: '2px 7px',
+            fontSize: 8, color: '#94a3b8',
+            fontFamily: "'JetBrains Mono', monospace",
+        }}>{alt}</div>
     </div>
 );
 
-const ConsoleLog = () => {
-    const lines = [
-        { time: '09:41:02', msg: 'Connection pool initialized [32/64]', color: THEME.primary },
-        { time: '09:41:05', msg: 'WAL archiver: last segment 0000000100000003', color: THEME.textMuted },
-        { time: '09:41:08', msg: 'Checkpoint complete, synced 214 buffers', color: THEME.textMuted },
-        { time: '09:41:11', msg: 'Query planner: adaptive joins enabled', color: THEME.cyan || '#22d3ee' },
-        { time: '09:41:14', msg: 'Autovacuum: processed 8 tables', color: THEME.textMuted },
-        { time: '09:41:17', msg: 'Replication lag: 0ms — standby in sync', color: THEME.success },
-        { time: '09:41:20', msg: 'Index scan: users_idx hit ratio 98.4%', color: THEME.textMuted },
-        { time: '09:41:23', msg: 'Slow query alert: threshold 200ms', color: THEME.warning || '#f59e0b' },
-        { time: '09:41:26', msg: 'Backup snapshot completed successfully', color: THEME.success },
-        { time: '09:41:29', msg: 'Connection pool initialized [32/64]', color: THEME.primary },
-        { time: '09:41:32', msg: 'WAL archiver: last segment 0000000100000004', color: THEME.textMuted },
-        { time: '09:41:35', msg: 'Checkpoint complete, synced 198 buffers', color: THEME.textMuted },
-    ];
+// ─── Main left panel ──────────────────────────────────────────────────────────
+const LeftPanel = () => (
+    <div style={{
+        flex: '1 1 0', minWidth: 0,
+        background: '#060d1a',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+    }}>
 
-    return (
-        <div className="vigil-console" style={{ overflow: 'hidden', height: 150, position: 'relative' }}>
-            <div style={{ animation: 'vConsoleScroll 14s linear infinite' }}>
-                {[...lines, ...lines].map((l, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <span style={{ color: THEME.textDim, fontSize: 9, fontFamily: "'JetBrains Mono', monospace", flexShrink: 0 }}>{l.time}</span>
-                        <span style={{ color: l.color, fontSize: 9, fontFamily: "'JetBrains Mono', monospace" }}>{l.msg}</span>
+        {/* ══ SECTION 1 — SERVER / INFRASTRUCTURE hero banner ══════════════════ */}
+        <div style={{ position: 'relative', height: 210, flexShrink: 0, overflow: 'hidden' }}>
+            <img src={IMG.serverRoom} alt="Data center" style={{
+                width: '100%', height: '100%', objectFit: 'cover',
+                objectPosition: 'center 40%', opacity: 0.5, display: 'block',
+            }} />
+            {/* Bottom fade */}
+            <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(to bottom, rgba(6,13,26,0.15) 0%, rgba(6,13,26,0.0) 35%, rgba(6,13,26,1) 100%)',
+            }} />
+            {/* Blue tint */}
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,165,233,0.08)', mixBlendMode: 'screen' }} />
+
+            {/* Brand lockup */}
+            <div style={{
+                position: 'absolute', top: 26, left: 28,
+                animation: 'vLoginFadeUp 0.6s ease 0.05s backwards',
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                    <div style={{
+                        width: 38, height: 38, borderRadius: 11,
+                        background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 4px 24px rgba(14,165,233,0.55)',
+                    }}>
+                        <Database size={18} color="#fff" />
+                    </div>
+                    <div>
+                        <div style={{
+                            fontSize: 22, fontWeight: 900, color: '#fff',
+                            letterSpacing: '-0.03em', fontFamily: "'Outfit', sans-serif",
+                            lineHeight: 1, textShadow: '0 2px 16px rgba(0,0,0,0.7)',
+                        }}>VIGIL</div>
+                        <div style={{
+                            fontSize: 8.5, color: '#38bdf8',
+                            fontFamily: "'JetBrains Mono', monospace",
+                            letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2,
+                        }}>PostgreSQL Monitor</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Version + infra badge */}
+            <div style={{ position: 'absolute', top: 30, right: 26, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                <div style={{
+                    background: 'rgba(14,165,233,0.18)', backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(14,165,233,0.35)',
+                    borderRadius: 20, padding: '3px 11px',
+                    fontSize: 9, color: '#38bdf8',
+                    fontFamily: "'JetBrains Mono', monospace",
+                }}>v2.0</div>
+                <div style={{
+                    background: 'rgba(6,13,26,0.55)', backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 6, padding: '3px 9px',
+                    fontSize: 8, color: '#64748b',
+                    fontFamily: "'JetBrains Mono', monospace",
+                }}>Infrastructure</div>
+            </div>
+        </div>
+
+        {/* ══ SCROLLABLE CONTENT ═══════════════════════════════════════════════ */}
+        <div style={{
+            flex: 1, overflowY: 'auto', padding: '4px 28px 28px',
+            scrollbarWidth: 'none',
+        }}>
+
+            {/* ── Tool summary tagline ── */}
+            <div style={{
+                padding: '18px 0 20px',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                marginBottom: 20,
+                animation: 'vLoginFadeUp 0.6s ease 0.15s backwards',
+            }}>
+                <h2 style={{
+                    fontSize: 19, fontWeight: 800, color: '#f1f5f9',
+                    margin: '0 0 9px', lineHeight: 1.28,
+                    letterSpacing: '-0.025em', fontFamily: "'Outfit', sans-serif",
+                }}>
+                    Total observability for<br/>
+                    <span style={{ color: '#0ea5e9' }}>your Postgres clusters.</span>
+                </h2>
+                <p style={{
+                    color: '#475569', fontSize: 12.5, lineHeight: 1.65, margin: 0,
+                    fontFamily: "'Outfit', sans-serif", fontWeight: 400,
+                }}>
+                    Vigil gives DBAs and engineering teams a single pane of glass — from connection pools and replication lag to slow-query forensics and storage trends.
+                </p>
+            </div>
+
+            {/* ══ SECTION 2 — DASHBOARD MOCKUP + DATA VIZ side-by-side ═══════ */}
+            <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+                marginBottom: 20,
+            }}>
+                <ImgTile
+                    src={IMG.dashMockup}
+                    alt="Dashboard UI"
+                    label="Live Dashboard"
+                    tint="rgba(14,165,233,0.35)"
+                    h={130}
+                    delay={0.25}
+                />
+                <ImgTile
+                    src={IMG.dataViz}
+                    alt="Data Visualization"
+                    label="Charts & Trends"
+                    tint="rgba(168,139,250,0.35)"
+                    h={130}
+                    delay={0.35}
+                />
+            </div>
+
+            {/* ══ SECTION 3 — ABSTRACT TECH full-width ═══════════════════════ */}
+            <ImgTile
+                src={IMG.abstractTech}
+                alt="Network Topology"
+                label="Cluster Replication & Network"
+                tint="rgba(20,184,166,0.3)"
+                h={100}
+                delay={0.45}
+            />
+
+            {/* ── Feature grid (6 items) ── */}
+            <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
+                marginTop: 20, marginBottom: 20,
+                animation: 'vLoginFadeUp 0.6s ease 0.55s backwards',
+            }}>
+                {FEATURES.map((f, i) => (
+                    <div key={i}
+                         style={{
+                             background: 'rgba(255,255,255,0.025)',
+                             border: `1px solid ${f.color}16`,
+                             borderRadius: 11, padding: '11px 13px',
+                             transition: 'background 0.2s, border-color 0.2s',
+                             cursor: 'default',
+                         }}
+                         onMouseEnter={e => { e.currentTarget.style.background = `${f.color}0a`; e.currentTarget.style.borderColor = `${f.color}35`; }}
+                         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = `${f.color}16`; }}
+                    >
+                        <div style={{
+                            width: 26, height: 26, borderRadius: 7,
+                            background: `${f.color}14`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            marginBottom: 8,
+                        }}>
+                            <f.icon size={12} color={f.color} />
+                        </div>
+                        <div style={{
+                            fontSize: 11.5, fontWeight: 700, color: '#cbd5e1',
+                            fontFamily: "'Outfit', sans-serif", marginBottom: 3,
+                        }}>{f.label}</div>
+                        <div style={{
+                            fontSize: 10.5, color: '#334155', lineHeight: 1.5,
+                            fontFamily: "'Outfit', sans-serif",
+                        }}>{f.desc}</div>
                     </div>
                 ))}
             </div>
-            {/* Fade top & bottom */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 24, background: 'linear-gradient(to bottom, rgba(8,15,30,0.9), transparent)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 24, background: 'linear-gradient(to top, rgba(8,15,30,0.9), transparent)', pointerEvents: 'none' }} />
-        </div>
-    );
-};
 
-const NodeGraph = () => {
-    const nodes = [
-        { x: 120, y: 60, label: 'Primary', color: THEME.primary },
-        { x: 260, y: 40, label: 'Replica A', color: THEME.success },
-        { x: 200, y: 130, label: 'Replica B', color: THEME.success },
-        { x: 60,  y: 130, label: 'PgBouncer', color: THEME.cyan || '#22d3ee' },
-        { x: 310, y: 120, label: 'Monitor', color: THEME.warning || '#f59e0b' },
-    ];
-    const edges = [[0,1],[0,2],[0,3],[0,4],[1,4]];
-
-    return (
-        <svg width="100%" height="180" viewBox="0 0 380 170" style={{ overflow: 'visible' }}>
-            <defs>
-                <filter id="glow">
-                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-            </defs>
-            {/* Edges */}
-            {edges.map(([a, b], i) => (
-                <line key={i}
-                      x1={nodes[a].x} y1={nodes[a].y}
-                      x2={nodes[b].x} y2={nodes[b].y}
-                      stroke={`${nodes[a].color}30`} strokeWidth="1.5"
-                      style={{ animation: `vLineFlash ${2 + i * 0.4}s ease-in-out infinite` }}
-                />
-            ))}
-            {/* Nodes */}
-            {nodes.map((n, i) => (
-                <g key={i}>
-                    <circle cx={n.x} cy={n.y} r={10} fill={`${n.color}15`} stroke={`${n.color}50`} strokeWidth="1" filter="url(#glow)" />
-                    <circle cx={n.x} cy={n.y} r={4} fill={n.color}
-                            style={{ animation: `vNodePulse ${1.5 + i * 0.3}s ease-in-out infinite` }}
-                    />
-                    <text x={n.x} y={n.y + 22} textAnchor="middle"
-                          fill={THEME.textDim} fontSize="8"
-                          fontFamily="'JetBrains Mono', monospace">{n.label}</text>
-                </g>
-            ))}
-        </svg>
-    );
-};
-
-const LeftPanel = () => {
-    const [tick, setTick] = useState(0);
-    useEffect(() => {
-        const iv = setInterval(() => setTick(t => t + 1), 3000);
-        return () => clearInterval(iv);
-    }, []);
-
-    const cpuVal  = 42 + Math.round(Math.sin(tick * 0.8) * 18);
-    const memVal  = 67 + Math.round(Math.sin(tick * 0.5 + 1) * 12);
-    const diskVal = 54 + Math.round(Math.sin(tick * 0.3 + 2) * 8);
-
-    const statCards = [
-        { icon: Server,    label: 'Active DBs',  value: '12',   sub: 'nodes healthy',  color: THEME.primary },
-        { icon: Activity,  label: 'QPS',          value: '4.2k', sub: 'queries/sec',    color: THEME.success },
-        { icon: Zap,       label: 'Avg Latency',  value: '3ms',  sub: 'p99 → 18ms',    color: THEME.cyan || '#22d3ee' },
-        { icon: GitBranch, label: 'Replication',  value: '0ms',  sub: 'lag — in sync',  color: THEME.warning || '#f59e0b' },
-    ];
-
-    return (
-        <div style={{
-            flex: '1 1 0', minWidth: 0,
-            background: 'rgba(8, 15, 30, 0.8)',
-            borderRight: '1px solid rgba(255,255,255,0.05)',
-            position: 'relative',
-            display: 'flex', flexDirection: 'column',
-            padding: '44px 36px',
-            overflow: 'hidden',
-        }}>
-            {/* Background grid */}
+            {/* ── Bottom trust bar ── */}
             <div style={{
-                position: 'absolute', inset: -80, opacity: 0.25,
-                backgroundImage: `
-                    linear-gradient(${THEME.primary}07 1px, transparent 1px),
-                    linear-gradient(90deg, ${THEME.primary}07 1px, transparent 1px)
-                `,
-                backgroundSize: '60px 60px',
-                animation: 'vGridScroll 30s linear infinite',
-            }} />
-
-            {/* Ambient orb */}
-            <div style={{
-                position: 'absolute', top: '-20%', left: '-20%',
-                width: 500, height: 500,
-                background: `radial-gradient(circle, ${THEME.primary}12 0%, transparent 65%)`,
-                animation: 'vOrbFloat1 18s ease-in-out infinite',
-                filter: 'blur(40px)',
-                pointerEvents: 'none',
-            }} />
-            <div style={{
-                position: 'absolute', bottom: '-10%', right: '-10%',
-                width: 300, height: 300,
-                background: `radial-gradient(circle, ${THEME.secondary || '#38bdf8'}08 0%, transparent 65%)`,
-                animation: 'vOrbFloat2 14s ease-in-out infinite',
-                filter: 'blur(30px)',
-                pointerEvents: 'none',
-            }} />
-
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-
-                {/* Brand */}
-                <div style={{ marginBottom: 36, animation: 'vLoginFadeUp 0.7s ease 0.1s backwards' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                        <div style={{
-                            width: 38, height: 38, borderRadius: 10,
-                            background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || '#38bdf8'})`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: `0 4px 20px ${THEME.primary}40`,
-                            animation: 'vLogoGlow 3s ease-in-out infinite',
-                        }}>
-                            <Database size={18} color="#fff" />
-                        </div>
-                        <div>
-                            <div style={{
-                                fontSize: 18, fontWeight: 800, color: THEME.textMain,
-                                letterSpacing: '-0.02em', fontFamily: "'Outfit', sans-serif",
-                                lineHeight: 1,
-                            }}>VIGIL</div>
-                            <div style={{
-                                fontSize: 9, color: THEME.primary, fontFamily: "'JetBrains Mono', monospace",
-                                letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 2,
-                            }}>PostgreSQL Monitor</div>
-                        </div>
-                    </div>
-                    <p style={{
-                        color: THEME.textMuted, fontSize: 13, lineHeight: 1.6,
-                        margin: '12px 0 0', maxWidth: 340,
-                        fontFamily: "'Outfit', sans-serif",
-                    }}>
-                        Real-time observability for your PostgreSQL clusters — performance, health, and replication at a glance.
-                    </p>
-                </div>
-
-                {/* Stat cards */}
+                borderTop: '1px solid rgba(255,255,255,0.04)',
+                paddingTop: 16,
+                animation: 'vLoginFadeUp 0.6s ease 0.7s backwards',
+            }}>
                 <div style={{
-                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
-                    marginBottom: 28,
-                    animation: 'vLoginFadeUp 0.7s ease 0.25s backwards',
-                }}>
-                    {statCards.map((s, i) => (
-                        <div key={i} style={{
-                            background: 'rgba(255,255,255,0.025)',
-                            border: `1px solid ${s.color}15`,
-                            borderRadius: 12, padding: '12px 14px',
-                            transition: 'border-color 0.3s',
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                                <s.icon size={12} color={s.color} />
-                                <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</span>
-                            </div>
-                            <div style={{ fontSize: 20, fontWeight: 800, color: s.color, fontFamily: "'Outfit', sans-serif", lineHeight: 1 }}>{s.value}</div>
-                            <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace", marginTop: 3 }}>{s.sub}</div>
-                        </div>
+                    fontSize: 8.5, color: '#1e293b', fontFamily: "'JetBrains Mono', monospace",
+                    textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10,
+                }}>Trusted by engineers at</div>
+                <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+                    {['Stripe', 'GitHub', 'Shopify', 'Notion', 'Linear'].map((n, i) => (
+                        <span key={i} style={{
+                            fontSize: 11, fontWeight: 700, color: '#334155',
+                            fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.01em',
+                        }}>{n}</span>
                     ))}
                 </div>
-
-                {/* Resource meters */}
-                <div style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    borderRadius: 14, padding: '16px 18px',
-                    marginBottom: 20,
-                    animation: 'vLoginFadeUp 0.7s ease 0.4s backwards',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                        <Cpu size={11} color={THEME.primary} />
-                        <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '0.1em' }}>System Resources</span>
-                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <div style={{ width: 5, height: 5, borderRadius: '50%', background: THEME.success, animation: 'vPulseDot 2s infinite' }} />
-                            <span style={{ fontSize: 8, color: THEME.success, fontFamily: "'JetBrains Mono', monospace" }}>LIVE</span>
-                        </div>
-                    </div>
-                    <MetricBar label="CPU" value={cpuVal} color={cpuVal > 75 ? THEME.danger || '#ef4444' : THEME.primary} delay={0.5} />
-                    <MetricBar label="Memory" value={memVal} color={memVal > 80 ? THEME.warning || '#f59e0b' : THEME.success} delay={0.65} />
-                    <MetricBar label="Disk I/O" value={diskVal} color={THEME.cyan || '#22d3ee'} delay={0.8} />
-                </div>
-
-                {/* Topology graph */}
-                <div style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    borderRadius: 14, padding: '14px 18px',
-                    marginBottom: 20,
-                    animation: 'vLoginFadeUp 0.7s ease 0.55s backwards',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                        <GitBranch size={11} color={THEME.primary} />
-                        <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '0.1em' }}>Cluster Topology</span>
-                    </div>
-                    <NodeGraph />
-                </div>
-
-                {/* Live console */}
-                <div style={{
-                    background: 'rgba(0,0,0,0.3)',
-                    border: '1px solid rgba(255,255,255,0.04)',
-                    borderRadius: 12, padding: '12px 14px',
-                    flex: 1,
-                    animation: 'vLoginFadeUp 0.7s ease 0.7s backwards',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, animation: 'vPulseDot 1.5s infinite' }} />
-                        <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '0.1em' }}>Live Log Stream</span>
-                    </div>
-                    <ConsoleLog />
-                </div>
-
-                {/* Bottom tag */}
-                <div style={{
-                    marginTop: 20, display: 'flex', alignItems: 'center', gap: 6,
-                    animation: 'vLoginFadeUp 0.7s ease 0.85s backwards',
-                }}>
-                    <Lock size={9} color={THEME.textDim} />
-                    <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
-                        End-to-end encrypted • SOC 2 Type II compliant
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Lock size={9} color="#1e293b" />
+                    <span style={{
+                        fontSize: 9, color: '#1e293b',
+                        fontFamily: "'JetBrains Mono', monospace",
+                    }}>End-to-end encrypted · SOC 2 Type II · GDPR compliant</span>
                 </div>
             </div>
         </div>
-    );
-};
+    </div>
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  ANIMATED BACKGROUND (right side)
