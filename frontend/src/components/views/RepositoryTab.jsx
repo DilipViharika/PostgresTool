@@ -115,93 +115,9 @@ const RepoStyles = () => (
     `}</style>
 );
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   MOCK DATA  (identical to v7)
-   ═══════════════════════════════════════════════════════════════════════════ */
-const MOCK_FILE_TREE = [
-    { id: 'src', name: 'src', type: 'folder', children: [
-            { id: 'api', name: 'api', type: 'folder', children: [
-                    { id: 'users.js',  name: 'users.js',  type: 'file', lang: 'js', issues: 2, lines: 148 },
-                    { id: 'auth.ts',   name: 'auth.ts',   type: 'file', lang: 'ts', issues: 0, lines: 92  },
-                ]},
-            { id: 'services', name: 'services', type: 'folder', children: [
-                    { id: 'billing.py', name: 'billing.py', type: 'file', lang: 'py', issues: 1, lines: 204 },
-                    { id: 'notify.js',  name: 'notify.js',  type: 'file', lang: 'js', issues: 0, lines: 67  },
-                ]},
-            { id: 'models', name: 'models', type: 'folder', children: [
-                    { id: 'Product.ts', name: 'Product.ts', type: 'file', lang: 'ts', issues: 0, lines: 55 },
-                    { id: 'User.ts',    name: 'User.ts',    type: 'file', lang: 'ts', issues: 1, lines: 78 },
-                ]},
-        ]},
-    { id: 'tests', name: 'tests', type: 'folder', children: [
-            { id: 'api.test.js', name: 'api.test.js', type: 'file', lang: 'js', issues: 0, lines: 210 },
-        ]},
-    { id: 'package.json', name: 'package.json', type: 'file', lang: 'json', issues: 0, lines: 34 },
-    { id: 'README.md',    name: 'README.md',    type: 'file', lang: 'md',   issues: 0, lines: 88 },
-];
-
-const MOCK_FILE_CONTENT = {
-    'users.js': `// User API Handler\nimport { db } from '../db/connection';\nimport { cache } from '../utils/cache';\n\n// ⚠️ Issue: N+1 query detected on line 18\nexport async function getUsers(filters = {}) {\n  const users = await db.query(\n    'SELECT * FROM users WHERE active = $1',\n    [filters.active ?? true]\n  );\n\n  // ⚠️ Issue: Missing index on orders.user_id\n  for (const user of users) {\n    user.orders = await db.query(\n      'SELECT * FROM orders WHERE user_id = $1',\n      [user.id]\n    );\n  }\n  return users;\n}\n\nexport async function getUserById(id) {\n  const cached = await cache.get(\`user:\${id}\`);\n  if (cached) return cached;\n  const user = await db.query('SELECT * FROM users WHERE id = $1', [id]);\n  await cache.set(\`user:\${id}\`, user, 300);\n  return user;\n}`,
-    'auth.ts': `import jwt from 'jsonwebtoken';\nimport bcrypt from 'bcrypt';\n\ninterface TokenPayload {\n  userId: string;\n  role: 'admin' | 'user' | 'viewer';\n}\n\nexport async function signIn(email: string, password: string) {\n  const user = await db.findOne({ email });\n  if (!user) throw new Error('Invalid credentials');\n  const valid = await bcrypt.compare(password, user.passwordHash);\n  if (!valid) throw new Error('Invalid credentials');\n  return jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '7d' });\n}`,
-    'billing.py': `# Billing Service\nimport stripe\nfrom datetime import datetime\nfrom models import Subscription\n\n# ⚠️ Issue: Missing transaction rollback on failure\ndef process_subscription(user_id: str, plan: str):\n    customer = stripe.Customer.create(email=get_user_email(user_id))\n    sub = stripe.Subscription.create(\n        customer=customer.id,\n        items=[{'price': PLAN_PRICES[plan]}],\n    )\n    # This could fail without rolling back Stripe subscription\n    Subscription.create(user_id=user_id, stripe_id=sub.id)\n    return sub`,
-};
-
-const DEPLOYMENTS = [
-    { id:'d-104', version:'v2.4.0', time:'10 min ago',  status:'success', branch:'main',    author:'Sarah J.',  latency:'45ms',  duration:'3m 40s', commit:'a1b2c3d' },
-    { id:'d-103', version:'v2.3.9', time:'4 hours ago', status:'failed',  branch:'main',    author:'Mike T.',   latency:'120ms', duration:'5m 12s', commit:'f4e5d6c', failReason:'DB migration timeout' },
-    { id:'d-102', version:'v2.3.8', time:'1 day ago',   status:'success', branch:'main',    author:'Sarah J.',  latency:'42ms',  duration:'3m 58s', commit:'b7c8d9e' },
-    { id:'d-101', version:'v2.3.7', time:'3 days ago',  status:'success', branch:'staging', author:'Bot',       latency:'46ms',  duration:'4m 02s', commit:'1a2b3c4' },
-];
-
-const PRS = [
-    { id:405, title:'Optimize User Query Performance', author:'dev-alex',   status:'open',   impact:'positive', score:92, tests:'passed', files:4,  additions:128, deletions:45  },
-    { id:404, title:'Add Subscription Migration',       author:'sarah-sql', status:'review', impact:'risk',     score:45, tests:'failed', files:12, additions:340, deletions:12  },
-    { id:402, title:'Update Dependencies',              author:'dependabot',status:'merged', impact:'neutral',  score:100,tests:'passed', files:1,  additions:48,  deletions:48  },
-    { id:401, title:'Refactor Auth Middleware',         author:'mike-t',    status:'open',   impact:'neutral',  score:78, tests:'passed', files:6,  additions:92,  deletions:110 },
-];
-
-const MIGRATIONS = [
-    { id:'m-20240219', name:'create_audit_logs',        type:'CREATE', risk:'low',    date:'2024-02-19', status:'pending', rows:null },
-    { id:'m-20240215', name:'alter_users_add_column',   type:'ALTER',  risk:'medium', date:'2024-02-15', status:'applied', rows:'~2.4M' },
-    { id:'m-20240210', name:'drop_legacy_tables',       type:'DROP',   risk:'high',   date:'2024-02-10', status:'applied', rows:'~8.1M' },
-    { id:'m-20240201', name:'add_index_orders_user_id', type:'INDEX',  risk:'low',    date:'2024-02-01', status:'applied', rows:'~8.1M' },
-];
-
-const INSIGHTS = {
-    codeHealth: 74,
-    techDebt: [
-        { file:'src/api/users.js',        issues:2, type:'N+1 Queries',      severity:'high',     estimatedFix:'2h'  },
-        { file:'src/services/billing.py', issues:1, type:'Missing Rollback', severity:'critical', estimatedFix:'4h'  },
-        { file:'src/models/User.ts',      issues:1, type:'Missing Index',    severity:'medium',   estimatedFix:'30m' },
-    ],
-    contributors: [
-        { name:'Sarah J.',  commits:47, additions:4820, deletions:1240, avatar:'SJ' },
-        { name:'Mike T.',   commits:32, additions:2100, deletions:890,  avatar:'MT' },
-        { name:'dev-alex',  commits:28, additions:3600, deletions:2200, avatar:'DA' },
-        { name:'sarah-sql', commits:14, additions:1800, deletions:440,  avatar:'SS' },
-    ],
-    codeToQueryMap: [
-        { file:'src/api/users.js',         query:'SELECT * FROM users JOIN orders WHERE...', load:'High',   latency:'240ms', queryCount:12 },
-        { file:'src/services/billing.py',  query:'UPDATE subscriptions SET status...',       load:'Medium', latency:'85ms',  queryCount:5  },
-        { file:'src/models/Product.ts',    query:'SELECT count(*) FROM products...',         load:'Low',    latency:'12ms',  queryCount:2  },
-    ],
-    commitCorrelation: [
-        { commit:'a1b2c3d', message:'Add user pagination',       latencyDelta:-18, date:'2d ago' },
-        { commit:'f4e5d6c', message:'Eager load orders',         latencyDelta:+40, date:'4d ago' },
-        { commit:'b7c8d9e', message:'Add DB index on user_id',   latencyDelta:-35, date:'7d ago' },
-        { commit:'1a2b3c4', message:'Cache user queries',        latencyDelta:-22, date:'12d ago'},
-    ],
-    activityHeatmap: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((day,i) => ({ day, commits:[8,12,6,14,10,3,1][i] })),
-    packageRisks: [
-        { name:'lodash@4.17.11',      risk:'medium', reason:'Known prototype pollution', cve:'CVE-2019-10744' },
-        { name:'axios@0.21.1',        risk:'high',   reason:'SSRF vulnerability',         cve:'CVE-2021-3749'  },
-        { name:'jsonwebtoken@8.5.1',  risk:'low',    reason:'Outdated by 3 versions',     cve:null             },
-    ],
-};
-
-/* ═══════════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════
    PROVIDER CONFIG
-   ═══════════════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════════════ */
 const PROV = {
     github:    { label:'GitHub',    Icon:Github,    color:'#e2e8f4', bg:'#ffffff08' },
     gitlab:    { label:'GitLab',    Icon:Gitlab,    color:'#fc6d26', bg:'#fc6d2612' },
@@ -348,58 +264,285 @@ const FileTreeNode = ({ node, depth=0, selectedId, onSelect }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    CODE VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const CodeView = () => {
-    const [selFile, setSelFile] = useState(null);
-    const [editing, setEditing] = useState(false);
-    const [content, setContent] = useState('');
-    const [copied, setCopied] = useState(false);
+const CodeView = ({ activeRepo }) => {
+    const [selFile, setSelFile]   = useState(null);
+    const [editing, setEditing]   = useState(false);
+    const [content, setContent]   = useState('');
+    const [copied,  setCopied]    = useState(false);
+    const [fileCode, setFileCode] = useState('');
+    const ai = useAIAnalysis();
 
-    const onSel = node => { setSelFile(node); setContent(MOCK_FILE_CONTENT[node.name]||`// ${node.name}\n// No preview available`); setEditing(false); };
-    const onCopy = () => { navigator.clipboard.writeText(content).catch(()=>{}); setCopied(true); setTimeout(()=>setCopied(false),1800); };
+    const onSel = node => {
+        if (node.type === 'folder') return;
+        setSelFile(node);
+        setEditing(false);
+        ai.reset();
+        const placeholder = `// ${node.name}\n// File content not available in this view.\n// Paste or type code here to enable AI Analysis.`;
+        setContent(placeholder);
+        setFileCode('');
+    };
+
+    const onCopy = () => {
+        navigator.clipboard.writeText(content).catch(()=>{});
+        setCopied(true); setTimeout(()=>setCopied(false),1800);
+    };
+
+    const handleAnalyze = () => {
+        const code = content;
+        if (!code.trim() || code.startsWith('// File content')) return;
+        ai.analyze({ filename: selFile?.name || 'file', code, repoName: activeRepo?.name, repoPath: activeRepo?.url });
+    };
+
+    const sevColor = s => ({ critical: THEME.danger, high: THEME.danger, medium: THEME.warning, low: THEME.info }[s] || THEME.textDim);
     const lines = content.split('\n');
 
     return (
         <div style={{ display:'grid', gridTemplateColumns:'215px 1fr', gap:14, height:'100%' }}>
             <Panel title="Files" icon={FolderOpen} noPad>
-                <div style={{ paddingTop:6 }}>
-                    {MOCK_FILE_TREE.map(n=><FileTreeNode key={n.id} node={n} selectedId={selFile?.id} onSelect={onSel}/>)}
+                <div style={{ paddingTop:6, paddingBottom:8 }}>
+                    {selFile === null && (
+                        <div style={{ padding:'10px 14px 6px', fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>
+                            Select a file or paste code in the editor for AI analysis.
+                        </div>
+                    )}
+                    <div style={{ padding:'6px 10px 4px' }}>
+                        <div style={{ fontSize:9.5, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
+                            Paste or select file
+                        </div>
+                        {[
+                            { id:'paste', name:'Paste Code Here', type:'file', lang:'txt', icon: FileCode },
+                        ].map(n => (
+                            <div key={n.id}
+                                 className={`r8-tree-item${selFile?.id===n.id?' r8-sel':''}`}
+                                 onClick={()=>{ setSelFile(n); setContent(''); setEditing(true); ai.reset(); }}
+                                 style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderLeft: selFile?.id===n.id?`2px solid ${THEME.primary}`:'2px solid transparent' }}>
+                                <FileCode size={12} color={selFile?.id===n.id?THEME.primary:THEME.textDim}/>
+                                <span style={{ fontSize:11.5, color:selFile?.id===n.id?THEME.primary:THEME.textMuted, flex:1 }}>Paste code…</span>
+                            </div>
+                        ))}
+                    </div>
+                    {activeRepo?.type === 'local' && (
+                        <div style={{ padding:'8px 10px 4px', borderTop:`1px solid ${THEME.glassBorder}`, marginTop:4 }}>
+                            <div style={{ fontSize:9.5, fontWeight:700, color:THEME.info, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6, display:'flex', alignItems:'center', gap:5 }}>
+                                <HardDrive size={9} color={THEME.info}/> {activeRepo.name}
+                            </div>
+                            <div style={{ fontSize:10.5, color:THEME.textDim, fontFamily:'JetBrains Mono,monospace', wordBreak:'break-all', padding:'4px 6px', background:`${THEME.info}08`, borderRadius:5, border:`1px solid ${THEME.info}18` }}>
+                                {activeRepo.url}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </Panel>
-            <Panel title={selFile?selFile.name:'Editor'} icon={Code} noPad
-                   rightNode={selFile&&(
-                       <div style={{ display:'flex', gap:6 }}>
-                           {selFile.issues>0 && <StatusBadge label={`${selFile.issues} Issue${selFile.issues>1?'s':''}`} color={THEME.danger} size="sm"/>}
-                           <button onClick={onCopy} className="r8-btn r8-btn-g r8-btn-sm">
-                               {copied?<Check size={11} color={THEME.success}/>:<Copy size={11}/>}
-                               {copied?'Copied':'Copy'}
-                           </button>
-                           <button onClick={()=>setEditing(e=>!e)} className="r8-btn r8-btn-sm"
-                                   style={{ background:editing?`${THEME.primary}15`:'transparent', color:editing?THEME.primary:THEME.textDim, border:`1px solid ${editing?THEME.primary+'40':THEME.glassBorder}` }}>
-                               {editing?<><Save size={11}/> Save</>:<><Edit3 size={11}/> Edit</>}
-                           </button>
-                       </div>
-                   )}>
-                {!selFile ? (
-                    <div style={{ height:'100%', display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:12 }}>
-                        <Code size={38} color={`${THEME.textDim}30`}/>
-                        <span style={{ fontSize:13, color:THEME.textDim }}>Select a file to view</span>
-                    </div>
-                ) : editing ? (
-                    <textarea value={content} onChange={e=>setContent(e.target.value)} style={{ width:'100%', height:'100%', background:'transparent', border:'none', outline:'none', color:THEME.textMuted, fontFamily:'JetBrains Mono,monospace', fontSize:12.5, lineHeight:1.75, resize:'none', padding:'16px 20px', boxSizing:'border-box' }}/>
-                ) : (
-                    <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:12.5, lineHeight:1.75 }}>
-                        {lines.map((line,i) => {
-                            const isIssue = line.includes('⚠️');
-                            return (
-                                <div key={i} className="r8-line" style={{ display:'flex', padding:'0 20px', background:isIssue?`${THEME.danger}08`:'transparent', borderLeft:isIssue?`2px solid ${THEME.danger}60`:'2px solid transparent' }}>
-                                    <span style={{ color:`${THEME.textDim}40`, width:32, flexShrink:0, userSelect:'none', fontSize:11 }}>{i+1}</span>
-                                    <span style={{ color:isIssue?THEME.warning:THEME.textMuted }}>{line}</span>
+
+            <div style={{ display:'grid', gridTemplateRows: ai.result ? '1fr' : '1fr', gridTemplateColumns: ai.result ? '1fr 380px' : '1fr', gap:14, height:'100%', minHeight:0 }}>
+                <Panel title={selFile ? (selFile.id==='paste' ? 'Code Editor' : selFile.name) : 'Editor'} icon={Code} noPad
+                       rightNode={(
+                           <div style={{ display:'flex', gap:6 }}>
+                               {selFile && content.trim() && !content.startsWith('// File content') && (
+                                   <button onClick={handleAnalyze} disabled={ai.loading} className="r8-btn r8-btn-p r8-btn-sm"
+                                           style={{ background: ai.loading ? THEME.glass : undefined }}>
+                                       {ai.loading
+                                           ? <><Loader size={11} style={{ animation:'rSpin 1s linear infinite' }}/> Analyzing…</>
+                                           : <><Sparkles size={11}/> AI Analysis</>
+                                       }
+                                   </button>
+                               )}
+                               {selFile && <button onClick={onCopy} className="r8-btn r8-btn-g r8-btn-sm">
+                                   {copied?<Check size={11} color={THEME.success}/>:<Copy size={11}/>}
+                                   {copied?'Copied':'Copy'}
+                               </button>}
+                               {selFile && (
+                                   <button onClick={()=>setEditing(e=>!e)} className="r8-btn r8-btn-sm"
+                                           style={{ background:editing?`${THEME.primary}15`:'transparent', color:editing?THEME.primary:THEME.textDim, border:`1px solid ${editing?THEME.primary+'40':THEME.glassBorder}` }}>
+                                       {editing?<><Save size={11}/> Done</>:<><Edit3 size={11}/> Edit</>}
+                                   </button>
+                               )}
+                           </div>
+                       )}>
+                    {!selFile ? (
+                        <div style={{ height:'100%', display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:16 }}>
+                            <div style={{ width:56, height:56, borderRadius:14, background:`${THEME.primary}10`, border:`1px solid ${THEME.primary}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                                <Sparkles size={24} color={`${THEME.primary}60`}/>
+                            </div>
+                            <div style={{ textAlign:'center' }}>
+                                <div style={{ fontSize:14, fontWeight:700, color:THEME.textMuted, marginBottom:6 }}>AI Code Analysis</div>
+                                <div style={{ fontSize:12, color:THEME.textDim, maxWidth:280, lineHeight:1.6 }}>
+                                    Click "Paste code…" in the sidebar, enter your code, then hit AI Analysis for a full review.
                                 </div>
-                            );
-                        })}
+                            </div>
+                        </div>
+                    ) : editing ? (
+                        <textarea value={content} onChange={e=>setContent(e.target.value)}
+                                  placeholder="Paste your code here…"
+                                  style={{ width:'100%', height:'100%', background:'transparent', border:'none', outline:'none', color:THEME.textMuted, fontFamily:'JetBrains Mono,monospace', fontSize:12.5, lineHeight:1.75, resize:'none', padding:'16px 20px', boxSizing:'border-box' }}/>
+                    ) : (
+                        <div className="r8-scroll" style={{ fontFamily:'JetBrains Mono,monospace', fontSize:12.5, lineHeight:1.75, overflowY:'auto', height:'100%' }}>
+                            {lines.map((line,i) => {
+                                const issueOnLine = ai.result?.issues?.find(iss => iss.line === i+1);
+                                const isIssue = !!issueOnLine;
+                                return (
+                                    <div key={i} className="r8-line" title={issueOnLine?.title}
+                                         style={{ display:'flex', padding:'0 20px', background:isIssue?`${THEME.danger}08`:'transparent', borderLeft:isIssue?`2px solid ${THEME.danger}60`:'2px solid transparent', cursor: isIssue?'help':'default' }}>
+                                        <span style={{ color:`${THEME.textDim}40`, width:32, flexShrink:0, userSelect:'none', fontSize:11 }}>{i+1}</span>
+                                        <span style={{ color:isIssue?THEME.warning:THEME.textMuted, flex:1 }}>{line}</span>
+                                        {isIssue && <span style={{ fontSize:9.5, color:THEME.danger, marginLeft:8, flexShrink:0, alignSelf:'center', padding:'1px 5px', background:`${THEME.danger}14`, borderRadius:3 }}>⚠ {issueOnLine.type}</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </Panel>
+
+                {/* AI Analysis Panel */}
+                {(ai.loading || ai.result || ai.error) && (
+                    <div className="r8-scroll" style={{ overflowY:'auto', height:'100%', display:'flex', flexDirection:'column', gap:12, animation:'rSlideIn .25s ease' }}>
+                        {ai.loading && (
+                            <Panel title="Analyzing…" icon={Sparkles}>
+                                <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                                    {['Parsing code structure','Detecting issues','Security scan','Performance review'].map((step,i)=>(
+                                        <div key={i} style={{ display:'flex', alignItems:'center', gap:10 }}>
+                                            <Loader size={12} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite', flexShrink:0 }}/>
+                                            <div className="r8-shimmer" style={{ height:12, flex:1, borderRadius:4 }}/>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Panel>
+                        )}
+
+                        {ai.error && (
+                            <Panel title="Analysis Error" icon={AlertCircle}>
+                                <div style={{ padding:12, borderRadius:8, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}20`, fontSize:12, color:THEME.danger }}>{ai.error}</div>
+                            </Panel>
+                        )}
+
+                        {ai.result && (() => {
+                            const r = ai.result;
+                            const hc = r.healthScore >= 80 ? THEME.success : r.healthScore >= 60 ? THEME.warning : THEME.danger;
+                            return (<>
+                                {/* Health Score */}
+                                <Panel title="AI Analysis" icon={Sparkles}
+                                       rightNode={<button onClick={ai.reset} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:4, borderRadius:5 }}><X size={13}/></button>}>
+                                    <div style={{ display:'flex', gap:16, padding:14, borderRadius:10, background:`${hc}08`, border:`1px solid ${hc}20`, marginBottom:14 }}>
+                                        <div style={{ fontSize:40, fontWeight:900, color:hc, lineHeight:1, fontFamily:'JetBrains Mono,monospace' }}>{r.healthScore}</div>
+                                        <div style={{ flex:1 }}>
+                                            <div style={{ fontSize:12, fontWeight:700, color:THEME.textMain }}>Health Score</div>
+                                            <div style={{ fontSize:11, color:THEME.textDim, marginTop:2, lineHeight:1.4 }}>{r.summary}</div>
+                                            <div style={{ marginTop:8 }}><ProgressBar value={r.healthScore} color={hc} height={5}/></div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:12 }}>
+                                        {[
+                                            { l:'Language', v:r.language },
+                                            { l:'Lines', v:r.linesAnalyzed },
+                                            { l:'Complexity', v:r.complexityMetrics?.cyclomaticComplexity },
+                                            { l:'Coupling', v:r.complexityMetrics?.coupling },
+                                        ].map((m,i)=> m.v && (
+                                            <div key={i} style={{ padding:'5px 10px', borderRadius:7, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, fontSize:10.5 }}>
+                                                <span style={{ color:THEME.textDim }}>{m.l}: </span>
+                                                <span style={{ color:THEME.textMain, fontWeight:700, fontFamily:'JetBrains Mono,monospace' }}>{m.v}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {r.strengths?.length > 0 && (
+                                        <div style={{ marginBottom:12 }}>
+                                            <div style={{ fontSize:10, fontWeight:700, color:THEME.success, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6 }}>✓ Strengths</div>
+                                            {r.strengths.map((s,i)=>(
+                                                <div key={i} style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, paddingLeft:8, borderLeft:`2px solid ${THEME.success}30` }}>{s}</div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </Panel>
+
+                                {/* Issues */}
+                                {r.issues?.length > 0 && (
+                                    <Panel title={`Issues (${r.issues.length})`} icon={AlertTriangle}>
+                                        {r.issues.map((iss,i)=>(
+                                            <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:`${sevColor(iss.severity)}08`, border:`1px solid ${sevColor(iss.severity)}20` }}>
+                                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                                                    <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain }}>{iss.title}</span>
+                                                    <div style={{ display:'flex', gap:6 }}>
+                                                        {iss.line && <span style={{ fontSize:9.5, color:THEME.textDim, fontFamily:'monospace', background:THEME.glass, padding:'1px 5px', borderRadius:3 }}>L{iss.line}</span>}
+                                                        <RiskBadge risk={iss.severity}/>
+                                                    </div>
+                                                </div>
+                                                <p style={{ fontSize:11, color:THEME.textDim, margin:'0 0 6px', lineHeight:1.5 }}>{iss.description}</p>
+                                                <div style={{ fontSize:10.5, color:THEME.info, background:`${THEME.info}08`, padding:'6px 9px', borderRadius:6 }}>
+                                                    <b>Fix:</b> {iss.fix}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </Panel>
+                                )}
+
+                                {/* Security */}
+                                {r.securityFlags?.length > 0 && (
+                                    <Panel title="Security Flags" icon={Shield}>
+                                        {r.securityFlags.map((sf,i)=>(
+                                            <div key={i} style={{ marginBottom:9, padding:11, borderRadius:8, background:`${sevColor(sf.severity)}08`, border:`1px solid ${sevColor(sf.severity)}20` }}>
+                                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                                                    <span style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain }}>{sf.title}</span>
+                                                    <RiskBadge risk={sf.severity}/>
+                                                </div>
+                                                <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{sf.description}</p>
+                                            </div>
+                                        ))}
+                                    </Panel>
+                                )}
+
+                                {/* Performance */}
+                                {r.performanceInsights?.length > 0 && (
+                                    <Panel title="Performance Insights" icon={Zap}>
+                                        {r.performanceInsights.map((p,i)=>(
+                                            <div key={i} style={{ marginBottom:10, padding:11, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                                                    <span style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain }}>{p.title}</span>
+                                                    <StatusBadge label={p.impact.toUpperCase()} color={p.impact==='high'?THEME.danger:p.impact==='medium'?THEME.warning:THEME.success} size="sm"/>
+                                                </div>
+                                                <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{p.suggestion}</p>
+                                            </div>
+                                        ))}
+                                    </Panel>
+                                )}
+
+                                {/* Refactor */}
+                                {r.refactorOpportunities?.length > 0 && (
+                                    <Panel title="Refactor Opportunities" icon={Wrench}>
+                                        {r.refactorOpportunities.map((rf,i)=>(
+                                            <div key={i} style={{ marginBottom:10, padding:11, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                                                    <span style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain }}>{rf.title}</span>
+                                                    <div style={{ display:'flex', gap:5 }}>
+                                                        <StatusBadge label={`Effort: ${rf.effort}`} color={rf.effort==='low'?THEME.success:rf.effort==='medium'?THEME.warning:THEME.danger} size="sm"/>
+                                                        <StatusBadge label={`Impact: ${rf.impact}`} color={rf.impact==='high'?THEME.primary:rf.impact==='medium'?THEME.secondary:THEME.textDim} size="sm"/>
+                                                    </div>
+                                                </div>
+                                                <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{rf.description}</p>
+                                            </div>
+                                        ))}
+                                    </Panel>
+                                )}
+
+                                {/* AI Recommendations */}
+                                {r.aiRecommendations?.length > 0 && (
+                                    <Panel title="AI Recommendations" icon={Lightbulb}>
+                                        {r.aiRecommendations.sort((a,b)=>a.priority-b.priority).map((rec,i)=>(
+                                            <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}15` }}>
+                                                <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
+                                                    <div style={{ width:20, height:20, borderRadius:6, background:`${THEME.primary}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:9.5, fontWeight:800, color:THEME.primary }}>{rec.priority}</div>
+                                                    <div>
+                                                        <div style={{ fontSize:11.5, fontWeight:700, color:THEME.textMain, marginBottom:3 }}>{rec.title}</div>
+                                                        <p style={{ fontSize:10.5, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{rec.rationale}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </Panel>
+                                )}
+                            </>);
+                        })()}
                     </div>
                 )}
-            </Panel>
+            </div>
         </div>
     );
 };
@@ -407,143 +550,217 @@ const CodeView = () => {
 /* ═══════════════════════════════════════════════════════════════════════════
    CI/CD VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const CICDView = () => {
-    const [expId, setExpId] = useState(null);
+const CICDView = ({ activeRepo }) => {
+    const ai = useAIAnalysis();
+    const hasData = false; // No live CI/CD data without an integration
+
     return (
-        <div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:22 }} className="r8-stagger">
-                <MetricCard label="Success Rate" value="98.5%"  icon={CheckCircle} color={THEME.success} subtext="Last 30 days" trend={1}/>
-                <MetricCard label="Avg Build"    value="4m 12s" icon={Clock}       color={THEME.primary} subtext="-18s vs last week" trend={1}/>
-                <MetricCard label="Active"       value="3"      icon={Workflow}     color={THEME.info}    subtext="2 queued"/>
-                <MetricCard label="Rollbacks"    value="1"      icon={Undo2}        color={THEME.warning} subtext="This month" trend={0}/>
+        <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+            <div style={{ padding:20, borderRadius:14, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}18`, display:'flex', gap:16, alignItems:'flex-start' }}>
+                <div style={{ width:44, height:44, borderRadius:11, background:`${THEME.primary}14`, border:`1px solid ${THEME.primary}25`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <RocketIcon size={20} color={THEME.primary}/>
+                </div>
+                <div style={{ flex:1 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:THEME.textMain, marginBottom:4 }}>CI/CD Pipeline Analysis</div>
+                    <div style={{ fontSize:12, color:THEME.textDim, lineHeight:1.6, marginBottom:12 }}>
+                        Connect a live CI/CD integration (GitHub Actions, GitLab CI, CircleCI, Jenkins) to see real deployment history, build metrics, and failure analysis.
+                        Meanwhile, use AI to analyze a pipeline config file.
+                    </div>
+                    {activeRepo && (
+                        <button onClick={()=>ai.analyzeRepo({ repoName: activeRepo.name, repoPath: activeRepo.url, repoType: activeRepo.type })}
+                                disabled={ai.loading} className="r8-btn r8-btn-p">
+                            {ai.loading ? <><Loader size={13} style={{ animation:'rSpin 1s linear infinite' }}/> Analyzing repo…</> : <><Sparkles size={13}/> AI Pipeline Analysis</>}
+                        </button>
+                    )}
+                </div>
             </div>
-            <SectionTitle icon={RocketIcon}>Deployment History</SectionTitle>
-            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                {DEPLOYMENTS.map((d,i) => {
-                    const exp = expId===d.id;
-                    const sc = d.status==='success'?THEME.success:THEME.danger;
-                    return (
-                        <div key={i} style={{ borderRadius:11, border:`1px solid ${THEME.glassBorder}`, overflow:'hidden', background:THEME.surface }}>
-                            <div onClick={()=>setExpId(exp?null:d.id)} style={{ padding:'13px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer' }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                                    <div style={{ width:10, height:10, borderRadius:'50%', background:sc, boxShadow:`0 0 8px ${sc}60` }}/>
-                                    <div>
-                                        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:2 }}>
-                                            <span style={{ fontSize:13.5, fontWeight:800, color:THEME.textMain, fontFamily:'JetBrains Mono,monospace' }}>{d.version}</span>
-                                            <span style={{ fontSize:10, color:THEME.textDim, fontFamily:'monospace', background:`${THEME.glassBorder}`, padding:'1px 6px', borderRadius:4 }}>{d.branch}</span>
-                                            <span style={{ fontSize:10, color:`${THEME.textDim}80`, fontFamily:'monospace' }}>{d.commit}</span>
-                                        </div>
-                                        <div style={{ fontSize:11, color:THEME.textDim }}>{d.time} · by <b style={{ color:THEME.textMuted }}>{d.author}</b> · {d.duration}</div>
-                                    </div>
-                                </div>
-                                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                                    <span style={{ fontSize:12, fontWeight:700, color:parseInt(d.latency)>100?THEME.danger:THEME.success }}>{d.latency}</span>
-                                    <StatusBadge label={d.status.toUpperCase()} color={sc} size="sm"/>
-                                    {d.status==='failed' && <button className="r8-btn r8-btn-d r8-btn-sm"><Undo2 size={10}/> Rollback</button>}
-                                    {exp?<ChevronUp size={13} color={THEME.textDim}/>:<ChevronDown size={13} color={THEME.textDim}/>}
-                                </div>
+
+            {ai.loading && (
+                <Panel title="Analyzing Repository…" icon={Sparkles}>
+                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                        {['Inferring build pipeline','Estimating deployment patterns','Checking CI/CD health'].map((s,i)=>(
+                            <div key={i} style={{ display:'flex', alignItems:'center', gap:10 }}>
+                                <Loader size={12} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/>
+                                <div className="r8-shimmer" style={{ height:12, flex:1, borderRadius:4 }}/>
                             </div>
-                            {exp && (
-                                <div style={{ padding:'0 16px 14px', borderTop:`1px solid ${THEME.glassBorder}`, paddingTop:12 }}>
-                                    {d.failReason && (
-                                        <div style={{ display:'flex', gap:8, padding:'9px 12px', background:`${THEME.danger}10`, borderRadius:8, marginBottom:10 }}>
-                                            <AlertTriangle size={12} color={THEME.danger} style={{ flexShrink:0, marginTop:1 }}/>
-                                            <span style={{ fontSize:11.5, color:THEME.danger, fontWeight:600 }}>Failure: {d.failReason}</span>
-                                        </div>
-                                    )}
-                                    <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:7 }}>
-                                        {[
-                                            { label:'Tests',  value:'Passed',                                        color:THEME.success },
-                                            { label:'Build',  value:'Completed',                                     color:d.status==='success'?THEME.success:THEME.danger },
-                                            { label:'Deploy', value:d.status==='success'?'Live':'Failed',            color:d.status==='success'?THEME.success:THEME.danger },
-                                        ].map((s,si)=>(
-                                            <div key={si} style={{ padding:'8px 11px', borderRadius:7, background:`${s.color}08`, border:`1px solid ${s.color}20`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                                                <span style={{ fontSize:11, color:THEME.textDim }}>{s.label}</span>
-                                                <span style={{ fontSize:11, fontWeight:700, color:s.color }}>{s.value}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                        ))}
+                    </div>
+                </Panel>
+            )}
+
+            {ai.error && (
+                <Panel title="Error" icon={AlertCircle}>
+                    <div style={{ padding:12, borderRadius:8, background:`${THEME.danger}10`, fontSize:12, color:THEME.danger }}>{ai.error}</div>
+                </Panel>
+            )}
+
+            {ai.result && ai.mode === 'repo' && (() => {
+                const r = ai.result;
+                const hc = r.overallHealthScore >= 80 ? THEME.success : r.overallHealthScore >= 60 ? THEME.warning : THEME.danger;
+                return (
+                    <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
+                            <MetricCard label="Health Score"    value={`${r.overallHealthScore}/100`} icon={Activity}  color={hc}/>
+                            <MetricCard label="Architecture"    value={r.architecturePattern}          icon={Workflow}  color={THEME.primary}/>
+                            <MetricCard label="Tech Debt"       value={r.techDebtEstimate}             icon={Wrench}    color={THEME.warning}/>
+                            <MetricCard label="Security"        value={r.securityPosture}              icon={Shield}    color={THEME.info}/>
                         </div>
-                    );
-                })}
-            </div>
+                        <Panel title="AI Pipeline Insights" icon={Sparkles}
+                               rightNode={<button onClick={ai.reset} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:4, borderRadius:5 }}><X size={13}/></button>}>
+                            <p style={{ fontSize:12, color:THEME.textDim, marginBottom:16, lineHeight:1.6 }}>{r.repoSummary}</p>
+                            <SectionTitle icon={Lightbulb}>Quick Wins</SectionTitle>
+                            {r.quickWins?.map((w,i)=>(
+                                <div key={i} style={{ display:'flex', gap:10, marginBottom:10, padding:'9px 12px', borderRadius:8, background:`${THEME.success}06`, border:`1px solid ${THEME.success}15` }}>
+                                    <CheckCircle size={13} color={THEME.success} style={{ flexShrink:0, marginTop:1 }}/>
+                                    <span style={{ fontSize:11.5, color:THEME.textMuted }}>{w}</span>
+                                </div>
+                            ))}
+                        </Panel>
+                        {r.topRisks?.length > 0 && (
+                            <Panel title="Top Risks" icon={AlertTriangle}>
+                                {r.topRisks.map((risk,i)=>{
+                                    const col = {critical:THEME.danger,high:THEME.danger,medium:THEME.warning,low:THEME.info}[risk.severity]||THEME.textDim;
+                                    return (
+                                        <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:`${col}08`, border:`1px solid ${col}20` }}>
+                                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                                                <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain }}>{risk.risk}</span>
+                                                <RiskBadge risk={risk.severity}/>
+                                            </div>
+                                            <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.5 }}>{risk.description}</p>
+                                        </div>
+                                    );
+                                })}
+                            </Panel>
+                        )}
+                    </div>
+                );
+            })()}
+
+            {!ai.loading && !ai.result && !ai.error && (
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:14 }}>
+                    <Panel title="Connect CI/CD" icon={Workflow}>
+                        {['GitHub Actions', 'GitLab CI', 'CircleCI', 'Jenkins', 'Buildkite'].map((ci,i)=>(
+                            <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 12px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, marginBottom:8 }}>
+                                <span style={{ fontSize:12.5, fontWeight:600, color:THEME.textMuted }}>{ci}</span>
+                                <button className="r8-btn r8-btn-g r8-btn-sm">Connect</button>
+                            </div>
+                        ))}
+                    </Panel>
+                    <Panel title="What you'll see" icon={Eye}>
+                        {['Real-time build status & logs','Deployment history & rollback','Test coverage trends','Build time metrics','Failure root-cause analysis'].map((f,i)=>(
+                            <div key={i} style={{ display:'flex', gap:8, marginBottom:9, padding:'8px 10px', borderRadius:7, background:`${THEME.primary}06` }}>
+                                <CheckCircle size={12} color={THEME.primary} style={{ flexShrink:0, marginTop:1 }}/>
+                                <span style={{ fontSize:11.5, color:THEME.textMuted }}>{f}</span>
+                            </div>
+                        ))}
+                    </Panel>
+                </div>
+            )}
         </div>
     );
 };
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PULL REQUESTS VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const PullRequestView = () => {
-    const [filter, setFilter] = useState('all');
-    const filtered = filter==='all'?PRS:PRS.filter(p=>p.status===filter);
-    const SC = { open:THEME.success, review:THEME.warning, merged:THEME.primary };
+const PullRequestView = ({ activeRepo }) => {
+    const ai = useAIAnalysis();
 
     return (
-        <div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
-                <MetricCard label="Open PRs"   value={PRS.filter(p=>p.status==='open').length}   icon={GitPullRequest} color={THEME.success}/>
-                <MetricCard label="In Review"  value={PRS.filter(p=>p.status==='review').length}  icon={Eye}           color={THEME.warning}/>
-                <MetricCard label="Merged"     value={PRS.filter(p=>p.status==='merged').length}  icon={GitMerge}      color={THEME.primary}/>
-                <MetricCard label="Avg Score"  value={`${Math.round(PRS.reduce((a,b)=>a+b.score,0)/PRS.length)}/100`} icon={Gauge} color={THEME.info}/>
+        <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+            <div style={{ padding:20, borderRadius:14, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}18`, display:'flex', gap:16, alignItems:'flex-start' }}>
+                <div style={{ width:44, height:44, borderRadius:11, background:`${THEME.primary}14`, border:`1px solid ${THEME.primary}25`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <GitPullRequest size={20} color={THEME.primary}/>
+                </div>
+                <div style={{ flex:1 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:THEME.textMain, marginBottom:4 }}>Pull Request Intelligence</div>
+                    <div style={{ fontSize:12, color:THEME.textDim, lineHeight:1.6, marginBottom:12 }}>
+                        Connect your GitHub/GitLab token to pull live PR data. AI can score PRs, detect risk, and flag breaking changes automatically.
+                        Use AI Repo Analysis to get estimated PR health based on your repository.
+                    </div>
+                    {activeRepo && (
+                        <button onClick={()=>ai.analyzeRepo({ repoName: activeRepo.name, repoPath: activeRepo.url, repoType: activeRepo.type })}
+                                disabled={ai.loading} className="r8-btn r8-btn-p">
+                            {ai.loading ? <><Loader size={13} style={{ animation:'rSpin 1s linear infinite' }}/> Analyzing…</> : <><Sparkles size={13}/> AI PR Risk Analysis</>}
+                        </button>
+                    )}
+                </div>
             </div>
-            <div style={{ display:'flex', gap:6, marginBottom:16 }}>
-                {['all','open','review','merged'].map(f=>(
-                    <button key={f} onClick={()=>setFilter(f)} style={{ padding:'5px 13px', borderRadius:6, border:`1px solid ${filter===f?(SC[f]||THEME.primary)+'40':THEME.glassBorder}`, background:filter===f?`${SC[f]||THEME.primary}14`:'transparent', color:filter===f?(SC[f]||THEME.primary):THEME.textDim, fontSize:11, fontWeight:700, cursor:'pointer' }}>
-                        {f.charAt(0).toUpperCase()+f.slice(1)}
-                    </button>
-                ))}
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                {filtered.map((pr,i)=>{
-                    const sc=SC[pr.status]||THEME.textDim;
-                    return (
-                        <div key={i} style={{ padding:16, borderRadius:11, border:`1px solid ${THEME.glassBorder}`, background:THEME.surface, transition:'all .2s', cursor:'pointer' }}
-                             onMouseEnter={e=>{e.currentTarget.style.borderColor=`${sc}35`;e.currentTarget.style.transform='translateY(-2px)';}}
-                             onMouseLeave={e=>{e.currentTarget.style.borderColor=THEME.glassBorder;e.currentTarget.style.transform='none';}}>
-                            <div style={{ display:'flex', gap:12 }}>
-                                <GitPullRequest size={15} color={sc} style={{ flexShrink:0, marginTop:2 }}/>
-                                <div style={{ flex:1 }}>
-                                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 }}>
-                                        <div>
-                                            <span style={{ fontSize:13.5, fontWeight:700, color:THEME.textMain }}>{pr.title}</span>
-                                            <span style={{ fontSize:11, color:THEME.textDim, marginLeft:7, fontFamily:'monospace' }}>#{pr.id}</span>
-                                        </div>
-                                        <StatusBadge label={pr.status.toUpperCase()} color={sc} size="sm"/>
-                                    </div>
-                                    <div style={{ display:'flex', alignItems:'center', gap:14, flexWrap:'wrap', marginBottom:10 }}>
-                                        <span style={{ fontSize:11, color:THEME.textDim }}>by <b style={{ color:THEME.textMuted }}>{pr.author}</b></span>
-                                        <span style={{ fontSize:11, color:THEME.success, fontFamily:'monospace' }}>+{pr.additions}</span>
-                                        <span style={{ fontSize:11, color:THEME.danger,  fontFamily:'monospace' }}>-{pr.deletions}</span>
-                                        <span style={{ fontSize:11, color:THEME.textDim }}>{pr.files} files</span>
-                                        <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-                                            <div style={{ width:6, height:6, borderRadius:'50%', background:pr.tests==='passed'?THEME.success:THEME.danger }}/>
-                                            <span style={{ fontSize:11, color:THEME.textDim }}>Tests {pr.tests}</span>
-                                        </div>
-                                        <span style={{ fontSize:11, fontWeight:700, color:pr.score>80?THEME.success:THEME.warning }}>Score {pr.score}/100</span>
-                                    </div>
-                                    <ProgressBar value={pr.score} color={pr.score>80?THEME.success:pr.score>50?THEME.warning:THEME.danger} height={4}/>
-                                </div>
-                                <button className="r8-btn r8-btn-g r8-btn-sm" style={{ alignSelf:'center' }}>View</button>
-                            </div>
+
+            {ai.loading && (
+                <Panel title="Analyzing…" icon={Sparkles}>
+                    {['Estimating PR patterns','Scanning for risk factors','Evaluating code churn'].map((s,i)=>(
+                        <div key={i} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                            <Loader size={12} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/>
+                            <div className="r8-shimmer" style={{ height:12, flex:1, borderRadius:4 }}/>
                         </div>
-                    );
-                })}
-            </div>
+                    ))}
+                </Panel>
+            )}
+            {ai.error && <Panel title="Error" icon={AlertCircle}><div style={{ padding:12, borderRadius:8, background:`${THEME.danger}10`, fontSize:12, color:THEME.danger }}>{ai.error}</div></Panel>}
+
+            {ai.result && ai.mode === 'repo' && (() => {
+                const r = ai.result;
+                return (
+                    <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                        <Panel title="AI PR Insights" icon={Sparkles}
+                               rightNode={<button onClick={ai.reset} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:4, borderRadius:5 }}><X size={13}/></button>}>
+                            <p style={{ fontSize:12, color:THEME.textDim, marginBottom:14, lineHeight:1.6 }}>{r.repoSummary}</p>
+                            {r.insights?.filter(i=>i.category==='Maintainability'||i.category==='Testing').map((ins,i)=>(
+                                <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                    <div style={{ fontSize:9.5, fontWeight:700, color:THEME.primary, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:5 }}>{ins.category}</div>
+                                    <div style={{ fontSize:12, fontWeight:600, color:THEME.textMain, marginBottom:4 }}>{ins.finding}</div>
+                                    <div style={{ fontSize:11, color:THEME.info }}>{ins.recommendation}</div>
+                                </div>
+                            ))}
+                        </Panel>
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
+                            <MetricCard label="Code Quality"  value={`${r.metricsEstimate?.codeQuality}/100`}  icon={Activity} color={THEME.primary}/>
+                            <MetricCard label="Test Coverage" value={`${r.metricsEstimate?.testCoverage}%`}    icon={CheckCircle} color={THEME.success}/>
+                            <MetricCard label="Documentation" value={`${r.metricsEstimate?.documentation}%`}   icon={FileText} color={THEME.warning}/>
+                            <MetricCard label="Security"      value={`${r.metricsEstimate?.securityScore}/100`} icon={Shield}  color={THEME.info}/>
+                        </div>
+                    </div>
+                );
+            })()}
+
+            {!ai.loading && !ai.result && (
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+                    <Panel title="Connect GitHub / GitLab" icon={Github}>
+                        <div style={{ fontSize:12, color:THEME.textDim, marginBottom:14, lineHeight:1.6 }}>
+                            Provide a personal access token to enable live PR data, automated scoring, and review assignment AI.
+                        </div>
+                        <div style={{ marginBottom:10 }}>
+                            <label style={{ fontSize:10.5, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.08em', display:'block', marginBottom:6 }}>Access Token</label>
+                            <input placeholder="ghp_xxxxxxxxxxxx" style={{ width:'100%', padding:'9px 12px', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:8, color:THEME.textMain, outline:'none', fontSize:12, fontFamily:'JetBrains Mono,monospace', boxSizing:'border-box' }}/>
+                        </div>
+                        <button className="r8-btn r8-btn-p"><Github size={13}/> Connect GitHub</button>
+                    </Panel>
+                    <Panel title="AI PR Scoring" icon={Gauge}>
+                        {['Risk impact detection (breaking changes, DB migrations)','Auto-labelling by domain & complexity','Test coverage delta calculation','Security vulnerability scanning','Reviewer recommendation engine'].map((f,i)=>(
+                            <div key={i} style={{ display:'flex', gap:8, marginBottom:9 }}>
+                                <Sparkles size={11} color={THEME.primary} style={{ flexShrink:0, marginTop:2 }}/>
+                                <span style={{ fontSize:11.5, color:THEME.textMuted }}>{f}</span>
+                            </div>
+                        ))}
+                    </Panel>
+                </div>
+            )}
         </div>
     );
 };
 
+
 /* ═══════════════════════════════════════════════════════════════════════════
    DATABASE VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const DatabaseView = () => {
-    const [sql, setSql] = useState('');
-    const [analysis, setAnalysis] = useState(null);
+const DatabaseView = ({ activeRepo }) => {
+    const [sql, setSql]             = useState('');
+    const [analysis, setAnalysis]   = useState(null);
+    const [aiMigration, setAiMig]   = useState({ loading:false, result:null, error:null });
 
-    const analyze = useCallback(() => {
+    const analyzeSQL = useCallback(() => {
         const u = sql.toUpperCase();
         let risk='LOW', msg='Standard or additive operation. Safe to run.';
         if (u.includes('DROP TABLE')||u.includes('TRUNCATE')) { risk='CRITICAL'; msg='Destructive operation — irreversible data loss possible.'; }
@@ -552,23 +769,62 @@ const DatabaseView = () => {
         setAnalysis({ risk, msg });
     }, [sql]);
 
+    const aiAnalyzeSQL = useCallback(async () => {
+        if (!sql.trim()) return;
+        setAiMig({ loading:true, result:null, error:null });
+        try {
+            const system = 'You are a database expert. Respond with valid JSON only — no markdown.';
+            const prompt = `Analyze this SQL migration:
+\`\`\`sql
+${sql.slice(0, 2000)}
+\`\`\`
+
+Respond with JSON:
+{
+  "risk": "LOW|MEDIUM|HIGH|CRITICAL",
+  "summary": "<what this migration does>",
+  "concerns": ["<concern1>", "<concern2>"],
+  "rollbackPlan": "<how to safely rollback>",
+  "bestPractices": ["<recommendation1>", "<recommendation2>"],
+  "estimatedDuration": "<for tables with millions of rows>",
+  "lockingImpact": "<table-level lock|row-level lock|no lock>",
+  "safeToRunLive": <true|false>
+}`;
+            const resp = await fetch('https://api.anthropic.com/v1/messages', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system, messages:[{role:'user',content:prompt}] }),
+            });
+            const data = await resp.json();
+            const raw = data.content?.map(b=>b.text||'').join('') || '';
+            const clean = raw.replace(/```json|```/g,'').trim();
+            const result = JSON.parse(clean);
+            setAiMig({ loading:false, result, error:null });
+        } catch(e) {
+            setAiMig({ loading:false, result:null, error:e.message });
+        }
+    }, [sql]);
+
     const RC = { CRITICAL:THEME.danger, HIGH:THEME.danger, MEDIUM:THEME.warning, LOW:THEME.success };
 
     return (
         <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
-                <MetricCard label="Applied"   value={MIGRATIONS.filter(m=>m.status==='applied').length} icon={CheckCircle}   color={THEME.success}/>
-                <MetricCard label="Pending"   value={MIGRATIONS.filter(m=>m.status==='pending').length} icon={Clock}         color={THEME.warning}/>
-                <MetricCard label="High Risk" value={MIGRATIONS.filter(m=>m.risk==='high').length}      icon={AlertTriangle} color={THEME.danger}/>
-            </div>
             <div style={{ padding:16, borderRadius:12, background:THEME.glass, border:`1px solid ${THEME.glassBorder}` }}>
                 <SectionTitle icon={Shield}>Migration Risk Assessment</SectionTitle>
-                <div style={{ display:'flex', gap:10 }}>
-                    <textarea value={sql} onChange={e=>setSql(e.target.value)} placeholder="Paste migration SQL to assess risk…"
-                              style={{ flex:1, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:8, padding:'10px 12px', color:THEME.textMuted, fontSize:11.5, fontFamily:'JetBrains Mono,monospace', resize:'none', height:68, outline:'none' }}/>
-                    <button onClick={analyze} className="r8-btn r8-btn-c" style={{ flexShrink:0 }}>Analyze</button>
+                <div style={{ fontSize:12, color:THEME.textDim, marginBottom:12, lineHeight:1.6 }}>
+                    Paste any SQL migration below for instant risk scoring plus AI-powered deep analysis with rollback planning.
                 </div>
-                {analysis && (
+                <div style={{ marginBottom:10 }}>
+                    <textarea value={sql} onChange={e=>setSql(e.target.value)} placeholder="Paste migration SQL to assess risk…"
+                              style={{ width:'100%', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:8, padding:'10px 12px', color:THEME.textMuted, fontSize:11.5, fontFamily:'JetBrains Mono,monospace', resize:'none', height:90, outline:'none', boxSizing:'border-box' }}/>
+                </div>
+                <div style={{ display:'flex', gap:8 }}>
+                    <button onClick={analyzeSQL} disabled={!sql.trim()} className="r8-btn r8-btn-c" style={{ opacity:!sql.trim()?0.5:1 }}><Shield size={13}/> Quick Check</button>
+                    <button onClick={aiAnalyzeSQL} disabled={!sql.trim()||aiMigration.loading} className="r8-btn r8-btn-p" style={{ opacity:!sql.trim()?0.5:1 }}>
+                        {aiMigration.loading ? <><Loader size={13} style={{ animation:'rSpin 1s linear infinite' }}/> AI Analyzing…</> : <><Sparkles size={13}/> AI Deep Analysis</>}
+                    </button>
+                </div>
+
+                {analysis && !aiMigration.result && (
                     <div style={{ marginTop:10, padding:'10px 12px', borderRadius:8, background:`${RC[analysis.risk]}10`, display:'flex', gap:8 }}>
                         {analysis.risk==='LOW'?<CheckCircle size={13} color={RC[analysis.risk]} style={{ marginTop:1 }}/>:<AlertTriangle size={13} color={RC[analysis.risk]} style={{ marginTop:1 }}/>}
                         <div>
@@ -577,270 +833,329 @@ const DatabaseView = () => {
                         </div>
                     </div>
                 )}
+
+                {aiMigration.loading && (
+                    <div style={{ marginTop:10, padding:12, borderRadius:8, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}15`, display:'flex', gap:10, alignItems:'center' }}>
+                        <Loader size={14} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite', flexShrink:0 }}/>
+                        <span style={{ fontSize:12, color:THEME.textDim }}>AI is analyzing your migration for risks, locking behavior, and rollback options…</span>
+                    </div>
+                )}
+
+                {aiMigration.error && (
+                    <div style={{ marginTop:10, padding:10, borderRadius:8, background:`${THEME.danger}10`, fontSize:11.5, color:THEME.danger }}>{aiMigration.error}</div>
+                )}
+
+                {aiMigration.result && (() => {
+                    const r = aiMigration.result;
+                    const col = RC[r.risk] || THEME.textDim;
+                    return (
+                        <div style={{ marginTop:10 }}>
+                            <div style={{ padding:12, borderRadius:8, background:`${col}10`, border:`1px solid ${col}20`, marginBottom:10 }}>
+                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                                    <span style={{ fontSize:13, fontWeight:800, color:col }}>Risk: {r.risk}</span>
+                                    <div style={{ display:'flex', gap:8 }}>
+                                        <StatusBadge label={r.lockingImpact} color={THEME.warning} size="sm"/>
+                                        <StatusBadge label={r.safeToRunLive?'Safe Live':'Risky Live'} color={r.safeToRunLive?THEME.success:THEME.danger} size="sm"/>
+                                    </div>
+                                </div>
+                                <p style={{ fontSize:12, color:THEME.textMuted, margin:'0 0 8px', lineHeight:1.5 }}>{r.summary}</p>
+                                <div style={{ fontSize:11, color:THEME.textDim }}>Est. duration: <b style={{ color:THEME.textMuted }}>{r.estimatedDuration}</b></div>
+                            </div>
+                            {r.concerns?.length > 0 && (
+                                <div style={{ marginBottom:10 }}>
+                                    <div style={{ fontSize:10, fontWeight:700, color:THEME.warning, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6 }}>Concerns</div>
+                                    {r.concerns.map((c,i)=>(
+                                        <div key={i} style={{ display:'flex', gap:7, marginBottom:5, fontSize:11.5, color:THEME.textMuted }}>
+                                            <AlertTriangle size={11} color={THEME.warning} style={{ flexShrink:0, marginTop:2 }}/>{c}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div style={{ padding:10, borderRadius:8, background:`${THEME.info}08`, border:`1px solid ${THEME.info}18` }}>
+                                <div style={{ fontSize:10, fontWeight:700, color:THEME.info, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:5 }}>Rollback Plan</div>
+                                <p style={{ fontSize:11.5, color:THEME.textMuted, margin:0, lineHeight:1.5 }}>{r.rollbackPlan}</p>
+                            </div>
+                        </div>
+                    );
+                })()}
             </div>
-            <div>
-                <SectionTitle icon={History}>Schema History</SectionTitle>
-                <div style={{ border:`1px solid ${THEME.glassBorder}`, borderRadius:12, overflow:'hidden' }}>
-                    <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
-                        <thead>
-                        <tr style={{ background:THEME.glass, borderBottom:`1px solid ${THEME.glassBorder}` }}>
-                            {['Migration','Type','Risk','Rows','Date','Status'].map(h=>(
-                                <th key={h} style={{ textAlign:'left', padding:'9px 12px', fontSize:10, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.07em' }}>{h}</th>
-                            ))}
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {MIGRATIONS.map((m,i)=>(
-                            <tr key={i} style={{ borderBottom:i<MIGRATIONS.length-1?`1px solid ${THEME.glassBorder}20`:'none', background:THEME.surface }}>
-                                <td style={{ padding:'10px 12px', fontFamily:'JetBrains Mono,monospace', color:THEME.textMuted, fontSize:11.5 }}>{m.name}</td>
-                                <td style={{ padding:'10px 12px' }}><span style={{ fontSize:10, fontWeight:700, background:`${THEME.primary}12`, color:THEME.primary, padding:'2px 6px', borderRadius:4, fontFamily:'monospace' }}>{m.type}</span></td>
-                                <td style={{ padding:'10px 12px' }}><RiskBadge risk={m.risk}/></td>
-                                <td style={{ padding:'10px 12px', color:THEME.textDim, fontFamily:'monospace', fontSize:11 }}>{m.rows||'—'}</td>
-                                <td style={{ padding:'10px 12px', color:THEME.textDim, fontSize:11 }}>{m.date}</td>
-                                <td style={{ padding:'10px 12px' }}><StatusBadge label={m.status.toUpperCase()} color={m.status==='applied'?THEME.success:THEME.warning} pulse={m.status==='pending'} size="sm"/></td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+
+            <Panel title="Database Migrations" icon={Database}>
+                <div style={{ padding:14, borderRadius:10, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}15`, display:'flex', gap:10, alignItems:'flex-start' }}>
+                    <Database size={14} color={THEME.primary} style={{ flexShrink:0, marginTop:2 }}/>
+                    <div>
+                        <div style={{ fontSize:12.5, fontWeight:700, color:THEME.primary, marginBottom:4 }}>No migration history connected</div>
+                        <div style={{ fontSize:11.5, color:THEME.textDim, lineHeight:1.6 }}>
+                            Connect a database (PostgreSQL, MySQL, SQLite) or migration tool (Flyway, Liquibase, Alembic, Prisma) to see applied migrations, pending changes, and schema history.
+                        </div>
+                    </div>
                 </div>
-            </div>
+                <div style={{ marginTop:16, display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
+                    {['PostgreSQL', 'MySQL / MariaDB', 'SQLite', 'MongoDB', 'Prisma', 'Alembic'].map((db,i)=>(
+                        <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'9px 12px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                            <span style={{ fontSize:12, fontWeight:600, color:THEME.textMuted }}>{db}</span>
+                            <button className="r8-btn r8-btn-g r8-btn-sm">Connect</button>
+                        </div>
+                    ))}
+                </div>
+            </Panel>
         </div>
     );
 };
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INSIGHTS VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const InsightsView = () => {
-    const [tab, setTab] = useState('health');
-    const healthColor = INSIGHTS.codeHealth>=80?THEME.success:INSIGHTS.codeHealth>=60?THEME.warning:THEME.danger;
+const InsightsView = ({ activeRepo }) => {
+    const ai = useAIAnalysis();
+    const [tab, setTab] = useState('overview');
 
     const TABS = [
-        { id:'health',       label:'Code Health',  icon:Activity },
-        { id:'query',        label:'Code → Query', icon:Database },
-        { id:'commits',      label:'Commit Impact',icon:GitCommit },
-        { id:'contributors', label:'Team',         icon:Users },
-        { id:'packages',     label:'Pkg Risks',    icon:Package },
+        { id:'overview',  label:'Overview',     icon:Activity },
+        { id:'security',  label:'Security',     icon:Shield },
+        { id:'perf',      label:'Performance',  icon:Zap },
+        { id:'ai',        label:'AI Analysis',  icon:Sparkles },
     ];
-    const total = INSIGHTS.contributors.reduce((a,b)=>a+b.commits,0);
+
+    const runAnalysis = () => {
+        if (!activeRepo) return;
+        ai.analyzeRepo({ repoName: activeRepo.name, repoPath: activeRepo.url, repoType: activeRepo.type });
+    };
+
+    const r = ai.result;
 
     return (
         <div style={{ display:'flex', flexDirection:'column', gap:16, height:'100%' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:10 }} className="r8-stagger">
-                <MetricCard label="Code Health"  value={`${INSIGHTS.codeHealth}/100`}                      icon={Activity}  color={healthColor} subtext="3 issues open" trend={-1}/>
-                <MetricCard label="Tech Debt"    value={`${INSIGHTS.techDebt.reduce((a,b)=>a+b.issues,0)} Issues`}  icon={Wrench}    color={THEME.warning} subtext="~6.5h to fix"/>
-                <MetricCard label="Dependencies" value={INSIGHTS.packageRisks.length}                       icon={Package}   color={THEME.info}  subtext={`${INSIGHTS.packageRisks.filter(p=>p.risk==='high').length} high risk`}/>
-                <MetricCard label="Contributors" value={INSIGHTS.contributors.length}                       icon={Users}     color={THEME.primary} subtext="Last 30 days"/>
-                <MetricCard label="Commits"      value={total}                                               icon={GitCommit} color={THEME.secondary} subtext="This month" trend={1}/>
-            </div>
-
-            {/* Tab nav */}
-            <div style={{ display:'flex', gap:4, padding:4, background:THEME.glass, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, width:'fit-content' }}>
-                {TABS.map(t=>(
-                    <button key={t.id} onClick={()=>setTab(t.id)} className={`r8-tab${tab===t.id?' r8-tab-on':''}`} style={{
-                        display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:8, border:'none', cursor:'pointer',
-                        background:tab===t.id?`linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`:'transparent',
-                        color:tab===t.id?'#fff':THEME.textDim, fontSize:11.5, fontWeight:700,
-                        boxShadow:tab===t.id?`0 3px 12px ${THEME.primary}30`:'none',
-                    }}>
-                        <t.icon size={11} color={tab===t.id?'#fff':THEME.textDim}/>{t.label}
-                    </button>
-                ))}
+            {/* Header row */}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
+                <div style={{ display:'flex', gap:4, padding:4, background:THEME.glass, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, width:'fit-content' }}>
+                    {TABS.map(t=>(
+                        <button key={t.id} onClick={()=>setTab(t.id)} className={`r8-tab${tab===t.id?' r8-tab-on':''}`} style={{
+                            display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:8, border:'none', cursor:'pointer',
+                            background:tab===t.id?`linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`:'transparent',
+                            color:tab===t.id?'#fff':THEME.textDim, fontSize:11.5, fontWeight:700,
+                            boxShadow:tab===t.id?`0 3px 12px ${THEME.primary}30`:'none',
+                        }}>
+                            <t.icon size={11} color={tab===t.id?'#fff':THEME.textDim}/>{t.label}
+                        </button>
+                    ))}
+                </div>
+                <button onClick={runAnalysis} disabled={!activeRepo||ai.loading} className="r8-btn r8-btn-p" style={{ opacity:!activeRepo?0.5:1 }}>
+                    {ai.loading ? <><Loader size={13} style={{ animation:'rSpin 1s linear infinite' }}/> Analyzing…</> : <><Sparkles size={13}/> Run AI Analysis</>}
+                </button>
             </div>
 
             <div className="r8-scroll" style={{ flex:1, minHeight:0, overflowY:'auto' }}>
-                {tab==='health' && (
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, height:'100%' }}>
-                        <Panel title="Tech Debt Tracker" icon={Wrench}>
-                            <div style={{ display:'flex', gap:16, padding:16, borderRadius:10, background:`${healthColor}08`, border:`1px solid ${healthColor}20`, marginBottom:20 }}>
-                                <div style={{ fontSize:44, fontWeight:900, color:healthColor, lineHeight:1, fontFamily:'JetBrains Mono,monospace' }}>{INSIGHTS.codeHealth}</div>
-                                <div>
-                                    <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain }}>Code Health Score</div>
-                                    <div style={{ fontSize:11, color:THEME.textDim, marginTop:2 }}>Issues, coverage & complexity</div>
-                                    <div style={{ marginTop:8 }}><ProgressBar value={INSIGHTS.codeHealth} color={healthColor} height={6}/></div>
-                                </div>
-                            </div>
-                            {INSIGHTS.techDebt.map((td,i)=>(
-                                <div key={i} style={{ marginBottom:10, padding:14, borderRadius:10, border:`1px solid ${THEME.glassBorder}`, background:THEME.surface }}>
-                                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
-                                        <span style={{ fontSize:11.5, fontWeight:700, color:THEME.primary, fontFamily:'JetBrains Mono,monospace' }}>{td.file}</span>
-                                        <RiskBadge risk={td.severity}/>
-                                    </div>
-                                    <div style={{ fontSize:12, color:THEME.textMuted, marginBottom:6 }}>{td.type}</div>
-                                    <div style={{ fontSize:10.5, color:THEME.textDim }}>Est. fix: <b style={{ color:THEME.textMuted }}>{td.estimatedFix}</b></div>
+                {/* Loading */}
+                {ai.loading && (
+                    <Panel title="AI is analyzing your repository…" icon={Sparkles}>
+                        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                            {['Scanning code patterns','Evaluating security posture','Measuring complexity metrics','Estimating tech debt','Generating recommendations'].map((s,i)=>(
+                                <div key={i} style={{ display:'flex', alignItems:'center', gap:12 }}>
+                                    <Loader size={12} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite', flexShrink:0 }}/>
+                                    <div className="r8-shimmer" style={{ height:14, flex:1, borderRadius:4 }}/>
                                 </div>
                             ))}
-                        </Panel>
-                        <Panel title="Activity & Health" icon={BarChart3}>
-                            <SectionTitle>Commits This Week</SectionTitle>
-                            <div style={{ display:'flex', gap:8, alignItems:'flex-end', height:72, marginBottom:20 }}>
-                                {INSIGHTS.activityHeatmap.map((d,i)=>(
-                                    <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
-                                        <div style={{ height:60, width:'100%', display:'flex', alignItems:'flex-end' }}>
-                                            <div style={{ width:'100%', borderRadius:'3px 3px 0 0', height:`${Math.max(5,(d.commits/15)*100)}%`, background:`linear-gradient(180deg, ${THEME.primary}, ${THEME.primary}60)` }}/>
+                        </div>
+                    </Panel>
+                )}
+
+                {/* Error */}
+                {ai.error && (
+                    <Panel title="Analysis Error" icon={AlertCircle}>
+                        <div style={{ padding:12, borderRadius:8, background:`${THEME.danger}10`, fontSize:12, color:THEME.danger }}>{ai.error}</div>
+                    </Panel>
+                )}
+
+                {/* Empty state */}
+                {!ai.loading && !ai.result && !ai.error && (
+                    <div style={{ padding:'60px 20px', textAlign:'center', border:`2px dashed ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
+                        <div style={{ width:60, height:60, borderRadius:14, background:`${THEME.primary}10`, border:`1px solid ${THEME.primary}20`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                            <Sparkles size={26} color={`${THEME.primary}60`}/>
+                        </div>
+                        <div>
+                            <div style={{ fontSize:16, fontWeight:800, color:THEME.textMuted, marginBottom:8 }}>AI-Powered Repository Insights</div>
+                            <div style={{ fontSize:12.5, color:THEME.textDim, marginBottom:20, maxWidth:360, lineHeight:1.7 }}>
+                                Click <b style={{ color:THEME.primary }}>Run AI Analysis</b> to get a comprehensive review of your repository including code health, security posture, tech debt, performance patterns, and prioritized recommendations.
+                            </div>
+                            {!activeRepo && <div style={{ fontSize:11.5, color:THEME.warning, padding:'8px 14px', borderRadius:8, background:`${THEME.warning}10`, border:`1px solid ${THEME.warning}20` }}>Select a repository first</div>}
+                        </div>
+                    </div>
+                )}
+
+                {/* Results */}
+                {r && !ai.loading && (() => {
+                    const hc = r.overallHealthScore >= 80 ? THEME.success : r.overallHealthScore >= 60 ? THEME.warning : THEME.danger;
+
+                    if (tab === 'overview') return (
+                        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                            {/* Score cards */}
+                            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }} className="r8-stagger">
+                                <MetricCard label="Overall Health" value={`${r.overallHealthScore}/100`} icon={Activity}    color={hc}/>
+                                <MetricCard label="Code Quality"   value={`${r.metricsEstimate?.codeQuality}/100`} icon={Code}  color={THEME.primary}/>
+                                <MetricCard label="Security"       value={`${r.metricsEstimate?.securityScore}/100`} icon={Shield} color={THEME.info}/>
+                                <MetricCard label="Tech Debt"      value={r.techDebtEstimate}              icon={Wrench}   color={THEME.warning}/>
+                            </div>
+
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                                <Panel title="Repository Summary" icon={Activity}>
+                                    <p style={{ fontSize:12.5, color:THEME.textDim, lineHeight:1.7, marginBottom:16 }}>{r.repoSummary}</p>
+                                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16 }}>
+                                        {r.primaryLanguages?.map((l,i)=>(
+                                            <span key={i} style={{ padding:'3px 10px', borderRadius:6, fontSize:10.5, fontWeight:700, background:`${THEME.primary}12`, color:THEME.primary, border:`1px solid ${THEME.primary}20` }}>{l}</span>
+                                        ))}
+                                        <span style={{ padding:'3px 10px', borderRadius:6, fontSize:10.5, fontWeight:700, background:`${THEME.info}12`, color:THEME.info, border:`1px solid ${THEME.info}20` }}>{r.architecturePattern}</span>
+                                    </div>
+                                    <Divider/>
+                                    {[
+                                        { label:'Test Coverage',   value: r.metricsEstimate?.testCoverage,  color: THEME.success },
+                                        { label:'Documentation',   value: r.metricsEstimate?.documentation, color: THEME.warning },
+                                        { label:'Code Quality',    value: r.metricsEstimate?.codeQuality,   color: THEME.primary },
+                                        { label:'Security Score',  value: r.metricsEstimate?.securityScore, color: THEME.info    },
+                                    ].map((item,i)=>(
+                                        <div key={i} style={{ marginBottom:12 }}>
+                                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                                                <span style={{ fontSize:11.5, color:THEME.textMuted }}>{item.label}</span>
+                                                <span style={{ fontSize:11.5, fontWeight:700, color:item.color, fontFamily:'JetBrains Mono,monospace' }}>{item.value}%</span>
+                                            </div>
+                                            <ProgressBar value={item.value} color={item.color} height={5}/>
                                         </div>
-                                        <span style={{ fontSize:9.5, color:THEME.textDim }}>{d.day}</span>
+                                    ))}
+                                </Panel>
+
+                                <Panel title="Quick Wins & Insights" icon={Lightbulb}>
+                                    <SectionTitle>Quick Wins</SectionTitle>
+                                    {r.quickWins?.map((w,i)=>(
+                                        <div key={i} style={{ display:'flex', gap:8, marginBottom:10, padding:'9px 12px', borderRadius:8, background:`${THEME.success}06`, border:`1px solid ${THEME.success}15` }}>
+                                            <CheckCircle size={12} color={THEME.success} style={{ flexShrink:0, marginTop:2 }}/>
+                                            <span style={{ fontSize:11.5, color:THEME.textMuted, lineHeight:1.5 }}>{w}</span>
+                                        </div>
+                                    ))}
+                                    <Divider/>
+                                    <SectionTitle>Top Insights</SectionTitle>
+                                    {r.insights?.slice(0,3).map((ins,i)=>(
+                                        <div key={i} style={{ marginBottom:10, padding:11, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                            <div style={{ fontSize:9.5, fontWeight:700, color:THEME.primary, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:4 }}>{ins.category}</div>
+                                            <div style={{ fontSize:12, fontWeight:600, color:THEME.textMain, marginBottom:4 }}>{ins.finding}</div>
+                                            <div style={{ fontSize:11, color:THEME.info }}>{ins.recommendation}</div>
+                                        </div>
+                                    ))}
+                                </Panel>
+                            </div>
+                        </div>
+                    );
+
+                    if (tab === 'security') return (
+                        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
+                                <MetricCard label="Security Score"  value={`${r.metricsEstimate?.securityScore}/100`} icon={Shield} color={THEME.info}/>
+                                <MetricCard label="Security Posture" value={r.securityPosture} icon={AlertTriangle} color={r.securityPosture==='strong'?THEME.success:r.securityPosture==='moderate'?THEME.warning:THEME.danger}/>
+                                <MetricCard label="Critical Risks"  value={r.topRisks?.filter(x=>x.severity==='critical'||x.severity==='high').length||0} icon={Flame} color={THEME.danger}/>
+                            </div>
+                            <Panel title="Risk Analysis" icon={AlertTriangle}>
+                                {r.topRisks?.length > 0 ? r.topRisks.map((risk,i)=>{
+                                    const col = {critical:THEME.danger,high:THEME.danger,medium:THEME.warning,low:THEME.info}[risk.severity]||THEME.textDim;
+                                    return (
+                                        <div key={i} style={{ marginBottom:12, padding:14, borderRadius:10, background:`${col}08`, border:`1px solid ${col}20` }}>
+                                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                                                <span style={{ fontSize:13, fontWeight:700, color:THEME.textMain }}>{risk.risk}</span>
+                                                <RiskBadge risk={risk.severity}/>
+                                            </div>
+                                            <p style={{ fontSize:11.5, color:THEME.textDim, margin:0, lineHeight:1.6 }}>{risk.description}</p>
+                                        </div>
+                                    );
+                                }) : (
+                                    <div style={{ padding:14, borderRadius:10, background:`${THEME.success}08`, border:`1px solid ${THEME.success}20`, display:'flex', gap:10 }}>
+                                        <CheckCircle size={13} color={THEME.success}/>
+                                        <span style={{ fontSize:12, color:THEME.success, fontWeight:600 }}>No critical security risks detected</span>
+                                    </div>
+                                )}
+                            </Panel>
+                            <Panel title="Security Insights" icon={Shield}>
+                                {r.insights?.filter(i=>i.category==='Security').map((ins,i)=>(
+                                    <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                        <div style={{ fontSize:12, fontWeight:600, color:THEME.textMain, marginBottom:4 }}>{ins.finding}</div>
+                                        <div style={{ fontSize:11, color:THEME.info }}>{ins.recommendation}</div>
                                     </div>
                                 ))}
-                            </div>
-                            <Divider/>
-                            {[
-                                { label:'Test Coverage',  value:78, color:THEME.success },
-                                { label:'Documentation',  value:55, color:THEME.warning },
-                                { label:'Code Complexity',value:68, color:THEME.primary },
-                                { label:'Security Score', value:82, color:THEME.info    },
-                            ].map((item,i)=>(
-                                <div key={i} style={{ marginBottom:12 }}>
-                                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
-                                        <span style={{ fontSize:11.5, color:THEME.textMuted }}>{item.label}</span>
-                                        <span style={{ fontSize:11.5, fontWeight:700, color:item.color, fontFamily:'JetBrains Mono,monospace' }}>{item.value}%</span>
-                                    </div>
-                                    <ProgressBar value={item.value} color={item.color} height={5}/>
-                                </div>
-                            ))}
-                        </Panel>
-                    </div>
-                )}
-
-                {tab==='query' && (
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-                        <Panel title="File → Query Mapping" icon={Database}>
-                            {INSIGHTS.codeToQueryMap.map((item,i)=>(
-                                <div key={i} style={{ marginBottom:14, padding:14, borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
-                                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
-                                        <span style={{ fontSize:12, fontWeight:700, color:THEME.primary, fontFamily:'JetBrains Mono,monospace' }}>{item.file}</span>
-                                        <StatusBadge label={`${item.load} Load`} color={item.load==='High'?THEME.danger:item.load==='Medium'?THEME.warning:THEME.success} size="sm"/>
-                                    </div>
-                                    <div style={{ fontSize:10.5, color:THEME.textDim, fontFamily:'JetBrains Mono,monospace', background:`${THEME.glassBorder}40`, padding:'8px 10px', borderRadius:6, marginBottom:8 }}>{item.query}</div>
-                                    <div style={{ display:'flex', gap:14 }}>
-                                        <span style={{ fontSize:11, color:THEME.textDim }}>Avg: <b style={{ color:item.load==='High'?THEME.danger:THEME.textMuted }}>{item.latency}</b></span>
-                                        <span style={{ fontSize:11, color:THEME.textDim }}>Queries/min: <b style={{ color:THEME.textMuted }}>{item.queryCount}</b></span>
-                                    </div>
-                                </div>
-                            ))}
-                        </Panel>
-                        <Panel title="Optimization Suggestions" icon={Lightbulb}>
-                            {[
-                                { title:'Fix N+1 in users.js',       desc:'Replace per-user queries with a JOIN. 90% latency reduction.',            impact:'Critical', color:THEME.danger,  icon:Zap },
-                                { title:'Add index on orders.user_id',desc:'Missing index causes full table scans. B-tree index will cut scan time.', impact:'High',     color:THEME.warning, icon:TrendingUp },
-                                { title:'Cache product counts',       desc:'COUNT(*) runs every request. Cache for 30s to reduce load.',              impact:'Medium',   color:THEME.primary, icon:Sparkles },
-                            ].map((s,i)=>(
-                                <div key={i} style={{ marginBottom:12, padding:14, borderRadius:10, background:`${s.color}06`, border:`1px solid ${s.color}18` }}>
-                                    <div style={{ display:'flex', gap:10, alignItems:'flex-start' }}>
-                                        <div style={{ width:28, height:28, borderRadius:8, background:`${s.color}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                                            <s.icon size={13} color={s.color}/>
-                                        </div>
-                                        <div style={{ flex:1 }}>
-                                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                                                <span style={{ fontSize:12.5, fontWeight:700, color:THEME.textMain }}>{s.title}</span>
-                                                <StatusBadge label={s.impact} color={s.color} size="sm"/>
-                                            </div>
-                                            <p style={{ fontSize:11, color:THEME.textDim, margin:0, lineHeight:1.6 }}>{s.desc}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </Panel>
-                    </div>
-                )}
-
-                {tab==='commits' && (
-                    <Panel title="Commit → Latency Correlation" icon={GitCommit} style={{ height:'auto' }}>
-                        <p style={{ fontSize:11, color:THEME.textDim, marginBottom:18, lineHeight:1.6 }}>How each commit affected production query latency. Negative delta = improvement.</p>
-                        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                            {INSIGHTS.commitCorrelation.map((c,i)=>{
-                                const good = c.latencyDelta<0;
-                                const col = good?THEME.success:THEME.danger;
-                                return (
-                                    <div key={i} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', borderRadius:10, background:THEME.surface, border:`1px solid ${col}18` }}>
-                                        <div style={{ width:36, height:36, borderRadius:8, background:`${col}12`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                                            {good?<TrendingDown size={16} color={col}/>:<TrendingUp size={16} color={col}/>}
-                                        </div>
-                                        <div style={{ flex:1 }}>
-                                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}>
-                                                <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                                                    <code style={{ fontSize:11, color:THEME.primary, background:`${THEME.primary}12`, padding:'2px 7px', borderRadius:4, fontFamily:'JetBrains Mono,monospace' }}>{c.commit}</code>
-                                                    <span style={{ fontSize:12.5, fontWeight:600, color:THEME.textMain }}>{c.message}</span>
-                                                </div>
-                                                <div style={{ display:'flex', gap:8 }}>
-                                                    <span style={{ fontSize:13, fontWeight:800, color:col, fontFamily:'JetBrains Mono,monospace' }}>{c.latencyDelta>0?'+':''}{c.latencyDelta}ms</span>
-                                                    <span style={{ fontSize:10.5, color:THEME.textDim }}>{c.date}</span>
-                                                </div>
-                                            </div>
-                                            <ProgressBar value={Math.abs(c.latencyDelta)} max={50} color={col} height={3}/>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                            </Panel>
                         </div>
-                    </Panel>
-                )}
+                    );
 
-                {tab==='contributors' && (
-                    <Panel title="Team Activity" icon={Users} style={{ height:'auto' }}>
-                        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                            {INSIGHTS.contributors.map((c,i)=>{
-                                const colors=[THEME.primary,THEME.success,THEME.secondary,THEME.info];
-                                const col=colors[i%colors.length];
-                                return (
-                                    <div key={i} style={{ padding:'14px 16px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
-                                        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-                                            <Avatar initials={c.avatar} color={col}/>
-                                            <div style={{ flex:1 }}>
-                                                <div style={{ display:'flex', justifyContent:'space-between' }}>
-                                                    <span style={{ fontSize:13, fontWeight:700, color:THEME.textMain }}>{c.name}</span>
-                                                    <span style={{ fontSize:12, fontWeight:800, color:col, fontFamily:'JetBrains Mono,monospace' }}>{c.commits} commits</span>
-                                                </div>
-                                                <div style={{ marginTop:6 }}><ProgressBar value={c.commits} max={total} color={col} height={4}/></div>
+                    if (tab === 'perf') return (
+                        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                            <Panel title="Performance Insights" icon={Zap}>
+                                {r.insights?.filter(i=>i.category==='Performance').length > 0
+                                    ? r.insights.filter(i=>i.category==='Performance').map((ins,i)=>(
+                                        <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                            <div style={{ fontSize:12, fontWeight:600, color:THEME.textMain, marginBottom:4 }}>{ins.finding}</div>
+                                            <div style={{ fontSize:11, color:THEME.info }}>{ins.recommendation}</div>
+                                        </div>
+                                    ))
+                                    : <div style={{ fontSize:12, color:THEME.textDim, padding:12 }}>No specific performance findings — paste code in the Code tab for file-level performance analysis.</div>
+                                }
+                            </Panel>
+                            <Panel title="Maintainability" icon={Wrench}>
+                                {r.insights?.filter(i=>i.category==='Maintainability').map((ins,i)=>(
+                                    <div key={i} style={{ marginBottom:10, padding:12, borderRadius:9, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                        <div style={{ fontSize:12, fontWeight:600, color:THEME.textMain, marginBottom:4 }}>{ins.finding}</div>
+                                        <div style={{ fontSize:11, color:THEME.info }}>{ins.recommendation}</div>
+                                    </div>
+                                ))}
+                                <div style={{ marginTop:12 }}>
+                                    {[
+                                        { label:'Code Quality',  value:r.metricsEstimate?.codeQuality,  color:THEME.primary },
+                                        { label:'Test Coverage', value:r.metricsEstimate?.testCoverage, color:THEME.success },
+                                        { label:'Documentation', value:r.metricsEstimate?.documentation,color:THEME.warning },
+                                    ].map((item,i)=>(
+                                        <div key={i} style={{ marginBottom:12 }}>
+                                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                                                <span style={{ fontSize:11.5, color:THEME.textMuted }}>{item.label}</span>
+                                                <span style={{ fontSize:11.5, fontWeight:700, color:item.color, fontFamily:'JetBrains Mono,monospace' }}>{item.value}%</span>
                                             </div>
+                                            <ProgressBar value={item.value} color={item.color} height={5}/>
                                         </div>
-                                        <div style={{ display:'flex', gap:16 }}>
-                                            <span style={{ fontSize:11, color:THEME.success, fontFamily:'JetBrains Mono,monospace' }}>+{c.additions.toLocaleString()}</span>
-                                            <span style={{ fontSize:11, color:THEME.danger,  fontFamily:'JetBrains Mono,monospace' }}>-{c.deletions.toLocaleString()}</span>
-                                            <span style={{ fontSize:11, color:THEME.textDim }}>Net: <b style={{ color:(c.additions-c.deletions)>0?THEME.success:THEME.danger, fontFamily:'JetBrains Mono,monospace' }}>{(c.additions-c.deletions)>0?'+':''}{(c.additions-c.deletions).toLocaleString()}</b></span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                    ))}
+                                </div>
+                            </Panel>
                         </div>
-                    </Panel>
-                )}
+                    );
 
-                {tab==='packages' && (
-                    <Panel title="Dependency Risk Audit" icon={Package} style={{ height:'auto' }}>
-                        <div style={{ padding:14, borderRadius:10, background:`${THEME.warning}08`, border:`1px solid ${THEME.warning}20`, marginBottom:18, display:'flex', gap:10 }}>
-                            <AlertTriangle size={13} color={THEME.warning} style={{ flexShrink:0, marginTop:1 }}/>
-                            <div>
-                                <div style={{ fontSize:12.5, fontWeight:700, color:THEME.warning, marginBottom:4 }}>{INSIGHTS.packageRisks.filter(p=>p.risk!=='low').length} packages require attention</div>
-                                <div style={{ fontSize:11, color:THEME.textDim }}>Known CVEs in your dependency tree. Update ASAP.</div>
-                            </div>
-                        </div>
-                        {INSIGHTS.packageRisks.map((pkg,i)=>(
-                            <div key={i} style={{ marginBottom:10, padding:14, borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
-                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-                                    <div>
-                                        <span style={{ fontSize:12.5, fontWeight:700, color:THEME.primary, fontFamily:'JetBrains Mono,monospace' }}>{pkg.name}</span>
-                                        {pkg.cve && <span style={{ marginLeft:8, fontSize:9.5, color:THEME.danger, background:`${THEME.danger}12`, padding:'2px 7px', borderRadius:4, fontFamily:'monospace' }}>{pkg.cve}</span>}
+                    if (tab === 'ai') return (
+                        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                            <Panel title="Full AI Report" icon={Sparkles}
+                                   rightNode={<button onClick={ai.reset} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:4, borderRadius:5 }}><X size={13}/></button>}>
+                                <p style={{ fontSize:13, color:THEME.textDim, lineHeight:1.7, marginBottom:16 }}>{r.repoSummary}</p>
+                                <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16 }}>
+                                    <StatusBadge label={`${r.estimatedSize} repo`} color={THEME.primary} size="sm"/>
+                                    <StatusBadge label={r.architecturePattern} color={THEME.secondary} size="sm"/>
+                                    <StatusBadge label={`Tech debt: ${r.techDebtEstimate}`} color={r.techDebtEstimate==='low'?THEME.success:r.techDebtEstimate==='medium'?THEME.warning:THEME.danger} size="sm"/>
+                                    <StatusBadge label={`Security: ${r.securityPosture}`} color={r.securityPosture==='strong'?THEME.success:r.securityPosture==='moderate'?THEME.warning:THEME.danger} size="sm"/>
+                                </div>
+                            </Panel>
+                            <Panel title="All Insights" icon={Activity}>
+                                {r.insights?.map((ins,i)=>(
+                                    <div key={i} style={{ marginBottom:12, padding:12, borderRadius:9, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                                            <span style={{ fontSize:9.5, fontWeight:700, color:THEME.primary, textTransform:'uppercase', letterSpacing:'0.07em' }}>{ins.category}</span>
+                                        </div>
+                                        <div style={{ fontSize:12, fontWeight:600, color:THEME.textMain, marginBottom:4 }}>{ins.finding}</div>
+                                        <div style={{ fontSize:11, color:THEME.info, padding:'6px 9px', borderRadius:6, background:`${THEME.info}08` }}>{ins.recommendation}</div>
                                     </div>
-                                    <RiskBadge risk={pkg.risk}/>
-                                </div>
-                                <p style={{ fontSize:11, color:THEME.textDim, margin:'0 0 10px' }}>{pkg.reason}</p>
-                                <div style={{ display:'flex', gap:8 }}>
-                                    <button className="r8-btn r8-btn-c r8-btn-sm">Update</button>
-                                    <button className="r8-btn r8-btn-g r8-btn-sm">Advisory</button>
-                                </div>
-                            </div>
-                        ))}
-                    </Panel>
-                )}
+                                ))}
+                            </Panel>
+                        </div>
+                    );
+
+                    return null;
+                })()}
             </div>
         </div>
     );
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   LOCAL REPO FORM  ← NEW
-   ═══════════════════════════════════════════════════════════════════════════ */
+
 const LOCAL_PATHS = ['~/Projects/', '~/Documents/code/', '/home/dev/repos/', 'C:\\Projects\\', '/workspace/'];
 
 const LocalRepoForm = ({ onConnect, onClose }) => {
@@ -852,12 +1167,15 @@ const LocalRepoForm = ({ onConnect, onClose }) => {
     const scan = () => {
         if (!path.trim()) return;
         setScanning(true);
+        // Derive repo name from the path — no fake data injected
         setTimeout(() => {
-            const detected = path.split('/').filter(Boolean).pop() || path.split('\\').filter(Boolean).pop() || 'local-repo';
-            setScanned({ name:detected, branch:'main', files:Math.floor(Math.random()*200+50), commits:Math.floor(Math.random()*500+20), dirty:Math.random()>.6 });
+            const trimmed = path.trim().replace(/[/\\]+$/, '');
+            const detected = trimmed.split(/[/\\]/).filter(Boolean).pop() || 'local-repo';
+            // Only record what we can actually know from the path
+            setScanned({ name: detected, path: trimmed });
             setName(detected);
             setScanning(false);
-        }, 900);
+        }, 400);
     };
 
     const connect = () => {
@@ -920,23 +1238,14 @@ const LocalRepoForm = ({ onConnect, onClose }) => {
                 <div style={{ padding:16, borderRadius:11, background:`${THEME.info}08`, border:`1px solid ${THEME.info}25`, animation:'rFadeUp .25s ease' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
                         <CheckCircle size={13} color={THEME.info}/>
-                        <span style={{ fontSize:12.5, fontWeight:700, color:THEME.info }}>Repository detected</span>
-                        {scanned.dirty && <StatusBadge label="Uncommitted Changes" color={THEME.warning} size="sm"/>}
+                        <span style={{ fontSize:12.5, fontWeight:700, color:THEME.info }}>Path accepted</span>
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:14 }}>
-                        {[
-                            { l:'Branch',  v:scanned.branch,               ic:GitBranch },
-                            { l:'Files',   v:scanned.files+' tracked',     ic:FileCode  },
-                            { l:'Commits', v:scanned.commits+' total',     ic:GitCommit },
-                        ].map((s,i)=>(
-                            <div key={i} style={{ padding:'9px 11px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:5, marginBottom:3 }}>
-                                    <s.ic size={10} color={THEME.textDim}/>
-                                    <span style={{ fontSize:9.5, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.07em', fontWeight:700 }}>{s.l}</span>
-                                </div>
-                                <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, fontFamily:'JetBrains Mono,monospace' }}>{s.v}</span>
-                            </div>
-                        ))}
+                    <div style={{ padding:'9px 11px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, marginBottom:14 }}>
+                        <div style={{ fontSize:9.5, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.07em', fontWeight:700, marginBottom:4 }}>Resolved Path</div>
+                        <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, fontFamily:'JetBrains Mono,monospace', wordBreak:'break-all' }}>{scanned.path}</span>
+                    </div>
+                    <div style={{ padding:'9px 11px', borderRadius:8, background:`${THEME.info}06`, border:`1px solid ${THEME.info}15`, marginBottom:14, fontSize:11.5, color:THEME.textDim, lineHeight:1.6 }}>
+                        <b style={{ color:THEME.info }}>Note:</b> Git metadata (branch, commits, file count) will be read from the repository on your local machine at runtime.
                     </div>
                     <div>
                         <label style={{ fontSize:10.5, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.08em', display:'block', marginBottom:6 }}>Display Name</label>
@@ -1273,11 +1582,11 @@ const RepositoryTab = () => {
             </div>
 
             <div style={{ flex:1, minHeight:0, overflow:'hidden' }}>
-                {subView==='code'     && <CodeView/>}
-                {subView==='cicd'     && <Panel title="CI/CD Pipelines" icon={RocketIcon}><CICDView/></Panel>}
-                {subView==='prs'      && <Panel title="Pull Request Analysis" icon={GitPullRequest}><PullRequestView/></Panel>}
-                {subView==='db'       && <Panel title="Database & Migrations" icon={Database}><DatabaseView/></Panel>}
-                {subView==='insights' && <InsightsView/>}
+                {subView==='code'     && <CodeView activeRepo={activeRepo}/>}
+                {subView==='cicd'     && <Panel title="CI/CD Pipelines" icon={RocketIcon} style={{ height:'100%', overflowY:'auto' }}><CICDView activeRepo={activeRepo}/></Panel>}
+                {subView==='prs'      && <Panel title="Pull Request Analysis" icon={GitPullRequest} style={{ height:'100%', overflowY:'auto' }}><PullRequestView activeRepo={activeRepo}/></Panel>}
+                {subView==='db'       && <Panel title="Database & Migrations" icon={Database} style={{ height:'100%', overflowY:'auto' }}><DatabaseView activeRepo={activeRepo}/></Panel>}
+                {subView==='insights' && <InsightsView activeRepo={activeRepo}/>}
             </div>
         </div>
     );
