@@ -315,10 +315,17 @@ app.post('/api/auth/login', async (req, res) => {
             location:    null,
         });
 
-        // Phase-1 screens are read-only monitoring screens — grant to all active users.
-        const PHASE1_SCREENS = ['backup', 'checkpoint', 'maintenance'];
+        // Phase 1 & 2 screens are read-only monitoring screens — grant to all active users.
+        const NEW_SCREENS    = [
+            // Phase 1
+            'backup', 'checkpoint', 'maintenance',
+            // Phase 2
+            'replication', 'bloat', 'regression', 'cloudwatch',
+            // Phase 3
+            'tasks', 'log-patterns', 'alert-correlation',
+        ];
         const baseScreens    = user.allowed_screens ?? [];
-        const allowedScreens = [...new Set([...baseScreens, ...PHASE1_SCREENS])];
+        const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
 
         const payload = {
             id:             user.id,
@@ -1008,6 +1015,396 @@ app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), a
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLOUDWATCH INTEGRATION
+// ─────────────────────────────────────────────────────────────────────────────
+const CW_CONFIGURED = !!(
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY &&
+    process.env.AWS_REGION &&
+    process.env.CLOUDWATCH_DB_IDENTIFIER
+);
+
+app.get('/api/cloudwatch/status', authenticate, async (req, res) => {
+    if (!CW_CONFIGURED) {
+        return res.json({ configured: false });
+    }
+    res.json({
+        configured: true,
+        region: process.env.AWS_REGION,
+        dbIdentifier: process.env.CLOUDWATCH_DB_IDENTIFIER,
+    });
+});
+
+app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
+    if (!CW_CONFIGURED) return res.json({ configured: false, datapoints: [] });
+
+    const { metric = 'CPUUtilization', period = 3600 } = req.query;
+    const periodSec = Number(period);
+
+    try {
+        // Dynamically import AWS SDK (optional dep — graceful fallback if missing)
+        let CloudWatchClient, GetMetricStatisticsCommand;
+        try {
+            const mod = await import('@aws-sdk/client-cloudwatch');
+            CloudWatchClient          = mod.CloudWatchClient;
+            GetMetricStatisticsCommand = mod.GetMetricStatisticsCommand;
+        } catch {
+            return res.json({ configured: true, datapoints: [], error: 'AWS SDK not installed. Run: npm install @aws-sdk/client-cloudwatch' });
+        }
+
+        const client = new CloudWatchClient({
+            region: process.env.AWS_REGION,
+            credentials: {
+                accessKeyId:     process.env.AWS_ACCESS_KEY_ID,
+                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            },
+        });
+
+        const endTime   = new Date();
+        const startTime = new Date(endTime.getTime() - periodSec * 1000);
+        // Choose granularity based on range
+        const stat      = periodSec <= 3600 ? 60 : periodSec <= 86400 ? 300 : 3600;
+
+        const cmd = new GetMetricStatisticsCommand({
+            Namespace:  'AWS/RDS',
+            MetricName: metric,
+            Dimensions: [{ Name: 'DBInstanceIdentifier', Value: process.env.CLOUDWATCH_DB_IDENTIFIER }],
+            StartTime:  startTime,
+            EndTime:    endTime,
+            Period:     stat,
+            Statistics: ['Average'],
+        });
+
+        const data = await client.send(cmd);
+        const datapoints = (data.Datapoints || [])
+            .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
+            .map(d => ({ timestamp: d.Timestamp, value: d.Average, unit: d.Unit }));
+
+        res.json({ configured: true, metric, datapoints });
+    } catch (e) {
+        res.status(500).json({ configured: true, datapoints: [], error: e.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DBA TASK SCHEDULER
+// ─────────────────────────────────────────────────────────────────────────────
+// In-memory task store (persists for server lifetime; swap for DB later)
+const dbaTaskStore = new Map(); // id → task
+let taskIdCounter = 1;
+
+const defaultTasks = [
+    { category: 'Daily',   priority: 'high',   title: 'Check active connections and long-running queries',  recurrence: 'daily'   },
+    { category: 'Daily',   priority: 'high',   title: 'Review autovacuum activity and dead tuple counts',   recurrence: 'daily'   },
+    { category: 'Daily',   priority: 'medium', title: 'Check replication lag on all standby servers',       recurrence: 'daily'   },
+    { category: 'Daily',   priority: 'medium', title: 'Verify backup job completed successfully',            recurrence: 'daily'   },
+    { category: 'Daily',   priority: 'low',    title: 'Review pg_stat_bgwriter checkpoint ratios',          recurrence: 'daily'   },
+    { category: 'Weekly',  priority: 'high',   title: 'Analyze table bloat and schedule VACUUM FULL',       recurrence: 'weekly'  },
+    { category: 'Weekly',  priority: 'high',   title: 'Review slow query log and optimize top offenders',   recurrence: 'weekly'  },
+    { category: 'Weekly',  priority: 'medium', title: 'Check index usage and remove unused indexes',        recurrence: 'weekly'  },
+    { category: 'Weekly',  priority: 'medium', title: 'Update table statistics with ANALYZE on large tables', recurrence: 'weekly' },
+    { category: 'Monthly', priority: 'high',   title: 'Review and rotate PostgreSQL logs',                  recurrence: 'monthly' },
+    { category: 'Monthly', priority: 'high',   title: 'Audit user roles and permissions',                   recurrence: 'monthly' },
+    { category: 'Monthly', priority: 'medium', title: 'Capacity planning: review disk, CPU, memory trends', recurrence: 'monthly' },
+    { category: 'Monthly', priority: 'low',    title: 'Test backup restoration procedure',                   recurrence: 'monthly' },
+];
+
+// Seed default tasks on startup
+defaultTasks.forEach(t => {
+    const id = String(taskIdCounter++);
+    dbaTaskStore.set(id, {
+        id, ...t,
+        done: false,
+        notes: '',
+        dueDate: null,
+        assignee: '',
+        createdAt: new Date().toISOString(),
+        completedAt: null,
+    });
+});
+
+app.get('/api/tasks', authenticate, (req, res) => {
+    res.json(Array.from(dbaTaskStore.values()));
+});
+
+app.post('/api/tasks', authenticate, (req, res) => {
+    const { title, category = 'Daily', priority = 'medium', recurrence = 'daily', notes = '', dueDate = null, assignee = '' } = req.body;
+    if (!title?.trim()) return res.status(400).json({ error: 'title required' });
+    const id = String(taskIdCounter++);
+    const task = { id, title: title.trim(), category, priority, recurrence, notes, dueDate, assignee, done: false, createdAt: new Date().toISOString(), completedAt: null };
+    dbaTaskStore.set(id, task);
+    res.status(201).json(task);
+});
+
+app.patch('/api/tasks/:id', authenticate, (req, res) => {
+    const task = dbaTaskStore.get(req.params.id);
+    if (!task) return res.status(404).json({ error: 'not found' });
+    const updates = req.body;
+    if (updates.done === true  && !task.completedAt) updates.completedAt = new Date().toISOString();
+    if (updates.done === false) updates.completedAt = null;
+    const updated = { ...task, ...updates, id: task.id };
+    dbaTaskStore.set(task.id, updated);
+    res.json(updated);
+});
+
+app.delete('/api/tasks/:id', authenticate, requireScreen('admin'), (req, res) => {
+    if (!dbaTaskStore.has(req.params.id)) return res.status(404).json({ error: 'not found' });
+    dbaTaskStore.delete(req.params.id);
+    res.json({ ok: true });
+});
+
+app.post('/api/tasks/reset', authenticate, requireScreen('admin'), (req, res) => {
+    dbaTaskStore.clear();
+    taskIdCounter = 1;
+    defaultTasks.forEach(t => {
+        const id = String(taskIdCounter++);
+        dbaTaskStore.set(id, { id, ...t, done: false, notes: '', dueDate: null, assignee: '', createdAt: new Date().toISOString(), completedAt: null });
+    });
+    res.json({ ok: true, count: dbaTaskStore.size });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOG PATTERN ANALYSIS
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000), async (req, res) => {
+    try {
+        const [waitEvents, lockWaits, slowQueries, errorStates, dbActivity, topQueries] = await Promise.all([
+            // Wait event breakdown
+            pool.query(`
+                SELECT wait_event_type, wait_event, COUNT(*) AS count
+                FROM pg_stat_activity
+                WHERE wait_event IS NOT NULL AND state != 'idle'
+                GROUP BY wait_event_type, wait_event
+                ORDER BY count DESC LIMIT 20
+            `),
+            // Lock waits
+            pool.query(`
+                SELECT
+                    blocked.pid AS blocked_pid,
+                    blocked.usename AS blocked_user,
+                    left(blocked.query, 120) AS blocked_query,
+                    blocking.pid AS blocking_pid,
+                    blocking.usename AS blocking_user,
+                    left(blocking.query, 120) AS blocking_query,
+                    round(EXTRACT(EPOCH FROM (now() - blocked.query_start))::numeric, 1) AS wait_sec
+                FROM pg_stat_activity blocked
+                JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
+                WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0
+                LIMIT 20
+            `),
+            // Slow query patterns (from pg_stat_statements if available)
+            pool.query(`
+                SELECT
+                    left(query, 100) AS query_preview,
+                    calls,
+                    round(mean_exec_time::numeric, 2) AS mean_ms,
+                    round(max_exec_time::numeric, 2) AS max_ms,
+                    round(stddev_exec_time::numeric, 2) AS stddev_ms,
+                    round(total_exec_time::numeric, 2) AS total_ms,
+                    round((100 * total_exec_time / NULLIF(SUM(total_exec_time) OVER (), 0))::numeric, 2) AS pct_total
+                FROM pg_stat_statements
+                WHERE mean_exec_time > 100
+                ORDER BY total_exec_time DESC
+                LIMIT 15
+            `).catch(() => ({ rows: [] })),
+            // Error / unusual states
+            pool.query(`
+                SELECT state, wait_event_type, COUNT(*) AS count,
+                       AVG(EXTRACT(EPOCH FROM (now() - query_start)))::int AS avg_age_sec
+                FROM pg_stat_activity
+                WHERE state IS NOT NULL
+                GROUP BY state, wait_event_type
+                ORDER BY count DESC
+            `),
+            // Overall DB activity
+            pool.query(`
+                SELECT datname,
+                       numbackends,
+                       xact_commit,
+                       xact_rollback,
+                       round((100.0 * xact_rollback / NULLIF(xact_commit + xact_rollback, 0))::numeric, 2) AS rollback_pct,
+                       blks_read,
+                       blks_hit,
+                       round((100.0 * blks_hit / NULLIF(blks_read + blks_hit, 0))::numeric, 2) AS cache_hit_pct,
+                       deadlocks,
+                       temp_files,
+                       temp_bytes
+                FROM pg_stat_database
+                WHERE datname IS NOT NULL
+                ORDER BY numbackends DESC
+                LIMIT 10
+            `),
+            // Top queries by calls
+            pool.query(`
+                SELECT left(query, 100) AS query_preview, calls, round(mean_exec_time::numeric,2) AS mean_ms, rows
+                FROM pg_stat_statements
+                ORDER BY calls DESC LIMIT 10
+            `).catch(() => ({ rows: [] })),
+        ]);
+
+        res.json({
+            waitEvents:  waitEvents.rows,
+            lockWaits:   lockWaits.rows,
+            slowQueries: slowQueries.rows,
+            errorStates: errorStates.rows,
+            dbActivity:  dbActivity.rows,
+            topQueries:  topQueries.rows,
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ALERT CORRELATION
+// ─────────────────────────────────────────────────────────────────────────────
+// In-memory alert event store for correlation analysis
+const alertEventStore = [];
+const MAX_ALERT_EVENTS = 500;
+
+// Push a synthetic snapshot of current DB health metrics as alert events
+async function captureAlertSnapshot() {
+    try {
+        const [conns, locks, waits, repl, bgwriter] = await Promise.all([
+            pool.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER(WHERE state='active') AS active,
+                               COUNT(*) FILTER(WHERE wait_event IS NOT NULL) AS waiting
+                        FROM pg_stat_activity`),
+            pool.query(`SELECT COUNT(*) AS lock_count FROM pg_locks WHERE NOT granted`),
+            pool.query(`SELECT wait_event_type, COUNT(*) AS cnt FROM pg_stat_activity
+                        WHERE wait_event IS NOT NULL AND state!='idle' GROUP BY wait_event_type`),
+            pool.query(`SELECT COUNT(*) AS replica_count FROM pg_stat_replication`).catch(() => ({rows:[{replica_count:0}]})),
+            pool.query(`SELECT checkpoints_req, checkpoints_timed FROM pg_stat_bgwriter`),
+        ]);
+
+        const c    = conns.rows[0];
+        const locks_waiting = Number(locks.rows[0]?.lock_count || 0);
+        const waitMap       = Object.fromEntries(waits.rows.map(r => [r.wait_event_type, Number(r.cnt)]));
+        const chk           = bgwriter.rows[0] || {};
+
+        const now = new Date().toISOString();
+        const events = [];
+
+        if (Number(c.waiting) > 5)
+            events.push({ ts: now, type: 'connection', severity: Number(c.waiting) > 15 ? 'critical' : 'warning', message: `${c.waiting} sessions waiting`, metric: 'waiting_sessions', value: Number(c.waiting) });
+        if (locks_waiting > 0)
+            events.push({ ts: now, type: 'lock', severity: locks_waiting > 3 ? 'critical' : 'warning', message: `${locks_waiting} ungranted lock(s)`, metric: 'lock_waits', value: locks_waiting });
+        if (Number(c.total) > 80)
+            events.push({ ts: now, type: 'connection', severity: 'warning', message: `High connection count: ${c.total}`, metric: 'total_connections', value: Number(c.total) });
+        if (waitMap['Lock'] > 0)
+            events.push({ ts: now, type: 'lock', severity: 'warning', message: `${waitMap['Lock']} lock-wait sessions`, metric: 'lock_wait_sessions', value: waitMap['Lock'] });
+        if (waitMap['IO'] > 3)
+            events.push({ ts: now, type: 'io', severity: 'warning', message: `${waitMap['IO']} IO-wait sessions`, metric: 'io_wait_sessions', value: waitMap['IO'] });
+
+        if (events.length > 0) {
+            alertEventStore.push(...events);
+            if (alertEventStore.length > MAX_ALERT_EVENTS)
+                alertEventStore.splice(0, alertEventStore.length - MAX_ALERT_EVENTS);
+        }
+    } catch (_) { /* silent — correlation is best-effort */ }
+}
+
+// Run alert capture every 30 seconds
+setInterval(captureAlertSnapshot, 30_000);
+
+app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), async (req, res) => {
+    try {
+        // Also grab a fresh snapshot for this request
+        const [conns, locks, waits, tables, txAge] = await Promise.all([
+            pool.query(`
+                SELECT state, wait_event_type, wait_event, COUNT(*) AS cnt,
+                       MAX(EXTRACT(EPOCH FROM (now()-query_start)))::int AS max_age_sec
+                FROM pg_stat_activity WHERE state IS NOT NULL
+                GROUP BY state, wait_event_type, wait_event ORDER BY cnt DESC
+            `),
+            pool.query(`SELECT locktype, mode, granted, COUNT(*) AS cnt FROM pg_locks GROUP BY locktype,mode,granted ORDER BY cnt DESC LIMIT 20`),
+            pool.query(`
+                SELECT pid, usename, datname, state, wait_event_type, wait_event,
+                       left(query,120) AS query, round(EXTRACT(EPOCH FROM (now()-query_start))::numeric,1) AS age_sec
+                FROM pg_stat_activity
+                WHERE state != 'idle' AND query NOT LIKE '%pg_stat_activity%'
+                ORDER BY age_sec DESC NULLS LAST LIMIT 25
+            `),
+            pool.query(`
+                SELECT relname AS table_name,
+                       n_dead_tup, n_live_tup,
+                       round((n_dead_tup::numeric/NULLIF(n_live_tup+n_dead_tup,0)*100),1) AS dead_pct,
+                       last_autovacuum, last_autoanalyze
+                FROM pg_stat_user_tables
+                WHERE n_dead_tup > 1000
+                ORDER BY dead_pct DESC NULLS LAST LIMIT 10
+            `),
+            pool.query(`
+                SELECT pid, usename, datname,
+                       age(backend_xid)  AS xid_age,
+                       age(backend_xmin) AS xmin_age,
+                       left(query,120) AS query,
+                       round(EXTRACT(EPOCH FROM (now()-xact_start))::numeric,1) AS xact_age_sec
+                FROM pg_stat_activity
+                WHERE xact_start IS NOT NULL
+                  AND state != 'idle'
+                ORDER BY xact_age_sec DESC NULLS LAST LIMIT 10
+            `),
+        ]);
+
+        // Build correlation groups from stored events
+        const WINDOW_MS = 5 * 60 * 1000; // 5-minute correlation window
+        const groups = [];
+        const remaining = [...alertEventStore];
+
+        while (remaining.length > 0) {
+            const anchor = remaining.shift();
+            const anchorTs = new Date(anchor.ts).getTime();
+            const cluster = [anchor];
+            const survivors = [];
+            for (const ev of remaining) {
+                if (Math.abs(new Date(ev.ts).getTime() - anchorTs) <= WINDOW_MS) {
+                    cluster.push(ev);
+                } else {
+                    survivors.push(ev);
+                }
+            }
+            remaining.splice(0, remaining.length, ...survivors);
+            groups.push({
+                id: `grp-${anchorTs}`,
+                startTs: anchor.ts,
+                endTs: cluster[cluster.length-1].ts,
+                events: cluster,
+                types: [...new Set(cluster.map(e => e.type))],
+                severity: cluster.some(e=>e.severity==='critical') ? 'critical' : 'warning',
+                rootCause: guessRootCause(cluster),
+            });
+        }
+
+        res.json({
+            correlationGroups: groups.slice(-20), // last 20 groups
+            recentEvents: alertEventStore.slice(-50),
+            liveSessions: waits.rows,
+            lockSummary:  locks.rows,
+            sessionStates: conns.rows,
+            bloatedTables: tables.rows,
+            longTransactions: txAge.rows,
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+function guessRootCause(events) {
+    const types = events.map(e => e.type);
+    const hasLock  = types.includes('lock');
+    const hasConn  = types.includes('connection');
+    const hasIO    = types.includes('io');
+    if (hasLock && hasConn) return 'Lock contention causing connection pile-up — identify and terminate blocking query';
+    if (hasLock)            return 'Lock contention — a long-running transaction may be blocking others';
+    if (hasConn && hasIO)   return 'High IO causing slow queries, leading to connection accumulation';
+    if (hasConn)            return 'Connection spike — check for connection leaks or missing pooler';
+    if (hasIO)              return 'IO saturation — consider increasing shared_buffers or adding indexes';
+    return 'Multiple concurrent anomalies detected — review pg_stat_activity';
+}
+
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CHECKPOINT MONITOR

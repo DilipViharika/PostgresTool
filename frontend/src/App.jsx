@@ -24,13 +24,20 @@ import CapacityPlanningTab from './components/views/CapacityPlanningTab.jsx';
 import BackupRecoveryTab from './components/views/BackupRecoveryTab.jsx';
 import CheckpointMonitorTab from './components/views/CheckpointMonitorTab.jsx';
 import VacuumMaintenanceTab from './components/views/VacuumMaintenanceTab.jsx';
-
+import ReplicationWALTab from './components/views/ReplicationWALTab.jsx';
+import BloatAnalysisTab from './components/views/BloatAnalysisTab.jsx';
+import QueryPlanRegressionTab from './components/views/QueryPlanRegressionTab.jsx';
+import CloudWatchTab from './components/views/CloudWatchTab.jsx';
+import DBATaskSchedulerTab from './components/views/DBATaskSchedulerTab.jsx';
+import LogPatternAnalysisTab from './components/views/LogPatternAnalysisTab.jsx';
+import AlertCorrelationTab from './components/views/AlertCorrelationTab.jsx';
 
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
     LogOut, Database, Wifi, WifiOff, Bell, ChevronLeft, ChevronRight,
     AlertCircle, X, Menu, Search, Settings, User, GitBranch, Users, Server, TrendingUp,
-    MessageSquarePlus, Star, Send, Archive, RefreshCw
+    MessageSquarePlus, Star, Send, Archive, RefreshCw, Radio, Cloud,
+    CalendarCheck, FileSearch, Link2
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
@@ -55,9 +62,16 @@ const TAB_CONFIG = [
     { id: 'schema', icon: Layers, label: 'Schema & Migrations', component: SchemaVersioningTab },
     { id: 'security', icon: Shield, label: 'Security & Compliance', component: SecurityComplianceTab },
     { id: 'capacity',    icon: TrendingUp,  label: 'Capacity Planning',     component: CapacityPlanningTab },
-    { id: 'backup',      icon: Archive,     label: 'Backup & Recovery',     component: BackupRecoveryTab },
-    { id: 'checkpoint',  icon: CheckCircle, label: 'Checkpoint Monitor',    component: CheckpointMonitorTab },
-    { id: 'maintenance', icon: RefreshCw,   label: 'Vacuum & Maintenance',  component: VacuumMaintenanceTab },
+    { id: 'backup',       icon: Archive,     label: 'Backup & Recovery',     component: BackupRecoveryTab },
+    { id: 'checkpoint',   icon: CheckCircle, label: 'Checkpoint Monitor',    component: CheckpointMonitorTab },
+    { id: 'maintenance',  icon: RefreshCw,   label: 'Vacuum & Maintenance',  component: VacuumMaintenanceTab },
+    { id: 'replication',  icon: Radio,       label: 'Replication & WAL',     component: ReplicationWALTab },
+    { id: 'bloat',        icon: Layers,      label: 'Bloat Analysis',        component: BloatAnalysisTab },
+    { id: 'regression',   icon: TrendingUp,  label: 'Plan Regression',       component: QueryPlanRegressionTab },
+    { id: 'cloudwatch',        icon: Cloud,        label: 'CloudWatch',           component: CloudWatchTab },
+    { id: 'tasks',             icon: CalendarCheck,label: 'DBA Task Scheduler',   component: DBATaskSchedulerTab },
+    { id: 'log-patterns',      icon: FileSearch,   label: 'Log Pattern Analysis', component: LogPatternAnalysisTab },
+    { id: 'alert-correlation', icon: Link2,        label: 'Alert Correlation',    component: AlertCorrelationTab },
 ];
 
 const STORAGE_KEYS = {
