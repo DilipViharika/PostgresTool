@@ -20,16 +20,27 @@ export function relTime(iso) {
 
 /**
  * Validate a user form object.
- * @param {{ name: string, email: string }} form
+ * @param {{ name: string, email: string, username?: string, password?: string }} form
+ * @param {boolean} isEdit - skip username/password checks when editing an existing user
  * @returns {{ [field: string]: string }} — empty object means valid
  */
-export function validateUserForm(form) {
+export function validateUserForm(form, isEdit = false) {
     const errors = {};
     if (!form.name?.trim() || form.name.trim().length < 2) {
         errors.name = 'Name must be at least 2 characters';
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
         errors.email = 'Valid email required';
+    }
+    if (!isEdit) {
+        if (!form.username?.trim() || form.username.trim().length < 3) {
+            errors.username = 'Username must be at least 3 characters';
+        } else if (!/^[a-zA-Z0-9._-]+$/.test(form.username.trim())) {
+            errors.username = 'Username may only contain letters, numbers, dots, underscores, or hyphens';
+        }
+        if (!form.password || form.password.length < 8) {
+            errors.password = 'Password must be at least 8 characters';
+        }
     }
     return errors;
 }

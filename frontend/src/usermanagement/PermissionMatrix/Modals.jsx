@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { T } from '../constants/theme.js';
 import { ROLES, DEPARTMENTS, LOCATIONS, RESOURCE_ROWS, DEFAULT_PERMISSIONS, PERM_COLORS } from '../constants/index.js';
 import { validateUserForm, generatePassword, passwordStrength, copyToClipboard } from '../helpers/index.js';
-import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter } from '../shared/components/ui.jsx';
+import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter, MfaBadge, LoginHeatmap, FormField, Toggle } from '../shared/components/ui.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────────
    USER DETAIL DRAWER
@@ -141,7 +141,7 @@ export const UserDrawer = ({ user, onClose, onEdit, onResetPassword }) => {
                                 <div style={{ fontSize: 12, fontWeight: 700, color: T.textDim, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                     28-Day Login Activity
                                 </div>
-                                <LoginHeatmap data={user.loginActivity.slice(0, 28)} />
+                                <LoginHeatmap data={(user.loginActivity ?? []).slice(0, 28)} />
                                 <div style={{ display: 'flex', gap: 6, marginTop: 10, alignItems: 'center' }}>
                                     <span style={{ fontSize: 11, color: T.textDim }}>Less</span>
                                     {[T.border, `${T.primary}44`, `${T.primary}88`, T.primary].map((c, i) => (
@@ -258,6 +258,8 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
     const [form, setForm] = useState({
         name:       user?.name       || '',
         email:      user?.email      || '',
+        username:   user?.username   || '',
+        password:   '',                          // only sent when creating (not editing)
         role:       user?.role       || 'viewer',
         department: user?.department || DEPARTMENTS[0],
         location:   user?.location   || LOCATIONS[0],
@@ -272,7 +274,7 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
     const patch = (key, value) => setForm(f => ({ ...f, [key]: value }));
 
     const handleSave = async () => {
-        const errs = validateUserForm(form);
+        const errs = validateUserForm(form, isEdit);
         setErrors(errs);
         if (Object.keys(errs).length > 0) return;
         setSaving(true);
@@ -345,6 +347,35 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
                                     />
                                 </FormField>
                             </div>
+                            {/* Username + Password — required for new users only */}
+                            {!isEdit && (
+                                <div className="um-grid-2">
+                                    <FormField label="Username" required error={errors.username}>
+                                        <input className="um-input um-mono" placeholder="jane.doe"
+                                               value={form.username} onChange={e => patch('username', e.target.value)}
+                                               style={{ borderColor: errors.username ? T.danger : undefined }}
+                                               aria-required="true" aria-invalid={!!errors.username}
+                                               autoComplete="username"
+                                        />
+                                    </FormField>
+                                    <FormField label="Password" required error={errors.password}>
+                                        <div style={{ position: 'relative' }}>
+                                            <input className="um-input" type="password" placeholder="Min. 8 characters"
+                                                   value={form.password} onChange={e => patch('password', e.target.value)}
+                                                   style={{ borderColor: errors.password ? T.danger : undefined, paddingRight: 38 }}
+                                                   aria-required="true" aria-invalid={!!errors.password}
+                                                   autoComplete="new-password"
+                                            />
+                                            <button type="button" className="um-btn um-btn-ghost um-btn-icon"
+                                                    onClick={() => patch('password', generatePassword())}
+                                                    style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 28, height: 28, padding: 0 }}
+                                                    aria-label="Generate password">
+                                                <Ico name="refresh" size={13} />
+                                            </button>
+                                        </div>
+                                    </FormField>
+                                </div>
+                            )}
                             <div className="um-grid-2">
                                 <FormField label="Department">
                                     <select className="um-input" value={form.department} onChange={e => patch('department', e.target.value)}>
