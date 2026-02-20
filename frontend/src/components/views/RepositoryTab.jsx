@@ -949,7 +949,7 @@ const LocalRepoForm = ({ onConnect, onClose }) => {
             {/* Action row */}
             <div style={{ display:'flex', gap:8, justifyContent:'flex-end', paddingTop:4 }}>
                 <button onClick={onClose} className="r8-btn r8-btn-g">Cancel</button>
-                <button onClick={connect} disabled={!path.trim()} className="r8-btn r8-btn-p" style={{ opacity:!path.trim()?.0.5:1 }}>
+                <button onClick={connect} disabled={!path.trim()} className="r8-btn r8-btn-p" style={{ opacity:!path.trim() ? 0.5 : 1 }}>
                     <HardDrive size={13}/> Connect Repository
                 </button>
             </div>
