@@ -12,7 +12,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { fetchData } from '../../utils/api';
-import { theme } from '../../utils/theme';
+import { THEME } from '../../utils/theme.jsx';
 
 const DBATaskSchedulerTab = () => {
   const [tasks, setTasks] = useState([]);
@@ -206,19 +206,19 @@ const DBATaskSchedulerTab = () => {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return theme.danger;
-      case 'medium': return theme.warning;
-      case 'low': return theme.success;
-      default: return theme.textMuted;
+      case 'high': return THEME.danger;
+      case 'medium': return THEME.warning;
+      case 'low': return THEME.success;
+      default: return THEME.textMuted;
     }
   };
 
   const getCategoryColor = (category) => {
     switch (category) {
-      case 'Daily': return theme.primary;
-      case 'Weekly': return theme.secondary;
-      case 'Monthly': return theme.ai;
-      default: return theme.textMuted;
+      case 'Daily': return THEME.primary;
+      case 'Weekly': return THEME.secondary;
+      case 'Monthly': return THEME.ai;
+      default: return THEME.textMuted;
     }
   };
 
@@ -238,7 +238,7 @@ const DBATaskSchedulerTab = () => {
       <div style={styles.header}>
         <div style={styles.headerTop}>
           <div style={styles.titleSection}>
-            <CalendarCheck size={28} color={theme.primary} />
+            <CalendarCheck size={28} color={THEME.primary} />
             <h1 style={styles.title}>DBA Task Scheduler</h1>
           </div>
         </div>
@@ -249,25 +249,25 @@ const DBATaskSchedulerTab = () => {
             icon={<CalendarCheck size={20} />}
             label="Total Tasks"
             value={stats.total}
-            color={theme.primary}
+            color={THEME.primary}
           />
           <StatCard
             icon={<CheckCircle size={20} />}
             label="Completed"
             value={stats.done}
-            color={theme.success}
+            color={THEME.success}
           />
           <StatCard
             icon={<Clock size={20} />}
             label="Pending"
             value={stats.pending}
-            color={theme.warning}
+            color={THEME.warning}
           />
           <StatCard
             icon={<TrendingUp size={20} />}
             label="Completion %"
             value={stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0}
-            color={theme.secondary}
+            color={THEME.secondary}
             suffix="%"
           />
         </div>
@@ -408,7 +408,7 @@ const DBATaskSchedulerTab = () => {
         <div style={styles.loadingState}>Loading tasks...</div>
       ) : error ? (
         <div style={styles.errorState}>
-          <AlertCircle size={20} color={theme.danger} />
+          <AlertCircle size={20} color={THEME.danger} />
           {error}
         </div>
       ) : filteredTasks.length === 0 ? (
@@ -585,7 +585,7 @@ const TaskRow = ({
               <span
                 style={{
                   ...styles.dueDateBadge,
-                  color: isOverdue ? theme.danger : theme.textMuted,
+                  color: isOverdue ? THEME.danger : THEME.textMuted,
                 }}
               >
                 {new Date(task.dueDate).toLocaleDateString()}
@@ -652,9 +652,9 @@ const Styles = () => (
 const styles = {
   container: {
     padding: '24px',
-    backgroundColor: theme.bg,
-    color: theme.textMain,
-    fontFamily: theme.fontBody,
+    backgroundColor: THEME.bg,
+    color: THEME.textMain,
+    fontFamily: THEME.fontBody,
     minHeight: '100vh',
   },
 
@@ -679,8 +679,8 @@ const styles = {
     fontSize: 28,
     fontWeight: 700,
     margin: 0,
-    color: theme.textMain,
-    fontFamily: theme.fontDisplay,
+    color: THEME.textMain,
+    fontFamily: THEME.fontDisplay,
     letterSpacing: '-0.5px',
   },
 
@@ -695,8 +695,8 @@ const styles = {
     alignItems: 'center',
     gap: 16,
     padding: 16,
-    backgroundColor: theme.surface,
-    border: `1px solid ${theme.glassBorder}`,
+    backgroundColor: THEME.surface,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 8,
     backdropFilter: 'blur(10px)',
     transition: 'all 0.2s ease',
@@ -716,7 +716,7 @@ const styles = {
 
   statLabel: {
     fontSize: 12,
-    color: theme.textMuted,
+    color: THEME.textMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: 4,
@@ -726,7 +726,7 @@ const styles = {
   statValue: {
     fontSize: 22,
     fontWeight: 700,
-    fontFamily: theme.fontMono,
+    fontFamily: THEME.fontMono,
   },
 
   controlsRow: {
@@ -747,67 +747,67 @@ const styles = {
   filterTab: {
     padding: '8px 16px',
     backgroundColor: 'transparent',
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMuted,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMuted,
     borderRadius: 6,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 500,
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   filterTabActive: {
-    backgroundColor: theme.surface,
-    color: theme.primary,
-    borderColor: theme.primary,
-    boxShadow: `0 0 12px ${theme.primary}40`,
+    backgroundColor: THEME.surface,
+    color: THEME.primary,
+    borderColor: THEME.primary,
+    boxShadow: `0 0 12px ${THEME.primary}40`,
   },
 
   searchInput: {
     padding: '8px 12px',
-    backgroundColor: theme.surface,
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMain,
+    backgroundColor: THEME.surface,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMain,
     borderRadius: 6,
     fontSize: 13,
     minWidth: 180,
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   addButton: {
     display: 'flex',
     alignItems: 'center',
     padding: '8px 16px',
-    backgroundColor: theme.primary,
+    backgroundColor: THEME.primary,
     border: 'none',
-    color: theme.bg,
+    color: THEME.bg,
     borderRadius: 6,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   resetButton: {
     padding: '8px 12px',
     backgroundColor: 'transparent',
-    border: `1px solid ${theme.textMuted}40`,
-    color: theme.textMuted,
+    border: `1px solid ${THEME.textMuted}40`,
+    color: THEME.textMuted,
     borderRadius: 6,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   formContainer: {
     padding: 20,
-    backgroundColor: theme.surface,
-    border: `1px solid ${theme.glassBorder}`,
+    backgroundColor: THEME.surface,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 8,
     marginBottom: 32,
     backdropFilter: 'blur(10px)',
@@ -817,9 +817,9 @@ const styles = {
   formTitle: {
     fontSize: 16,
     fontWeight: 600,
-    color: theme.textMain,
+    color: THEME.textMain,
     margin: '0 0 16px 0',
-    fontFamily: theme.fontDisplay,
+    fontFamily: THEME.fontDisplay,
   },
 
   formGrid: {
@@ -831,23 +831,23 @@ const styles = {
 
   formInput: {
     padding: '8px 12px',
-    backgroundColor: theme.surfaceHover,
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMain,
+    backgroundColor: THEME.surfaceHover,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMain,
     borderRadius: 6,
     fontSize: 13,
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
     transition: 'all 0.2s ease',
   },
 
   formSelect: {
     padding: '8px 12px',
-    backgroundColor: theme.surfaceHover,
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMain,
+    backgroundColor: THEME.surfaceHover,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMain,
     borderRadius: 6,
     fontSize: 13,
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
     transition: 'all 0.2s ease',
   },
 
@@ -859,34 +859,34 @@ const styles = {
 
   saveButton: {
     padding: '8px 20px',
-    backgroundColor: theme.primary,
+    backgroundColor: THEME.primary,
     border: 'none',
-    color: theme.bg,
+    color: THEME.bg,
     borderRadius: 6,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   cancelButton: {
     padding: '8px 20px',
     backgroundColor: 'transparent',
-    border: `1px solid ${theme.textMuted}40`,
-    color: theme.textMuted,
+    border: `1px solid ${THEME.textMuted}40`,
+    color: THEME.textMuted,
     borderRadius: 6,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   loadingState: {
     textAlign: 'center',
     padding: 40,
-    color: theme.textMuted,
+    color: THEME.textMuted,
     fontSize: 14,
   },
 
@@ -895,9 +895,9 @@ const styles = {
     alignItems: 'center',
     gap: 12,
     padding: 16,
-    backgroundColor: `${theme.danger}20`,
-    border: `1px solid ${theme.danger}40`,
-    color: theme.danger,
+    backgroundColor: `${THEME.danger}20`,
+    border: `1px solid ${THEME.danger}40`,
+    color: THEME.danger,
     borderRadius: 8,
     marginBottom: 16,
     fontSize: 13,
@@ -906,7 +906,7 @@ const styles = {
   emptyState: {
     textAlign: 'center',
     padding: 60,
-    color: theme.textMuted,
+    color: THEME.textMuted,
     fontSize: 14,
   },
 
@@ -927,7 +927,7 @@ const styles = {
     alignItems: 'center',
     gap: 12,
     padding: '12px 16px',
-    backgroundColor: theme.surfaceHover,
+    backgroundColor: THEME.surfaceHover,
     borderRadius: 6,
     borderLeft: '4px solid',
     marginBottom: 8,
@@ -936,26 +936,26 @@ const styles = {
   categoryName: {
     fontSize: 14,
     fontWeight: 600,
-    color: theme.textMain,
+    color: THEME.textMain,
     flex: 1,
   },
 
   categoryCount: {
     fontSize: 12,
-    color: theme.textMuted,
-    backgroundColor: theme.surface,
+    color: THEME.textMuted,
+    backgroundColor: THEME.surface,
     padding: '2px 8px',
     borderRadius: 4,
     fontWeight: 500,
-    fontFamily: theme.fontMono,
+    fontFamily: THEME.fontMono,
   },
 
   taskRow: {
     display: 'flex',
     flexDirection: 'column',
     padding: 12,
-    backgroundColor: theme.surface,
-    border: `1px solid ${theme.glassBorder}`,
+    backgroundColor: THEME.surface,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 6,
     transition: 'all 0.2s ease',
   },
@@ -970,7 +970,7 @@ const styles = {
     width: 18,
     height: 18,
     cursor: 'pointer',
-    accentColor: theme.primary,
+    accentColor: THEME.primary,
   },
 
   priorityDot: {
@@ -988,7 +988,7 @@ const styles = {
   taskTitle: {
     fontSize: 14,
     fontWeight: 500,
-    color: theme.textMain,
+    color: THEME.textMain,
     marginBottom: 4,
     wordBreak: 'break-word',
   },
@@ -1003,8 +1003,8 @@ const styles = {
   recurrenceBadge: {
     display: 'inline-block',
     fontSize: 11,
-    backgroundColor: `${theme.primary}20`,
-    color: theme.primary,
+    backgroundColor: `${THEME.primary}20`,
+    color: THEME.primary,
     padding: '2px 8px',
     borderRadius: 3,
     fontWeight: 500,
@@ -1014,8 +1014,8 @@ const styles = {
   assigneeBadge: {
     display: 'inline-block',
     fontSize: 11,
-    backgroundColor: `${theme.secondary}20`,
-    color: theme.secondary,
+    backgroundColor: `${THEME.secondary}20`,
+    color: THEME.secondary,
     padding: '2px 8px',
     borderRadius: 3,
     fontWeight: 500,
@@ -1024,7 +1024,7 @@ const styles = {
   dueDateBadge: {
     display: 'inline-block',
     fontSize: 11,
-    backgroundColor: `${theme.textMuted}10`,
+    backgroundColor: `${THEME.textMuted}10`,
     padding: '2px 8px',
     borderRadius: 3,
     fontWeight: 500,
@@ -1033,8 +1033,8 @@ const styles = {
   notesButton: {
     padding: 6,
     backgroundColor: 'transparent',
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMuted,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMuted,
     borderRadius: 4,
     cursor: 'pointer',
     display: 'flex',
@@ -1046,8 +1046,8 @@ const styles = {
   editButton: {
     padding: 6,
     backgroundColor: 'transparent',
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMuted,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMuted,
     borderRadius: 4,
     cursor: 'pointer',
     display: 'flex',
@@ -1059,8 +1059,8 @@ const styles = {
   deleteButton: {
     padding: 6,
     backgroundColor: 'transparent',
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.danger,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.danger,
     borderRadius: 4,
     cursor: 'pointer',
     display: 'flex',
@@ -1072,15 +1072,15 @@ const styles = {
   notesExpandedContainer: {
     marginTop: 12,
     paddingTop: 12,
-    borderTop: `1px solid ${theme.glassBorder}`,
+    borderTop: `1px solid ${THEME.glassBorder}`,
   },
 
   notesExpanded: {
     fontSize: 12,
-    color: theme.textMuted,
+    color: THEME.textMuted,
     lineHeight: 1.6,
     padding: '8px',
-    backgroundColor: theme.surfaceHover,
+    backgroundColor: THEME.surfaceHover,
     borderRadius: 4,
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
@@ -1088,8 +1088,8 @@ const styles = {
 
   taskRowEdit: {
     padding: 12,
-    backgroundColor: theme.surface,
-    border: `2px solid ${theme.primary}`,
+    backgroundColor: THEME.surface,
+    border: `2px solid ${THEME.primary}`,
     borderRadius: 6,
   },
 
@@ -1101,22 +1101,22 @@ const styles = {
 
   editInput: {
     padding: '8px 10px',
-    backgroundColor: theme.surfaceHover,
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMain,
+    backgroundColor: THEME.surfaceHover,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMain,
     borderRadius: 4,
     fontSize: 12,
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   editSelect: {
     padding: '8px 10px',
-    backgroundColor: theme.surfaceHover,
-    border: `1px solid ${theme.glassBorder}`,
-    color: theme.textMain,
+    backgroundColor: THEME.surfaceHover,
+    border: `1px solid ${THEME.glassBorder}`,
+    color: THEME.textMain,
     borderRadius: 4,
     fontSize: 12,
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   editActions: {
@@ -1129,28 +1129,28 @@ const styles = {
 
   editSaveBtn: {
     padding: '6px 14px',
-    backgroundColor: theme.success,
+    backgroundColor: THEME.success,
     border: 'none',
-    color: theme.bg,
+    color: THEME.bg,
     borderRadius: 4,
     cursor: 'pointer',
     fontSize: 12,
     fontWeight: 600,
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 
   editCancelBtn: {
     padding: '6px 14px',
     backgroundColor: 'transparent',
-    border: `1px solid ${theme.textMuted}40`,
-    color: theme.textMuted,
+    border: `1px solid ${THEME.textMuted}40`,
+    color: THEME.textMuted,
     borderRadius: 4,
     cursor: 'pointer',
     fontSize: 12,
     fontWeight: 600,
     transition: 'all 0.2s ease',
-    fontFamily: theme.fontBody,
+    fontFamily: THEME.fontBody,
   },
 };
 
