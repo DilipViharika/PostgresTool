@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { T } from '../constants/theme.js';
 import { ROLES, RESOURCE_ROWS, DEFAULT_PERMISSIONS, PERM_LABELS, PERM_COLORS, DEPARTMENTS, LOCATIONS } from '../constants/index.js';
 import { useDebounce, useClickOutside } from '../hooks/index.js';
-import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter } from '../generatePassword, relTime…/components/ui.jsx';
+import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter } from '../shared/components/ui.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────────
    ANALYTICS HEADER — top KPI row

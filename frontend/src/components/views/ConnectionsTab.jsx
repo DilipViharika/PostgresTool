@@ -33,7 +33,7 @@ const ConnectionsTab = () => {
   const [formData, setFormData] = useState({
     name: '',
     host: '',
-    port: '5432',
+    port: '',
     database: '',
     username: '',
     password: '',

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { T } from '../constants/theme.js';
 import { AUDIT_LEVELS, SESSION_RISK_COLORS } from '../constants/index.js';
-import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter } from '../generatePassword, relTime…/components/ui.jsx';
+import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter } from '../shared/components/ui.jsx';
 
 /* ─── Mock data — in production, replace with useFetch('/api/audit') ──────── */
 const AUDIT_EVENTS = [

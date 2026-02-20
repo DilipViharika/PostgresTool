@@ -12,7 +12,7 @@ const BASE = '/api';
 
 /** Shared fetch wrapper with auth header and error normalisation */
 async function request(path, options = {}) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('vigil_token');
     const res = await fetch(`${BASE}${path}`, {
         ...options,
         headers: {
