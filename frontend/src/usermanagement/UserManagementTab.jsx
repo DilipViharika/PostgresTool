@@ -194,9 +194,9 @@ function useUsers(initialUsers = []) {
     const [error, setError] = useState(null);
     const abortRef = useRef(null);
 
-    // FIXED: Now checks 'token' first before 'auth_token'
+    // Uses the app-wide token key 'vigil_token' set by AuthContext
     const getAuthHeaders = useCallback(() => {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('auth_token');
+        const token = localStorage.getItem('vigil_token');
         return {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),

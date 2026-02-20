@@ -3,10 +3,10 @@ import {
     MessageSquare, X, Send, ThumbsUp, AlertTriangle,
     Lightbulb, Star, ChevronDown, Layers, PlusCircle
 } from 'lucide-react';
-import { THEME } from '../utils/theme.jsx';
+import { THEME } from '../../utils/theme.jsx';
 
-/* ─── Auth token key — must match your login flow ───────────────────────── */
-const AUTH_TOKEN_KEY = 'token';
+/* ─── Auth token key — must match AuthContext storage key ───────────────── */
+const AUTH_TOKEN_KEY = 'vigil_token';
 
 /* ─── All app sections pulled from TAB_CONFIG in App.jsx ────────────────── */
 const APP_SECTIONS = [
@@ -295,7 +295,7 @@ const FeatureRequestForm = ({ data, onChange }) => {
             </div>
 
             {/* Remarks */}
-            <div style={{ marginBottom: 4 }}>
+            <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Additional Remarks / Suggested Approach</label>
                 <textarea
                     value={data.remarks}
@@ -305,6 +305,35 @@ const FeatureRequestForm = ({ data, onChange }) => {
                     maxLength={500}
                     style={inputStyle}
                 />
+            </div>
+
+            {/* ── Suggest a new tab ───────────────────────────────────────── */}
+            <div style={{
+                marginTop: 14,
+                padding: '12px 14px',
+                border: `1px dashed ${THEME.primary}40`,
+                borderRadius: 8,
+                background: `${THEME.primary}06`,
+            }}>
+                <label style={{ ...labelStyle, color: THEME.primary, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <PlusCircle size={12} /> Suggest a New Tab / Section
+                    <span style={{ fontSize: 10, fontWeight: 400, color: THEME.textMuted, textTransform: 'none', letterSpacing: 0, marginLeft: 4 }}>
+                        (optional)
+                    </span>
+                </label>
+                <input
+                    type="text"
+                    value={data.suggestedTab || ''}
+                    onChange={e => onChange('suggestedTab', e.target.value)}
+                    placeholder="e.g. Query History, Cost Estimator, Live Replication…"
+                    maxLength={80}
+                    style={{ ...inputStyle, resize: undefined, borderColor: data.suggestedTab ? THEME.primary : THEME.grid }}
+                />
+                {data.suggestedTab && (
+                    <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>
+                        Describe what this tab should do in the "Description" field above.
+                    </div>
+                )}
             </div>
 
             {/* Priority */}
@@ -348,7 +377,7 @@ const FeedbackWidget = () => {
     const [section, setSection]             = useState('all');       // selected section id
     const [sectionForms, setSectionForms]   = useState({ all: emptySection() }); // keyed by section id
     const [featureData, setFeatureData]     = useState({
-        section: 'all', title: '', description: '', remarks: '', priority: 'Medium',
+        section: 'all', title: '', description: '', remarks: '', priority: 'Medium', suggestedTab: '',
     });
     const [submitting, setSubmitting]       = useState(false);
     const [sent, setSent]                   = useState(false);
@@ -398,7 +427,7 @@ const FeedbackWidget = () => {
         setActiveTab('bug');
         setSection('all');
         setSectionForms({ all: emptySection() });
-        setFeatureData({ section: 'all', title: '', description: '', remarks: '', priority: 'Medium' });
+        setFeatureData({ section: 'all', title: '', description: '', remarks: '', priority: 'Medium', suggestedTab: '' });
         setError('');
         setSent(false);
     };
@@ -426,6 +455,7 @@ const FeedbackWidget = () => {
                 feature_title: featureData.title.trim(),
                 feature_priority: featureData.priority,
                 section: featureData.section,
+                suggested_tab: featureData.suggestedTab.trim() || null,
                 user_metadata: {
                     page:       window.location.pathname,
                     userAgent:  navigator.userAgent,
