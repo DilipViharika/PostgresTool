@@ -60,7 +60,102 @@ const GlobalStyles = () => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  DATABASE PANEL
+//  LEFT PANEL — clean minimal brand panel
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FEATURES_SIMPLE = [
+    { icon: Activity,   label: 'Real-time metrics',    desc: 'QPS, latency & cache hit — live'   },
+    { icon: Bell,       label: 'Smart alerting',       desc: 'Fires before customers notice'     },
+    { icon: Search,     label: 'Query inspector',      desc: 'EXPLAIN plans in one click'        },
+    { icon: RefreshCw,  label: 'Replication monitor',  desc: 'WAL lag & standby health'          },
+    { icon: TrendingUp, label: 'Trend analysis',       desc: 'Anomaly detection across clusters' },
+    { icon: UserCheck,  label: 'Access audit',         desc: 'RBAC & compliance trails'          },
+];
+
+const LeftPanel = () => (
+    <div style={{
+        flex: '1 1 0', minWidth: 0, height: '100vh',
+        background: '#05080f',
+        borderRight: '1px solid rgba(255,255,255,.06)',
+        display: 'flex', flexDirection: 'column',
+        position: 'relative', overflow: 'hidden',
+    }}>
+        {/* Subtle radial glow — top-left */}
+        <div style={{ position:'absolute', top:'-10%', left:'-5%', width:'60%', height:'55%', background:'radial-gradient(circle,rgba(14,165,233,.07) 0%,transparent 70%)', pointerEvents:'none' }}/>
+        {/* Subtle radial glow — bottom-right */}
+        <div style={{ position:'absolute', bottom:'-10%', right:'0%', width:'50%', height:'50%', background:'radial-gradient(circle,rgba(20,184,166,.05) 0%,transparent 70%)', pointerEvents:'none' }}/>
+        {/* Faint dot grid */}
+        <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(14,165,233,.12) 1px,transparent 1px)', backgroundSize:'32px 32px', opacity:.35, pointerEvents:'none' }}/>
+
+        {/* ── Top logo bar ── */}
+        <div style={{ position:'relative', zIndex:1, padding:'22px 36px', display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
+            <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#0ea5e9,#38bdf8)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 20px rgba(14,165,233,.4)' }}>
+                <Database size={16} color="#fff"/>
+            </div>
+            <div>
+                <div style={{ fontSize:13, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.16em', textTransform:'uppercase', lineHeight:1 }}>Vigil</div>
+                <div style={{ fontSize:9, color:'rgba(56,189,248,.35)', fontFamily:"'JetBrains Mono',monospace", marginTop:2, letterSpacing:'.06em' }}>PostgreSQL Monitor</div>
+            </div>
+        </div>
+
+        {/* ── Main centred content ── */}
+        <div style={{ position:'relative', zIndex:1, flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 48px 40px' }}>
+
+            {/* Headline */}
+            <div style={{ marginBottom:40, animation:'fadeUp .6s ease .1s backwards' }}>
+                <div style={{ display:'inline-flex', alignItems:'center', gap:7, background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.18)', borderRadius:20, padding:'4px 12px', marginBottom:18 }}>
+                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', display:'inline-block', boxShadow:'0 0 6px #22c55e', animation:'pulse 2s ease infinite' }}/>
+                    <span style={{ fontSize:10, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.12em' }}>LIVE MONITORING</span>
+                </div>
+                <h2 style={{ fontSize:36, fontWeight:800, color:'#e8f4fc', fontFamily:"'Syne',sans-serif", lineHeight:1.18, letterSpacing:'-.03em', margin:0 }}>
+                    Complete visibility<br/>
+                    for your <span style={{ color:'#0ea5e9' }}>PostgreSQL</span><br/>
+                    clusters.
+                </h2>
+                <p style={{ fontSize:13, color:'rgba(148,180,210,.55)', lineHeight:1.7, marginTop:16, fontFamily:"'DM Sans',sans-serif", fontWeight:400, maxWidth:340 }}>
+                    One dashboard for query performance, replication health, connection pools and anomaly alerts — in real time.
+                </p>
+            </div>
+
+            {/* Feature list — two columns, minimal */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px 24px', animation:'fadeUp .6s ease .2s backwards' }}>
+                {FEATURES_SIMPLE.map(({ icon: Icon, label, desc }) => (
+                    <div key={label} style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                        <div style={{ width:28, height:28, borderRadius:8, background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
+                            <Icon size={13} color="#38bdf8"/>
+                        </div>
+                        <div>
+                            <div style={{ fontSize:11.5, fontWeight:600, color:'#b8d4e8', fontFamily:"'DM Sans',sans-serif", lineHeight:1.3 }}>{label}</div>
+                            <div style={{ fontSize:10, color:'rgba(148,180,210,.4)', fontFamily:"'DM Sans',sans-serif", marginTop:2, lineHeight:1.4 }}>{desc}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.15),transparent)', margin:'32px 0', animation:'fadeUp .6s ease .3s backwards' }}/>
+
+            {/* Social proof / trust line */}
+            <div style={{ display:'flex', alignItems:'center', gap:20, animation:'fadeUp .6s ease .35s backwards' }}>
+                {[['99.9%','Uptime SLA'],['< 1s','Alert latency'],['SOC 2','Type II']].map(([val, lbl]) => (
+                    <div key={lbl} style={{ textAlign:'center' }}>
+                        <div style={{ fontSize:15, fontWeight:800, color:'#38bdf8', fontFamily:"'Syne',sans-serif", lineHeight:1 }}>{val}</div>
+                        <div style={{ fontSize:9, color:'rgba(148,180,210,.4)', marginTop:3, fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.05em' }}>{lbl}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        {/* ── Bottom footer ── */}
+        <div style={{ position:'relative', zIndex:1, padding:'16px 36px', borderTop:'1px solid rgba(255,255,255,.04)', display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+            <Lock size={9} color="rgba(56,189,248,.2)"/>
+            <span style={{ fontSize:9, color:'rgba(56,189,248,.2)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>End-to-end encrypted · SOC 2 Type II · © 2025 Vigil</span>
+        </div>
+    </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  LEGACY PANEL — kept for reference but unused
 // ─────────────────────────────────────────────────────────────────────────────
 const DatabasePanel = () => (
     <div style={{ width:'100%', height:'100%', background:'linear-gradient(150deg,#020c1c 0%,#030f24 60%,#021020 100%)', borderRadius:12, overflow:'hidden', position:'relative', fontFamily:'JetBrains Mono,monospace' }}>
@@ -399,7 +494,7 @@ const VisualPanel = () => (
                 <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
                     <span style={{ fontSize:14 }}>😰</span>
                     <div>
-                        <div style={{ fontSize:9, fontWeight:800, color:'#ef4444', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITHOUT </div>
+                        <div style={{ fontSize:9, fontWeight:800, color:'#ef4444', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITHOUT VIGIL</div>
                         <div style={{ fontSize:7.5, color:'#6b3040', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Flying blind on your database</div>
                     </div>
                 </div>
@@ -537,7 +632,7 @@ const VisualPanel = () => (
                 {/* Pipeline steps */}
                 {[
                     { icon:'🗄', label:'Your Postgres DB', sub:'pg_stat_statements\npg_stat_replication', color:'#0ea5e9' },
-                    { icon:'⚡', label:' Agent', sub:'Samples every second\nZero schema changes', color:'#a78bfa' },
+                    { icon:'⚡', label:'Vigil Agent', sub:'Samples every second\nZero schema changes', color:'#a78bfa' },
                     { icon:'🔍', label:'Analysis Engine', sub:'Anomaly detection\nQuery fingerprinting', color:'#f59e0b' },
                     { icon:'📊', label:'Your Dashboard', sub:'Live metrics & alerts\nEXPLAIN plans', color:'#22c55e' },
                 ].map(({ icon, label, sub, color }, i, arr) => (
@@ -568,7 +663,7 @@ const VisualPanel = () => (
             <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
                 <span style={{ fontSize:14 }}>✅</span>
                 <div>
-                    <div style={{ fontSize:9, fontWeight:800, color:'#22c55e', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITH  — FULL MONITORING COVERAGE</div>
+                    <div style={{ fontSize:9, fontWeight:800, color:'#22c55e', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITH VIGIL — FULL MONITORING COVERAGE</div>
                     <div style={{ fontSize:7.5, color:'#1a3050', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Everything you need to keep Postgres healthy, fast, and available</div>
                 </div>
             </div>
@@ -579,66 +674,6 @@ const VisualPanel = () => (
                 <CapCard icon="🔄" title="Replication Monitor" desc="WAL archiving, streaming lag, and standby health tracked end-to-end." color="#14b8a6"/>
                 <CapCard icon="📈" title="Trend Analysis" desc="Anomaly detection across clusters — spot issues before they become outages." color="#f43f5e"/>
                 <CapCard icon="🔐" title="Access Audit" desc="Full RBAC visibility and compliance trails for every database operation." color="#22c55e"/>
-            </div>
-        </div>
-    </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  LEFT PANEL
-// ─────────────────────────────────────────────────────────────────────────────
-const LeftPanel = () => (
-    <div style={{ flex:'1 1 0', minWidth:0, background:'#05080f', borderRight:'1px solid rgba(255,255,255,.05)', display:'flex', flexDirection:'column', overflow:'hidden', position:'relative', height:'100vh' }}>
-        <div style={{ position:'absolute', inset:0, opacity:.015, pointerEvents:'none', backgroundImage:'linear-gradient(rgba(14,165,233,1) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,1) 1px,transparent 1px)', backgroundSize:'40px 40px' }}/>
-        <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 70% 50% at 25% 15%,rgba(14,165,233,.06) 0%,transparent 70%), radial-gradient(ellipse 50% 55% at 80% 85%,rgba(20,184,166,.04) 0%,transparent 70%)' }}/>
-
-        {/* Top bar */}
-        <div style={{ position:'relative', zIndex:1, padding:'11px 26px', borderBottom:'1px solid rgba(255,255,255,.04)', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, animation:'fadeUp .5s ease backwards' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={{ width:32, height:32, borderRadius:9, background:'linear-gradient(135deg,#0ea5e9,#38bdf8)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 18px rgba(14,165,233,.45)' }}>
-                    <Database size={14} color="#fff" />
-                </div>
-                <div>
-                    <div style={{ fontSize:10.5, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.18em', textTransform:'uppercase', lineHeight:1 }}>PostgreSQL Monitor</div>
-                    <div style={{ fontSize:8, color:'#0f2540', fontFamily:"'JetBrains Mono',monospace", marginTop:2 }}>v2.0.1 · Production</div>
-                </div>
-            </div>
-            <div style={{ display:'flex', gap:7 }}>
-                {[['99.9% UPTIME','#22c55e'],['MONITOR','#0ea5e9']].map(([t,c])=>(
-                    <div key={t} style={{ display:'flex', alignItems:'center', gap:5, background:`${c}0a`, border:`1px solid ${c}20`, borderRadius:20, padding:'3px 10px' }}>
-                        <span style={{ width:5, height:5, borderRadius:'50%', background:c, display:'inline-block', animation:'pulse 2s ease infinite' }}/>
-                        <span style={{ fontSize:7.5, color:c, fontFamily:"'JetBrains Mono',monospace", fontWeight:700, letterSpacing:'.07em' }}>{t}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-
-        {/* Scrollable content */}
-        <div style={{ position:'relative', zIndex:1, flex:1, display:'flex', flexDirection:'column', overflowY:'auto', overflowX:'hidden' }}>
-            {/* Headline */}
-            <div style={{ padding:'14px 26px 10px', flexShrink:0, animation:'fadeUp .6s ease .06s backwards' }}>
-                <h2 style={{ fontSize:20, fontWeight:800, color:'#dde8f2', fontFamily:"'Syne',sans-serif", lineHeight:1.25, letterSpacing:'-.03em', marginBottom:5 }}>
-                    Database issues with{' '}
-                    <span style={{ color:'#ef4444' }}>no visibility?</span>
-                    {' '} fixes that.
-                </h2>
-                <p style={{ fontSize:10.5, color:'#1a2e4a', lineHeight:1.6, fontFamily:"'DM Sans',sans-serif" }}>
-                    Complete PostgreSQL monitoring — from cluster health to slow-query forensics — in one place, in real time.
-                </p>
-            </div>
-
-            {/* Main Visual — Problem → Solution */}
-            <div style={{ padding:'0 26px 16px', animation:'fadeUp .6s ease .12s backwards' }}>
-                <VisualPanel />
-            </div>
-
-            {/* Footer */}
-            <div style={{ padding:'10px 26px 14px', borderTop:'1px solid rgba(255,255,255,.03)', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, marginTop:'auto' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                    <Lock size={9} color="#0f2540" />
-                    <span style={{ fontSize:8, color:'#0f2540', fontFamily:"'JetBrains Mono',monospace" }}>End-to-end encrypted · SOC 2 Type II</span>
-                </div>
-                <span style={{ fontSize:8, color:'#0f2540', fontFamily:"'JetBrains Mono',monospace" }}>© 2025 </span>
             </div>
         </div>
     </div>
@@ -911,7 +946,7 @@ const LoginPage = () => {
                     {/* Footer */}
                     <div style={{ marginTop:18, display:'flex', alignItems:'center', justifyContent:'center', gap:5, animation:'fadeUp .6s ease .6s backwards' }}>
                         <Shield size={9} color="#0a1828" style={{ opacity:.4 }}/>
-                        <span style={{ fontSize:9, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace" }}>Secured by  · PostgreSQL Monitor v2.0</span>
+                        <span style={{ fontSize:9, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace" }}>Secured by Vigil · PostgreSQL Monitor v2.0</span>
                     </div>
                 </div>
             </div>
