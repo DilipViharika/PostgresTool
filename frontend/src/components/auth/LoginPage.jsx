@@ -1,13 +1,12 @@
 // ==========================================================================
-//  VIGIL — Login Page  (v5.0 — Cinematic Overdrive)
+//  VIGIL — Login Page  (Screenshot Match Edition)
 // ==========================================================================
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
-    User, KeyRound, Activity, Shield, Lock,
-    Bell, RefreshCw, Search, TrendingUp,
-    Zap, Server, Cpu, GitBranch, Radio, Terminal,
+    User, KeyRound, Shield, Lock,
+    Activity, Bell, Search, TrendingUp, RefreshCw, UserCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -47,25 +46,20 @@ const GlobalStyles = () => (
         @keyframes pulseDot    { 0%,100%{opacity:1} 50%{opacity:.35} }
         @keyframes orb1        { 0%,100%{transform:translate(0,0) scale(1);opacity:.6} 33%{transform:translate(40px,-60px) scale(1.12);opacity:.85} 66%{transform:translate(-25px,-25px) scale(.93);opacity:.5} }
         @keyframes orb2        { 0%,100%{transform:translate(0,0) scale(1);opacity:.45} 50%{transform:translate(-50px,40px) scale(1.15);opacity:.7} }
-        @keyframes orb3        { 0%,100%{transform:translate(0,0);opacity:.3} 40%{transform:translate(20px,-30px);opacity:.5} 80%{transform:translate(-10px,15px);opacity:.25} }
         @keyframes logoPulse   { 0%,100%{transform:scale(1)} 50%{transform:scale(1.045)} }
         @keyframes logoGlow    { 0%,100%{box-shadow:0 0 25px rgba(14,165,233,0.25),0 0 70px rgba(14,165,233,0.08)} 50%{box-shadow:0 0 40px rgba(14,165,233,0.4),0 0 100px rgba(14,165,233,0.12)} }
         @keyframes successPop  { 0%{transform:scale(0) rotate(-45deg);opacity:0} 55%{transform:scale(1.2) rotate(0deg);opacity:1} 100%{transform:scale(1) rotate(0deg);opacity:1} }
         @keyframes successRipple{ 0%{transform:scale(.5);opacity:.6} 100%{transform:scale(3.5);opacity:0} }
-        @keyframes scanline    { 0%{top:-2px;opacity:0} 5%{opacity:.8} 95%{opacity:.8} 100%{top:100%;opacity:0} }
         @keyframes borderPulse { 0%,100%{opacity:.25} 50%{opacity:.9} }
-        @keyframes gridDrift   { from{transform:translate(0,0)} to{transform:translate(60px,60px)} }
-        @keyframes nodePulse   { 0%,100%{opacity:.6} 50%{opacity:1} }
-        @keyframes metricTick  { 0%,100%{opacity:1} 50%{opacity:.55} }
-        @keyframes consoleScroll { from{transform:translateY(0)} to{transform:translateY(-50%)} }
         @keyframes shimmer     { 0%{left:-100%} 100%{left:200%} }
-        @keyframes termBlink   { 0%,100%{opacity:1} 49%{opacity:1} 50%,99%{opacity:0} }
         @keyframes glitchH     {
             0%,88%,100%  { clip-path:none; transform:none; }
             90%  { clip-path:inset(30% 0 55% 0); transform:translateX(-3px); }
             92%  { clip-path:inset(70% 0 5% 0);  transform:translateX(3px);  }
             94%  { clip-path:inset(15% 0 75% 0); transform:translateX(-2px); }
         }
+        @keyframes subtleFloat { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-4px)} }
+        @keyframes scanH       { 0%{top:0%;opacity:0} 5%{opacity:.4} 95%{opacity:.4} 100%{top:100%;opacity:0} }
 
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
@@ -77,8 +71,6 @@ const GlobalStyles = () => (
         }
         .v-input::placeholder { color: #334155; opacity: 1; }
         .v-input:focus::placeholder { color: transparent; }
-        .v-no-scroll::-webkit-scrollbar { display: none; }
-        .v-no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .v-btn-shine::after {
             content: '';
             position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
@@ -86,298 +78,187 @@ const GlobalStyles = () => (
             animation: shimmer 2.8s ease infinite;
             pointer-events: none;
         }
+        .feature-card:hover {
+            border-color: rgba(14,165,233,0.18) !important;
+            background: rgba(14,165,233,0.06) !important;
+        }
+        .screenshot-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        }
     `}</style>
 );
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  PARTICLE CANVAS
+//  MOCK SCREENSHOT PANELS (SVG-based dashboard previews)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const ParticleCanvas = ({ width, height }) => {
-    const canvasRef = useRef(null);
-    const animRef   = useRef(null);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        canvas.width  = width;
-        canvas.height = height;
-
-        const particles = Array.from({ length: 55 }, () => ({
-            x:     Math.random() * width,
-            y:     Math.random() * height,
-            vx:    (Math.random() - 0.5) * 0.35,
-            vy:    (Math.random() - 0.5) * 0.35,
-            r:     Math.random() * 1.6 + 0.3,
-            alpha: Math.random() * 0.5 + 0.1,
-            pulse: Math.random() * Math.PI * 2,
-        }));
-
-        const draw = () => {
-            ctx.clearRect(0, 0, width, height);
-            particles.forEach(p => {
-                p.x += p.vx; p.y += p.vy; p.pulse += 0.015;
-                if (p.x < 0) p.x = width;  if (p.x > width)  p.x = 0;
-                if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
-                const a = p.alpha * (0.65 + 0.35 * Math.sin(p.pulse));
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(14,165,233,${a})`;
-                ctx.fill();
-            });
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx   = particles[i].x - particles[j].x;
-                    const dy   = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 100) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(14,165,233,${0.12 * (1 - dist / 100)})`;
-                        ctx.lineWidth   = 0.5;
-                        ctx.stroke();
-                    }
-                }
-            }
-            animRef.current = requestAnimationFrame(draw);
-        };
-        draw();
-        return () => cancelAnimationFrame(animRef.current);
-    }, [width, height]);
-
-    return <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />;
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  LIVE METRICS HOOK
-// ═══════════════════════════════════════════════════════════════════════════
-
-const useLiveMetrics = () => {
-    const [metrics, setMetrics] = useState({
-        qps: 2847, latency: 1.2, cacheHit: 98.4, connections: 142,
-        replication: 0.012, txps: 1923, bufferHit: 99.1,
-    });
-    useEffect(() => {
-        const iv = setInterval(() => {
-            setMetrics(m => ({
-                qps:         Math.max(1000, m.qps + Math.round((Math.random() - 0.5) * 180)),
-                latency:     Math.max(0.5, parseFloat((m.latency + (Math.random() - 0.5) * 0.15).toFixed(2))),
-                cacheHit:    Math.min(99.9, Math.max(95, parseFloat((m.cacheHit + (Math.random() - 0.5) * 0.3).toFixed(1)))),
-                connections: Math.max(80, m.connections + Math.round((Math.random() - 0.5) * 12)),
-                replication: parseFloat((Math.random() * 0.04).toFixed(3)),
-                txps:        Math.max(800, m.txps + Math.round((Math.random() - 0.5) * 120)),
-                bufferHit:   Math.min(99.9, Math.max(97, parseFloat((m.bufferHit + (Math.random() - 0.5) * 0.15).toFixed(1)))),
-            }));
-        }, 1800);
-        return () => clearInterval(iv);
-    }, []);
-    return metrics;
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  SPARKLINE
-// ═══════════════════════════════════════════════════════════════════════════
-
-const Sparkline = ({ values, color, w = 48, h = 18 }) => {
-    if (!values || values.length < 2) return null;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const range = max - min || 1;
-    const pts = values
-        .map((v, i) => `${(i / (values.length - 1)) * w},${h - ((v - min) / range) * (h - 2) - 1}`)
-        .join(' ');
-    const last = values[values.length - 1];
-    const lx   = w;
-    const ly   = h - ((last - min) / range) * (h - 2) - 1;
-    return (
-        <svg width={w} height={h} style={{ overflow: 'visible', flexShrink: 0 }}>
-            <polyline fill="none" stroke={color} strokeWidth="1.5"
-                      strokeLinecap="round" strokeLinejoin="round"
-                      points={pts} opacity="0.8" />
-            <circle cx={lx} cy={ly} r="2" fill={color} />
-        </svg>
-    );
-};
-
-const useSparkHistory = (value, len = 18) => {
-    const hist = useRef([value]);
-    useEffect(() => {
-        hist.current = [...hist.current.slice(-(len - 1)), value];
-    }, [value, len]);
-    return hist.current;
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  CONSOLE LOG STREAM
-// ═══════════════════════════════════════════════════════════════════════════
-
-const LOG_LINES = [
-    ['info', 'pg_stat_statements: query plan cache flushed'],
-    ['ok',   'autovacuum: processed 847 dead tuples in users_table'],
-    ['warn', 'checkpoint distance ratio: 0.87 (threshold: 0.9)'],
-    ['info', 'replication slot "replica_1": lag 12ms'],
-    ['ok',   'connection pool: 142/200 active, 3 idle'],
-    ['info', 'WAL archiving: segment 000000010000000000000002 archived'],
-    ['ok',   'index scan: idx_orders_created (hits: 99.1%)'],
-    ['warn', 'lock wait: pid 18421 waited 320ms on relation orders'],
-    ['info', 'pg_hba.conf: SCRAM-SHA-256 auth for vigil_monitor'],
-    ['ok',   'buffers: hit=99.1% miss=0.9% evict=0'],
-    ['info', 'shared_buffers: 512MB / 4GB utilisation 12.8%'],
-    ['ok',   'VACUUM ANALYZE users: 0 removed, 0 frozen'],
-    ['info', 'pg_stat_bgwriter: checkpoints_req=0 checkpoints_timed=142'],
-    ['warn', 'slow query: 340ms — SELECT * FROM events WHERE ts > NOW()-1d'],
-    ['ok',   'logical replication: slot lag 0ms, confirmed_flush_lsn advanced'],
-    ['info', 'pg_stat_activity: 3 idle-in-transaction (threshold: 10)'],
-];
-
-const LOG_COLORS = { info: '#38bdf8', ok: '#22c55e', warn: '#f59e0b', err: '#ef4444' };
-
-const ConsoleStream = () => {
-    const doubled = [...LOG_LINES, ...LOG_LINES];
-    return (
-        <div className="v-no-scroll" style={{
-            overflow: 'hidden', height: '100%', position: 'relative',
-            maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
-        }}>
-            <div style={{ animation: 'consoleScroll 28s linear infinite' }}>
-                {doubled.map(([lvl, msg], i) => (
+const DashboardScreenshot = () => (
+    <div style={{
+        width: '100%', height: '100%',
+        background: 'linear-gradient(135deg, #0a1628 0%, #0d1f3c 100%)',
+        borderRadius: 8, overflow: 'hidden', position: 'relative',
+    }}>
+        {/* Header bar */}
+        <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(14,165,233,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+            <span style={{ marginLeft: 6, fontSize: 7, color: '#334155', fontFamily: 'JetBrains Mono, monospace' }}>Dashboard UI</span>
+            <div style={{ marginLeft: 'auto', background: 'rgba(14,165,233,0.15)', borderRadius: 3, padding: '1px 5px' }}>
+                <span style={{ fontSize: 6, color: '#38bdf8', fontFamily: 'JetBrains Mono, monospace' }}>57.1%</span>
+            </div>
+        </div>
+        {/* Content area */}
+        <div style={{ padding: '8px 10px' }}>
+            {/* Mini chart line */}
+            <svg width="100%" height="40" viewBox="0 0 200 40">
+                <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
+                    </linearGradient>
+                </defs>
+                <path d="M0,30 C20,25 40,10 60,15 C80,20 100,8 120,12 C140,16 160,5 180,8 L200,6 L200,40 L0,40 Z" fill="url(#chartGrad)" />
+                <path d="M0,30 C20,25 40,10 60,15 C80,20 100,8 120,12 C140,16 160,5 180,8 L200,6" fill="none" stroke="#0ea5e9" strokeWidth="1.5" />
+            </svg>
+            {/* Bar chart mini */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, marginTop: 4, height: 28 }}>
+                {[60, 80, 45, 90, 55, 75, 40, 85, 65, 95, 50, 70].map((h, i) => (
                     <div key={i} style={{
-                        display: 'flex', gap: 8, alignItems: 'flex-start',
-                        padding: '2.5px 0',
-                    }}>
-                        <span style={{
-                            color: LOG_COLORS[lvl] || '#64748b',
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 9, fontWeight: 700, minWidth: 32,
-                            textTransform: 'uppercase', letterSpacing: '0.04em',
-                        }}>{lvl}</span>
-                        <span style={{
-                            color: '#1e3a5f', fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 9, lineHeight: 1.5, wordBreak: 'break-word',
-                        }}>{msg}</span>
-                    </div>
+                        flex: 1, height: `${h}%`, borderRadius: '2px 2px 0 0',
+                        background: i === 11 ? '#0ea5e9' : `rgba(14,165,233,${0.2 + i * 0.02})`,
+                    }} />
                 ))}
             </div>
         </div>
-    );
-};
+        {/* Bottom label */}
+        <div style={{ position: 'absolute', bottom: 6, left: 10 }}>
+            <span style={{ fontSize: 7, color: '#0ea5e9', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.08em' }}>LIVE DASHBOARD</span>
+        </div>
+        {/* Scan line */}
+        <div style={{
+            position: 'absolute', left: 0, right: 0, height: 1,
+            background: 'linear-gradient(90deg, transparent, rgba(14,165,233,0.3), transparent)',
+            animation: 'scanH 4s linear infinite',
+        }} />
+    </div>
+);
+
+const ChartsScreenshot = () => (
+    <div style={{
+        width: '100%', height: '100%',
+        background: 'linear-gradient(135deg, #0a1628 0%, #120a1e 100%)',
+        borderRadius: 8, overflow: 'hidden', position: 'relative',
+    }}>
+        <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(168,139,250,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+            <span style={{ marginLeft: 6, fontSize: 7, color: '#334155', fontFamily: 'JetBrains Mono, monospace' }}>Data Visualization</span>
+        </div>
+        <div style={{ padding: '8px 10px' }}>
+            {/* Candlestick-like chart */}
+            <svg width="100%" height="55" viewBox="0 0 200 55">
+                {/* Gradient area */}
+                <defs>
+                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
+                    </linearGradient>
+                </defs>
+                <path d="M0,45 C30,40 50,20 80,25 C110,30 130,10 160,15 C180,18 190,10 200,8 L200,55 L0,55 Z" fill="url(#areaGrad)" />
+                <path d="M0,45 C30,40 50,20 80,25 C110,30 130,10 160,15 C180,18 190,10 200,8" fill="none" stroke="#a78bfa" strokeWidth="1.5" />
+                {/* Red candles */}
+                {[20,60,100,140,180].map((x,i) => (
+                    <g key={i}>
+                        <rect x={x-3} y={15+i*3} width={6} height={10+i*2} fill={i%2===0?"#ef4444":"#22c55e"} opacity="0.7" rx="1" />
+                        <line x1={x} y1={12+i*3} x2={x} y2={28+i*4} stroke={i%2===0?"#ef4444":"#22c55e"} strokeWidth="0.8" opacity="0.5" />
+                    </g>
+                ))}
+            </svg>
+        </div>
+        <div style={{ position: 'absolute', bottom: 6, left: 10 }}>
+            <span style={{ fontSize: 7, color: '#a78bfa', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.08em' }}>CHARTS & TRENDS</span>
+        </div>
+    </div>
+);
+
+const NetworkScreenshot = () => (
+    <div style={{
+        width: '100%', height: '100%',
+        background: 'linear-gradient(135deg, #040c0c 0%, #0a1a1a 100%)',
+        borderRadius: 8, overflow: 'hidden', position: 'relative',
+    }}>
+        <div style={{ padding: '8px 10px', borderBottom: '1px solid rgba(20,184,166,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+            <span style={{ marginLeft: 6, fontSize: 7, color: '#334155', fontFamily: 'JetBrains Mono, monospace' }}>Network Topology</span>
+        </div>
+        <div style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100% - 32px)' }}>
+            <svg width="160" height="70" viewBox="0 0 160 70">
+                {/* Network nodes */}
+                <circle cx="80" cy="20" r="8" fill="none" stroke="#14b8a6" strokeWidth="1.2" opacity="0.8" />
+                <circle cx="80" cy="20" r="4" fill="#14b8a6" opacity="0.9" />
+                <circle cx="40" cy="55" r="6" fill="none" stroke="#22c55e" strokeWidth="1" opacity="0.7" />
+                <circle cx="40" cy="55" r="3" fill="#22c55e" opacity="0.9" />
+                <circle cx="120" cy="55" r="6" fill="none" stroke="#22c55e" strokeWidth="1" opacity="0.7" />
+                <circle cx="120" cy="55" r="3" fill="#22c55e" opacity="0.9" />
+                <circle cx="15" cy="35" r="5" fill="#f59e0b" opacity="0.8" />
+                <circle cx="145" cy="35" r="5" fill="#f59e0b" opacity="0.8" />
+                {/* Lines */}
+                <line x1="80" y1="28" x2="40" y2="49" stroke="rgba(14,165,233,0.3)" strokeWidth="0.8" strokeDasharray="3 2" />
+                <line x1="80" y1="28" x2="120" y2="49" stroke="rgba(14,165,233,0.3)" strokeWidth="0.8" strokeDasharray="3 2" />
+                <line x1="15" y1="35" x2="75" y2="22" stroke="rgba(14,165,233,0.2)" strokeWidth="0.8" strokeDasharray="3 2" />
+                <line x1="145" y1="35" x2="85" y2="22" stroke="rgba(14,165,233,0.2)" strokeWidth="0.8" strokeDasharray="3 2" />
+            </svg>
+        </div>
+        <div style={{ position: 'absolute', bottom: 6, left: 10 }}>
+            <span style={{ fontSize: 7, color: '#14b8a6', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.08em' }}>CLUSTER REPLICATION & NETWORK</span>
+        </div>
+    </div>
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  TOPOLOGY SVG
+//  FEATURE CARDS
 // ═══════════════════════════════════════════════════════════════════════════
 
-const TOPO_NODES = [
-    { id: 'primary', x: 50, y: 50, label: 'PRIMARY',   color: '#0ea5e9' },
-    { id: 'r1',      x: 20, y: 82, label: 'REPLICA 1', color: '#22c55e' },
-    { id: 'r2',      x: 80, y: 82, label: 'REPLICA 2', color: '#22c55e' },
-    { id: 'pool',    x: 50, y: 18, label: 'PGBOUNCER', color: '#a78bfa' },
-    { id: 'app1',    x: 14, y:  8, label: 'APP 1',     color: '#f59e0b' },
-    { id: 'app2',    x: 86, y:  8, label: 'APP 2',     color: '#f59e0b' },
+const FEATURES = [
+    { icon: Activity,    label: 'Real-Time Metrics',   desc: 'QPS, latency & cache hit ratios — live.',         color: '#0ea5e9' },
+    { icon: Bell,        label: 'Smart Alerting',       desc: 'Slow query & replication log alerts.',             color: '#a78bfa' },
+    { icon: Search,      label: 'Query Inspector',      desc: 'EXPLAIN plans & pg_stat_statements.',              color: '#f59e0b' },
+    { icon: RefreshCw,   label: 'Replication Health',   desc: 'WAL archiving & standby lag tracking.',            color: '#14b8a6' },
+    { icon: TrendingUp,  label: 'Trend Analysis',       desc: 'Anomaly detection across clusters.',               color: '#f43f5e' },
+    { icon: UserCheck,   label: 'Access Audit',         desc: 'RBAC with full compliance trails.',                color: '#22c55e' },
 ];
-const TOPO_EDGES = [
-    ['primary','r1'], ['primary','r2'],
-    ['pool','primary'], ['app1','pool'], ['app2','pool'],
-];
 
-const TopologyMap = () => {
-    const W = 200, H = 120;
-    const px = (v, dim) => (v / 100) * dim;
-    return (
-        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-            <defs>
-                <marker id="topoArr" markerWidth="5" markerHeight="5" refX="3" refY="2.5" orient="auto">
-                    <path d="M0,0 L5,2.5 L0,5 Z" fill="rgba(14,165,233,0.4)" />
-                </marker>
-            </defs>
-            {TOPO_EDGES.map(([aId, bId], i) => {
-                const a = TOPO_NODES.find(n => n.id === aId);
-                const b = TOPO_NODES.find(n => n.id === bId);
-                if (!a || !b) return null;
-                return (
-                    <line key={i}
-                          x1={px(a.x, W)} y1={px(a.y, H)}
-                          x2={px(b.x, W)} y2={px(b.y, H)}
-                          stroke="rgba(14,165,233,0.18)" strokeWidth="0.8"
-                          strokeDasharray="3 2"
-                          markerEnd="url(#topoArr)" />
-                );
-            })}
-            {TOPO_NODES.map(n => (
-                <g key={n.id} transform={`translate(${px(n.x, W)},${px(n.y, H)})`}>
-                    <circle r="6" fill={n.color} opacity="0.12"
-                            style={{ animation: 'nodePulse 2s ease-in-out infinite' }} />
-                    <circle r="3" fill={n.color} opacity="0.9" />
-                    <text x="0" y="11" textAnchor="middle" style={{
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: 5, fill: '#475569', letterSpacing: '0.04em',
-                    }}>
-                        {n.label}
-                    </text>
-                </g>
-            ))}
-        </svg>
-    );
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  METRIC CARD
-// ═══════════════════════════════════════════════════════════════════════════
-
-const MetricCard = ({ icon: Icon, label, value, unit, color, spark }) => (
+const FeatureCard = ({ icon: Icon, label, desc, color }) => (
     <div
+        className="feature-card"
         style={{
-            background: 'rgba(255,255,255,0.022)', border: `1px solid ${color}16`,
-            borderRadius: 10, padding: '9px 11px', display: 'flex',
-            flexDirection: 'column', gap: 5, position: 'relative', overflow: 'hidden',
-            transition: 'border-color .2s, background .2s', cursor: 'default',
-        }}
-        onMouseEnter={e => {
-            e.currentTarget.style.borderColor = color + '36';
-            e.currentTarget.style.background  = color + '08';
-        }}
-        onMouseLeave={e => {
-            e.currentTarget.style.borderColor = color + '16';
-            e.currentTarget.style.background  = 'rgba(255,255,255,0.022)';
+            background: 'rgba(255,255,255,0.025)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 10, padding: '14px 14px',
+            display: 'flex', flexDirection: 'column', gap: 6,
+            cursor: 'default', transition: 'all .2s ease',
         }}
     >
-        <div style={{ position: 'absolute', bottom: -8, right: -4, opacity: 0.04, pointerEvents: 'none' }}>
-            <Icon size={42} color={color} />
+        <div style={{
+            width: 28, height: 28, borderRadius: 7,
+            background: color + '18',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+            <Icon size={13} color={color} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{
-                    width: 18, height: 18, borderRadius: 4,
-                    background: color + '18',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                    <Icon size={9} color={color} />
-                </div>
-                <span style={{
-                    fontSize: 8.5, color: '#334155',
-                    fontFamily: "'JetBrains Mono', monospace",
-                    textTransform: 'uppercase', letterSpacing: '0.06em',
-                }}>
-                    {label}
-                </span>
-            </div>
-            {spark && <Sparkline values={spark} color={color} />}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-            <span style={{
-                fontSize: 17, fontWeight: 700, color: '#e2e8f0',
-                fontFamily: "'Syne', sans-serif", lineHeight: 1,
-                animation: 'metricTick 2.5s ease-in-out infinite',
-            }}>{value}</span>
-            {unit && (
-                <span style={{
-                    fontSize: 9, color: '#475569',
-                    fontFamily: "'JetBrains Mono', monospace",
-                }}>{unit}</span>
-            )}
-        </div>
+        <div style={{
+            fontSize: 11.5, fontWeight: 700, color: '#c8d6e5',
+            fontFamily: "'Syne', sans-serif", letterSpacing: '-0.01em',
+        }}>{label}</div>
+        <div style={{
+            fontSize: 9.5, color: '#334155', lineHeight: 1.5,
+            fontFamily: "'DM Sans', sans-serif",
+        }}>{desc}</div>
     </div>
 );
 
@@ -385,228 +266,149 @@ const MetricCard = ({ icon: Icon, label, value, unit, color, spark }) => (
 //  LEFT PANEL
 // ═══════════════════════════════════════════════════════════════════════════
 
-const LeftPanel = () => {
-    const metrics = useLiveMetrics();
-    const [panelW, setPanelW] = useState(0);
-    const [panelH, setPanelH] = useState(0);
-    const panelRef = useRef(null);
+const LeftPanel = () => (
+    <div style={{
+        flex: '1 1 0', minWidth: 0,
+        background: '#04080f',
+        borderRight: '1px solid rgba(255,255,255,0.055)',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', position: 'relative', height: '100vh',
+    }}>
+        {/* Background grid */}
+        <div style={{
+            position: 'absolute', inset: 0, opacity: 0.016, pointerEvents: 'none',
+            backgroundImage: `
+                linear-gradient(rgba(14,165,233,1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14,165,233,1) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px',
+        }} />
+        {/* Gradient overlay */}
+        <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: `
+                radial-gradient(ellipse 70% 50% at 30% 20%, rgba(14,165,233,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 60% at 80% 80%, rgba(20,184,166,0.04) 0%, transparent 70%)`,
+        }} />
 
-    const qpsSpark  = useSparkHistory(metrics.qps,         18);
-    const latSpark   = useSparkHistory(metrics.latency,     18);
-    const cacheSpark = useSparkHistory(metrics.cacheHit,    18);
-    const connSpark  = useSparkHistory(metrics.connections, 18);
+        {/* Content */}
+        <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-    useEffect(() => {
-        if (!panelRef.current) return;
-        const ro = new ResizeObserver(entries => {
-            const rect = entries[0].contentRect;
-            setPanelW(rect.width);
-            setPanelH(rect.height);
-        });
-        ro.observe(panelRef.current);
-        return () => ro.disconnect();
-    }, []);
-
-    const secondaryMetrics = [
-        { label: 'TXN/s',    value: metrics.txps.toLocaleString(), color: '#14b8a6' },
-        { label: 'Repl Lag', value: metrics.replication + 's',     color: '#f43f5e' },
-        { label: 'Buf Hit',  value: metrics.bufferHit + '%',        color: '#0ea5e9' },
-    ];
-
-    return (
-        <div ref={panelRef} style={{
-            flex: '1 1 0', minWidth: 0,
-            background: '#04080f',
-            borderRight: '1px solid rgba(255,255,255,0.055)',
-            display: 'flex', flexDirection: 'column',
-            overflow: 'hidden', position: 'relative', height: '100vh',
-        }}>
-            {/* Particle background */}
-            {panelW > 0 && <ParticleCanvas width={panelW} height={panelH} />}
-
-            {/* Grid */}
-            <div style={{
-                position: 'absolute', inset: 0, opacity: 0.018, pointerEvents: 'none',
-                backgroundImage: `
-                    linear-gradient(rgba(14,165,233,1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(14,165,233,1) 1px, transparent 1px)`,
-                backgroundSize: '40px 40px',
-                animation: 'gridDrift 20s linear infinite',
-            }} />
-
-            {/* Gradient sweeps */}
-            <div style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none',
-                background: `
-                    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(14,165,233,0.07) 0%, transparent 70%),
-                    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(20,184,166,0.05) 0%, transparent 70%)`,
-            }} />
-
-            {/* Content */}
-            <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-                {/* ── Header ───────────────────────────────────────────── */}
-                <div style={{ padding: '22px 26px 0', flexShrink: 0, animation: 'fadeUp .6s ease .05s backwards' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                            <div style={{
-                                width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                                background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: '0 4px 24px rgba(14,165,233,0.55)',
-                                animation: 'logoGlow 3s ease-in-out infinite',
-                            }}>
-                                <Database size={16} color="#fff" />
-                            </div>
-                            <div>
-                                <div style={{
-                                    fontSize: 22, fontWeight: 800, color: '#f8fafc',
-                                    fontFamily: "'Syne', sans-serif", letterSpacing: '-0.04em', lineHeight: 1,
-                                }}>VIGIL</div>
-                                <div style={{
-                                    fontSize: 7.5, color: '#38bdf8', marginTop: 2,
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    letterSpacing: '0.22em', textTransform: 'uppercase',
-                                }}>PostgreSQL Monitor</div>
-                            </div>
-                        </div>
+            {/* ── Header ── */}
+            <div style={{ padding: '20px 26px 0', flexShrink: 0, animation: 'fadeUp .6s ease .05s backwards' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
-                            display: 'flex', alignItems: 'center', gap: 5,
-                            background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)',
-                            borderRadius: 20, padding: '4px 10px',
+                            width: 32, height: 32, borderRadius: 8,
+                            background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 4px 18px rgba(14,165,233,0.45)',
                         }}>
-                            <div style={{
-                                width: 6, height: 6, borderRadius: '50%',
-                                background: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,0.7)',
-                                animation: 'pulseDot 2s ease-in-out infinite',
-                            }} />
-                            <span style={{
-                                color: '#22c55e', fontWeight: 700,
-                                fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 8, letterSpacing: '0.06em',
-                            }}>LIVE</span>
+                            <Database size={14} color="#fff" />
                         </div>
+                        <span style={{
+                            fontSize: 11, fontWeight: 600, color: '#38bdf8',
+                            fontFamily: "'JetBrains Mono', monospace",
+                            letterSpacing: '0.18em', textTransform: 'uppercase',
+                        }}>PostgreSQL Monitor</span>
                     </div>
-
-                    {/* Tagline */}
+                    {/* Online pill */}
                     <div style={{
-                        marginTop: 20, marginBottom: 16,
-                        paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.045)',
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.2)',
+                        borderRadius: 20, padding: '3px 10px',
                     }}>
-                        <h2 style={{
-                            fontSize: 15, fontWeight: 700, color: '#e2e8f0',
-                            fontFamily: "'Syne', sans-serif", lineHeight: 1.35,
-                            letterSpacing: '-0.02em', marginBottom: 5,
-                        }}>
-                            Total observability for{' '}
-                            <span style={{ color: '#0ea5e9', display: 'inline-block', animation: 'glitchH 8s ease-in-out infinite' }}>
-                                Postgres clusters.
-                            </span>
-                        </h2>
-                        <p style={{ fontSize: 10.5, color: '#334155', lineHeight: 1.65, fontFamily: "'DM Sans', sans-serif" }}>
-                            Connection pools · Replication lag · Query forensics · Storage trends
-                        </p>
-                    </div>
-                </div>
-
-                {/* ── Live Metrics ─────────────────────────────────────── */}
-                <div style={{ padding: '0 26px', flexShrink: 0, animation: 'fadeUp .6s ease .15s backwards' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 9 }}>
-                        <Radio size={9} color={THEME.primary} style={{ animation: 'pulseDot 1.5s ease-in-out infinite' }} />
-                        <span style={{
-                            fontSize: 8.5, color: '#1e3a5f',
-                            fontFamily: "'JetBrains Mono', monospace",
-                            letterSpacing: '0.1em', textTransform: 'uppercase',
-                        }}>Live System Metrics</span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                        <MetricCard icon={Zap}      label="QPS"       value={metrics.qps.toLocaleString()} color="#0ea5e9" spark={qpsSpark} />
-                        <MetricCard icon={Activity} label="Latency"   value={metrics.latency} unit="ms"    color="#a78bfa" spark={latSpark} />
-                        <MetricCard icon={Server}   label="Cache Hit" value={metrics.cacheHit} unit="%"    color="#22c55e" spark={cacheSpark} />
-                        <MetricCard icon={Cpu}      label="Conns"     value={metrics.connections}            color="#f59e0b" spark={connSpark} />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, marginTop: 5 }}>
-                        {secondaryMetrics.map(({ label, value, color }) => (
-                            <div key={label} style={{
-                                background: 'rgba(255,255,255,0.016)',
-                                border: `1px solid ${color}12`,
-                                borderRadius: 8, padding: '6px 9px',
-                            }}>
-                                <div style={{
-                                    fontSize: 7.5, color: '#1e3a5f',
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3,
-                                }}>{label}</div>
-                                <div style={{
-                                    fontSize: 13, fontWeight: 700, color,
-                                    fontFamily: "'Syne', sans-serif",
-                                }}>{value}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* ── Topology ─────────────────────────────────────────── */}
-                <div style={{ padding: '14px 26px 0', flexShrink: 0, animation: 'fadeUp .6s ease .25s backwards' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-                        <GitBranch size={9} color={THEME.teal} />
-                        <span style={{
-                            fontSize: 8.5, color: '#1e3a5f',
-                            fontFamily: "'JetBrains Mono', monospace",
-                            letterSpacing: '0.1em', textTransform: 'uppercase',
-                        }}>Cluster Topology</span>
-                    </div>
-                    <div style={{
-                        background: 'rgba(255,255,255,0.018)',
-                        border: '1px solid rgba(255,255,255,0.04)',
-                        borderRadius: 12, padding: '10px 14px', height: 130,
-                    }}>
-                        <TopologyMap />
-                    </div>
-                </div>
-
-                {/* ── Console Stream ───────────────────────────────────── */}
-                <div style={{ padding: '12px 26px 0', flex: 1, minHeight: 0, animation: 'fadeUp .6s ease .35s backwards' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-                        <Terminal size={9} color="#64748b" />
-                        <span style={{
-                            fontSize: 8.5, color: '#1e3a5f',
-                            fontFamily: "'JetBrains Mono', monospace",
-                            letterSpacing: '0.1em', textTransform: 'uppercase',
-                        }}>Log Stream</span>
                         <div style={{
-                            marginLeft: 'auto', width: 5, height: 9,
-                            background: '#0ea5e9', animation: 'termBlink 1s step-start infinite',
+                            width: 5, height: 5, borderRadius: '50%',
+                            background: '#0ea5e9', boxShadow: '0 0 5px rgba(14,165,233,0.7)',
                         }} />
-                    </div>
-                    <div style={{
-                        background: 'rgba(0,0,0,0.25)',
-                        border: '1px solid rgba(255,255,255,0.03)',
-                        borderRadius: 10, padding: '10px 12px',
-                        height: 120, overflow: 'hidden',
-                    }}>
-                        <ConsoleStream />
+                        <span style={{
+                            color: '#0ea5e9', fontWeight: 600,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontSize: 7.5, letterSpacing: '0.08em',
+                        }}>MONITOR</span>
                     </div>
                 </div>
 
-                {/* ── Footer ───────────────────────────────────────────── */}
-                <div style={{
-                    padding: '10px 26px 18px', flexShrink: 0,
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    animation: 'fadeUp .6s ease .45s backwards',
+                {/* Tagline */}
+                <h2 style={{
+                    fontSize: 20, fontWeight: 800, color: '#e2e8f0',
+                    fontFamily: "'Syne', sans-serif", lineHeight: 1.3,
+                    letterSpacing: '-0.03em', marginBottom: 6,
                 }}>
-                    <Lock size={8} color="#1e293b" />
-                    <span style={{
-                        fontSize: 8.5, color: '#1e293b',
-                        fontFamily: "'JetBrains Mono', monospace",
-                    }}>
-                        End-to-end encrypted · SOC 2 Type II · v2.0
+                    Total observability for{' '}
+                    <span style={{ color: '#0ea5e9', display: 'inline-block', animation: 'glitchH 8s ease-in-out infinite' }}>
+                        your Postgres clusters.
                     </span>
+                </h2>
+                <p style={{ fontSize: 10.5, color: '#334155', lineHeight: 1.6, fontFamily: "'DM Sans', sans-serif", marginBottom: 16 }}>
+                    A single pane of glass — connection pools, replication lag, slow-query forensics and storage trends.
+                </p>
+            </div>
+
+            {/* ── Screenshot Grid ── */}
+            <div style={{ padding: '0 26px', flexShrink: 0, animation: 'fadeUp .6s ease .15s backwards' }}>
+                {/* Top row: 2 screenshots side by side */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                    <div
+                        className="screenshot-card"
+                        style={{
+                            height: 110, borderRadius: 10,
+                            border: '1px solid rgba(255,255,255,0.07)',
+                            overflow: 'hidden', transition: 'all .3s ease',
+                        }}
+                    >
+                        <DashboardScreenshot />
+                    </div>
+                    <div
+                        className="screenshot-card"
+                        style={{
+                            height: 110, borderRadius: 10,
+                            border: '1px solid rgba(255,255,255,0.07)',
+                            overflow: 'hidden', transition: 'all .3s ease',
+                        }}
+                    >
+                        <ChartsScreenshot />
+                    </div>
+                </div>
+                {/* Bottom row: full-width screenshot */}
+                <div
+                    className="screenshot-card"
+                    style={{
+                        height: 100, borderRadius: 10,
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        overflow: 'hidden', transition: 'all .3s ease',
+                        marginBottom: 0,
+                    }}
+                >
+                    <NetworkScreenshot />
                 </div>
             </div>
+
+            {/* ── Feature Cards Grid ── */}
+            <div style={{ padding: '12px 26px', flex: 1, minHeight: 0, animation: 'fadeUp .6s ease .25s backwards' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7 }}>
+                    {FEATURES.map(f => (
+                        <FeatureCard key={f.label} {...f} />
+                    ))}
+                </div>
+            </div>
+
+            {/* ── Footer ── */}
+            <div style={{
+                padding: '8px 26px 16px', flexShrink: 0,
+                display: 'flex', alignItems: 'center', gap: 5,
+            }}>
+                <Lock size={8} color="#1e293b" />
+                <span style={{
+                    fontSize: 8.5, color: '#1e293b',
+                    fontFamily: "'JetBrains Mono', monospace",
+                }}>
+                    End-to-end encrypted · SOC 2 Type II · v2.0
+                </span>
+            </div>
         </div>
-    );
-};
+    </div>
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  RIGHT BACKGROUND
@@ -616,25 +418,20 @@ const RightBackground = () => (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{
             position: 'absolute', inset: 0,
-            background: 'radial-gradient(ellipse 85% 85% at 55% 50%, rgba(14,165,233,0.045) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse 85% 85% at 55% 50%, rgba(14,165,233,0.04) 0%, transparent 70%)',
         }} />
         <div style={{
             position: 'absolute', top: '10%', right: '-15%', width: 360, height: 360,
-            background: 'radial-gradient(circle, rgba(14,165,233,0.07) 0%, transparent 65%)',
+            background: 'radial-gradient(circle, rgba(14,165,233,0.06) 0%, transparent 65%)',
             animation: 'orb2 22s ease-in-out infinite', filter: 'blur(40px)',
         }} />
         <div style={{
             position: 'absolute', bottom: '5%', left: '-10%', width: 260, height: 260,
-            background: 'radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 65%)',
+            background: 'radial-gradient(circle, rgba(20,184,166,0.05) 0%, transparent 65%)',
             animation: 'orb1 18s ease-in-out infinite', filter: 'blur(28px)',
         }} />
         <div style={{
-            position: 'absolute', top: '55%', left: '20%', width: 180, height: 180,
-            background: 'radial-gradient(circle, rgba(168,139,250,0.05) 0%, transparent 65%)',
-            animation: 'orb3 14s ease-in-out infinite', filter: 'blur(20px)',
-        }} />
-        <div style={{
-            position: 'absolute', inset: 0, opacity: 0.015,
+            position: 'absolute', inset: 0, opacity: 0.013,
             backgroundImage: `
                 linear-gradient(rgba(14,165,233,1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(14,165,233,1) 1px, transparent 1px)`,
@@ -648,16 +445,13 @@ const RightBackground = () => (
 // ═══════════════════════════════════════════════════════════════════════════
 
 const LogoEmblem = ({ success }) => {
-    const size = 78, c = 39, r1 = 33, r2 = 26, r3 = 19;
-    const strokeMain    = success ? THEME.success : THEME.primary;
-    const strokeSub     = success ? THEME.success : THEME.secondary;
-    const glowBg        = success
-        ? 'radial-gradient(circle, rgba(34,197,94,0.22) 0%, transparent 70%)'
-        : 'radial-gradient(circle, rgba(14,165,233,0.18) 0%, transparent 70%)';
-    const centerBg      = success
+    const size = 82, c = 41, r1 = 35, r2 = 27, r3 = 19;
+    const strokeMain = success ? THEME.success : THEME.primary;
+    const strokeSub  = success ? THEME.success : THEME.secondary;
+    const centerBg   = success
         ? `linear-gradient(135deg, ${THEME.success}, ${THEME.teal})`
         : `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`;
-    const centerShadow  = success
+    const centerShadow = success
         ? '0 4px 22px rgba(34,197,94,0.45)'
         : '0 4px 22px rgba(14,165,233,0.35)';
 
@@ -665,51 +459,44 @@ const LogoEmblem = ({ success }) => {
         <div style={{ position: 'relative', width: size, height: size, animation: 'logoPulse 4.5s ease-in-out infinite' }}>
             <div style={{
                 position: 'absolute', inset: -14, borderRadius: '50%',
-                background: glowBg,
+                background: success
+                    ? 'radial-gradient(circle, rgba(34,197,94,0.2) 0%, transparent 70%)'
+                    : 'radial-gradient(circle, rgba(14,165,233,0.16) 0%, transparent 70%)',
                 animation: 'logoGlow 3s ease-in-out infinite', transition: 'background .8s',
             }} />
             <svg width={size} height={size} style={{ position: 'absolute', top: 0, left: 0 }}>
-                {/* Outer dashed ring */}
                 <circle cx={c} cy={c} r={r1} fill="none"
-                        stroke={strokeMain} strokeWidth="1" strokeDasharray="4 3" opacity=".45"
+                        stroke={strokeMain} strokeWidth="1" strokeDasharray="4 3" opacity=".4"
                         style={{ transformOrigin: 'center', animation: 'spin 20s linear infinite', transition: 'stroke .8s' }} />
-                {/* Mid ring */}
                 <circle cx={c} cy={c} r={r2} fill="none"
                         stroke={strokeMain} strokeWidth="1.5"
                         strokeDasharray={`${Math.PI * r2 * 0.65} ${Math.PI * r2 * 0.35}`}
-                        strokeLinecap="round" opacity=".7"
+                        strokeLinecap="round" opacity=".65"
                         style={{ transformOrigin: 'center', animation: 'spinRev 11s linear infinite', transition: 'stroke .8s' }} />
-                {/* Inner ring */}
                 <circle cx={c} cy={c} r={r3} fill="none"
                         stroke={strokeSub} strokeWidth="0.8"
-                        strokeDasharray="2 4" opacity=".35"
+                        strokeDasharray="2 4" opacity=".3"
                         style={{ transformOrigin: 'center', animation: 'spin 7s linear infinite', transition: 'stroke .8s' }} />
-                {/* Orbit dots */}
                 {[0, 72, 144, 216, 288].map((deg, i) => (
                     <circle key={deg}
                             cx={c + r1 * Math.cos((deg * Math.PI) / 180)}
                             cy={c + r1 * Math.sin((deg * Math.PI) / 180)}
                             r="1.8" fill={strokeMain}
-                            opacity={0.5 + i * 0.1}
+                            opacity={0.5 + i * 0.09}
                             style={{ transition: 'fill .8s' }} />
                 ))}
-                {/* Crosshairs */}
-                <line x1={c - r2 - 3} y1={c} x2={c + r2 + 3} y2={c}
-                      stroke={THEME.primary} strokeWidth=".4" opacity=".15" />
-                <line x1={c} y1={c - r2 - 3} x2={c} y2={c + r2 + 3}
-                      stroke={THEME.primary} strokeWidth=".4" opacity=".15" />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{
-                    width: 42, height: 42, borderRadius: 12,
+                    width: 44, height: 44, borderRadius: 12,
                     background: centerBg,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: centerShadow,
                     transition: 'all .8s cubic-bezier(.34,1.56,.64,1)',
                 }}>
                     {success
-                        ? <CheckCircle size={20} color="#fff" style={{ animation: 'successPop .5s ease backwards' }} />
-                        : <Database size={20} color="#fff" />
+                        ? <CheckCircle size={22} color="#fff" style={{ animation: 'successPop .5s ease backwards' }} />
+                        : <Database size={22} color="#fff" />
                     }
                 </div>
             </div>
@@ -731,14 +518,13 @@ const ServerStatus = ({ status }) => {
         <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '5px 14px 5px 10px', borderRadius: 100,
-            background: color + '08', border: `1px solid ${color}20`,
+            background: color + '08', border: `1px solid ${color}22`,
             fontSize: 10, fontFamily: "'JetBrains Mono', monospace",
         }}>
             {checking ? (
                 <>
-                    <Loader size={9} color={THEME.textMuted}
-                            style={{ animation: 'spin 1s linear infinite' }} />
-                    <span style={{ color: THEME.textMuted }}>Probing…</span>
+                    <Loader size={9} color={THEME.textMuted} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span style={{ color: THEME.textMuted }}>Checking…</span>
                 </>
             ) : (
                 <>
@@ -798,23 +584,14 @@ const InputField = React.forwardRef(function InputField({
             </label>
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                background: focused ? 'rgba(14,165,233,0.06)' : 'rgba(255,255,255,0.028)',
-                border: `1px solid ${focused ? THEME.primary + '60' : 'rgba(255,255,255,0.075)'}`,
+                background: focused ? 'rgba(14,165,233,0.05)' : 'rgba(255,255,255,0.025)',
+                border: `1px solid ${focused ? THEME.primary + '55' : 'rgba(255,255,255,0.07)'}`,
                 borderRadius: 13, padding: '0 14px',
                 transition: 'all .25s cubic-bezier(.4,0,.2,1)',
                 boxShadow: focused
-                    ? `0 0 0 3px rgba(14,165,233,0.09), 0 0 20px rgba(14,165,233,0.08), inset 0 1px 0 rgba(255,255,255,0.04)`
+                    ? `0 0 0 3px rgba(14,165,233,0.08), inset 0 1px 0 rgba(255,255,255,0.03)`
                     : 'inset 0 1px 0 rgba(255,255,255,0.02)',
-                position: 'relative', overflow: 'hidden',
             }}>
-                {focused && (
-                    <div style={{
-                        position: 'absolute', left: 0, right: 0, height: 1,
-                        background: `linear-gradient(90deg, transparent, ${THEME.primary}50, transparent)`,
-                        animation: 'scanline 2.2s linear infinite',
-                        pointerEvents: 'none',
-                    }} />
-                )}
                 <Icon size={15}
                       color={focused ? THEME.primary : hasValue ? '#475569' : '#1e3a5f'}
                       style={{ flexShrink: 0, transition: 'color .2s' }} />
@@ -827,7 +604,7 @@ const InputField = React.forwardRef(function InputField({
                     onBlur={()  => setFocused(false)}
                     className="v-input"
                     style={{
-                        flex: 1, padding: '14px 0', background: 'none', border: 'none',
+                        flex: 1, padding: '13px 0', background: 'none', border: 'none',
                         color: THEME.textMain, fontSize: 13.5, outline: 'none',
                         fontFamily: "'DM Sans', sans-serif", fontWeight: 400,
                         letterSpacing: '0.01em', opacity: disabled ? 0.4 : 1,
@@ -856,14 +633,12 @@ const CornerAccents = () => {
                 const { borderTop, borderRight, borderBottom, borderLeft, borderRadius, ...pos } = corner;
                 return (
                     <div key={i} style={{
-                        position: 'absolute',
-                        width: 14, height: 14,
-                        pointerEvents: 'none',
+                        position: 'absolute', width: 14, height: 14, pointerEvents: 'none',
                         borderRadius,
-                        borderTop:    borderTop    ? `1px solid rgba(14,165,233,0.3)` : 'none',
-                        borderBottom: borderBottom ? `1px solid rgba(14,165,233,0.3)` : 'none',
-                        borderLeft:   borderLeft   ? `1px solid rgba(14,165,233,0.3)` : 'none',
-                        borderRight:  borderRight  ? `1px solid rgba(14,165,233,0.3)` : 'none',
+                        borderTop:    borderTop    ? `1px solid rgba(14,165,233,0.28)` : 'none',
+                        borderBottom: borderBottom ? `1px solid rgba(14,165,233,0.28)` : 'none',
+                        borderLeft:   borderLeft   ? `1px solid rgba(14,165,233,0.28)` : 'none',
+                        borderRight:  borderRight  ? `1px solid rgba(14,165,233,0.28)` : 'none',
                         ...pos,
                     }} />
                 );
@@ -963,12 +738,12 @@ const LoginPage = () => {
             ? THEME.success
             : canSubmit
                 ? 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #38bdf8 100%)'
-                : 'rgba(14,165,233,0.18)';
+                : 'rgba(14,165,233,0.15)';
 
     const btnShadow = canSubmit && !authLoading && !loginSuccess
         ? btnHover
-            ? '0 8px 28px rgba(14,165,233,0.55), 0 0 0 1px rgba(14,165,233,0.3) inset'
-            : '0 4px 18px rgba(14,165,233,0.35), 0 0 0 1px rgba(14,165,233,0.18) inset'
+            ? '0 8px 28px rgba(14,165,233,0.5), 0 0 0 1px rgba(14,165,233,0.28) inset'
+            : '0 4px 18px rgba(14,165,233,0.3), 0 0 0 1px rgba(14,165,233,0.15) inset'
         : 'none';
 
     return (
@@ -984,7 +759,7 @@ const LoginPage = () => {
 
             {/* ═══ RIGHT PANEL ═══ */}
             <div style={{
-                width: 490, flexShrink: 0, position: 'relative',
+                width: 500, flexShrink: 0, position: 'relative',
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
                 padding: '40px 48px',
@@ -994,7 +769,7 @@ const LoginPage = () => {
 
                 <div style={{
                     position: 'relative', zIndex: 1,
-                    width: '100%', maxWidth: 370,
+                    width: '100%', maxWidth: 380,
                     display: 'flex', flexDirection: 'column', alignItems: 'center',
                 }}>
                     {/* Logo */}
@@ -1005,17 +780,17 @@ const LoginPage = () => {
                     {/* Heading */}
                     <div style={{ textAlign: 'center', marginBottom: 6, animation: 'fadeUp .6s ease .18s backwards', width: '100%' }}>
                         <h1 style={{
-                            fontSize: 27, fontWeight: 800, color: THEME.textMain,
+                            fontSize: 28, fontWeight: 800, color: THEME.textMain,
                             margin: 0, lineHeight: 1.15, letterSpacing: '-0.03em',
                             fontFamily: "'Syne', sans-serif",
                         }}>
                             Welcome back
                         </h1>
                         <p style={{
-                            color: '#334155', margin: '9px 0 0', fontSize: 12.5,
+                            color: '#334155', margin: '8px 0 0', fontSize: 12.5,
                             fontWeight: 400, lineHeight: 1.55,
                         }}>
-                            Authenticate to access your monitoring dashboard
+                            Sign in to your monitoring dashboard
                         </p>
                     </div>
 
@@ -1024,22 +799,22 @@ const LoginPage = () => {
                         <ServerStatus status={serverStatus} />
                     </div>
 
-                    {/* ── Card ─────────────────────────────────────────── */}
+                    {/* ── Card ── */}
                     <div style={{
                         width: '100%',
                         padding: '30px 28px 26px',
                         borderRadius: 22,
-                        background: 'rgba(12,22,42,0.72)',
+                        background: 'rgba(10,18,35,0.75)',
                         backdropFilter: 'blur(28px)',
                         WebkitBackdropFilter: 'blur(28px)',
                         border: `1px solid ${
                             loginSuccess ? THEME.success + '45'
-                                : error      ? THEME.danger  + '38'
+                                : error      ? THEME.danger  + '35'
                                     : 'rgba(255,255,255,0.07)'
                         }`,
                         boxShadow: loginSuccess
-                            ? '0 0 60px rgba(34,197,94,0.12), 0 24px 48px rgba(0,0,0,0.55)'
-                            : '0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.025) inset',
+                            ? '0 0 60px rgba(34,197,94,0.1), 0 24px 48px rgba(0,0,0,0.5)'
+                            : '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.02) inset',
                         transition: 'border-color .55s, box-shadow .55s',
                         animation: formShake ? 'shake .5s ease' : 'fadeUp .7s ease .34s backwards',
                         position: 'relative', overflow: 'hidden',
@@ -1048,20 +823,19 @@ const LoginPage = () => {
                         <div style={{
                             position: 'absolute', top: 0, left: '8%', right: '8%', height: 1,
                             background: loginSuccess
-                                ? `linear-gradient(90deg, transparent, ${THEME.success}70, transparent)`
-                                : `linear-gradient(90deg, transparent, ${THEME.primary}40, transparent)`,
+                                ? `linear-gradient(90deg, transparent, ${THEME.success}65, transparent)`
+                                : `linear-gradient(90deg, transparent, ${THEME.primary}35, transparent)`,
                             transition: 'background .55s',
                             animation: 'borderPulse 3s ease-in-out infinite',
                         }} />
 
-                        {/* Corner accents */}
                         <CornerAccents />
 
                         {/* Success overlay */}
                         {loginSuccess && (
                             <div style={{
                                 position: 'absolute', inset: 0,
-                                background: 'radial-gradient(circle at center, rgba(34,197,94,0.08) 0%, transparent 70%)',
+                                background: 'radial-gradient(circle at center, rgba(34,197,94,0.07) 0%, transparent 70%)',
                                 display: 'flex', flexDirection: 'column',
                                 alignItems: 'center', justifyContent: 'center',
                                 zIndex: 20, borderRadius: 22,
@@ -1070,7 +844,7 @@ const LoginPage = () => {
                                 <div style={{
                                     position: 'absolute', width: 80, height: 80,
                                     borderRadius: '50%',
-                                    border: `2px solid ${THEME.success}35`,
+                                    border: `2px solid ${THEME.success}30`,
                                     animation: 'successRipple 1s ease-out forwards',
                                 }} />
                                 <CheckCircle
@@ -1099,7 +873,7 @@ const LoginPage = () => {
                             <div style={{
                                 marginBottom: 18, padding: '10px 13px', borderRadius: 10,
                                 background: THEME.danger + '09',
-                                border: `1px solid ${THEME.danger}28`,
+                                border: `1px solid ${THEME.danger}25`,
                                 display: 'flex', alignItems: 'center', gap: 9,
                                 animation: 'slideDown .3s ease backwards',
                             }}>
@@ -1116,7 +890,7 @@ const LoginPage = () => {
                                 ref={usernameRef}
                                 icon={User} label="Username"
                                 value={username} onChange={setUsername}
-                                placeholder="your_username" autoComplete="username"
+                                placeholder="Enter your username" autoComplete="username"
                                 disabled={authLoading || loginSuccess}
                             />
                             <InputField
@@ -1124,7 +898,7 @@ const LoginPage = () => {
                                 icon={KeyRound} label="Password"
                                 type={showPassword ? 'text' : 'password'}
                                 value={password} onChange={setPassword}
-                                placeholder="••••••••••••" autoComplete="current-password"
+                                placeholder="Enter your password" autoComplete="current-password"
                                 disabled={authLoading || loginSuccess}
                                 rightElement={
                                     <button
@@ -1158,7 +932,7 @@ const LoginPage = () => {
                                     background: rememberMe ? THEME.primary : 'transparent',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     transition: 'all .22s cubic-bezier(.34,1.56,.64,1)',
-                                    boxShadow: rememberMe ? '0 0 10px rgba(14,165,233,0.4)' : 'none',
+                                    boxShadow: rememberMe ? '0 0 10px rgba(14,165,233,0.35)' : 'none',
                                 }}>
                                     {rememberMe && (
                                         <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
@@ -1171,7 +945,7 @@ const LoginPage = () => {
                                     fontSize: 12, color: '#334155',
                                     fontFamily: "'DM Sans', sans-serif", fontWeight: 400,
                                 }}>
-                                    Remember this device
+                                    Remember me
                                 </span>
                             </div>
 
@@ -1186,10 +960,10 @@ const LoginPage = () => {
                                     position: 'relative', overflow: 'hidden',
                                     background: btnBackground,
                                     border: canSubmit
-                                        ? `1px solid ${loginSuccess ? THEME.success : THEME.primary}40`
-                                        : '1px solid rgba(255,255,255,0.05)',
-                                    padding: '13.5px 22px', borderRadius: 13,
-                                    color: 'white', fontWeight: 700, fontSize: 13.5,
+                                        ? `1px solid ${loginSuccess ? THEME.success : THEME.primary}35`
+                                        : '1px solid rgba(255,255,255,0.04)',
+                                    padding: '14px 22px', borderRadius: 13,
+                                    color: 'white', fontWeight: 700, fontSize: 14,
                                     fontFamily: "'Syne', sans-serif", letterSpacing: '0.02em',
                                     cursor: canSubmit ? 'pointer' : 'not-allowed',
                                     marginTop: 4,
@@ -1211,7 +985,7 @@ const LoginPage = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <span>Sign In to Dashboard</span>
+                                        <span>Sign In</span>
                                         <ArrowRight size={15} style={{
                                             transition: 'transform .25s',
                                             transform: btnHover ? 'translateX(3px)' : 'translateX(0)',
@@ -1229,8 +1003,8 @@ const LoginPage = () => {
                             fontSize: 9.5, color: '#1e293b',
                             fontFamily: "'JetBrains Mono', monospace",
                         }}>
-                            <Shield size={9} style={{ opacity: .45 }} />
-                            <span>Vigil PostgreSQL Monitor · Secured Session</span>
+                            <Shield size={9} style={{ opacity: .4 }} />
+                            <span>Secured by Vigil · PostgreSQL Monitor v2.0</span>
                         </div>
                     </div>
                 </div>
