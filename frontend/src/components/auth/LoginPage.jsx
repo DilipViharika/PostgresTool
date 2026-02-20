@@ -231,195 +231,148 @@ const LeftPanel = () => (
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
         position: 'relative',
+        height: '100vh',
     }}>
 
-        {/* ══ SECTION 1 — SERVER / INFRASTRUCTURE hero banner ══════════════════ */}
-        <div style={{ position: 'relative', height: 210, flexShrink: 0, overflow: 'hidden' }}>
+        {/* ══ HERO — Server / Infrastructure photo ════════════════════════════ */}
+        <div style={{ position: 'relative', height: '26%', flexShrink: 0, overflow: 'hidden' }}>
             <img src={IMG.serverRoom} alt="Data center" style={{
                 width: '100%', height: '100%', objectFit: 'cover',
-                objectPosition: 'center 40%', opacity: 0.5, display: 'block',
+                objectPosition: 'center 40%', opacity: 0.52, display: 'block',
             }} />
-            {/* Bottom fade */}
             <div style={{
                 position: 'absolute', inset: 0,
-                background: 'linear-gradient(to bottom, rgba(6,13,26,0.15) 0%, rgba(6,13,26,0.0) 35%, rgba(6,13,26,1) 100%)',
+                background: 'linear-gradient(to bottom, rgba(6,13,26,0.1) 0%, rgba(6,13,26,0.0) 30%, rgba(6,13,26,1) 100%)',
             }} />
-            {/* Blue tint */}
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,165,233,0.08)', mixBlendMode: 'screen' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,165,233,0.07)', mixBlendMode: 'screen' }} />
 
             {/* Brand lockup */}
-            <div style={{
-                position: 'absolute', top: 26, left: 28,
-                animation: 'vLoginFadeUp 0.6s ease 0.05s backwards',
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <div style={{ position: 'absolute', top: 22, left: 26, animation: 'vLoginFadeUp 0.6s ease 0.05s backwards' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
-                        width: 38, height: 38, borderRadius: 11,
+                        width: 36, height: 36, borderRadius: 10,
                         background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 4px 24px rgba(14,165,233,0.55)',
+                        boxShadow: '0 4px 20px rgba(14,165,233,0.5)',
                     }}>
-                        <Database size={18} color="#fff" />
+                        <Database size={17} color="#fff" />
                     </div>
                     <div>
                         <div style={{
-                            fontSize: 22, fontWeight: 900, color: '#fff',
+                            fontSize: 21, fontWeight: 900, color: '#fff',
                             letterSpacing: '-0.03em', fontFamily: "'Outfit', sans-serif",
-                            lineHeight: 1, textShadow: '0 2px 16px rgba(0,0,0,0.7)',
+                            lineHeight: 1, textShadow: '0 2px 14px rgba(0,0,0,0.7)',
                         }}>VIGIL</div>
                         <div style={{
-                            fontSize: 8.5, color: '#38bdf8',
-                            fontFamily: "'JetBrains Mono', monospace",
+                            fontSize: 8, color: '#38bdf8', fontFamily: "'JetBrains Mono', monospace",
                             letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2,
                         }}>PostgreSQL Monitor</div>
                     </div>
                 </div>
             </div>
 
-            {/* Version + infra badge */}
-            <div style={{ position: 'absolute', top: 30, right: 26, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                <div style={{
-                    background: 'rgba(14,165,233,0.18)', backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(14,165,233,0.35)',
-                    borderRadius: 20, padding: '3px 11px',
-                    fontSize: 9, color: '#38bdf8',
-                    fontFamily: "'JetBrains Mono', monospace",
-                }}>v2.0</div>
-                <div style={{
-                    background: 'rgba(6,13,26,0.55)', backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 6, padding: '3px 9px',
-                    fontSize: 8, color: '#64748b',
-                    fontFamily: "'JetBrains Mono', monospace",
-                }}>Infrastructure</div>
-            </div>
+            {/* v2.0 badge */}
+            <div style={{
+                position: 'absolute', top: 26, right: 22,
+                background: 'rgba(14,165,233,0.18)', backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(14,165,233,0.35)',
+                borderRadius: 20, padding: '3px 10px',
+                fontSize: 9, color: '#38bdf8', fontFamily: "'JetBrains Mono', monospace",
+            }}>v2.0</div>
         </div>
 
-        {/* ══ SCROLLABLE CONTENT ═══════════════════════════════════════════════ */}
+        {/* ══ FIXED CONTENT — no scroll, fills remaining height ═══════════════ */}
         <div style={{
-            flex: 1, overflowY: 'auto', padding: '4px 28px 28px',
-            scrollbarWidth: 'none',
+            flex: 1, display: 'flex', flexDirection: 'column',
+            padding: '0 24px 20px', overflow: 'hidden',
+            gap: 0,
         }}>
 
-            {/* ── Tool summary tagline ── */}
+            {/* ── Tagline ── */}
             <div style={{
-                padding: '18px 0 20px',
+                padding: '14px 0 14px',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
-                marginBottom: 20,
+                flexShrink: 0,
                 animation: 'vLoginFadeUp 0.6s ease 0.15s backwards',
             }}>
                 <h2 style={{
-                    fontSize: 19, fontWeight: 800, color: '#f1f5f9',
-                    margin: '0 0 9px', lineHeight: 1.28,
+                    fontSize: 17, fontWeight: 800, color: '#f1f5f9',
+                    margin: '0 0 6px', lineHeight: 1.28,
                     letterSpacing: '-0.025em', fontFamily: "'Outfit', sans-serif",
                 }}>
-                    Total observability for<br/>
+                    Total observability for{' '}
                     <span style={{ color: '#0ea5e9' }}>your Postgres clusters.</span>
                 </h2>
                 <p style={{
-                    color: '#475569', fontSize: 12.5, lineHeight: 1.65, margin: 0,
+                    color: '#475569', fontSize: 11.5, lineHeight: 1.6, margin: 0,
                     fontFamily: "'Outfit', sans-serif", fontWeight: 400,
                 }}>
-                    Vigil gives DBAs and engineering teams a single pane of glass — from connection pools and replication lag to slow-query forensics and storage trends.
+                    A single pane of glass — connection pools, replication lag, slow-query forensics and storage trends.
                 </p>
             </div>
 
-            {/* ══ SECTION 2 — DASHBOARD MOCKUP + DATA VIZ side-by-side ═══════ */}
-            <div style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
-                marginBottom: 20,
-            }}>
-                <ImgTile
-                    src={IMG.dashMockup}
-                    alt="Dashboard UI"
-                    label="Live Dashboard"
-                    tint="rgba(14,165,233,0.35)"
-                    h={130}
-                    delay={0.25}
-                />
-                <ImgTile
-                    src={IMG.dataViz}
-                    alt="Data Visualization"
-                    label="Charts & Trends"
-                    tint="rgba(168,139,250,0.35)"
-                    h={130}
-                    delay={0.35}
-                />
-            </div>
-
-            {/* ══ SECTION 3 — ABSTRACT TECH full-width ═══════════════════════ */}
-            <ImgTile
-                src={IMG.abstractTech}
-                alt="Network Topology"
-                label="Cluster Replication & Network"
-                tint="rgba(20,184,166,0.3)"
-                h={100}
-                delay={0.45}
-            />
-
-            {/* ── Feature grid (6 items) ── */}
+            {/* ══ Dashboard UI + Data Viz side-by-side ════════════════════════ */}
             <div style={{
                 display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
-                marginTop: 20, marginBottom: 20,
-                animation: 'vLoginFadeUp 0.6s ease 0.55s backwards',
+                paddingTop: 12, flexShrink: 0,
+                animation: 'vLoginFadeUp 0.6s ease 0.25s backwards',
+            }}>
+                <ImgTile src={IMG.dashMockup}   alt="Dashboard UI"        label="Live Dashboard"  tint="rgba(14,165,233,0.35)"  h={100} delay={0.25} />
+                <ImgTile src={IMG.dataViz}       alt="Data Visualization"  label="Charts & Trends" tint="rgba(168,139,250,0.35)" h={100} delay={0.32} />
+            </div>
+
+            {/* ══ Abstract Tech full-width ════════════════════════════════════ */}
+            <div style={{ paddingTop: 8, flexShrink: 0, animation: 'vLoginFadeUp 0.6s ease 0.4s backwards' }}>
+                <ImgTile src={IMG.abstractTech} alt="Network Topology" label="Cluster Replication & Network" tint="rgba(20,184,166,0.28)" h={80} delay={0.4} />
+            </div>
+
+            {/* ── Feature grid — 3 cols × 2 rows to stay compact ─────────── */}
+            <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7,
+                paddingTop: 12, flex: 1,
+                animation: 'vLoginFadeUp 0.6s ease 0.5s backwards',
             }}>
                 {FEATURES.map((f, i) => (
                     <div key={i}
                          style={{
                              background: 'rgba(255,255,255,0.025)',
                              border: `1px solid ${f.color}16`,
-                             borderRadius: 11, padding: '11px 13px',
+                             borderRadius: 10, padding: '10px 11px',
                              transition: 'background 0.2s, border-color 0.2s',
-                             cursor: 'default',
+                             cursor: 'default', display: 'flex', flexDirection: 'column', gap: 5,
                          }}
-                         onMouseEnter={e => { e.currentTarget.style.background = `${f.color}0a`; e.currentTarget.style.borderColor = `${f.color}35`; }}
+                         onMouseEnter={e => { e.currentTarget.style.background = `${f.color}0b`; e.currentTarget.style.borderColor = `${f.color}38`; }}
                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = `${f.color}16`; }}
                     >
                         <div style={{
-                            width: 26, height: 26, borderRadius: 7,
+                            width: 24, height: 24, borderRadius: 6,
                             background: `${f.color}14`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            marginBottom: 8,
                         }}>
-                            <f.icon size={12} color={f.color} />
+                            <f.icon size={11} color={f.color} />
                         </div>
                         <div style={{
-                            fontSize: 11.5, fontWeight: 700, color: '#cbd5e1',
-                            fontFamily: "'Outfit', sans-serif", marginBottom: 3,
+                            fontSize: 10.5, fontWeight: 700, color: '#cbd5e1',
+                            fontFamily: "'Outfit', sans-serif", lineHeight: 1.2,
                         }}>{f.label}</div>
                         <div style={{
-                            fontSize: 10.5, color: '#334155', lineHeight: 1.5,
+                            fontSize: 9.5, color: '#334155', lineHeight: 1.45,
                             fontFamily: "'Outfit', sans-serif",
                         }}>{f.desc}</div>
                     </div>
                 ))}
             </div>
 
-            {/* ── Bottom trust bar ── */}
+            {/* ── Security footer ── */}
             <div style={{
-                borderTop: '1px solid rgba(255,255,255,0.04)',
-                paddingTop: 16,
-                animation: 'vLoginFadeUp 0.6s ease 0.7s backwards',
+                display: 'flex', alignItems: 'center', gap: 6,
+                paddingTop: 12, flexShrink: 0,
+                animation: 'vLoginFadeUp 0.6s ease 0.65s backwards',
             }}>
-                <div style={{
-                    fontSize: 8.5, color: '#1e293b', fontFamily: "'JetBrains Mono', monospace",
-                    textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10,
-                }}>Trusted by engineers at</div>
-                <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
-                    {['Stripe', 'GitHub', 'Shopify', 'Notion', 'Linear'].map((n, i) => (
-                        <span key={i} style={{
-                            fontSize: 11, fontWeight: 700, color: '#334155',
-                            fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.01em',
-                        }}>{n}</span>
-                    ))}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Lock size={9} color="#1e293b" />
-                    <span style={{
-                        fontSize: 9, color: '#1e293b',
-                        fontFamily: "'JetBrains Mono', monospace",
-                    }}>End-to-end encrypted · SOC 2 Type II · GDPR compliant</span>
-                </div>
+                <Lock size={9} color="#1e293b" />
+                <span style={{ fontSize: 9, color: '#1e293b', fontFamily: "'JetBrains Mono', monospace" }}>
+                    End-to-end encrypted · SOC 2 Type II · GDPR compliant
+                </span>
             </div>
         </div>
     </div>
