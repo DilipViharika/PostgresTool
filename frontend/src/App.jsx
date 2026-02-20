@@ -21,13 +21,16 @@ import ConnectionPoolTab from './components/views/ConnectionPoolTab.jsx';
 import SchemaVersioningTab  from "./components/views/SchemaVersioningTab.jsx";
 import SecurityComplianceTab from './components/views/SecurityComplianceTab.jsx';
 import CapacityPlanningTab from './components/views/CapacityPlanningTab.jsx';
+import BackupRecoveryTab from './components/views/BackupRecoveryTab.jsx';
+import CheckpointMonitorTab from './components/views/CheckpointMonitorTab.jsx';
+import VacuumMaintenanceTab from './components/views/VacuumMaintenanceTab.jsx';
 
 
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
     LogOut, Database, Wifi, WifiOff, Bell, ChevronLeft, ChevronRight,
     AlertCircle, X, Menu, Search, Settings, User, GitBranch, Users, Server, TrendingUp,
-    MessageSquarePlus, Star, Send
+    MessageSquarePlus, Star, Send, Archive, RefreshCw
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
@@ -51,7 +54,10 @@ const TAB_CONFIG = [
     { id: 'pool', icon: Network, label: 'Connection Pool', component: ConnectionPoolTab },
     { id: 'schema', icon: Layers, label: 'Schema & Migrations', component: SchemaVersioningTab },
     { id: 'security', icon: Shield, label: 'Security & Compliance', component: SecurityComplianceTab },
-    { id: 'capacity', icon: TrendingUp, label: 'Capacity Planning', component: CapacityPlanningTab },
+    { id: 'capacity',    icon: TrendingUp,  label: 'Capacity Planning',     component: CapacityPlanningTab },
+    { id: 'backup',      icon: Archive,     label: 'Backup & Recovery',     component: BackupRecoveryTab },
+    { id: 'checkpoint',  icon: CheckCircle, label: 'Checkpoint Monitor',    component: CheckpointMonitorTab },
+    { id: 'maintenance', icon: RefreshCw,   label: 'Vacuum & Maintenance',  component: VacuumMaintenanceTab },
 ];
 
 const STORAGE_KEYS = {

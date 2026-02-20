@@ -315,6 +315,15 @@ app.post('/api/auth/login', async (req, res) => {
             location:    null,
         });
 
+        // New Phase-1 screens — automatically granted to all admins.
+        // For other roles they must still be granted explicitly via User Management.
+        const PHASE1_SCREENS = ['backup', 'checkpoint', 'maintenance'];
+        const baseScreens    = user.allowed_screens ?? [];
+        const isAdmin        = ['super_admin', 'admin'].includes(user.role);
+        const allowedScreens = isAdmin
+            ? [...new Set([...baseScreens, ...PHASE1_SCREENS])]
+            : baseScreens;
+
         const payload = {
             id:             user.id,
             username:       user.username,
@@ -322,7 +331,7 @@ app.post('/api/auth/login', async (req, res) => {
             email:          user.email,
             role:           user.role,
             accessLevel:    user.access_level,
-            allowedScreens: user.allowed_screens ?? [],
+            allowedScreens,
             sid:            sessionId,
         };
 
@@ -763,6 +772,133 @@ app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), asy
             FROM pgmonitoringtool.user_feedback
         `);
         res.json(result.rows[0]);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHECKPOINT MONITOR
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
+    try {
+        const [bgwriter, walLsn, walSettings] = await Promise.all([
+            pool.query(`
+                SELECT checkpoints_timed, checkpoints_req,
+                       round(checkpoint_write_time::numeric, 0) AS checkpoint_write_ms,
+                       round(checkpoint_sync_time::numeric, 0)  AS checkpoint_sync_ms,
+                       buffers_checkpoint, buffers_clean, maxwritten_clean,
+                       buffers_backend, buffers_backend_fsync, buffers_alloc,
+                       stats_reset
+                FROM pg_stat_bgwriter
+            `),
+            pool.query(`
+                SELECT pg_current_wal_lsn()::text AS current_lsn,
+                       pg_walfile_name(pg_current_wal_lsn()) AS current_wal_file,
+                       (SELECT setting::int FROM pg_settings WHERE name = 'checkpoint_completion_target') AS completion_target,
+                       (SELECT setting::int FROM pg_settings WHERE name = 'max_wal_size') AS max_wal_mb,
+                       (SELECT setting::int FROM pg_settings WHERE name = 'min_wal_size') AS min_wal_mb,
+                       (SELECT setting::int FROM pg_settings WHERE name = 'checkpoint_timeout') AS checkpoint_timeout_sec
+            `),
+            pool.query(`
+                SELECT name, setting, unit, short_desc
+                FROM pg_settings
+                WHERE name IN (
+                    'checkpoint_completion_target','checkpoint_timeout',
+                    'max_wal_size','min_wal_size','wal_buffers',
+                    'bgwriter_delay','bgwriter_lru_maxpages','bgwriter_lru_multiplier'
+                )
+                ORDER BY name
+            `)
+        ]);
+        res.json({ bgwriter: bgwriter.rows[0], wal: walLsn.rows[0], settings: walSettings.rows });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BACKUP & RECOVERY
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (req, res) => {
+    try {
+        const [archiver, walInfo, recoveryInfo] = await Promise.all([
+            pool.query(`
+                SELECT archived_count, last_archived_wal, last_archived_time,
+                       failed_count, last_failed_wal, last_failed_time, stats_reset
+                FROM pg_stat_archiver
+            `),
+            pool.query(`
+                SELECT pg_current_wal_lsn()::text        AS current_lsn,
+                       pg_walfile_name(pg_current_wal_lsn()) AS current_wal,
+                       pg_is_in_recovery()               AS in_recovery,
+                       pg_postmaster_start_time()::text  AS started_at
+            `),
+            pool.query(`
+                SELECT name, setting
+                FROM pg_settings
+                WHERE name IN ('wal_level','archive_mode','archive_command','restore_command',
+                               'recovery_target_timeline','max_wal_senders','wal_keep_size')
+                ORDER BY name
+            `)
+        ]);
+        res.json({
+            archiver:  archiver.rows[0],
+            wal:       walInfo.rows[0],
+            settings:  recoveryInfo.rows
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VACUUM & MAINTENANCE
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CONFIG.CACHE_TTL.VACUUM), async (req, res) => {
+    try {
+        const [tables, workers, settings] = await Promise.all([
+            pool.query(`
+                SELECT schemaname, relname,
+                       n_dead_tup, n_live_tup,
+                       CASE WHEN n_live_tup > 0
+                            THEN round((n_dead_tup::numeric / NULLIF(n_live_tup,0)) * 100, 1)
+                            ELSE 0 END AS dead_pct,
+                       last_vacuum, last_autovacuum,
+                       last_analyze, last_autoanalyze,
+                       vacuum_count, autovacuum_count,
+                       analyze_count, autoanalyze_count,
+                       n_mod_since_analyze,
+                       pg_size_pretty(pg_total_relation_size(quote_ident(schemaname)||'.'||quote_ident(relname))) AS total_size
+                FROM pg_stat_user_tables
+                ORDER BY n_dead_tup DESC
+                LIMIT 50
+            `),
+            pool.query(`
+                SELECT pid, datname,
+                       regexp_replace(query, '^autovacuum: ', '') AS table_name,
+                       state,
+                       round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 0) AS duration_sec,
+                       query_start::text AS started_at
+                FROM pg_stat_activity
+                WHERE query LIKE 'autovacuum:%'
+                ORDER BY query_start ASC
+            `),
+            pool.query(`
+                SELECT name, setting, unit, short_desc
+                FROM pg_settings
+                WHERE name LIKE 'autovacuum%'
+                ORDER BY name
+            `)
+        ]);
+        res.json({ tables: tables.rows, workers: workers.rows, settings: settings.rows });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async (req, res) => {
+    const { table, schema = 'public', analyze = true } = req.body;
+    if (!table  || !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(table))  return res.status(400).json({ error: 'Invalid table name'  });
+    if (!schema || !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(schema)) return res.status(400).json({ error: 'Invalid schema name' });
+    try {
+        const cmd = `VACUUM${analyze ? ' ANALYZE' : ''} "${schema}"."${table}"`;
+        await pool.query(cmd);
+        cache.clear(); // invalidate caches so next read reflects the fresh state
+        log('INFO', 'Manual VACUUM executed', { schema, table, analyze });
+        res.json({ success: true, command: cmd });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
