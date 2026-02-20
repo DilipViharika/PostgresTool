@@ -255,7 +255,7 @@ const LeftPanel = () => (
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         boxShadow: '0 4px 20px rgba(14,165,233,0.5)',
                     }}>
-                        <Database size={17} color="#fff" />
+                        <Database size={14} color="#fff" />
                     </div>
                     <div>
                         <div style={{
@@ -278,7 +278,7 @@ const LeftPanel = () => (
                 border: '1px solid rgba(14,165,233,0.35)',
                 borderRadius: 20, padding: '3px 10px',
                 fontSize: 9, color: '#38bdf8', fontFamily: "'JetBrains Mono', monospace",
-            }}>v2.0</div>
+            }}></div>
         </div>
 
         {/* ══ FIXED CONTENT — no scroll, fills remaining height ═══════════════ */}
@@ -371,7 +371,7 @@ const LeftPanel = () => (
             }}>
                 <Lock size={9} color="#1e293b" />
                 <span style={{ fontSize: 9, color: '#1e293b', fontFamily: "'JetBrains Mono', monospace" }}>
-                    End-to-end encrypted · SOC 2 Type II · GDPR compliant
+                    End-to-end encrypted ·
                 </span>
             </div>
         </div>
