@@ -34,7 +34,7 @@ import AlertCorrelationTab from './components/views/AlertCorrelationTab.jsx';
 
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
-    LogOut, Database, WifiOff, Bell, ChevronLeft, ChevronRight,
+    LogOut, Database, WifiOff, Bell, ChevronLeft, ChevronRight, ChevronDown,
     AlertCircle, X, User, GitBranch, Users, TrendingUp,
     MessageSquarePlus, Star, Send, Archive, RefreshCw, Radio, Cloud,
     CalendarCheck, FileSearch, Link2
@@ -42,16 +42,9 @@ import {
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CONSTANTS
+   TAB CONFIG  — section headers drive collapsible groups in the sidebar
    ═══════════════════════════════════════════════════════════════════════════ */
-
-/**
- * TAB_CONFIG — entries are either a section header { section: 'Label' }
- * or a nav tab { id, icon, label, component }.
- * Section headers appear as visual dividers in the sidebar.
- */
 const TAB_CONFIG = [
-    // ── Core Monitoring ──────────────────────────────────────────────
     { section: 'Core Monitoring' },
     { id: 'overview',          icon: Activity,      label: 'Overview',              component: OverviewTab },
     { id: 'connections',       icon: Database,      label: 'Connections',           component: ConnectionsTab },
@@ -60,14 +53,12 @@ const TAB_CONFIG = [
     { id: 'reliability',       icon: CheckCircle,   label: 'Reliability',           component: ReliabilityTab },
     { id: 'alerts',            icon: Bell,          label: 'Alerts',                component: AlertsComponent },
 
-    // ── Query & Index Analysis ────────────────────────────────────────
     { section: 'Query & Indexes' },
     { id: 'optimizer',         icon: Zap,           label: 'Query Optimizer',       component: QueryOptimizerTab },
     { id: 'indexes',           icon: Layers,        label: 'Indexes',               component: IndexesTab },
     { id: 'regression',        icon: TrendingUp,    label: 'Plan Regression',       component: QueryPlanRegressionTab },
     { id: 'bloat',             icon: Layers,        label: 'Bloat Analysis',        component: BloatAnalysisTab },
 
-    // ── Infrastructure ────────────────────────────────────────────────
     { section: 'Infrastructure' },
     { id: 'pool',              icon: Network,       label: 'Connection Pool',       component: ConnectionPoolTab },
     { id: 'replication',       icon: Radio,         label: 'Replication & WAL',     component: ReplicationWALTab },
@@ -76,32 +67,54 @@ const TAB_CONFIG = [
     { id: 'capacity',          icon: TrendingUp,    label: 'Capacity Planning',     component: CapacityPlanningTab },
     { id: 'backup',            icon: Archive,       label: 'Backup & Recovery',     component: BackupRecoveryTab },
 
-    // ── Schema & Security ─────────────────────────────────────────────
     { section: 'Schema & Security' },
     { id: 'schema',            icon: Layers,        label: 'Schema & Migrations',   component: SchemaVersioningTab },
     { id: 'security',          icon: Shield,        label: 'Security & Compliance', component: SecurityComplianceTab },
 
-    // ── Observability & Logs ──────────────────────────────────────────
     { section: 'Observability' },
     { id: 'cloudwatch',        icon: Cloud,         label: 'CloudWatch',            component: CloudWatchTab },
     { id: 'log-patterns',      icon: FileSearch,    label: 'Log Pattern Analysis',  component: LogPatternAnalysisTab },
     { id: 'alert-correlation', icon: Link2,         label: 'Alert Correlation',     component: AlertCorrelationTab },
 
-    // ── Developer Tools ───────────────────────────────────────────────
     { section: 'Developer Tools' },
     { id: 'sql',               icon: Terminal,      label: 'SQL Console',           component: SqlConsoleTab },
     { id: 'api',               icon: Network,       label: 'API Tracing',           component: ApiQueriesTab },
     { id: 'repository',        icon: GitBranch,     label: 'Repository',            component: RepositoryTab },
 
-    // ── Admin & Management ────────────────────────────────────────────
     { section: 'Admin' },
     { id: 'tasks',             icon: CalendarCheck, label: 'DBA Task Scheduler',    component: DBATaskSchedulerTab },
     { id: 'UserManagement',    icon: Users,         label: 'User Management',       component: UserManagementTab },
     { id: 'admin',             icon: Shield,        label: 'Admin',                 component: AdminTab },
 ];
 
-// Flat list of real tabs only (no section headers) — used for routing/logic
+// Flat list of real tabs only — used for routing / logic
 const TABS_ONLY = TAB_CONFIG.filter(t => t.id);
+
+/**
+ * Build an array of section groups:
+ * [{ section: 'Core Monitoring', tabs: [{ id, icon, label, component }, ...] }, ...]
+ */
+const SECTION_GROUPS = (() => {
+    const groups = [];
+    let current = null;
+    for (const item of TAB_CONFIG) {
+        if (item.section) {
+            current = { section: item.section, tabs: [] };
+            groups.push(current);
+        } else if (current) {
+            current.tabs.push(item);
+        }
+    }
+    return groups;
+})();
+
+/** Given a tab id, return which section it belongs to */
+const getSectionForTab = (tabId) => {
+    for (const g of SECTION_GROUPS) {
+        if (g.tabs.some(t => t.id === tabId)) return g.section;
+    }
+    return null;
+};
 
 const STORAGE_KEYS = {
     ACTIVE_TAB: 'pg_monitor_active_tab',
@@ -143,18 +156,28 @@ const AppStyles = () => (
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-4px); }
         }
+        @keyframes sectionOpen {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
         .nav-item-hover {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .nav-item-hover:hover {
-            transform: translateX(4px);
+            transform: translateX(3px);
             background: ${THEME.primary}08 !important;
+        }
+        .section-header-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .section-header-btn:hover {
+            background: ${THEME.primary}0a !important;
+        }
+        .section-tabs-open {
+            animation: sectionOpen 0.18s ease-out both;
         }
         .notification-item:hover {
             background: ${THEME.primary}05 !important;
-        }
-        .smooth-transition {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .feedback-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
@@ -262,12 +285,9 @@ const FeedbackModal = ({ onClose }) => {
    ERROR BOUNDARY
    ═══════════════════════════════════════════════════════════════════════════ */
 class ErrorBoundary extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-    }
+    constructor(props) { super(props); this.state = { hasError: false, error: null }; }
     static getDerivedStateFromError(error) { return { hasError: true, error }; }
-    componentDidCatch(error, errorInfo) { console.error('Error Boundary caught:', error, errorInfo); }
+    componentDidCatch(error, info) { console.error('Error Boundary caught:', error, info); }
     render() {
         if (this.state.hasError) {
             return (
@@ -275,9 +295,7 @@ class ErrorBoundary extends React.Component {
                     <AlertCircle size={64} color={THEME.danger} />
                     <h2 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Something went wrong</h2>
                     <p style={{ color: THEME.textMuted, textAlign: 'center', maxWidth: 500 }}>{this.state.error?.message || 'An unexpected error occurred'}</p>
-                    <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`, color: '#fff', fontWeight: 600, fontSize: 14 }}>
-                        Reload Page
-                    </button>
+                    <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`, color: '#fff', fontWeight: 600, fontSize: 14 }}>Reload Page</button>
                 </div>
             );
         }
@@ -309,7 +327,7 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
                         <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>Notifications ({notifications.length})</div>
                             {notifications.length > 0 && (
-                                <button onClick={onClearAll} style={{ background: 'none', border: 'none', color: THEME.textDim, fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: '4px 8px', borderRadius: 4, transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = THEME.primary} onMouseLeave={e => e.currentTarget.style.color = THEME.textDim}>
+                                <button onClick={onClearAll} style={{ background: 'none', border: 'none', color: THEME.textDim, fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: '4px 8px', borderRadius: 4 }} onMouseEnter={e => e.currentTarget.style.color = THEME.primary} onMouseLeave={e => e.currentTarget.style.color = THEME.textDim}>
                                     Clear All
                                 </button>
                             )}
@@ -320,23 +338,21 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
                                     <Bell size={32} style={{ opacity: 0.3, marginBottom: 12 }} />
                                     <div style={{ fontSize: 12 }}>No notifications</div>
                                 </div>
-                            ) : (
-                                notifications.map((notif) => (
-                                    <div key={notif.id} className="notification-item" style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}40`, display: 'flex', gap: 10, alignItems: 'flex-start', background: notif.read ? 'transparent' : `${THEME.primary}05`, cursor: 'pointer', transition: 'all 0.15s' }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: 6, flexShrink: 0, background: `${notif.severity === 'critical' ? THEME.danger : notif.severity === 'warning' ? THEME.warning : THEME.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <AlertCircle size={16} color={notif.severity === 'critical' ? THEME.danger : notif.severity === 'warning' ? THEME.warning : THEME.primary} />
-                                        </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: 12, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{notif.title}</div>
-                                            <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.4 }}>{notif.message}</div>
-                                            <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>{new Date(notif.timestamp).toLocaleTimeString()}</div>
-                                        </div>
-                                        <button onClick={(e) => { e.stopPropagation(); onDismiss(notif.id); }} style={{ width: 20, height: 20, borderRadius: 4, border: 'none', background: 'transparent', color: THEME.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}20`; e.currentTarget.style.color = THEME.danger; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = THEME.textDim; }}>
-                                            <X size={14} />
-                                        </button>
+                            ) : notifications.map((notif) => (
+                                <div key={notif.id} className="notification-item" style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}40`, display: 'flex', gap: 10, alignItems: 'flex-start', background: notif.read ? 'transparent' : `${THEME.primary}05`, cursor: 'pointer' }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 6, flexShrink: 0, background: `${notif.severity === 'critical' ? THEME.danger : notif.severity === 'warning' ? THEME.warning : THEME.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <AlertCircle size={16} color={notif.severity === 'critical' ? THEME.danger : notif.severity === 'warning' ? THEME.warning : THEME.primary} />
                                     </div>
-                                ))
-                            )}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{notif.title}</div>
+                                        <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.4 }}>{notif.message}</div>
+                                        <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>{new Date(notif.timestamp).toLocaleTimeString()}</div>
+                                    </div>
+                                    <button onClick={(e) => { e.stopPropagation(); onDismiss(notif.id); }} style={{ width: 20, height: 20, borderRadius: 4, border: 'none', background: 'transparent', color: THEME.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}20`; e.currentTarget.style.color = THEME.danger; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = THEME.textDim; }}>
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </>
@@ -346,29 +362,45 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SIDEBAR — with visible section dividers
+   SIDEBAR — collapsible sections, active section auto-expands
    ═══════════════════════════════════════════════════════════════════════════ */
 const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onToggleCollapse, onOpenFeedback, allowedTabIds }) => {
 
-    // Filter TAB_CONFIG: keep section headers that have at least one allowed tab below them
-    const visibleConfig = useMemo(() => {
-        const result = [];
-        for (let i = 0; i < TAB_CONFIG.length; i++) {
-            const item = TAB_CONFIG[i];
-            if (item.section) {
-                let j = i + 1;
-                let hasAllowed = false;
-                while (j < TAB_CONFIG.length && !TAB_CONFIG[j].section) {
-                    if (allowedTabIds.includes(TAB_CONFIG[j].id)) { hasAllowed = true; break; }
-                    j++;
-                }
-                if (hasAllowed) result.push(item);
-            } else {
-                if (allowedTabIds.includes(item.id)) result.push(item);
-            }
+    // Track which sections are open. Default: the section containing the active tab.
+    const [openSections, setOpenSections] = useState(() => {
+        const active = getSectionForTab(activeTab);
+        return active ? new Set([active]) : new Set();
+    });
+
+    // When active tab changes, auto-open its section
+    useEffect(() => {
+        const section = getSectionForTab(activeTab);
+        if (section) {
+            setOpenSections(prev => {
+                if (prev.has(section)) return prev;
+                const next = new Set(prev);
+                next.add(section);
+                return next;
+            });
         }
-        return result;
-    }, [allowedTabIds]);
+    }, [activeTab]);
+
+    const toggleSection = useCallback((sectionName) => {
+        setOpenSections(prev => {
+            const next = new Set(prev);
+            if (next.has(sectionName)) next.delete(sectionName);
+            else next.add(sectionName);
+            return next;
+        });
+    }, []);
+
+    // Filtered section groups — only sections with ≥1 allowed tab
+    const visibleGroups = useMemo(() =>
+            SECTION_GROUPS
+                .map(g => ({ ...g, tabs: g.tabs.filter(t => allowedTabIds.includes(t.id)) }))
+                .filter(g => g.tabs.length > 0),
+        [allowedTabIds]
+    );
 
     return (
         <aside style={{ width: collapsed ? 70 : 240, background: 'rgba(2,6,23,0.95)', borderRight: `1px solid ${THEME.grid}`, display: 'flex', flexDirection: 'column', zIndex: 50, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', flexShrink: 0 }}>
@@ -381,63 +413,97 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 {!collapsed && <span style={{ fontWeight: 700, fontSize: 16, whiteSpace: 'nowrap' }}>PG Monitor</span>}
             </div>
 
-            {/* Navigation */}
-            <div className="sidebar-nav" style={{ flex: 1, padding: '8px', display: 'flex', flexDirection: 'column', gap: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-                {visibleConfig.map((item, idx) => {
+            {/* Navigation — collapsible section groups */}
+            <div className="sidebar-nav" style={{ flex: 1, padding: '8px 8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', overflowX: 'hidden' }}>
+                {visibleGroups.map((group) => {
+                    const isOpen = collapsed || openSections.has(group.section); // always open when icon-only
+                    const hasActiveTab = group.tabs.some(t => t.id === activeTab);
 
-                    /* ── Section Header ── */
-                    if (item.section) {
-                        return (
-                            <div key={`section-${idx}`} style={{ marginTop: idx === 0 ? 4 : 10, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6, padding: collapsed ? '0 8px' : '0 4px' }}>
-                                {collapsed ? (
-                                    <div style={{ width: '100%', height: 1, background: `${THEME.grid}70`, borderRadius: 1 }} />
-                                ) : (
-                                    <>
-                                        <div style={{ height: 1, background: `${THEME.grid}60`, flex: 1 }} />
-                                        <span style={{ fontSize: 9, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap', padding: '0 2px' }}>
-                                            {item.section}
-                                        </span>
-                                        <div style={{ height: 1, background: `${THEME.grid}60`, flex: 1 }} />
-                                    </>
-                                )}
-                            </div>
-                        );
-                    }
-
-                    /* ── Nav Button ── */
-                    const isActive = activeTab === item.id;
                     return (
-                        <button
-                            key={item.id}
-                            onClick={() => onTabChange(item.id)}
-                            className="nav-item-hover"
-                            title={collapsed ? item.label : undefined}
-                            aria-label={item.label}
-                            aria-current={isActive ? 'page' : undefined}
-                            style={{
-                                display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start',
-                                gap: 10, padding: collapsed ? '10px 0' : '9px 12px',
-                                background: isActive ? `${THEME.primary}18` : 'transparent',
-                                border: isActive ? `1px solid ${THEME.primary}35` : '1px solid transparent',
-                                borderRadius: 7, cursor: 'pointer',
-                                color: isActive ? THEME.primary : THEME.textMuted,
-                                fontWeight: isActive ? 600 : 400,
-                                textAlign: 'left', fontSize: 13,
-                                position: 'relative', whiteSpace: 'nowrap', overflow: 'hidden', width: '100%',
-                            }}
-                        >
-                            {/* Active left bar */}
-                            {isActive && (
-                                <div style={{ position: 'absolute', left: 0, top: '18%', bottom: '18%', width: 3, background: THEME.primary, borderRadius: '0 3px 3px 0' }} />
+                        <div key={group.section} style={{ marginBottom: 2 }}>
+
+                            {/* ── Section Header Button ── */}
+                            {collapsed ? (
+                                /* Collapsed: thin divider line only */
+                                <div style={{ margin: '6px 8px 4px', height: 1, background: `${THEME.grid}60`, borderRadius: 1 }} />
+                            ) : (
+                                <button
+                                    onClick={() => toggleSection(group.section)}
+                                    className="section-header-btn"
+                                    style={{
+                                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        padding: '6px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                                        background: hasActiveTab ? `${THEME.primary}10` : 'transparent',
+                                        marginBottom: 2,
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        {/* Active section indicator dot */}
+                                        {hasActiveTab && (
+                                            <div style={{ width: 5, height: 5, borderRadius: '50%', background: THEME.primary, flexShrink: 0 }} />
+                                        )}
+                                        <span style={{
+                                            fontSize: 10, fontWeight: 700,
+                                            color: hasActiveTab ? THEME.primary : THEME.textMuted,
+                                            textTransform: 'uppercase', letterSpacing: '0.1em',
+                                        }}>
+                                            {group.section}
+                                        </span>
+                                    </div>
+                                    <ChevronDown
+                                        size={12}
+                                        color={hasActiveTab ? THEME.primary : THEME.textMuted}
+                                        style={{ transition: 'transform 0.2s', transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', flexShrink: 0 }}
+                                    />
+                                </button>
                             )}
-                            <item.icon size={16} style={{ flexShrink: 0 }} />
-                            {!collapsed && <span>{item.label}</span>}
-                        </button>
+
+                            {/* ── Section Tabs ── */}
+                            {isOpen && (
+                                <div className={collapsed ? '' : 'section-tabs-open'} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    {group.tabs.map(tab => {
+                                        const isActive = activeTab === tab.id;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => onTabChange(tab.id)}
+                                                className="nav-item-hover"
+                                                title={collapsed ? tab.label : undefined}
+                                                aria-label={tab.label}
+                                                aria-current={isActive ? 'page' : undefined}
+                                                style={{
+                                                    display: 'flex', alignItems: 'center',
+                                                    justifyContent: collapsed ? 'center' : 'flex-start',
+                                                    gap: 9,
+                                                    /* indent tabs under their section when expanded */
+                                                    padding: collapsed ? '10px 0' : '8px 10px 8px 22px',
+                                                    background: isActive ? `${THEME.primary}18` : 'transparent',
+                                                    border: isActive ? `1px solid ${THEME.primary}35` : '1px solid transparent',
+                                                    borderRadius: 7, cursor: 'pointer',
+                                                    color: isActive ? THEME.primary : THEME.textMuted,
+                                                    fontWeight: isActive ? 600 : 400,
+                                                    textAlign: 'left', fontSize: 13,
+                                                    position: 'relative', whiteSpace: 'nowrap',
+                                                    overflow: 'hidden', width: '100%',
+                                                }}
+                                            >
+                                                {/* Active left bar */}
+                                                {isActive && (
+                                                    <div style={{ position: 'absolute', left: 0, top: '18%', bottom: '18%', width: 3, background: THEME.primary, borderRadius: '0 3px 3px 0' }} />
+                                                )}
+                                                <tab.icon size={15} style={{ flexShrink: 0 }} />
+                                                {!collapsed && <span>{tab.label}</span>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     );
                 })}
             </div>
 
-            {/* Footer: Feedback + User + Logout */}
+            {/* Footer */}
             <div style={{ padding: collapsed ? '12px 0' : '12px 16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <button onClick={onOpenFeedback} className="nav-item-hover" title="Give Feedback" style={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', gap: 10, background: 'transparent', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: collapsed ? '8px 0' : '7px 8px', fontSize: 13, fontWeight: 500, borderRadius: 7, width: '100%' }}>
                     <MessageSquarePlus size={15} />
@@ -523,7 +589,6 @@ const Dashboard = () => {
     const [latestAlert, setLatestAlert] = useState(null);
     const [showFeedback, setShowFeedback] = useState(false);
 
-    // Auto-prompt feedback on first visit
     useEffect(() => {
         const hasSeenPrompt = localStorage.getItem(STORAGE_KEYS.FEEDBACK_PROMPT);
         if (!hasSeenPrompt) {
@@ -537,14 +602,7 @@ const Dashboard = () => {
 
     const handleWSMessage = useCallback((msg) => {
         if (msg.type === 'alert') {
-            const notification = {
-                id: Date.now(),
-                title: msg.payload.title || 'Alert',
-                message: msg.payload.message || 'System alert',
-                severity: msg.payload.severity || 'info',
-                timestamp: Date.now(),
-                read: false
-            };
+            const notification = { id: Date.now(), title: msg.payload.title || 'Alert', message: msg.payload.message || 'System alert', severity: msg.payload.severity || 'info', timestamp: Date.now(), read: false };
             setNotifications(prev => [notification, ...prev].slice(0, MAX_NOTIFICATIONS));
             setLatestAlert(msg.payload);
             setTimeout(() => setLatestAlert(null), ALERT_AUTO_DISMISS_TIME);
@@ -553,24 +611,18 @@ const Dashboard = () => {
 
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
 
-    // Allowed tab IDs from user permissions
     const allowedTabIds = useMemo(() =>
             TABS_ONLY.filter(t => currentUser.allowedScreens.includes(t.id)).map(t => t.id),
         [currentUser.allowedScreens]
     );
 
-    // Resolve active component
     const ActiveComponent = useMemo(() => {
         const tab = TABS_ONLY.find(t => t.id === activeTab && allowedTabIds.includes(t.id));
         if (tab) return tab.component;
-        const first = TABS_ONLY.find(t => allowedTabIds.includes(t.id));
-        return first?.component;
+        return TABS_ONLY.find(t => allowedTabIds.includes(t.id))?.component;
     }, [activeTab, allowedTabIds]);
 
-    const activeTabLabel = useMemo(() =>
-            TABS_ONLY.find(t => t.id === activeTab)?.label || '',
-        [activeTab]
-    );
+    const activeTabLabel = useMemo(() => TABS_ONLY.find(t => t.id === activeTab)?.label || '', [activeTab]);
 
     const handleTabChange = useCallback((tabId) => {
         setActiveTab(tabId);
@@ -587,19 +639,12 @@ const Dashboard = () => {
         });
     }, []);
 
-    const handleDismissNotification = useCallback((id) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-    }, []);
-
+    const handleDismissNotification = useCallback((id) => setNotifications(prev => prev.filter(n => n.id !== id)), []);
     const handleClearAllNotifications = useCallback(() => setNotifications([]), []);
 
-    // Ctrl/Cmd+B: toggle sidebar
     useEffect(() => {
         const handleKeyPress = (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
-                e.preventDefault();
-                handleToggleCollapse();
-            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); handleToggleCollapse(); }
         };
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
@@ -622,7 +667,6 @@ const Dashboard = () => {
             />
 
             <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                {/* Header */}
                 <header style={{ height: 64, borderBottom: `1px solid ${THEME.grid}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', background: 'rgba(2,6,23,0.8)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 40, flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                         <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{activeTabLabel}</h2>
@@ -639,7 +683,6 @@ const Dashboard = () => {
                     </div>
                 </header>
 
-                {/* Content */}
                 <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
                     <div style={{ padding: 32, maxWidth: 1600, margin: '0 auto', position: 'relative', minHeight: '100%' }}>
                         {latestAlert && (
@@ -677,11 +720,7 @@ const LoadingScreen = () => (
 const AuthConsumer = () => {
     const { currentUser, loading } = useAuth();
     if (loading) return <LoadingScreen />;
-    return currentUser ? (
-        <ErrorBoundary><Dashboard /></ErrorBoundary>
-    ) : (
-        <LoginPage />
-    );
+    return currentUser ? <ErrorBoundary><Dashboard /></ErrorBoundary> : <LoginPage />;
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
