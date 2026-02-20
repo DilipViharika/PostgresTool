@@ -1,442 +1,766 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { T } from '../constants/theme.js';
-import { ROLES, RESOURCE_ROWS, DEFAULT_PERMISSIONS, PERM_LABELS, PERM_COLORS, DEPARTMENTS, LOCATIONS } from '../constants/index.js';
-import { useDebounce, useClickOutside } from '../hooks/index.js';
-import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter } from '../shared/components/ui.jsx';
+/**
+ * TableAndMatrix.jsx
+ * Redesigned UsersTable + PermissionMatrix
+ * — clean horizontal table rows, refined dark aesthetic
+ */
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   ANALYTICS HEADER — top KPI row
-   ───────────────────────────────────────────────────────────────────────────── */
-export const AnalyticsHeader = ({ users }) => {
-    const active   = users.filter(u => u.status === 'active').length;
-    const noMfa    = users.filter(u => !u.mfa).length;
-    const highRisk = users.filter(u => u.riskScore > 70).length;
-    const weekLogins = users.reduce(
-        (s, u) => s + u.loginActivity.slice(-7).reduce((a, b) => a + b, 0),
-        0
-    );
+import React, { useState, useMemo, useCallback, memo } from 'react';
 
-    return (
-        <div className="um-grid-4 um-stagger" style={{ marginBottom: 24 }}>
-            <StatCard
-                label="Total Users" value={users.length} sub={`${active} active`}
-                icon="users" color={T.primary} trend={12}
-                sparkData={Array.from({ length: 24 }, (_, i) =>
-                    Math.floor(Math.sin(i / 3) * 30 + 40 + Math.random() * 20)
-                )}
-            />
-            <StatCard
-                label="No MFA Enabled" value={noMfa} sub="Security risk"
-                icon="shield" color={T.warning} trend={-3}
-            />
-            <StatCard
-                label="High Risk Users" value={highRisk} sub="Score > 70"
-                icon="alert" color={T.danger} trend={highRisk > 3 ? 5 : -8}
-            />
-            <StatCard
-                label="Weekly Logins" value={weekLogins.toLocaleString()} sub="Across all users"
-                icon="activity" color={T.info}
-                sparkData={Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000 + 500))}
-            />
-        </div>
-    );
+/* ═══════════════════════════════════════════════════════
+   THEME TOKENS  (fallback values mirror the app theme)
+   ═══════════════════════════════════════════════════════ */
+const T = {
+    bg:          '#0d0d1a',
+    surface:     '#12121f',
+    surfaceHigh: '#1a1a2e',
+    surfaceMid:  '#16162a',
+    border:      '#252538',
+    borderLight: '#2e2e48',
+    primary:     '#6c63ff',
+    primaryGlow: '#6c63ff22',
+    cyan:        '#00d4ff',
+    green:       '#10b981',
+    yellow:      '#f59e0b',
+    red:         '#ef4444',
+    purple:      '#8b5cf6',
+    text:        '#e8eaf0',
+    textDim:     '#9395a5',
+    textMuted:   '#565870',
 };
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   USERS TABLE — sortable, filterable, paginated, with bulk selection
-   ───────────────────────────────────────────────────────────────────────────── */
-const PER_PAGE = 8;
+/* ═══════════════════════════════════════════════════════
+   ROLE CONFIG
+   ═══════════════════════════════════════════════════════ */
+const ROLE_CONFIG = {
+    superadmin: { label: 'Super Admin', color: '#f59e0b', bg: '#f59e0b15', icon: '👑' },
+    admin:      { label: 'Admin',       color: '#6c63ff', bg: '#6c63ff18', icon: '🛡️' },
+    editor:     { label: 'Editor',      color: '#00d4ff', bg: '#00d4ff12', icon: '✏️' },
+    viewer:     { label: 'Viewer',      color: '#10b981', bg: '#10b98112', icon: '👁' },
+    guest:      { label: 'Guest',       color: '#9395a5', bg: '#9395a515', icon: '🔗' },
+};
 
-export const UsersTable = ({ users, onSelectUser, onDeleteUsers, onEditUser }) => {
-    const [rawSearch, setRawSearch]   = useState('');
-    const [selected, setSelected]     = useState([]);
-    const [page, setPage]             = useState(1);
-    const [sort, setSort]             = useState({ key: 'name', dir: 'asc' });
-    const [roleFilter, setRoleFilter] = useState('all');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [showBulkMenu, setShowBulkMenu] = useState(false);
+const STATUS_CONFIG = {
+    active:    { label: 'Active',    color: '#10b981', bg: '#10b98115', dot: '#10b981' },
+    inactive:  { label: 'Inactive',  color: '#9395a5', bg: '#9395a515', dot: '#9395a5' },
+    suspended: { label: 'Suspended', color: '#ef4444', bg: '#ef444415', dot: '#ef4444' },
+};
 
-    const bulkMenuRef = useRef(null);
-    useClickOutside(bulkMenuRef, () => setShowBulkMenu(false));
+const RISK_CONFIG = {
+    low:      { label: 'Low',    color: '#10b981', bar: 25 },
+    medium:   { label: 'Med',   color: '#f59e0b', bar: 55 },
+    high:     { label: 'High',   color: '#ef4444', bar: 85 },
+    critical: { label: 'Crit',  color: '#ff2d6b', bar: 100 },
+};
 
-    const search = useDebounce(rawSearch, 250);
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════ */
+function getInitials(name = '') {
+    return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+}
 
-    const toggleSort = (key) =>
-        setSort(s => ({ key, dir: s.key === key && s.dir === 'asc' ? 'desc' : 'asc' }));
+function getAvatarColor(name = '') {
+    const colors = ['#6c63ff', '#00d4ff', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ff6b35'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+}
 
-    const filtered = useMemo(() => {
-        const q = search.toLowerCase();
-        let r = users.filter(u => {
-            const matchQ = !q ||
-                u.name.toLowerCase().includes(q) ||
-                u.email.toLowerCase().includes(q) ||
-                u.department.toLowerCase().includes(q);
-            const matchRole   = roleFilter   === 'all' || u.role   === roleFilter;
-            const matchStatus = statusFilter === 'all' || u.status === statusFilter;
-            return matchQ && matchRole && matchStatus;
-        });
-        r.sort((a, b) => {
-            let av = a[sort.key], bv = b[sort.key];
-            if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
-            return sort.dir === 'asc' ? (av < bv ? -1 : av > bv ? 1 : 0)
-                : (av > bv ? -1 : av < bv ? 1 : 0);
-        });
-        return r;
-    }, [users, search, sort, roleFilter, statusFilter]);
+function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d)) return '—';
+        const now = new Date();
+        const diff = now - d;
+        const mins = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        if (mins < 60) return `${mins}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch {
+        return '—';
+    }
+}
 
-    const pages = Math.ceil(filtered.length / PER_PAGE);
-    const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-    const allSelected = paged.length > 0 && paged.every(u => selected.includes(u.id));
+/* ═══════════════════════════════════════════════════════
+   INLINE STYLES INJECTOR
+   ═══════════════════════════════════════════════════════ */
+const TableStyles = memo(() => (
+    <style>{`
+        .ut-root { font-family: 'Geist', 'DM Sans', system-ui, sans-serif; }
 
-    const SortIcon = ({ k }) =>
-        sort.key !== k
-            ? <Ico name="sort" size={12} color={T.textDim} />
-            : <Ico name={sort.dir === 'asc' ? 'arrowUp' : 'arrowDown'} size={12} color={T.primary} />;
+        .ut-search-wrap input {
+            background: ${T.surfaceHigh};
+            border: 1px solid ${T.border};
+            color: ${T.text};
+            border-radius: 10px;
+            padding: 9px 14px 9px 38px;
+            font-size: 13px;
+            width: 280px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            outline: none;
+        }
+        .ut-search-wrap input::placeholder { color: ${T.textMuted}; }
+        .ut-search-wrap input:focus {
+            border-color: ${T.primary};
+            box-shadow: 0 0 0 3px ${T.primaryGlow};
+        }
 
-    const cols = '40px 2.2fr 1.2fr 1fr 0.9fr 1fr 80px 44px';
+        .ut-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 600; cursor: pointer;
+            border: none; font-family: inherit; transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .ut-pill:hover { filter: brightness(1.15); }
 
-    const handleBulkDelete = () => {
-        onDeleteUsers(selected);
-        setSelected([]);
-        setShowBulkMenu(false);
-    };
+        .ut-filter-btn {
+            background: transparent; border: 1px solid ${T.border};
+            color: ${T.textDim}; padding: 6px 14px; border-radius: 8px;
+            font-size: 12px; font-weight: 500; cursor: pointer;
+            font-family: inherit; transition: all 0.15s; white-space: nowrap;
+        }
+        .ut-filter-btn:hover { border-color: ${T.primary}; color: ${T.text}; }
+        .ut-filter-btn.active {
+            background: ${T.primaryGlow}; border-color: ${T.primary};
+            color: ${T.primary}; font-weight: 600;
+        }
 
+        /* Table */
+        .ut-table { width: 100%; border-collapse: collapse; }
+        .ut-table thead tr {
+            border-bottom: 1px solid ${T.border};
+        }
+        .ut-table th {
+            padding: 11px 16px; text-align: left;
+            font-size: 11px; font-weight: 700;
+            color: ${T.textMuted}; letter-spacing: 0.06em; text-transform: uppercase;
+            white-space: nowrap; user-select: none;
+        }
+        .ut-table th.sortable { cursor: pointer; }
+        .ut-table th.sortable:hover { color: ${T.textDim}; }
+
+        .ut-table tbody tr {
+            border-bottom: 1px solid ${T.border}22;
+            transition: background 0.12s;
+            cursor: pointer;
+        }
+        .ut-table tbody tr:last-child { border-bottom: none; }
+        .ut-table tbody tr:hover { background: ${T.surfaceHigh}88; }
+        .ut-table tbody tr.selected { background: ${T.primaryGlow}; }
+
+        .ut-table td { padding: 14px 16px; vertical-align: middle; }
+
+        /* Checkbox */
+        .ut-checkbox {
+            width: 16px; height: 16px; border-radius: 4px;
+            border: 1.5px solid ${T.border}; background: transparent;
+            appearance: none; cursor: pointer; position: relative;
+            transition: all 0.15s; flex-shrink: 0;
+        }
+        .ut-checkbox:checked {
+            background: ${T.primary}; border-color: ${T.primary};
+        }
+        .ut-checkbox:checked::after {
+            content: ''; position: absolute;
+            left: 3px; top: 1px; width: 8px; height: 5px;
+            border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+            transform: rotate(-45deg);
+        }
+        .ut-checkbox:focus-visible { outline: 2px solid ${T.primary}; outline-offset: 2px; }
+
+        /* Avatar */
+        .ut-avatar {
+            width: 34px; height: 34px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 800; flex-shrink: 0;
+            letter-spacing: 0.02em;
+        }
+
+        /* Risk bar */
+        .ut-risk-bar {
+            height: 3px; border-radius: 2px;
+            background: ${T.border}; overflow: hidden;
+            width: 60px; margin-top: 4px;
+        }
+        .ut-risk-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+
+        /* Action buttons */
+        .ut-action-btn {
+            width: 30px; height: 30px; border-radius: 8px;
+            border: 1px solid ${T.border}; background: transparent;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: ${T.textDim}; transition: all 0.15s; font-size: 14px;
+        }
+        .ut-action-btn:hover { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryGlow}; }
+        .ut-action-btn.danger:hover { border-color: ${T.red}; color: ${T.red}; background: ${T.red}15; }
+
+        /* Export / Add buttons */
+        .ut-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 9px; border: none;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: all 0.15s; white-space: nowrap;
+        }
+        .ut-btn-ghost {
+            background: transparent; color: ${T.textDim};
+            border: 1px solid ${T.border};
+        }
+        .ut-btn-ghost:hover { background: ${T.surfaceHigh}; color: ${T.text}; border-color: ${T.borderLight}; }
+        .ut-btn-primary {
+            background: ${T.primary}; color: #fff;
+        }
+        .ut-btn-primary:hover { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 4px 16px ${T.primary}44; }
+
+        /* Empty state */
+        @keyframes ut-fade-up {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .ut-row-animate { animation: ut-fade-up 0.2s ease-out both; }
+
+        /* Pagination */
+        .ut-page-btn {
+            width: 30px; height: 30px; border-radius: 7px;
+            border: 1px solid ${T.border}; background: transparent;
+            color: ${T.textDim}; cursor: pointer; font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center;
+            font-family: inherit; transition: all 0.15s;
+        }
+        .ut-page-btn:hover:not(:disabled) { border-color: ${T.primary}; color: ${T.primary}; }
+        .ut-page-btn.active { background: ${T.primary}; border-color: ${T.primary}; color: #fff; }
+        .ut-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    `}</style>
+));
+
+/* ═══════════════════════════════════════════════════════
+   ROLE BADGE
+   ═══════════════════════════════════════════════════════ */
+const RoleBadge = memo(({ role }) => {
+    const cfg = ROLE_CONFIG[role?.toLowerCase()] || ROLE_CONFIG.guest;
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            padding: '3px 9px', borderRadius: 20,
+            background: cfg.bg, color: cfg.color,
+            fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+        }}>
+            <span style={{ fontSize: 10 }}>{cfg.icon}</span>
+            {cfg.label}
+        </span>
+    );
+});
+
+/* ═══════════════════════════════════════════════════════
+   STATUS BADGE
+   ═══════════════════════════════════════════════════════ */
+const StatusBadge = memo(({ status }) => {
+    const cfg = STATUS_CONFIG[status?.toLowerCase()] || STATUS_CONFIG.inactive;
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '3px 9px', borderRadius: 20,
+            background: cfg.bg, color: cfg.color,
+            fontSize: 11, fontWeight: 600,
+        }}>
+            <span style={{
+                width: 5, height: 5, borderRadius: '50%',
+                background: cfg.dot,
+                boxShadow: `0 0 4px ${cfg.dot}`,
+            }} />
+            {cfg.label}
+        </span>
+    );
+});
+
+/* ═══════════════════════════════════════════════════════
+   RISK CELL
+   ═══════════════════════════════════════════════════════ */
+const RiskCell = memo(({ risk }) => {
+    if (!risk) return <span style={{ color: T.textMuted, fontSize: 12 }}>—</span>;
+    const cfg = RISK_CONFIG[risk?.toLowerCase()] || { label: risk, color: T.textDim, bar: 30 };
     return (
         <div>
-            {/* ── Toolbar ──────────────────────────────────────────────── */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
+            <div className="ut-risk-bar">
+                <div className="ut-risk-fill" style={{ width: `${cfg.bar}%`, background: cfg.color }} />
+            </div>
+        </div>
+    );
+});
+
+/* ═══════════════════════════════════════════════════════
+   SORT ICON
+   ═══════════════════════════════════════════════════════ */
+const SortIcon = ({ active, direction }) => (
+    <span style={{ marginLeft: 4, opacity: active ? 1 : 0.3, color: active ? T.primary : 'inherit', fontSize: 10 }}>
+        {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+);
+
+/* ═══════════════════════════════════════════════════════
+   USERS TABLE
+   ═══════════════════════════════════════════════════════ */
+const PAGE_SIZE = 10;
+
+const COLUMNS = [
+    { key: 'name',       label: 'User',       sortable: true,  width: '30%' },
+    { key: 'role',       label: 'Role',       sortable: true,  width: '14%' },
+    { key: 'status',     label: 'Status',     sortable: true,  width: '11%' },
+    { key: 'department', label: 'Dept',       sortable: true,  width: '13%' },
+    { key: 'last_login', label: 'Last Login', sortable: true,  width: '13%' },
+    { key: 'risk',       label: 'Risk',       sortable: false, width: '10%' },
+    { key: '_actions',   label: '',           sortable: false, width: '9%'  },
+];
+
+export const UsersTable = memo(({ users = [], onSelectUser, onEditUser, onDeleteUsers }) => {
+    const [search, setSearch]           = useState('');
+    const [roleFilter, setRoleFilter]   = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortKey, setSortKey]         = useState('name');
+    const [sortDir, setSortDir]         = useState('asc');
+    const [selected, setSelected]       = useState(new Set());
+    const [page, setPage]               = useState(1);
+
+    /* ── Filtering + sorting ── */
+    const filtered = useMemo(() => {
+        let list = [...users];
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            list = list.filter(u =>
+                (u.name || '').toLowerCase().includes(q) ||
+                (u.email || '').toLowerCase().includes(q) ||
+                (u.department || '').toLowerCase().includes(q)
+            );
+        }
+        if (roleFilter !== 'all') list = list.filter(u => u.role?.toLowerCase() === roleFilter);
+        if (statusFilter !== 'all') list = list.filter(u => u.status?.toLowerCase() === statusFilter);
+
+        list.sort((a, b) => {
+            const av = (a[sortKey] || '').toString().toLowerCase();
+            const bv = (b[sortKey] || '').toString().toLowerCase();
+            return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+        return list;
+    }, [users, search, roleFilter, statusFilter, sortKey, sortDir]);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    const handleSort = useCallback((key) => {
+        if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        else { setSortKey(key); setSortDir('asc'); }
+    }, [sortKey]);
+
+    const toggleSelect = useCallback((id) => {
+        setSelected(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    }, []);
+
+    const toggleAll = useCallback(() => {
+        if (selected.size === paginated.length) setSelected(new Set());
+        else setSelected(new Set(paginated.map(u => u.id)));
+    }, [selected.size, paginated]);
+
+    const allSelected = paginated.length > 0 && selected.size === paginated.length;
+
+    /* ── Action handlers ── */
+    const handleEdit   = (e, u) => { e.stopPropagation(); onEditUser?.(u); };
+    const handleDelete = (e, u) => { e.stopPropagation(); onDeleteUsers?.(u.id); };
+
+    /* ── Roles for filter pills ── */
+    const availableRoles = useMemo(() => {
+        const roles = [...new Set(users.map(u => u.role?.toLowerCase()).filter(Boolean))];
+        return roles;
+    }, [users]);
+
+    return (
+        <div className="ut-root">
+            <TableStyles />
+
+            {/* ── Toolbar ─────────────────────────────────────────── */}
+            <div style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                flexWrap: 'wrap', marginBottom: 16,
+            }}>
                 {/* Search */}
-                <div style={{ position: 'relative', flex: 1, minWidth: 220, maxWidth: 360 }}>
-                    <Ico name="search" size={15} color={T.textDim}
-                         style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                <div className="ut-search-wrap" style={{ position: 'relative' }}>
+                    <svg style={{
+                        position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)',
+                        color: T.textMuted, pointerEvents: 'none',
+                    }} width={14} height={14} viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
                     <input
-                        className="um-input" placeholder="Search name, email, department…"
-                        value={rawSearch} aria-label="Search users"
-                        onChange={e => { setRawSearch(e.target.value); setPage(1); }}
-                        style={{ paddingLeft: 38 }}
+                        id="um-search-input"
+                        type="text"
+                        placeholder="Search name, email, dept…"
+                        value={search}
+                        onChange={e => { setSearch(e.target.value); setPage(1); }}
+                        aria-label="Search users"
                     />
                 </div>
 
-                {/* Role pills */}
+                {/* Role filters */}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {['all', ...ROLES.map(r => r.id)].map(r => (
-                        <TagFilter
-                            key={r} active={roleFilter === r}
-                            label={r === 'all' ? 'All Roles' : ROLES.find(x => x.id === r)?.label || r}
-                            onClick={() => { setRoleFilter(r); setPage(1); }}
-                        />
-                    ))}
-                </div>
-
-                {/* Action buttons */}
-                <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-                    {selected.length > 0 && (
-                        <div style={{ position: 'relative' }} ref={bulkMenuRef}>
-                            <button className="um-btn um-btn-danger" onClick={() => setShowBulkMenu(v => !v)}>
-                                <Ico name="more" size={14} /> Bulk ({selected.length}) <Ico name="chevDown" size={12} />
-                            </button>
-                            {showBulkMenu && (
-                                <div style={{
-                                    position: 'absolute', right: 0, top: 'calc(100% + 6px)',
-                                    background: T.surfaceHigh, border: `1px solid ${T.border}`,
-                                    borderRadius: 10, padding: 6, zIndex: 100, minWidth: 160,
-                                }}>
-                                    {[
-                                        { label: 'Export Selected', icon: 'download' },
-                                        { label: 'Reset Passwords', icon: 'key' },
-                                        { label: 'Revoke Sessions', icon: 'logOut' },
-                                        { label: 'Delete Users', icon: 'trash', danger: true },
-                                    ].map(item => (
-                                        <button key={item.label} className="um-btn um-btn-ghost"
-                                                onClick={() => { if (item.danger) handleBulkDelete(); }}
-                                                style={{
-                                                    width: '100%', justifyContent: 'flex-start',
-                                                    borderRadius: 7, border: 'none', gap: 10,
-                                                    color: item.danger ? T.danger : T.textSub,
-                                                    background: 'transparent',
-                                                }}>
-                                            <Ico name={item.icon} size={13} color={item.danger ? T.danger : T.textDim} />
-                                            {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    <button className="um-btn um-btn-ghost">
-                        <Ico name="download" size={14} /> Export
+                    <button
+                        className={`ut-filter-btn${roleFilter === 'all' ? ' active' : ''}`}
+                        onClick={() => { setRoleFilter('all'); setPage(1); }}>
+                        All Roles
                     </button>
-                    <button className="um-btn um-btn-primary" onClick={() => onEditUser(null)}>
-                        <Ico name="plus" size={15} /> Add User
-                    </button>
-                </div>
-            </div>
-
-            {/* ── Status filter row ─────────────────────────────────────── */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-                {['all', 'active', 'inactive', 'suspended'].map(s => (
-                    <TagFilter key={s} active={statusFilter === s}
-                               label={s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1)}
-                               onClick={() => { setStatusFilter(s); setPage(1); }} />
-                ))}
-                <span style={{ marginLeft: 'auto', fontSize: 12, color: T.textDim, alignSelf: 'center' }}>
-                    {filtered.length} result{filtered.length !== 1 ? 's' : ''}
-                </span>
-            </div>
-
-            {/* ── Table ─────────────────────────────────────────────────── */}
-            <div style={{ border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'hidden' }}>
-                {/* Header */}
-                <div style={{
-                    display: 'grid', gridTemplateColumns: cols, padding: '10px 20px',
-                    background: T.surfaceHigh, borderBottom: `1px solid ${T.border}`,
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <input type="checkbox" aria-label="Select all on page"
-                               style={{ width: 17, height: 17, cursor: 'pointer', accentColor: T.primary }}
-                               checked={allSelected}
-                               onChange={() => setSelected(allSelected ? [] : paged.map(u => u.id))}
-                        />
-                    </div>
-                    {[['name', 'User'], ['role', 'Role'], ['status', 'Status'], ['department', 'Dept'], ['lastLogin', 'Last Login']].map(([k, label]) => (
-                        <button key={k} onClick={() => toggleSort(k)}
-                                aria-label={`Sort by ${label}`}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: 5,
-                                    background: 'none', border: 'none', cursor: 'pointer',
-                                    fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-                                    textTransform: 'uppercase', fontFamily: 'Outfit, sans-serif', padding: 0,
-                                    color: sort.key === k ? T.primary : T.textDim,
-                                }}>
-                            {label} <SortIcon k={k} />
-                        </button>
-                    ))}
-                    <div style={{ fontSize: 11, fontWeight: 700, color: T.textDim, letterSpacing: '0.06em', textTransform: 'uppercase' }}>RISK</div>
-                    <div />
-                </div>
-
-                {/* Rows */}
-                {paged.length === 0 ? (
-                    <div style={{ padding: '48px 20px', textAlign: 'center', color: T.textDim }}>
-                        <Ico name="search" size={28} color={T.textDim} style={{ marginBottom: 12 }} />
-                        <div style={{ fontSize: 14 }}>No users match your filters</div>
-                    </div>
-                ) : paged.map(user => {
-                    const roleColor = ROLES.find(r => r.id === user.role)?.color || T.primary;
-                    return (
-                        <div key={user.id}
-                             className={`um-row${selected.includes(user.id) ? ' selected' : ''}`}
-                             style={{ gridTemplateColumns: cols }}
-                             onClick={() => onSelectUser(user)}
-                             role="row" tabIndex={0}
-                             onKeyDown={e => e.key === 'Enter' && onSelectUser(user)}
-                        >
-                            <div onClick={e => e.stopPropagation()}>
-                                <input type="checkbox" aria-label={`Select ${user.name}`}
-                                       style={{ width: 17, height: 17, cursor: 'pointer', accentColor: T.primary }}
-                                       checked={selected.includes(user.id)}
-                                       onChange={() => setSelected(s =>
-                                           s.includes(user.id) ? s.filter(x => x !== user.id) : [...s, user.id]
-                                       )}
-                                />
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, overflow: 'hidden' }}>
-                                <div style={{
-                                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                                    background: `${roleColor}22`, border: `1px solid ${roleColor}40`,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 14, fontWeight: 700, color: roleColor,
-                                }}>
-                                    {user.name.charAt(0)}
-                                </div>
-                                <div style={{ overflow: 'hidden' }}>
-                                    <div style={{ fontSize: 13, fontWeight: 600, color: T.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {user.name}
-                                    </div>
-                                    <div style={{ fontSize: 11, color: T.textDim, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {user.email}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div><RoleBadge roleId={user.role} size="sm" /></div>
-                            <div><StatusBadge status={user.status} /></div>
-                            <div style={{ fontSize: 12, color: T.textSub }}>{user.department}</div>
-                            <div style={{ fontSize: 11, color: T.textDim }}>
-                                {new Date(user.lastLogin).toLocaleDateString()}
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <RiskRing score={user.riskScore} size={36} />
-                            </div>
-
-                            <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                                <button className="um-btn um-btn-ghost um-btn-icon"
-                                        aria-label={`Edit ${user.name}`}
-                                        onClick={e => { e.stopPropagation(); onEditUser(user); }}>
-                                    <Ico name="edit" size={13} color={T.textDim} />
+                    {['superadmin', 'admin', 'editor', 'viewer', 'guest']
+                        .filter(r => availableRoles.includes(r) || availableRoles.length === 0)
+                        .map(r => {
+                            const cfg = ROLE_CONFIG[r];
+                            return (
+                                <button
+                                    key={r}
+                                    className={`ut-filter-btn${roleFilter === r ? ' active' : ''}`}
+                                    onClick={() => { setRoleFilter(r); setPage(1); }}
+                                    style={roleFilter === r ? {
+                                        borderColor: cfg.color,
+                                        color: cfg.color,
+                                        background: cfg.bg,
+                                    } : {}}>
+                                    {cfg.label}
                                 </button>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* ── Pagination ────────────────────────────────────────────── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0 0' }}>
-                <div style={{ fontSize: 12, color: T.textDim }}>
-                    Showing <b style={{ color: T.textSub }}>{paged.length}</b> of <b style={{ color: T.textSub }}>{filtered.length}</b> users
+                            );
+                        })}
                 </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <button className="um-btn um-btn-ghost um-btn-icon" aria-label="Previous page"
-                            disabled={page === 1} onClick={() => setPage(p => p - 1)}
-                            style={{ opacity: page === 1 ? 0.4 : 1 }}>
-                        <Ico name="chevLeft" size={15} />
-                    </button>
-                    {Array.from({ length: Math.min(pages, 5) }, (_, i) => {
-                        const p = i + 1;
-                        return (
-                            <button key={p} className="um-btn" aria-label={`Page ${p}`}
-                                    aria-current={page === p ? 'page' : undefined}
-                                    onClick={() => setPage(p)}
-                                    style={{
-                                        minWidth: 32, padding: '5px 0',
-                                        background: page === p ? T.primary : 'transparent',
-                                        color: page === p ? '#fff' : T.textSub,
-                                        border: `1px solid ${page === p ? T.primary : T.border}`,
-                                        borderRadius: 7, fontSize: 13, fontWeight: 600,
-                                    }}>
-                                {p}
-                            </button>
-                        );
-                    })}
-                    <button className="um-btn um-btn-ghost um-btn-icon" aria-label="Next page"
-                            disabled={page === pages || pages === 0} onClick={() => setPage(p => p + 1)}
-                            style={{ opacity: (page === pages || pages === 0) ? 0.4 : 1 }}>
-                        <Ico name="chevRight" size={15} />
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   PERMISSION MATRIX — editable role → resource → action grid
-   ───────────────────────────────────────────────────────────────────────────── */
-export const PermissionMatrix = () => {
-    const [activeRole, setActiveRole] = useState('admin');
-    const [perms, setPerms] = useState(
-        () => Object.fromEntries(
-            Object.entries(DEFAULT_PERMISSIONS).map(([r, v]) => [r, JSON.parse(JSON.stringify(v))])
-        )
-    );
-
-    const toggle = (resource, action) => {
-        setPerms(prev => {
-            const copy = JSON.parse(JSON.stringify(prev));
-            const arr = copy[activeRole][resource] || [];
-            copy[activeRole][resource] = arr.includes(action)
-                ? arr.filter(a => a !== action)
-                : [...arr, action];
-            return copy;
-        });
-    };
-
-    const currentPerms = perms[activeRole] || {};
-
-    return (
-        <div>
-            {/* Role selector */}
-            <div style={{
-                display: 'flex', gap: 10, marginBottom: 24, padding: 16,
-                background: T.surfaceHigh, borderRadius: 12, border: `1px solid ${T.border}`,
-            }}>
-                {ROLES.map(role => {
-                    const active = activeRole === role.id;
-                    return (
-                        <button key={role.id} onClick={() => setActiveRole(role.id)} className="um-btn"
-                                aria-pressed={active}
-                                style={{
-                                    flex: 1, flexDirection: 'column', gap: 6, padding: '12px 8px',
-                                    background: active ? `${role.color}18` : 'transparent',
-                                    border: `1px solid ${active ? role.color : T.border}`,
-                                    color: active ? role.color : T.textDim,
-                                    borderRadius: 10,
-                                }}>
-                            <div style={{ fontSize: 18 }}>{role.badge}</div>
-                            <div style={{ fontSize: 12, fontWeight: 700 }}>{role.label}</div>
-                            <div style={{ fontSize: 10, color: active ? role.color : T.textDim }}>{role.perms} perms</div>
+                {/* Status filters */}
+                <div style={{ display: 'flex', gap: 6, marginLeft: 'auto', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {['all', 'active', 'inactive', 'suspended'].map(s => (
+                        <button
+                            key={s}
+                            className={`ut-filter-btn${statusFilter === s ? ' active' : ''}`}
+                            onClick={() => { setStatusFilter(s); setPage(1); }}
+                            style={statusFilter === s && s !== 'all' ? {
+                                borderColor: STATUS_CONFIG[s]?.color,
+                                color: STATUS_CONFIG[s]?.color,
+                                background: STATUS_CONFIG[s]?.bg,
+                            } : {}}>
+                            {s === 'all' ? 'All Status' : STATUS_CONFIG[s]?.label}
                         </button>
-                    );
-                })}
+                    ))}
+                </div>
+
+                {/* Export + Add */}
+                <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="ut-btn ut-btn-ghost">
+                        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export
+                    </button>
+                    <button className="ut-btn ut-btn-primary" onClick={() => onEditUser?.(null)}>
+                        <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add User
+                    </button>
+                </div>
             </div>
 
-            {/* Matrix */}
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 6px' }}>
+            {/* ── Results count ───────────────────────────────────── */}
+            <div style={{
+                fontSize: 12, color: T.textMuted, marginBottom: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+                <span>{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
+                {selected.size > 0 && (
+                    <span style={{ color: T.primary, fontWeight: 600 }}>
+                        {selected.size} selected
+                        <button
+                            onClick={() => onDeleteUsers?.([...selected])}
+                            style={{
+                                marginLeft: 12, fontSize: 11, fontWeight: 600,
+                                color: T.red, background: `${T.red}15`,
+                                border: `1px solid ${T.red}40`, borderRadius: 6,
+                                padding: '2px 8px', cursor: 'pointer', fontFamily: 'inherit',
+                            }}>
+                            Delete selected
+                        </button>
+                    </span>
+                )}
+            </div>
+
+            {/* ── Table ───────────────────────────────────────────── */}
+            <div style={{
+                background: T.surface, border: `1px solid ${T.border}`,
+                borderRadius: 12, overflow: 'hidden',
+            }}>
+                <table className="ut-table">
+                    <colgroup>
+                        <col style={{ width: 44 }} />
+                        {COLUMNS.map(c => <col key={c.key} style={{ width: c.width }} />)}
+                    </colgroup>
                     <thead>
-                    <tr>
-                        <th style={{ textAlign: 'left', padding: '8px 16px', fontSize: 11, fontWeight: 700, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Resource</th>
-                        {Object.entries(PERM_LABELS).map(([k, label]) => (
-                            <th key={k} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 700, color: PERM_COLORS[k], textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>
-                                {label}
+                    <tr style={{ background: T.surfaceMid }}>
+                        <th style={{ padding: '11px 16px', width: 44 }}>
+                            <input
+                                type="checkbox"
+                                className="ut-checkbox"
+                                checked={allSelected}
+                                onChange={toggleAll}
+                                aria-label="Select all"
+                            />
+                        </th>
+                        {COLUMNS.map(col => (
+                            <th
+                                key={col.key}
+                                className={col.sortable ? 'sortable' : ''}
+                                onClick={col.sortable ? () => handleSort(col.key) : undefined}
+                                aria-sort={col.sortable && sortKey === col.key
+                                    ? (sortDir === 'asc' ? 'ascending' : 'descending')
+                                    : undefined}
+                            >
+                                {col.label}
+                                {col.sortable && (
+                                    <SortIcon active={sortKey === col.key} direction={sortDir} />
+                                )}
                             </th>
                         ))}
-                        <th style={{ textAlign: 'right', padding: '8px 16px', fontSize: 11, fontWeight: 700, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Coverage</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {RESOURCE_ROWS.map(res => {
-                        const hasPerms = currentPerms[res] || [];
-                        const coverage = Math.round((hasPerms.length / 4) * 100);
-                        return (
-                            <tr key={res} style={{ background: T.surface }}>
-                                <td style={{ padding: '14px 16px', borderRadius: '9px 0 0 9px', border: `1px solid ${T.border}`, borderRight: 'none' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <Ico name="database" size={14} color={T.textDim} />
-                                        <span style={{ fontSize: 13, fontWeight: 600, color: T.text, textTransform: 'capitalize' }}>{res}</span>
-                                    </div>
-                                </td>
-                                {['r', 'w', 'd', 'a'].map(action => {
-                                    const checked = hasPerms.includes(action);
-                                    return (
-                                        <td key={action} style={{ padding: '14px 16px', border: `1px solid ${T.border}`, borderLeft: 'none', borderRight: 'none', textAlign: 'center' }}>
-                                            <button
-                                                onClick={() => toggle(res, action)}
-                                                aria-label={`${PERM_LABELS[action]} permission for ${res}`}
-                                                aria-pressed={checked}
-                                                style={{
-                                                    width: 28, height: 28, borderRadius: 7,
-                                                    border: `1px solid ${checked ? PERM_COLORS[action] : T.border}`,
-                                                    background: checked ? `${PERM_COLORS[action]}20` : 'transparent',
-                                                    cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                                    justifyContent: 'center', margin: '0 auto', transition: 'all 0.15s',
+                    {paginated.length === 0 ? (
+                        <tr>
+                            <td colSpan={COLUMNS.length + 1} style={{ textAlign: 'center', padding: '60px 20px' }}>
+                                <div style={{ color: T.textMuted, fontSize: 13 }}>
+                                    <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
+                                    No users found{search ? ` matching "${search}"` : ''}
+                                </div>
+                            </td>
+                        </tr>
+                    ) : (
+                        paginated.map((user, i) => {
+                            const isSelected = selected.has(user.id);
+                            const avatarColor = getAvatarColor(user.name);
+                            return (
+                                <tr
+                                    key={user.id ?? i}
+                                    className={`ut-row-animate${isSelected ? ' selected' : ''}`}
+                                    style={{ animationDelay: `${i * 30}ms` }}
+                                    onClick={() => onSelectUser?.(user)}
+                                >
+                                    {/* Checkbox */}
+                                    <td style={{ padding: '14px 16px' }}
+                                        onClick={e => { e.stopPropagation(); toggleSelect(user.id); }}>
+                                        <input
+                                            type="checkbox"
+                                            className="ut-checkbox"
+                                            checked={isSelected}
+                                            onChange={() => toggleSelect(user.id)}
+                                            aria-label={`Select ${user.name}`}
+                                        />
+                                    </td>
+
+                                    {/* User */}
+                                    <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <div
+                                                className="ut-avatar"
+                                                style={{ background: `${avatarColor}25`, color: avatarColor }}
+                                            >
+                                                {getInitials(user.name)}
+                                            </div>
+                                            <div>
+                                                <div style={{
+                                                    fontSize: 13, fontWeight: 600, color: T.text,
+                                                    letterSpacing: '-0.01em',
                                                 }}>
-                                                {checked && <Ico name="check" size={13} color={PERM_COLORS[action]} />}
-                                            </button>
-                                        </td>
-                                    );
-                                })}
-                                <td style={{ padding: '14px 16px', borderRadius: '0 9px 9px 0', border: `1px solid ${T.border}`, borderLeft: 'none', textAlign: 'right' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-                                        <div style={{ width: 60, height: 4, borderRadius: 2, background: T.border, overflow: 'hidden' }}>
-                                            <div style={{
-                                                height: '100%', borderRadius: 2, transition: 'width 0.3s',
-                                                width: `${coverage}%`,
-                                                background: coverage === 100 ? T.success : coverage > 50 ? T.warning : T.danger,
-                                            }} />
+                                                    {user.name || '—'}
+                                                </div>
+                                                <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1 }}>
+                                                    {user.email || ''}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <span style={{ fontSize: 11, color: T.textDim, fontFamily: 'Space Mono, monospace', minWidth: 28, textAlign: 'right' }}>{coverage}%</span>
-                                    </div>
+                                    </td>
+
+                                    {/* Role */}
+                                    <td><RoleBadge role={user.role} /></td>
+
+                                    {/* Status */}
+                                    <td><StatusBadge status={user.status} /></td>
+
+                                    {/* Department */}
+                                    <td style={{ fontSize: 12, color: T.textDim }}>
+                                        {user.department || '—'}
+                                    </td>
+
+                                    {/* Last Login */}
+                                    <td style={{
+                                        fontSize: 12, color: T.textDim,
+                                        fontFamily: '"SF Mono", "Fira Code", monospace',
+                                    }}>
+                                        {formatDate(user.last_login)}
+                                    </td>
+
+                                    {/* Risk */}
+                                    <td><RiskCell risk={user.risk} /></td>
+
+                                    {/* Actions */}
+                                    <td onClick={e => e.stopPropagation()}>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                            <button
+                                                className="ut-action-btn"
+                                                onClick={(e) => handleEdit(e, user)}
+                                                title="Edit user"
+                                                aria-label={`Edit ${user.name}`}
+                                            >
+                                                <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                </svg>
+                                            </button>
+                                            <button
+                                                className="ut-action-btn danger"
+                                                onClick={(e) => handleDelete(e, user)}
+                                                title="Delete user"
+                                                aria-label={`Delete ${user.name}`}
+                                            >
+                                                <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* ── Pagination ────────────────────────────────────────── */}
+            {totalPages > 1 && (
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginTop: 14, padding: '0 2px',
+                }}>
+                    <span style={{ fontSize: 12, color: T.textMuted }}>
+                        Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} users
+                    </span>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <button className="ut-page-btn" onClick={() => setPage(p => p - 1)}
+                                disabled={page === 1} aria-label="Previous page">‹</button>
+                        {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+                            const p = i + 1;
+                            return (
+                                <button key={p} className={`ut-page-btn${page === p ? ' active' : ''}`}
+                                        onClick={() => setPage(p)}>{p}</button>
+                            );
+                        })}
+                        {totalPages > 5 && <span style={{ color: T.textMuted, fontSize: 12 }}>…</span>}
+                        <button className="ut-page-btn" onClick={() => setPage(p => p + 1)}
+                                disabled={page === totalPages} aria-label="Next page">›</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Single page pagination line */}
+            {totalPages === 1 && filtered.length > 0 && (
+                <div style={{ marginTop: 14, fontSize: 12, color: T.textMuted }}>
+                    Showing {filtered.length} of {filtered.length} users
+                </div>
+            )}
+        </div>
+    );
+});
+UsersTable.displayName = 'UsersTable';
+
+
+/* ═══════════════════════════════════════════════════════
+   PERMISSION MATRIX  (placeholder — unchanged)
+   ═══════════════════════════════════════════════════════ */
+export const PermissionMatrix = memo(() => {
+    const roles   = ['Super Admin', 'Admin', 'Editor', 'Viewer', 'Guest'];
+    const actions = ['View', 'Create', 'Edit', 'Delete', 'Export', 'Admin'];
+
+    const matrix = {
+        'Super Admin': [true,  true,  true,  true,  true,  true ],
+        'Admin':       [true,  true,  true,  true,  true,  false],
+        'Editor':      [true,  true,  true,  false, false, false],
+        'Viewer':      [true,  false, false, false, true,  false],
+        'Guest':       [true,  false, false, false, false, false],
+    };
+
+    return (
+        <div style={{ fontFamily: 'inherit' }}>
+            <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Permission Matrix</div>
+                <div style={{ fontSize: 12, color: T.textDim, marginTop: 3 }}>
+                    Role-based access control across all system actions
+                </div>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
+                    <thead>
+                    <tr>
+                        <th style={{
+                            padding: '10px 16px', textAlign: 'left',
+                            fontSize: 11, fontWeight: 700, color: T.textMuted,
+                            textTransform: 'uppercase', letterSpacing: '0.06em',
+                            borderBottom: `1px solid ${T.border}`,
+                        }}>Role</th>
+                        {actions.map(a => (
+                            <th key={a} style={{
+                                padding: '10px 16px', textAlign: 'center',
+                                fontSize: 11, fontWeight: 700, color: T.textMuted,
+                                textTransform: 'uppercase', letterSpacing: '0.06em',
+                                borderBottom: `1px solid ${T.border}`,
+                            }}>{a}</th>
+                        ))}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {roles.map((role, ri) => (
+                        <tr key={role} style={{
+                            borderBottom: ri < roles.length - 1 ? `1px solid ${T.border}22` : 'none',
+                        }}>
+                            <td style={{ padding: '14px 16px' }}>
+                                <RoleBadge role={role.toLowerCase().replace(' ', '')} />
+                            </td>
+                            {matrix[role].map((allowed, ai) => (
+                                <td key={ai} style={{ padding: '14px 16px', textAlign: 'center' }}>
+                                    {allowed ? (
+                                        <span style={{
+                                            width: 22, height: 22, borderRadius: 6,
+                                            background: `${T.green}20`, color: T.green,
+                                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 12, fontWeight: 700,
+                                        }}>✓</span>
+                                    ) : (
+                                        <span style={{
+                                            width: 22, height: 22, borderRadius: 6,
+                                            background: T.border + '40', color: T.textMuted,
+                                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 11,
+                                        }}>—</span>
+                                    )}
                                 </td>
-                            </tr>
-                        );
-                    })}
+                            ))}
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
             </div>
         </div>
     );
-};
+});
+PermissionMatrix.displayName = 'PermissionMatrix';
