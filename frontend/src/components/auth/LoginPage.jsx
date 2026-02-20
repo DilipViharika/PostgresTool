@@ -38,6 +38,8 @@ const GlobalStyles = () => (
         @keyframes glow      { 0%,100%{box-shadow:0 0 28px rgba(14,165,233,.22),0 0 70px rgba(14,165,233,.07)} 50%{box-shadow:0 0 46px rgba(14,165,233,.38),0 0 110px rgba(14,165,233,.12)} }
         @keyframes edgePulse { 0%,100%{opacity:.18} 50%{opacity:.75} }
         @keyframes scanline  { 0%{top:0%;opacity:0} 5%{opacity:.3} 95%{opacity:.3} 100%{top:100%;opacity:0} }
+        @keyframes flowDash  { 0%{stroke-dashoffset:20} 100%{stroke-dashoffset:0} }
+        @keyframes barGrow   { from{transform:scaleX(0)} to{transform:scaleX(1)} }
 
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
@@ -328,66 +330,205 @@ const FeatureCard = ({ icon:Icon, label, desc, color }) => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  TOOL SUMMARY PANEL
+//  TOOL SUMMARY PANEL — Rich Visual
 // ─────────────────────────────────────────────────────────────────────────────
-const STAT_ITEMS = [
-    { label:'Queries / sec',  value:'12.8k', delta:'+4.2%', color:'#0ea5e9' },
-    { label:'P99 Latency',    value:'4.2 ms', delta:'-11%',  color:'#22c55e' },
-    { label:'Cache Hit Rate', value:'97.4%',  delta:'+0.3%', color:'#14b8a6' },
-    { label:'Replication Lag',value:'0.0 s',  delta:'IN SYNC',color:'#a78bfa' },
-    { label:'Active Conns',   value:'342',    delta:'/ 500',  color:'#f59e0b' },
-    { label:'Nodes Healthy',  value:'4 / 4',  delta:'ALL OK', color:'#22c55e' },
-];
 
-const HOW_IT_WORKS = [
-    { step:'01', title:'Connect your cluster', desc:'Point Vigil at any PostgreSQL instance — on‑prem or cloud.', color:'#0ea5e9' },
-    { step:'02', title:'Instant observability', desc:'Live metrics stream in: QPS, latency, cache, replication, and storage.', color:'#14b8a6' },
-    { step:'03', title:'Alert & investigate', desc:'Smart alerts fire on anomalies; Query Inspector shows EXPLAIN plans side‑by‑side.', color:'#a78bfa' },
-];
+// Mini sparkline SVG
+const Sparkline = ({ points, color, fill }) => {
+    const w = 110, h = 36;
+    const max = Math.max(...points), min = Math.min(...points);
+    const xs = points.map((_, i) => (i / (points.length - 1)) * w);
+    const ys = points.map(p => h - ((p - min) / (max - min + 0.01)) * (h - 4) - 2);
+    const line = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+    const area = line + ` L${w},${h} L0,${h} Z`;
+    return (
+        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display:'block' }}>
+            <defs>
+                <linearGradient id={`sg-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={color} stopOpacity=".35"/>
+                    <stop offset="100%" stopColor={color} stopOpacity="0"/>
+                </linearGradient>
+            </defs>
+            {fill && <path d={area} fill={`url(#sg-${color.replace('#','')})`}/>}
+            <path d={line} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx={xs[xs.length-1]} cy={ys[ys.length-1]} r="2.5" fill={color}/>
+        </svg>
+    );
+};
+
+// Donut ring chart
+const DonutRing = ({ pct, color, size=48 }) => {
+    const r = 18, c = size/2, circ = 2 * Math.PI * r;
+    return (
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+            <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="4"/>
+            <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth="4"
+                    strokeDasharray={`${circ * pct / 100} ${circ}`}
+                    strokeLinecap="round"
+                    transform={`rotate(-90 ${c} ${c})`}
+                    style={{ filter:`drop-shadow(0 0 4px ${color}88)` }}
+            />
+            <text x={c} y={c+3.5} textAnchor="middle" fontSize="9" fontWeight="700" fill={color} fontFamily="JetBrains Mono,monospace">{pct}%</text>
+        </svg>
+    );
+};
+
+// Architecture flow diagram
+const ArchDiagram = () => (
+    <svg width="100%" height="72" viewBox="0 0 420 72" style={{ display:'block', overflow:'visible' }}>
+        <defs>
+            <linearGradient id="flowGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#0ea5e9" stopOpacity=".0"/>
+                <stop offset="50%" stopColor="#0ea5e9" stopOpacity=".7"/>
+                <stop offset="100%" stopColor="#14b8a6" stopOpacity=".0"/>
+            </linearGradient>
+            <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#0ea5e9" opacity=".6"/>
+            </marker>
+            <marker id="arr2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#14b8a6" opacity=".6"/>
+            </marker>
+        </defs>
+
+        {/* Node boxes */}
+        {[
+            { x:4,   label:'PG Primary', sub:'16.2', color:'#0ea5e9', icon:'🗄' },
+            { x:118, label:'Replica ×3', sub:'Streaming', color:'#22c55e', icon:'📡' },
+            { x:232, label:'Vigil Agent', sub:'Real-time', color:'#a78bfa', icon:'⚡' },
+            { x:346, label:'Dashboard', sub:'You', color:'#f59e0b', icon:'📊' },
+        ].map(({ x, label, sub, color, icon }) => (
+            <g key={label}>
+                <rect x={x} y={8} width={70} height={56} rx="8" fill={`${color}10`} stroke={`${color}35`} strokeWidth="1"/>
+                <text x={x+35} y={28} textAnchor="middle" fontSize="14" style={{ userSelect:'none' }}>{icon}</text>
+                <text x={x+35} y={44} textAnchor="middle" fontSize="7.5" fontWeight="700" fill={color} fontFamily="JetBrains Mono,monospace">{label}</text>
+                <text x={x+35} y={56} textAnchor="middle" fontSize="6" fill={`${color}80`} fontFamily="JetBrains Mono,monospace">{sub}</text>
+            </g>
+        ))}
+
+        {/* Arrows */}
+        <line x1="74" y1="36" x2="116" y2="36" stroke="#0ea5e9" strokeWidth="1.2" strokeDasharray="3 2" markerEnd="url(#arr)" opacity=".7"/>
+        <line x1="188" y1="36" x2="230" y2="36" stroke="#0ea5e9" strokeWidth="1.2" strokeDasharray="3 2" markerEnd="url(#arr)" opacity=".7"/>
+        <line x1="302" y1="36" x2="344" y2="36" stroke="#14b8a6" strokeWidth="1.2" strokeDasharray="3 2" markerEnd="url(#arr2)" opacity=".7"/>
+
+        {/* flow glow line */}
+        <rect x="74" y="34" width="272" height="3" rx="1.5" fill="url(#flowGrad)" opacity=".4"/>
+    </svg>
+);
 
 const ToolSummaryPanel = () => (
-    <div style={{ borderRadius:14, border:'1px solid rgba(14,165,233,.14)', background:'linear-gradient(135deg,rgba(8,20,40,.95) 0%,rgba(4,14,30,.98) 100%)', overflow:'hidden', fontFamily:'JetBrains Mono,monospace', position:'relative' }}>
-        {/* subtle dot grid */}
-        <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(14,165,233,.18) 1px,transparent 1px)', backgroundSize:'20px 20px', opacity:.22, pointerEvents:'none' }}/>
-        {/* top accent line */}
-        <div style={{ position:'absolute', top:0, left:'10%', right:'10%', height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.6),transparent)' }}/>
+    <div style={{ borderRadius:14, border:'1px solid rgba(14,165,233,.15)', background:'linear-gradient(145deg,rgba(5,14,32,.98) 0%,rgba(3,10,24,1) 100%)', overflow:'hidden', fontFamily:'JetBrains Mono,monospace', position:'relative' }}>
+        {/* dot grid */}
+        <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(14,165,233,.15) 1px,transparent 1px)', backgroundSize:'22px 22px', opacity:.2, pointerEvents:'none' }}/>
+        {/* top glow */}
+        <div style={{ position:'absolute', top:0, left:'20%', width:'60%', height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.7),rgba(20,184,166,.4),transparent)' }}/>
+        {/* corner glow */}
+        <div style={{ position:'absolute', top:-40, right:-40, width:180, height:180, background:'radial-gradient(circle,rgba(14,165,233,.08) 0%,transparent 70%)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', bottom:-40, left:-40, width:160, height:160, background:'radial-gradient(circle,rgba(20,184,166,.07) 0%,transparent 70%)', pointerEvents:'none' }}/>
 
-        <div style={{ position:'relative', zIndex:1, padding:'18px 20px 16px' }}>
-            {/* Section heading */}
-            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-                <div style={{ width:3, height:22, borderRadius:2, background:'linear-gradient(180deg,#0ea5e9,#14b8a6)' }}/>
-                <span style={{ fontSize:8.5, color:'#38bdf8', fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase' }}>Live Cluster Snapshot</span>
-                <span style={{ marginLeft:'auto', fontSize:6.5, color:'#22c55e', background:'rgba(34,197,94,.1)', border:'1px solid rgba(34,197,94,.25)', borderRadius:4, padding:'2px 7px', fontWeight:700 }}>● LIVE</span>
-            </div>
+        <div style={{ position:'relative', zIndex:1, padding:'16px 18px 14px' }}>
 
-            {/* Metric grid */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:18 }}>
-                {STAT_ITEMS.map(({ label, value, delta, color }) => (
-                    <div key={label} style={{ background:`${color}09`, border:`1px solid ${color}22`, borderRadius:9, padding:'10px 11px' }}>
-                        <div style={{ fontSize:6, color:'#1e3a5f', marginBottom:5, letterSpacing:'.05em' }}>{label}</div>
-                        <div style={{ fontSize:15, color, fontWeight:700, lineHeight:1, marginBottom:4 }}>{value}</div>
-                        <div style={{ fontSize:6, color:`${color}bb`, fontWeight:600 }}>{delta}</div>
+            {/* ── Row 1: Hero metrics ── */}
+            <div style={{ display:'flex', gap:10, marginBottom:14 }}>
+
+                {/* BIG stat — QPS */}
+                <div style={{ flex:'0 0 auto', width:130, background:'rgba(14,165,233,.07)', border:'1px solid rgba(14,165,233,.2)', borderRadius:12, padding:'12px 14px', position:'relative', overflow:'hidden' }}>
+                    <div style={{ position:'absolute', bottom:-8, right:-4, fontSize:52, fontWeight:900, color:'rgba(14,165,233,.06)', fontFamily:'Syne,sans-serif', lineHeight:1, userSelect:'none' }}>QPS</div>
+                    <div style={{ fontSize:7, color:'#1e4060', marginBottom:6, letterSpacing:'.1em' }}>QUERIES / SEC</div>
+                    <div style={{ fontSize:28, fontWeight:700, color:'#38bdf8', lineHeight:1, marginBottom:4, fontFamily:'Syne,sans-serif' }}>12.8k</div>
+                    <div style={{ fontSize:7, color:'#22c55e', marginBottom:8 }}>↑ 4.2% vs last hour</div>
+                    <Sparkline points={[58,72,45,88,62,95,50,78,66,91,55,83,12800]} color="#0ea5e9" fill={true}/>
+                </div>
+
+                {/* Mid column — P99 + Cache */}
+                <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
+                    {/* P99 latency bar */}
+                    <div style={{ background:'rgba(34,197,94,.06)', border:'1px solid rgba(34,197,94,.18)', borderRadius:10, padding:'10px 12px', display:'flex', alignItems:'center', gap:12 }}>
+                        <div style={{ flex:1 }}>
+                            <div style={{ fontSize:6.5, color:'#0a2818', marginBottom:4, letterSpacing:'.08em' }}>P99 LATENCY</div>
+                            <div style={{ fontSize:20, fontWeight:700, color:'#22c55e', fontFamily:'Syne,sans-serif', lineHeight:1 }}>4.2<span style={{ fontSize:10, fontWeight:400, marginLeft:2 }}>ms</span></div>
+                            <div style={{ marginTop:6, height:4, background:'rgba(255,255,255,.06)', borderRadius:2, overflow:'hidden' }}>
+                                <div style={{ width:'42%', height:'100%', background:'linear-gradient(90deg,#22c55e80,#22c55e)', borderRadius:2 }}/>
+                            </div>
+                        </div>
+                        <Sparkline points={[8,6,10,4,7,5,9,4,6,4,5,4,4.2]} color="#22c55e" fill={false}/>
                     </div>
-                ))}
+
+                    {/* Cache hit donut */}
+                    <div style={{ background:'rgba(20,184,166,.06)', border:'1px solid rgba(20,184,166,.18)', borderRadius:10, padding:'10px 12px', display:'flex', alignItems:'center', gap:10 }}>
+                        <DonutRing pct={97} color="#14b8a6" size={48}/>
+                        <div>
+                            <div style={{ fontSize:6.5, color:'#0a2820', marginBottom:3, letterSpacing:'.08em' }}>BUFFER CACHE HIT</div>
+                            <div style={{ fontSize:10, fontWeight:700, color:'#14b8a6', fontFamily:'Syne,sans-serif' }}>97.4% hit rate</div>
+                            <div style={{ fontSize:7, color:'#0a2820', marginTop:2 }}>2.6% disk reads</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right column — Replication + Connections */}
+                <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
+                    {/* Replication status */}
+                    <div style={{ background:'rgba(167,139,250,.06)', border:'1px solid rgba(167,139,250,.2)', borderRadius:10, padding:'10px 12px' }}>
+                        <div style={{ fontSize:6.5, color:'#2a1060', marginBottom:6, letterSpacing:'.08em' }}>REPLICATION STATUS</div>
+                        {[
+                            { name:'replica-1', lag:'0.0s', color:'#22c55e', pct:100 },
+                            { name:'replica-2', lag:'0.0s', color:'#22c55e', pct:100 },
+                            { name:'standby',   lag:'1.2s', color:'#f59e0b', pct:88  },
+                        ].map(({ name, lag, color, pct }) => (
+                            <div key={name} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
+                                <span style={{ width:4, height:4, borderRadius:'50%', background:color, flexShrink:0, display:'inline-block' }}/>
+                                <span style={{ fontSize:6.5, color:'#1a1040', flex:1, fontWeight:600 }}>{name}</span>
+                                <div style={{ width:40, height:3, background:'rgba(255,255,255,.06)', borderRadius:2, overflow:'hidden' }}>
+                                    <div style={{ width:`${pct}%`, height:'100%', background:color, borderRadius:2 }}/>
+                                </div>
+                                <span style={{ fontSize:6, color, fontWeight:700, width:18, textAlign:'right' }}>{lag}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Connection pool */}
+                    <div style={{ background:'rgba(245,158,11,.06)', border:'1px solid rgba(245,158,11,.18)', borderRadius:10, padding:'10px 12px' }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                            <div style={{ fontSize:6.5, color:'#2a1a00', letterSpacing:'.08em' }}>CONNECTION POOL</div>
+                            <div style={{ fontSize:9, color:'#f59e0b', fontWeight:700 }}>342<span style={{ color:'#2a1a00', fontWeight:400 }}>/500</span></div>
+                        </div>
+                        <div style={{ height:6, background:'rgba(255,255,255,.05)', borderRadius:3, overflow:'hidden', marginBottom:6, position:'relative' }}>
+                            <div style={{ width:'68%', height:'100%', background:'linear-gradient(90deg,#d97706,#f59e0b,#fcd34d)', borderRadius:3 }}/>
+                            {[25,50,75].map(p=><div key={p} style={{ position:'absolute', top:0, bottom:0, left:`${p}%`, width:1, background:'rgba(0,0,0,.3)' }}/>)}
+                        </div>
+                        <div style={{ display:'flex', justifyContent:'space-between' }}>
+                            {[['idle','158','#475569'],['active','184','#f59e0b'],['wait','0','#22c55e']].map(([k,v,c])=>(
+                                <div key={k} style={{ textAlign:'center' }}>
+                                    <div style={{ fontSize:9, color:c, fontWeight:700 }}>{v}</div>
+                                    <div style={{ fontSize:5.5, color:'#2a1a00' }}>{k}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Divider */}
-            <div style={{ height:1, background:'rgba(255,255,255,.05)', marginBottom:14 }}/>
-
-            {/* How it works */}
-            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
-                <div style={{ width:3, height:22, borderRadius:2, background:'linear-gradient(180deg,#a78bfa,#f43f5e)' }}/>
-                <span style={{ fontSize:8.5, color:'#c4b5fd', fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase' }}>How Vigil Works</span>
+            {/* ── Row 2: Architecture flow ── */}
+            <div style={{ background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.06)', borderRadius:10, padding:'10px 14px', marginBottom:12 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:8 }}>
+                    <span style={{ fontSize:6.5, color:'#1a3050', letterSpacing:'.12em', fontWeight:700 }}>DATA PIPELINE</span>
+                    <span style={{ fontSize:6, color:'#0ea5e9', background:'rgba(14,165,233,.1)', border:'1px solid rgba(14,165,233,.2)', borderRadius:3, padding:'1px 6px', marginLeft:'auto' }}>STREAMING</span>
+                </div>
+                <ArchDiagram/>
             </div>
 
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
-                {HOW_IT_WORKS.map(({ step, title, desc, color }) => (
-                    <div key={step} style={{ background:'rgba(255,255,255,.025)', border:`1px solid ${color}20`, borderRadius:9, padding:'11px 12px', position:'relative', overflow:'hidden' }}>
-                        {/* big step number watermark */}
-                        <div style={{ position:'absolute', bottom:-6, right:6, fontSize:38, fontWeight:900, color:`${color}09`, lineHeight:1, userSelect:'none', fontFamily:'Syne,sans-serif' }}>{step}</div>
-                        <div style={{ fontSize:8, color, fontWeight:700, marginBottom:5, letterSpacing:'.1em' }}>STEP {step}</div>
-                        <div style={{ fontSize:10, color:'#c8d6e5', fontWeight:700, fontFamily:'Syne,sans-serif', marginBottom:5, lineHeight:1.3 }}>{title}</div>
-                        <div style={{ fontSize:8.5, color:'#1e3a5f', lineHeight:1.55, fontFamily:'DM Sans,sans-serif' }}>{desc}</div>
+            {/* ── Row 3: Feature pills ── */}
+            <div style={{ display:'flex', gap:7, flexWrap:'wrap' }}>
+                {[
+                    { icon:'⚡', label:'Real-Time QPS & Latency',  color:'#0ea5e9' },
+                    { icon:'🔔', label:'Smart Alerting',            color:'#a78bfa' },
+                    { icon:'🔍', label:'Query EXPLAIN Inspector',   color:'#f59e0b' },
+                    { icon:'🔄', label:'WAL Replication Tracking', color:'#14b8a6' },
+                    { icon:'📈', label:'Trend & Anomaly Analysis', color:'#f43f5e' },
+                    { icon:'🔐', label:'RBAC Access Audit',         color:'#22c55e' },
+                ].map(({ icon, label, color }) => (
+                    <div key={label} style={{ display:'flex', alignItems:'center', gap:5, background:`${color}0c`, border:`1px solid ${color}25`, borderRadius:20, padding:'5px 10px' }}>
+                        <span style={{ fontSize:10 }}>{icon}</span>
+                        <span style={{ fontSize:7.5, color:`${color}dd`, fontWeight:600, letterSpacing:'.04em', fontFamily:'DM Sans,sans-serif' }}>{label}</span>
                     </div>
                 ))}
             </div>
