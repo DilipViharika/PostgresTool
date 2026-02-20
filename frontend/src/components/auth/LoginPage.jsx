@@ -93,54 +93,110 @@ const LeftPanel = () => (
                 <Database size={16} color="#fff"/>
             </div>
             <div>
-                <div style={{ fontSize:13, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.16em', textTransform:'uppercase', lineHeight:1 }}>Vigil</div>
+                <div style={{ fontSize:13, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.16em', textTransform:'uppercase', lineHeight:1 }}></div>
                 <div style={{ fontSize:9, color:'rgba(56,189,248,.35)', fontFamily:"'JetBrains Mono',monospace", marginTop:2, letterSpacing:'.06em' }}>PostgreSQL Monitor</div>
             </div>
         </div>
 
         {/* ── Main centred content ── */}
-        <div style={{ position:'relative', zIndex:1, flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 48px 40px' }}>
+        <div style={{ position:'relative', zIndex:1, flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 44px 32px' }}>
 
             {/* Headline */}
-            <div style={{ marginBottom:40, animation:'fadeUp .6s ease .1s backwards' }}>
-                <div style={{ display:'inline-flex', alignItems:'center', gap:7, background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.18)', borderRadius:20, padding:'4px 12px', marginBottom:18 }}>
+            <div style={{ marginBottom:24, animation:'fadeUp .6s ease .1s backwards' }}>
+                <div style={{ display:'inline-flex', alignItems:'center', gap:7, background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.18)', borderRadius:20, padding:'4px 12px', marginBottom:14 }}>
                     <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', display:'inline-block', boxShadow:'0 0 6px #22c55e', animation:'pulse 2s ease infinite' }}/>
-                    <span style={{ fontSize:10, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.12em' }}>LIVE MONITORING</span>
+                    <span style={{ fontSize:9.5, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.12em' }}>LIVE MONITORING</span>
                 </div>
-                <h2 style={{ fontSize:36, fontWeight:800, color:'#e8f4fc', fontFamily:"'Syne',sans-serif", lineHeight:1.18, letterSpacing:'-.03em', margin:0 }}>
-                    Complete visibility<br/>
-                    for your <span style={{ color:'#0ea5e9' }}>PostgreSQL</span><br/>
-                    clusters.
+                <h2 style={{ fontSize:24, fontWeight:800, color:'#e8f4fc', fontFamily:"'Syne',sans-serif", lineHeight:1.25, letterSpacing:'-.02em', margin:'0 0 10px' }}>
+                    Complete visibility for your{' '}
+                    <span style={{ color:'#0ea5e9' }}>PostgreSQL</span> clusters.
                 </h2>
-                <p style={{ fontSize:13, color:'rgba(148,180,210,.55)', lineHeight:1.7, marginTop:16, fontFamily:"'DM Sans',sans-serif", fontWeight:400, maxWidth:340 }}>
-                    One dashboard for query performance, replication health, connection pools and anomaly alerts — in real time.
+                <p style={{ fontSize:11.5, color:'rgba(148,180,210,.5)', lineHeight:1.65, margin:0, fontFamily:"'DM Sans',sans-serif", fontWeight:400, maxWidth:360 }}>
+                    One dashboard for query performance, replication health, connection pools and anomaly alerts.
                 </p>
             </div>
 
-            {/* Feature list — two columns, minimal */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px 24px', animation:'fadeUp .6s ease .2s backwards' }}>
+            {/* ── Simple metrics visual card ── */}
+            <div style={{ background:'rgba(255,255,255,.02)', border:'1px solid rgba(14,165,233,.12)', borderRadius:14, padding:'16px 18px', marginBottom:24, animation:'fadeUp .6s ease .15s backwards', position:'relative', overflow:'hidden' }}>
+                {/* top line accent */}
+                <div style={{ position:'absolute', top:0, left:'20%', right:'20%', height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.4),transparent)' }}/>
+
+                {/* Header row */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                        <Database size={12} color="#38bdf8" opacity={0.7}/>
+                        <span style={{ fontSize:9.5, color:'rgba(56,189,248,.6)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.1em', fontWeight:600 }}>POSTGRES · PRIMARY</span>
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                        <span style={{ width:5, height:5, borderRadius:'50%', background:'#22c55e', display:'inline-block', animation:'pulse 2s ease infinite' }}/>
+                        <span style={{ fontSize:9, color:'#22c55e', fontFamily:"'JetBrains Mono',monospace", fontWeight:700 }}>HEALTHY</span>
+                    </div>
+                </div>
+
+                {/* 4 KPI tiles */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:14 }}>
+                    {[
+                        { label:'QPS',    value:'12.8k', color:'#0ea5e9', trend:'+2%'  },
+                        { label:'P99',    value:'4.2ms', color:'#22c55e', trend:'–'    },
+                        { label:'CACHE',  value:'97.4%', color:'#14b8a6', trend:'+0.1%'},
+                        { label:'CONN',   value:'342',   color:'#f59e0b', trend:'68%'  },
+                    ].map(({ label, value, color, trend }) => (
+                        <div key={label} style={{ background:`${color}0a`, border:`1px solid ${color}1a`, borderRadius:8, padding:'8px 10px' }}>
+                            <div style={{ fontSize:8.5, color:'rgba(148,180,210,.4)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.06em', marginBottom:5 }}>{label}</div>
+                            <div style={{ fontSize:14, fontWeight:700, color, fontFamily:"'Syne',sans-serif", lineHeight:1 }}>{value}</div>
+                            <div style={{ fontSize:8, color:`${color}80`, marginTop:4, fontFamily:"'JetBrains Mono',monospace" }}>{trend}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Mini sparkline bars */}
+                <div style={{ display:'flex', alignItems:'flex-end', gap:3, height:28 }}>
+                    {[40,58,45,72,55,80,62,91,70,85,68,88].map((h, i) => (
+                        <div key={i} style={{ flex:1, height:`${h}%`, background: i === 11 ? 'rgba(14,165,233,.7)' : 'rgba(14,165,233,.15)', borderRadius:2, transition:'height .3s' }}/>
+                    ))}
+                </div>
+                <div style={{ fontSize:8, color:'rgba(148,180,210,.25)', fontFamily:"'JetBrains Mono',monospace", marginTop:5, letterSpacing:'.05em' }}>QPS · last 12s</div>
+
+                {/* 2 replica status rows */}
+                <div style={{ marginTop:12, display:'flex', flexDirection:'column', gap:6, paddingTop:12, borderTop:'1px solid rgba(255,255,255,.04)' }}>
+                    {[
+                        { name:'replica-1', lag:'0.0s', color:'#22c55e', status:'SYNC' },
+                        { name:'replica-2', lag:'1.2s', color:'#f59e0b', status:'LAG'  },
+                    ].map(({ name, lag, color, status }) => (
+                        <div key={name} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <span style={{ width:5, height:5, borderRadius:'50%', background:color, display:'inline-block', flexShrink:0 }}/>
+                            <span style={{ fontSize:9.5, color:'rgba(148,180,210,.5)', fontFamily:"'JetBrains Mono',monospace", flex:1 }}>{name}</span>
+                            <span style={{ fontSize:9, color:'rgba(148,180,210,.3)', fontFamily:"'JetBrains Mono',monospace" }}>lag {lag}</span>
+                            <span style={{ fontSize:8, color, background:`${color}12`, border:`1px solid ${color}25`, borderRadius:4, padding:'1px 6px', fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>{status}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Feature list — two columns */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'9px 20px', animation:'fadeUp .6s ease .2s backwards' }}>
                 {FEATURES_SIMPLE.map(({ icon: Icon, label, desc }) => (
-                    <div key={label} style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-                        <div style={{ width:28, height:28, borderRadius:8, background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
-                            <Icon size={13} color="#38bdf8"/>
+                    <div key={label} style={{ display:'flex', alignItems:'flex-start', gap:9 }}>
+                        <div style={{ width:26, height:26, borderRadius:7, background:'rgba(14,165,233,.07)', border:'1px solid rgba(14,165,233,.13)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
+                            <Icon size={12} color="#38bdf8"/>
                         </div>
                         <div>
-                            <div style={{ fontSize:11.5, fontWeight:600, color:'#b8d4e8', fontFamily:"'DM Sans',sans-serif", lineHeight:1.3 }}>{label}</div>
-                            <div style={{ fontSize:10, color:'rgba(148,180,210,.4)', fontFamily:"'DM Sans',sans-serif", marginTop:2, lineHeight:1.4 }}>{desc}</div>
+                            <div style={{ fontSize:11, fontWeight:600, color:'#b8d4e8', fontFamily:"'DM Sans',sans-serif", lineHeight:1.3 }}>{label}</div>
+                            <div style={{ fontSize:9.5, color:'rgba(148,180,210,.35)', fontFamily:"'DM Sans',sans-serif", marginTop:1.5, lineHeight:1.4 }}>{desc}</div>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Divider */}
-            <div style={{ height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.15),transparent)', margin:'32px 0', animation:'fadeUp .6s ease .3s backwards' }}/>
+            <div style={{ height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.12),transparent)', margin:'22px 0', animation:'fadeUp .6s ease .3s backwards' }}/>
 
-            {/* Social proof / trust line */}
-            <div style={{ display:'flex', alignItems:'center', gap:20, animation:'fadeUp .6s ease .35s backwards' }}>
+            {/* Trust stats */}
+            <div style={{ display:'flex', alignItems:'center', gap:28, animation:'fadeUp .6s ease .35s backwards' }}>
                 {[['99.9%','Uptime SLA'],['< 1s','Alert latency'],['SOC 2','Type II']].map(([val, lbl]) => (
-                    <div key={lbl} style={{ textAlign:'center' }}>
-                        <div style={{ fontSize:15, fontWeight:800, color:'#38bdf8', fontFamily:"'Syne',sans-serif", lineHeight:1 }}>{val}</div>
-                        <div style={{ fontSize:9, color:'rgba(148,180,210,.4)', marginTop:3, fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.05em' }}>{lbl}</div>
+                    <div key={lbl}>
+                        <div style={{ fontSize:14, fontWeight:800, color:'#38bdf8', fontFamily:"'Syne',sans-serif", lineHeight:1 }}>{val}</div>
+                        <div style={{ fontSize:8.5, color:'rgba(148,180,210,.35)', marginTop:3, fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>{lbl}</div>
                     </div>
                 ))}
             </div>
@@ -149,7 +205,7 @@ const LeftPanel = () => (
         {/* ── Bottom footer ── */}
         <div style={{ position:'relative', zIndex:1, padding:'16px 36px', borderTop:'1px solid rgba(255,255,255,.04)', display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
             <Lock size={9} color="rgba(56,189,248,.2)"/>
-            <span style={{ fontSize:9, color:'rgba(56,189,248,.2)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>End-to-end encrypted · SOC 2 Type II · © 2025 Vigil</span>
+            <span style={{ fontSize:9, color:'rgba(56,189,248,.2)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>End-to-end encrypted  · © 2025  </span>
         </div>
     </div>
 );
@@ -494,7 +550,7 @@ const VisualPanel = () => (
                 <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
                     <span style={{ fontSize:14 }}>😰</span>
                     <div>
-                        <div style={{ fontSize:9, fontWeight:800, color:'#ef4444', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITHOUT VIGIL</div>
+                        <div style={{ fontSize:9, fontWeight:800, color:'#ef4444', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITHOUT  </div>
                         <div style={{ fontSize:7.5, color:'#6b3040', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Flying blind on your database</div>
                     </div>
                 </div>
@@ -632,7 +688,7 @@ const VisualPanel = () => (
                 {/* Pipeline steps */}
                 {[
                     { icon:'🗄', label:'Your Postgres DB', sub:'pg_stat_statements\npg_stat_replication', color:'#0ea5e9' },
-                    { icon:'⚡', label:'Vigil Agent', sub:'Samples every second\nZero schema changes', color:'#a78bfa' },
+                    { icon:'⚡', label:' Agent', sub:'Samples every second\nZero schema changes', color:'#a78bfa' },
                     { icon:'🔍', label:'Analysis Engine', sub:'Anomaly detection\nQuery fingerprinting', color:'#f59e0b' },
                     { icon:'📊', label:'Your Dashboard', sub:'Live metrics & alerts\nEXPLAIN plans', color:'#22c55e' },
                 ].map(({ icon, label, sub, color }, i, arr) => (
@@ -663,7 +719,7 @@ const VisualPanel = () => (
             <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
                 <span style={{ fontSize:14 }}>✅</span>
                 <div>
-                    <div style={{ fontSize:9, fontWeight:800, color:'#22c55e', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITH VIGIL — FULL MONITORING COVERAGE</div>
+                    <div style={{ fontSize:9, fontWeight:800, color:'#22c55e', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITH  — FULL MONITORING COVERAGE</div>
                     <div style={{ fontSize:7.5, color:'#1a3050', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Everything you need to keep Postgres healthy, fast, and available</div>
                 </div>
             </div>
