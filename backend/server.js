@@ -315,14 +315,10 @@ app.post('/api/auth/login', async (req, res) => {
             location:    null,
         });
 
-        // New Phase-1 screens — automatically granted to all admins.
-        // For other roles they must still be granted explicitly via User Management.
+        // Phase-1 screens are read-only monitoring screens — grant to all active users.
         const PHASE1_SCREENS = ['backup', 'checkpoint', 'maintenance'];
         const baseScreens    = user.allowed_screens ?? [];
-        const isAdmin        = ['super_admin', 'admin'].includes(user.role);
-        const allowedScreens = isAdmin
-            ? [...new Set([...baseScreens, ...PHASE1_SCREENS])]
-            : baseScreens;
+        const allowedScreens = [...new Set([...baseScreens, ...PHASE1_SCREENS])];
 
         const payload = {
             id:             user.id,
