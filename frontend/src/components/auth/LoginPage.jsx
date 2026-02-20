@@ -105,84 +105,143 @@ const GlobalStyles = () => (
 const DashboardScreenshot = () => (
     <div style={{
         width: '100%', height: '100%',
-        background: 'linear-gradient(145deg, #040d1e 0%, #071528 100%)',
+        background: 'linear-gradient(145deg, #020c1b 0%, #050f22 100%)',
         borderRadius: 10, overflow: 'hidden', position: 'relative',
+        fontFamily: 'JetBrains Mono, monospace',
     }}>
-        <div style={{ padding: '9px 11px', borderBottom: '1px solid rgba(14,165,233,0.12)', display: 'flex', alignItems: 'center', gap: 5 }}>
+        {/* Title bar */}
+        <div style={{ padding: '7px 10px', borderBottom: '1px solid rgba(14,165,233,0.12)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
-            <span style={{ marginLeft: 7, fontSize: 7, color: '#1e3a5f', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '.05em' }}>Dashboard UI</span>
-            <div style={{ marginLeft: 'auto', background: 'rgba(14,165,233,0.18)', borderRadius: 4, padding: '2px 6px', border: '1px solid rgba(14,165,233,0.25)' }}>
-                <span style={{ fontSize: 6.5, color: '#38bdf8', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>57.1%</span>
+            <span style={{ marginLeft: 6, fontSize: 6.5, color: '#2a4a6a', letterSpacing: '.06em' }}>PostgreSQL · query_stats</span>
+            <div style={{ marginLeft: 'auto', background: 'rgba(14,165,233,0.15)', border: '1px solid rgba(14,165,233,0.25)', borderRadius: 3, padding: '1px 5px' }}>
+                <span style={{ fontSize: 6, color: '#38bdf8', fontWeight: 700 }}>LIVE</span>
             </div>
         </div>
-        <div style={{ padding: '9px 11px' }}>
-            <svg width="100%" height="42" viewBox="0 0 200 42">
+
+        <div style={{ padding: '7px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {/* Top stat cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4 }}>
+                {[
+                    { label: 'QPS', value: '12.8k', color: '#0ea5e9' },
+                    { label: 'P99', value: '4.2ms', color: '#22c55e' },
+                    { label: 'HIT%', value: '97.4', color: '#14b8a6' },
+                ].map(({ label, value, color }) => (
+                    <div key={label} style={{ background: `${color}0d`, border: `1px solid ${color}20`, borderRadius: 5, padding: '4px 5px' }}>
+                        <div style={{ fontSize: 5.5, color: '#2a4a6a', marginBottom: 1 }}>{label}</div>
+                        <div style={{ fontSize: 9, color, fontWeight: 700 }}>{value}</div>
+                    </div>
+                ))}
+            </div>
+
+            {/* DB cylinder icon + connection pool */}
+            <div style={{ display: 'flex', gap: 5, alignItems: 'stretch' }}>
+                {/* DB visual */}
+                <div style={{ width: 38, background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.15)', borderRadius: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, padding: '4px 0', flexShrink: 0 }}>
+                    <svg width="22" height="28" viewBox="0 0 22 28">
+                        <ellipse cx="11" cy="5" rx="9" ry="3.5" fill="none" stroke="#0ea5e9" strokeWidth="1" opacity="0.8"/>
+                        <ellipse cx="11" cy="14" rx="9" ry="3.5" fill="none" stroke="#0ea5e9" strokeWidth="0.8" opacity="0.5"/>
+                        <ellipse cx="11" cy="23" rx="9" ry="3.5" fill="none" stroke="#38bdf8" strokeWidth="1" opacity="0.8"/>
+                        <line x1="2" y1="5" x2="2" y2="23" stroke="#0ea5e9" strokeWidth="1" opacity="0.6"/>
+                        <line x1="20" y1="5" x2="20" y2="23" stroke="#0ea5e9" strokeWidth="1" opacity="0.6"/>
+                        <ellipse cx="11" cy="5" rx="9" ry="3.5" fill="rgba(14,165,233,0.12)"/>
+                    </svg>
+                    <span style={{ fontSize: 5, color: '#0ea5e9', letterSpacing: '.05em' }}>PRIMARY</span>
+                </div>
+
+                {/* Query activity */}
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 5, padding: '4px 6px' }}>
+                    <div style={{ fontSize: 5.5, color: '#2a4a6a', marginBottom: 3 }}>ACTIVE QUERIES</div>
+                    {['SELECT * FROM orders WHERE…', 'UPDATE users SET last_seen…', 'INSERT INTO events (…)'].map((q, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                            <div style={{ width: 3, height: 3, borderRadius: '50%', background: i === 0 ? '#22c55e' : i === 1 ? '#f59e0b' : '#0ea5e9', flexShrink: 0 }} />
+                            <span style={{ fontSize: 5.5, color: '#1e3a5f', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', flex: 1 }}>{q}</span>
+                            <span style={{ fontSize: 5, color: i === 0 ? '#22c55e' : i === 1 ? '#f59e0b' : '#0ea5e9', flexShrink: 0 }}>{['1.2ms', '8.4ms', '0.3ms'][i]}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Sparkline */}
+            <svg width="100%" height="18" viewBox="0 0 200 18" style={{ display: 'block' }}>
                 <defs>
-                    <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
+                    <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.3"/>
+                        <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0"/>
                     </linearGradient>
                 </defs>
-                <path d="M0,32 C20,26 40,10 60,15 C80,20 100,7 120,11 C140,15 160,4 180,7 L200,5 L200,42 L0,42 Z" fill="url(#cg1)" />
-                <path d="M0,32 C20,26 40,10 60,15 C80,20 100,7 120,11 C140,15 160,4 180,7 L200,5" fill="none" stroke="#0ea5e9" strokeWidth="1.5" />
-                {/* Data points */}
-                {[[60,15],[120,11],[180,7]].map(([x,y],i) => (
-                    <circle key={i} cx={x} cy={y} r="2.5" fill="#0ea5e9" opacity="0.9" />
-                ))}
+                <path d="M0,14 C15,12 30,5 50,7 C70,9 85,3 105,5 C125,7 145,2 165,4 L200,2 L200,18 L0,18 Z" fill="url(#sg)"/>
+                <path d="M0,14 C15,12 30,5 50,7 C70,9 85,3 105,5 C125,7 145,2 165,4 L200,2" fill="none" stroke="#0ea5e9" strokeWidth="1.2"/>
             </svg>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, marginTop: 5, height: 24 }}>
-                {[55, 75, 40, 90, 60, 80, 45, 88, 65, 95, 50, 72].map((h, i) => (
-                    <div key={i} style={{
-                        flex: 1, height: `${h}%`, borderRadius: '2px 2px 0 0',
-                        background: i === 11 ? '#0ea5e9' : `rgba(14,165,233,${0.15 + i * 0.025})`,
-                    }} />
-                ))}
-            </div>
         </div>
-        <div style={{ position: 'absolute', bottom: 7, left: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#0ea5e9', animation: 'pulseDot 2s ease infinite' }} />
-            <span style={{ fontSize: 7, color: '#0ea5e9', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '.1em', fontWeight: 600 }}>LIVE DASHBOARD</span>
+
+        <div style={{ position: 'absolute', bottom: 5, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#0ea5e9', animation: 'pulseDot 2s ease infinite' }} />
+            <span style={{ fontSize: 6, color: '#0ea5e9', letterSpacing: '.1em', fontWeight: 600 }}>DATABASE MONITOR</span>
         </div>
-        <div style={{ position: 'absolute', left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(14,165,233,0.25), transparent)', animation: 'scanH 4s linear infinite', top: 0 }} />
+        <div style={{ position: 'absolute', left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(14,165,233,0.2), transparent)', animation: 'scanH 5s linear infinite', top: 0 }} />
     </div>
 );
 
 const InfraScreenshot = () => (
     <div style={{
         width: '100%', height: '100%',
-        background: 'linear-gradient(145deg, #060e0a 0%, #0a1810 100%)',
+        background: 'linear-gradient(145deg, #030c08 0%, #071510 100%)',
         borderRadius: 10, overflow: 'hidden', position: 'relative',
+        fontFamily: 'JetBrains Mono, monospace',
     }}>
-        <div style={{ padding: '9px 11px', borderBottom: '1px solid rgba(20,184,166,0.12)', display: 'flex', alignItems: 'center', gap: 5 }}>
+        <div style={{ padding: '7px 10px', borderBottom: '1px solid rgba(20,184,166,0.12)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
-            <span style={{ marginLeft: 7, fontSize: 7, color: '#1e3a5f', fontFamily: 'JetBrains Mono, monospace' }}>Infrastructure</span>
-            <div style={{ marginLeft: 'auto', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.22)', borderRadius: 4, padding: '2px 6px' }}>
-                <span style={{ fontSize: 6.5, color: '#14b8a6', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>4 nodes</span>
+            <span style={{ marginLeft: 6, fontSize: 6.5, color: '#1a3a2a', letterSpacing: '.06em' }}>Infrastructure · 4 nodes</span>
+            <div style={{ marginLeft: 'auto', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 3, padding: '1px 4px' }}>
+                <span style={{ fontSize: 5.5, color: '#22c55e', fontWeight: 700 }}>ALL HEALTHY</span>
             </div>
         </div>
-        <div style={{ padding: '9px 11px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {[
-                { label: 'CPU',    value: 62, color: '#14b8a6' },
-                { label: 'MEM',    value: 81, color: '#f59e0b' },
-                { label: 'DISK',   value: 44, color: '#22c55e' },
-                { label: 'NET I/O',value: 35, color: '#0ea5e9' },
-            ].map(({ label, value, color }) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 6.5, color: '#334155', fontFamily: 'JetBrains Mono, monospace', width: 30, flexShrink: 0 }}>{label}</span>
-                    <div style={{ flex: 1, height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
-                        <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: 3, opacity: 0.85 }} />
+        <div style={{ padding: '7px 10px', display: 'flex', gap: 6 }}>
+            {/* Server rack illustration */}
+            <div style={{ width: 32, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ fontSize: 5, color: '#0d2018', marginBottom: 1 }}>RACK A</div>
+                {[
+                    { color: '#22c55e', label: 'SRV1' },
+                    { color: '#22c55e', label: 'SRV2' },
+                    { color: '#f59e0b', label: 'SRV3' },
+                    { color: '#22c55e', label: 'SRV4' },
+                ].map(({ color, label }) => (
+                    <div key={label} style={{ background: 'rgba(255,255,255,0.025)', border: `1px solid ${color}22`, borderRadius: 3, padding: '2px 3px', display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <div style={{ width: 3, height: 3, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                        <span style={{ fontSize: 5, color: '#1a3a2a' }}>{label}</span>
+                        <div style={{ marginLeft: 'auto', display: 'flex', gap: 1 }}>
+                            {[0,1,2].map(i => <div key={i} style={{ width: 3, height: 3, borderRadius: 1, background: `${color}45` }} />)}
+                        </div>
                     </div>
-                    <span style={{ fontSize: 6.5, color, fontFamily: 'JetBrains Mono, monospace', width: 22, textAlign: 'right' }}>{value}%</span>
-                </div>
-            ))}
+                ))}
+            </div>
+            {/* Resource meters */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {[
+                    { label: 'CPU',     value: 62, color: '#14b8a6', sub: '8 cores'  },
+                    { label: 'MEMORY',  value: 81, color: '#f59e0b', sub: '64 GB'    },
+                    { label: 'STORAGE', value: 44, color: '#22c55e', sub: '2 TB'     },
+                    { label: 'NETWORK', value: 35, color: '#0ea5e9', sub: '10 Gbps'  },
+                ].map(({ label, value, color, sub }) => (
+                    <div key={label}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                            <span style={{ fontSize: 5.5, color: '#1a3a2a' }}>{label} <span style={{ color: '#0d2018' }}>· {sub}</span></span>
+                            <span style={{ fontSize: 5.5, color, fontWeight: 700 }}>{value}%</span>
+                        </div>
+                        <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${value}%`, height: '100%', background: `linear-gradient(90deg, ${color}70, ${color})`, borderRadius: 3 }} />
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
-        <div style={{ position: 'absolute', bottom: 7, left: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#14b8a6', animation: 'pulseDot 2.5s ease infinite' }} />
-            <span style={{ fontSize: 7, color: '#14b8a6', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '.1em', fontWeight: 600 }}>INFRASTRUCTURE</span>
+        <div style={{ position: 'absolute', bottom: 5, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#14b8a6', animation: 'pulseDot 2.5s ease infinite' }} />
+            <span style={{ fontSize: 6, color: '#14b8a6', letterSpacing: '.1em', fontWeight: 600 }}>INFRASTRUCTURE</span>
         </div>
     </div>
 );
