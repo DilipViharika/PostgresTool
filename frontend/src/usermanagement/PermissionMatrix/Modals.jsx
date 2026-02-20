@@ -5,6 +5,30 @@ import { validateUserForm, generatePassword, passwordStrength, copyToClipboard }
 import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter, MfaBadge, LoginHeatmap, FormField, Toggle } from '../shared/components/ui.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   SHARED STYLES (Guarantees dark theme regardless of global CSS conflicts)
+   ───────────────────────────────────────────────────────────────────────────── */
+const overlayStyle = {
+    position: 'fixed', inset: 0, zIndex: 5000,
+    background: 'rgba(4, 5, 10, 0.78)', backdropFilter: 'blur(8px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    animation: 'umFadeIn 0.2s ease'
+};
+
+const baseInputStyle = {
+    width: '100%',
+    padding: '10px 14px',
+    borderRadius: '8px',
+    border: `1px solid ${T.border || '#2a2a3e'}`,
+    background: T.surfaceHigh || '#1a1a2e',
+    color: T.text || '#e2e4eb',
+    fontSize: '13px',
+    outline: 'none',
+    fontFamily: 'inherit',
+    transition: 'border-color 0.2s, box-shadow 0.2s'
+};
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
    USER DETAIL DRAWER
    ───────────────────────────────────────────────────────────────────────────── */
 export const UserDrawer = ({ user, onClose, onEdit, onResetPassword }) => {
@@ -16,12 +40,12 @@ export const UserDrawer = ({ user, onClose, onEdit, onResetPassword }) => {
     const riskColor = user.riskScore > 70 ? T.danger : user.riskScore > 40 ? T.warning : T.success;
 
     return (
-        <div
-            style={{ position: 'fixed', inset: 0, background: 'rgba(4,5,10,0.75)', backdropFilter: 'blur(8px)', zIndex: 2000, animation: 'umFadeIn 0.2s ease' }}
-            onClick={onClose}
-            role="dialog" aria-modal="true" aria-label={`User details: ${user.name}`}
-        >
-            <div className="um-drawer" onClick={e => e.stopPropagation()}>
+        <div style={overlayStyle} onClick={onClose} role="dialog" aria-modal="true" aria-label={`User details: ${user.name}`}>
+            <div className="um-drawer" onClick={e => e.stopPropagation()} style={{
+                position: 'absolute', right: 0, top: 0, bottom: 0, width: 480, maxWidth: '100vw',
+                background: T.surface || '#120A1F', borderLeft: `1px solid ${T.border || '#1A0E2B'}`,
+                display: 'flex', flexDirection: 'column', boxShadow: '-16px 0 60px rgba(0,0,0,0.55)'
+            }}>
                 {/* ── Header ──────────────────────────────────────────────── */}
                 <div style={{
                     padding: 24, borderBottom: `1px solid ${T.border}`,
@@ -286,9 +310,13 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
     };
 
     return (
-        <div className="um-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label={isEdit ? 'Edit user' : 'Create user'}>
-            <div className="um-modal" onClick={e => e.stopPropagation()}
-                 style={{ width: '90%', maxWidth: 720, maxHeight: '88vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={overlayStyle} onClick={onCancel} role="dialog" aria-modal="true" aria-label={isEdit ? 'Edit user' : 'Create user'}>
+            <div onClick={e => e.stopPropagation()}
+                 style={{
+                     width: '90%', maxWidth: 720, maxHeight: '88vh', display: 'flex', flexDirection: 'column',
+                     background: T.surface || '#120A1F', border: `1px solid ${T.border || '#1A0E2B'}`,
+                     borderRadius: 16, boxShadow: '0 24px 80px rgba(0,0,0,0.65)', overflow: 'hidden'
+                 }}>
 
                 {/* Header */}
                 <div style={{
@@ -333,16 +361,16 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                             <div className="um-grid-2">
                                 <FormField label="Full Name" required error={errors.name}>
-                                    <input className="um-input" placeholder="Jane Doe"
+                                    <input placeholder="Jane Doe"
                                            value={form.name} onChange={e => patch('name', e.target.value)}
-                                           style={{ borderColor: errors.name ? T.danger : undefined }}
+                                           style={{ ...baseInputStyle, borderColor: errors.name ? T.danger : baseInputStyle.border }}
                                            aria-required="true" aria-invalid={!!errors.name}
                                     />
                                 </FormField>
                                 <FormField label="Email Address" required error={errors.email}>
-                                    <input className="um-input" type="email" placeholder="jane@acme.io"
+                                    <input type="email" placeholder="jane@acme.io"
                                            value={form.email} onChange={e => patch('email', e.target.value)}
-                                           style={{ borderColor: errors.email ? T.danger : undefined }}
+                                           style={{ ...baseInputStyle, borderColor: errors.email ? T.danger : baseInputStyle.border }}
                                            aria-required="true" aria-invalid={!!errors.email}
                                     />
                                 </FormField>
@@ -351,18 +379,18 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
                             {!isEdit && (
                                 <div className="um-grid-2">
                                     <FormField label="Username" required error={errors.username}>
-                                        <input className="um-input um-mono" placeholder="jane.doe"
+                                        <input placeholder="jane.doe"
                                                value={form.username} onChange={e => patch('username', e.target.value)}
-                                               style={{ borderColor: errors.username ? T.danger : undefined }}
+                                               style={{ ...baseInputStyle, fontFamily: '"Space Mono", monospace', borderColor: errors.username ? T.danger : baseInputStyle.border }}
                                                aria-required="true" aria-invalid={!!errors.username}
                                                autoComplete="username"
                                         />
                                     </FormField>
                                     <FormField label="Password" required error={errors.password}>
                                         <div style={{ position: 'relative' }}>
-                                            <input className="um-input" type="password" placeholder="Min. 8 characters"
+                                            <input type="password" placeholder="Min. 8 characters"
                                                    value={form.password} onChange={e => patch('password', e.target.value)}
-                                                   style={{ borderColor: errors.password ? T.danger : undefined, paddingRight: 38 }}
+                                                   style={{ ...baseInputStyle, paddingRight: 38, borderColor: errors.password ? T.danger : baseInputStyle.border }}
                                                    aria-required="true" aria-invalid={!!errors.password}
                                                    autoComplete="new-password"
                                             />
@@ -378,13 +406,13 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
                             )}
                             <div className="um-grid-2">
                                 <FormField label="Department">
-                                    <select className="um-input" value={form.department} onChange={e => patch('department', e.target.value)}>
-                                        {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                                    <select value={form.department} onChange={e => patch('department', e.target.value)} style={{...baseInputStyle, cursor: 'pointer'}}>
+                                        {DEPARTMENTS.map(d => <option key={d} value={d} style={{ background: T.surfaceHigh }}>{d}</option>)}
                                     </select>
                                 </FormField>
                                 <FormField label="Location">
-                                    <select className="um-input" value={form.location} onChange={e => patch('location', e.target.value)}>
-                                        {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
+                                    <select value={form.location} onChange={e => patch('location', e.target.value)} style={{...baseInputStyle, cursor: 'pointer'}}>
+                                        {LOCATIONS.map(l => <option key={l} value={l} style={{ background: T.surfaceHigh }}>{l}</option>)}
                                     </select>
                                 </FormField>
                             </div>
@@ -398,7 +426,7 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
                                                     aria-pressed={form.status === s}
                                                     style={{
                                                         flex: 1,
-                                                        background: form.status === s ? dimColors[s] : T.surface,
+                                                        background: form.status === s ? dimColors[s] : T.surfaceHigh,
                                                         border: `1px solid ${form.status === s ? colors[s] : T.border}`,
                                                         color: form.status === s ? colors[s] : T.textDim,
                                                     }}>
@@ -464,21 +492,21 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
 
                     {tab === 'security' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                            <div className="um-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div className="um-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.surfaceHigh, border: `1px solid ${T.border}`, padding: '16px 18px', borderRadius: 12 }}>
                                 <div>
                                     <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Multi-Factor Authentication</div>
                                     <div style={{ fontSize: 12, color: T.textDim, marginTop: 3 }}>Require 2FA for this user's account</div>
                                 </div>
                                 <Toggle value={form.mfa} onChange={v => patch('mfa', v)} color={T.success} />
                             </div>
-                            <div className="um-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div className="um-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.surfaceHigh, border: `1px solid ${T.border}`, padding: '16px 18px', borderRadius: 12 }}>
                                 <div>
                                     <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>API Access</div>
                                     <div style={{ fontSize: 12, color: T.textDim, marginTop: 3 }}>Allow user to generate API keys</div>
                                 </div>
                                 <Toggle value={form.apiAccess} onChange={v => patch('apiAccess', v)} color={T.primary} />
                             </div>
-                            <div className="um-card" style={{ background: T.dangerDim, borderColor: `${T.danger}30` }}>
+                            <div className="um-card" style={{ background: T.dangerDim, border: `1px solid ${T.danger}30`, padding: '16px 18px', borderRadius: 12 }}>
                                 <div style={{ fontSize: 13, fontWeight: 700, color: T.danger, marginBottom: 8 }}>Danger Zone</div>
                                 <div style={{ display: 'flex', gap: 10 }}>
                                     <button className="um-btn um-btn-danger um-btn-sm">Force Password Reset</button>
@@ -490,11 +518,11 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '16px 24px', borderTop: `1px solid ${T.border}`, display: 'flex', gap: 10 }}>
+                <div style={{ padding: '16px 24px', borderTop: `1px solid ${T.border}`, display: 'flex', gap: 10, background: T.surface }}>
                     <button className="um-btn um-btn-ghost" onClick={onCancel} style={{ flex: 1 }} disabled={saving}>
                         <Ico name="x" size={14} /> Cancel
                     </button>
-                    <button className="um-btn um-btn-primary" onClick={handleSave} style={{ flex: 2 }} disabled={saving}>
+                    <button className="um-btn um-btn-primary" onClick={handleSave} style={{ flex: 2, background: T.primary, color: '#000' }} disabled={saving}>
                         {saving
                             ? <><Ico name="refresh" size={14} style={{ animation: 'umSpin 1s linear infinite' }} /> Saving…</>
                             : <><Ico name="save" size={14} /> {isEdit ? 'Update User' : 'Create User'}</>
@@ -534,8 +562,12 @@ export const PasswordModal = ({ user, onClose, onConfirm }) => {
     };
 
     return (
-        <div className="um-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Reset password">
-            <div className="um-modal" onClick={e => e.stopPropagation()} style={{ width: '90%', maxWidth: 460 }}>
+        <div style={overlayStyle} onClick={onClose} role="dialog" aria-modal="true" aria-label="Reset password">
+            <div onClick={e => e.stopPropagation()} style={{
+                width: '90%', maxWidth: 460, background: T.surface || '#120A1F',
+                border: `1px solid ${T.border || '#1A0E2B'}`, borderRadius: 16,
+                boxShadow: '0 24px 80px rgba(0,0,0,0.65)', overflow: 'hidden'
+            }}>
                 <div style={{
                     padding: '20px 24px', borderBottom: `1px solid ${T.border}`,
                     display: 'flex', alignItems: 'center', gap: 14,
@@ -560,9 +592,9 @@ export const PasswordModal = ({ user, onClose, onConfirm }) => {
                 <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <FormField label="New Password">
                         <div style={{ position: 'relative' }}>
-                            <input className="um-input um-mono" type={show ? 'text' : 'password'} value={pw}
+                            <input type={show ? 'text' : 'password'} value={pw}
                                    onChange={e => setPw(e.target.value)}
-                                   style={{ paddingRight: 80, fontSize: 14, letterSpacing: show ? '0.04em' : '0.2em' }}
+                                   style={{ ...baseInputStyle, paddingRight: 80, fontSize: 14, letterSpacing: show ? '0.04em' : '0.2em', fontFamily: '"Space Mono", monospace' }}
                                    aria-label="New password"
                             />
                             <div style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: 4 }}>
@@ -600,12 +632,12 @@ export const PasswordModal = ({ user, onClose, onConfirm }) => {
                     </button>
                 </div>
 
-                <div style={{ padding: '16px 24px', borderTop: `1px solid ${T.border}`, display: 'flex', gap: 10 }}>
+                <div style={{ padding: '16px 24px', borderTop: `1px solid ${T.border}`, display: 'flex', gap: 10, background: T.surface }}>
                     <button className="um-btn um-btn-ghost" onClick={onClose} style={{ flex: 1 }} disabled={saving}>
                         <Ico name="x" size={14} /> Cancel
                     </button>
                     <button className="um-btn" onClick={handleConfirm} disabled={saving}
-                            style={{ flex: 2, background: `linear-gradient(135deg, ${T.warning}, #e08800)`, color: '#fff' }}>
+                            style={{ flex: 2, background: `linear-gradient(135deg, ${T.warning}, #e08800)`, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600 }}>
                         {saving
                             ? <><Ico name="refresh" size={14} style={{ animation: 'umSpin 1s linear infinite' }} /> Setting…</>
                             : <><Ico name="key" size={14} /> Set New Password</>
