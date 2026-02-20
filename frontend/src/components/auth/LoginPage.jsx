@@ -352,6 +352,15 @@ const InfraPanel = () => (
 );
 
 
+const FEATURES = [
+    { icon: Activity,   label: 'Real-Time Metrics', desc: 'QPS, latency & cache hit ratios — live.',    color: '#0ea5e9' },
+    { icon: Bell,       label: 'Smart Alerting',    desc: 'Slow query & replication log alerts.',        color: '#a78bfa' },
+    { icon: Search,     label: 'Query Inspector',   desc: 'EXPLAIN plans & pg_stat_statements.',         color: '#f59e0b' },
+    { icon: RefreshCw,  label: 'Replication',       desc: 'WAL archiving & standby lag tracking.',       color: '#14b8a6' },
+    { icon: TrendingUp, label: 'Trend Analysis',    desc: 'Anomaly detection across clusters.',          color: '#f43f5e' },
+    { icon: UserCheck,  label: 'Access Audit',      desc: 'RBAC with full compliance trails.',           color: '#22c55e' },
+];
+
 const FeatureCard = ({ icon: Icon, label, desc, color }) => (
     <div
         className="feature-card"
