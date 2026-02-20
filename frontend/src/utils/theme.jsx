@@ -1,113 +1,115 @@
 import React from 'react';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// THEME SYSTEM — Bioluminescent Abyss
-// Deep ocean darkness with living light — amber cores, teal bioluminescence,
-// ink-black depths, and the warm shimmer of ancient gold.
+// THEME SYSTEM — Velvet Protocol
+//
+// Ultra-dark purple-void foundations meet electric rose and aquamarine.
+// Like a deep-space signal trace — precise, luminous, uncompromising.
+// No other tool uses this palette.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export const THEME = {
-    // ── Backgrounds — ink-black to deep abyssal ──
-    bg: '#030A0E',
-    bgAlt: '#060F14',
-    surface: '#0A1A20',
-    surfaceHover: '#112530',
-    surfaceRaised: '#162D38',
+    // ── Backgrounds — purple-void, deepest night ──────────────────────────────
+    bg:            '#07030D',
+    bgAlt:         '#0C0516',
+    surface:       '#120A1F',
+    surfaceHover:  '#1A1029',
+    surfaceRaised: '#221535',
 
-    // ── Glass ──
-    glass: 'rgba(10, 26, 32, 0.60)',
-    glassHeavy: 'rgba(6, 15, 20, 0.88)',
-    glassBorder: 'rgba(0, 210, 180, 0.10)',
-    glassBorderHover: 'rgba(0, 210, 180, 0.28)',
+    // ── Glass ─────────────────────────────────────────────────────────────────
+    glass:             'rgba(18, 10, 31, 0.65)',
+    glassHeavy:        'rgba(7, 3, 13, 0.92)',
+    glassBorder:       'rgba(232, 54, 154, 0.12)',
+    glassBorderHover:  'rgba(232, 54, 154, 0.32)',
 
-    // ── Typography ──
-    textMain: '#EEF6F4',
-    textMuted: '#7DADA3',
-    textDim: '#3A6060',
-    textInverse: '#030A0E',
+    // ── Typography ────────────────────────────────────────────────────────────
+    textMain:    '#F0ECF8',   // warm violet-white
+    textMuted:   '#9888B4',   // muted orchid
+    textDim:     '#4A3A5E',   // dim velvet
+    textInverse: '#07030D',
 
-    // ── Bioluminescent Teal — primary glow ──
-    primary: '#00D2B4',
-    primaryDark: '#00A88F',
-    primaryLight: '#3FFFD8',
-    primaryFaint: 'rgba(0, 210, 180, 0.07)',
+    // ── Electric Rose — primary pulse ─────────────────────────────────────────
+    primary:      '#E8369A',
+    primaryDark:  '#C2237D',
+    primaryLight: '#FF6DC0',
+    primaryFaint: 'rgba(232, 54, 154, 0.07)',
 
-    // ── Abyssal Amber — secondary warmth ──
-    secondary: '#E8A830',
-    secondaryDark: '#C4861A',
-    secondaryLight: '#FFD060',
-    secondaryFaint: 'rgba(232, 168, 48, 0.08)',
+    // ── Aquamarine — secondary contrast ──────────────────────────────────────
+    secondary:      '#2AFFD4',
+    secondaryDark:  '#00CCAA',
+    secondaryLight: '#80FFE8',
+    secondaryFaint: 'rgba(42, 255, 212, 0.07)',
 
-    // ── Soft Coral — success ──
-    success: '#26D98A',
-    successDark: '#1CB070',
-    successLight: '#5FFFB0',
+    // ── Emerald Pulse — success ───────────────────────────────────────────────
+    success:      '#2EE89C',
+    successDark:  '#18C47A',
+    successLight: '#70FFBD',
 
-    // ── Deep Crimson — danger ──
-    danger: '#FF4E6A',
-    dangerDark: '#D93050',
-    dangerLight: '#FF8098',
+    // ── Infrared — danger ─────────────────────────────────────────────────────
+    danger:      '#FF4560',
+    dangerDark:  '#D92640',
+    dangerLight: '#FF7A90',
 
-    // ── Amber Alert — warning ──
-    warning: '#FFB830',
-    warningDark: '#D99020',
-    warningLight: '#FFD060',
+    // ── Solar Flare — warning ─────────────────────────────────────────────────
+    warning:      '#FFB520',
+    warningDark:  '#D49210',
+    warningLight: '#FFD878',
 
-    // ── Cerulean — info ──
-    info: '#30A8E8',
-    infoDark: '#1880C4',
-    infoLight: '#70D0FF',
+    // ── Stellar Blue — info ───────────────────────────────────────────────────
+    info:      '#5BB8F5',
+    infoDark:  '#2A90D4',
+    infoLight: '#90D4FF',
 
-    // ── AI/System — deep violet-teal ──
-    ai: '#7060E8',
-    aiDark: '#5040C0',
-    aiLight: '#A090FF',
+    // ── Violet Haze — AI/system ───────────────────────────────────────────────
+    ai:      '#B88BFF',
+    aiDark:  '#8B5CF6',
+    aiLight: '#D4BFFF',
 
-    // ── Accents ──
-    grid: '#0E2830',
-    gridAlt: '#163840',
-    pearl: '#C8EAE4',
-    deepTeal: '#004D44',
-    inkBlack: '#010608',
-    phosphor: '#80FFE8',
-    biolume: '#00FFD0',
-    mariana: '#001820',
+    // ── Structural accents ────────────────────────────────────────────────────
+    grid:      '#1A0E2B',
+    gridAlt:   '#25184A',
+    pearl:     '#E8D4F4',
+    deepTeal:  '#0A0028',
+    inkBlack:  '#030108',
+    phosphor:  '#E8369A',    // primary alias for shimmer animations
+    biolume:   '#2AFFD4',    // secondary alias for glow animations
+    mariana:   '#05021A',
 
-    // ── Shadows ──
-    shadowSm: '0 1px 3px rgba(0,0,0,0.8)',
-    shadowMd: '0 4px 12px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.6)',
-    shadowLg: '0 12px 30px rgba(0,0,0,0.7), 0 4px 10px rgba(0,0,0,0.5)',
-    shadowXl: '0 24px 50px rgba(0,0,0,0.8), 0 8px 20px rgba(0,0,0,0.6)',
-    shadowInner: 'inset 0 2px 8px rgba(0,0,0,0.5)',
-    shadowNeon: (color) => `0 0 6px ${color}50, 0 0 20px ${color}28, 0 0 50px ${color}12`,
+    // ── Shadows ───────────────────────────────────────────────────────────────
+    shadowSm:     '0 1px 3px rgba(0,0,0,0.85)',
+    shadowMd:     '0 4px 12px rgba(0,0,0,0.75), 0 1px 4px rgba(0,0,0,0.65)',
+    shadowLg:     '0 12px 30px rgba(0,0,0,0.75), 0 4px 10px rgba(0,0,0,0.55)',
+    shadowXl:     '0 24px 50px rgba(0,0,0,0.85), 0 8px 20px rgba(0,0,0,0.65)',
+    shadowInner:  'inset 0 2px 8px rgba(0,0,0,0.55)',
+    shadowNeon:       (color) => `0 0 6px ${color}50, 0 0 20px ${color}28, 0 0 50px ${color}12`,
     shadowNeonStrong: (color) => `0 0 6px ${color}90, 0 0 24px ${color}55, 0 0 70px ${color}25`,
-    shadowGold: '0 0 8px rgba(232,168,48,0.55), 0 0 25px rgba(232,168,48,0.25)',
-    shadowTeal: '0 0 8px rgba(0,210,180,0.55), 0 0 28px rgba(0,210,180,0.22)',
-    shadowDeep: '0 30px 80px rgba(0,0,0,0.9), 0 8px 24px rgba(0,0,0,0.7)',
+    shadowGold:   '0 0 8px rgba(42,255,212,0.45), 0 0 25px rgba(42,255,212,0.20)',
+    shadowTeal:   '0 0 8px rgba(232,54,154,0.55), 0 0 28px rgba(232,54,154,0.22)',
+    shadowDeep:   '0 30px 80px rgba(0,0,0,0.95), 0 8px 24px rgba(0,0,0,0.75)',
 
-    // ── Border Radius ──
-    radiusXs: '4px',
-    radiusSm: '7px',
-    radiusMd: '12px',
-    radiusLg: '18px',
-    radiusXl: '26px',
-    radius2Xl: '36px',
+    // ── Border Radius ─────────────────────────────────────────────────────────
+    radiusXs:   '4px',
+    radiusSm:   '7px',
+    radiusMd:   '12px',
+    radiusLg:   '18px',
+    radiusXl:   '26px',
+    radius2Xl:  '36px',
     radiusFull: '9999px',
 
-    // ── Transitions ──
-    transitionFast: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-    transitionBase: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    transitionSlow: 'all 0.55s cubic-bezier(0.4, 0, 0.2, 1)',
+    // ── Transitions ───────────────────────────────────────────────────────────
+    transitionFast:   'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+    transitionBase:   'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transitionSlow:   'all 0.55s cubic-bezier(0.4, 0, 0.2, 1)',
     transitionSpring: 'all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
     transitionBounce: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
 
-    // ── Typography Scale ──
-    fontDisplay: "'Cinzel', 'Playfair Display', Georgia, serif",
-    fontBody: "'DM Sans', 'Outfit', sans-serif",
-    fontMono: "'JetBrains Mono', 'Fira Code', monospace",
-    fontDecorative: "'Cormorant Garamond', Georgia, serif",
+    // ── Typography ────────────────────────────────────────────────────────────
+    fontDisplay:     "'Cinzel', 'Playfair Display', Georgia, serif",
+    fontBody:        "'DM Sans', 'Outfit', sans-serif",
+    fontMono:        "'JetBrains Mono', 'Fira Code', monospace",
+    fontDecorative:  "'Cormorant Garamond', Georgia, serif",
 
-    // ── Spacing ──
+    // ── Spacing ───────────────────────────────────────────────────────────────
     space: (n) => `${n * 4}px`,
 };
 
@@ -120,15 +122,22 @@ export const ChartDefs = () => (
         <defs>
 
             {/* ── Glow Filters ── */}
+
+            {/* Rose glow — primary #E8369A */}
             <filter id="tealGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
-                <feColorMatrix type="matrix" values="0 0 0 0 0  0 0.82 0.7 0 0  0 0 0.71 0 0  0 0 0 1 0" in="blur" result="coloredBlur" />
+                <feColorMatrix type="matrix"
+                    values="0.91 0 0 0 0  0.21 0 0 0 0  0.60 0 0 0 0  0 0 0 1 0"
+                    in="blur" result="coloredBlur" />
                 <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
 
+            {/* Aquamarine glow — secondary #2AFFD4 */}
             <filter id="goldGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
-                <feColorMatrix type="matrix" values="0.9 0 0 0 0  0.66 0 0 0 0  0 0 0.19 0 0  0 0 0 1 0" in="blur" result="coloredBlur" />
+                <feColorMatrix type="matrix"
+                    values="0.165 0 0 0 0  1.0 0 0 0 0  0.83 0 0 0 0  0 0 0 1 0"
+                    in="blur" result="coloredBlur" />
                 <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
 
@@ -161,98 +170,98 @@ export const ChartDefs = () => (
 
             {/* ── Area Gradients ── */}
             <linearGradient id="primaryGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.55} />
-                <stop offset="45%" stopColor={THEME.primary} stopOpacity={0.18} />
-                <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
+                <stop offset="0%"   stopColor={THEME.primary}   stopOpacity={0.55} />
+                <stop offset="45%"  stopColor={THEME.primary}   stopOpacity={0.18} />
+                <stop offset="100%" stopColor={THEME.primary}   stopOpacity={0} />
             </linearGradient>
 
             <linearGradient id="secondaryGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.secondary} stopOpacity={0.55} />
-                <stop offset="45%" stopColor={THEME.secondary} stopOpacity={0.18} />
+                <stop offset="0%"   stopColor={THEME.secondary} stopOpacity={0.55} />
+                <stop offset="45%"  stopColor={THEME.secondary} stopOpacity={0.18} />
                 <stop offset="100%" stopColor={THEME.secondary} stopOpacity={0} />
             </linearGradient>
 
             <linearGradient id="successGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.success} stopOpacity={0.55} />
-                <stop offset="45%" stopColor={THEME.success} stopOpacity={0.18} />
-                <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
+                <stop offset="0%"   stopColor={THEME.success}   stopOpacity={0.55} />
+                <stop offset="45%"  stopColor={THEME.success}   stopOpacity={0.18} />
+                <stop offset="100%" stopColor={THEME.success}   stopOpacity={0} />
             </linearGradient>
 
             <linearGradient id="dangerGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.danger} stopOpacity={0.55} />
-                <stop offset="45%" stopColor={THEME.danger} stopOpacity={0.18} />
-                <stop offset="100%" stopColor={THEME.danger} stopOpacity={0} />
+                <stop offset="0%"   stopColor={THEME.danger}    stopOpacity={0.55} />
+                <stop offset="45%"  stopColor={THEME.danger}    stopOpacity={0.18} />
+                <stop offset="100%" stopColor={THEME.danger}    stopOpacity={0} />
             </linearGradient>
 
             <linearGradient id="aiGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.ai} stopOpacity={0.55} />
-                <stop offset="45%" stopColor={THEME.ai} stopOpacity={0.18} />
-                <stop offset="100%" stopColor={THEME.ai} stopOpacity={0} />
+                <stop offset="0%"   stopColor={THEME.ai}        stopOpacity={0.55} />
+                <stop offset="45%"  stopColor={THEME.ai}        stopOpacity={0.18} />
+                <stop offset="100%" stopColor={THEME.ai}        stopOpacity={0} />
             </linearGradient>
 
             {/* ── Bar Gradients ── */}
             <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.95} />
-                <stop offset="100%" stopColor={THEME.deepTeal} stopOpacity={0.6} />
+                <stop offset="0%"   stopColor={THEME.primary}   stopOpacity={0.95} />
+                <stop offset="100%" stopColor={THEME.deepTeal}  stopOpacity={0.6} />
             </linearGradient>
 
             <linearGradient id="barGradientGold" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.secondary} stopOpacity={0.95} />
-                <stop offset="100%" stopColor={THEME.secondaryDark} stopOpacity={0.5} />
+                <stop offset="0%"   stopColor={THEME.secondary}     stopOpacity={0.95} />
+                <stop offset="100%" stopColor={THEME.secondaryDark}  stopOpacity={0.5} />
             </linearGradient>
 
             <linearGradient id="barGradientSuccess" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={THEME.success} stopOpacity={0.95} />
-                <stop offset="100%" stopColor={THEME.successDark} stopOpacity={0.5} />
+                <stop offset="0%"   stopColor={THEME.success}     stopOpacity={0.95} />
+                <stop offset="100%" stopColor={THEME.successDark}  stopOpacity={0.5} />
             </linearGradient>
 
             {/* ── Horizontal / Directional ── */}
             <linearGradient id="horizTealGold" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor={THEME.primary} />
+                <stop offset="0%"   stopColor={THEME.primary}   />
                 <stop offset="100%" stopColor={THEME.secondary} />
             </linearGradient>
 
             <linearGradient id="horizDeepTeal" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor={THEME.deepTeal} />
-                <stop offset="50%" stopColor={THEME.primary} />
-                <stop offset="100%" stopColor={THEME.biolume} />
+                <stop offset="0%"   stopColor={THEME.deepTeal}  />
+                <stop offset="50%"  stopColor={THEME.primary}   />
+                <stop offset="100%" stopColor={THEME.biolume}   />
             </linearGradient>
 
             <linearGradient id="diagAbyssal" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor={THEME.primary} />
-                <stop offset="40%" stopColor={THEME.ai} />
+                <stop offset="0%"   stopColor={THEME.primary}   />
+                <stop offset="40%"  stopColor={THEME.ai}        />
                 <stop offset="100%" stopColor={THEME.secondary} />
             </linearGradient>
 
             <linearGradient id="diagWarm" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%" stopColor={THEME.secondaryDark} />
-                <stop offset="50%" stopColor={THEME.secondary} />
-                <stop offset="100%" stopColor={THEME.warning} />
+                <stop offset="0%"   stopColor={THEME.secondaryDark} />
+                <stop offset="50%"  stopColor={THEME.secondary}     />
+                <stop offset="100%" stopColor={THEME.success}       />
             </linearGradient>
 
             <linearGradient id="diagCool" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor={THEME.biolume} />
-                <stop offset="50%" stopColor={THEME.primary} />
-                <stop offset="100%" stopColor={THEME.ai} />
+                <stop offset="0%"   stopColor={THEME.biolume}  />
+                <stop offset="50%"  stopColor={THEME.primary}  />
+                <stop offset="100%" stopColor={THEME.ai}       />
             </linearGradient>
 
             {/* ── Radial Gradients ── */}
             <radialGradient id="radialTeal" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.7} />
-                <stop offset="60%" stopColor={THEME.primary} stopOpacity={0.15} />
-                <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
+                <stop offset="0%"   stopColor={THEME.primary}  stopOpacity={0.7} />
+                <stop offset="60%"  stopColor={THEME.primary}  stopOpacity={0.15} />
+                <stop offset="100%" stopColor={THEME.primary}  stopOpacity={0} />
             </radialGradient>
 
             <radialGradient id="radialGold" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor={THEME.secondary} stopOpacity={0.7} />
-                <stop offset="60%" stopColor={THEME.secondary} stopOpacity={0.15} />
+                <stop offset="0%"   stopColor={THEME.secondary} stopOpacity={0.7} />
+                <stop offset="60%"  stopColor={THEME.secondary} stopOpacity={0.15} />
                 <stop offset="100%" stopColor={THEME.secondary} stopOpacity={0} />
             </radialGradient>
 
             <radialGradient id="radialAbyss" cx="30%" cy="30%" r="70%">
-                <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.25} />
-                <stop offset="50%" stopColor={THEME.deepTeal} stopOpacity={0.1} />
-                <stop offset="100%" stopColor={THEME.mariana} stopOpacity={0} />
+                <stop offset="0%"   stopColor={THEME.primary}  stopOpacity={0.25} />
+                <stop offset="50%"  stopColor={THEME.deepTeal} stopOpacity={0.10} />
+                <stop offset="100%" stopColor={THEME.mariana}  stopOpacity={0} />
             </radialGradient>
 
             {/* ── Grid / Dot Patterns ── */}
@@ -273,11 +282,13 @@ export const ChartDefs = () => (
             </pattern>
 
             <pattern id="hexPattern" width="28" height="32" patternUnits="userSpaceOnUse">
-                <polygon points="14,2 24,7.5 24,18.5 14,24 4,18.5 4,7.5" fill="none" stroke={THEME.grid} strokeWidth="0.5" strokeOpacity="0.3" />
+                <polygon points="14,2 24,7.5 24,18.5 14,24 4,18.5 4,7.5"
+                    fill="none" stroke={THEME.grid} strokeWidth="0.5" strokeOpacity="0.3" />
             </pattern>
 
             <pattern id="wavePattern" width="60" height="20" patternUnits="userSpaceOnUse">
-                <path d="M0 10 C15 0 30 20 45 10 S60 0 60 10" fill="none" stroke={THEME.primary} strokeWidth="0.5" strokeOpacity="0.15" />
+                <path d="M0 10 C15 0 30 20 45 10 S60 0 60 10"
+                    fill="none" stroke={THEME.primary} strokeWidth="0.5" strokeOpacity="0.15" />
             </pattern>
 
             {/* ── Clip Paths ── */}
@@ -303,8 +314,8 @@ export const GlobalStyles = () => (
 
     /* ── CSS Custom Properties ── */
     :root {
-      --teal:       ${THEME.primary};
-      --gold:       ${THEME.secondary};
+      --primary:    ${THEME.primary};
+      --secondary:  ${THEME.secondary};
       --bg:         ${THEME.bg};
       --surface:    ${THEME.surface};
       --text:       ${THEME.textMain};
@@ -323,7 +334,7 @@ export const GlobalStyles = () => (
 
     /* ── Base Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
       font-family: ${THEME.fontBody};
       background: ${THEME.bg};
@@ -536,7 +547,7 @@ export const GlobalStyles = () => (
     .anim-depth-pulse    { animation: depthPulse 4s ease-in-out infinite; }
 
     .anim-shimmer {
-      background: linear-gradient(90deg, transparent, rgba(0,210,180,0.05), transparent);
+      background: linear-gradient(90deg, transparent, ${THEME.primaryFaint}, transparent);
       background-size: 300% 100%;
       animation: shimmer 3.5s infinite;
     }
@@ -633,7 +644,6 @@ export const GlobalStyles = () => (
       pointer-events: none;
     }
 
-    /* Teal-accented card */
     .glass-card-teal {
       background: ${THEME.glass};
       backdrop-filter: blur(20px);
@@ -657,7 +667,6 @@ export const GlobalStyles = () => (
       pointer-events: none;
     }
 
-    /* Gold-accented card */
     .glass-card-gold {
       background: ${THEME.glass};
       backdrop-filter: blur(20px);
@@ -674,7 +683,6 @@ export const GlobalStyles = () => (
       transform: translateY(-3px);
     }
 
-    /* Abyss — ultra-dark card with depth */
     .glass-card-abyss {
       background: linear-gradient(160deg, ${THEME.bgAlt} 0%, ${THEME.mariana} 100%);
       border: 1px solid ${THEME.grid};
@@ -714,7 +722,7 @@ export const GlobalStyles = () => (
       background: linear-gradient(
         to bottom,
         transparent 0%,
-        rgba(0, 210, 180, 0.025) 50%,
+        ${THEME.primaryFaint} 50%,
         transparent 100%
       );
       height: 80px;
@@ -726,7 +734,7 @@ export const GlobalStyles = () => (
       background: radial-gradient(
         ellipse at center,
         transparent 40%,
-        rgba(3, 10, 14, 0.6) 100%
+        rgba(7, 3, 13, 0.6) 100%
       );
       pointer-events: none;
     }
@@ -790,7 +798,7 @@ export const GlobalStyles = () => (
     }
 
     .gradient-text-warm {
-      background: linear-gradient(135deg, ${THEME.secondaryLight}, ${THEME.secondary}, ${THEME.danger});
+      background: linear-gradient(135deg, ${THEME.secondaryLight}, ${THEME.secondary}, ${THEME.success});
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -850,7 +858,6 @@ export const GlobalStyles = () => (
        BUTTONS
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-    /* Ghost / Outline */
     .btn-neon {
       position: relative;
       padding: 11px 26px;
@@ -885,7 +892,6 @@ export const GlobalStyles = () => (
       animation: shimmer 3s infinite;
     }
 
-    /* Gold ghost */
     .btn-neon-gold {
       position: relative;
       padding: 11px 26px;
@@ -909,14 +915,13 @@ export const GlobalStyles = () => (
       transform: translateY(-2px);
     }
 
-    /* Filled gradient */
     .btn-glow {
       position: relative;
       padding: 12px 30px;
       border: none;
       border-radius: ${THEME.radiusMd};
       background: linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark});
-      color: ${THEME.inkBlack};
+      color: #fff;
       font-family: ${THEME.fontBody};
       font-size: 14px;
       font-weight: 700;
@@ -943,7 +948,6 @@ export const GlobalStyles = () => (
 
     .btn-glow:hover::before { left: 150%; }
 
-    /* Gold filled */
     .btn-glow-gold {
       position: relative;
       padding: 12px 30px;
@@ -967,7 +971,6 @@ export const GlobalStyles = () => (
       transform: translateY(-2px);
     }
 
-    /* Icon button */
     .btn-icon {
       display: inline-flex;
       align-items: center;
@@ -1091,7 +1094,7 @@ export const GlobalStyles = () => (
       background: linear-gradient(
         90deg,
         ${THEME.surface} 20%,
-        rgba(0,210,180,0.06) 50%,
+        ${THEME.primaryFaint} 50%,
         ${THEME.surface} 80%
       );
       background-size: 300% 100%;
@@ -1115,9 +1118,7 @@ export const GlobalStyles = () => (
        TOOLTIPS
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-    .tooltip-neon {
-      position: relative;
-    }
+    .tooltip-neon { position: relative; }
 
     .tooltip-neon::after {
       content: attr(data-tip);
@@ -1195,7 +1196,6 @@ export const GlobalStyles = () => (
       box-shadow: 0 0 12px ${THEME.danger}70;
     }
 
-    /* Thick variant */
     .progress-thick { height: 10px; }
     .progress-thick .progress-neon-fill::after { display: none; }
 
@@ -1233,7 +1233,7 @@ export const GlobalStyles = () => (
 
     .bg-orb-deep {
       width: 600px; height: 600px;
-      background: radial-gradient(circle, ${THEME.deepTeal}, transparent);
+      background: radial-gradient(circle, ${THEME.gridAlt}, transparent);
       animation: depthPulse 12s ease-in-out infinite;
       opacity: 0.08;
       filter: blur(120px);
@@ -1267,7 +1267,7 @@ export const GlobalStyles = () => (
       padding: 13px 18px;
       color: ${THEME.textMain};
       font-size: 13.5px;
-      border-bottom: 1px solid rgba(14, 40, 48, 0.6);
+      border-bottom: 1px solid ${THEME.grid}99;
       transition: ${THEME.transitionFast};
     }
 
@@ -1275,9 +1275,7 @@ export const GlobalStyles = () => (
 
     .data-table tbody tr { transition: ${THEME.transitionFast}; }
 
-    .data-table tbody tr:hover {
-      background: ${THEME.primary}07;
-    }
+    .data-table tbody tr:hover { background: ${THEME.primaryFaint}; }
 
     .data-table tbody tr:hover td { color: ${THEME.textMain}; }
 
@@ -1297,13 +1295,13 @@ export const GlobalStyles = () => (
       letter-spacing: 0.04em;
     }
 
-    .badge-teal    { background: ${THEME.primary}1A; color: ${THEME.primary}; border: 1px solid ${THEME.primary}35; }
+    .badge-teal    { background: ${THEME.primary}1A;   color: ${THEME.primary};   border: 1px solid ${THEME.primary}35; }
     .badge-gold    { background: ${THEME.secondary}1A; color: ${THEME.secondary}; border: 1px solid ${THEME.secondary}35; }
-    .badge-success { background: ${THEME.success}1A; color: ${THEME.success}; border: 1px solid ${THEME.success}35; }
-    .badge-danger  { background: ${THEME.danger}1A; color: ${THEME.danger}; border: 1px solid ${THEME.danger}35; }
-    .badge-warning { background: ${THEME.warning}1A; color: ${THEME.warning}; border: 1px solid ${THEME.warning}35; }
-    .badge-ai      { background: ${THEME.ai}1A; color: ${THEME.ai}; border: 1px solid ${THEME.ai}35; }
-    .badge-muted   { background: ${THEME.surface}; color: ${THEME.textMuted}; border: 1px solid ${THEME.grid}; }
+    .badge-success { background: ${THEME.success}1A;   color: ${THEME.success};   border: 1px solid ${THEME.success}35; }
+    .badge-danger  { background: ${THEME.danger}1A;    color: ${THEME.danger};    border: 1px solid ${THEME.danger}35; }
+    .badge-warning { background: ${THEME.warning}1A;   color: ${THEME.warning};   border: 1px solid ${THEME.warning}35; }
+    .badge-ai      { background: ${THEME.ai}1A;        color: ${THEME.ai};        border: 1px solid ${THEME.ai}35; }
+    .badge-muted   { background: ${THEME.surface};     color: ${THEME.textMuted}; border: 1px solid ${THEME.grid}; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        DIVIDERS
@@ -1331,7 +1329,7 @@ export const GlobalStyles = () => (
     }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       STAT CARD — Quick KPI Component
+       STAT CARD
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
     .stat-card {
@@ -1353,18 +1351,15 @@ export const GlobalStyles = () => (
       border-radius: 2px 2px 0 0;
     }
 
-    .stat-card.teal::before { background: linear-gradient(90deg, transparent, ${THEME.primary}, transparent); }
-    .stat-card.gold::before  { background: linear-gradient(90deg, transparent, ${THEME.secondary}, transparent); }
-    .stat-card.danger::before { background: linear-gradient(90deg, transparent, ${THEME.danger}, transparent); }
-    .stat-card.ai::before    { background: linear-gradient(90deg, transparent, ${THEME.ai}, transparent); }
+    .stat-card.teal::before   { background: linear-gradient(90deg, transparent, ${THEME.primary},   transparent); }
+    .stat-card.gold::before   { background: linear-gradient(90deg, transparent, ${THEME.secondary}, transparent); }
+    .stat-card.danger::before { background: linear-gradient(90deg, transparent, ${THEME.danger},    transparent); }
+    .stat-card.ai::before     { background: linear-gradient(90deg, transparent, ${THEME.ai},        transparent); }
 
-    .stat-card:hover {
-      border-color: ${THEME.glassBorderHover};
-      transform: translateY(-4px);
-    }
+    .stat-card:hover { border-color: ${THEME.glassBorderHover}; transform: translateY(-4px); }
 
-    .stat-card.teal:hover  { box-shadow: ${THEME.shadowTeal}; }
-    .stat-card.gold:hover  { box-shadow: ${THEME.shadowGold}; }
+    .stat-card.teal:hover { box-shadow: ${THEME.shadowTeal}; }
+    .stat-card.gold:hover { box-shadow: ${THEME.shadowGold}; }
 
     .stat-card .stat-label {
       font-size: 11px;
@@ -1425,7 +1420,6 @@ export const GlobalStyles = () => (
     .text-balance { text-wrap: balance; }
     .text-pretty  { text-wrap: pretty; }
 
-    /* Highlight/selection */
     ::selection {
       background: ${THEME.primary}35;
       color: ${THEME.textMain};
