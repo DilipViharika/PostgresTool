@@ -2,15 +2,26 @@ import React, { useState } from 'react';
 import { T } from '../constants/theme.js';
 import { ROLES, DEPARTMENTS, LOCATIONS, RESOURCE_ROWS, DEFAULT_PERMISSIONS, PERM_COLORS } from '../constants/index.js';
 import { validateUserForm, generatePassword, passwordStrength, copyToClipboard } from '../helpers/index.js';
-import { Ico, StatCard, Sparkline, RiskRing, RoleBadge, StatusBadge, TagFilter, MfaBadge, LoginHeatmap, FormField, Toggle } from '../shared/components/ui.jsx';
+import { Ico, RiskRing, RoleBadge, StatusBadge, MfaBadge, LoginHeatmap, FormField, Toggle } from '../shared/components/ui.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   SHARED STYLES (Guarantees dark theme regardless of global CSS conflicts)
+   SHARED STYLES (Guarantees dark theme & center positioning)
    ───────────────────────────────────────────────────────────────────────────── */
 const overlayStyle = {
-    position: 'fixed', inset: 0, zIndex: 5000,
-    background: 'rgba(4, 5, 10, 0.78)', backdropFilter: 'blur(8px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    zIndex: 99999,
+    background: 'rgba(4, 5, 10, 0.78)',
+    backdropFilter: 'blur(8px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 0,
+    padding: 0,
+    boxSizing: 'border-box',
     animation: 'umFadeIn 0.2s ease'
 };
 
@@ -241,7 +252,6 @@ export const UserDrawer = ({ user, onClose, onEdit, onResetPassword }) => {
                             <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 16 }}>Login Timeline</div>
                             <div style={{ position: 'relative', paddingLeft: 24 }}>
                                 <div style={{ position: 'absolute', left: 8, top: 0, bottom: 0, width: 1, background: T.border }} />
-                                {/* TODO: replace with real audit events for this user */}
                                 {[
                                     { action: 'LOGIN_SUCCESS',   ts: '2025-02-17T14:00:00Z', detail: 'Chrome · macOS', level: 'info' },
                                     { action: 'PERM_CHANGED',    ts: '2025-02-16T09:22:00Z', detail: 'Added write:sql', level: 'warn' },
@@ -283,7 +293,7 @@ export const UserFormModal = ({ user, onSave, onCancel }) => {
         name:       user?.name       || '',
         email:      user?.email      || '',
         username:   user?.username   || '',
-        password:   '',                          // only sent when creating (not editing)
+        password:   '',
         role:       user?.role       || 'viewer',
         department: user?.department || DEPARTMENTS[0],
         location:   user?.location   || LOCATIONS[0],
