@@ -1,25 +1,44 @@
 /**
- * Design tokens — single source of truth for all colours, spacing, and typography.
- * Import this wherever you need a theme value instead of hardcoding hex strings.
+ * Unified design tokens for User Management components.
+ *
+ * All values are derived from the single app-wide THEME object so that
+ * every section of the app renders with the same "Bioluminescent Abyss"
+ * colour palette. Never hard-code colours here — always reference THEME.
  */
+import { THEME } from '../../utils/theme.jsx';
+
 export const T = Object.freeze({
-    bg:          '#07080d',
-    surface:     '#0d0f17',
-    surfaceHigh: '#131620',
-    border:      '#1e2235',
-    borderHigh:  '#2a2f47',
-    primary:     '#4f7cff',
-    primaryDim:  '#4f7cff22',
-    accent:      '#7c3aed',
-    success:     '#10d98a',
-    successDim:  '#10d98a18',
-    warning:     '#f5a623',
-    warningDim:  '#f5a62318',
-    danger:      '#ff4a6e',
-    dangerDim:   '#ff4a6e18',
-    info:        '#22d3ee',
-    infoDim:     '#22d3ee18',
-    text:        '#e8eaf6',
-    textSub:     '#9399b8',
-    textDim:     '#555a7a',
+    // ── Backgrounds ──────────────────────────────────────────────────────────
+    bg:          THEME.bg,               // #030A0E  ink-black
+    surface:     THEME.surface,          // #0A1A20  deep surface
+    surfaceHigh: THEME.surfaceRaised,    // #162D38  raised surface
+
+    // ── Borders / Grid ───────────────────────────────────────────────────────
+    border:      THEME.grid,             // #0E2830
+    borderHigh:  THEME.gridAlt,          // #163840
+
+    // ── Primary — bioluminescent teal ────────────────────────────────────────
+    primary:     THEME.primary,          // #00D2B4
+    primaryDim:  THEME.primaryFaint,     // rgba(0,210,180,0.07)
+
+    // ── Accent — abyssal amber (maps old purple → warm gold) ─────────────────
+    accent:      THEME.secondary,        // #E8A830
+
+    // ── Semantic colours ─────────────────────────────────────────────────────
+    success:     THEME.success,          // #26D98A
+    successDim:  `${THEME.success}26`,   // 15% opacity
+
+    warning:     THEME.warning,          // #FFB830
+    warningDim:  `${THEME.warning}26`,   // 15% opacity
+
+    danger:      THEME.danger,           // #FF4E6A
+    dangerDim:   `${THEME.danger}26`,    // 15% opacity
+
+    info:        THEME.info,             // #30A8E8
+    infoDim:     `${THEME.info}26`,      // 15% opacity
+
+    // ── Typography ───────────────────────────────────────────────────────────
+    text:        THEME.textMain,         // #EEF6F4
+    textSub:     THEME.textMuted,        // #7DADA3
+    textDim:     THEME.textDim,          // #3A6060
 });
