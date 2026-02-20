@@ -328,6 +328,74 @@ const FeatureCard = ({ icon:Icon, label, desc, color }) => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  TOOL SUMMARY PANEL
+// ─────────────────────────────────────────────────────────────────────────────
+const STAT_ITEMS = [
+    { label:'Queries / sec',  value:'12.8k', delta:'+4.2%', color:'#0ea5e9' },
+    { label:'P99 Latency',    value:'4.2 ms', delta:'-11%',  color:'#22c55e' },
+    { label:'Cache Hit Rate', value:'97.4%',  delta:'+0.3%', color:'#14b8a6' },
+    { label:'Replication Lag',value:'0.0 s',  delta:'IN SYNC',color:'#a78bfa' },
+    { label:'Active Conns',   value:'342',    delta:'/ 500',  color:'#f59e0b' },
+    { label:'Nodes Healthy',  value:'4 / 4',  delta:'ALL OK', color:'#22c55e' },
+];
+
+const HOW_IT_WORKS = [
+    { step:'01', title:'Connect your cluster', desc:'Point Vigil at any PostgreSQL instance — on‑prem or cloud.', color:'#0ea5e9' },
+    { step:'02', title:'Instant observability', desc:'Live metrics stream in: QPS, latency, cache, replication, and storage.', color:'#14b8a6' },
+    { step:'03', title:'Alert & investigate', desc:'Smart alerts fire on anomalies; Query Inspector shows EXPLAIN plans side‑by‑side.', color:'#a78bfa' },
+];
+
+const ToolSummaryPanel = () => (
+    <div style={{ borderRadius:14, border:'1px solid rgba(14,165,233,.14)', background:'linear-gradient(135deg,rgba(8,20,40,.95) 0%,rgba(4,14,30,.98) 100%)', overflow:'hidden', fontFamily:'JetBrains Mono,monospace', position:'relative' }}>
+        {/* subtle dot grid */}
+        <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(14,165,233,.18) 1px,transparent 1px)', backgroundSize:'20px 20px', opacity:.22, pointerEvents:'none' }}/>
+        {/* top accent line */}
+        <div style={{ position:'absolute', top:0, left:'10%', right:'10%', height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.6),transparent)' }}/>
+
+        <div style={{ position:'relative', zIndex:1, padding:'18px 20px 16px' }}>
+            {/* Section heading */}
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+                <div style={{ width:3, height:22, borderRadius:2, background:'linear-gradient(180deg,#0ea5e9,#14b8a6)' }}/>
+                <span style={{ fontSize:8.5, color:'#38bdf8', fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase' }}>Live Cluster Snapshot</span>
+                <span style={{ marginLeft:'auto', fontSize:6.5, color:'#22c55e', background:'rgba(34,197,94,.1)', border:'1px solid rgba(34,197,94,.25)', borderRadius:4, padding:'2px 7px', fontWeight:700 }}>● LIVE</span>
+            </div>
+
+            {/* Metric grid */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:18 }}>
+                {STAT_ITEMS.map(({ label, value, delta, color }) => (
+                    <div key={label} style={{ background:`${color}09`, border:`1px solid ${color}22`, borderRadius:9, padding:'10px 11px' }}>
+                        <div style={{ fontSize:6, color:'#1e3a5f', marginBottom:5, letterSpacing:'.05em' }}>{label}</div>
+                        <div style={{ fontSize:15, color, fontWeight:700, lineHeight:1, marginBottom:4 }}>{value}</div>
+                        <div style={{ fontSize:6, color:`${color}bb`, fontWeight:600 }}>{delta}</div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height:1, background:'rgba(255,255,255,.05)', marginBottom:14 }}/>
+
+            {/* How it works */}
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+                <div style={{ width:3, height:22, borderRadius:2, background:'linear-gradient(180deg,#a78bfa,#f43f5e)' }}/>
+                <span style={{ fontSize:8.5, color:'#c4b5fd', fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase' }}>How Vigil Works</span>
+            </div>
+
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
+                {HOW_IT_WORKS.map(({ step, title, desc, color }) => (
+                    <div key={step} style={{ background:'rgba(255,255,255,.025)', border:`1px solid ${color}20`, borderRadius:9, padding:'11px 12px', position:'relative', overflow:'hidden' }}>
+                        {/* big step number watermark */}
+                        <div style={{ position:'absolute', bottom:-6, right:6, fontSize:38, fontWeight:900, color:`${color}09`, lineHeight:1, userSelect:'none', fontFamily:'Syne,sans-serif' }}>{step}</div>
+                        <div style={{ fontSize:8, color, fontWeight:700, marginBottom:5, letterSpacing:'.1em' }}>STEP {step}</div>
+                        <div style={{ fontSize:10, color:'#c8d6e5', fontWeight:700, fontFamily:'Syne,sans-serif', marginBottom:5, lineHeight:1.3 }}>{title}</div>
+                        <div style={{ fontSize:8.5, color:'#1e3a5f', lineHeight:1.55, fontFamily:'DM Sans,sans-serif' }}>{desc}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  LEFT PANEL
 // ─────────────────────────────────────────────────────────────────────────────
 const LeftPanel = () => (
@@ -369,16 +437,9 @@ const LeftPanel = () => (
                 </p>
             </div>
 
-            {/* Preview panels */}
+            {/* Tool Summary Visual */}
             <div style={{ padding:'0 26px 12px', flexShrink:0, animation:'fadeUp .6s ease .12s backwards' }}>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                    <div className="pc" style={{ height:210, borderRadius:12, border:'1px solid rgba(14,165,233,.12)', overflow:'hidden', transition:'all .3s ease', cursor:'pointer', boxShadow:'0 8px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(14,165,233,.08)' }}>
-                        <DatabasePanel />
-                    </div>
-                    <div className="pc" style={{ height:210, borderRadius:12, border:'1px solid rgba(20,184,166,.12)', overflow:'hidden', transition:'all .3s ease', cursor:'pointer', boxShadow:'0 8px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(20,184,166,.08)' }}>
-                        <InfraPanel />
-                    </div>
-                </div>
+                <ToolSummaryPanel />
             </div>
 
             {/* Feature grid */}
