@@ -21,8 +21,7 @@ export const DEPARTMENTS = [
 ];
 
 export const LOCATIONS = [
-    'San Francisco, US', 'London, UK', 'Remote',
-    'Berlin, DE', 'Tokyo, JP'
+    'Coimbatore', 'Hyderabad'
 ];
 
 // ─── Permission Matrix Configuration ──────────────────────────────────────────
