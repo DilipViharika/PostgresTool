@@ -772,6 +772,244 @@ app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), asy
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// REPLICATION & WAL
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CACHE_TTL.WAL), async (req, res) => {
+    try {
+        const [replicas, slots, walReceiver, walSender, walSettings] = await Promise.all([
+            pool.query(`
+                SELECT pid, usename, application_name, client_addr::text,
+                       state, sync_state,
+                       sent_lsn::text, write_lsn::text, flush_lsn::text, replay_lsn::text,
+                       pg_wal_lsn_diff(sent_lsn,  write_lsn)  AS write_lag_bytes,
+                       pg_wal_lsn_diff(write_lsn, flush_lsn)  AS flush_lag_bytes,
+                       pg_wal_lsn_diff(flush_lsn, replay_lsn) AS replay_lag_bytes,
+                       pg_wal_lsn_diff(sent_lsn,  replay_lsn) AS total_lag_bytes,
+                       EXTRACT(EPOCH FROM write_lag)::int       AS write_lag_sec,
+                       EXTRACT(EPOCH FROM flush_lag)::int       AS flush_lag_sec,
+                       EXTRACT(EPOCH FROM replay_lag)::int      AS replay_lag_sec,
+                       reply_time::text
+                FROM pg_stat_replication
+                ORDER BY total_lag_bytes DESC NULLS LAST
+            `),
+            pool.query(`
+                SELECT slot_name, plugin, slot_type, database, active, active_pid,
+                       pg_wal_lsn_diff(pg_current_wal_lsn(), confirmed_flush_lsn) AS lag_bytes,
+                       pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), confirmed_flush_lsn)) AS lag_pretty,
+                       wal_status, safe_wal_size, two_phase
+                FROM pg_replication_slots
+                ORDER BY lag_bytes DESC NULLS LAST
+            `),
+            pool.query(`
+                SELECT status, receive_start_lsn::text, received_tli,
+                       last_msg_send_time::text, last_msg_receipt_time::text,
+                       latest_end_lsn::text, latest_end_time::text,
+                       sender_host, sender_port, slot_name, conninfo
+                FROM pg_stat_wal_receiver
+            `).catch(() => ({ rows: [] })),
+            pool.query(`
+                SELECT pg_current_wal_lsn()::text                    AS current_lsn,
+                       pg_walfile_name(pg_current_wal_lsn())          AS current_wal,
+                       pg_wal_lsn_diff(pg_current_wal_lsn(), '0/0')  AS total_bytes_generated,
+                       (SELECT count(*) FROM pg_stat_replication)      AS replica_count,
+                       pg_is_in_recovery()                            AS in_recovery
+            `),
+            pool.query(`
+                SELECT name, setting, unit
+                FROM pg_settings
+                WHERE name IN ('wal_level','max_wal_senders','max_replication_slots',
+                               'wal_keep_size','synchronous_standby_names','wal_sender_timeout')
+                ORDER BY name
+            `)
+        ]);
+        res.json({
+            replicas:    replicas.rows,
+            slots:       slots.rows,
+            walReceiver: walReceiver.rows[0] || null,
+            walSender:   walSender.rows[0],
+            settings:    walSettings.rows,
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BLOAT ANALYSIS
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            WITH stats AS (
+                SELECT
+                    schemaname, tablename,
+                    pg_total_relation_size(quote_ident(schemaname)||'.'||quote_ident(tablename)) AS total_bytes,
+                    pg_relation_size(quote_ident(schemaname)||'.'||quote_ident(tablename))       AS table_bytes,
+                    pg_indexes_size(quote_ident(schemaname)||'.'||quote_ident(tablename))        AS index_bytes,
+                    n_dead_tup, n_live_tup,
+                    CASE WHEN n_live_tup > 0
+                         THEN round((n_dead_tup::numeric / NULLIF(n_live_tup,0))*100, 2)
+                         ELSE 0 END AS dead_pct,
+                    last_vacuum, last_autovacuum,
+                    n_mod_since_analyze
+                FROM pg_stat_user_tables
+            )
+            SELECT *,
+                   pg_size_pretty(total_bytes) AS total_size,
+                   pg_size_pretty(table_bytes) AS table_size,
+                   pg_size_pretty(index_bytes) AS index_size,
+                   pg_size_pretty((dead_pct/100 * table_bytes)::bigint) AS estimated_bloat_size
+            FROM stats
+            WHERE total_bytes > 8192
+            ORDER BY dead_pct DESC, total_bytes DESC
+            LIMIT 100
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT
+                schemaname, tablename, indexname,
+                pg_size_pretty(pg_relation_size(indexrelid))                AS index_size,
+                pg_relation_size(indexrelid)                                AS index_bytes,
+                idx_scan, idx_tup_read, idx_tup_fetch,
+                CASE WHEN idx_scan = 0 THEN 100
+                     ELSE round((1 - idx_tup_fetch::numeric / NULLIF(idx_tup_read,0))*100, 1)
+                     END AS inefficiency_pct,
+                pg_get_indexdef(indexrelid)                                 AS index_def
+            FROM pg_stat_user_indexes
+            JOIN pg_index USING (indexrelid)
+            WHERE NOT indisprimary
+            ORDER BY index_bytes DESC
+            LIMIT 80
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT
+                count(*)                                                                         AS total_tables,
+                count(*) FILTER (WHERE (n_dead_tup::numeric / NULLIF(n_live_tup,0))*100 > 10)  AS high_bloat_tables,
+                count(*) FILTER (WHERE (n_dead_tup::numeric / NULLIF(n_live_tup,0))*100 > 20)  AS critical_bloat_tables,
+                pg_size_pretty(sum(pg_total_relation_size(quote_ident(schemaname)||'.'||quote_ident(tablename)))) AS total_db_size,
+                sum(pg_total_relation_size(quote_ident(schemaname)||'.'||quote_ident(tablename))) AS total_bytes,
+                round(avg(CASE WHEN n_live_tup > 0 THEN (n_dead_tup::numeric/n_live_tup)*100 ELSE 0 END),2) AS avg_dead_pct,
+                sum(n_dead_tup)                                                                  AS total_dead_tuples,
+                sum(n_live_tup)                                                                  AS total_live_tuples
+            FROM pg_stat_user_tables
+        `);
+        res.json(r.rows[0]);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUERY PLAN REGRESSION (in-memory baseline store — survives until restart)
+// ─────────────────────────────────────────────────────────────────────────────
+const planBaselines = new Map(); // fingerprint → { plan, cost, ts, query }
+
+app.post('/api/regression/capture', authenticate, async (req, res) => {
+    try {
+        const { query, label } = req.body;
+        if (!query) return res.status(400).json({ error: 'query required' });
+        const result = await pool.query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
+        const plan = result.rows[0]['QUERY PLAN'][0];
+        const cost = plan['Plan']['Total Cost'];
+        const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
+        planBaselines.set(fingerprint, { plan, cost, ts: new Date().toISOString(), query, label: label || query.slice(0, 60) });
+        res.json({ fingerprint, cost, plan, message: 'Baseline captured' });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/regression/compare', authenticate, async (req, res) => {
+    try {
+        const { query } = req.body;
+        if (!query) return res.status(400).json({ error: 'query required' });
+        const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
+        const baseline = planBaselines.get(fingerprint);
+
+        const result = await pool.query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
+        const currentPlan = result.rows[0]['QUERY PLAN'][0];
+        const currentCost = currentPlan['Plan']['Total Cost'];
+
+        if (!baseline) {
+            return res.json({ status: 'no_baseline', currentCost, currentPlan, fingerprint });
+        }
+
+        const costChange = ((currentCost - baseline.cost) / Math.max(baseline.cost, 0.001)) * 100;
+        const regression = costChange > 20; // >20% cost increase = regression
+        res.json({
+            status:      regression ? 'regression' : 'ok',
+            fingerprint, costChange: Math.round(costChange * 10) / 10,
+            baseline:    { cost: baseline.cost, plan: baseline.plan, ts: baseline.ts, label: baseline.label },
+            current:     { cost: currentCost, plan: currentPlan },
+            regression,
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/regression/baselines', authenticate, (req, res) => {
+    const list = Array.from(planBaselines.entries()).map(([fp, b]) => ({
+        fingerprint: fp, label: b.label, cost: b.cost, ts: b.ts,
+        queryPreview: b.query.slice(0, 120),
+    }));
+    res.json(list);
+});
+
+app.delete('/api/regression/baselines/:fp', authenticate, (req, res) => {
+    planBaselines.delete(req.params.fp);
+    res.json({ success: true });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOG ANALYSIS
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
+    try {
+        const threshold = parseInt(req.query.min_ms) || 1000;
+        const r = await pool.query(`
+            SELECT query,
+                   calls,
+                   round(mean_exec_time::numeric, 2)  AS mean_ms,
+                   round(max_exec_time::numeric,  2)  AS max_ms,
+                   round(total_exec_time::numeric, 2) AS total_ms,
+                   round((shared_blks_hit::numeric / NULLIF(shared_blks_hit + shared_blks_read, 0))*100, 1) AS cache_hit_pct,
+                   rows
+            FROM pg_stat_statements
+            WHERE mean_exec_time > $1
+            ORDER BY mean_exec_time DESC
+            LIMIT 50
+        `, [threshold]);
+        res.json(r.rows);
+    } catch (e) {
+        // pg_stat_statements might not be enabled
+        res.json([]);
+    }
+});
+
+app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT pid, usename, datname, application_name,
+                   state, wait_event_type, wait_event,
+                   left(query, 200) AS query_preview,
+                   query_start::text,
+                   round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 1) AS duration_sec
+            FROM pg_stat_activity
+            WHERE state != 'idle'
+              AND query NOT LIKE '%pg_stat_activity%'
+              AND query_start IS NOT NULL
+            ORDER BY query_start ASC
+            LIMIT 40
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CHECKPOINT MONITOR
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {

@@ -427,6 +427,7 @@ function useStaleWhileRevalidate(users, fetchUsers) {
 
 const GlobalStylesInjector = memo(() => (
     <style>{`
+        /* ── Keyframe Animations ─────────────────────────────────────────── */
         @keyframes umSlideUp {
             from { opacity: 0; transform: translateY(12px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -435,13 +436,21 @@ const GlobalStylesInjector = memo(() => (
             from { opacity: 0; }
             to   { opacity: 1; }
         }
+        @keyframes umFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        @keyframes umFadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
         @keyframes umSlideLeft {
-            from { transform: translateX(16px); }
-            to   { transform: translateX(0); }
+            from { transform: translateX(16px); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
         }
         @keyframes umSlideRight {
-            from { transform: translateX(-16px); }
-            to   { transform: translateX(0); }
+            from { transform: translateX(-16px); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
         }
         @keyframes umSpin {
             to { transform: rotate(360deg); }
@@ -460,38 +469,45 @@ const GlobalStylesInjector = memo(() => (
             100% { transform: scale(1); opacity: 1; }
         }
 
+        /* ── Box sizing ──────────────────────────────────────────────────── */
         .um-root *, .um-root *::before, .um-root *::after { box-sizing: border-box; }
 
+        /* ── Shimmer skeleton ────────────────────────────────────────────── */
         .shimmer-skeleton {
-            background: linear-gradient(90deg, ${T.surfaceHigh || '#1a1a2e'} 25%, ${T.border || '#2a2a3e'} 50%, ${T.surfaceHigh || '#1a1a2e'} 75%);
+            background: linear-gradient(90deg, ${T.surfaceRaised || '#1a1a2e'} 25%, ${T.grid || '#2a2a3e'} 50%, ${T.surfaceRaised || '#1a1a2e'} 75%);
             background-size: 200% 100%;
             animation: umShimmer 1.5s infinite ease-in-out;
             border-radius: 12px;
         }
 
+        /* ── Revalidating progress bar ───────────────────────────────────── */
         .um-revalidating-bar {
             position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, ${T.primary || '#6366f1'}, transparent);
+            background: linear-gradient(90deg, transparent, ${T.primary || '#00D4FF'}, transparent);
             background-size: 200% 100%;
             animation: umShimmer 1s infinite linear;
             border-radius: 2px; z-index: 10;
         }
 
+        /* ── Focus ring ──────────────────────────────────────────────────── */
         .um-root *:focus-visible {
-            outline: 2px solid ${T.primary || '#6366f1'};
+            outline: 2px solid ${T.primary || '#00D4FF'};
             outline-offset: 2px;
             border-radius: 4px;
         }
 
+        /* ── Tab indicator ───────────────────────────────────────────────── */
         .um-tab-indicator {
             position: absolute; bottom: -1px; height: 2px;
-            background: ${T.primary || '#6366f1'};
+            background: ${T.primary || '#00D4FF'};
             border-radius: 2px 2px 0 0;
             transition: left 0.25s cubic-bezier(0.16,1,0.3,1), width 0.25s cubic-bezier(0.16,1,0.3,1);
         }
 
+        /* ── Bulk action bar ─────────────────────────────────────────────── */
         .um-bulk-bar { animation: umSlideUp 0.2s cubic-bezier(0.16,1,0.3,1); }
 
+        /* ── Buttons ─────────────────────────────────────────────────────── */
         .um-btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 8px 16px; border-radius: 8px; border: none;
@@ -501,44 +517,159 @@ const GlobalStylesInjector = memo(() => (
         }
         .um-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .um-btn-primary {
-            background: ${T.primary || '#6366f1'}; color: #fff;
+            background: ${T.primary || '#00D4FF'}; color: ${T.textInverse || '#07030D'};
         }
         .um-btn-primary:hover:not(:disabled) {
             filter: brightness(1.1); transform: translateY(-1px);
         }
         .um-btn-ghost {
-            background: transparent; color: ${T.textDim || '#8b8fa3'};
-            border: 1px solid ${T.border || '#2a2a3e'};
+            background: transparent; color: ${T.textDim || '#4A3A5E'};
+            border: 1px solid ${T.grid || '#1A0E2B'};
         }
         .um-btn-ghost:hover:not(:disabled) {
-            background: ${T.surfaceHigh || '#1a1a2e'}; color: ${T.text || '#e2e4eb'};
+            background: ${T.surfaceRaised || '#221535'}; color: ${T.textMain || '#F0ECF8'};
         }
         .um-btn-danger {
-            background: ${T.danger || '#ef4444'}; color: #fff;
+            background: ${T.danger || '#FF4560'}; color: #fff;
         }
         .um-btn-danger:hover:not(:disabled) { filter: brightness(1.1); }
         .um-btn-sm { padding: 5px 10px; font-size: 12px; }
+        .um-btn-icon {
+            padding: 6px; border-radius: 6px;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
 
+        /* ── Tab buttons ─────────────────────────────────────────────────── */
         .um-tab {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 12px 18px; border: none; background: transparent;
-            color: ${T.textMuted || '#6b6f82'}; font-size: 13px; font-weight: 500;
+            color: ${T.textMuted || '#9888B4'}; font-size: 13px; font-weight: 500;
             cursor: pointer; transition: color 0.15s; font-family: inherit;
             position: relative;
         }
-        .um-tab:hover { color: ${T.text || '#e2e4eb'}; }
-        .um-tab.active { color: ${T.primary || '#6366f1'}; font-weight: 700; }
+        .um-tab:hover { color: ${T.textMain || '#F0ECF8'}; }
+        .um-tab.active { color: ${T.primary || '#00D4FF'}; font-weight: 700; }
 
+        /* ── Layout grids ────────────────────────────────────────────────── */
         .um-grid-4 {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+        }
+        .um-grid-2 {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
         }
         @media (max-width: 900px) {
             .um-grid-4 { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 600px) {
             .um-grid-4 { grid-template-columns: 1fr; }
+            .um-grid-2 { grid-template-columns: 1fr; }
         }
 
+        /* ── Modal overlay — full-screen backdrop ────────────────────────── */
+        .um-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            background: rgba(4, 5, 10, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: umFadeIn 0.2s ease;
+        }
+
+        /* ── Modal panel ─────────────────────────────────────────────────── */
+        .um-modal {
+            background: ${T.surface || '#120A1F'};
+            border: 1px solid ${T.grid || '#1A0E2B'};
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.65);
+            animation: umSlideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        /* ── Drawer — right-side slide-in panel ──────────────────────────── */
+        .um-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 480px;
+            max-width: 95vw;
+            background: ${T.surface || '#120A1F'};
+            border-left: 1px solid ${T.grid || '#1A0E2B'};
+            box-shadow: -16px 0 60px rgba(0,0,0,0.55);
+            display: flex;
+            flex-direction: column;
+            animation: umSlideLeft 0.3s cubic-bezier(0.16,1,0.3,1);
+            z-index: 5001;
+        }
+
+        /* ── Scrollable content area ──────────────────────────────────────── */
+        .um-scroll {
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: ${T.grid || '#1A0E2B'} transparent;
+        }
+        .um-scroll::-webkit-scrollbar { width: 4px; }
+        .um-scroll::-webkit-scrollbar-track { background: transparent; }
+        .um-scroll::-webkit-scrollbar-thumb {
+            background: ${T.grid || '#1A0E2B'};
+            border-radius: 2px;
+        }
+
+        /* ── Card ────────────────────────────────────────────────────────── */
+        .um-card {
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: ${T.surfaceRaised || '#221535'};
+            border: 1px solid ${T.grid || '#1A0E2B'};
+        }
+
+        /* ── Form inputs ─────────────────────────────────────────────────── */
+        .um-input {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1px solid ${T.grid || '#1A0E2B'};
+            background: ${T.surfaceRaised || '#221535'};
+            color: ${T.textMain || '#F0ECF8'};
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            -webkit-appearance: none;
+        }
+        .um-input:focus {
+            border-color: ${T.primary || '#00D4FF'};
+            box-shadow: 0 0 0 3px ${T.primary || '#00D4FF'}20;
+        }
+        .um-input::placeholder { color: ${T.textDim || '#4A3A5E'}; }
+        select.um-input { cursor: pointer; }
+
+        /* ── Monospace input variant ──────────────────────────────────────── */
+        .um-mono {
+            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Permission chip ──────────────────────────────────────────────── */
+        .um-perm-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── Reduced motion ───────────────────────────────────────────────── */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
