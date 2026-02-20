@@ -6,9 +6,9 @@
  */
 
 import React, { useState } from 'react';
-import { T } from '../constants/theme.js';
-import { ROLES, PERM_COLORS } from '../constants/index.js';
-import { relTime } from '../utils/index.js';
+import { T } from '../../constants/theme.js';
+import { ROLES, PERM_COLORS } from '../../constants/index.js';
+import { relTime } from '../../helpers/index.js';
 
 /* ─── SVG Icon ────────────────────────────────────────────────────────────── */
 export const ICONS = {

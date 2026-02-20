@@ -1,5 +1,5 @@
 import React from 'react';
-import { T } from '../constants/theme.js';
+import { T } from '../../constants/theme.js';
 
 /**
  * Injects all global CSS once at the app root.
