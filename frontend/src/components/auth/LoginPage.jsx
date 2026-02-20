@@ -3,13 +3,15 @@
 // ==========================================================================
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { THEME } from '../../utils/theme.jsx';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
     User, KeyRound, Shield, Lock, Activity, Bell, Search,
     TrendingUp, RefreshCw, UserCheck,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
-const API_BASE = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_API_URL) || 'http://localhost:5000';
+const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  GLOBAL STYLES
@@ -731,60 +733,91 @@ const Corners = ({ color='rgba(14,165,233,.25)' }) => (
 //  LOGIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
-    const [authLoading, setAuthLoading] = useState(false);
-    const [error, setError]             = useState(null);
-    const [username, setUsername]       = useState('');
-    const [password, setPassword]       = useState('');
-    const [showPwd,  setShowPwd]        = useState(false);
-    const [remember, setRemember]       = useState(false);
-    const [status,   setStatus]         = useState({ status:'online', latency:12 });
-    const [success,  setSuccess]        = useState(false);
-    const [shake,    setShake]          = useState(false);
-    const [btnHover, setBtnHover]       = useState(false);
+    const { login, authLoading, error, clearError } = useAuth();
+
+    const [username,      setUsername]      = useState('');
+    const [password,      setPassword]      = useState('');
+    const [showPwd,       setShowPwd]       = useState(false);
+    const [rememberMe,    setRememberMe]    = useState(false);
+    const [serverStatus,  setServerStatus]  = useState({ status: 'checking' });
+    const [loginSuccess,  setLoginSuccess]  = useState(false);
+    const [shake,         setShake]         = useState(false);
+    const [btnHover,      setBtnHover]      = useState(false);
+
     const userRef = useRef(null);
+    const pwdRef  = useRef(null);
 
-    useEffect(() => { userRef.current?.focus(); }, []);
-    useEffect(() => { if(error){ setShake(true); const t=setTimeout(()=>setShake(false),600); return ()=>clearTimeout(t); } }, [error]);
-    useEffect(() => { if(error) setError(null); }, [username, password]);
+    // ── Health check ──────────────────────────────────────────────────
+    useEffect(() => {
+        let cancelled = false;
+        const check = async () => {
+            try {
+                const t0  = performance.now();
+                const res  = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(5000) });
+                const data = await res.json();
+                if (!cancelled) setServerStatus({
+                    status:    data.status === 'ok' ? 'online' : 'degraded',
+                    latency:   Math.round(performance.now() - t0),
+                    dbLatency: data.dbLatencyMs,
+                    pool:      data.pool,
+                });
+            } catch {
+                if (!cancelled) setServerStatus({ status: 'offline' });
+            }
+        };
+        check();
+        const iv = setInterval(check, 15000);
+        return () => { cancelled = true; clearInterval(iv); };
+    }, []);
 
-    const handleSubmit = useCallback(async e => {
+    // ── Restore remembered user ───────────────────────────────────────
+    useEffect(() => {
+        const saved = localStorage.getItem('vigil_remembered_user');
+        if (saved) { setUsername(saved); setRememberMe(true); pwdRef.current?.focus(); }
+        else userRef.current?.focus();
+    }, []);
+
+    // ── Shake on error ────────────────────────────────────────────────
+    useEffect(() => {
+        if (error) { setShake(true); const t = setTimeout(() => setShake(false), 600); return () => clearTimeout(t); }
+    }, [error]);
+
+    // ── Clear error on typing ─────────────────────────────────────────
+    useEffect(() => {
+        if (error && clearError) clearError();
+    }, [username, password]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Submit ────────────────────────────────────────────────────────
+    const handleSubmit = useCallback(async (e) => {
         e?.preventDefault();
         if (!username.trim() || !password.trim()) return;
-        setAuthLoading(true);
-        setError(null);
-        try {
-            const res = await fetch(`${API_BASE}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ username: username.trim(), password }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (res.ok) {
-                setSuccess(true);
-                setTimeout(() => {
-                    window.location.href = data.redirect || '/dashboard';
-                }, 1200);
-            } else {
-                setError(data.message || data.error || 'Invalid credentials. Please check and try again.');
-            }
-        } catch (err) {
-            setError('Unable to reach the server. Please check your connection.');
-        } finally {
-            setAuthLoading(false);
-        }
-    }, [username, password]);
 
-    const canSubmit = username.trim() && password.trim() && !authLoading && !success;
-    const btnBg = authLoading ? 'rgba(14,165,233,.5)' : success ? '#22c55e' : canSubmit ? 'linear-gradient(135deg,#0284c7 0%,#0ea5e9 50%,#38bdf8 100%)' : 'rgba(14,165,233,.12)';
-    const btnShadow = canSubmit && !authLoading && !success ? (btnHover ? '0 10px 34px rgba(14,165,233,.55),0 0 0 1px rgba(14,165,233,.3) inset' : '0 4px 22px rgba(14,165,233,.3),0 0 0 1px rgba(14,165,233,.16) inset') : 'none';
+        if (rememberMe) localStorage.setItem('vigil_remembered_user', username.trim());
+        else            localStorage.removeItem('vigil_remembered_user');
+
+        setLoginSuccess(false);
+        try {
+            await login(username, password);
+            setLoginSuccess(true);
+        } catch { /* error handled by AuthContext */ }
+    }, [username, password, rememberMe, login]);
+
+    const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading && !loginSuccess;
+    const btnBg     = authLoading  ? 'rgba(14,165,233,.5)'
+        : loginSuccess ? '#22c55e'
+            : canSubmit    ? 'linear-gradient(135deg,#0284c7 0%,#0ea5e9 50%,#38bdf8 100%)'
+                :                'rgba(14,165,233,.12)';
+    const btnShadow = canSubmit && !authLoading && !loginSuccess
+        ? (btnHover ? '0 10px 34px rgba(14,165,233,.55),0 0 0 1px rgba(14,165,233,.3) inset'
+            : '0 4px 22px rgba(14,165,233,.3),0 0 0 1px rgba(14,165,233,.16) inset')
+        : 'none';
 
     return (
         <div style={{ height:'100vh', width:'100vw', display:'flex', background:'#05080f', fontFamily:"'DM Sans',sans-serif", overflow:'hidden' }}>
             <GlobalStyles />
             <LeftPanel />
 
-            {/* RIGHT */}
+            {/* ── RIGHT — login form ── */}
             <div style={{ width:490, flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'36px 44px', background:'rgba(4,7,14,.98)' }}>
                 {/* bg blobs */}
                 <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none' }}>
@@ -792,31 +825,35 @@ const LoginPage = () => {
                     <div style={{ position:'absolute', bottom:'5%', left:'-18%', width:320, height:320, background:'radial-gradient(circle,rgba(20,184,166,.045) 0%,transparent 65%)', animation:'blob1 18s ease-in-out infinite', filter:'blur(40px)' }}/>
                     <div style={{ position:'absolute', inset:0, opacity:.012, backgroundImage:'linear-gradient(rgba(14,165,233,1) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,1) 1px,transparent 1px)', backgroundSize:'44px 44px' }}/>
                 </div>
-                {/* top accent */}
                 <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:'linear-gradient(90deg,transparent 0%,rgba(14,165,233,.55) 30%,rgba(56,189,248,.8) 50%,rgba(14,165,233,.55) 70%,transparent 100%)', opacity:.75 }}/>
 
                 <div style={{ position:'relative', zIndex:1, width:'100%', maxWidth:370, display:'flex', flexDirection:'column', alignItems:'center' }}>
+
+                    {/* Logo */}
                     <div style={{ marginBottom:22, animation:'fadeUp .6s ease .1s backwards' }}>
-                        <LogoEmblem success={success} />
+                        <LogoEmblem success={loginSuccess} />
                     </div>
 
+                    {/* Heading */}
                     <div style={{ textAlign:'center', marginBottom:4, animation:'fadeUp .6s ease .18s backwards', width:'100%' }}>
                         <h1 style={{ fontSize:32, fontWeight:800, color:'#f0f6fc', margin:0, lineHeight:1.1, letterSpacing:'-.04em', fontFamily:"'Syne',sans-serif" }}>Welcome back</h1>
                         <p style={{ color:'#1a2e4a', margin:'9px 0 0', fontSize:12, lineHeight:1.55 }}>Sign in to your monitoring dashboard</p>
                     </div>
 
+                    {/* Server status */}
                     <div style={{ margin:'16px 0 18px', display:'flex', alignItems:'center', gap:10, width:'100%', animation:'fadeUp .6s ease .24s backwards' }}>
                         <div style={{ flex:1, height:1, background:'rgba(255,255,255,.04)' }}/>
-                        <ServerStatus status={status} />
+                        <ServerStatus status={serverStatus} />
                         <div style={{ flex:1, height:1, background:'rgba(255,255,255,.04)' }}/>
                     </div>
 
-                    {/* CARD */}
-                    <div style={{ width:'100%', padding:'28px 26px 24px', borderRadius:22, background:'rgba(6,14,28,.85)', backdropFilter:'blur(32px)', WebkitBackdropFilter:'blur(32px)', border:`1px solid ${success ? 'rgba(34,197,94,.38)' : error ? 'rgba(239,68,68,.28)' : 'rgba(255,255,255,.07)'}`, boxShadow: success ? '0 0 70px rgba(34,197,94,.1),0 28px 60px rgba(0,0,0,.6)' : '0 28px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03)', transition:'border-color .55s,box-shadow .55s', animation: shake ? 'shake .5s ease' : 'fadeUp .7s ease .32s backwards', position:'relative', overflow:'hidden' }}>
-                        <div style={{ position:'absolute', top:0, left:'8%', right:'8%', height:1, background: success ? 'linear-gradient(90deg,transparent,rgba(34,197,94,.6),transparent)' : 'linear-gradient(90deg,transparent,rgba(14,165,233,.38),transparent)', transition:'background .55s', animation:'edgePulse 3s ease-in-out infinite' }}/>
-                        <Corners color={success ? 'rgba(34,197,94,.28)' : 'rgba(14,165,233,.22)'} />
+                    {/* Card */}
+                    <div style={{ width:'100%', padding:'28px 26px 24px', borderRadius:22, background:'rgba(6,14,28,.85)', backdropFilter:'blur(32px)', WebkitBackdropFilter:'blur(32px)', border:`1px solid ${loginSuccess ? 'rgba(34,197,94,.38)' : error ? 'rgba(239,68,68,.28)' : 'rgba(255,255,255,.07)'}`, boxShadow: loginSuccess ? '0 0 70px rgba(34,197,94,.1),0 28px 60px rgba(0,0,0,.6)' : '0 28px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03)', transition:'border-color .55s,box-shadow .55s', animation: shake ? 'shake .5s ease' : 'fadeUp .7s ease .32s backwards', position:'relative', overflow:'hidden' }}>
+                        <div style={{ position:'absolute', top:0, left:'8%', right:'8%', height:1, background: loginSuccess ? 'linear-gradient(90deg,transparent,rgba(34,197,94,.6),transparent)' : 'linear-gradient(90deg,transparent,rgba(14,165,233,.38),transparent)', transition:'background .55s', animation:'edgePulse 3s ease-in-out infinite' }}/>
+                        <Corners color={loginSuccess ? 'rgba(34,197,94,.28)' : 'rgba(14,165,233,.22)'} />
 
-                        {success && (
+                        {/* Success overlay */}
+                        {loginSuccess && (
                             <div style={{ position:'absolute', inset:0, background:'radial-gradient(circle at center,rgba(34,197,94,.08) 0%,transparent 70%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', zIndex:20, borderRadius:22, animation:'fadeIn .3s ease' }}>
                                 <div style={{ position:'absolute', width:80, height:80, borderRadius:'50%', border:'2px solid rgba(34,197,94,.3)', animation:'ripple 1s ease-out forwards' }}/>
                                 <CheckCircle size={44} color="#22c55e" style={{ animation:'successPop .5s ease backwards', marginBottom:14 }}/>
@@ -825,6 +862,7 @@ const LoginPage = () => {
                             </div>
                         )}
 
+                        {/* Error banner */}
                         {error && (
                             <div style={{ marginBottom:18, padding:'10px 13px', borderRadius:10, background:'rgba(239,68,68,.07)', border:'1px solid rgba(239,68,68,.22)', display:'flex', alignItems:'center', gap:9, animation:'slideDown .3s ease backwards' }}>
                                 <AlertCircle size={14} color="#ef4444" style={{ flexShrink:0 }}/>
@@ -833,15 +871,20 @@ const LoginPage = () => {
                         )}
 
                         <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:15 }}>
-                            <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading||success} />
-                            <InputField icon={KeyRound} label="Password" type={showPwd?'text':'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading||success}
-                                        rightEl={<button type="button" onClick={()=>setShowPwd(s=>!s)} tabIndex={-1} style={{ background:'none', border:'none', cursor:'pointer', color:'#101e35', padding:4, display:'flex', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color='#334155'} onMouseLeave={e=>e.currentTarget.style.color='#101e35'}>{showPwd?<EyeOff size={14}/>:<Eye size={14}/>}</button>}
+                            <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading || loginSuccess} />
+                            <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading || loginSuccess}
+                                        rightEl={
+                                            <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background:'none', border:'none', cursor:'pointer', color:'#101e35', padding:4, display:'flex', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color='#334155'} onMouseLeave={e=>e.currentTarget.style.color='#101e35'}>
+                                                {showPwd ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                            </button>
+                                        }
                             />
 
+                            {/* Remember me + Forgot password */}
                             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:-3 }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', userSelect:'none' }} onClick={()=>setRemember(r=>!r)}>
-                                    <div style={{ width:16, height:16, borderRadius:4, flexShrink:0, border:`1.5px solid ${remember?'#0ea5e9':'rgba(255,255,255,.1)'}`, background:remember?'#0ea5e9':'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .22s cubic-bezier(.34,1.56,.64,1)', boxShadow:remember?'0 0 12px rgba(14,165,233,.4)':'none' }}>
-                                        {remember&&<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', userSelect:'none' }} onClick={() => setRememberMe(r => !r)}>
+                                    <div style={{ width:16, height:16, borderRadius:4, flexShrink:0, border:`1.5px solid ${rememberMe ? '#0ea5e9' : 'rgba(255,255,255,.1)'}`, background:rememberMe ? '#0ea5e9' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .22s cubic-bezier(.34,1.56,.64,1)', boxShadow:rememberMe ? '0 0 12px rgba(14,165,233,.4)' : 'none' }}>
+                                        {rememberMe && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                     </div>
                                     <span style={{ fontSize:11.5, color:'#1a2e4a', fontFamily:"'DM Sans',sans-serif" }}>Remember me</span>
                                 </div>
@@ -850,20 +893,22 @@ const LoginPage = () => {
                                 </button>
                             </div>
 
-                            <button type="submit" disabled={!canSubmit} onMouseEnter={()=>setBtnHover(true)} onMouseLeave={()=>setBtnHover(false)} className={canSubmit&&!authLoading?'vi-btn':''} style={{ position:'relative', overflow:'hidden', background:btnBg, border:canSubmit?`1px solid ${success?'rgba(34,197,94,.3)':'rgba(14,165,233,.28)'}`:'1px solid rgba(255,255,255,.04)', padding:'14px 22px', borderRadius:13, color:'white', fontWeight:700, fontSize:14, fontFamily:"'Syne',sans-serif", letterSpacing:'.02em', cursor:canSubmit?'pointer':'not-allowed', marginTop:5, display:'flex', alignItems:'center', justifyContent:'center', gap:8, transition:'all .28s cubic-bezier(.4,0,.2,1)', boxShadow:btnShadow, transform:btnHover&&canSubmit?'translateY(-2px)':'translateY(0)' }}>
-                                {authLoading ? (<><Loader size={15} style={{ animation:'spin 1s linear infinite' }}/><span>Authenticating…</span></>) :
-                                    success     ? (<><CheckCircle size={15}/><span>Access Granted</span></>) :
-                                        (<><span>Sign In</span><ArrowRight size={15} style={{ transition:'transform .25s', transform:btnHover?'translateX(4px)':'translateX(0)' }}/></>)}
+                            {/* Sign In button */}
+                            <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)} style={{ position:'relative', overflow:'hidden', background:btnBg, border:canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.3)' : 'rgba(14,165,233,.28)'}` : '1px solid rgba(255,255,255,.04)', padding:'14px 22px', borderRadius:13, color:'white', fontWeight:700, fontSize:14, fontFamily:"'Syne',sans-serif", letterSpacing:'.02em', cursor:canSubmit ? 'pointer' : 'not-allowed', marginTop:5, display:'flex', alignItems:'center', justifyContent:'center', gap:8, transition:'all .28s cubic-bezier(.4,0,.2,1)', boxShadow:btnShadow, transform:btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
+                                {authLoading  ? (<><Loader size={15} style={{ animation:'spin 1s linear infinite' }}/><span>Authenticating…</span></>) :
+                                    loginSuccess ? (<><CheckCircle size={15}/><span>Access Granted</span></>) :
+                                        (<><span>Sign In</span><ArrowRight size={15} style={{ transition:'transform .25s', transform:btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>)}
                             </button>
                         </form>
 
-                        {!success && (
+                        {!loginSuccess && (
                             <div style={{ marginTop:18, paddingTop:16, borderTop:'1px solid rgba(255,255,255,.04)', textAlign:'center' }}>
                                 <span style={{ fontSize:9.5, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>Admin access only · Contact your DBA for credentials</span>
                             </div>
                         )}
                     </div>
 
+                    {/* Footer */}
                     <div style={{ marginTop:18, display:'flex', alignItems:'center', justifyContent:'center', gap:5, animation:'fadeUp .6s ease .6s backwards' }}>
                         <Shield size={9} color="#0a1828" style={{ opacity:.4 }}/>
                         <span style={{ fontSize:9, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace" }}>Secured by Vigil · PostgreSQL Monitor v2.0</span>
