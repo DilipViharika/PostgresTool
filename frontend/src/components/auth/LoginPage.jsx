@@ -751,10 +751,28 @@ const LoginPage = () => {
         e?.preventDefault();
         if (!username.trim() || !password.trim()) return;
         setAuthLoading(true);
-        await new Promise(r=>setTimeout(r,1600));
-        setAuthLoading(false);
-        if (username.toLowerCase()==='wrong') setError('Invalid credentials. Please check and try again.');
-        else setSuccess(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username: username.trim(), password }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setSuccess(true);
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/dashboard';
+                }, 1200);
+            } else {
+                setError(data.message || data.error || 'Invalid credentials. Please check and try again.');
+            }
+        } catch (err) {
+            setError('Unable to reach the server. Please check your connection.');
+        } finally {
+            setAuthLoading(false);
+        }
     }, [username, password]);
 
     const canSubmit = username.trim() && password.trim() && !authLoading && !success;
