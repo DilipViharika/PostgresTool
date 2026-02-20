@@ -1,279 +1,1146 @@
-import React, { useState, useEffect } from 'react';
+import React, {
+    useState, useCallback, useEffect, useMemo, useRef, memo,
+} from 'react';
 import { createPortal } from 'react-dom';
+
 import { T } from '../constants/theme.js';
-import { ROLES, DEPARTMENTS, LOCATIONS, RESOURCE_ROWS, DEFAULT_PERMISSIONS, PERM_COLORS } from '../constants/index.js';
-import { validateUserForm, generatePassword, passwordStrength, copyToClipboard } from '../helpers/index.js';
-import { Ico, RiskRing, RoleBadge, StatusBadge, MfaBadge, LoginHeatmap, FormField, Toggle } from '../shared/components/ui.jsx';
+import { ROLES, DEPARTMENTS, LOCATIONS } from '../constants/index.js';
+import { generatePassword, validateUserForm } from '../helpers/index.js';
+import { Ico, RoleBadge, StatusBadge, FormField, Toggle } from '../shared/components/ui.jsx';
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   STRICT OVERLAY & INPUT STYLES (Defeats global CSS conflicts)
-   ───────────────────────────────────────────────────────────────────────────── */
-const OverlayWrapper = ({ children, onClose }) => {
-    // Lock the body scroll when the modal is open
-    useEffect(() => {
-        const originalStyle = window.getComputedStyle(document.body).overflow;
-        document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = originalStyle; };
-    }, []);
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCREEN CATEGORIES & PRESETS
+═══════════════════════════════════════════════════════════════════════════ */
+const SCREEN_CATEGORIES = [
+  {
+    label: 'Core Monitoring',
+    color: '#00D4FF',
+    screens: [
+      { id: 'connections',  label: 'Connections',     icon: '🔌' },
+      { id: 'overview',     label: 'Overview',        icon: '📊' },
+      { id: 'performance',  label: 'Performance',     icon: '⚡' },
+      { id: 'resources',    label: 'Resources',       icon: '💾' },
+      { id: 'reliability',  label: 'Reliability',     icon: '✅' },
+      { id: 'alerts',       label: 'Alerts',          icon: '🔔' },
+    ],
+  },
+  {
+    label: 'Query & Analysis',
+    color: '#2AFFD4',
+    screens: [
+      { id: 'sql',          label: 'SQL Console',     icon: '🖥️' },
+      { id: 'optimizer',    label: 'Query Optimizer', icon: '🔍' },
+      { id: 'indexes',      label: 'Indexes',         icon: '📑' },
+      { id: 'api',          label: 'API Tracing',     icon: '🌐' },
+      { id: 'regression',   label: 'Plan Regression', icon: '📉' },
+    ],
+  },
+  {
+    label: 'Infrastructure',
+    color: '#B88BFF',
+    screens: [
+      { id: 'replication',  label: 'Replication & WAL', icon: '🔁' },
+      { id: 'checkpoint',   label: 'Checkpoint Monitor',icon: '📍' },
+      { id: 'maintenance',  label: 'Vacuum & Maintenance', icon: '🧹' },
+      { id: 'backup',       label: 'Backup & Recovery',icon: '💿' },
+      { id: 'bloat',        label: 'Bloat Analysis',  icon: '📦' },
+      { id: 'pool',         label: 'Connection Pool', icon: '🌊' },
+    ],
+  },
+  {
+    label: 'Schema & Capacity',
+    color: '#FFB520',
+    screens: [
+      { id: 'schema',       label: 'Schema & Migrations', icon: '🗂️' },
+      { id: 'capacity',     label: 'Capacity Planning', icon: '📈' },
+      { id: 'repository',   label: 'Repository',      icon: '🗄️' },
+    ],
+  },
+  {
+    label: 'Security & Admin',
+    color: '#FF4560',
+    screens: [
+      { id: 'security',     label: 'Security & Compliance', icon: '🛡️' },
+      { id: 'admin',        label: 'Admin',           icon: '⚙️' },
+      { id: 'UserManagement', label: 'User Management', icon: '👥' },
+    ],
+  },
+  {
+    label: 'Cloud & Observability',
+    color: '#2EE89C',
+    screens: [
+      { id: 'cloudwatch',        label: 'CloudWatch',        icon: '☁️' },
+      { id: 'log-patterns',      label: 'Log Pattern Analysis', icon: '🔎' },
+      { id: 'alert-correlation', label: 'Alert Correlation', icon: '🔗' },
+      { id: 'tasks',             label: 'DBA Task Scheduler', icon: '📅' },
+    ],
+  },
+];
 
-    // Portal directly to the body with maximum z-index
-    return createPortal(
-        <div onClick={onClose} style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            width: '100vw', height: '100vh',
-            backgroundColor: 'rgba(4, 5, 10, 0.85)',
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-            zIndex: 2147483647, // Maximum possible z-index
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            animation: 'umFadeIn 0.2s ease', margin: 0, padding: 0
-        }}>
-            {children}
-        </div>,
-        document.body
-    );
+// Role-based default screen presets
+const ROLE_SCREEN_PRESETS = {
+  super_admin: SCREEN_CATEGORIES.flatMap(c => c.screens.map(s => s.id)),
+  admin:       SCREEN_CATEGORIES.flatMap(c => c.screens.map(s => s.id)).filter(id => id !== 'UserManagement'),
+  developer:   ['connections','overview','performance','sql','optimizer','indexes','api','schema','regression','bloat','replication','checkpoint','pool','repository'],
+  analyst:     ['connections','overview','performance','resources','reliability','sql','optimizer','indexes','capacity','bloat','alerts'],
+  viewer:      ['connections','overview','performance','resources','reliability'],
 };
 
-const strictInputStyle = {
-    width: '100%',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    border: `1px solid ${T.border || '#2a2a3e'}`,
-    backgroundColor: T.surfaceHigh || '#1a1a2e', // Forces dark background
-    color: T.text || '#e2e4eb',                 // Forces light text
-    fontSize: '13px',
-    outline: 'none',
-    fontFamily: 'inherit',
-    boxSizing: 'border-box',
-    WebkitAppearance: 'none',
-    appearance: 'none'
-};
+const DATA_ACCESS_LEVELS = [
+  { id: 'public', label: 'Public', color: '#2EE89C' },
+  { id: 'internal', label: 'Internal', color: '#00D4FF' },
+  { id: 'confidential', label: 'Confidential', color: '#FFB520' },
+  { id: 'restricted', label: 'Restricted', color: '#FF4560' },
+];
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   USER DETAIL DRAWER
-   ───────────────────────────────────────────────────────────────────────────── */
-export const UserDrawer = ({ user, onClose, onEdit, onResetPassword }) => {
-    const [drawerTab, setDrawerTab] = useState('overview');
-    if (!user) return null;
+/* ═══════════════════════════════════════════════════════════════════════════
+   OVERLAY WRAPPER
+═══════════════════════════════════════════════════════════════════════════ */
+const OverlayWrapper = memo(({ children, onClose }) => (
+  createPortal(
+    <div
+      onClick={e => e.target === e.currentTarget && onClose()}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,.6)',
+        backdropFilter: 'blur(6px)',
+      }}
+    >
+      {children}
+    </div>,
+    document.body
+  )
+));
+OverlayWrapper.displayName = 'OverlayWrapper';
 
-    const role      = ROLES.find(r => r.id === user.role) || ROLES[4];
-    const riskColor = user.riskScore > 70 ? T.danger : user.riskScore > 40 ? T.warning : T.success;
+/* ═══════════════════════════════════════════════════════════════════════════
+   USER FORM MODAL — Main user editing form with 4 tabs
+═══════════════════════════════════════════════════════════════════════════ */
+const UserFormModal = memo(({ user, onSave, onCancel }) => {
+  const [form, setForm] = useState(() => ({
+    id: user?.id || null,
+    name: user?.name || '',
+    email: user?.email || '',
+    username: user?.username || '',
+    password: user?.password || '',
+    role: user?.role || 'viewer',
+    department: user?.department || '',
+    location: user?.location || '',
+    mfaEnabled: user?.mfaEnabled ?? false,
+    apiAccess: user?.apiAccess ?? false,
+    allowedScreens: user?.allowedScreens ?? [],
+    dataAccess: user?.dataAccess ?? 'internal',
+  }));
+  
+  const [activeTab, setActiveTab] = useState('info');
+  const [showRoleDefaults, setShowRoleDefaults] = useState(false);
+  const [errors, setErrors] = useState({});
+  const prevRoleRef = useRef(form.role);
 
-    return (
-        <OverlayWrapper onClose={onClose}>
-            <div className="um-drawer" onClick={e => e.stopPropagation()} style={{
-                position: 'absolute', right: 0, top: 0, bottom: 0, width: 480, maxWidth: '100vw',
-                background: T.surface || '#120A1F', borderLeft: `1px solid ${T.border || '#1A0E2B'}`,
-                display: 'flex', flexDirection: 'column', boxShadow: '-16px 0 60px rgba(0,0,0,0.55)'
-            }}>
-                <div style={{ padding: 24, borderBottom: `1px solid ${T.border}`, background: `linear-gradient(to bottom, ${T.surfaceHigh}, ${T.surface})` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                            <div style={{
-                                width: 60, height: 60, borderRadius: 18, flexShrink: 0,
-                                background: `${role.color}20`, border: `2px solid ${role.color}50`,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 24, fontWeight: 800, color: role.color,
-                            }}>
-                                {user.name.charAt(0)}
-                            </div>
-                            <div>
-                                <div style={{ fontSize: 20, fontWeight: 800, color: T.text, letterSpacing: '-0.01em' }}>{user.name}</div>
-                                <div style={{ fontSize: 13, color: T.textSub, marginTop: 3 }}>{user.email}</div>
-                                <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                                    <RoleBadge roleId={user.role} />
-                                    <StatusBadge status={user.status} />
-                                </div>
-                            </div>
-                        </div>
-                        <button className="um-btn um-btn-ghost um-btn-icon" onClick={onClose}><Ico name="x" size={16} /></button>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                        <button className="um-btn um-btn-ghost" style={{ flex: 1 }} onClick={() => onEdit(user)}><Ico name="edit" size={14} /> Edit</button>
-                        <button className="um-btn um-btn-ghost" style={{ flex: 1 }} onClick={() => onResetPassword(user)}><Ico name="key" size={14} /> Password</button>
-                    </div>
-                </div>
+  const tabs = ['info', 'access', 'screens', 'security'];
 
-                <div style={{ display: 'flex', borderBottom: `1px solid ${T.border}`, paddingLeft: 8 }}>
-                    {['overview'].map(t => (
-                        <button key={t} className={`um-tab${drawerTab === t ? ' active' : ''}`} onClick={() => setDrawerTab(t)}>
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                        </button>
-                    ))}
-                </div>
-                <div className="um-scroll" style={{ flex: 1, padding: 24 }}>
-                    {/* Drawer Content - Minified for brevity to match form focus */}
-                    <div className="um-grid-2">
-                        <div style={{ padding: '12px 14px', borderRadius: 10, background: T.surfaceHigh, border: `1px solid ${T.border}` }}>
-                            <div style={{ fontSize: 11, color: T.textDim, fontWeight: 600, textTransform: 'uppercase' }}>Department</div>
-                            <div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginTop: 4 }}>{user.department}</div>
-                        </div>
-                        <div style={{ padding: '12px 14px', borderRadius: 10, background: T.surfaceHigh, border: `1px solid ${T.border}` }}>
-                            <div style={{ fontSize: 11, color: T.textDim, fontWeight: 600, textTransform: 'uppercase' }}>Location</div>
-                            <div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginTop: 4 }}>{user.location}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </OverlayWrapper>
-    );
-};
+  // Detect role change and show prompt
+  useEffect(() => {
+    if (prevRoleRef.current !== form.role && activeTab === 'access') {
+      setShowRoleDefaults(true);
+    }
+    prevRoleRef.current = form.role;
+  }, [form.role, activeTab]);
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   USER FORM MODAL — create / edit
-   ───────────────────────────────────────────────────────────────────────────── */
-export const UserFormModal = ({ user, onSave, onCancel }) => {
-    const isEdit = !!user;
-    const [form, setForm] = useState({
-        name:       user?.name       || '',
-        email:      user?.email      || '',
-        username:   user?.username   || '',
-        password:   '',
-        role:       user?.role       || 'viewer',
-        department: user?.department || DEPARTMENTS[0],
-        location:   user?.location   || LOCATIONS[0],
-        mfa:        user?.mfa        ?? true,
-        status:     user?.status     || 'active',
-        apiAccess:  user?.apiAccess  || false,
+  const handleInputChange = useCallback((e) => {
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
+  }, [errors]);
+
+  const handleScreenToggle = useCallback((screenId) => {
+    setForm(prev => ({
+      ...prev,
+      allowedScreens: prev.allowedScreens.includes(screenId)
+        ? prev.allowedScreens.filter(id => id !== screenId)
+        : [...prev.allowedScreens, screenId],
+    }));
+  }, []);
+
+  const handleApplyRoleDefaults = useCallback(() => {
+    setForm(prev => ({
+      ...prev,
+      allowedScreens: ROLE_SCREEN_PRESETS[form.role] || [],
+    }));
+    setShowRoleDefaults(false);
+  }, [form.role]);
+
+  const handleCategoryToggleAll = useCallback((categoryIndex, shouldAdd) => {
+    const category = SCREEN_CATEGORIES[categoryIndex];
+    const screenIds = category.screens.map(s => s.id);
+    setForm(prev => {
+      const current = new Set(prev.allowedScreens);
+      if (shouldAdd) {
+        screenIds.forEach(id => current.add(id));
+      } else {
+        screenIds.forEach(id => current.delete(id));
+      }
+      return { ...prev, allowedScreens: Array.from(current) };
     });
-    const [errors, setErrors] = useState({});
-    const [saving, setSaving] = useState(false);
-    const [tab, setTab]       = useState('info');
+  }, []);
 
-    const patch = (key, value) => {
-        setForm(f => ({ ...f, [key]: value }));
-        setErrors(e => ({ ...e, [key]: undefined }));
-    };
+  const validateForm = useCallback(() => {
+    const newErrors = {};
+    if (!form.name?.trim()) newErrors.name = 'Name is required';
+    if (!form.email?.trim()) newErrors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'Invalid email';
+    if (!form.username?.trim()) newErrors.username = 'Username is required';
+    if (!user?.id && !form.password?.trim()) newErrors.password = 'Password required for new user';
+    if (!form.role) newErrors.role = 'Role is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [form, user]);
 
-    const handleSave = async () => {
-        const errs = validateUserForm(form, isEdit);
-        setErrors(errs);
-        if (Object.keys(errs).length > 0) return;
-        setSaving(true);
-        try { await onSave({ ...form, id: user?.id }); }
-        finally { setSaving(false); }
-    };
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSave(form);
+    }
+  }, [form, validateForm, onSave]);
 
-    return (
-        <OverlayWrapper onClose={onCancel}>
-            <div onClick={e => e.stopPropagation()} style={{
-                width: '90%', maxWidth: 720, maxHeight: '88vh', display: 'flex', flexDirection: 'column',
-                background: T.surface || '#120A1F', border: `1px solid ${T.border || '#1A0E2B'}`,
-                borderRadius: 16, boxShadow: '0 24px 80px rgba(0,0,0,0.65)', overflow: 'hidden'
-            }}>
-                {/* Header */}
-                <div style={{ padding: '20px 24px', borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>{isEdit ? 'Edit User' : 'Create New User'}</div>
-                    <button className="um-btn um-btn-ghost um-btn-icon" onClick={onCancel}><Ico name="x" size={16} /></button>
+  const countScreensInCategory = useCallback((categoryIndex) => {
+    return SCREEN_CATEGORIES[categoryIndex].screens.filter(s => form.allowedScreens.includes(s.id)).length;
+  }, [form.allowedScreens]);
+
+  const categoryFullySelected = useCallback((categoryIndex) => {
+    const category = SCREEN_CATEGORIES[categoryIndex];
+    return category.screens.every(s => form.allowedScreens.includes(s.id));
+  }, [form.allowedScreens]);
+
+  const strictInputStyle = {
+    padding: '10px 12px',
+    borderRadius: '8px',
+    border: `1px solid ${T.border}`,
+    background: T.surfaceHigh,
+    color: T.text,
+    fontSize: '13px',
+    fontFamily: 'inherit',
+    transition: 'border-color 0.15s',
+  };
+
+  return (
+    <OverlayWrapper onClose={onCancel}>
+      <div
+        style={{
+          background: T.surface,
+          border: `1px solid ${T.border}`,
+          borderRadius: '16px',
+          maxWidth: '640px',
+          width: '90vw',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 24px 80px rgba(0,0,0,.4)',
+          animation: 'slideUp 0.2s ease-out',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: `1px solid ${T.border}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: T.text }}>
+              {user?.id ? `Edit ${form.name || 'User'}` : 'New User'}
+            </h2>
+          </div>
+          <button
+            onClick={onCancel}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: T.textDim,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div style={{
+          display: 'flex',
+          borderBottom: `1px solid ${T.border}`,
+          background: T.surfaceHigh,
+          gap: '2px',
+          padding: '8px',
+        }}>
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                flex: 1,
+                padding: '10px 16px',
+                border: 'none',
+                background: activeTab === tab ? T.surface : 'transparent',
+                color: activeTab === tab ? T.primary : T.textDim,
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: activeTab === tab ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <form onSubmit={handleSubmit} style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, padding: '24px', overflow: 'auto' }}>
+
+            {/* INFO TAB */}
+            {activeTab === 'info' && (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '6px' }}>
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={form.name}
+                    onChange={handleInputChange}
+                    placeholder="John Doe"
+                    style={{
+                      ...strictInputStyle,
+                      width: '100%',
+                      borderColor: errors.name ? T.danger : T.border,
+                    }}
+                  />
+                  {errors.name && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.name}</div>}
                 </div>
 
-                {/* Tabs */}
-                <div style={{ display: 'flex', borderBottom: `1px solid ${T.border}`, paddingLeft: 8 }}>
-                    {['info', 'access', 'security'].map(t => (
-                        <button key={t} className={`um-tab${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                        </button>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '6px' }}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleInputChange}
+                    placeholder="john@example.com"
+                    style={{
+                      ...strictInputStyle,
+                      width: '100%',
+                      borderColor: errors.email ? T.danger : T.border,
+                    }}
+                  />
+                  {errors.email && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.email}</div>}
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '6px' }}>
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={form.username}
+                    onChange={handleInputChange}
+                    placeholder="johndoe"
+                    style={{
+                      ...strictInputStyle,
+                      width: '100%',
+                      borderColor: errors.username ? T.danger : T.border,
+                    }}
+                  />
+                  {errors.username && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.username}</div>}
+                </div>
+
+                {!user?.id && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '6px' }}>
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={form.password}
+                      onChange={handleInputChange}
+                      placeholder="••••••••"
+                      style={{
+                        ...strictInputStyle,
+                        width: '100%',
+                        borderColor: errors.password ? T.danger : T.border,
+                      }}
+                    />
+                    {errors.password && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.password}</div>}
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '6px' }}>
+                      Department
+                    </label>
+                    <select
+                      name="department"
+                      value={form.department}
+                      onChange={handleInputChange}
+                      style={{
+                        ...strictInputStyle,
+                        width: '100%',
+                      }}
+                    >
+                      <option value="">Select...</option>
+                      {DEPARTMENTS?.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '6px' }}>
+                      Location
+                    </label>
+                    <select
+                      name="location"
+                      value={form.location}
+                      onChange={handleInputChange}
+                      style={{
+                        ...strictInputStyle,
+                        width: '100%',
+                      }}
+                    >
+                      <option value="">Select...</option>
+                      {LOCATIONS?.map(l => <option key={l.id} value={l.id}>{l.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ACCESS TAB */}
+            {activeTab === 'access' && (
+              <div style={{ display: 'grid', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '10px' }}>
+                    Role
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {ROLES?.map(role => (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onClick={() => setForm(prev => ({ ...prev, role: role.id }))}
+                        style={{
+                          padding: '12px 16px',
+                          borderRadius: '8px',
+                          border: `2px solid ${form.role === role.id ? role.color || T.primary : T.border}`,
+                          background: form.role === role.id ? `${role.color || T.primary}20` : T.surfaceHigh,
+                          color: form.role === role.id ? role.color || T.primary : T.text,
+                          fontWeight: form.role === role.id ? '600' : '500',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {role.label}
+                      </button>
                     ))}
+                  </div>
                 </div>
 
-                {/* Body */}
-                <div className="um-scroll" style={{ flex: 1, padding: 24 }}>
-                    {tab === 'info' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                            <div className="um-grid-2">
-                                <FormField label="Full Name" required error={errors.name}>
-                                    <input placeholder="Jane Doe" value={form.name} onChange={e => patch('name', e.target.value)} style={{...strictInputStyle, borderColor: errors.name ? T.danger : strictInputStyle.border}} />
-                                </FormField>
-                                <FormField label="Email Address" required error={errors.email}>
-                                    <input type="email" placeholder="jane@acme.io" value={form.email} onChange={e => patch('email', e.target.value)} style={{...strictInputStyle, borderColor: errors.email ? T.danger : strictInputStyle.border}} />
-                                </FormField>
-                            </div>
-                            {!isEdit && (
-                                <div className="um-grid-2">
-                                    <FormField label="Username" required error={errors.username}>
-                                        <input placeholder="jane.doe" value={form.username} onChange={e => patch('username', e.target.value)} style={{...strictInputStyle, borderColor: errors.username ? T.danger : strictInputStyle.border}} />
-                                    </FormField>
-                                    <FormField label="Password" required error={errors.password}>
-                                        <input type="password" placeholder="Min. 8 characters" value={form.password} onChange={e => patch('password', e.target.value)} style={{...strictInputStyle, borderColor: errors.password ? T.danger : strictInputStyle.border}} />
-                                    </FormField>
-                                </div>
-                            )}
-                            <div className="um-grid-2">
-                                <FormField label="Department">
-                                    <select value={form.department} onChange={e => patch('department', e.target.value)} style={{...strictInputStyle, cursor: 'pointer'}}>
-                                        {DEPARTMENTS.map(d => <option key={d} value={d} style={{ background: T.surfaceHigh }}>{d}</option>)}
-                                    </select>
-                                </FormField>
-                                <FormField label="Location">
-                                    <select value={form.location} onChange={e => patch('location', e.target.value)} style={{...strictInputStyle, cursor: 'pointer'}}>
-                                        {LOCATIONS.map(l => <option key={l} value={l} style={{ background: T.surfaceHigh }}>{l}</option>)}
-                                    </select>
-                                </FormField>
-                            </div>
-                        </div>
-                    )}
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '10px' }}>
+                    Data Access Level
+                  </label>
+                  <select
+                    name="dataAccess"
+                    value={form.dataAccess}
+                    onChange={handleInputChange}
+                    style={{
+                      ...strictInputStyle,
+                      width: '100%',
+                      paddingLeft: '40px',
+                      backgroundImage: `radial-gradient(circle, ${DATA_ACCESS_LEVELS.find(d => d.id === form.dataAccess)?.color} 5px, transparent 5px)`,
+                      backgroundPosition: '12px center',
+                      backgroundRepeat: 'no-repeat',
+                    }}
+                  >
+                    {DATA_ACCESS_LEVELS.map(level => (
+                      <option key={level.id} value={level.id}>
+                        {level.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
-                    {tab === 'access' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {ROLES.map(role => (
-                                <button key={role.id} onClick={() => patch('role', role.id)} className="um-btn" style={{
-                                    width: '100%', justifyContent: 'flex-start', padding: 16, borderRadius: 12,
-                                    background: form.role === role.id ? `${role.color}12` : T.surfaceHigh,
-                                    border: `1px solid ${form.role === role.id ? role.color : T.border}`,
-                                    color: form.role === role.id ? role.color : T.textSub,
-                                }}>
-                                    <div style={{ flex: 1, textAlign: 'left' }}>{role.label}</div>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    {tab === 'security' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                            <div className="um-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.surfaceHigh, border: `1px solid ${T.border}`, padding: '16px 18px', borderRadius: 12 }}>
-                                <div>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Multi-Factor Authentication</div>
-                                    <div style={{ fontSize: 12, color: T.textDim, marginTop: 3 }}>Require 2FA for this account</div>
-                                </div>
-                                <Toggle value={form.mfa} onChange={v => patch('mfa', v)} color={T.success} />
-                            </div>
-                        </div>
-                    )}
+            {/* SCREENS TAB */}
+            {activeTab === 'screens' && (
+              <div style={{ display: 'grid', gap: '20px' }}>
+                {/* Header with role defaults button */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingBottom: '12px',
+                  borderBottom: `1px solid ${T.border}`,
+                }}>
+                  <button
+                    type="button"
+                    onClick={handleApplyRoleDefaults}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '6px',
+                      border: `1px solid ${T.primary}`,
+                      background: `${T.primary}20`,
+                      color: T.primary,
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    Apply {form.role} Defaults
+                  </button>
+                  <div style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    background: T.surfaceRaised,
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    color: T.primary,
+                  }}>
+                    {form.allowedScreens.length} selected
+                  </div>
                 </div>
 
-                {/* Footer */}
-                <div style={{ padding: '16px 24px', borderTop: `1px solid ${T.border}`, display: 'flex', gap: 10 }}>
-                    <button className="um-btn um-btn-ghost" onClick={onCancel} style={{ flex: 1 }}>Cancel</button>
-                    <button className="um-btn um-btn-primary" onClick={handleSave} style={{ flex: 2, background: T.primary, color: '#000' }}>
-                        {saving ? 'Saving...' : (isEdit ? 'Update User' : 'Create User')}
+                {/* Role defaults banner */}
+                {showRoleDefaults && (
+                  <div style={{
+                    padding: '12px 14px',
+                    borderRadius: '8px',
+                    background: `${T.primary}15`,
+                    border: `1px solid ${T.primary}40`,
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'center',
+                  }}>
+                    <span style={{ fontSize: '13px', color: T.text, flex: 1 }}>
+                      Apply role defaults for {form.role}?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleApplyRoleDefaults}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: T.primary,
+                        color: '#000',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Yes
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowRoleDefaults(false)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: `1px solid ${T.border}`,
+                        background: 'transparent',
+                        color: T.textDim,
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Keep
+                    </button>
+                  </div>
+                )}
+
+                {/* Categories */}
+                {SCREEN_CATEGORIES.map((category, catIdx) => {
+                  const count = countScreensInCategory(catIdx);
+                  const isFullySelected = categoryFullySelected(catIdx);
+                  return (
+                    <div key={category.label}>
+                      {/* Category Header */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        marginBottom: '12px',
+                        paddingBottom: '8px',
+                        borderBottom: `2px solid ${category.color}40`,
+                      }}>
+                        <div
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: category.color,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: T.text, flex: 1 }}>
+                          {category.label}
+                        </div>
+                        <div style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: T.surfaceRaised,
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          color: T.textDim,
+                        }}>
+                          {count} / {category.screens.length}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCategoryToggleAll(catIdx, !isFullySelected)}
+                          style={{
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            border: 'none',
+                            background: isFullySelected ? category.color : T.surfaceRaised,
+                            color: isFullySelected ? '#000' : T.textDim,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          {isFullySelected ? 'All' : 'None'}
+                        </button>
+                      </div>
+
+                      {/* Screen Grid */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                        gap: '10px',
+                        marginBottom: '16px',
+                      }}>
+                        {category.screens.map(screen => {
+                          const isSelected = form.allowedScreens.includes(screen.id);
+                          return (
+                            <button
+                              key={screen.id}
+                              type="button"
+                              onClick={() => handleScreenToggle(screen.id)}
+                              style={{
+                                padding: '12px 10px',
+                                borderRadius: '8px',
+                                border: `1px solid ${isSelected ? category.color + '50' : T.border}`,
+                                background: isSelected ? category.color + '12' : T.surfaceHigh,
+                                color: isSelected ? category.color : T.textDim,
+                                cursor: 'pointer',
+                                transition: 'all 0.15s',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '24px',
+                              }}
+                            >
+                              <div>{screen.icon}</div>
+                              <div style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textAlign: 'center',
+                                lineHeight: '1.2',
+                              }}>
+                                {screen.label}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Summary */}
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: T.surfaceRaised,
+                  fontSize: '13px',
+                  color: T.textDim,
+                  textAlign: 'center',
+                }}>
+                  {form.allowedScreens.length} of {SCREEN_CATEGORIES.flatMap(c => c.screens).length} screens granted
                 </div>
+              </div>
+            )}
+
+            {/* SECURITY TAB */}
+            {activeTab === 'security' && (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div style={{
+                  padding: '14px 16px',
+                  borderRadius: '8px',
+                  border: `1px solid ${T.border}`,
+                  background: T.surfaceHigh,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: T.text }}>
+                      Multi-Factor Authentication
+                    </div>
+                    <div style={{ fontSize: '12px', color: T.textDim, marginTop: '4px' }}>
+                      Require 2FA for account login
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    name="mfaEnabled"
+                    checked={form.mfaEnabled}
+                    onChange={handleInputChange}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+
+                <div style={{
+                  padding: '14px 16px',
+                  borderRadius: '8px',
+                  border: `1px solid ${T.border}`,
+                  background: T.surfaceHigh,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: T.text }}>
+                      API Access
+                    </div>
+                    <div style={{ fontSize: '12px', color: T.textDim, marginTop: '4px' }}>
+                      Allow API token generation
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    name="apiAccess"
+                    checked={form.apiAccess}
+                    onChange={handleInputChange}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Footer */}
+          <div style={{
+            padding: '16px 24px',
+            borderTop: `1px solid ${T.border}`,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '10px',
+          }}>
+            <button
+              type="button"
+              onClick={onCancel}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '8px',
+                border: `1px solid ${T.border}`,
+                background: 'transparent',
+                color: T.textDim,
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                padding: '10px 18px',
+                borderRadius: '8px',
+                border: 'none',
+                background: T.primary,
+                color: '#000',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              {user?.id ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </OverlayWrapper>
+  );
+});
+UserFormModal.displayName = 'UserFormModal';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   USER DRAWER — Right sidebar with user overview
+═══════════════════════════════════════════════════════════════════════════ */
+const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
+  if (!user) return null;
+
+  return createPortal(
+    <div
+      onClick={e => e.target === e.currentTarget && onClose()}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9998,
+        display: 'flex',
+        justifyContent: 'flex-end',
+        background: 'rgba(0,0,0,.4)',
+        backdropFilter: 'blur(4px)',
+      }}
+    >
+      <div
+        style={{
+          width: '400px',
+          height: '100vh',
+          background: T.surface,
+          borderLeft: `1px solid ${T.border}`,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'auto',
+          animation: 'slideInRight 0.3s ease-out',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: `1px solid ${T.border}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: T.text }}>
+            {user.name}
+          </h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: T.textDim,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, padding: '24px', overflow: 'auto', display: 'grid', gap: '20px' }}>
+          {/* Info Section */}
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
+              Email
             </div>
-        </OverlayWrapper>
-    );
-};
+            <div style={{ fontSize: '13px', color: T.text }}>
+              {user.email}
+            </div>
+          </div>
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   PASSWORD RESET MODAL
-   ───────────────────────────────────────────────────────────────────────────── */
-export const PasswordModal = ({ user, onClose, onConfirm }) => {
-    const [pw, setPw] = useState(() => generatePassword());
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
+              Username
+            </div>
+            <div style={{ fontSize: '13px', color: T.text }}>
+              {user.username}
+            </div>
+          </div>
 
-    return (
-        <OverlayWrapper onClose={onClose}>
-            <div onClick={e => e.stopPropagation()} style={{
-                width: '90%', maxWidth: 460, background: T.surface || '#120A1F',
-                border: `1px solid ${T.border || '#1A0E2B'}`, borderRadius: 16, padding: 24,
-                boxShadow: '0 24px 80px rgba(0,0,0,0.65)'
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
+              Role
+            </div>
+            <div style={{
+              display: 'inline-block',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              background: `${T.primary}20`,
+              color: T.primary,
+              fontSize: '12px',
+              fontWeight: '600',
             }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: T.text, marginBottom: 16 }}>Reset Password</div>
-                <FormField label="New Password">
-                    <input type="text" value={pw} onChange={e => setPw(e.target.value)} style={{...strictInputStyle, fontFamily: '"Space Mono", monospace'}} />
-                </FormField>
-                <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-                    <button className="um-btn um-btn-ghost" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
-                    <button className="um-btn um-btn-primary" onClick={() => onConfirm(user.id, pw)} style={{ flex: 1 }}>Save</button>
-                </div>
+              {user.role || 'N/A'}
             </div>
-        </OverlayWrapper>
-    );
-};
+          </div>
+
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
+              Department
+            </div>
+            <div style={{ fontSize: '13px', color: T.text }}>
+              {user.department || 'N/A'}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
+              Location
+            </div>
+            <div style={{ fontSize: '13px', color: T.text }}>
+              {user.location || 'N/A'}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
+              Status
+            </div>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              background: user.status === 'active' ? '#2EE89C20' : '#FF456020',
+              color: user.status === 'active' ? '#2EE89C' : '#FF4560',
+              fontSize: '12px',
+              fontWeight: '600',
+            }}>
+              <span style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: 'currentColor',
+              }} />
+              {user.status || 'unknown'}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '16px 24px',
+          borderTop: `1px solid ${T.border}`,
+          display: 'flex',
+          gap: '10px',
+        }}>
+          <button
+            onClick={() => onResetPassword(user)}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: `1px solid ${T.border}`,
+              background: 'transparent',
+              color: T.textDim,
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Reset Password
+          </button>
+          <button
+            onClick={() => onEdit(user)}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: T.primary,
+              color: '#000',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Edit User
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+});
+UserDrawer.displayName = 'UserDrawer';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PASSWORD MODAL
+═══════════════════════════════════════════════════════════════════════════ */
+const PasswordModal = memo(({ user, onConfirm, onClose }) => {
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleGeneratePassword = useCallback(() => {
+    const newPass = generatePassword();
+    setPassword(newPass);
+  }, []);
+
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+    if (password.trim()) {
+      onConfirm(user.id, password);
+    }
+  }, [password, user, onConfirm]);
+
+  return (
+    <OverlayWrapper onClose={onClose}>
+      <div
+        style={{
+          background: T.surface,
+          border: `1px solid ${T.border}`,
+          borderRadius: '16px',
+          maxWidth: '400px',
+          width: '90vw',
+          boxShadow: '0 24px 80px rgba(0,0,0,.4)',
+          animation: 'slideUp 0.2s ease-out',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: `1px solid ${T.border}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: T.text }}>
+            Reset Password for {user?.name}
+          </h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: T.textDim,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'grid', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
+              New Password
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: `1px solid ${T.border}`,
+                  background: T.surfaceHigh,
+                  color: T.text,
+                  fontSize: '13px',
+                  fontFamily: 'monospace',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: `1px solid ${T.border}`,
+                  background: T.surfaceHigh,
+                  color: T.textDim,
+                  cursor: 'pointer',
+                }}
+              >
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGeneratePassword}
+            style={{
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: `1px solid ${T.border}`,
+              background: T.surfaceHigh,
+              color: T.textDim,
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Generate Password
+          </button>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '10px',
+            paddingTop: '8px',
+          }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '8px',
+                border: `1px solid ${T.border}`,
+                background: 'transparent',
+                color: T.textDim,
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!password.trim()}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '8px',
+                border: 'none',
+                background: password.trim() ? T.primary : T.border,
+                color: password.trim() ? '#000' : T.textDim,
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: password.trim() ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </OverlayWrapper>
+  );
+});
+PasswordModal.displayName = 'PasswordModal';
+
+export { UserFormModal, UserDrawer, PasswordModal, SCREEN_CATEGORIES, ROLE_SCREEN_PRESETS };

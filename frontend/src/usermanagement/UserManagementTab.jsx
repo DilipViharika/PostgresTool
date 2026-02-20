@@ -176,7 +176,7 @@ function useUsers(initialUsers = []) {
     }, [getAuthHeaders]);
 
     useEffect(() => () => { if (abortRef.current) abortRef.current.abort(); }, []);
-    return { users, loading, error, fetchUsers, createUser, updateUser, deleteUsers, resetPassword };
+    return { users, loading, error, fetchUsers, createUser, updateUser, deleteUsers, resetPassword, setUsers };
 }
 
 function useStaleWhileRevalidate(users, fetchUsers) {
@@ -200,10 +200,12 @@ const GlobalStylesInjector = memo(() => (
     @keyframes umFadeIn     { from { opacity:0 } to { opacity:1 } }
     @keyframes umSpin       { to { transform:rotate(360deg) } }
     @keyframes umShimmer    { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    @keyframes umLivePulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
 
     .um-root *, .um-root *::before, .um-root *::after { box-sizing: border-box; }
     .shimmer-skeleton { background: linear-gradient(90deg, ${T.surfaceRaised || '#1a1a2e'} 25%, ${T.grid || '#2a2a3e'} 50%, ${T.surfaceRaised || '#1a1a2e'} 75%); background-size: 200% 100%; animation: umShimmer 1.5s infinite ease-in-out; border-radius: 12px; }
     .um-revalidating-bar { position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, ${T.primary || '#00D4FF'}, transparent); background-size:200% 100%; animation:umShimmer 1s infinite linear; border-radius:2px; z-index:10; }
+    .um-live-dot { width:8px; height:8px; border-radius:50%; background:#2EE89C; animation:umLivePulse 2s ease-in-out infinite; display:inline-block; flex-shrink:0; }
     
     .um-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s ease; font-family:inherit; line-height:1; }
     .um-btn:disabled { opacity:.5; cursor:not-allowed; }
@@ -304,15 +306,108 @@ const UserManagementTab = ({ initialUsers = [] }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const { activeTab, modal, bulkSelection } = state;
     const { toasts, toast }    = useToast();
-    const { users, loading, error, fetchUsers, createUser, updateUser, deleteUsers, resetPassword } = useUsers(initialUsers);
+    const { users, loading, error, fetchUsers, createUser, updateUser, deleteUsers, resetPassword, setUsers } = useUsers(initialUsers);
     const { isRevalidating, revalidate } = useStaleWhileRevalidate(users, fetchUsers);
 
+    // Real-time polling and WebSocket
+    const wsRef = useRef(null);
+    const [isLive, setIsLive] = useState(false);
+    const [lastSynced, setLastSynced] = useState(null);
+    const pollingRef = useRef(null);
+
+    // Format time elapsed
+    const formatTimeAgo = useCallback((timestamp) => {
+        if (!timestamp) return 'never';
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        if (seconds < 60) return `${seconds}s`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+        return `${Math.floor(seconds / 3600)}h`;
+    }, []);
+
+    // WebSocket connection attempt
+    useEffect(() => {
+        const connectWebSocket = () => {
+            try {
+                const token = localStorage.getItem('vigil_token');
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = new URL(API_BASE);
+                const wsBase = `${wsProtocol}//${wsUrl.host}`;
+                wsRef.current = new WebSocket(`${wsBase}/ws?token=${token}`);
+
+                wsRef.current.onopen = () => {
+                    setIsLive(true);
+                    if (pollingRef.current) clearInterval(pollingRef.current);
+                };
+
+                wsRef.current.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'USER_UPDATED') {
+                            fetchUsers();
+                            setLastSynced(Date.now());
+                        }
+                    } catch (e) {
+                        console.error('WS message parse error:', e);
+                    }
+                };
+
+                wsRef.current.onerror = () => {
+                    setIsLive(false);
+                };
+
+                wsRef.current.onclose = () => {
+                    setIsLive(false);
+                    // Fallback to polling
+                    if (!pollingRef.current) {
+                        pollingRef.current = setInterval(() => {
+                            fetchUsers();
+                            setLastSynced(Date.now());
+                        }, 30000);
+                    }
+                };
+            } catch (err) {
+                console.error('WebSocket connection failed:', err);
+                setIsLive(false);
+                // Fallback to polling
+                if (!pollingRef.current) {
+                    pollingRef.current = setInterval(() => {
+                        fetchUsers();
+                        setLastSynced(Date.now());
+                    }, 30000);
+                }
+            }
+        };
+
+        // Try to connect to WebSocket
+        connectWebSocket();
+
+        // Set up polling as fallback
+        if (!isLive) {
+            pollingRef.current = setInterval(() => {
+                fetchUsers();
+                setLastSynced(Date.now());
+            }, 30000);
+        }
+
+        return () => {
+            if (wsRef.current) {
+                wsRef.current.close();
+                wsRef.current = null;
+            }
+            if (pollingRef.current) {
+                clearInterval(pollingRef.current);
+                pollingRef.current = null;
+            }
+        };
+    }, [fetchUsers]);
+
+    // Initial load
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { if (initialUsers.length === 0) fetchUsers(); }, []);
 
     const activeCount  = useMemo(() => users.filter(u => u.status === 'active').length, [users]);
     const bulkCount    = bulkSelection.size;
-    const contextValue = useMemo(() => ({ state, dispatch, users, toast }), [state, users, toast]);
+    const contextValue = useMemo(() => ({ state, dispatch, users, toast, setUsers }), [state, users, toast, setUsers]);
 
     const handleSaveUser = useCallback(async (formData) => {
         try {
@@ -354,8 +449,12 @@ const UserManagementTab = ({ initialUsers = [] }) => {
                     <div>
                         <h1 style={{ fontSize:26, fontWeight:900, color:T.text || '#e2e4eb', margin:0, display:'flex', alignItems:'center', gap:10 }}>
                             User Management
+                            {isLive && <span className="um-live-dot" title="Live sync enabled" />}
                         </h1>
-                        <div style={{ fontSize:13, color:T.textDim || '#8b8fa3', marginTop:4 }}>Manage access, permissions, and security across your organization</div>
+                        <div style={{ fontSize:13, color:T.textDim || '#8b8fa3', marginTop:4 }}>
+                            Manage access, permissions, and security across your organization
+                            {lastSynced && <span style={{ marginLeft: '8px' }}>• Last synced {formatTimeAgo(lastSynced)} ago</span>}
+                        </div>
                     </div>
                     <div style={{ display:'flex', gap:10, alignItems:'center' }}>
                         <div style={{ fontSize:12, color:T.textDim || '#8b8fa3', padding:'6px 12px', background:T.surfaceHigh || '#1a1a2e', borderRadius:8, border:`1px solid ${T.border || '#2a2a3e'}`, display:'flex', alignItems:'center', gap:8 }}>
