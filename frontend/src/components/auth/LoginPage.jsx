@@ -262,7 +262,7 @@ const LeftPanel = () => (
                             fontSize: 21, fontWeight: 900, color: '#fff',
                             letterSpacing: '-0.03em', fontFamily: "'Outfit', sans-serif",
                             lineHeight: 1, textShadow: '0 2px 14px rgba(0,0,0,0.7)',
-                        }}>VIGIL</div>
+                        }}></div>
                         <div style={{
                             fontSize: 8, color: '#38bdf8', fontFamily: "'JetBrains Mono', monospace",
                             letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2,

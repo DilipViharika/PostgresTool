@@ -45,33 +45,46 @@ import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.j
    CONSTANTS
    ═══════════════════════════════════════════════════════════════════════════ */
 const TAB_CONFIG = [
-    { id: 'connections', icon: Database, label: 'Connections', component: ConnectionsTab },
-    { id: 'overview', icon: Activity, label: 'Overview', component: OverviewTab },
-    { id: 'performance', icon: Zap, label: 'Performance', component: PerformanceTab },
-    { id: 'optimizer', icon: Zap, label: 'Query Optimizer', component: QueryOptimizerTab },
-    { id: 'resources', icon: HardDrive, label: 'Resources', component: ResourcesTab },
-    { id: 'reliability', icon: CheckCircle, label: 'Reliability', component: ReliabilityTab },
-    { id: 'indexes', icon: Layers, label: 'Indexes', component: IndexesTab },
-    { id: 'alerts', icon: Bell, label: 'Alerts', component: AlertsComponent },
-    { id: 'sql', icon: Terminal, label: 'SQL Console', component: SqlConsoleTab },
-    { id: 'api', icon: Network, label: 'API Tracing', component: ApiQueriesTab },
-    { id: 'repository', icon: GitBranch, label: 'Repository', component: RepositoryTab },
-    { id: 'admin', icon: Shield, label: 'Admin', component: AdminTab },
-    { id: 'UserManagement', icon: Users, label: 'User Management', component: UserManagementTab },
-    { id: 'pool', icon: Network, label: 'Connection Pool', component: ConnectionPoolTab },
-    { id: 'schema', icon: Layers, label: 'Schema & Migrations', component: SchemaVersioningTab },
-    { id: 'security', icon: Shield, label: 'Security & Compliance', component: SecurityComplianceTab },
-    { id: 'capacity',    icon: TrendingUp,  label: 'Capacity Planning',     component: CapacityPlanningTab },
-    { id: 'backup',       icon: Archive,     label: 'Backup & Recovery',     component: BackupRecoveryTab },
-    { id: 'checkpoint',   icon: CheckCircle, label: 'Checkpoint Monitor',    component: CheckpointMonitorTab },
-    { id: 'maintenance',  icon: RefreshCw,   label: 'Vacuum & Maintenance',  component: VacuumMaintenanceTab },
-    { id: 'replication',  icon: Radio,       label: 'Replication & WAL',     component: ReplicationWALTab },
-    { id: 'bloat',        icon: Layers,      label: 'Bloat Analysis',        component: BloatAnalysisTab },
-    { id: 'regression',   icon: TrendingUp,  label: 'Plan Regression',       component: QueryPlanRegressionTab },
-    { id: 'cloudwatch',        icon: Cloud,        label: 'CloudWatch',           component: CloudWatchTab },
-    { id: 'tasks',             icon: CalendarCheck,label: 'DBA Task Scheduler',   component: DBATaskSchedulerTab },
-    { id: 'log-patterns',      icon: FileSearch,   label: 'Log Pattern Analysis', component: LogPatternAnalysisTab },
-    { id: 'alert-correlation', icon: Link2,        label: 'Alert Correlation',    component: AlertCorrelationTab },
+    // ── Core Monitoring ──────────────────────────────────────────────
+    { id: 'overview',          icon: Activity,      label: 'Overview',              component: OverviewTab },
+    { id: 'connections',       icon: Database,      label: 'Connections',           component: ConnectionsTab },
+    { id: 'performance',       icon: Zap,           label: 'Performance',           component: PerformanceTab },
+    { id: 'resources',         icon: HardDrive,     label: 'Resources',             component: ResourcesTab },
+    { id: 'reliability',       icon: CheckCircle,   label: 'Reliability',           component: ReliabilityTab },
+    { id: 'alerts',            icon: Bell,          label: 'Alerts',                component: AlertsComponent },
+
+    // ── Query & Index Analysis ────────────────────────────────────────
+    { id: 'optimizer',         icon: Zap,           label: 'Query Optimizer',       component: QueryOptimizerTab },
+    { id: 'indexes',           icon: Layers,        label: 'Indexes',               component: IndexesTab },
+    { id: 'regression',        icon: TrendingUp,    label: 'Plan Regression',       component: QueryPlanRegressionTab },
+    { id: 'bloat',             icon: Layers,        label: 'Bloat Analysis',        component: BloatAnalysisTab },
+
+    // ── Infrastructure ────────────────────────────────────────────────
+    { id: 'pool',              icon: Network,       label: 'Connection Pool',       component: ConnectionPoolTab },
+    { id: 'replication',       icon: Radio,         label: 'Replication & WAL',     component: ReplicationWALTab },
+    { id: 'checkpoint',        icon: CheckCircle,   label: 'Checkpoint Monitor',    component: CheckpointMonitorTab },
+    { id: 'maintenance',       icon: RefreshCw,     label: 'Vacuum & Maintenance',  component: VacuumMaintenanceTab },
+    { id: 'capacity',          icon: TrendingUp,    label: 'Capacity Planning',     component: CapacityPlanningTab },
+    { id: 'backup',            icon: Archive,       label: 'Backup & Recovery',     component: BackupRecoveryTab },
+
+    // ── Schema, Security & Compliance ─────────────────────────────────
+    { id: 'schema',            icon: Layers,        label: 'Schema & Migrations',   component: SchemaVersioningTab },
+    { id: 'security',          icon: Shield,        label: 'Security & Compliance', component: SecurityComplianceTab },
+
+    // ── Observability & Logs ──────────────────────────────────────────
+    { id: 'cloudwatch',        icon: Cloud,         label: 'CloudWatch',            component: CloudWatchTab },
+    { id: 'log-patterns',      icon: FileSearch,    label: 'Log Pattern Analysis',  component: LogPatternAnalysisTab },
+    { id: 'alert-correlation', icon: Link2,         label: 'Alert Correlation',     component: AlertCorrelationTab },
+
+    // ── Developer Tools ───────────────────────────────────────────────
+    { id: 'sql',               icon: Terminal,      label: 'SQL Console',           component: SqlConsoleTab },
+    { id: 'api',               icon: Network,       label: 'API Tracing',           component: ApiQueriesTab },
+    { id: 'repository',        icon: GitBranch,     label: 'Repository',            component: RepositoryTab },
+
+    // ── Admin & Management ────────────────────────────────────────────
+    { id: 'tasks',             icon: CalendarCheck, label: 'DBA Task Scheduler',    component: DBATaskSchedulerTab },
+    { id: 'UserManagement',    icon: Users,         label: 'User Management',       component: UserManagementTab },
+    { id: 'admin',             icon: Shield,        label: 'Admin',                 component: AdminTab },
 ];
 
 const STORAGE_KEYS = {
@@ -158,13 +171,11 @@ const FeedbackModal = ({ onClose }) => {
 
         setSubmitting(true);
         try {
-            // Ensure you have an endpoint /api/feedback in your server
             await postData('/api/feedback', { rating, category, comment, timestamp: new Date() });
             setSuccess(true);
-            setTimeout(onClose, 2000); // Close after 2s
+            setTimeout(onClose, 2000);
         } catch (error) {
             console.error('Failed to submit feedback:', error);
-            // Optional: Show error state
             setSubmitting(false);
         }
     };
@@ -281,7 +292,6 @@ const FeedbackModal = ({ onClose }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    ERROR BOUNDARY
    ═══════════════════════════════════════════════════════════════════════════ */
-// ... (Previous ErrorBoundary Code remains same)
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
@@ -329,7 +339,6 @@ class ErrorBoundary extends React.Component {
 /* ═══════════════════════════════════════════════════════════════════════════
    NOTIFICATION CENTER
    ═══════════════════════════════════════════════════════════════════════════ */
-// ... (Previous NotificationCenter Code remains same)
 const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
     const [isOpen, setIsOpen] = useState(false);
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -688,9 +697,8 @@ const Sidebar = ({ tabs, activeTab, onTabChange, onLogout, currentUser, collapse
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   WEBSOCKET MANAGER (Same as before)
+   WEBSOCKET MANAGER
    ═══════════════════════════════════════════════════════════════════════════ */
-// ... (useWebSocket logic remains unchanged)
 const useWebSocket = (onMessage) => {
     const [connected, setConnected] = useState(false);
     const [reconnecting, setReconnecting] = useState(false);
@@ -709,7 +717,6 @@ const useWebSocket = (onMessage) => {
             console.error('WebSocket connection error:', error);
             setConnected(false);
             setReconnecting(false);
-            // Schedule reconnect
             reconnectTimerRef.current = setTimeout(connect, WS_RECONNECT_INTERVAL);
         }
     }, [onMessage]);
@@ -736,7 +743,6 @@ const useWebSocket = (onMessage) => {
 const Dashboard = () => {
     const { logout, currentUser } = useAuth();
 
-    // Load saved preferences
     const [activeTab, setActiveTab] = useState(() => {
         try {
             return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || 'overview';
@@ -757,12 +763,9 @@ const Dashboard = () => {
     const [latestAlert, setLatestAlert] = useState(null);
     const [showFeedback, setShowFeedback] = useState(false);
 
-    // Auto-prompt feedback logic on mount
     useEffect(() => {
-        // Check if user has seen prompt before
         const hasSeenPrompt = localStorage.getItem(STORAGE_KEYS.FEEDBACK_PROMPT);
         if (!hasSeenPrompt) {
-            // Delay for 3 seconds after login to be polite
             const timer = setTimeout(() => {
                 setShowFeedback(true);
                 localStorage.setItem(STORAGE_KEYS.FEEDBACK_PROMPT, 'true');
@@ -771,7 +774,6 @@ const Dashboard = () => {
         }
     }, []);
 
-    // WebSocket handler
     const handleWSMessage = useCallback((msg) => {
         if (msg.type === 'alert') {
             const notification = {
@@ -786,26 +788,22 @@ const Dashboard = () => {
             setNotifications(prev => [notification, ...prev].slice(0, MAX_NOTIFICATIONS));
             setLatestAlert(msg.payload);
 
-            // Auto-dismiss toast
             setTimeout(() => setLatestAlert(null), ALERT_AUTO_DISMISS_TIME);
         }
     }, []);
 
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
 
-    // Filter tabs based on user permissions
     const allowedTabs = useMemo(() =>
             TAB_CONFIG.filter(t => currentUser.allowedScreens.includes(t.id)),
         [currentUser.allowedScreens]
     );
 
-    // Get active tab component
     const ActiveComponent = useMemo(() => {
         const tab = allowedTabs.find(t => t.id === activeTab);
         return tab ? tab.component : allowedTabs[0]?.component;
     }, [activeTab, allowedTabs]);
 
-    // Persist active tab
     const handleTabChange = useCallback((tabId) => {
         setActiveTab(tabId);
         try {
@@ -815,7 +813,6 @@ const Dashboard = () => {
         }
     }, []);
 
-    // Toggle sidebar collapse
     const handleToggleCollapse = useCallback(() => {
         setSidebarCollapsed(prev => {
             const newValue = !prev;
@@ -828,7 +825,6 @@ const Dashboard = () => {
         });
     }, []);
 
-    // Notification handlers
     const handleDismissNotification = useCallback((id) => {
         setNotifications(prev => prev.filter(n => n.id !== id));
     }, []);
@@ -837,10 +833,8 @@ const Dashboard = () => {
         setNotifications([]);
     }, []);
 
-    // Keyboard shortcuts
     useEffect(() => {
         const handleKeyPress = (e) => {
-            // Ctrl/Cmd + B: Toggle sidebar
             if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
                 e.preventDefault();
                 handleToggleCollapse();
@@ -918,10 +912,7 @@ const Dashboard = () => {
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {/* WebSocket Status */}
                         <WebSocketStatus connected={connected} />
-
-                        {/* Notification Center */}
                         <NotificationCenter
                             notifications={notifications}
                             onDismiss={handleDismissNotification}
