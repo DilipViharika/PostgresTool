@@ -308,279 +308,276 @@ const InfraPanel = () => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FEATURES
-// ─────────────────────────────────────────────────────────────────────────────
-const FEATURES = [
-    { icon:Activity,   label:'Real-Time Metrics', desc:'QPS, latency & cache hit ratios — live.',   color:'#0ea5e9' },
-    { icon:Bell,       label:'Smart Alerting',     desc:'Slow query & replication log alerts.',      color:'#a78bfa' },
-    { icon:Search,     label:'Query Inspector',    desc:'EXPLAIN plans & pg_stat_statements.',       color:'#f59e0b' },
-    { icon:RefreshCw,  label:'Replication',        desc:'WAL archiving & standby lag tracking.',     color:'#14b8a6' },
-    { icon:TrendingUp, label:'Trend Analysis',     desc:'Anomaly detection across clusters.',        color:'#f43f5e' },
-    { icon:UserCheck,  label:'Access Audit',       desc:'RBAC with full compliance trails.',         color:'#22c55e' },
-];
-
-const FeatureCard = ({ icon:Icon, label, desc, color }) => (
-    <div className="fc" style={{ background:'rgba(255,255,255,.025)', border:'1px solid rgba(255,255,255,.06)', borderRadius:12, padding:'14px 13px', display:'flex', flexDirection:'column', gap:8, cursor:'default', transition:'all .22s ease' }}>
-        <div style={{ width:32, height:32, borderRadius:9, background:`${color}14`, border:`1px solid ${color}22`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <Icon size={14} color={color} />
-        </div>
-        <div style={{ fontSize:11.5, fontWeight:700, color:'#c8d6e5', fontFamily:"'Syne',sans-serif", letterSpacing:'-.01em', lineHeight:1.2 }}>{label}</div>
-        <div style={{ fontSize:9.5, color:'#1e3a5f', lineHeight:1.55, fontFamily:"'DM Sans',sans-serif" }}>{desc}</div>
-    </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  TOOL SUMMARY PANEL — Database · Infrastructure · How It Works
+//  LEFT PANEL VISUAL COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── DB Cylinder SVG (reusable) ──
-const DbCylinder = ({ color='#0ea5e9', size=44, label, sub, dot }) => {
-    const w = size, h = size * 1.1;
-    const rx = w * 0.46, ry = rx * 0.28;
-    const cx = w / 2, bodyTop = ry + 2, bodyH = h - ry * 2 - 6;
+// ── SVG Database Cylinder ──
+const Cyl = ({ color='#0ea5e9', w=38, label, dot }) => {
+    const h = w * 1.15, rx = w * 0.48, ry = rx * 0.27, cx = w / 2;
+    const bodyTop = ry + 1, bodyH = h - ry * 2.4;
     return (
-        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
             <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
                 <defs>
-                    <linearGradient id={`cyl-body-${color.replace('#','')}`} x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor={color} stopOpacity=".55"/>
-                        <stop offset="50%" stopColor={color} stopOpacity=".3"/>
+                    <linearGradient id={`cb${color.slice(1)}`} x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor={color} stopOpacity=".5"/>
+                        <stop offset="50%" stopColor={color} stopOpacity=".25"/>
+                        <stop offset="100%" stopColor={color} stopOpacity=".5"/>
+                    </linearGradient>
+                    <linearGradient id={`ct${color.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={color} stopOpacity=".9"/>
                         <stop offset="100%" stopColor={color} stopOpacity=".55"/>
                     </linearGradient>
-                    <linearGradient id={`cyl-top-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={color} stopOpacity=".95"/>
-                        <stop offset="100%" stopColor={color} stopOpacity=".6"/>
-                    </linearGradient>
                 </defs>
-                {/* shadow */}
-                <ellipse cx={cx} cy={h-3} rx={rx*.7} ry={ry*.5} fill={color} opacity=".12"/>
-                {/* body */}
-                <rect x={cx - rx} y={bodyTop} width={rx*2} height={bodyH} fill={`url(#cyl-body-${color.replace('#','')})`}/>
-                {/* bottom cap */}
-                <ellipse cx={cx} cy={bodyTop + bodyH} rx={rx} ry={ry} fill={color} opacity=".45"/>
-                {/* mid rings */}
-                {[.33,.66].map((f,i)=><ellipse key={i} cx={cx} cy={bodyTop + bodyH*f} rx={rx} ry={ry} fill="none" stroke={color} strokeWidth=".6" opacity=".25"/>)}
-                {/* top cap */}
-                <ellipse cx={cx} cy={bodyTop} rx={rx} ry={ry} fill={`url(#cyl-top-${color.replace('#','')})`}/>
-                <ellipse cx={cx} cy={bodyTop} rx={rx} ry={ry} fill="none" stroke={color} strokeWidth=".8" opacity=".6"/>
-                {/* shine */}
-                <ellipse cx={cx - rx*.22} cy={bodyTop - ry*.15} rx={rx*.3} ry={ry*.5} fill="white" opacity=".12"/>
-                {/* status dot */}
-                {dot && <circle cx={cx + rx - 4} cy={bodyTop + 4} r="3" fill={dot} style={{ filter:`drop-shadow(0 0 3px ${dot})` }}/>}
+                <ellipse cx={cx} cy={h-2} rx={rx*.65} ry={ry*.4} fill={color} opacity=".1"/>
+                <rect x={cx-rx} y={bodyTop} width={rx*2} height={bodyH} fill={`url(#cb${color.slice(1)})`}/>
+                <ellipse cx={cx} cy={bodyTop+bodyH} rx={rx} ry={ry} fill={color} opacity=".4"/>
+                {[.35,.7].map((f,i)=><ellipse key={i} cx={cx} cy={bodyTop+bodyH*f} rx={rx} ry={ry} fill="none" stroke={color} strokeWidth=".5" opacity=".2"/>)}
+                <ellipse cx={cx} cy={bodyTop} rx={rx} ry={ry} fill={`url(#ct${color.slice(1)})`}/>
+                <ellipse cx={cx} cy={bodyTop} rx={rx} ry={ry} fill="none" stroke={color} strokeWidth=".8" opacity=".55"/>
+                <ellipse cx={cx-rx*.2} cy={bodyTop-ry*.1} rx={rx*.28} ry={ry*.5} fill="white" opacity=".1"/>
+                {dot && <circle cx={cx+rx*.6} cy={bodyTop+3} r="2.5" fill={dot} style={{ filter:`drop-shadow(0 0 3px ${dot})` }}/>}
             </svg>
-            {label && <div style={{ fontSize:7.5, color, fontWeight:700, fontFamily:'JetBrains Mono,monospace', letterSpacing:'.08em', textAlign:'center' }}>{label}</div>}
-            {sub   && <div style={{ fontSize:6,   color:`${color}80`, fontFamily:'JetBrains Mono,monospace', textAlign:'center' }}>{sub}</div>}
+            {label && <span style={{ fontSize:6.5, color, fontWeight:700, fontFamily:'JetBrains Mono,monospace', letterSpacing:'.08em' }}>{label}</span>}
         </div>
     );
 };
 
-// ── Server Node SVG ──
-const ServerNode = ({ color='#22c55e', cpu, mem, id, role }) => (
-    <div style={{ background:`${color}09`, border:`1px solid ${color}28`, borderRadius:8, padding:'7px 9px', display:'flex', flexDirection:'column', gap:4 }}>
-        {/* server rack illustration */}
-        <svg width="100%" height="28" viewBox="0 0 80 28">
-            <rect x="0" y="0" width="80" height="28" rx="3" fill={`${color}15`} stroke={`${color}30`} strokeWidth=".8"/>
-            {/* drive bays */}
-            {[0,1,2].map(i=><rect key={i} x={4+i*8} y="6" width="6" height="16" rx="1" fill={`${color}25`} stroke={`${color}40`} strokeWidth=".5"/>)}
-            {/* LED indicators */}
-            {[0,1,2].map(i=><circle key={i} cx={7+i*8} cy="22" r="1.2" fill={color} opacity=".8" style={{ filter:`drop-shadow(0 0 2px ${color})` }}/>)}
-            {/* label area */}
-            <rect x="30" y="6" width="44" height="16" rx="2" fill={`${color}10`}/>
-            <text x="52" y="16.5" textAnchor="middle" fontSize="6" fontWeight="700" fill={color} fontFamily="JetBrains Mono,monospace">{id}</text>
-        </svg>
-        <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-            <span style={{ width:5, height:5, borderRadius:'50%', background:color, display:'inline-block', flexShrink:0, boxShadow:`0 0 4px ${color}` }}/>
-            <span style={{ fontSize:6, color:`${color}cc`, fontWeight:700, flex:1, fontFamily:'JetBrains Mono,monospace' }}>{role}</span>
+// ── Dashed flow arrow ──
+const Arrow = ({ color='#0ea5e9' }) => (
+    <svg width="22" height="12" viewBox="0 0 22 12" style={{ flexShrink:0, alignSelf:'center', marginBottom:12 }}>
+        <line x1="1" y1="6" x2="16" y2="6" stroke={color} strokeWidth="1.2" strokeDasharray="2.5 1.8" opacity=".7"/>
+        <path d="M13,2 L19,6 L13,10" fill="none" stroke={color} strokeWidth="1.3" opacity=".8" strokeLinejoin="round"/>
+    </svg>
+);
+
+// ── Live metric bar ──
+const LiveBar = ({ pct, color, label, value }) => (
+    <div style={{ marginBottom:5 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:2.5 }}>
+            <span style={{ fontSize:7, color:'#1e3a5f', letterSpacing:'.05em' }}>{label}</span>
+            <span style={{ fontSize:7.5, color, fontWeight:700 }}>{value}</span>
         </div>
-        {[['CPU', cpu, color], ['MEM', mem, `${color}bb`]].map(([k,v,c])=>(
-            <div key={k} style={{ display:'flex', alignItems:'center', gap:4 }}>
-                <span style={{ fontSize:5.5, color:'#1a3040', width:14, flexShrink:0 }}>{k}</span>
-                <div style={{ flex:1, height:3, background:'rgba(255,255,255,.06)', borderRadius:2, overflow:'hidden' }}>
-                    <div style={{ width:`${v}%`, height:'100%', background:`linear-gradient(90deg,${c}60,${c})`, borderRadius:2 }}/>
+        <div style={{ height:5, background:'rgba(255,255,255,.05)', borderRadius:3, overflow:'hidden' }}>
+            <div style={{ width:`${pct}%`, height:'100%', background:`linear-gradient(90deg,${color}55,${color})`, borderRadius:3 }}/>
+        </div>
+    </div>
+);
+
+// ── Problem card (before state) ──
+const ProblemCard = ({ icon, text }) => (
+    <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(239,68,68,.05)', border:'1px solid rgba(239,68,68,.15)', borderRadius:8, padding:'8px 10px' }}>
+        <span style={{ fontSize:14, flexShrink:0 }}>{icon}</span>
+        <span style={{ fontSize:9.5, color:'#7a3040', lineHeight:1.4, fontFamily:'DM Sans,sans-serif' }}>{text}</span>
+    </div>
+);
+
+// ── Capability card (after/solution state) ──
+const CapCard = ({ icon, title, desc, color }) => (
+    <div style={{ background:`${color}08`, border:`1px solid ${color}20`, borderRadius:9, padding:'10px 11px', display:'flex', flexDirection:'column', gap:5 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+            <div style={{ width:26, height:26, borderRadius:7, background:`${color}18`, border:`1px solid ${color}28`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, flexShrink:0 }}>{icon}</div>
+            <span style={{ fontSize:9.5, fontWeight:700, color:'#c8d6e5', fontFamily:'Syne,sans-serif', lineHeight:1.2 }}>{title}</span>
+        </div>
+        <span style={{ fontSize:8.5, color:'#1e3a5f', lineHeight:1.5, fontFamily:'DM Sans,sans-serif' }}>{desc}</span>
+    </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  MAIN VISUAL PANEL — Problem → Solution narrative
+// ─────────────────────────────────────────────────────────────────────────────
+const VisualPanel = () => (
+    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+
+        {/* ══ ROW 1 — Problem statement + DB Architecture side by side ══ */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+
+            {/* LEFT: The Problem */}
+            <div style={{ background:'rgba(239,68,68,.04)', border:'1px solid rgba(239,68,68,.14)', borderRadius:12, padding:'12px 13px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
+                    <span style={{ fontSize:14 }}>😰</span>
+                    <div>
+                        <div style={{ fontSize:9, fontWeight:800, color:'#ef4444', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITHOUT VIGIL</div>
+                        <div style={{ fontSize:7.5, color:'#6b3040', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Flying blind on your database</div>
+                    </div>
                 </div>
-                <span style={{ fontSize:5.5, color:c, width:20, textAlign:'right', fontWeight:700 }}>{v}%</span>
+                <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                    <ProblemCard icon="🔴" text="Queries slowing down — no idea which ones or why"/>
+                    <ProblemCard icon="🔴" text="Replication lag silently growing behind the scenes"/>
+                    <ProblemCard icon="🔴" text="Connection pool exhausted — users getting errors"/>
+                    <ProblemCard icon="🔴" text="No alerts until customers report the outage"/>
+                </div>
             </div>
-        ))}
-    </div>
-);
 
-// ── How It Works Step ──
-const HowStep = ({ num, title, desc, color, icon }) => (
-    <div style={{ display:'flex', gap:10, alignItems:'flex-start' }}>
-        {/* step number circle */}
-        <div style={{ flexShrink:0, width:28, height:28, borderRadius:'50%', background:`${color}18`, border:`1.5px solid ${color}40`, display:'flex', alignItems:'center', justifyContent:'center', marginTop:1 }}>
-            <span style={{ fontSize:10, fontWeight:800, color, fontFamily:'Syne,sans-serif' }}>{num}</span>
-        </div>
-        <div style={{ flex:1 }}>
-            <div style={{ fontSize:10, fontWeight:700, color:'#c8d6e5', fontFamily:'Syne,sans-serif', marginBottom:3, display:'flex', alignItems:'center', gap:6 }}>
-                <span style={{ fontSize:12 }}>{icon}</span>
-                {title}
-            </div>
-            <div style={{ fontSize:9, color:'#1e3a5f', lineHeight:1.6, fontFamily:'DM Sans,sans-serif' }}>{desc}</div>
-        </div>
-    </div>
-);
-
-// ── WAL Flow Arrow connector ──
-const FlowArrow = ({ color='#0ea5e9', vertical=false }) => (
-    vertical
-        ? <div style={{ display:'flex', justifyContent:'center', padding:'2px 0' }}>
-            <svg width="12" height="16" viewBox="0 0 12 16"><line x1="6" y1="0" x2="6" y2="12" stroke={color} strokeWidth="1.2" strokeDasharray="2 1.5" opacity=".6"/><path d="M3,10 L6,14 L9,10" fill="none" stroke={color} strokeWidth="1.2" opacity=".7"/></svg>
-        </div>
-        : <div style={{ display:'flex', alignItems:'center', padding:'0 2px' }}>
-            <svg width="16" height="10" viewBox="0 0 16 10"><line x1="0" y1="5" x2="12" y2="5" stroke={color} strokeWidth="1.2" strokeDasharray="2 1.5" opacity=".6"/><path d="M10,2 L14,5 L10,8" fill="none" stroke={color} strokeWidth="1.2" opacity=".7"/></svg>
-        </div>
-);
-
-const ToolSummaryPanel = () => (
-    <div style={{ borderRadius:14, border:'1px solid rgba(14,165,233,.14)', background:'linear-gradient(145deg,rgba(4,12,28,.99) 0%,rgba(3,9,22,1) 100%)', overflow:'hidden', fontFamily:'JetBrains Mono,monospace', position:'relative' }}>
-        {/* ambient grid */}
-        <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(14,165,233,.14) 1px,transparent 1px)', backgroundSize:'20px 20px', opacity:.18, pointerEvents:'none' }}/>
-        <div style={{ position:'absolute', top:0, left:'15%', width:'70%', height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.65),rgba(20,184,166,.4),transparent)' }}/>
-        <div style={{ position:'absolute', top:-50, right:-30, width:200, height:200, background:'radial-gradient(circle,rgba(14,165,233,.07) 0%,transparent 70%)', pointerEvents:'none' }}/>
-
-        <div style={{ position:'relative', zIndex:1, padding:'14px 16px 14px' }}>
-
-            {/* ══════════ SECTION 1 — DATABASE ARCHITECTURE ══════════ */}
-            <div style={{ marginBottom:12 }}>
+            {/* RIGHT: DB Architecture visual */}
+            <div style={{ background:'rgba(14,165,233,.04)', border:'1px solid rgba(14,165,233,.14)', borderRadius:12, padding:'12px 13px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:10 }}>
-                    <div style={{ width:3, height:16, borderRadius:2, background:'linear-gradient(180deg,#0ea5e9,#38bdf8)' }}/>
-                    <span style={{ fontSize:7.5, color:'#38bdf8', fontWeight:700, letterSpacing:'.18em' }}>DATABASE ARCHITECTURE</span>
-                    <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:4, background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.2)', borderRadius:4, padding:'2px 8px' }}>
-                        <span style={{ width:5, height:5, borderRadius:'50%', background:'#22c55e', display:'inline-block', boxShadow:'0 0 4px #22c55e' }}/>
-                        <span style={{ fontSize:6.5, color:'#22c55e', fontWeight:700 }}>LIVE · pg 16.2</span>
-                    </div>
+                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', display:'inline-block', boxShadow:'0 0 5px #22c55e', animation:'pulse 2s ease infinite' }}/>
+                    <span style={{ fontSize:9, fontWeight:700, color:'#38bdf8', fontFamily:'JetBrains Mono,monospace', letterSpacing:'.12em' }}>YOUR DB CLUSTER · LIVE</span>
                 </div>
 
-                <div style={{ background:'rgba(8,20,44,.6)', border:'1px solid rgba(14,165,233,.1)', borderRadius:10, padding:'12px 14px' }}>
-                    {/* DB topology row */}
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, marginBottom:10 }}>
-                        {/* Primary */}
-                        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
-                            <DbCylinder color="#0ea5e9" size={42} label="PRIMARY" sub="12.8k QPS" dot="#22c55e"/>
-                        </div>
-
-                        {/* WAL stream arrows to replicas */}
-                        <div style={{ display:'flex', flexDirection:'column', gap:6, alignItems:'center' }}>
-                            <FlowArrow color="#0ea5e9"/>
-                            <FlowArrow color="#0ea5e9"/>
-                            <FlowArrow color="#f59e0b"/>
-                        </div>
-
-                        {/* Replicas column */}
-                        <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
-                            {[
-                                { color:'#22c55e', label:'REPLICA-1', sub:'WAL lag: 0.0s', dot:'#22c55e' },
-                                { color:'#22c55e', label:'REPLICA-2', sub:'WAL lag: 0.0s', dot:'#22c55e' },
-                                { color:'#f59e0b', label:'STANDBY',   sub:'WAL lag: 1.2s', dot:'#f59e0b' },
-                            ].map(r => (
-                                <div key={r.label} style={{ display:'flex', alignItems:'center', gap:6, background:`${r.color}09`, border:`1px solid ${r.color}22`, borderRadius:7, padding:'5px 9px' }}>
-                                    <DbCylinder color={r.color} size={22} dot={r.dot}/>
-                                    <div>
-                                        <div style={{ fontSize:7, color:r.color, fontWeight:700 }}>{r.label}</div>
-                                        <div style={{ fontSize:6, color:`${r.color}70` }}>{r.sub}</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Vigil agent arrow */}
-                        <FlowArrow color="#a78bfa"/>
-
-                        {/* Vigil box */}
-                        <div style={{ background:'rgba(167,139,250,.1)', border:'1px solid rgba(167,139,250,.3)', borderRadius:10, padding:'10px 12px', textAlign:'center', minWidth:72 }}>
-                            <div style={{ fontSize:18, marginBottom:4 }}>⚡</div>
-                            <div style={{ fontSize:7, color:'#c4b5fd', fontWeight:700, marginBottom:2 }}>VIGIL AGENT</div>
-                            <div style={{ fontSize:6, color:'rgba(196,181,253,.5)' }}>Real-time</div>
-                            <div style={{ fontSize:6, color:'rgba(196,181,253,.5)' }}>collection</div>
-                        </div>
-
-                        {/* Dashboard arrow */}
-                        <FlowArrow color="#f59e0b"/>
-
-                        {/* Dashboard box */}
-                        <div style={{ background:'rgba(245,158,11,.08)', border:'1px solid rgba(245,158,11,.25)', borderRadius:10, padding:'10px 12px', textAlign:'center', minWidth:72 }}>
-                            <div style={{ fontSize:18, marginBottom:4 }}>📊</div>
-                            <div style={{ fontSize:7, color:'#fcd34d', fontWeight:700, marginBottom:2 }}>DASHBOARD</div>
-                            <div style={{ fontSize:6, color:'rgba(252,211,77,.5)' }}>You · browser</div>
-                            <div style={{ fontSize:6, color:'rgba(252,211,77,.5)' }}>live view</div>
-                        </div>
+                {/* Topology: Primary → Replicas */}
+                <div style={{ display:'flex', alignItems:'flex-start', gap:6, marginBottom:10 }}>
+                    {/* Primary */}
+                    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.2)', borderRadius:8, padding:'8px 7px', flex:'0 0 auto' }}>
+                        <Cyl color="#0ea5e9" w={34} dot="#22c55e"/>
+                        <span style={{ fontSize:6.5, color:'#38bdf8', fontWeight:700, marginTop:4, fontFamily:'JetBrains Mono,monospace' }}>PRIMARY</span>
+                        <span style={{ fontSize:5.5, color:'rgba(56,189,248,.5)', fontFamily:'JetBrains Mono,monospace' }}>pg 16.2</span>
                     </div>
 
-                    {/* KPI bar under DB topology */}
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6 }}>
+                    {/* WAL stream arrows */}
+                    <div style={{ display:'flex', flexDirection:'column', gap:3, justifyContent:'center', paddingTop:14, flex:'0 0 auto' }}>
+                        {['#22c55e','#22c55e','#f59e0b'].map((c,i)=>(
+                            <svg key={i} width="18" height="9" viewBox="0 0 18 9">
+                                <line x1="0" y1="4.5" x2="12" y2="4.5" stroke={c} strokeWidth="1" strokeDasharray="2 1.5" opacity=".7"/>
+                                <path d="M10,1.5 L15,4.5 L10,7.5" fill="none" stroke={c} strokeWidth="1" opacity=".8"/>
+                            </svg>
+                        ))}
+                        <span style={{ fontSize:5, color:'#1a3050', fontFamily:'JetBrains Mono,monospace', textAlign:'center', marginTop:1 }}>WAL</span>
+                    </div>
+
+                    {/* Replicas column */}
+                    <div style={{ display:'flex', flexDirection:'column', gap:4, flex:1 }}>
                         {[
-                            { l:'QPS',     v:'12.8k', c:'#0ea5e9' },
-                            { l:'P99',     v:'4.2ms', c:'#22c55e' },
-                            { l:'CACHE',   v:'97.4%', c:'#14b8a6' },
-                            { l:'CONNS',   v:'342/500',c:'#f59e0b' },
-                        ].map(({ l, v, c }) => (
-                            <div key={l} style={{ background:`${c}09`, border:`1px solid ${c}20`, borderRadius:6, padding:'5px 8px', textAlign:'center' }}>
-                                <div style={{ fontSize:5.5, color:'#1e3a5f', marginBottom:3, letterSpacing:'.08em' }}>{l}</div>
-                                <div style={{ fontSize:11, color:c, fontWeight:700, fontFamily:'Syne,sans-serif' }}>{v}</div>
+                            { color:'#22c55e', label:'REPLICA-1', lag:'0.0s' },
+                            { color:'#22c55e', label:'REPLICA-2', lag:'0.0s' },
+                            { color:'#f59e0b', label:'STANDBY',   lag:'1.2s' },
+                        ].map(({ color, label, lag }) => (
+                            <div key={label} style={{ display:'flex', alignItems:'center', gap:6, background:`${color}09`, border:`1px solid ${color}22`, borderRadius:6, padding:'4px 7px' }}>
+                                <Cyl color={color} w={20} dot={color}/>
+                                <div>
+                                    <div style={{ fontSize:6.5, color, fontWeight:700, fontFamily:'JetBrains Mono,monospace' }}>{label}</div>
+                                    <div style={{ fontSize:5.5, color:`${color}70`, fontFamily:'JetBrains Mono,monospace' }}>lag: {lag}</div>
+                                </div>
+                                <span style={{ marginLeft:'auto', fontSize:6, color, background:`${color}15`, borderRadius:4, padding:'1px 5px', fontWeight:700, fontFamily:'JetBrains Mono,monospace' }}>{lag === '0.0s' ? 'SYNC' : 'LAG'}</span>
                             </div>
                         ))}
                     </div>
                 </div>
+
+                {/* KPI strip */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:5 }}>
+                    {[['QPS','12.8k','#0ea5e9'],['P99','4.2ms','#22c55e'],['CACHE','97.4%','#14b8a6'],['CONN','342/500','#f59e0b']].map(([l,v,c])=>(
+                        <div key={l} style={{ background:`${c}0a`, border:`1px solid ${c}20`, borderRadius:6, padding:'4px 6px', textAlign:'center' }}>
+                            <div style={{ fontSize:5.5, color:'#1a3050', marginBottom:2 }}>{l}</div>
+                            <div style={{ fontSize:9, color:c, fontWeight:700, fontFamily:'Syne,sans-serif' }}>{v}</div>
+                        </div>
+                    ))}
+                </div>
             </div>
+        </div>
 
-            {/* ══════════ SECTION 2 — INFRASTRUCTURE ══════════ */}
-            <div style={{ marginBottom:12 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:10 }}>
-                    <div style={{ width:3, height:16, borderRadius:2, background:'linear-gradient(180deg,#14b8a6,#22c55e)' }}/>
-                    <span style={{ fontSize:7.5, color:'#2dd4bf', fontWeight:700, letterSpacing:'.18em' }}>INFRASTRUCTURE</span>
-                    <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:4, background:'rgba(34,197,94,.06)', border:'1px solid rgba(34,197,94,.2)', borderRadius:4, padding:'2px 8px' }}>
-                        <span style={{ fontSize:6.5, color:'#22c55e', fontWeight:700 }}>4 NODES · 0 CRITICAL</span>
+        {/* ══ ROW 2 — Infrastructure health + Vigil pipeline ══ */}
+        <div style={{ display:'grid', gridTemplateColumns:'1.1fr 0.9fr', gap:10 }}>
+
+            {/* Infrastructure health */}
+            <div style={{ background:'rgba(20,184,166,.04)', border:'1px solid rgba(20,184,166,.13)', borderRadius:12, padding:'12px 13px' }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                        <span style={{ fontSize:11 }}>🖥</span>
+                        <span style={{ fontSize:9, fontWeight:700, color:'#2dd4bf', fontFamily:'JetBrains Mono,monospace', letterSpacing:'.1em' }}>INFRASTRUCTURE</span>
                     </div>
+                    <span style={{ fontSize:6.5, color:'#22c55e', background:'rgba(34,197,94,.1)', border:'1px solid rgba(34,197,94,.25)', borderRadius:4, padding:'2px 7px', fontWeight:700, fontFamily:'JetBrains Mono,monospace' }}>4/4 HEALTHY</span>
                 </div>
 
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:7 }}>
+                {/* Server nodes */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, marginBottom:9 }}>
                     {[
-                        { id:'SRV-01', role:'PRIMARY',  color:'#22c55e', cpu:62, mem:55 },
-                        { id:'SRV-02', role:'REPLICA',  color:'#22c55e', cpu:41, mem:38 },
-                        { id:'SRV-03', role:'REPLICA',  color:'#f59e0b', cpu:78, mem:71 },
-                        { id:'SRV-04', role:'STANDBY',  color:'#14b8a6', cpu:18, mem:22 },
-                    ].map(s => <ServerNode key={s.id} {...s}/>)}
+                        { id:'SRV-01', role:'PRIMARY',  c:'#22c55e', cpu:62, mem:55 },
+                        { id:'SRV-02', role:'REPLICA',  c:'#22c55e', cpu:41, mem:38 },
+                        { id:'SRV-03', role:'REPLICA',  c:'#f59e0b', cpu:78, mem:71 },
+                        { id:'SRV-04', role:'STANDBY',  c:'#14b8a6', cpu:18, mem:22 },
+                    ].map(({ id, role, c, cpu, mem }) => (
+                        <div key={id} style={{ background:`${c}08`, border:`1px solid ${c}22`, borderRadius:7, padding:'7px 8px' }}>
+                            {/* server rack SVG */}
+                            <svg width="100%" height="20" viewBox="0 0 72 20" style={{ display:'block', marginBottom:5 }}>
+                                <rect x="0" y="0" width="72" height="20" rx="3" fill={`${c}12`} stroke={`${c}28`} strokeWidth=".7"/>
+                                {[0,1,2].map(i=><rect key={i} x={3+i*7} y="4" width="5" height="12" rx="1" fill={`${c}20`} stroke={`${c}35`} strokeWidth=".5"/>)}
+                                {[0,1,2].map(i=><circle key={i} cx={5.5+i*7} cy="17" r="1" fill={c} opacity=".9"/>)}
+                                <text x="38" y="13" fontSize="6.5" fontWeight="700" fill={c} fontFamily="JetBrains Mono,monospace" textAnchor="middle">{id}</text>
+                            </svg>
+                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                                <span style={{ fontSize:6, color:`${c}cc`, fontWeight:700, fontFamily:'JetBrains Mono,monospace' }}>{role}</span>
+                                <span style={{ width:5, height:5, borderRadius:'50%', background:c, display:'inline-block', boxShadow:`0 0 4px ${c}` }}/>
+                            </div>
+                            <LiveBar pct={cpu} color={c} label="CPU" value={`${cpu}%`}/>
+                            <LiveBar pct={mem} color={c} label="MEM" value={`${mem}%`}/>
+                        </div>
+                    ))}
                 </div>
 
-                {/* Storage + Network summary */}
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:7, marginTop:7 }}>
+                {/* Storage + Network */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
                     {[
                         { l:'STORAGE', used:'880 GB', total:'2 TB', pct:44, c:'#22c55e' },
                         { l:'NETWORK', used:'3.5 Gbps', total:'10 Gbps', pct:35, c:'#0ea5e9' },
                     ].map(({ l, used, total, pct, c }) => (
-                        <div key={l} style={{ background:`${c}07`, border:`1px solid ${c}18`, borderRadius:7, padding:'7px 10px' }}>
-                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                                <span style={{ fontSize:6, color:'#1a3040', letterSpacing:'.07em' }}>{l}</span>
-                                <span style={{ fontSize:6.5, color:c, fontWeight:700 }}>{used} <span style={{ color:'#1a3040', fontWeight:400 }}>/ {total}</span></span>
+                        <div key={l} style={{ background:`${c}07`, border:`1px solid ${c}18`, borderRadius:6, padding:'6px 8px' }}>
+                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
+                                <span style={{ fontSize:6, color:'#1a3040', letterSpacing:'.06em' }}>{l}</span>
+                                <span style={{ fontSize:6.5, color:c, fontWeight:700 }}>{used}<span style={{ color:'#1a3040', fontWeight:400 }}>/{total}</span></span>
                             </div>
                             <div style={{ height:4, background:'rgba(255,255,255,.05)', borderRadius:2, overflow:'hidden' }}>
-                                <div style={{ width:`${pct}%`, height:'100%', background:`linear-gradient(90deg,${c}60,${c})`, borderRadius:2 }}/>
+                                <div style={{ width:`${pct}%`, height:'100%', background:`linear-gradient(90deg,${c}55,${c})`, borderRadius:2 }}/>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* ══════════ SECTION 3 — HOW IT WORKS ══════════ */}
-            <div>
-                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:10 }}>
-                    <div style={{ width:3, height:16, borderRadius:2, background:'linear-gradient(180deg,#a78bfa,#f43f5e)' }}/>
-                    <span style={{ fontSize:7.5, color:'#c4b5fd', fontWeight:700, letterSpacing:'.18em' }}>HOW VIGIL WORKS</span>
+            {/* Vigil pipeline: how data flows */}
+            <div style={{ background:'rgba(167,139,250,.04)', border:'1px solid rgba(167,139,250,.13)', borderRadius:12, padding:'12px 13px', display:'flex', flexDirection:'column' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:12 }}>
+                    <span style={{ fontSize:11 }}>⚡</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:'#c4b5fd', fontFamily:'JetBrains Mono,monospace', letterSpacing:'.1em' }}>HOW VIGIL WORKS</span>
                 </div>
 
-                <div style={{ background:'rgba(8,12,28,.5)', border:'1px solid rgba(255,255,255,.05)', borderRadius:10, padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
-                    <HowStep num="1" icon="🔌" color="#0ea5e9" title="Connect Your Cluster"
-                             desc="Point Vigil at any PostgreSQL instance — on-prem, RDS, Aurora, or Supabase. No schema changes required; a read-only pg_monitor role is all that's needed."/>
-                    <div style={{ height:1, background:'rgba(255,255,255,.04)' }}/>
-                    <HowStep num="2" icon="📡" color="#14b8a6" title="Stream Metrics in Real Time"
-                             desc="The Vigil Agent samples pg_stat_statements, pg_stat_replication, and connection pools every second — streaming QPS, latency, cache hit rates, and WAL lag live to your browser."/>
-                    <div style={{ height:1, background:'rgba(255,255,255,.04)' }}/>
-                    <HowStep num="3" icon="🔍" color="#f59e0b" title="Inspect & Alert"
-                             desc="Smart alerts fire on slow queries, high latency spikes, or replication drift. The Query Inspector shows EXPLAIN plans and pg_stat_statements side-by-side so you can pinpoint and fix bottlenecks fast."/>
+                {/* Pipeline steps */}
+                {[
+                    { icon:'🗄', label:'Your Postgres DB', sub:'pg_stat_statements\npg_stat_replication', color:'#0ea5e9' },
+                    { icon:'⚡', label:'Vigil Agent', sub:'Samples every second\nZero schema changes', color:'#a78bfa' },
+                    { icon:'🔍', label:'Analysis Engine', sub:'Anomaly detection\nQuery fingerprinting', color:'#f59e0b' },
+                    { icon:'📊', label:'Your Dashboard', sub:'Live metrics & alerts\nEXPLAIN plans', color:'#22c55e' },
+                ].map(({ icon, label, sub, color }, i, arr) => (
+                    <div key={label}>
+                        <div style={{ display:'flex', alignItems:'center', gap:8, background:`${color}09`, border:`1px solid ${color}22`, borderRadius:8, padding:'8px 10px' }}>
+                            <span style={{ fontSize:16, flexShrink:0 }}>{icon}</span>
+                            <div style={{ flex:1 }}>
+                                <div style={{ fontSize:9, fontWeight:700, color, fontFamily:'Syne,sans-serif' }}>{label}</div>
+                                <div style={{ fontSize:7, color:'#1e3a5f', fontFamily:'DM Sans,sans-serif', marginTop:2, whiteSpace:'pre-line', lineHeight:1.4 }}>{sub}</div>
+                            </div>
+                            <div style={{ width:6, height:6, borderRadius:'50%', background:color, flexShrink:0, boxShadow:`0 0 5px ${color}`, animation:'pulse 2s ease infinite' }}/>
+                        </div>
+                        {i < arr.length - 1 && (
+                            <div style={{ display:'flex', justifyContent:'center', padding:'3px 0' }}>
+                                <svg width="10" height="14" viewBox="0 0 10 14">
+                                    <line x1="5" y1="0" x2="5" y2="9" stroke={color} strokeWidth="1" strokeDasharray="2 1.5" opacity=".6"/>
+                                    <path d="M2,8 L5,13 L8,8" fill="none" stroke={color} strokeWidth="1" opacity=".7"/>
+                                </svg>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        {/* ══ ROW 3 — Solution capabilities ══ */}
+        <div style={{ background:'rgba(14,165,233,.03)', border:'1px solid rgba(14,165,233,.1)', borderRadius:12, padding:'12px 13px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:10 }}>
+                <span style={{ fontSize:14 }}>✅</span>
+                <div>
+                    <div style={{ fontSize:9, fontWeight:800, color:'#22c55e', fontFamily:'Syne,sans-serif', letterSpacing:'.04em' }}>WITH VIGIL — FULL MONITORING COVERAGE</div>
+                    <div style={{ fontSize:7.5, color:'#1a3050', fontFamily:'DM Sans,sans-serif', marginTop:1 }}>Everything you need to keep Postgres healthy, fast, and available</div>
                 </div>
             </div>
-
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:7 }}>
+                <CapCard icon="⚡" title="Real-Time Metrics" desc="QPS, P99 latency, cache hit rates and TPS streamed live every second." color="#0ea5e9"/>
+                <CapCard icon="🔔" title="Smart Alerting" desc="Fires instantly on slow queries, replication drift, or connection saturation." color="#a78bfa"/>
+                <CapCard icon="🔍" title="Query Inspector" desc="EXPLAIN plans and pg_stat_statements — pinpoint bottlenecks in seconds." color="#f59e0b"/>
+                <CapCard icon="🔄" title="Replication Monitor" desc="WAL archiving, streaming lag, and standby health tracked end-to-end." color="#14b8a6"/>
+                <CapCard icon="📈" title="Trend Analysis" desc="Anomaly detection across clusters — spot issues before they become outages." color="#f43f5e"/>
+                <CapCard icon="🔐" title="Access Audit" desc="Full RBAC visibility and compliance trails for every database operation." color="#22c55e"/>
+            </div>
         </div>
     </div>
 );
@@ -614,33 +611,27 @@ const LeftPanel = () => (
             </div>
         </div>
 
-        {/* Content */}
-        <div style={{ position:'relative', zIndex:1, flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        {/* Scrollable content */}
+        <div style={{ position:'relative', zIndex:1, flex:1, display:'flex', flexDirection:'column', overflowY:'auto', overflowX:'hidden' }}>
             {/* Headline */}
-            <div style={{ padding:'16px 26px 12px', flexShrink:0, animation:'fadeUp .6s ease .06s backwards' }}>
-                <h2 style={{ fontSize:22, fontWeight:800, color:'#dde8f2', fontFamily:"'Syne',sans-serif", lineHeight:1.25, letterSpacing:'-.03em', marginBottom:6 }}>
-                    Total observability for{' '}
-                    <span style={{ color:'#0ea5e9', display:'inline-block', animation:'glitch 9s ease-in-out infinite' }}>your Postgres clusters.</span>
+            <div style={{ padding:'14px 26px 10px', flexShrink:0, animation:'fadeUp .6s ease .06s backwards' }}>
+                <h2 style={{ fontSize:20, fontWeight:800, color:'#dde8f2', fontFamily:"'Syne',sans-serif", lineHeight:1.25, letterSpacing:'-.03em', marginBottom:5 }}>
+                    Database issues with{' '}
+                    <span style={{ color:'#ef4444' }}>no visibility?</span>
+                    {' '}Vigil fixes that.
                 </h2>
-                <p style={{ fontSize:10.5, color:'#1a2e4a', lineHeight:1.65, fontFamily:"'DM Sans',sans-serif" }}>
-                    A single pane of glass — connection pools, replication lag, slow-query forensics and storage trends in real time.
+                <p style={{ fontSize:10.5, color:'#1a2e4a', lineHeight:1.6, fontFamily:"'DM Sans',sans-serif" }}>
+                    Complete PostgreSQL monitoring — from cluster health to slow-query forensics — in one place, in real time.
                 </p>
             </div>
 
-            {/* Tool Summary Visual */}
-            <div style={{ padding:'0 26px 12px', flexShrink:0, animation:'fadeUp .6s ease .12s backwards' }}>
-                <ToolSummaryPanel />
-            </div>
-
-            {/* Feature grid */}
-            <div style={{ padding:'0 26px', flex:1, minHeight:0, animation:'fadeUp .6s ease .2s backwards' }}>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
-                    {FEATURES.map(f => <FeatureCard key={f.label} {...f} />)}
-                </div>
+            {/* Main Visual — Problem → Solution */}
+            <div style={{ padding:'0 26px 16px', animation:'fadeUp .6s ease .12s backwards' }}>
+                <VisualPanel />
             </div>
 
             {/* Footer */}
-            <div style={{ padding:'10px 26px 14px', borderTop:'1px solid rgba(255,255,255,.03)', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
+            <div style={{ padding:'10px 26px 14px', borderTop:'1px solid rgba(255,255,255,.03)', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, marginTop:'auto' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:5 }}>
                     <Lock size={9} color="#0f2540" />
                     <span style={{ fontSize:8, color:'#0f2540', fontFamily:"'JetBrains Mono',monospace" }}>End-to-end encrypted · SOC 2 Type II</span>
