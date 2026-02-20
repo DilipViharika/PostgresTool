@@ -1,443 +1,833 @@
-// ==========================================================================
-//  VIGIL — Connection Pool Manager (v1.0)
-// ==========================================================================
-import React, { useState, useEffect, useMemo } from 'react';
-import { THEME } from '../../utils/theme.jsx';
-
+import React, { useState, useEffect } from 'react';
 import {
-    Activity, Server, Database, Clock, AlertTriangle,
-    CheckCircle, XCircle, TrendingUp, Users, Settings,
-    RefreshCcw, Shield, Zap, Power, Network,
-    ArrowRight, BarChart3, PieChart, Filter
+    Database, Plus, Edit, Trash2, Eye, EyeOff, Check, X,
+    Server, Key, User, AlertCircle, CheckCircle, Link as LinkIcon,
+    RefreshCw, ChevronDown
 } from 'lucide-react';
-import {
-    ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip,
-    CartesianGrid, BarChart, Bar, PieChart as RePie, Pie, Cell,
-    LineChart, Line, ReferenceLine
-} from 'recharts';
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   STYLES & ANIMATIONS
-   ═══════════════════════════════════════════════════════════════════════════ */
-const PoolStyles = () => (
-    <style>{`
-        @keyframes poolPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        @keyframes poolSlide { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes poolGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-        
-        .pool-card {
-            background: ${THEME.surface};
-            border: 1px solid ${THEME.border};
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
-        .pool-card:hover {
-            border-color: ${THEME.primary}50;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-        }
-        
-        .pool-stat-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .connection-row {
-            display: grid;
-            grid-template-columns: 80px 1.5fr 1fr 1fr 1fr 1fr 80px;
-            padding: 10px 16px;
-            border-bottom: 1px solid ${THEME.grid}40;
-            align-items: center;
-            font-size: 12px;
-            transition: background 0.15s;
-        }
-        .connection-row:hover { background: ${THEME.surfaceHigh}; }
-        
-        .pool-btn {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid ${THEME.border};
-            background: transparent;
-            color: ${THEME.textDim};
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-        .pool-btn:hover {
-            color: ${THEME.textMain};
-            border-color: ${THEME.primary};
-            background: ${THEME.primary}10;
-        }
-        
-        .forecast-zone {
-            background: repeating-linear-gradient(
-                45deg,
-                ${THEME.warning}05,
-                ${THEME.warning}05 10px,
-                ${THEME.warning}10 10px,
-                ${THEME.warning}10 20px
-            );
-        }
-    `}</style>
-);
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   MOCK DATA GENERATORS
-   ═══════════════════════════════════════════════════════════════════════════ */
-const generateForecastData = () => {
-    const data = [];
-    let load = 45;
-    for (let i = 0; i < 24; i++) {
-        load += (Math.random() - 0.4) * 8; // Random walk
-        load = Math.max(20, Math.min(95, load));
-        // Add artificial spike for "Storm" simulation
-        if (i > 18) load += (i - 18) * 5;
-
-        data.push({
-            time: `${i}:00`,
-            usage: Math.round(load),
-            limit: 100,
-            forecast: i > 18 ? Math.round(load) : null,
-            actual: i <= 18 ? Math.round(load) : null
-        });
-    }
-    return data;
+// ─── Database type definitions ───────────────────────────────────────────────
+const DB_TYPES = {
+    postgresql: {
+        label: 'PostgreSQL',
+        defaultPort: 5432,
+        color: '#336791',
+        accent: '#4a90d9',
+        icon: '🐘',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    mysql: {
+        label: 'MySQL',
+        defaultPort: 3306,
+        color: '#f29111',
+        accent: '#f5a623',
+        icon: '🐬',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    mariadb: {
+        label: 'MariaDB',
+        defaultPort: 3306,
+        color: '#c0765a',
+        accent: '#e8956d',
+        icon: '🦭',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    mssql: {
+        label: 'SQL Server',
+        defaultPort: 1433,
+        color: '#cc2927',
+        accent: '#e84040',
+        icon: '🪟',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl', 'instanceName'],
+    },
+    oracle: {
+        label: 'Oracle',
+        defaultPort: 1521,
+        color: '#f80000',
+        accent: '#ff4444',
+        icon: '🔮',
+        fields: ['host', 'port', 'serviceName', 'username', 'password', 'ssl'],
+    },
+    sqlite: {
+        label: 'SQLite',
+        defaultPort: null,
+        color: '#0f80cc',
+        accent: '#4da6ff',
+        icon: '📦',
+        fields: ['filePath'],
+    },
+    mongodb: {
+        label: 'MongoDB',
+        defaultPort: 27017,
+        color: '#13aa52',
+        accent: '#00ed64',
+        icon: '🍃',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl', 'authSource', 'replicaSet'],
+    },
+    redis: {
+        label: 'Redis',
+        defaultPort: 6379,
+        color: '#dc382c',
+        accent: '#ff6b6b',
+        icon: '⚡',
+        fields: ['host', 'port', 'password', 'database', 'ssl'],
+    },
+    cassandra: {
+        label: 'Cassandra',
+        defaultPort: 9042,
+        color: '#1287b1',
+        accent: '#1ab8f3',
+        icon: '💫',
+        fields: ['host', 'port', 'keyspace', 'username', 'password', 'ssl'],
+    },
+    bigquery: {
+        label: 'BigQuery',
+        defaultPort: null,
+        color: '#4285f4',
+        accent: '#66a3ff',
+        icon: '📊',
+        fields: ['projectId', 'dataset', 'keyFile'],
+    },
+    snowflake: {
+        label: 'Snowflake',
+        defaultPort: 443,
+        color: '#29b5e8',
+        accent: '#7fd8f5',
+        icon: '❄️',
+        fields: ['account', 'warehouse', 'database', 'schema', 'username', 'password', 'role'],
+    },
+    clickhouse: {
+        label: 'ClickHouse',
+        defaultPort: 8123,
+        color: '#ffcc01',
+        accent: '#ffe566',
+        icon: '🖱️',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
 };
 
-const generateConnections = (count) => Array.from({ length: count }, (_, i) => ({
-    pid: 14000 + i,
-    app: ['PaymentService', 'AuthService', 'Reporting', 'WebClient', 'MobileAPI'][i % 5],
-    user: ['postgres', 'app_user', 'readonly', 'analytics'][i % 4],
-    state: i < 5 ? 'active' : i < 15 ? 'idle in transaction' : 'idle',
-    duration: Math.floor(Math.random() * (i < 5 ? 500 : 3600000)), // Active are fast, idle are old
-    age: Math.floor(Math.random() * 7200), // Seconds since connection established
-    wait_event: i % 7 === 0 ? 'ClientRead' : i % 8 === 0 ? 'IO:XactSync' : null,
-    ip: `10.0.2.${100 + i}`
-}));
-
-const generatePoolStats = () => [
-    { name: 'transaction_pool', active: 42, waiting: 0, idle: 18, max: 100, hit_rate: 98.2 },
-    { name: 'session_pool', active: 85, waiting: 12, idle: 5, max: 90, hit_rate: 64.5 },
-    { name: 'read_replica_pool', active: 120, waiting: 45, idle: 0, max: 120, hit_rate: 99.1 }
-];
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SUB-COMPONENTS
-   ═══════════════════════════════════════════════════════════════════════════ */
-const MetricCard = ({ label, value, unit, subtext, icon: Icon, color, trend }) => (
-    <div className="pool-card" style={{ padding: 20, position: 'relative' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-            <div style={{ padding: 10, borderRadius: 8, background: `${color}15` }}>
-                <Icon size={20} color={color} />
-            </div>
-            {trend && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: trend > 0 ? THEME.danger : THEME.success }}>
-                    {trend > 0 ? '+' : ''}{trend}%
-                    <TrendingUp size={12} style={{ transform: trend < 0 ? 'scaleY(-1)' : 'none' }} />
-                </div>
-            )}
-        </div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: THEME.textMain, marginBottom: 4 }} className="pool-stat-value">
-            {value}<span style={{ fontSize: 14, color: THEME.textDim, marginLeft: 4 }}>{unit}</span>
-        </div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {label}
-        </div>
-        {subtext && <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 8 }}>{subtext}</div>}
-    </div>
-);
-
-const StateBadge = ({ state }) => {
-    let color = THEME.textDim;
-    if (state === 'active') color = THEME.success;
-    if (state === 'idle') color = THEME.textMuted;
-    if (state.includes('transaction')) color = THEME.warning;
-
-    return (
-        <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '2px 8px', borderRadius: 4,
-            background: `${color}15`, color: color,
-            fontSize: 11, fontWeight: 600, border: `1px solid ${color}30`
-        }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
-            {state}
-        </span>
-    );
+const FIELD_META = {
+    host:         { label: 'Host',              placeholder: 'localhost',               type: 'text' },
+    port:         { label: 'Port',              placeholder: '',                         type: 'number' },
+    database:     { label: 'Database',          placeholder: 'my_database',             type: 'text' },
+    username:     { label: 'Username',          placeholder: 'admin',                   type: 'text' },
+    password:     { label: 'Password',          placeholder: '••••••••',               type: 'password' },
+    ssl:          { label: 'Enable SSL',        type: 'checkbox' },
+    filePath:     { label: 'File Path',         placeholder: '/path/to/db.sqlite',      type: 'text' },
+    instanceName: { label: 'Instance Name',     placeholder: 'MSSQLSERVER',             type: 'text', optional: true },
+    serviceName:  { label: 'Service Name',      placeholder: 'ORCLCDB',                 type: 'text' },
+    authSource:   { label: 'Auth Source',       placeholder: 'admin',                   type: 'text', optional: true },
+    replicaSet:   { label: 'Replica Set',       placeholder: 'rs0',                     type: 'text', optional: true },
+    keyspace:     { label: 'Keyspace',          placeholder: 'my_keyspace',             type: 'text' },
+    projectId:    { label: 'Project ID',        placeholder: 'my-gcp-project',          type: 'text' },
+    dataset:      { label: 'Dataset',           placeholder: 'my_dataset',              type: 'text' },
+    keyFile:      { label: 'Service Account JSON', placeholder: 'Paste JSON key here', type: 'textarea' },
+    account:      { label: 'Account',           placeholder: 'xy12345.us-east-1',       type: 'text' },
+    warehouse:    { label: 'Warehouse',         placeholder: 'COMPUTE_WH',              type: 'text' },
+    schema:       { label: 'Schema',            placeholder: 'PUBLIC',                  type: 'text', optional: true },
+    role:         { label: 'Role',              placeholder: 'SYSADMIN',                type: 'text', optional: true },
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   MAIN TAB COMPONENT
-   ═══════════════════════════════════════════════════════════════════════════ */
-const ConnectionPoolTab = () => {
-    const [timeRange, setTimeRange] = useState('1h');
-    const [connections, setConnections] = useState([]);
-    const [forecast, setForecast] = useState([]);
-    const [pools, setPools] = useState([]);
-    const [filterState, setFilterState] = useState('all');
-
-    // Simulate real-time updates
-    useEffect(() => {
-        setConnections(generateConnections(25));
-        setForecast(generateForecastData());
-        setPools(generatePoolStats());
-
-        const interval = setInterval(() => {
-            setConnections(prev => prev.map(c => ({
-                ...c,
-                duration: c.state === 'active' ? c.duration + 1000 : c.duration,
-                age: c.age + 1
-            })));
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // Derived Metrics
-    const totalConnections = connections.length;
-    const activeCount = connections.filter(c => c.state === 'active').length;
-    const idleTxCount = connections.filter(c => c.state.includes('transaction')).length;
-    const poolUtilization = Math.round((totalConnections / 100) * 100); // Assuming 100 max
-
-    const ageDistribution = useMemo(() => {
-        const buckets = { '<1m': 0, '1-5m': 0, '5-30m': 0, '30m+': 0 };
-        connections.forEach(c => {
-            if (c.age < 60) buckets['<1m']++;
-            else if (c.age < 300) buckets['1-5m']++;
-            else if (c.age < 1800) buckets['5-30m']++;
-            else buckets['30m+']++;
-        });
-        return Object.entries(buckets).map(([k,v]) => ({ name: k, count: v }));
-    }, [connections]);
-
-    const terminateConnection = (pid) => {
-        if(confirm(`Are you sure you want to terminate backend PID ${pid}?`)) {
-            setConnections(prev => prev.filter(c => c.pid !== pid));
-        }
+const defaultFormData = (dbType = 'postgresql') => {
+    const meta = DB_TYPES[dbType];
+    return {
+        name: '',
+        dbType,
+        host: '',
+        port: meta.defaultPort ? String(meta.defaultPort) : '',
+        database: '',
+        username: '',
+        password: '',
+        ssl: false,
+        isDefault: false,
+        filePath: '',
+        instanceName: '',
+        serviceName: '',
+        authSource: '',
+        replicaSet: '',
+        keyspace: '',
+        projectId: '',
+        dataset: '',
+        keyFile: '',
+        account: '',
+        warehouse: '',
+        schema: '',
+        role: '',
     };
+};
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const S = {
+    root: {
+        fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+        minHeight: '100vh',
+        background: '#0d0f1a',
+        color: '#c9d1d9',
+        padding: '32px 28px',
+    },
+    card: (accent) => ({
+        background: 'rgba(255,255,255,0.02)',
+        border: `1px solid rgba(255,255,255,0.06)`,
+        borderTop: `2px solid ${accent}55`,
+        borderRadius: 10,
+        padding: 20,
+        transition: 'all 0.2s',
+        position: 'relative',
+        overflow: 'hidden',
+    }),
+    badge: (color) => ({
+        display: 'inline-flex', alignItems: 'center', gap: 5,
+        padding: '3px 10px', borderRadius: 4, fontSize: 11, fontWeight: 700,
+        background: `${color}22`, color: color,
+        border: `1px solid ${color}44`, letterSpacing: '0.05em',
+    }),
+    btn: (bg, border, color) => ({
+        background: bg, border: `1px solid ${border}`, borderRadius: 7,
+        padding: '8px 14px', color, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+        transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 6,
+        letterSpacing: '0.02em',
+    }),
+    input: (hasError) => ({
+        width: '100%', boxSizing: 'border-box',
+        background: 'rgba(255,255,255,0.03)',
+        border: `1px solid ${hasError ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+        borderRadius: 7, padding: '9px 12px', color: '#e5e7eb', fontSize: 13,
+        outline: 'none', transition: 'border-color 0.2s',
+        fontFamily: 'inherit',
+    }),
+    label: {
+        display: 'block', fontSize: 11, fontWeight: 700,
+        color: '#6b7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em',
+    },
+};
+
+// ─── DB Type Selector ─────────────────────────────────────────────────────────
+const DBTypeSelector = ({ value, onChange }) => {
+    const [open, setOpen] = useState(false);
+    const current = DB_TYPES[value];
 
     return (
-        <div style={{ padding: '0 24px 40px', maxWidth: 1600, margin: '0 auto' }}>
-            <PoolStyles />
-
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 12 }}>
-                <div>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, color: THEME.textMain, margin: 0 }}>Connection Pool Manager</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, fontSize: 13, color: THEME.textDim }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: THEME.success, boxShadow: `0 0 8px ${THEME.success}` }} />
-                            PgBouncer Active
-                        </span>
-                        <span>•</span>
-                        <span>Uptime: 14d 2h</span>
-                        <span>•</span>
-                        <span>Version 1.18.0</span>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                    <button className="pool-btn" onClick={() => setConnections(generateConnections(25))}>
-                        <RefreshCcw size={14} /> Refresh
-                    </button>
-                    <button className="pool-btn" style={{ background: THEME.primary, color: '#fff', borderColor: THEME.primary }}>
-                        <Settings size={14} /> Pool Config
-                    </button>
-                </div>
-            </div>
-
-            {/* KPI Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
-                <MetricCard
-                    label="Total Connections" value={totalConnections} unit="/ 100"
-                    icon={Users} color={THEME.primary}
-                    subtext={`${activeCount} Active · ${totalConnections - activeCount} Idle`}
-                />
-                <MetricCard
-                    label="Pool Utilization" value={poolUtilization} unit="%"
-                    icon={Activity} color={poolUtilization > 85 ? THEME.danger : THEME.success}
-                    trend={5.2}
-                    subtext="Approaching saturation limit"
-                />
-                <MetricCard
-                    label="Avg Wait Time" value="12" unit="ms"
-                    icon={Clock} color={THEME.warning}
-                    subtext="Queue depth: 4 clients"
-                />
-                <MetricCard
-                    label="Idle in Transaction" value={idleTxCount} unit="conn"
-                    icon={AlertTriangle} color={idleTxCount > 0 ? THEME.danger : THEME.textDim}
-                    subtext={idleTxCount > 0 ? "Potential holding locks" : "Healthy state"}
-                />
-            </div>
-
-            {/* Pools Overview & Saturation Forecast */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: 20, marginBottom: 24 }}>
-
-                {/* Pool List */}
-                <div className="pool-card" style={{ padding: 20 }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: '0 0 16px', display: 'flex', justifyContent: 'space-between' }}>
-                        Pool Efficiency
-                        <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 400 }}>Hit Rate / Saturation</span>
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {pools.map(pool => (
-                            <div key={pool.name}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12 }}>
-                                    <span style={{ fontWeight: 600, color: THEME.textMain }}>{pool.name}</span>
-                                    <span style={{ fontFamily: 'monospace', color: pool.active > pool.max * 0.9 ? THEME.danger : THEME.textDim }}>
-                                        {pool.active}/{pool.max} ({Math.round(pool.active/pool.max*100)}%)
-                                    </span>
+        <div style={{ position: 'relative' }}>
+            <label style={S.label}>Database Type *</label>
+            <button
+                type="button"
+                onClick={() => setOpen(o => !o)}
+                style={{
+                    ...S.btn('rgba(255,255,255,0.04)', 'rgba(255,255,255,0.12)', '#e5e7eb'),
+                    width: '100%', justifyContent: 'space-between', padding: '10px 14px', fontSize: 14,
+                }}
+            >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 20 }}>{current.icon}</span>
+          <span style={{ fontWeight: 600 }}>{current.label}</span>
+          <span style={S.badge(current.accent)}>:{current.defaultPort || 'N/A'}</span>
+        </span>
+                <ChevronDown size={16} style={{ color: '#6b7280', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
+            {open && (
+                <div style={{
+                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 200,
+                    background: '#151726', border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 10, overflow: 'hidden',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', maxHeight: 360, overflowY: 'auto' }}>
+                        {Object.entries(DB_TYPES).map(([key, db]) => (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => { onChange(key); setOpen(false); }}
+                                style={{
+                                    background: key === value ? `${db.accent}15` : 'transparent',
+                                    border: 'none',
+                                    borderLeft: key === value ? `3px solid ${db.accent}` : '3px solid transparent',
+                                    padding: '10px 14px', cursor: 'pointer', textAlign: 'left',
+                                    display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = `${db.accent}12`}
+                                onMouseLeave={e => e.currentTarget.style.background = key === value ? `${db.accent}15` : 'transparent'}
+                            >
+                                <span style={{ fontSize: 18 }}>{db.icon}</span>
+                                <div>
+                                    <div style={{ fontSize: 13, fontWeight: 600, color: key === value ? db.accent : '#e5e7eb' }}>{db.label}</div>
+                                    <div style={{ fontSize: 11, color: '#6b7280' }}>port {db.defaultPort || '—'}</div>
                                 </div>
-                                <div style={{ height: 6, background: THEME.grid, borderRadius: 3, overflow: 'hidden', marginBottom: 4 }}>
-                                    <div style={{
-                                        width: `${(pool.active / pool.max) * 100}%`, height: '100%',
-                                        background: pool.active > pool.max * 0.9 ? THEME.danger : THEME.primary,
-                                        transition: 'width 0.5s ease'
-                                    }} />
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: THEME.textDim }}>
-                                    <span>Wait Queue: {pool.waiting}</span>
-                                    <span style={{ color: pool.hit_rate > 90 ? THEME.success : THEME.warning }}>Hit Rate: {pool.hit_rate}%</span>
-                                </div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>
-
-                {/* Saturation Forecast */}
-                <div className="pool-card" style={{ padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                        <div>
-                            <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Pool Saturation Forecast</h3>
-                            <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4 }}>AI-predicted usage trend for next 4 hours</div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}>
-                                <span style={{ width: 8, height: 8, background: THEME.primary, borderRadius: 2 }} /> Actual
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}>
-                                <span style={{ width: 8, height: 8, background: THEME.warning, borderRadius: 2, opacity: 0.5 }} /> Predicted
-                            </div>
-                        </div>
-                    </div>
-                    <div style={{ height: 200, width: '100%' }}>
-                        <ResponsiveContainer>
-                            <AreaChart data={forecast}>
-                                <defs>
-                                    <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor={THEME.primary} stopOpacity={0}/>
-                                    </linearGradient>
-                                    <pattern id="stripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                                        <rect width="4" height="8" transform="translate(0,0)" fill={THEME.warning} fillOpacity="0.1" />
-                                    </pattern>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
-                                <XAxis dataKey="time" tick={{fontSize: 10, fill: THEME.textDim}} axisLine={false} tickLine={false} />
-                                <YAxis tick={{fontSize: 10, fill: THEME.textDim}} axisLine={false} tickLine={false} />
-                                <Tooltip
-                                    contentStyle={{ background: THEME.surface, borderColor: THEME.border, borderRadius: 8 }}
-                                    itemStyle={{ fontSize: 12, fontWeight: 600 }}
-                                />
-                                <ReferenceLine y={90} stroke={THEME.danger} strokeDasharray="3 3" label={{ value: "Critical Limit", fill: THEME.danger, fontSize: 10 }} />
-                                <Area type="monotone" dataKey="actual" stroke={THEME.primary} fill="url(#colorUsage)" strokeWidth={2} />
-                                <Area type="monotone" dataKey="forecast" stroke={THEME.warning} fill="url(#stripe)" strokeDasharray="5 5" strokeWidth={2} />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-
-            {/* Connection Analytics & List */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: 20 }}>
-
-                {/* Age Distribution */}
-                <div className="pool-card" style={{ padding: 20 }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: '0 0 20px' }}>Connection Age</h3>
-                    <div style={{ height: 200 }}>
-                        <ResponsiveContainer>
-                            <BarChart data={ageDistribution} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={THEME.grid} />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" tick={{fontSize: 11, fill: THEME.textDim}} width={50} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{fill: THEME.grid}} contentStyle={{ background: THEME.surface, borderColor: THEME.border }} />
-                                <Bar dataKey="count" fill={THEME.info} radius={[0, 4, 4, 0]} barSize={20} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div style={{ marginTop: 20, padding: 12, background: THEME.surfaceHigh, borderRadius: 8, fontSize: 11, color: THEME.textDim, lineHeight: 1.5 }}>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                            <AlertTriangle size={12} color={THEME.warning} />
-                            <strong style={{ color: THEME.warning }}>Optimization Tip</strong>
-                        </div>
-                        3 connections are older than 30m. Consider lowering <code>server_idle_timeout</code> to free up slots.
-                    </div>
-                </div>
-
-                {/* Connection List */}
-                <div className="pool-card" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Active Backends</h3>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                            <button className="pool-btn" onClick={() => setFilterState('all')} style={{ background: filterState === 'all' ? THEME.primary + '20' : 'transparent', color: filterState === 'all' ? THEME.primary : THEME.textDim }}>All</button>
-                            <button className="pool-btn" onClick={() => setFilterState('active')} style={{ background: filterState === 'active' ? THEME.success + '20' : 'transparent', color: filterState === 'active' ? THEME.success : THEME.textDim }}>Active</button>
-                            <button className="pool-btn" onClick={() => setFilterState('idle in transaction')} style={{ background: filterState === 'idle in transaction' ? THEME.warning + '20' : 'transparent', color: filterState === 'idle in transaction' ? THEME.warning : THEME.textDim }}>Blocking</button>
-                        </div>
-                    </div>
-
-                    {/* Table Header */}
-                    <div className="connection-row" style={{ background: THEME.surfaceHigh, fontWeight: 700, color: THEME.textDim, borderBottom: `1px solid ${THEME.border}` }}>
-                        <div>PID</div>
-                        <div>Application / IP</div>
-                        <div>User</div>
-                        <div>State</div>
-                        <div>Duration</div>
-                        <div>Wait Event</div>
-                        <div style={{ textAlign: 'right' }}>Action</div>
-                    </div>
-
-                    {/* Table Body */}
-                    <div style={{ overflowY: 'auto', maxHeight: 400 }}>
-                        {connections
-                            .filter(c => filterState === 'all' || c.state === filterState)
-                            .map(conn => (
-                                <div key={conn.pid} className="connection-row">
-                                    <div style={{ fontFamily: 'monospace', color: THEME.primary }}>{conn.pid}</div>
-                                    <div>
-                                        <div style={{ fontWeight: 600, color: THEME.textMain }}>{conn.app}</div>
-                                        <div style={{ fontSize: 10, color: THEME.textDim }}>{conn.ip}</div>
-                                    </div>
-                                    <div style={{ color: THEME.textDim }}>{conn.user}</div>
-                                    <div><StateBadge state={conn.state} /></div>
-                                    <div style={{ fontFamily: 'monospace', color: conn.duration > 5000 ? THEME.warning : THEME.textMain }}>
-                                        {(conn.duration / 1000).toFixed(2)}s
-                                    </div>
-                                    <div style={{ color: conn.wait_event ? THEME.info : THEME.textDim, fontSize: 11 }}>
-                                        {conn.wait_event || '—'}
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <button
-                                            onClick={() => terminateConnection(conn.pid)}
-                                            style={{
-                                                padding: 6, borderRadius: 4, border: 'none',
-                                                background: `${THEME.danger}15`, color: THEME.danger,
-                                                cursor: 'pointer', transition: 'all 0.2s'
-                                            }}
-                                            title="Terminate Backend"
-                                        >
-                                            <Power size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                    </div>
-                </div>
-            </div>
+            )}
         </div>
     );
 };
 
-export default ConnectionPoolTab;
+// ─── Dynamic Form Fields ──────────────────────────────────────────────────────
+const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword, togglePasswordVisibility }) => {
+    const fields = DB_TYPES[dbType].fields;
+    const rows = [];
+
+    // Group host+port together, port+database together, etc.
+    let i = 0;
+    while (i < fields.length) {
+        const f = fields[i];
+        const meta = FIELD_META[f];
+
+        if (meta.type === 'checkbox') {
+            rows.push(
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <input
+                        type="checkbox"
+                        id={`chk-${f}`}
+                        checked={!!formData[f]}
+                        onChange={e => setFormData(p => ({ ...p, [f]: e.target.checked }))}
+                        style={{ cursor: 'pointer', accentColor: '#818cf8', width: 16, height: 16 }}
+                    />
+                    <label htmlFor={`chk-${f}`} style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: '#9ca3af' }}>
+                        {meta.label}
+                    </label>
+                </div>
+            );
+            i++;
+            continue;
+        }
+
+        if (meta.type === 'textarea') {
+            rows.push(
+                <div key={f}>
+                    <label style={S.label}>{meta.label} {!meta.optional && '*'}</label>
+                    <textarea
+                        value={formData[f] || ''}
+                        onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
+                        placeholder={meta.placeholder}
+                        rows={5}
+                        style={{ ...S.input(!!formErrors[f]), resize: 'vertical', lineHeight: 1.5 }}
+                        onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                        onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                    />
+                    {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
+                </div>
+            );
+            i++;
+            continue;
+        }
+
+        // Pair host+port side by side
+        if (f === 'host' && fields[i + 1] === 'port') {
+            rows.push(
+                <div key="host-port" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+                    {['host', 'port'].map(field => {
+                        const m = FIELD_META[field];
+                        return (
+                            <div key={field}>
+                                <label style={S.label}>{m.label} *</label>
+                                <input
+                                    type={m.type}
+                                    value={formData[field] || ''}
+                                    onChange={e => setFormData(p => ({ ...p, [field]: e.target.value }))}
+                                    placeholder={field === 'port' ? (DB_TYPES[dbType].defaultPort || '') : m.placeholder}
+                                    style={S.input(!!formErrors[field])}
+                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                    onBlur={e => e.currentTarget.style.borderColor = formErrors[field] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                                />
+                                {formErrors[field] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[field]}</div>}
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+            i += 2;
+            continue;
+        }
+
+        // Password field with toggle
+        if (meta.type === 'password') {
+            rows.push(
+                <div key={f}>
+                    <label style={S.label}>{meta.label} *</label>
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={formData[f] || ''}
+                            onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
+                            placeholder={meta.placeholder}
+                            style={{ ...S.input(!!formErrors[f]), paddingRight: 42 }}
+                            onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                            onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                        />
+                        <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                            style={{
+                                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                                background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 4,
+                            }}
+                        >
+                            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                    </div>
+                    {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
+                </div>
+            );
+            i++;
+            continue;
+        }
+
+        // Default text/number field
+        rows.push(
+            <div key={f}>
+                <label style={S.label}>{meta.label} {!meta.optional ? '*' : <span style={{ color: '#4b5563', textTransform: 'none', fontSize: 10 }}>(optional)</span>}</label>
+                <input
+                    type={meta.type || 'text'}
+                    value={formData[f] || ''}
+                    onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
+                    placeholder={meta.placeholder}
+                    style={S.input(!!formErrors[f])}
+                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                    onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                />
+                {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
+            </div>
+        );
+        i++;
+    }
+
+    return <>{rows}</>;
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+const ConnectionsTab = () => {
+    const [connections, setConnections] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [editingConnection, setEditingConnection] = useState(null);
+    const [testingConnection, setTestingConnection] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [formData, setFormData] = useState(defaultFormData());
+    const [formErrors, setFormErrors] = useState({});
+
+    const API_BASE = 'http://localhost:5000';
+    const getAuthToken = () => localStorage.getItem('authToken');
+
+    useEffect(() => { fetchConnections(); }, []);
+
+    const fetchConnections = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/connections`, {
+                headers: { Authorization: `Bearer ${getAuthToken()}` },
+            });
+            if (res.ok) setConnections(await res.json());
+        } catch (e) { console.error(e); }
+    };
+
+    const validateForm = () => {
+        const errors = {};
+        const dbMeta = DB_TYPES[formData.dbType];
+        const fields = dbMeta.fields.filter(f => FIELD_META[f].type !== 'checkbox');
+
+        if (!formData.name.trim()) errors.name = 'Name is required';
+
+        fields.forEach(f => {
+            const meta = FIELD_META[f];
+            if (meta.optional || meta.type === 'checkbox') return;
+            if (f === 'password' && editingConnection) return; // allow blank on edit
+            const val = formData[f];
+            if (!val || (typeof val === 'string' && !val.trim())) {
+                errors[f] = `${meta.label} is required`;
+            }
+        });
+
+        if (formData.port) {
+            const p = parseInt(formData.port);
+            if (isNaN(p) || p < 1 || p > 65535) errors.port = 'Port must be 1–65535';
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const saveConnection = async () => {
+        if (!validateForm()) return;
+        try {
+            const url = editingConnection
+                ? `${API_BASE}/api/connections/${editingConnection.id}`
+                : `${API_BASE}/api/connections`;
+            const res = await fetch(url, {
+                method: editingConnection ? 'PUT' : 'POST',
+                headers: { Authorization: `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            if (res.ok) { await fetchConnections(); closeModal(); }
+            else { const e = await res.json(); alert(e.error || 'Failed to save'); }
+        } catch (e) { alert('Failed to save connection'); }
+    };
+
+    const deleteConnection = async (id) => {
+        if (!confirm('Delete this connection?')) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/connections/${id}`, {
+                method: 'DELETE', headers: { Authorization: `Bearer ${getAuthToken()}` },
+            });
+            if (res.ok) fetchConnections();
+            else alert('Failed to delete');
+        } catch (e) { console.error(e); }
+    };
+
+    const testConnection = async (conn) => {
+        setTestingConnection(conn.id);
+        try {
+            const res = await fetch(`${API_BASE}/api/connections/${conn.id}/test`, {
+                method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}` },
+            });
+            const r = await res.json();
+            alert(r.success ? '✅ Connection successful!' : `❌ Failed: ${r.error}`);
+        } catch (e) { alert('Failed to test'); }
+        finally { setTestingConnection(null); }
+    };
+
+    const setDefaultConnection = async (id) => {
+        try {
+            const res = await fetch(`${API_BASE}/api/connections/${id}/default`, {
+                method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}` },
+            });
+            if (res.ok) fetchConnections();
+        } catch (e) { console.error(e); }
+    };
+
+    const openNew = () => {
+        setEditingConnection(null);
+        setFormData(defaultFormData());
+        setFormErrors({});
+        setShowPassword(false);
+        setShowModal(true);
+    };
+
+    const openEdit = (conn) => {
+        setEditingConnection(conn);
+        setFormData({ ...defaultFormData(conn.dbType || 'postgresql'), ...conn, password: '' });
+        setFormErrors({});
+        setShowPassword(false);
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setEditingConnection(null);
+        setFormData(defaultFormData());
+        setFormErrors({});
+    };
+
+    const handleDbTypeChange = (type) => {
+        setFormData(prev => ({
+            ...defaultFormData(type),
+            name: prev.name, // preserve connection name
+        }));
+        setFormErrors({});
+    };
+
+    return (
+        <div style={S.root}>
+            {/* ── Header ── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+                <div>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f0f0f0', margin: 0, letterSpacing: '-0.02em' }}>
+                        Database Connections
+                    </h2>
+                    <p style={{ fontSize: 13, color: '#4b5563', marginTop: 4, fontWeight: 500 }}>
+                        {connections.length} connection{connections.length !== 1 ? 's' : ''} · PostgreSQL, MySQL, MongoDB, Redis & more
+                    </p>
+                </div>
+                <button
+                    onClick={openNew}
+                    style={S.btn('rgba(99,102,241,0.18)', 'rgba(99,102,241,0.4)', '#a5b4fc')}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.28)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.18)'}
+                >
+                    <Plus size={16} />
+                    New Connection
+                </button>
+            </div>
+
+            {/* ── Cards Grid ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+                {connections.map(conn => {
+                    const dbMeta = DB_TYPES[conn.dbType] || DB_TYPES.postgresql;
+                    return (
+                        <div key={conn.id} style={S.card(dbMeta.accent)}>
+                            {/* Subtle glow top-left */}
+                            <div style={{
+                                position: 'absolute', top: -40, left: -40, width: 120, height: 120,
+                                borderRadius: '50%', background: `${dbMeta.accent}08`, pointerEvents: 'none',
+                            }} />
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <span style={{ fontSize: 24 }}>{dbMeta.icon}</span>
+                                    <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 15, fontWeight: 700, color: '#f0f0f0' }}>{conn.name}</span>
+                                            {conn.isDefault && <span style={S.badge('#4ade80')}>DEFAULT</span>}
+                                        </div>
+                                        <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2 }}>
+                                            <span style={{ color: dbMeta.accent }}>{dbMeta.label}</span>
+                                            {conn.host && ` · ${conn.host}${conn.port ? `:${conn.port}` : ''}`}
+                                            {conn.filePath && ` · ${conn.filePath}`}
+                                            {conn.account && ` · ${conn.account}`}
+                                            {conn.projectId && ` · ${conn.projectId}`}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Key-value details */}
+                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 6, padding: '8px 12px', marginBottom: 14, fontSize: 12 }}>
+                                {conn.database && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                        <span style={{ color: '#4b5563' }}>database</span>
+                                        <span style={{ color: '#9ca3af' }}>{conn.database}</span>
+                                    </div>
+                                )}
+                                {conn.username && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                        <span style={{ color: '#4b5563' }}>user</span>
+                                        <span style={{ color: '#9ca3af' }}>{conn.username}</span>
+                                    </div>
+                                )}
+                                {conn.keyspace && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                        <span style={{ color: '#4b5563' }}>keyspace</span>
+                                        <span style={{ color: '#9ca3af' }}>{conn.keyspace}</span>
+                                    </div>
+                                )}
+                                {conn.warehouse && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                        <span style={{ color: '#4b5563' }}>warehouse</span>
+                                        <span style={{ color: '#9ca3af' }}>{conn.warehouse}</span>
+                                    </div>
+                                )}
+                                {conn.dataset && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                        <span style={{ color: '#4b5563' }}>dataset</span>
+                                        <span style={{ color: '#9ca3af' }}>{conn.dataset}</span>
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ color: '#4b5563' }}>ssl</span>
+                                    <span style={{ color: conn.ssl ? '#4ade80' : '#374151' }}>{conn.ssl ? 'on' : 'off'}</span>
+                                </div>
+                            </div>
+
+                            {/* Last test status */}
+                            {conn.lastTested && (
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 6,
+                                    padding: '6px 10px', borderRadius: 6, marginBottom: 14,
+                                    background: conn.status === 'success' ? 'rgba(74,222,128,0.06)' : 'rgba(239,68,68,0.06)',
+                                    border: `1px solid ${conn.status === 'success' ? 'rgba(74,222,128,0.15)' : 'rgba(239,68,68,0.15)'}`,
+                                }}>
+                                    {conn.status === 'success'
+                                        ? <CheckCircle size={13} color="#4ade80" />
+                                        : <AlertCircle size={13} color="#ef4444" />}
+                                    <span style={{ fontSize: 11, color: conn.status === 'success' ? '#4ade80' : '#ef4444', fontWeight: 600 }}>
+                    {conn.status === 'success' ? 'Last test passed' : 'Last test failed'}
+                  </span>
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button
+                                    onClick={() => testConnection(conn)}
+                                    disabled={testingConnection === conn.id}
+                                    style={{
+                                        ...S.btn('rgba(99,102,241,0.12)', 'rgba(99,102,241,0.25)', '#818cf8'),
+                                        flex: 1, justifyContent: 'center', opacity: testingConnection === conn.id ? 0.5 : 1,
+                                    }}
+                                    onMouseEnter={e => testingConnection !== conn.id && (e.currentTarget.style.background = 'rgba(99,102,241,0.22)')}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.12)'}
+                                >
+                                    {testingConnection === conn.id
+                                        ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Testing…</>
+                                        : <><LinkIcon size={12} /> Test</>}
+                                </button>
+
+                                {!conn.isDefault && (
+                                    <button
+                                        onClick={() => setDefaultConnection(conn.id)}
+                                        style={S.btn('rgba(74,222,128,0.1)', 'rgba(74,222,128,0.25)', '#4ade80')}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,222,128,0.2)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(74,222,128,0.1)'}
+                                        title="Set as default"
+                                    >
+                                        <Check size={12} />
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={() => openEdit(conn)}
+                                    style={S.btn('rgba(255,255,255,0.04)', 'rgba(255,255,255,0.1)', '#9ca3af')}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                                    title="Edit"
+                                >
+                                    <Edit size={12} />
+                                </button>
+
+                                <button
+                                    onClick={() => deleteConnection(conn.id)}
+                                    disabled={conn.isDefault}
+                                    style={{
+                                        ...S.btn(
+                                            conn.isDefault ? 'rgba(107,114,128,0.06)' : 'rgba(239,68,68,0.1)',
+                                            conn.isDefault ? 'rgba(107,114,128,0.15)' : 'rgba(239,68,68,0.25)',
+                                            conn.isDefault ? '#374151' : '#ef4444'
+                                        ),
+                                        cursor: conn.isDefault ? 'not-allowed' : 'pointer',
+                                    }}
+                                    onMouseEnter={e => !conn.isDefault && (e.currentTarget.style.background = 'rgba(239,68,68,0.2)')}
+                                    onMouseLeave={e => !conn.isDefault && (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
+                                    title={conn.isDefault ? "Can't delete default" : 'Delete'}
+                                >
+                                    <Trash2 size={12} />
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {/* Empty state */}
+                {connections.length === 0 && (
+                    <div style={{
+                        gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px',
+                        background: 'rgba(255,255,255,0.01)', border: '1px dashed rgba(255,255,255,0.07)',
+                        borderRadius: 10,
+                    }}>
+                        <div style={{ fontSize: 48, marginBottom: 16 }}>🔌</div>
+                        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#e5e7eb', marginBottom: 8 }}>No connections yet</h3>
+                        <p style={{ fontSize: 13, color: '#4b5563', marginBottom: 20 }}>
+                            Connect to PostgreSQL, MySQL, MongoDB, Redis, Snowflake and more
+                        </p>
+                        <button
+                            onClick={openNew}
+                            style={S.btn('rgba(99,102,241,0.18)', 'rgba(99,102,241,0.4)', '#a5b4fc')}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.28)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.18)'}
+                        >
+                            <Plus size={16} /> Add First Connection
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* ── Modal ── */}
+            {showModal && (
+                <>
+                    <div onClick={closeModal} style={{
+                        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+                        backdropFilter: 'blur(6px)', zIndex: 999,
+                    }} />
+                    <div style={{
+                        position: 'fixed', top: '50%', left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '90%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto',
+                        background: '#111420',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderTop: `2px solid ${DB_TYPES[formData.dbType].accent}66`,
+                        borderRadius: 14, padding: 30, zIndex: 1000,
+                        boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
+                        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                    }}>
+                        {/* Modal header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f0f0f0', margin: 0 }}>
+                                {editingConnection ? '✏️ Edit Connection' : '🔌 New Connection'}
+                            </h2>
+                            <button
+                                onClick={closeModal}
+                                style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 6, borderRadius: 6 }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#6b7280'; }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                            {/* DB Type selector */}
+                            <DBTypeSelector value={formData.dbType} onChange={handleDbTypeChange} />
+
+                            {/* Connection name */}
+                            <div>
+                                <label style={S.label}>Connection Name *</label>
+                                <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
+                                    placeholder={`My ${DB_TYPES[formData.dbType].label} DB`}
+                                    style={S.input(!!formErrors.name)}
+                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                    onBlur={e => e.currentTarget.style.borderColor = formErrors.name ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                                />
+                                {formErrors.name && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors.name}</div>}
+                            </div>
+
+                            {/* Dynamic fields per DB type */}
+                            <DynamicFields
+                                dbType={formData.dbType}
+                                formData={formData}
+                                setFormData={setFormData}
+                                formErrors={formErrors}
+                                showPassword={showPassword}
+                                togglePasswordVisibility={() => setShowPassword(p => !p)}
+                            />
+
+                            {/* Set as default */}
+                            {!editingConnection && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <input
+                                        type="checkbox"
+                                        id="isDefault"
+                                        checked={formData.isDefault}
+                                        onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
+                                        style={{ cursor: 'pointer', accentColor: '#818cf8', width: 16, height: 16 }}
+                                    />
+                                    <label htmlFor="isDefault" style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: '#9ca3af' }}>
+                                        Set as default connection
+                                    </label>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal footer */}
+                        <div style={{ display: 'flex', gap: 10, marginTop: 28, justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={closeModal}
+                                style={S.btn('rgba(255,255,255,0.04)', 'rgba(255,255,255,0.1)', '#9ca3af')}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveConnection}
+                                style={S.btn('rgba(99,102,241,0.2)', 'rgba(99,102,241,0.45)', '#a5b4fc')}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.32)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.2)'}
+                            >
+                                <Check size={16} />
+                                {editingConnection ? 'Update' : 'Add Connection'}
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+      `}</style>
+        </div>
+    );
+};
+
+export default ConnectionsTab;
