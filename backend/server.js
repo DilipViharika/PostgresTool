@@ -1,19 +1,21 @@
-import express                from 'express';
-import cors                   from 'cors';
-import http                   from 'http';
-import { Pool }               from 'pg';
-import jwt                    from 'jsonwebtoken';
-import bcrypt                 from 'bcryptjs';
-import { v4 as uuid }         from 'uuid';
-import { WebSocketServer }    from 'ws';
-import fs                     from 'fs/promises';
-import path                   from 'path';
-import { fileURLToPath }      from 'url';
-import { dirname }            from 'path';
+import 'dotenv/config';
 
-import repoRoutes             from './routes/repoRoutes.js';
-import EnhancedAlertEngine    from './enhanced-alerts.js';
-import EmailNotificationService from './email-notification-service.js';
+import express                  from 'express';
+import cors                     from 'cors';
+import http                     from 'http';
+import { Pool }                 from 'pg';
+import jwt                      from 'jsonwebtoken';
+import bcrypt                   from 'bcryptjs';
+import { v4 as uuid }           from 'uuid';
+import { WebSocketServer }      from 'ws';
+import fs                       from 'fs/promises';
+import path                     from 'path';
+import { fileURLToPath }        from 'url';
+import { dirname }              from 'path';
+
+import repoRoutes               from './routes/repoRoutes.js';
+import EnhancedAlertEngine      from './services/alertService.js';
+import EmailNotificationService from './services/emailService.js';
 
 import { buildAuthenticate, requireScreen } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
@@ -86,6 +88,28 @@ const CONFIG = Object.freeze({
         },
     },
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENVIRONMENT VALIDATION
+// ─────────────────────────────────────────────────────────────────────────────
+(function validateEnv() {
+    const required = ['PGHOST', 'PGPASSWORD'];
+    const missing  = required.filter(k => !process.env[k]);
+    if (missing.length) {
+        console.error(JSON.stringify({
+            ts:  new Date().toISOString(),
+            level: 'ERROR',
+            msg: `Missing required environment variables: ${missing.join(', ')}. Check your .env file.`,
+        }));
+        process.exit(1);
+    }
+    if (process.env.JWT_SECRET === 'vigil-change-me-in-production' || !process.env.JWT_SECRET) {
+        console.warn(JSON.stringify({
+            ts: new Date().toISOString(), level: 'WARN',
+            msg: 'JWT_SECRET is using the default insecure value. Set a strong secret in production.',
+        }));
+    }
+})();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LOGGER
@@ -161,6 +185,32 @@ function rateLimiter(req, res, next) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// LOGIN LOCKOUT (in-memory, resets on restart)
+// Max 5 failed attempts per 15 minutes per username
+// ─────────────────────────────────────────────────────────────────────────────
+const loginAttempts = new Map();
+const LOGIN_MAX_ATTEMPTS  = 5;
+const LOGIN_WINDOW_MS     = 15 * 60 * 1000; // 15 minutes
+
+function recordLoginAttempt(username, success) {
+    const now    = Date.now();
+    const record = loginAttempts.get(username) || { count: 0, windowStart: now };
+    if (now - record.windowStart > LOGIN_WINDOW_MS) {
+        record.count = 0; record.windowStart = now;
+    }
+    if (success) { loginAttempts.delete(username); return; }
+    record.count++;
+    loginAttempts.set(username, record);
+}
+
+function isLoginLocked(username) {
+    const record = loginAttempts.get(username);
+    if (!record) return false;
+    if (Date.now() - record.windowStart > LOGIN_WINDOW_MS) { loginAttempts.delete(username); return false; }
+    return record.count >= LOGIN_MAX_ATTEMPTS;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // ALERT ENGINE & EMAIL
 // ─────────────────────────────────────────────────────────────────────────────
 const emailService = new EmailNotificationService(CONFIG.EMAIL);
@@ -229,10 +279,16 @@ app.post('/api/auth/login', async (req, res) => {
         return res.status(400).json({ error: 'username and password are required' });
     }
 
+    // Lockout check — prevent brute force
+    if (isLoginLocked(username)) {
+        return res.status(429).json({ error: 'Too many failed login attempts. Try again in 15 minutes.' });
+    }
+
     try {
         const user = await getUserByUsername(pool, username);
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+            recordLoginAttempt(username, false);
             if (user) {
                 await recordFailedLogin(pool, user.id).catch(() => {});
                 await writeAudit(pool, {
@@ -271,6 +327,7 @@ app.post('/api/auth/login', async (req, res) => {
         };
 
         const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
+        recordLoginAttempt(username, true); // clear failed attempts on success
 
         Promise.all([
             touchLastLogin(pool, user.id),
@@ -713,12 +770,26 @@ app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), asy
 // WEBSOCKET
 // ─────────────────────────────────────────────────────────────────────────────
 const wss = new WebSocketServer({ server, path: '/ws' });
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
+    // ── JWT Authentication — require ?token=<jwt> in the upgrade URL ──────
+    try {
+        const url    = new URL(req.url, `http://${req.headers.host}`);
+        const token  = url.searchParams.get('token');
+        if (!token) throw new Error('Missing token');
+        jwt.verify(token, CONFIG.JWT_SECRET); // throws if invalid/expired
+    } catch (err) {
+        log('WARN', 'WebSocket auth failed — closing connection', { error: err.message });
+        ws.close(1008, 'Unauthorized'); // 1008 = Policy Violation
+        return;
+    }
+
     log('INFO', 'WebSocket connection established');
     alerts.addSubscriber(ws);
     alerts.getRecent(10, false).then(recent => {
-        ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
-    });
+        if (ws.readyState === 1) {
+            ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
+        }
+    }).catch(() => {});
     ws.on('close', () => { log('INFO', 'WebSocket closed'); alerts.removeSubscriber(ws); });
     ws.on('error', (e) => log('ERROR', 'WebSocket error', { error: e.message }));
 });
