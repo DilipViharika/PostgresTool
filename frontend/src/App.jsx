@@ -826,7 +826,11 @@ const FeedbackModal = ({ onClose, initialSection }) => {
     const handleSubmit = async () => {
         if (!canSubmit()) return;
         setSubmitting(true); setError('');
-        try {
+        const payload = buildPayload();
+        console.debug('[FeedbackModal] submitting payload:', payload);
+
+        /* Helper: attempt a raw fetch with the Bearer token */
+        const tryFetch = async () => {
             const token = localStorage.getItem(AUTH_TOKEN_KEY);
             if (!token) throw new Error('Session expired — please log in again.');
             const res = await fetch('/api/feedback', {
@@ -835,18 +839,32 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify(buildPayload()),
+                body: JSON.stringify(payload),
             });
             if (res.status === 401) throw new Error('Session expired — please log in again.');
+            if (res.status === 405) throw new Error(
+                'Endpoint not configured (405). Ensure POST /api/feedback is registered on the server.'
+            );
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
-                throw new Error(body.error || `Server error (${res.status})`);
+                throw new Error(body.error || body.message || `Server error (${res.status})`);
+            }
+        };
+
+        try {
+            /* Primary: use the app's postData utility — it carries auth + base URL */
+            try {
+                await postData('/api/feedback', payload);
+            } catch (primaryErr) {
+                /* Fallback: raw fetch in case postData wraps differently */
+                console.warn('[FeedbackModal] postData failed, retrying with fetch:', primaryErr.message);
+                await tryFetch();
             }
             try { localStorage.setItem('vigil_last_feedback', Date.now().toString()); } catch {}
             setSent(true);
             setTimeout(onClose, 2800);
         } catch (e) {
-            console.error('[FeedbackModal]', e);
+            console.error('[FeedbackModal] submit failed:', e);
             setError(e.message || 'Failed to send. Please try again.');
         } finally {
             setSubmitting(false);
@@ -981,10 +999,25 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                             background: 'rgba(251,113,133,0.08)',
                             border: '1px solid rgba(251,113,133,0.25)',
                             color: DS.rose, fontSize: 12, lineHeight: 1.5,
-                            display: 'flex', alignItems: 'flex-start', gap: 8,
+                            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8,
                         }}>
-                            <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-                            {error}
+                            <span style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                                <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+                                {error}
+                            </span>
+                            <button type="button" onClick={() => setError('')}
+                                    style={{
+                                        background: 'none', border: 'none', cursor: 'pointer',
+                                        color: DS.rose, opacity: 0.6, padding: 0, flexShrink: 0,
+                                        display: 'flex', alignItems: 'center',
+                                        transition: 'opacity 0.15s',
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                                    aria-label="Dismiss error"
+                            >
+                                <X size={14} />
+                            </button>
                         </div>
                     )}
                 </div>
