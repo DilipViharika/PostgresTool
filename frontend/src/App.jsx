@@ -737,12 +737,13 @@ const FeedbackModal = ({ onClose, initialSection }) => {
         }
     }, [section]);
 
-    /* Rate-limit guard */
+    /* Rate-limit notice (non-blocking — just a warning) */
+    const [rateLimited, setRateLimited] = useState(false);
     useEffect(() => {
         try {
             const last = parseInt(localStorage.getItem('vigil_last_feedback') || '0', 10);
-            if (Date.now() - last < FEEDBACK_RATE_LIMIT_MS)
-                setError('Please wait a few minutes before submitting again.');
+            if (last > 0 && Date.now() - last < FEEDBACK_RATE_LIMIT_MS)
+                setRateLimited(true);
         } catch {}
     }, []);
 
@@ -758,66 +759,79 @@ const FeedbackModal = ({ onClose, initialSection }) => {
         setForms(p => ({ ...p, [tabId]: { ...(p[tabId] || emptyRow()), [field]: val } }));
 
     const canSubmit = useCallback(() => {
-        if (sent || submitting || error.startsWith('Please wait')) return false;
+        if (sent || submitting) return false;
         if (mode === 'feature') return feature.title.trim().length > 0 && feature.description.trim().length > 0;
         if (section === 'all') return FB_ALL_TABS.some(t => (forms[t.id]?.comment || '').trim().length > 0);
         return (forms[section]?.comment || '').trim().length > 0;
-    }, [sent, submitting, error, mode, feature, section, forms]);
+    }, [sent, submitting, mode, feature, section, forms]);
 
-    /* Build payload — every field maps to a user_feedback column */
+    /* Build payload — maps 1-to-1 to user_feedback columns.
+       username / user_id are resolved server-side from the Bearer token. */
     const buildPayload = useCallback(() => {
         const meta = {
-            page: window.location.pathname,
-            userAgent: navigator.userAgent,
+            page:       window.location.pathname,
+            userAgent:  navigator.userAgent,
             screenSize: `${window.screen.width}x${window.screen.height}`,
-            timestamp: new Date().toISOString(),
+            timestamp:  new Date().toISOString(),
         };
+
         if (mode === 'feature') {
+            const sugTab = feature.suggestedTab.trim() || null;
             return {
                 feedback_type:    'feature',
                 rating:           null,
-                comment:          feature.description.trim(),
-                remarks:          feature.remarks.trim() || null,
-                section:          feature.section || null,
+                comment:          feature.description.trim() || '',  // NOT NULL column
+                remarks:          feature.remarks.trim()    || null,
+                section:          feature.section           || null,
                 feature_title:    feature.title.trim(),
                 feature_priority: feature.priority,
+                suggested_tab:    sugTab,                            // dedicated column (not buried in JSONB)
                 section_feedback: null,
-                user_metadata:    { ...meta, suggested_tab: feature.suggestedTab.trim() || null },
+                user_metadata:    { ...meta },
             };
         }
+
         if (section === 'all') {
             const sectionFeedback = FB_ALL_TABS
                 .map(tab => {
                     const row = forms[tab.id] || emptyRow();
                     return {
-                        section_id: tab.id, section_label: tab.label,
-                        rating:  row.rating || null,
-                        comment: row.comment.trim(),
-                        remarks: row.remarks.trim() || null,
+                        section_id:    tab.id,
+                        section_label: tab.label,
+                        rating:        row.rating  || null,
+                        comment:       row.comment.trim(),
+                        remarks:       row.remarks.trim() || null,
                     };
                 })
                 .filter(r => r.comment || r.rating);
             return {
                 feedback_type:    mode,
                 rating:           null,
-                comment:          sectionFeedback.map(r => `[${r.section_label}] ${r.comment}`).filter(Boolean).join('\n'),
+                comment:          sectionFeedback
+                    .map(r => `[${r.section_label}] ${r.comment}`)
+                    .filter(Boolean)
+                    .join('\n') || '',              // NOT NULL column
                 remarks:          null,
                 section:          null,
                 feature_title:    null,
                 feature_priority: null,
+                suggested_tab:    null,
                 section_feedback: sectionFeedback,
                 user_metadata:    { ...meta, mode: 'all-sections' },
             };
         }
+
+        /* Single section */
         const row = forms[section] || emptyRow();
         return {
             feedback_type:    mode,
-            rating:           row.rating || null,
-            comment:          row.comment.trim(),
+            rating:           row.rating  || null,
+            comment:          row.comment.trim() || '',              // NOT NULL column
             remarks:          row.remarks.trim() || null,
             section:          section,
             feature_title:    null,
             feature_priority: null,
+            suggested_tab:    null,
             section_feedback: null,
             user_metadata:    meta,
         };
@@ -825,47 +839,49 @@ const FeedbackModal = ({ onClose, initialSection }) => {
 
     const handleSubmit = async () => {
         if (!canSubmit()) return;
-        setSubmitting(true); setError('');
-        const payload = buildPayload();
-        console.debug('[FeedbackModal] submitting payload:', payload);
+        setSubmitting(true);
+        setError('');
 
-        /* Helper: attempt a raw fetch with the Bearer token */
-        const tryFetch = async () => {
+        const payload = buildPayload();
+        console.debug('[FeedbackModal] payload →', JSON.stringify(payload, null, 2));
+
+        try {
             const token = localStorage.getItem(AUTH_TOKEN_KEY);
-            if (!token) throw new Error('Session expired — please log in again.');
+            if (!token) throw new Error('Not authenticated — please refresh and log in again.');
+
             const res = await fetch('/api/feedback', {
-                method: 'POST',
+                method:  'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type':  'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             });
-            if (res.status === 401) throw new Error('Session expired — please log in again.');
-            if (res.status === 405) throw new Error(
-                'Endpoint not configured (405). Ensure POST /api/feedback is registered on the server.'
-            );
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body.error || body.message || `Server error (${res.status})`);
-            }
-        };
 
-        try {
-            /* Primary: use the app's postData utility — it carries auth + base URL */
-            try {
-                await postData('/api/feedback', payload);
-            } catch (primaryErr) {
-                /* Fallback: raw fetch in case postData wraps differently */
-                console.warn('[FeedbackModal] postData failed, retrying with fetch:', primaryErr.message);
-                await tryFetch();
+            /* Try to parse response body regardless of status */
+            let resBody = {};
+            try { resBody = await res.json(); } catch {}
+
+            if (!res.ok) {
+                const msg = resBody?.error || resBody?.message || resBody?.detail;
+                if      (res.status === 400) throw new Error(`Validation error: ${msg || 'check required fields'}`);
+                else if (res.status === 401) throw new Error('Session expired — please log in again.');
+                else if (res.status === 403) throw new Error('Permission denied (403).');
+                else if (res.status === 404) throw new Error('Feedback endpoint not found (404) — check server routing.');
+                else if (res.status === 405) throw new Error('Method not allowed (405) — server must accept POST /api/feedback.');
+                else if (res.status === 422) throw new Error(`Unprocessable data (422): ${msg || 'invalid payload shape'}`);
+                else if (res.status >= 500)  throw new Error(`Server error (${res.status})${msg ? ': ' + msg : ' — check server logs'}.`);
+                else                         throw new Error(`Request failed (${res.status})${msg ? ': ' + msg : ''}.`);
             }
+
+            /* ✓ Success */
             try { localStorage.setItem('vigil_last_feedback', Date.now().toString()); } catch {}
             setSent(true);
             setTimeout(onClose, 2800);
+
         } catch (e) {
-            console.error('[FeedbackModal] submit failed:', e);
-            setError(e.message || 'Failed to send. Please try again.');
+            console.error('[FeedbackModal] submit error:', e);
+            setError(e.message || 'Something went wrong. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -993,6 +1009,28 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                         />
                     )}
 
+                    {/* Rate-limit soft notice */}
+                    {rateLimited && !error && (
+                        <div style={{
+                            marginTop: 16, padding: '9px 13px', borderRadius: 9,
+                            background: 'rgba(251,191,36,0.08)',
+                            border: '1px solid rgba(251,191,36,0.22)',
+                            color: DS.amber, fontSize: 11, lineHeight: 1.5,
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                        }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                <AlertTriangle size={12} style={{ flexShrink: 0 }} />
+                                You submitted feedback recently — you can still submit again if needed.
+                            </span>
+                            <button type="button" onClick={() => setRateLimited(false)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: DS.amber, opacity: 0.6, padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'opacity 0.15s' }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                            ><X size={13} /></button>
+                        </div>
+                    )}
+
+                    {/* Hard error */}
                     {error && (
                         <div style={{
                             marginTop: 16, padding: '10px 14px', borderRadius: 9,
@@ -1006,18 +1044,11 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                                 {error}
                             </span>
                             <button type="button" onClick={() => setError('')}
-                                    style={{
-                                        background: 'none', border: 'none', cursor: 'pointer',
-                                        color: DS.rose, opacity: 0.6, padding: 0, flexShrink: 0,
-                                        display: 'flex', alignItems: 'center',
-                                        transition: 'opacity 0.15s',
-                                    }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: DS.rose, opacity: 0.6, padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'opacity 0.15s' }}
                                     onMouseEnter={e => e.currentTarget.style.opacity = '1'}
                                     onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
                                     aria-label="Dismiss error"
-                            >
-                                <X size={14} />
-                            </button>
+                            ><X size={14} /></button>
                         </div>
                     )}
                 </div>
