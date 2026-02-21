@@ -18,7 +18,7 @@ const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
 // ─────────────────────────────────────────────────────────────────────────────
 const NODE_DEFS = {
     //          label (App.jsx section)   sub-line          hex          icon key   r
-    primary: { label: 'Vigil',           sub: 'pg_monitor', color: '#6470FF', icon: 'Database',  r: 14 },
+    primary: { label: 'Database',        sub: 'pg_monitor', color: '#6470FF', icon: 'Database',  r: 14 },
     hub0:    { label: 'Core',            sub: 'Monitoring',  color: '#38BDF8', icon: 'Activity',  r: 9.5 },
     hub1:    { label: 'Query',           sub: '& Indexes',   color: '#F5C842', icon: 'Zap',       r: 9.5 },
     hub2:    { label: 'Infrastructure',  sub: 'Resources',   color: '#00D4A0', icon: 'HardDrive', r: 9.5 },
@@ -364,7 +364,7 @@ const LeftPanel = () => {
                     <Database size={17} color="#fff"/>
                 </div>
                 <div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#E8EAF4', fontFamily: "'DM Sans',sans-serif", letterSpacing: '-0.3px', lineHeight: 1 }}>Vigil</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#E8EAF4', fontFamily: "'DM Sans',sans-serif", letterSpacing: '-0.3px', lineHeight: 1 }}></div>
                     <div style={{ fontSize: 8.5, color: 'rgba(107,119,153,.60)', fontFamily: "'JetBrains Mono',monospace", marginTop: 2.5, letterSpacing: '2px', textTransform: 'uppercase' }}>PostgreSQL Intelligence</div>
                 </div>
             </div>
@@ -394,7 +394,7 @@ const LeftPanel = () => {
                 {/* Sub-text */}
                 <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(107,119,153,.78)', lineHeight: 1.70, margin: '0 0 16px', maxWidth: 390, fontFamily: "'DM Sans',sans-serif", animation: 'fadeUp .8s ease .30s backwards' }}>
                     Real-time intelligence across your entire PostgreSQL fleet.<br/>
-                    From slow queries to replication lag — nothing escapes Vigil.
+                    From slow queries to replication lag — nothing escapes .
                 </p>
 
                 {/* Status dots — one row */}
@@ -634,7 +634,7 @@ const LoginPage = () => {
 
                     <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, animation: 'fadeUp .6s ease .6s backwards' }}>
                         <Shield size={8} color="#161B2E" style={{ opacity: .5 }}/>
-                        <span style={{ fontSize: 8.5, color: '#161B2E', fontFamily: "'JetBrains Mono',monospace" }}>Secured by Vigil · PostgreSQL Monitor v2.0</span>
+                        <span style={{ fontSize: 8.5, color: '#161B2E', fontFamily: "'JetBrains Mono',monospace" }}>Secured by · PostgreSQL Monitor v2.0</span>
                     </div>
                 </div>
             </div>
