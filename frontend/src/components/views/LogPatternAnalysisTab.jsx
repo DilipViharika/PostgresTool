@@ -230,7 +230,9 @@ const WaitEventBreakdown = ({ waitEvents }) => {
         THEME.info,
     ];
 
-    const total = waitEvents.reduce((sum, e) => sum + e.count, 0);
+    // Guard: count may arrive as a string from the API; coerce to number to prevent
+    // string concatenation in the reduce and NaN.toFixed() crashes downstream.
+    const total = waitEvents.reduce((sum, e) => sum + (Number(e.count) || 0), 0);
 
     return (
         <div
@@ -248,7 +250,8 @@ const WaitEventBreakdown = ({ waitEvents }) => {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {waitEvents.map((event, idx) => {
-                    const percentage = total > 0 ? (event.count / total) * 100 : 0;
+                    const count = Number(event.count) || 0;
+                    const percentage = total > 0 ? (count / total) * 100 : 0;
                     const color = colors[idx % colors.length];
                     return (
                         <div key={idx}>
@@ -257,7 +260,7 @@ const WaitEventBreakdown = ({ waitEvents }) => {
                                     {event.wait_event_type} - {event.wait_event}
                                 </div>
                                 <div style={{ color, fontSize: '13px', fontWeight: '500' }}>
-                                    {event.count} ({percentage.toFixed(1)}%)
+                                    {count} ({percentage.toFixed(1)}%)
                                 </div>
                             </div>
                             <div
