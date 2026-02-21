@@ -815,7 +815,10 @@ const FeedbackModal = ({ onClose, initialSection }) => {
             const token = localStorage.getItem(AUTH_TOKEN_KEY);
             if (!token) throw new Error('Not authenticated — please refresh and log in again.');
 
-            const res = await fetch('/api/feedback', {
+            // 🛠️ FIX APPLIED: Force routing directly to backend OR use environment variable
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+            const res = await fetch(`${baseUrl}/api/feedback`, {
                 method:  'POST',
                 headers: {
                     'Content-Type':  'application/json',
