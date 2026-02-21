@@ -1,13 +1,8 @@
 // ==========================================================================
-//  VIGIL — Login Page  (Ultra-Premium v4)
-//  Original auth logic 100% preserved.
-//  Added: Canvas particles · 3D card tilt · Animated gradient bar ·
-//         Live scrolling ticker · Focus-underline animation · Shimmer btn ·
-//         Grain + scanlines · Ambient glows · Premium typography
+//  VIGIL — Login Page  (Premium Redesign v4 — with Network Canvas)
 // ==========================================================================
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { THEME } from '../../utils/theme.jsx';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
     User, KeyRound, Shield, Lock, Activity, Bell, Search,
@@ -18,23 +13,20 @@ import { useAuth } from '../../context/AuthContext';
 const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  GLOBAL STYLES  — original keyframes kept, new ones added
+//  GLOBAL STYLES
 // ─────────────────────────────────────────────────────────────────────────────
 const GlobalStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; background: #04080f; overflow: hidden; }
+        html, body { height: 100%; background: #05080f; overflow: hidden; }
 
-        /* ── original ── */
         @keyframes fadeUp    { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
         @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes shake     { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
         @keyframes spin      { to{transform:rotate(360deg)} }
         @keyframes spinRev   { to{transform:rotate(-360deg)} }
-        @keyframes blob1     { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(40px,-50px) scale(1.1)} 66%{transform:translate(-20px,-20px) scale(0.95)} }
-        @keyframes blob2     { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-50px,35px) scale(1.08)} }
         @keyframes pulse     { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
         @keyframes ring      { 0%{transform:scale(0.7);opacity:0.8} 100%{transform:scale(2.8);opacity:0} }
         @keyframes shimmer   { 0%{left:-100%} 100%{left:200%} }
@@ -43,17 +35,7 @@ const GlobalStyles = () => (
         @keyframes logoPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
         @keyframes glow      { 0%,100%{box-shadow:0 0 28px rgba(14,165,233,.22),0 0 70px rgba(14,165,233,.07)} 50%{box-shadow:0 0 46px rgba(14,165,233,.38),0 0 110px rgba(14,165,233,.12)} }
         @keyframes edgePulse { 0%,100%{opacity:.18} 50%{opacity:.75} }
-        @keyframes scanline  { 0%{top:0%;opacity:0} 5%{opacity:.3} 95%{opacity:.3} 100%{top:100%;opacity:0} }
-        @keyframes barGrow   { from{transform:scaleX(0)} to{transform:scaleX(1)} }
 
-        /* ── new premium ── */
-        @keyframes sonar        { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)} 70%{box-shadow:0 0 0 9px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
-        @keyframes barSlide     { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-        @keyframes tickerScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-        @keyframes floatA       { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,55px)} }
-        @keyframes floatB       { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-35px,-40px)} }
-
-        /* ── autofill ── */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus {
@@ -62,253 +44,230 @@ const GlobalStyles = () => (
             caret-color:#e2e8f0;
             transition:background-color 5000s ease-in-out 0s;
         }
-
         .vi-input::placeholder { color:#0f2040; opacity:1; }
         .vi-input:focus::placeholder { opacity:0; transition:opacity .2s; }
-
-        /* shimmer sweep on Sign In button */
-        .vi-btn::after {
-            content:''; position:absolute; top:0; left:-100%; width:55%; height:100%;
-            background:linear-gradient(90deg,transparent,rgba(255,255,255,.11),transparent);
-            animation:shimmer 2.6s ease infinite; pointer-events:none;
-        }
-
-        .fc:hover {
-            border-color:rgba(14,165,233,.22)!important;
-            background:rgba(14,165,233,.05)!important;
-            transform:translateY(-2px)!important;
-            box-shadow:0 8px 24px rgba(0,0,0,.4)!important;
-        }
-        .pc:hover { transform:translateY(-3px) scale(1.012)!important; }
+        .vi-btn::after { content:''; position:absolute; top:0; left:-100%; width:55%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent); animation:shimmer 2.6s ease infinite; pointer-events:none; }
     `}</style>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CANVAS PARTICLE FIELD
+//  NETWORK CANVAS HOOK
 // ─────────────────────────────────────────────────────────────────────────────
-const ParticleCanvas = () => {
-    const canvasRef = useRef(null);
-    const rafRef    = useRef(null);
-    const ptsRef    = useRef([]);
-    const mouseRef  = useRef({ x: -999, y: -999 });
-
+function useNetworkCanvas(canvasRef) {
     useEffect(() => {
-        const cvs = canvasRef.current;
-        if (!cvs) return;
-        const ctx = cvs.getContext('2d');
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let animId;
+        let nodes = [], edges = [];
+        const mouse = { x: -999, y: -999 };
+        const packets = [];
 
-        const resize = () => {
-            cvs.width  = cvs.offsetWidth;
-            cvs.height = cvs.offsetHeight;
-            buildPts();
-        };
+        const PALETTE = [
+            { h: 232, s: 100, l: 70 }, // indigo
+            { h: 275, s: 85,  l: 65 }, // violet
+            { h: 165, s: 100, l: 55 }, // emerald
+            { h: 46,  s: 90,  l: 60 }, // amber
+            { h: 348, s: 100, l: 65 }, // rose
+        ];
+        const hsl = (c, a) => `hsla(${c.h},${c.s}%,${c.l}%,${a})`;
 
-        const buildPts = () => {
-            const n = Math.min(Math.floor((cvs.width * cvs.height) / 15000), 80);
-            ptsRef.current = Array.from({ length: n }, () => ({
-                x:  Math.random() * cvs.width,
-                y:  Math.random() * cvs.height,
-                vx: (Math.random() - 0.5) * 0.22,
-                vy: (Math.random() - 0.5) * 0.22,
-                r:  Math.random() * 1.1 + 0.3,
-                ph: Math.random() * Math.PI * 2,
-            }));
-        };
+        function buildGraph(W, H) {
+            nodes = [];
+            edges = [];
 
-        const draw = () => {
-            ctx.clearRect(0, 0, cvs.width, cvs.height);
-            const pts = ptsRef.current;
-            const { x: mx, y: my } = mouseRef.current;
+            // Central primary node
+            nodes.push({
+                x: W * 0.42, y: H * 0.44,
+                vx: 0, vy: 0,
+                r: 9, color: PALETTE[0],
+                role: 'primary', phase: 0, pulse: 0,
+            });
 
-            for (let i = 0; i < pts.length; i++) {
-                const p = pts[i];
-                p.x += p.vx; p.y += p.vy; p.ph += 0.01;
-                if (p.x < 0) p.x = cvs.width;  if (p.x > cvs.width)  p.x = 0;
-                if (p.y < 0) p.y = cvs.height; if (p.y > cvs.height) p.y = 0;
+            // Replica ring
+            const replicaPos = [
+                { x: 0.22, y: 0.28 }, { x: 0.62, y: 0.22 },
+                { x: 0.70, y: 0.56 }, { x: 0.24, y: 0.62 },
+                { x: 0.48, y: 0.72 },
+            ];
+            replicaPos.forEach((p, i) => {
+                const c = PALETTE[i % PALETTE.length];
+                nodes.push({
+                    x: W * p.x + (Math.random() - .5) * 30,
+                    y: H * p.y + (Math.random() - .5) * 30,
+                    vx: (Math.random() - .5) * 0.15,
+                    vy: (Math.random() - .5) * 0.15,
+                    r: i === 0 ? 6.5 : 5.5,
+                    color: c, role: 'replica',
+                    phase: Math.random() * Math.PI * 2, pulse: 0,
+                });
+            });
 
-                const mdx = p.x - mx, mdy = p.y - my;
-                const md  = Math.hypot(mdx, mdy);
-                if (md < 110 && md > 0) {
-                    const f = (1 - md / 110) * 0.28;
-                    p.vx += (mdx / md) * f; p.vy += (mdy / md) * f;
-                }
-                const spd = Math.hypot(p.vx, p.vy);
-                if (spd > 0.75) { p.vx /= spd * 1.3; p.vy /= spd * 1.3; }
+            // Micro-nodes
+            for (let i = 0; i < 18; i++) {
+                const c = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+                nodes.push({
+                    x: W * (0.08 + Math.random() * 0.84),
+                    y: H * (0.06 + Math.random() * 0.88),
+                    vx: (Math.random() - .5) * 0.22,
+                    vy: (Math.random() - .5) * 0.22,
+                    r: 1.5 + Math.random() * 2,
+                    color: c, role: 'micro',
+                    phase: Math.random() * Math.PI * 2, pulse: 0,
+                });
+            }
 
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(14,165,233,${0.12 + Math.sin(p.ph) * 0.09})`;
-                ctx.fill();
-
-                for (let j = i + 1; j < pts.length; j++) {
-                    const q = pts[j];
-                    const d = Math.hypot(p.x - q.x, p.y - q.y);
-                    if (d < 105) {
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
-                        ctx.strokeStyle = `rgba(14,165,233,${(1 - d / 105) * 0.055})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
+            // Edges: primary → replicas
+            for (let i = 1; i <= 5; i++) edges.push({ a: 0, b: i, strength: 1 });
+            // Replicas → micros
+            for (let i = 6; i < nodes.length; i++) {
+                edges.push({ a: Math.floor(Math.random() * 5) + 1, b: i, strength: 0.5 });
+            }
+            // Micro → micro short links
+            for (let i = 6; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    if (Math.sqrt(dx * dx + dy * dy) < 160 && Math.random() > 0.55) {
+                        edges.push({ a: i, b: j, strength: 0.25 });
                     }
                 }
             }
-            rafRef.current = requestAnimationFrame(draw);
-        };
+        }
 
-        const onMouse = e => {
-            const r = cvs.getBoundingClientRect();
-            mouseRef.current = { x: e.clientX - r.left, y: e.clientY - r.top };
-        };
+        function spawnPacket() {
+            if (edges.length === 0) return;
+            const e = edges[Math.floor(Math.random() * edges.length)];
+            packets.push({ edge: e, t: 0, speed: 0.008 + Math.random() * 0.012, reverse: Math.random() > 0.5 });
+        }
+
+        function resize() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width  = rect.width;
+            canvas.height = rect.height;
+            buildGraph(canvas.width, canvas.height);
+        }
+
+        function draw() {
+            const W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            // Update physics
+            nodes.forEach(n => {
+                if (n.role === 'primary') return;
+                n.phase += 0.008;
+                n.x += n.vx + Math.sin(n.phase * 0.7) * 0.04;
+                n.y += n.vy + Math.cos(n.phase * 0.5) * 0.04;
+                const pad = 40;
+                if (n.x < pad) n.vx += 0.04;
+                if (n.x > W - pad) n.vx -= 0.04;
+                if (n.y < pad) n.vy += 0.04;
+                if (n.y > H - pad) n.vy -= 0.04;
+                n.vx *= 0.995; n.vy *= 0.995;
+                n.vx = Math.max(-0.5, Math.min(0.5, n.vx));
+                n.vy = Math.max(-0.5, Math.min(0.5, n.vy));
+                const dx = n.x - mouse.x, dy = n.y - mouse.y;
+                const d  = Math.sqrt(dx * dx + dy * dy);
+                if (d < 120) { const f = (1 - d / 120) * 0.3; n.vx += (dx / d) * f; n.vy += (dy / d) * f; }
+            });
+
+            // Edges
+            edges.forEach(e => {
+                const a = nodes[e.a], b = nodes[e.b];
+                const dx = b.x - a.x, dy = b.y - a.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const alpha = e.strength * 0.18 * Math.max(0, 1 - dist / 450);
+                if (alpha < 0.01) return;
+                const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+                grad.addColorStop(0, hsl(a.color, alpha));
+                grad.addColorStop(1, hsl(b.color, alpha));
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = e.strength * 0.8;
+                ctx.stroke();
+            });
+
+            // Packets
+            for (let pi = packets.length - 1; pi >= 0; pi--) {
+                const pk = packets[pi];
+                pk.t += pk.speed;
+                if (pk.t >= 1) { packets.splice(pi, 1); continue; }
+                const a = nodes[pk.edge.a], b = nodes[pk.edge.b];
+                const t = pk.reverse ? 1 - pk.t : pk.t;
+                const x = a.x + (b.x - a.x) * t;
+                const y = a.y + (b.y - a.y) * t;
+                ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = hsl(a.color, 0.9); ctx.fill();
+                const g = ctx.createRadialGradient(x, y, 0, x, y, 10);
+                g.addColorStop(0, hsl(a.color, 0.25)); g.addColorStop(1, hsl(a.color, 0));
+                ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = g; ctx.fill();
+            }
+
+            // Nodes
+            nodes.forEach(n => {
+                n.phase += 0.01;
+                const breathe = Math.sin(n.phase) * 0.18 + 1;
+                const rr = n.r * breathe;
+
+                if (n.role !== 'micro') {
+                    const glowR = rr + (n.role === 'primary' ? 22 : 14);
+                    const glow  = ctx.createRadialGradient(n.x, n.y, rr, n.x, n.y, glowR);
+                    glow.addColorStop(0, hsl(n.color, n.role === 'primary' ? 0.22 : 0.12));
+                    glow.addColorStop(1, hsl(n.color, 0));
+                    ctx.beginPath(); ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+                    ctx.fillStyle = glow; ctx.fill();
+
+                    ctx.beginPath(); ctx.arc(n.x, n.y, rr + 3.5, 0, Math.PI * 2);
+                    ctx.strokeStyle = hsl(n.color, 0.25); ctx.lineWidth = 1; ctx.stroke();
+                }
+
+                const fill = ctx.createRadialGradient(n.x - rr * 0.3, n.y - rr * 0.3, 0, n.x, n.y, rr);
+                fill.addColorStop(0, hsl({ ...n.color, l: Math.min(95, n.color.l + 20) }, 1));
+                fill.addColorStop(1, hsl(n.color, 0.85));
+                ctx.beginPath(); ctx.arc(n.x, n.y, rr, 0, Math.PI * 2);
+                ctx.fillStyle = fill; ctx.fill();
+
+                if (n.role === 'primary') {
+                    n.pulse = (n.pulse + 0.012) % 1;
+                    const pr = rr + 8 + n.pulse * 28;
+                    ctx.beginPath(); ctx.arc(n.x, n.y, pr, 0, Math.PI * 2);
+                    ctx.strokeStyle = hsl(n.color, (1 - n.pulse) * 0.35);
+                    ctx.lineWidth = 1.5; ctx.stroke();
+                }
+            });
+
+            animId = requestAnimationFrame(draw);
+        }
+
+        const packetInterval = setInterval(() => { if (packets.length < 24) spawnPacket(); }, 350);
 
         resize();
-        window.addEventListener('resize', resize);
-        window.addEventListener('mousemove', onMouse);
         draw();
+
+        const onResize = () => { cancelAnimationFrame(animId); resize(); draw(); };
+        const onMouseMove = e => {
+            const r = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - r.left;
+            mouse.y = e.clientY - r.top;
+        };
+
+        window.addEventListener('resize', onResize);
+        canvas.parentElement.addEventListener('mousemove', onMouseMove);
+
         return () => {
-            window.removeEventListener('resize', resize);
-            window.removeEventListener('mousemove', onMouse);
-            cancelAnimationFrame(rafRef.current);
+            cancelAnimationFrame(animId);
+            clearInterval(packetInterval);
+            window.removeEventListener('resize', onResize);
+            canvas.parentElement?.removeEventListener('mousemove', onMouseMove);
         };
-    }, []);
-
-    return (
-        <canvas
-            ref={canvasRef}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
-        />
-    );
-};
+    }, [canvasRef]);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LIVE TICKER
-// ─────────────────────────────────────────────────────────────────────────────
-const TICKER_DATA = [
-    { lbl: 'postgres-primary', key: 'QPS',    val: '12.8k', c: '#0ea5e9' },
-    { lbl: 'postgres-primary', key: 'P99',    val: '4.2ms', c: '#0ea5e9' },
-    { lbl: 'replica-1',        key: 'Lag',    val: '0.0s',  c: '#22c55e' },
-    { lbl: 'replica-2',        key: 'Lag',    val: '1.2s',  c: '#f59e0b' },
-    { lbl: 'cache hit',        key: 'Ratio',  val: '97.4%', c: '#22c55e' },
-    { lbl: 'alert engine',     key: 'Status', val: 'OK',    c: '#22c55e' },
-    { lbl: 'connections',      key: 'Used',   val: '342/500', c: '#0ea5e9' },
-    { lbl: 'deadlocks',        key: '24h',    val: '0',     c: '#22c55e' },
-    { lbl: 'long txns',        key: 'Active', val: '1',     c: '#f59e0b' },
-    { lbl: 'checkpoints',      key: 'Errs',   val: '0',     c: '#22c55e' },
-];
-
-const TickerBar = () => {
-    const doubled = [...TICKER_DATA, ...TICKER_DATA];
-    return (
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 28, borderTop: '1px solid rgba(255,255,255,0.04)', background: 'rgba(4,8,15,0.92)', overflow: 'hidden', zIndex: 6, display: 'flex', alignItems: 'center' }}>
-            <div style={{ display: 'flex', animation: 'tickerScroll 34s linear infinite', whiteSpace: 'nowrap' }}>
-                {doubled.map((item, i) => (
-                    <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '0 22px', borderRight: '1px solid rgba(255,255,255,0.04)', fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-                        <span style={{ color: '#1e3050' }}>{item.lbl}</span>
-                        <span style={{ color: '#0d1e30' }}>·</span>
-                        <span style={{ color: '#1e3050' }}>{item.key}</span>
-                        <span style={{ color: item.c, fontWeight: 600 }}>{item.val}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  3-D DASHBOARD PREVIEW CARD
-// ─────────────────────────────────────────────────────────────────────────────
-const SPARK = [18,28,22,42,28,52,32,44,60,36,50,65,40,58,70,48,66,78,52,70,82,56,74,100];
-const METRIC_POOL = {
-    v1:['12.8k','13.1k','12.6k','13.4k','12.9k'], d1:['+2%','+5%','-1%','+8%','+3%'],
-    v2:['4.2ms','3.9ms','4.5ms','4.1ms','3.8ms'], d2:['stable','-7%','+4%','-2%','-9%'],
-    v3:['97.4%','97.6%','97.3%','97.5%','97.8%'], d3:['+0.1%','+0.3%','-0.1%','+0.2%','+0.5%'],
-    v4:['342','338','351','344','340'],             d4:['68% cap','67% cap','70% cap','68% cap','67% cap'],
-};
-
-const DashCard3D = () => {
-    const sceneRef = useRef(null);
-    const cardRef  = useRef(null);
-    const [tick, setTick] = useState(0);
-
-    useEffect(() => {
-        const iv = setInterval(() => setTick(t => (t + 1) % 5), 2800);
-        return () => clearInterval(iv);
-    }, []);
-
-    useEffect(() => {
-        const scene = sceneRef.current;
-        if (!scene) return;
-        const move = e => {
-            const r  = scene.getBoundingClientRect();
-            const rx = ((e.clientY - r.top  - r.height / 2) / r.height) * -9;
-            const ry = ((e.clientX - r.left - r.width  / 2) / r.width)  *  9;
-            if (cardRef.current) cardRef.current.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
-        };
-        const leave = () => { if (cardRef.current) cardRef.current.style.transform = 'rotateX(0) rotateY(0)'; };
-        scene.addEventListener('mousemove', move);
-        scene.addEventListener('mouseleave', leave);
-        return () => { scene.removeEventListener('mousemove', move); scene.removeEventListener('mouseleave', leave); };
-    }, []);
-
-    const mv = k => METRIC_POOL[k][tick];
-
-    return (
-        <div ref={sceneRef} style={{ perspective: '1200px', marginBottom: 22 }}>
-            <div ref={cardRef} style={{ transformStyle: 'preserve-3d', transition: 'transform 0.12s ease-out', borderRadius: 14, willChange: 'transform' }}>
-                <div style={{ background: '#090f1c', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 40px 80px rgba(0,0,0,0.65)' }}>
-                    {/* animated gradient top bar */}
-                    <div style={{ height: 2, background: 'linear-gradient(90deg,#0ea5e9 0%,#22c55e 50%,#0ea5e9 100%)', backgroundSize: '300% 100%', animation: 'barSlide 3s linear infinite' }} />
-                    <div style={{ padding: '16px 18px 15px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'JetBrains Mono',monospace", fontSize: 9.5, color: 'rgba(56,189,248,.55)', letterSpacing: '.1em', fontWeight: 600 }}>
-                                <Database size={11} color="#38bdf8" opacity={0.7} /> POSTGRES · PRIMARY
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: '#22c55e', padding: '3px 9px', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 20, background: 'rgba(34,197,94,0.06)', letterSpacing: '1px' }}>
-                                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block', animation: 'sonar 2s infinite' }} />
-                                HEALTHY
-                            </div>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 13 }}>
-                            {[
-                                { lbl:'QPS',   vk:'v1', dk:'d1', color:'#0ea5e9' },
-                                { lbl:'P99',   vk:'v2', dk:'d2', color:'#0ea5e9' },
-                                { lbl:'CACHE', vk:'v3', dk:'d3', color:'#22c55e' },
-                                { lbl:'CONN',  vk:'v4', dk:'d4', color:'#f59e0b' },
-                            ].map(({ lbl, vk, dk, color }) => (
-                                <div key={lbl} style={{ background: `${color}0a`, border: `1px solid ${color}1a`, borderRadius: 8, padding: '8px 10px' }}>
-                                    <div style={{ fontSize: 8.5, color: 'rgba(148,180,210,.4)', fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.06em', marginBottom: 5 }}>{lbl}</div>
-                                    <div style={{ fontSize: 15, fontWeight: 700, color, fontFamily: "'JetBrains Mono',monospace", lineHeight: 1 }}>{mv(vk)}</div>
-                                    <div style={{ fontSize: 8, color: `${color}80`, marginTop: 4, fontFamily: "'JetBrains Mono',monospace" }}>{mv(dk)}</div>
-                                </div>
-                            ))}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2.5, height: 30, marginBottom: 5 }}>
-                            {SPARK.map((h, i) => (
-                                <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: '2px 2px 0 0', background: i === SPARK.length-1 ? 'rgba(14,165,233,.72)' : i >= SPARK.length-5 ? 'rgba(14,165,233,.28)' : 'rgba(14,165,233,.12)', transition: 'height .3s' }} />
-                            ))}
-                        </div>
-                        <div style={{ fontSize: 8, color: 'rgba(148,180,210,.25)', fontFamily: "'JetBrains Mono',monospace", marginBottom: 12, letterSpacing: '.05em' }}>QPS · last 24 ticks</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.04)' }}>
-                            {[
-                                { name: 'replica-1', lag: '0.0s', color: '#22c55e', status: 'SYNC' },
-                                { name: 'replica-2', lag: '1.2s', color: '#f59e0b', status: 'LAG'  },
-                            ].map(({ name, lag, color, status }) => (
-                                <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}`, display: 'inline-block', flexShrink: 0 }} />
-                                    <span style={{ fontSize: 9.5, color: 'rgba(148,180,210,.5)', fontFamily: "'JetBrains Mono',monospace", flex: 1 }}>{name}</span>
-                                    <span style={{ fontSize: 9, color: 'rgba(148,180,210,.3)', fontFamily: "'JetBrains Mono',monospace" }}>lag {lag}</span>
-                                    <span style={{ fontSize: 8, color, background: `${color}12`, border: `1px solid ${color}25`, borderRadius: 4, padding: '1px 6px', fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }}>{status}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  FEATURES LIST (same data as original)
+//  LEFT PANEL — Network canvas + brand overlay
 // ─────────────────────────────────────────────────────────────────────────────
 const FEATURES_SIMPLE = [
     { icon: Activity,   label: 'Real-time metrics',   desc: 'QPS, latency & cache hit — live'   },
@@ -319,172 +278,188 @@ const FEATURES_SIMPLE = [
     { icon: UserCheck,  label: 'Access audit',        desc: 'RBAC & compliance trails'          },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  LEFT PANEL — upgraded with canvas, 3D card, ticker, premium typography
-// ─────────────────────────────────────────────────────────────────────────────
-const LeftPanel = () => (
-    <div style={{ flex:'1 1 0', minWidth:0, height:'100vh', background:'#04080f', borderRight:'1px solid rgba(255,255,255,.05)', display:'flex', flexDirection:'column', position:'relative', overflow:'hidden' }}>
+const LeftPanel = () => {
+    const canvasRef = useRef(null);
+    useNetworkCanvas(canvasRef);
 
-        {/* Layer 0 – particle canvas */}
-        <ParticleCanvas />
-
-        {/* Layer 1 – ambient glow blobs */}
-        <div style={{ position:'absolute', top:'-12%', left:'-8%', width:'65%', height:'60%', background:'radial-gradient(circle,rgba(14,165,233,.08) 0%,transparent 70%)', filter:'blur(70px)', animation:'floatA 20s ease-in-out infinite', pointerEvents:'none', zIndex:1 }}/>
-        <div style={{ position:'absolute', bottom:'-10%', right:'0%', width:'55%', height:'55%', background:'radial-gradient(circle,rgba(20,184,166,.06) 0%,transparent 70%)', filter:'blur(60px)', animation:'floatB 24s ease-in-out infinite', pointerEvents:'none', zIndex:1 }}/>
-
-        {/* Layer 2 – faint dot grid */}
-        <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(14,165,233,.1) 1px,transparent 1px)', backgroundSize:'32px 32px', opacity:.3, pointerEvents:'none', zIndex:2 }}/>
-
-        {/* Layer 3 – noise grain */}
-        <div style={{ position:'absolute', inset:0, zIndex:3, pointerEvents:'none', opacity:.022, backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }}/>
-
-        {/* Layer 4 – scanlines */}
-        <div style={{ position:'absolute', inset:0, zIndex:4, pointerEvents:'none', background:'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.022) 2px,rgba(0,0,0,.022) 4px)' }}/>
-
-        {/* Layer 5 – glowing right-edge accent */}
-        <div style={{ position:'absolute', top:'14%', bottom:'14%', right:0, width:1, background:'linear-gradient(to bottom,transparent,rgba(14,165,233,.45),rgba(14,165,233,.45),transparent)', filter:'blur(.5px)', zIndex:5 }}/>
-
-        {/* Content */}
-        <div style={{ position:'relative', zIndex:6, flex:1, display:'flex', flexDirection:'column', padding:'0 44px', paddingBottom:56 }}>
-
-            {/* Logo bar */}
-            <div style={{ padding:'22px 0 10px', display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
-                <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#0ea5e9,#38bdf8)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 20px rgba(14,165,233,.4)' }}>
-                    <Database size={16} color="#fff"/>
-                </div>
-                <div>
-                    <div style={{ fontSize:12, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.18em', textTransform:'uppercase', lineHeight:1 }}>Vigil</div>
-                    <div style={{ fontSize:9, color:'rgba(56,189,248,.35)', fontFamily:"'JetBrains Mono',monospace", marginTop:2, letterSpacing:'.06em' }}>PostgreSQL Monitor</div>
-                </div>
-            </div>
-
-            {/* Headline */}
-            <div style={{ marginBottom:20, animation:'fadeUp .7s ease .1s backwards' }}>
-                <div style={{ display:'inline-flex', alignItems:'center', gap:7, background:'rgba(14,165,233,.08)', border:'1px solid rgba(14,165,233,.18)', borderRadius:20, padding:'4px 12px', marginBottom:16 }}>
-                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', display:'inline-block', boxShadow:'0 0 6px #22c55e', animation:'sonar 2.4s ease-out infinite' }}/>
-                    <span style={{ fontSize:9.5, fontWeight:700, color:'#38bdf8', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.12em' }}>LIVE MONITORING</span>
-                </div>
-                <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(28px,2.8vw,44px)', fontWeight:300, color:'#eef4ff', lineHeight:1.1, letterSpacing:'-0.3px', margin:'0 0 12px' }}>
-                    Complete visibility<br/>
-                    for your <em style={{ fontStyle:'italic', color:'#38bdf8' }}>PostgreSQL</em><br/>
-                    clusters.
-                </h2>
-                <p style={{ fontFamily:"'Manrope',sans-serif", fontSize:12, fontWeight:300, color:'rgba(148,180,210,.5)', lineHeight:1.7, margin:0, maxWidth:360 }}>
-                    One dashboard for query performance, replication health,<br/>connection pools and anomaly alerts.
-                </p>
-            </div>
-
-            {/* 3D Dashboard Card */}
-            <div style={{ animation:'fadeUp .7s ease .15s backwards' }}>
-                <DashCard3D />
-            </div>
-
-            {/* Feature list */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'9px 20px', animation:'fadeUp .7s ease .2s backwards', marginBottom:20 }}>
-                {FEATURES_SIMPLE.map(({ icon: Icon, label, desc }) => (
-                    <div key={label} style={{ display:'flex', alignItems:'flex-start', gap:9 }}>
-                        <div style={{ width:26, height:26, borderRadius:7, background:'rgba(14,165,233,.07)', border:'1px solid rgba(14,165,233,.13)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
-                            <Icon size={12} color="#38bdf8"/>
-                        </div>
-                        <div>
-                            <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:11, fontWeight:600, color:'#b8d4e8', lineHeight:1.3 }}>{label}</div>
-                            <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:9.5, fontWeight:300, color:'rgba(148,180,210,.35)', marginTop:1.5, lineHeight:1.4 }}>{desc}</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Divider */}
-            <div style={{ height:1, background:'linear-gradient(90deg,transparent,rgba(14,165,233,.12),transparent)', margin:'0 0 18px', animation:'fadeUp .7s ease .3s backwards' }}/>
-
-            {/* Trust stats */}
-            <div style={{ display:'flex', alignItems:'center', gap:28, animation:'fadeUp .7s ease .35s backwards' }}>
-                {[['99.9%','Uptime SLA'],['< 1s','Alert latency'],['SOC 2','Type II']].map(([val, lbl]) => (
-                    <div key={lbl}>
-                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:300, color:'#38bdf8', lineHeight:1 }}>{val}</div>
-                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8.5, color:'rgba(148,180,210,.35)', marginTop:3, letterSpacing:'.04em' }}>{lbl}</div>
-                    </div>
-                ))}
-            </div>
-        </div>
-
-        {/* Bottom footer */}
-        <div style={{ position:'absolute', bottom:28, left:44, right:44, zIndex:6, display:'flex', alignItems:'center', gap:6 }}>
-            <Lock size={9} color="rgba(56,189,248,.2)"/>
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:'rgba(56,189,248,.2)', letterSpacing:'.04em' }}>End-to-end encrypted · © 2025 Vigil</span>
-        </div>
-
-        {/* Ticker */}
-        <TickerBar />
-    </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  ORIGINAL HELPER COMPONENTS — zero changes
-// ─────────────────────────────────────────────────────────────────────────────
-const Cyl = ({ color='#0ea5e9', w=38, label, dot }) => {
-    const h=w*1.15, rx=w*0.48, ry=rx*0.27, cx=w/2;
-    const bodyTop=ry+1, bodyH=h-ry*2.4;
     return (
-        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
-            <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
-                <defs>
-                    <linearGradient id={`cb${color.slice(1)}`} x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%"   stopColor={color} stopOpacity=".5"/>
-                        <stop offset="50%"  stopColor={color} stopOpacity=".25"/>
-                        <stop offset="100%" stopColor={color} stopOpacity=".5"/>
-                    </linearGradient>
-                    <linearGradient id={`ct${color.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%"   stopColor={color} stopOpacity=".9"/>
-                        <stop offset="100%" stopColor={color} stopOpacity=".55"/>
-                    </linearGradient>
-                </defs>
-                <ellipse cx={cx} cy={h-2} rx={rx*.65} ry={ry*.4} fill={color} opacity=".1"/>
-                <rect x={cx-rx} y={bodyTop} width={rx*2} height={bodyH} fill={`url(#cb${color.slice(1)})`}/>
-                <ellipse cx={cx} cy={bodyTop+bodyH} rx={rx} ry={ry} fill={color} opacity=".4"/>
-                {[.35,.7].map((f,i)=><ellipse key={i} cx={cx} cy={bodyTop+bodyH*f} rx={rx} ry={ry} fill="none" stroke={color} strokeWidth=".5" opacity=".2"/>)}
-                <ellipse cx={cx} cy={bodyTop} rx={rx} ry={ry} fill={`url(#ct${color.slice(1)})`}/>
-                <ellipse cx={cx} cy={bodyTop} rx={rx} ry={ry} fill="none" stroke={color} strokeWidth=".8" opacity=".55"/>
-                <ellipse cx={cx-rx*.2} cy={bodyTop-ry*.1} rx={rx*.28} ry={ry*.5} fill="white" opacity=".1"/>
-                {dot && <circle cx={cx+rx*.6} cy={bodyTop+3} r="2.5" fill={dot} style={{ filter:`drop-shadow(0 0 3px ${dot})` }}/>}
-            </svg>
-            {label && <span style={{ fontSize:6.5, color, fontWeight:700, fontFamily:'JetBrains Mono,monospace', letterSpacing:'.08em' }}>{label}</span>}
+        <div style={{
+            flex: '1 1 0', minWidth: 0, height: '100vh',
+            background: '#05080f',
+            borderRight: '1px solid rgba(255,255,255,.06)',
+            display: 'flex', flexDirection: 'column',
+            position: 'relative', overflow: 'hidden',
+        }}>
+            {/* ── Animated network canvas (full bleed background) ── */}
+            <canvas
+                ref={canvasRef}
+                style={{
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%',
+                    zIndex: 0, display: 'block',
+                }}
+            />
+
+            {/* ── Atmospheric mesh overlays (sit above canvas) ── */}
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+                background: `
+                    radial-gradient(ellipse 70% 60% at 30% 25%, rgba(100,112,255,0.10) 0%, transparent 65%),
+                    radial-gradient(ellipse 55% 50% at 75% 70%, rgba(155,95,238,0.07) 0%, transparent 60%),
+                    radial-gradient(ellipse 40% 45% at 65% 15%, rgba(0,212,160,0.04) 0%, transparent 55%)
+                ` }} />
+
+            {/* Subtle radial glow — top-left */}
+            <div style={{ position:'absolute', top:'-10%', left:'-5%', width:'60%', height:'55%', background:'radial-gradient(circle,rgba(14,165,233,.05) 0%,transparent 70%)', pointerEvents:'none', zIndex:1 }}/>
+            {/* Subtle radial glow — bottom-right */}
+            <div style={{ position:'absolute', bottom:'-10%', right:'0%', width:'50%', height:'50%', background:'radial-gradient(circle,rgba(20,184,166,.04) 0%,transparent 70%)', pointerEvents:'none', zIndex:1 }}/>
+
+            {/* Faint dot grid */}
+            <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(rgba(100,112,255,.12) 1px,transparent 1px)', backgroundSize:'40px 40px', opacity:.28, pointerEvents:'none', zIndex:1,
+                maskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 20%, transparent 80%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 20%, transparent 80%)',
+            }}/>
+
+            {/* Fine grain */}
+            <div style={{ position:'absolute', inset:0, zIndex:1, pointerEvents:'none', opacity:0.025,
+                backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E")`
+            }}/>
+
+            {/* ── All content sits above canvas ── */}
+            <div style={{ position:'relative', zIndex:2, display:'flex', flexDirection:'column', height:'100%' }}>
+
+                {/* Top logo bar */}
+                <div style={{ padding:'22px 36px', display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
+                    <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#4A54E8,#8A46DB)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 0 1px rgba(255,255,255,0.1) inset, 0 8px 24px rgba(74,84,232,0.45), 0 0 60px rgba(74,84,232,0.15)' }}>
+                        <Database size={16} color="#fff"/>
+                    </div>
+                    <div>
+                        <div style={{ fontSize:13, fontWeight:700, color:'#818AFF', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.16em', textTransform:'uppercase', lineHeight:1 }}>Vigil</div>
+                        <div style={{ fontSize:9, color:'rgba(129,138,255,.4)', fontFamily:"'JetBrains Mono',monospace", marginTop:2, letterSpacing:'.06em' }}>PostgreSQL Intelligence</div>
+                    </div>
+                </div>
+
+                {/* Main centred content */}
+                <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 44px 32px' }}>
+
+                    {/* Headline */}
+                    <div style={{ marginBottom:24, animation:'fadeUp .6s ease .1s backwards' }}>
+                        <div style={{ display:'inline-flex', alignItems:'center', gap:7, background:'rgba(100,112,255,.08)', border:'1px solid rgba(100,112,255,.2)', borderRadius:20, padding:'4px 12px', marginBottom:14 }}>
+                            <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', display:'inline-block', boxShadow:'0 0 6px #22c55e', animation:'pulse 2s ease infinite' }}/>
+                            <span style={{ fontSize:9.5, fontWeight:700, color:'#818AFF', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.12em' }}>LIVE MONITORING</span>
+                        </div>
+                        <h2 style={{ fontSize:24, fontWeight:800, color:'#e8f4fc', fontFamily:"'Syne',sans-serif", lineHeight:1.25, letterSpacing:'-.02em', margin:'0 0 10px' }}>
+                            Complete visibility for your{' '}
+                            <span style={{ color:'#818AFF' }}>PostgreSQL</span> clusters.
+                        </h2>
+                        <p style={{ fontSize:11.5, color:'rgba(148,180,210,.45)', lineHeight:1.65, margin:0, fontFamily:"'DM Sans',sans-serif", fontWeight:400, maxWidth:360 }}>
+                            One dashboard for query performance, replication health, connection pools and anomaly alerts.
+                        </p>
+                    </div>
+
+                    {/* Mini metrics card — frosted glass over the canvas */}
+                    <div style={{ background:'rgba(7,8,15,0.72)', backdropFilter:'blur(18px)', WebkitBackdropFilter:'blur(18px)', border:'1px solid rgba(100,112,255,.14)', borderRadius:14, padding:'16px 18px', marginBottom:24, animation:'fadeUp .6s ease .15s backwards', position:'relative', overflow:'hidden' }}>
+                        <div style={{ position:'absolute', top:0, left:'20%', right:'20%', height:1, background:'linear-gradient(90deg,transparent,rgba(100,112,255,.45),transparent)' }}/>
+
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                                <Database size={12} color="#818AFF" opacity={0.7}/>
+                                <span style={{ fontSize:9.5, color:'rgba(129,138,255,.6)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.1em', fontWeight:600 }}>POSTGRES · PRIMARY</span>
+                            </div>
+                            <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                                <span style={{ width:5, height:5, borderRadius:'50%', background:'#22c55e', display:'inline-block', animation:'pulse 2s ease infinite' }}/>
+                                <span style={{ fontSize:9, color:'#22c55e', fontFamily:"'JetBrains Mono',monospace", fontWeight:700 }}>HEALTHY</span>
+                            </div>
+                        </div>
+
+                        {/* 4 KPI tiles */}
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:14 }}>
+                            {[
+                                { label:'QPS',   value:'12.8k', color:'#6470FF', trend:'+2%'   },
+                                { label:'P99',   value:'4.2ms', color:'#22c55e', trend:'–'     },
+                                { label:'CACHE', value:'97.4%', color:'#14b8a6', trend:'+0.1%' },
+                                { label:'CONN',  value:'342',   color:'#f59e0b', trend:'68%'   },
+                            ].map(({ label, value, color, trend }) => (
+                                <div key={label} style={{ background:`${color}0a`, border:`1px solid ${color}1a`, borderRadius:8, padding:'8px 10px' }}>
+                                    <div style={{ fontSize:8.5, color:'rgba(148,180,210,.4)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.06em', marginBottom:5 }}>{label}</div>
+                                    <div style={{ fontSize:14, fontWeight:700, color, fontFamily:"'Syne',sans-serif", lineHeight:1 }}>{value}</div>
+                                    <div style={{ fontSize:8, color:`${color}80`, marginTop:4, fontFamily:"'JetBrains Mono',monospace" }}>{trend}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Mini sparkline bars */}
+                        <div style={{ display:'flex', alignItems:'flex-end', gap:3, height:28 }}>
+                            {[40,58,45,72,55,80,62,91,70,85,68,88].map((h, i) => (
+                                <div key={i} style={{ flex:1, height:`${h}%`, background: i === 11 ? 'rgba(100,112,255,.75)' : 'rgba(100,112,255,.15)', borderRadius:2 }}/>
+                            ))}
+                        </div>
+                        <div style={{ fontSize:8, color:'rgba(148,180,210,.25)', fontFamily:"'JetBrains Mono',monospace", marginTop:5, letterSpacing:'.05em' }}>QPS · last 12s</div>
+
+                        {/* Replica status rows */}
+                        <div style={{ marginTop:12, display:'flex', flexDirection:'column', gap:6, paddingTop:12, borderTop:'1px solid rgba(255,255,255,.04)' }}>
+                            {[
+                                { name:'replica-1', lag:'0.0s', color:'#22c55e', status:'SYNC' },
+                                { name:'replica-2', lag:'1.2s', color:'#f59e0b', status:'LAG'  },
+                            ].map(({ name, lag, color, status }) => (
+                                <div key={name} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                    <span style={{ width:5, height:5, borderRadius:'50%', background:color, display:'inline-block', flexShrink:0 }}/>
+                                    <span style={{ fontSize:9.5, color:'rgba(148,180,210,.5)', fontFamily:"'JetBrains Mono',monospace", flex:1 }}>{name}</span>
+                                    <span style={{ fontSize:9, color:'rgba(148,180,210,.3)', fontFamily:"'JetBrains Mono',monospace" }}>lag {lag}</span>
+                                    <span style={{ fontSize:8, color, background:`${color}12`, border:`1px solid ${color}25`, borderRadius:4, padding:'1px 6px', fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>{status}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Feature list — two columns */}
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'9px 20px', animation:'fadeUp .6s ease .2s backwards' }}>
+                        {FEATURES_SIMPLE.map(({ icon: Icon, label, desc }) => (
+                            <div key={label} style={{ display:'flex', alignItems:'flex-start', gap:9 }}>
+                                <div style={{ width:26, height:26, borderRadius:7, background:'rgba(100,112,255,.07)', border:'1px solid rgba(100,112,255,.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
+                                    <Icon size={12} color="#818AFF"/>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize:11, fontWeight:600, color:'#b8d4e8', fontFamily:"'DM Sans',sans-serif", lineHeight:1.3 }}>{label}</div>
+                                    <div style={{ fontSize:9.5, color:'rgba(148,180,210,.35)', fontFamily:"'DM Sans',sans-serif", marginTop:1.5, lineHeight:1.4 }}>{desc}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ height:1, background:'linear-gradient(90deg,transparent,rgba(100,112,255,.14),transparent)', margin:'22px 0', animation:'fadeUp .6s ease .3s backwards' }}/>
+
+                    {/* Trust stats */}
+                    <div style={{ display:'flex', alignItems:'center', gap:28, animation:'fadeUp .6s ease .35s backwards' }}>
+                        {[['99.9%','Uptime SLA'],['< 1s','Alert latency'],['SOC 2','Type II']].map(([val, lbl]) => (
+                            <div key={lbl}>
+                                <div style={{ fontSize:14, fontWeight:800, color:'#818AFF', fontFamily:"'Syne',sans-serif", lineHeight:1 }}>{val}</div>
+                                <div style={{ fontSize:8.5, color:'rgba(148,180,210,.35)', marginTop:3, fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>{lbl}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Bottom footer */}
+                <div style={{ padding:'16px 36px', borderTop:'1px solid rgba(255,255,255,.04)', display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+                    <Lock size={9} color="rgba(129,138,255,.2)"/>
+                    <span style={{ fontSize:9, color:'rgba(129,138,255,.2)', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>End-to-end encrypted · © 2025 Vigil</span>
+                </div>
+            </div>
         </div>
     );
 };
 
-const LiveBar = ({ pct, color, label, value }) => (
-    <div style={{ marginBottom:5 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:2.5 }}>
-            <span style={{ fontSize:7, color:'#1e3a5f', letterSpacing:'.05em' }}>{label}</span>
-            <span style={{ fontSize:7.5, color, fontWeight:700 }}>{value}</span>
-        </div>
-        <div style={{ height:5, background:'rgba(255,255,255,.05)', borderRadius:3, overflow:'hidden' }}>
-            <div style={{ width:`${pct}%`, height:'100%', background:`linear-gradient(90deg,${color}55,${color})`, borderRadius:3 }}/>
-        </div>
-    </div>
-);
-
-const CapCard = ({ icon, title, desc, color }) => (
-    <div style={{ background:`${color}08`, border:`1px solid ${color}20`, borderRadius:9, padding:'10px 11px', display:'flex', flexDirection:'column', gap:5 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-            <div style={{ width:26, height:26, borderRadius:7, background:`${color}18`, border:`1px solid ${color}28`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, flexShrink:0 }}>{icon}</div>
-            <span style={{ fontSize:9.5, fontWeight:700, color:'#c8d6e5', lineHeight:1.2 }}>{title}</span>
-        </div>
-        <span style={{ fontSize:8.5, color:'#1e3a5f', lineHeight:1.5 }}>{desc}</span>
-    </div>
-);
-
 // ─────────────────────────────────────────────────────────────────────────────
-//  LOGO EMBLEM — original, zero changes
+//  LOGO EMBLEM
 // ─────────────────────────────────────────────────────────────────────────────
 const LogoEmblem = ({ success }) => {
     const S=88, C=44, R1=38, R2=29, R3=20;
-    const c1 = success ? '#22c55e' : '#0ea5e9';
-    const c2 = success ? '#22c55e' : '#38bdf8';
+    const c1 = success ? '#22c55e' : '#6470FF';
+    const c2 = success ? '#22c55e' : '#818AFF';
     return (
         <div style={{ position:'relative', width:S, height:S, animation:'logoPulse 4s ease-in-out infinite' }}>
-            <div style={{ position:'absolute', inset:-18, borderRadius:'50%', background: success ? 'radial-gradient(circle,rgba(34,197,94,.18) 0%,transparent 70%)' : 'radial-gradient(circle,rgba(14,165,233,.15) 0%,transparent 70%)', animation:'glow 3s ease-in-out infinite', transition:'background .8s' }}/>
+            <div style={{ position:'absolute', inset:-18, borderRadius:'50%', background: success ? 'radial-gradient(circle,rgba(34,197,94,.18) 0%,transparent 70%)' : 'radial-gradient(circle,rgba(100,112,255,.15) 0%,transparent 70%)', animation:'glow 3s ease-in-out infinite', transition:'background .8s' }}/>
             <svg width={S} height={S} style={{ position:'absolute', top:0, left:0 }}>
                 <circle cx={C} cy={C} r={R1} fill="none" stroke={c1} strokeWidth="1" strokeDasharray="4 3" opacity=".35" style={{ transformOrigin:'center', animation:'spin 22s linear infinite', transition:'stroke .8s' }}/>
                 <circle cx={C} cy={C} r={R2} fill="none" stroke={c1} strokeWidth="1.5" strokeDasharray={`${Math.PI*R2*.6} ${Math.PI*R2*.4}`} strokeLinecap="round" opacity=".7" style={{ transformOrigin:'center', animation:'spinRev 11s linear infinite', transition:'stroke .8s' }}/>
@@ -494,7 +469,7 @@ const LogoEmblem = ({ success }) => {
                 ))}
             </svg>
             <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <div style={{ width:48, height:48, borderRadius:14, background: success ? 'linear-gradient(135deg,#22c55e,#14b8a6)' : 'linear-gradient(135deg,#0ea5e9,#38bdf8)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow: success ? '0 4px 26px rgba(34,197,94,.5)' : '0 4px 26px rgba(14,165,233,.45)', transition:'all .8s cubic-bezier(.34,1.56,.64,1)' }}>
+                <div style={{ width:48, height:48, borderRadius:14, background: success ? 'linear-gradient(135deg,#22c55e,#14b8a6)' : 'linear-gradient(135deg,#4A54E8,#8A46DB)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow: success ? '0 4px 26px rgba(34,197,94,.5)' : '0 4px 26px rgba(74,84,232,.45)', transition:'all .8s cubic-bezier(.34,1.56,.64,1)' }}>
                     {success ? <CheckCircle size={24} color="#fff" style={{ animation:'successPop .5s ease backwards' }}/> : <Database size={24} color="#fff"/>}
                 </div>
             </div>
@@ -503,10 +478,10 @@ const LogoEmblem = ({ success }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SERVER STATUS — original, zero changes
+//  SERVER STATUS
 // ─────────────────────────────────────────────────────────────────────────────
 const ServerStatus = ({ status }) => {
-    const on=status.status==='online', off=status.status==='offline', checking=status.status==='checking';
+    const on = status.status==='online', off = status.status==='offline', checking = status.status==='checking';
     const color = on ? '#22c55e' : off ? '#ef4444' : '#f59e0b';
     const label = on ? 'ONLINE' : off ? 'OFFLINE' : checking ? 'Checking…' : 'DEGRADED';
     return (
@@ -515,7 +490,7 @@ const ServerStatus = ({ status }) => {
                 ? <><Loader size={9} color="#334155" style={{ animation:'spin 1s linear infinite' }}/><span style={{ color:'#334155' }}>Checking…</span></>
                 : <>
                     <div style={{ position:'relative', width:7, height:7 }}>
-                        <div style={{ position:'absolute', inset:0, borderRadius:'50%', background:color, boxShadow:`0 0 7px ${color}90`, animation:on?'pulse 2s ease-in-out infinite':'none' }}/>
+                        <div style={{ position:'absolute', inset:0, borderRadius:'50%', background:color, boxShadow:`0 0 7px ${color}90`, animation: on?'pulse 2s ease-in-out infinite':'none' }}/>
                         {on && <div style={{ position:'absolute', inset:-2, borderRadius:'50%', border:`1px solid ${color}60`, animation:'ring 2s ease-out infinite' }}/>}
                     </div>
                     <span style={{ color, fontWeight:700, letterSpacing:'.05em' }}>{label}</span>
@@ -526,54 +501,44 @@ const ServerStatus = ({ status }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  INPUT FIELD — original + animated focus-underline bar added
+//  INPUT FIELD
 // ─────────────────────────────────────────────────────────────────────────────
 const InputField = React.forwardRef(function InputField(
-    { icon:Icon, label, type='text', value, onChange, placeholder, autoComplete, disabled, rightEl }, ref
+    { icon: Icon, label, type='text', value, onChange, placeholder, autoComplete, disabled, rightEl }, ref
 ) {
     const [focused, setFocused] = useState(false);
     const hasVal = value.length > 0;
     return (
         <div>
-            <label style={{ display:'block', marginBottom:7, fontSize:9.5, fontWeight:600, color:focused?'#0ea5e9':'#1a3050', textTransform:'uppercase', letterSpacing:'1.4px', fontFamily:"'JetBrains Mono',monospace", transition:'color .2s' }}>{label}</label>
-            <div style={{ position:'relative', display:'flex', alignItems:'center', gap:10, background:focused?'rgba(14,165,233,.05)':'rgba(255,255,255,.022)', border:`1px solid ${focused?'rgba(14,165,233,.45)':'rgba(255,255,255,.07)'}`, borderRadius:13, padding:'0 14px', transition:'all .25s cubic-bezier(.4,0,.2,1)', boxShadow:focused?'0 0 0 3.5px rgba(14,165,233,.08),inset 0 1px 0 rgba(255,255,255,.04)':'inset 0 1px 0 rgba(255,255,255,.025)' }}>
-                <Icon size={15} color={focused?'#0ea5e9':hasVal?'#2a4560':'#101e35'} style={{ flexShrink:0, transition:'color .2s' }}/>
-                <input
-                    ref={ref} type={type} value={value}
-                    onChange={e=>onChange(e.target.value)}
-                    placeholder={placeholder} autoComplete={autoComplete}
-                    disabled={disabled}
-                    onFocus={()=>setFocused(true)}
-                    onBlur={()=>setFocused(false)}
-                    className="vi-input"
-                    style={{ flex:1, padding:'13px 0', background:'none', border:'none', color:'#e2e8f0', fontSize:13.5, outline:'none', fontFamily:"'Manrope',sans-serif", fontWeight:400, letterSpacing:'.01em', opacity:disabled?.4:1 }}
-                />
+            <label style={{ display:'block', marginBottom:7, fontSize:9.5, fontWeight:600, color: focused ? '#6470FF' : '#1a3050', textTransform:'uppercase', letterSpacing:'1.4px', fontFamily:"'JetBrains Mono',monospace", transition:'color .2s' }}>{label}</label>
+            <div style={{ display:'flex', alignItems:'center', gap:10, background: focused ? 'rgba(100,112,255,.05)' : 'rgba(255,255,255,.022)', border:`1px solid ${focused ? 'rgba(100,112,255,.45)' : 'rgba(255,255,255,.07)'}`, borderRadius:13, padding:'0 14px', transition:'all .25s cubic-bezier(.4,0,.2,1)', boxShadow: focused ? '0 0 0 3.5px rgba(100,112,255,.08),inset 0 1px 0 rgba(255,255,255,.04)' : 'inset 0 1px 0 rgba(255,255,255,.025)' }}>
+                <Icon size={15} color={focused ? '#6470FF' : hasVal ? '#2a4560' : '#101e35'} style={{ flexShrink:0, transition:'color .2s' }}/>
+                <input ref={ref} type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)} className="vi-input"
+                       style={{ flex:1, padding:'13px 0', background:'none', border:'none', color:'#e2e8f0', fontSize:13.5, outline:'none', fontFamily:"'DM Sans',sans-serif", fontWeight:400, letterSpacing:'.01em', opacity:disabled?.4:1 }}/>
                 {rightEl}
-                {/* animated focus underline bar */}
-                <div style={{ position:'absolute', bottom:0, left:focused?14:'50%', right:focused?14:'50%', height:2, background:'#0ea5e9', borderRadius:'0 0 13px 13px', transition:'left .3s cubic-bezier(.16,1,.3,1),right .3s cubic-bezier(.16,1,.3,1)', opacity:focused?1:0 }}/>
             </div>
         </div>
     );
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CORNER ACCENTS — original, zero changes
+//  CORNER ACCENTS
 // ─────────────────────────────────────────────────────────────────────────────
-const Corners = ({ color='rgba(14,165,233,.25)' }) => (
+const Corners = ({ color='rgba(100,112,255,.25)' }) => (
     <>
         {[
-            { top:0,    left:0,  borderTop:`1px solid ${color}`, borderLeft:`1px solid ${color}`,   borderRadius:'3px 0 0 0' },
-            { top:0,    right:0, borderTop:`1px solid ${color}`, borderRight:`1px solid ${color}`,  borderRadius:'0 3px 0 0' },
-            { bottom:0, left:0,  borderBottom:`1px solid ${color}`, borderLeft:`1px solid ${color}`, borderRadius:'0 0 0 3px' },
-            { bottom:0, right:0, borderBottom:`1px solid ${color}`, borderRight:`1px solid ${color}`,borderRadius:'0 0 3px 0' },
+            { top:0,    left:0,  borderTop:`1px solid ${color}`, borderLeft:`1px solid ${color}`,    borderRadius:'3px 0 0 0' },
+            { top:0,    right:0, borderTop:`1px solid ${color}`, borderRight:`1px solid ${color}`,   borderRadius:'0 3px 0 0' },
+            { bottom:0, left:0,  borderBottom:`1px solid ${color}`, borderLeft:`1px solid ${color}`,  borderRadius:'0 0 0 3px' },
+            { bottom:0, right:0, borderBottom:`1px solid ${color}`, borderRight:`1px solid ${color}`, borderRadius:'0 0 3px 0' },
         ].map(({ borderRadius, ...style }, i) => (
-            <div key={i} style={{ position:'absolute', width:14, height:14, pointerEvents:'none', borderRadius, ...style }}/>
+            <div key={i} style={{ position:'absolute', width:14, height:14, pointerEvents:'none', borderRadius, ...style }} />
         ))}
     </>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LOGIN PAGE — original logic 100% intact, cosmetic font upgrades only
+//  LOGIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
     const { login, authLoading, error, clearError } = useAuth();
@@ -595,10 +560,15 @@ const LoginPage = () => {
         let cancelled = false;
         const check = async () => {
             try {
-                const t0   = performance.now();
+                const t0  = performance.now();
                 const res  = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(5000) });
                 const data = await res.json();
-                if (!cancelled) setServerStatus({ status: data.status==='ok'?'online':'degraded', latency: Math.round(performance.now()-t0), dbLatency: data.dbLatencyMs, pool: data.pool });
+                if (!cancelled) setServerStatus({
+                    status:    data.status === 'ok' ? 'online' : 'degraded',
+                    latency:   Math.round(performance.now() - t0),
+                    dbLatency: data.dbLatencyMs,
+                    pool:      data.pool,
+                });
             } catch {
                 if (!cancelled) setServerStatus({ status: 'offline' });
             }
@@ -617,7 +587,7 @@ const LoginPage = () => {
 
     // Shake on error
     useEffect(() => {
-        if (error) { setShake(true); const t=setTimeout(()=>setShake(false),600); return ()=>clearTimeout(t); }
+        if (error) { setShake(true); const t = setTimeout(() => setShake(false), 600); return () => clearTimeout(t); }
     }, [error]);
 
     // Clear error on typing
@@ -633,74 +603,79 @@ const LoginPage = () => {
         else            localStorage.removeItem('vigil_remembered_user');
         setLoginSuccess(false);
         try { await login(username, password); setLoginSuccess(true); }
-        catch { /* handled by AuthContext */ }
+        catch { /* error handled by AuthContext */ }
     }, [username, password, rememberMe, login]);
 
-    const canSubmit = username.trim().length>0 && password.trim().length>0 && !authLoading && !loginSuccess;
-    const btnBg     = authLoading  ? 'rgba(14,165,233,.5)'
+    const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading && !loginSuccess;
+
+    const btnBg = authLoading  ? 'rgba(100,112,255,.5)'
         : loginSuccess ? '#22c55e'
-            : canSubmit    ? 'linear-gradient(135deg,#0284c7 0%,#0ea5e9 50%,#38bdf8 100%)'
-                :                'rgba(14,165,233,.12)';
+            : canSubmit    ? 'linear-gradient(135deg,#4A54E8 0%,#6470FF 50%,#818AFF 100%)'
+                :                'rgba(100,112,255,.12)';
+
     const btnShadow = canSubmit && !authLoading && !loginSuccess
-        ? (btnHover ? '0 10px 34px rgba(14,165,233,.55),0 0 0 1px rgba(14,165,233,.3) inset'
-            : '0 4px 22px rgba(14,165,233,.3),0 0 0 1px rgba(14,165,233,.16) inset')
+        ? (btnHover ? '0 10px 34px rgba(100,112,255,.55),0 0 0 1px rgba(100,112,255,.3) inset'
+            : '0 4px 22px rgba(100,112,255,.3),0 0 0 1px rgba(100,112,255,.16) inset')
         : 'none';
 
     return (
-        <div style={{ height:'100vh', width:'100vw', display:'flex', background:'#04080f', fontFamily:"'Manrope',sans-serif", overflow:'hidden' }}>
+        <div style={{ height:'100vh', width:'100vw', display:'flex', background:'#05080f', fontFamily:"'DM Sans',sans-serif", overflow:'hidden' }}>
             <GlobalStyles />
             <LeftPanel />
 
-            {/* RIGHT — login form */}
+            {/* ── RIGHT — login form ── */}
             <div style={{ width:490, flexShrink:0, position:'relative', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'36px 44px', background:'rgba(4,7,14,.98)' }}>
 
                 {/* bg blobs */}
                 <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none' }}>
-                    <div style={{ position:'absolute', top:'5%', right:'-22%', width:420, height:420, background:'radial-gradient(circle,rgba(14,165,233,.055) 0%,transparent 65%)', animation:'blob2 24s ease-in-out infinite', filter:'blur(55px)' }}/>
-                    <div style={{ position:'absolute', bottom:'5%', left:'-18%', width:320, height:320, background:'radial-gradient(circle,rgba(20,184,166,.045) 0%,transparent 65%)', animation:'blob1 18s ease-in-out infinite', filter:'blur(40px)' }}/>
-                    <div style={{ position:'absolute', inset:0, opacity:.012, backgroundImage:'linear-gradient(rgba(14,165,233,1) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,1) 1px,transparent 1px)', backgroundSize:'44px 44px' }}/>
+                    <div style={{ position:'absolute', top:'5%', right:'-22%', width:420, height:420, background:'radial-gradient(circle,rgba(100,112,255,.055) 0%,transparent 65%)', filter:'blur(55px)' }}/>
+                    <div style={{ position:'absolute', bottom:'5%', left:'-18%', width:320, height:320, background:'radial-gradient(circle,rgba(129,138,255,.04) 0%,transparent 65%)', filter:'blur(40px)' }}/>
+                    <div style={{ position:'absolute', inset:0, opacity:.012, backgroundImage:'linear-gradient(rgba(100,112,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(100,112,255,1) 1px,transparent 1px)', backgroundSize:'44px 44px' }}/>
                 </div>
 
-                {/* top edge accent */}
-                <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:'linear-gradient(90deg,transparent 0%,rgba(14,165,233,.55) 30%,rgba(56,189,248,.8) 50%,rgba(14,165,233,.55) 70%,transparent 100%)', opacity:.75 }}/>
-
-                {/* glowing left-edge accent */}
-                <div style={{ position:'absolute', top:'14%', bottom:'14%', left:0, width:1, background:'linear-gradient(to bottom,transparent,rgba(14,165,233,.4),rgba(14,165,233,.4),transparent)', filter:'blur(.5px)' }}/>
+                {/* top edge line */}
+                <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:'linear-gradient(90deg,transparent 0%,rgba(100,112,255,.55) 30%,rgba(129,138,255,.8) 50%,rgba(100,112,255,.55) 70%,transparent 100%)', opacity:.75 }}/>
 
                 <div style={{ position:'relative', zIndex:1, width:'100%', maxWidth:370, display:'flex', flexDirection:'column', alignItems:'center' }}>
 
                     {/* Logo */}
                     <div style={{ marginBottom:22, animation:'fadeUp .6s ease .1s backwards' }}>
-                        <LogoEmblem success={loginSuccess}/>
+                        <LogoEmblem success={loginSuccess} />
                     </div>
 
-                    {/* Heading — upgraded to Cormorant Garamond */}
+                    {/* Heading */}
                     <div style={{ textAlign:'center', marginBottom:4, animation:'fadeUp .6s ease .18s backwards', width:'100%' }}>
-                        <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300, color:'#f0f6fc', margin:0, lineHeight:1.05, letterSpacing:'-.02em' }}>
-                            Welcome <em style={{ fontStyle:'italic', color:'#38bdf8' }}>back</em>
-                        </h1>
-                        <p style={{ fontFamily:"'Manrope',sans-serif", color:'#1a2e4a', margin:'9px 0 0', fontSize:12, lineHeight:1.55, fontWeight:300 }}>Sign in to your monitoring dashboard</p>
+                        <h1 style={{ fontSize:32, fontWeight:800, color:'#f0f6fc', margin:0, lineHeight:1.1, letterSpacing:'-.04em', fontFamily:"'Syne',sans-serif" }}>Welcome back</h1>
+                        <p style={{ color:'#1a2e4a', margin:'9px 0 0', fontSize:12, lineHeight:1.55 }}>Sign in to your monitoring dashboard</p>
                     </div>
 
                     {/* Server status */}
                     <div style={{ margin:'16px 0 18px', display:'flex', alignItems:'center', gap:10, width:'100%', animation:'fadeUp .6s ease .24s backwards' }}>
                         <div style={{ flex:1, height:1, background:'rgba(255,255,255,.04)' }}/>
-                        <ServerStatus status={serverStatus}/>
+                        <ServerStatus status={serverStatus} />
                         <div style={{ flex:1, height:1, background:'rgba(255,255,255,.04)' }}/>
                     </div>
 
                     {/* Card */}
-                    <div style={{ width:'100%', padding:'28px 26px 24px', borderRadius:22, background:'rgba(6,14,28,.85)', backdropFilter:'blur(32px)', WebkitBackdropFilter:'blur(32px)', border:`1px solid ${loginSuccess?'rgba(34,197,94,.38)':error?'rgba(239,68,68,.28)':'rgba(255,255,255,.07)'}`, boxShadow:loginSuccess?'0 0 70px rgba(34,197,94,.1),0 28px 60px rgba(0,0,0,.6)':'0 28px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03)', transition:'border-color .55s,box-shadow .55s', animation:shake?'shake .5s ease':'fadeUp .7s ease .32s backwards', position:'relative', overflow:'hidden' }}>
-                        <div style={{ position:'absolute', top:0, left:'8%', right:'8%', height:1, background:loginSuccess?'linear-gradient(90deg,transparent,rgba(34,197,94,.6),transparent)':'linear-gradient(90deg,transparent,rgba(14,165,233,.38),transparent)', transition:'background .55s', animation:'edgePulse 3s ease-in-out infinite' }}/>
-                        <Corners color={loginSuccess?'rgba(34,197,94,.28)':'rgba(14,165,233,.22)'}/>
+                    <div style={{
+                        width:'100%', padding:'28px 26px 24px', borderRadius:22,
+                        background:'rgba(6,14,28,.85)', backdropFilter:'blur(32px)', WebkitBackdropFilter:'blur(32px)',
+                        border:`1px solid ${loginSuccess ? 'rgba(34,197,94,.38)' : error ? 'rgba(239,68,68,.28)' : 'rgba(255,255,255,.07)'}`,
+                        boxShadow: loginSuccess ? '0 0 70px rgba(34,197,94,.1),0 28px 60px rgba(0,0,0,.6)' : '0 28px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03)',
+                        transition:'border-color .55s,box-shadow .55s',
+                        animation: shake ? 'shake .5s ease' : 'fadeUp .7s ease .32s backwards',
+                        position:'relative', overflow:'hidden',
+                    }}>
+                        <div style={{ position:'absolute', top:0, left:'8%', right:'8%', height:1, background: loginSuccess ? 'linear-gradient(90deg,transparent,rgba(34,197,94,.6),transparent)' : 'linear-gradient(90deg,transparent,rgba(100,112,255,.4),transparent)', transition:'background .55s', animation:'edgePulse 3s ease-in-out infinite' }}/>
+                        <Corners color={loginSuccess ? 'rgba(34,197,94,.28)' : 'rgba(100,112,255,.22)'} />
 
                         {/* Success overlay */}
                         {loginSuccess && (
                             <div style={{ position:'absolute', inset:0, background:'radial-gradient(circle at center,rgba(34,197,94,.08) 0%,transparent 70%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', zIndex:20, borderRadius:22, animation:'fadeIn .3s ease' }}>
                                 <div style={{ position:'absolute', width:80, height:80, borderRadius:'50%', border:'2px solid rgba(34,197,94,.3)', animation:'ripple 1s ease-out forwards' }}/>
                                 <CheckCircle size={44} color="#22c55e" style={{ animation:'successPop .5s ease backwards', marginBottom:14 }}/>
-                                <div style={{ fontFamily:"'Cormorant Garamond',serif", color:'#22c55e', fontSize:20, fontWeight:300, animation:'fadeUp .4s ease .2s backwards' }}>Authenticated</div>
-                                <div style={{ fontFamily:"'JetBrains Mono',monospace", color:'#0f2540', fontSize:10, marginTop:6, animation:'fadeUp .4s ease .35s backwards' }}>Redirecting to dashboard…</div>
+                                <div style={{ color:'#22c55e', fontSize:16, fontWeight:800, fontFamily:"'Syne',sans-serif", animation:'fadeUp .4s ease .2s backwards' }}>Authenticated</div>
+                                <div style={{ color:'#0f2540', fontSize:10, marginTop:6, fontFamily:"'JetBrains Mono',monospace", animation:'fadeUp .4s ease .35s backwards' }}>Redirecting to dashboard…</div>
                             </div>
                         )}
 
@@ -713,52 +688,42 @@ const LoginPage = () => {
                         )}
 
                         <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:15 }}>
-                            <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading||loginSuccess}/>
-                            <InputField
-                                ref={pwdRef} icon={KeyRound} label="Password"
-                                type={showPwd?'text':'password'}
-                                value={password} onChange={setPassword}
-                                placeholder="Enter your password"
-                                autoComplete="current-password"
-                                disabled={authLoading||loginSuccess}
-                                rightEl={
-                                    <button type="button" onClick={()=>setShowPwd(s=>!s)} tabIndex={-1} style={{ background:'none', border:'none', cursor:'pointer', color:'#101e35', padding:4, display:'flex', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color='#334155'} onMouseLeave={e=>e.currentTarget.style.color='#101e35'}>
-                                        {showPwd?<EyeOff size={14}/>:<Eye size={14}/>}
-                                    </button>
-                                }
+                            <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading || loginSuccess} />
+                            <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading || loginSuccess}
+                                        rightEl={
+                                            <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background:'none', border:'none', cursor:'pointer', color:'#101e35', padding:4, display:'flex', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color='#334155'} onMouseLeave={e=>e.currentTarget.style.color='#101e35'}>
+                                                {showPwd ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                            </button>
+                                        }
                             />
 
-                            {/* Remember me + Forgot */}
+                            {/* Remember me + Forgot password */}
                             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:-3 }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', userSelect:'none' }} onClick={()=>setRememberMe(r=>!r)}>
-                                    <div style={{ width:16, height:16, borderRadius:4, flexShrink:0, border:`1.5px solid ${rememberMe?'#0ea5e9':'rgba(255,255,255,.1)'}`, background:rememberMe?'#0ea5e9':'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .22s cubic-bezier(.34,1.56,.64,1)', boxShadow:rememberMe?'0 0 12px rgba(14,165,233,.4)':'none' }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', userSelect:'none' }} onClick={() => setRememberMe(r => !r)}>
+                                    <div style={{ width:16, height:16, borderRadius:4, flexShrink:0, border:`1.5px solid ${rememberMe ? '#6470FF' : 'rgba(255,255,255,.1)'}`, background:rememberMe ? '#6470FF' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .22s cubic-bezier(.34,1.56,.64,1)', boxShadow:rememberMe ? '0 0 12px rgba(100,112,255,.4)' : 'none' }}>
                                         {rememberMe && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                     </div>
-                                    <span style={{ fontFamily:"'Manrope',sans-serif", fontSize:11.5, color:'#1a2e4a', fontWeight:400 }}>Remember me</span>
+                                    <span style={{ fontSize:11.5, color:'#1a2e4a', fontFamily:"'DM Sans',sans-serif" }}>Remember me</span>
                                 </div>
-                                <button type="button" style={{ background:'none', border:'none', cursor:'pointer', fontFamily:"'Manrope',sans-serif", fontSize:11.5, color:'#101e35', padding:0, transition:'color .2s', fontWeight:400 }} onMouseEnter={e=>e.currentTarget.style.color='#38bdf8'} onMouseLeave={e=>e.currentTarget.style.color='#101e35'}>
+                                <button type="button" style={{ background:'none', border:'none', cursor:'pointer', fontSize:11.5, color:'#101e35', fontFamily:"'DM Sans',sans-serif", padding:0, transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color='#818AFF'} onMouseLeave={e=>e.currentTarget.style.color='#101e35'}>
                                     Forgot password?
                                 </button>
                             </div>
 
-                            {/* Sign In — vi-btn adds shimmer sweep */}
-                            <button
-                                type="submit"
-                                className="vi-btn"
-                                disabled={!canSubmit}
-                                onMouseEnter={()=>setBtnHover(true)}
-                                onMouseLeave={()=>setBtnHover(false)}
-                                style={{ position:'relative', overflow:'hidden', background:btnBg, border:canSubmit?`1px solid ${loginSuccess?'rgba(34,197,94,.3)':'rgba(14,165,233,.28)'}`:'1px solid rgba(255,255,255,.04)', padding:'14px 22px', borderRadius:13, color:'white', fontWeight:700, fontSize:14, fontFamily:"'Manrope',sans-serif", letterSpacing:'.04em', cursor:canSubmit?'pointer':'not-allowed', marginTop:5, display:'flex', alignItems:'center', justifyContent:'center', gap:8, transition:'all .28s cubic-bezier(.4,0,.2,1)', boxShadow:btnShadow, transform:btnHover&&canSubmit?'translateY(-2px)':'translateY(0)' }}
-                            >
+                            {/* Sign In button */}
+                            <button type="submit" disabled={!canSubmit}
+                                    onMouseEnter={() => setBtnHover(true)}
+                                    onMouseLeave={() => setBtnHover(false)}
+                                    style={{ position:'relative', overflow:'hidden', background:btnBg, border:canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.3)' : 'rgba(100,112,255,.28)'}` : '1px solid rgba(255,255,255,.04)', padding:'14px 22px', borderRadius:13, color:'white', fontWeight:700, fontSize:14, fontFamily:"'Syne',sans-serif", letterSpacing:'.02em', cursor:canSubmit ? 'pointer' : 'not-allowed', marginTop:5, display:'flex', alignItems:'center', justifyContent:'center', gap:8, transition:'all .28s cubic-bezier(.4,0,.2,1)', boxShadow:btnShadow, transform:btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
                                 {authLoading  ? (<><Loader size={15} style={{ animation:'spin 1s linear infinite' }}/><span>Authenticating…</span></>) :
-                                    loginSuccess  ? (<><CheckCircle size={15}/><span>Access Granted</span></>) :
-                                        (<><span>Sign In</span><ArrowRight size={15} style={{ transition:'transform .25s', transform:btnHover?'translateX(4px)':'translateX(0)' }}/></>)}
+                                    loginSuccess ? (<><CheckCircle size={15}/><span>Access Granted</span></>) :
+                                        (<><span>Sign In</span><ArrowRight size={15} style={{ transition:'transform .25s', transform:btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>)}
                             </button>
                         </form>
 
                         {!loginSuccess && (
                             <div style={{ marginTop:18, paddingTop:16, borderTop:'1px solid rgba(255,255,255,.04)', textAlign:'center' }}>
-                                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9.5, color:'#0a1828', letterSpacing:'.04em' }}>Admin access only · Contact your DBA for credentials</span>
+                                <span style={{ fontSize:9.5, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace", letterSpacing:'.04em' }}>Admin access only · Contact your DBA for credentials</span>
                             </div>
                         )}
                     </div>
@@ -766,7 +731,7 @@ const LoginPage = () => {
                     {/* Footer */}
                     <div style={{ marginTop:18, display:'flex', alignItems:'center', justifyContent:'center', gap:5, animation:'fadeUp .6s ease .6s backwards' }}>
                         <Shield size={9} color="#0a1828" style={{ opacity:.4 }}/>
-                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:'#0a1828' }}>Secured by Vigil · PostgreSQL Monitor v2.0</span>
+                        <span style={{ fontSize:9, color:'#0a1828', fontFamily:"'JetBrains Mono',monospace" }}>Secured by Vigil · PostgreSQL Monitor v2.0</span>
                     </div>
                 </div>
             </div>
