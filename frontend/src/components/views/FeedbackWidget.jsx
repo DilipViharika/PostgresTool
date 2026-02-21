@@ -1,171 +1,150 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     MessageSquare, X, Send, ThumbsUp, AlertTriangle,
-    Lightbulb, Star, ChevronDown, Layers, PlusCircle
+    Lightbulb, Star, ChevronDown, Layers, PlusCircle, Zap
 } from 'lucide-react';
 import { THEME } from '../../utils/theme.jsx';
 
-/* ─── Auth token key — must match AuthContext storage key ───────────────── */
+/* ─── Inject keyframes once ─────────────────────────────────────────────── */
+const STYLE_ID = 'fw-redesign-styles';
+if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
+    const s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+        @keyframes fw-rise {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0)  scale(1); }
+        }
+        @keyframes fw-pulse-ring {
+            0%   { box-shadow: 0 0 0 0 rgba(99,179,237,0.45); }
+            70%  { box-shadow: 0 0 0 10px rgba(99,179,237,0); }
+            100% { box-shadow: 0 0 0 0 rgba(99,179,237,0); }
+        }
+        @keyframes fw-checkmark {
+            from { opacity: 0; transform: scale(0.4) rotate(-15deg); }
+            to   { opacity: 1; transform: scale(1)   rotate(0deg); }
+        }
+        @keyframes fw-shimmer {
+            0%   { background-position: -200% center; }
+            100% { background-position:  200% center; }
+        }
+        .fw-fab:hover { transform: scale(1.08) !important; }
+        .fw-fab:active { transform: scale(0.96) !important; }
+        .fw-tab-btn:hover { opacity: 1 !important; }
+        .fw-star:hover { transform: scale(1.25) !important; }
+        .fw-close:hover { background: rgba(255,255,255,0.08) !important; color: #fff !important; }
+        .fw-input:focus { border-color: #63B3ED !important; box-shadow: 0 0 0 3px rgba(99,179,237,0.12) !important; }
+        .fw-submit:not(:disabled):hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,179,237,0.35) !important; }
+        .fw-submit:not(:disabled):active { transform: translateY(0); }
+        .fw-prio:hover { border-color: rgba(255,255,255,0.3) !important; background: rgba(255,255,255,0.05) !important; }
+        .fw-section-opt:hover { background: rgba(99,179,237,0.08) !important; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    `;
+    document.head.appendChild(s);
+}
+
+/* ─── Auth token key ────────────────────────────────────────────────────── */
 const AUTH_TOKEN_KEY = 'vigil_token';
 
-/* ─── All app sections pulled from TAB_CONFIG in App.jsx ────────────────── */
+/* ─── App sections ──────────────────────────────────────────────────────── */
 const APP_SECTIONS = [
-    { id: 'all',         label: 'All Sections (General)' },
-    { id: 'connections', label: 'Connections'             },
-    { id: 'overview',    label: 'Overview'                },
-    { id: 'performance', label: 'Performance'             },
-    { id: 'optimizer',   label: 'Query Optimizer'         },
-    { id: 'resources',   label: 'Resources'               },
-    { id: 'reliability', label: 'Reliability'             },
-    { id: 'indexes',     label: 'Indexes'                 },
-    { id: 'alerts',      label: 'Alerts'                  },
-    { id: 'sql',         label: 'SQL Console'             },
-    { id: 'api',         label: 'API Tracing'             },
-    { id: 'repository',  label: 'Repository'              },
-    { id: 'admin',       label: 'Admin'                   },
-    { id: 'UserManagement', label: 'User Management'      },
-    { id: 'pool',        label: 'Connection Pool'         },
-    { id: 'schema',      label: 'Schema & Migrations'     },
-    { id: 'security',    label: 'Security & Compliance'   },
-    { id: 'capacity',    label: 'Capacity Planning'       },
+    { id: 'all',           label: 'All Sections (General)' },
+    { id: 'connections',   label: 'Connections'            },
+    { id: 'overview',      label: 'Overview'               },
+    { id: 'performance',   label: 'Performance'            },
+    { id: 'optimizer',     label: 'Query Optimizer'        },
+    { id: 'resources',     label: 'Resources'              },
+    { id: 'reliability',   label: 'Reliability'            },
+    { id: 'indexes',       label: 'Indexes'                },
+    { id: 'alerts',        label: 'Alerts'                 },
+    { id: 'sql',           label: 'SQL Console'            },
+    { id: 'api',           label: 'API Tracing'            },
+    { id: 'repository',    label: 'Repository'             },
+    { id: 'admin',         label: 'Admin'                  },
+    { id: 'UserManagement',label: 'User Management'        },
+    { id: 'pool',          label: 'Connection Pool'        },
+    { id: 'schema',        label: 'Schema & Migrations'    },
+    { id: 'security',      label: 'Security & Compliance'  },
+    { id: 'capacity',      label: 'Capacity Planning'      },
 ];
 
-/* ─── Feedback type tabs ─────────────────────────────────────────────────── */
+/* ─── Feedback types ────────────────────────────────────────────────────── */
 const FEEDBACK_TABS = [
-    { id: 'bug',     label: 'Bug Report',      icon: AlertTriangle },
-    { id: 'general', label: 'General',          icon: MessageSquare },
-    { id: 'feature', label: 'Feature Request',  icon: Lightbulb    },
+    { id: 'feature', label: 'Feature',  icon: Lightbulb,    color: '#63B3ED' },
+    { id: 'bug',     label: 'Bug',      icon: AlertTriangle, color: '#FC8181' },
+    { id: 'general', label: 'General',  icon: MessageSquare, color: '#68D391' },
 ];
 
-/* ─── Per-section form state factory ────────────────────────────────────── */
-const emptySection = () => ({
-    rating:  0,
-    comment: '',
-    remarks: '',
-});
+/* ─── Shared design tokens ──────────────────────────────────────────────── */
+const D = {
+    bg:        'rgba(10, 14, 22, 0.97)',
+    surface:   'rgba(18, 24, 38, 0.98)',
+    card:      'rgba(255,255,255,0.03)',
+    border:    'rgba(255,255,255,0.07)',
+    borderHov: 'rgba(99,179,237,0.4)',
+    accent:    '#63B3ED',
+    accentDim: 'rgba(99,179,237,0.15)',
+    text:      '#E2E8F0',
+    muted:     '#718096',
+    dim:       '#4A5568',
+    success:   '#68D391',
+    danger:    '#FC8181',
+    warning:   '#F6AD55',
+    font:      "'DM Sans', sans-serif",
+    mono:      "'DM Mono', monospace",
+    radius:    '18px',
+    radiusSm:  '10px',
+};
+
+const emptySection = () => ({ rating: 0, comment: '', remarks: '' });
 
 /* ══════════════════════════════════════════════════════════════════════════
-   STAR RATING COMPONENT
+   STAR RATING
    ══════════════════════════════════════════════════════════════════════════ */
 const StarRating = ({ value, onChange }) => {
     const [hovered, setHovered] = useState(0);
     const display = hovered || value;
+    const labels = ['Terrible', 'Poor', 'Okay', 'Good', 'Excellent'];
     return (
-        <div role="group" aria-label="Rate your experience"
-             style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-            {[1, 2, 3, 4, 5].map(star => (
-                <button
-                    key={star}
-                    type="button"
-                    onClick={() => onChange(star)}
-                    onMouseEnter={() => setHovered(star)}
-                    onMouseLeave={() => setHovered(0)}
-                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
-                >
-                    <Star
-                        size={24}
-                        fill={star <= display ? THEME.warning : 'transparent'}
-                        color={star <= display ? THEME.warning : THEME.grid}
+        <div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {[1, 2, 3, 4, 5].map(star => (
+                    <button
+                        key={star}
+                        type="button"
+                        className="fw-star"
+                        onClick={() => onChange(star)}
+                        onMouseEnter={() => setHovered(star)}
+                        onMouseLeave={() => setHovered(0)}
                         style={{
-                            transition: 'all 0.15s',
-                            transform: star <= display ? 'scale(1.2)' : 'scale(1)',
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            padding: 0, transition: 'transform 0.15s',
                         }}
-                    />
-                </button>
-            ))}
-        </div>
-    );
-};
-
-/* ══════════════════════════════════════════════════════════════════════════
-   SECTION FORM — one set of fields for a single section
-   ══════════════════════════════════════════════════════════════════════════ */
-const SectionForm = ({ sectionLabel, data, onChange, compact = false }) => {
-    const inputStyle = {
-        width: '100%',
-        background: `${THEME.bg}80`,
-        border: `1px solid ${THEME.grid}`,
-        borderRadius: 8,
-        padding: '10px 12px',
-        color: THEME.textMain,
-        fontSize: 12,
-        outline: 'none',
-        resize: 'none',
-        fontFamily: 'inherit',
-        boxSizing: 'border-box',
-    };
-    const labelStyle = {
-        display: 'block',
-        fontSize: 11,
-        fontWeight: 700,
-        color: THEME.textMuted,
-        marginBottom: 6,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-    };
-
-    return (
-        <div style={{
-            border: `1px solid ${THEME.grid}`,
-            borderRadius: 10,
-            padding: compact ? '12px 14px' : '16px',
-            marginBottom: 12,
-            background: `${THEME.bg}40`,
-        }}>
-            {/* Section header label (shown in "All Sections" inline mode) */}
-            {compact && (
-                <div style={{
-                    fontSize: 12, fontWeight: 700, color: THEME.primary,
-                    marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6,
-                }}>
-                    <Layers size={13} /> {sectionLabel}
-                </div>
-            )}
-
-            {/* Star Rating */}
-            <div style={{ marginBottom: 14 }}>
-                <label style={labelStyle}>Rating</label>
-                <StarRating value={data.rating} onChange={v => onChange('rating', v)} />
-            </div>
-
-            {/* Comment */}
-            <div style={{ marginBottom: 10 }}>
-                <label style={labelStyle}>Feedback / Comments</label>
-                <textarea
-                    value={data.comment}
-                    onChange={e => onChange('comment', e.target.value)}
-                    placeholder="What do you love or what could be better?"
-                    rows={compact ? 2 : 3}
-                    maxLength={500}
-                    style={inputStyle}
-                />
-                <div style={{ fontSize: 10, color: THEME.textMuted, textAlign: 'right', marginTop: 2 }}>
-                    {data.comment.length}/500
-                </div>
-            </div>
-
-            {/* Remarks / Suggested Improvements */}
-            <div>
-                <label style={labelStyle}>Remarks / Suggested Improvements</label>
-                <textarea
-                    value={data.remarks}
-                    onChange={e => onChange('remarks', e.target.value)}
-                    placeholder="Any specific suggestions or improvements you'd recommend?"
-                    rows={compact ? 2 : 3}
-                    maxLength={500}
-                    style={inputStyle}
-                />
-                <div style={{ fontSize: 10, color: THEME.textMuted, textAlign: 'right', marginTop: 2 }}>
-                    {data.remarks.length}/500
-                </div>
+                    >
+                        <Star
+                            size={22}
+                            fill={star <= display ? D.warning : 'transparent'}
+                            color={star <= display ? D.warning : D.dim}
+                            strokeWidth={1.5}
+                        />
+                    </button>
+                ))}
+                {display > 0 && (
+                    <span style={{ fontSize: 11, color: D.muted, fontFamily: D.mono, marginLeft: 4 }}>
+                        {labels[display - 1]}
+                    </span>
+                )}
             </div>
         </div>
     );
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
-   DROPDOWN — custom styled select
+   SECTION DROPDOWN
    ══════════════════════════════════════════════════════════════════════════ */
 const SectionDropdown = ({ value, onChange }) => {
     const [open, setOpen] = useState(false);
@@ -179,53 +158,64 @@ const SectionDropdown = ({ value, onChange }) => {
     }, []);
 
     return (
-        <div ref={ref} style={{ position: 'relative', marginBottom: 16 }}>
+        <div ref={ref} style={{ position: 'relative' }}>
             <button
                 type="button"
                 onClick={() => setOpen(o => !o)}
+                className="fw-input"
                 style={{
                     width: '100%', display: 'flex', alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '9px 12px', borderRadius: 8,
-                    border: `1px solid ${open ? THEME.primary : THEME.grid}`,
-                    background: `${THEME.bg}80`, color: THEME.textMain,
-                    fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    transition: 'border-color 0.2s',
+                    padding: '10px 14px',
+                    borderRadius: D.radiusSm,
+                    border: `1px solid ${open ? D.borderHov : D.border}`,
+                    background: D.card,
+                    color: D.text, fontSize: 13,
+                    cursor: 'pointer', fontFamily: D.font,
+                    transition: 'all 0.2s', boxSizing: 'border-box',
+                    boxShadow: open ? `0 0 0 3px rgba(99,179,237,0.12)` : 'none',
                 }}
             >
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Layers size={13} color={THEME.primary} />
-                    {selected.label}
+                    <Layers size={13} color={D.accent} />
+                    <span>{selected.label}</span>
                 </span>
-                <ChevronDown size={14} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                <ChevronDown
+                    size={14} color={D.muted}
+                    style={{ transform: open ? 'rotate(180deg)' : 'none', transition: '0.2s' }}
+                />
             </button>
 
             {open && (
                 <div style={{
-                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
-                    background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
-                    borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                    zIndex: 10, maxHeight: 220, overflowY: 'auto',
+                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+                    background: 'rgba(15, 20, 32, 0.98)',
+                    border: `1px solid ${D.border}`,
+                    borderRadius: D.radiusSm,
+                    boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+                    zIndex: 10, maxHeight: 240, overflowY: 'auto',
+                    backdropFilter: 'blur(12px)',
                 }}>
-                    {APP_SECTIONS.map(sec => (
+                    {APP_SECTIONS.map((sec, i) => (
                         <button
                             key={sec.id}
                             type="button"
+                            className="fw-section-opt"
                             onClick={() => { onChange(sec.id); setOpen(false); }}
                             style={{
-                                width: '100%', textAlign: 'left', padding: '9px 14px',
-                                background: sec.id === value ? `${THEME.primary}15` : 'transparent',
-                                color: sec.id === value ? THEME.primary : THEME.textMain,
-                                border: 'none', cursor: 'pointer', fontSize: 12,
-                                fontWeight: sec.id === value ? 700 : 400,
-                                borderBottom: `1px solid ${THEME.grid}30`,
+                                width: '100%', textAlign: 'left',
+                                padding: '9px 14px',
+                                background: sec.id === value ? D.accentDim : 'transparent',
+                                color: sec.id === value ? D.accent : D.text,
+                                border: 'none',
+                                borderBottom: i < APP_SECTIONS.length - 1 ? `1px solid ${D.border}` : 'none',
+                                cursor: 'pointer', fontSize: 12,
+                                fontWeight: sec.id === value ? 600 : 400,
+                                fontFamily: D.font,
                                 transition: 'background 0.15s',
-                                fontFamily: 'inherit',
                             }}
-                            onMouseEnter={e => { if (sec.id !== value) e.currentTarget.style.background = `${THEME.primary}08`; }}
-                            onMouseLeave={e => { if (sec.id !== value) e.currentTarget.style.background = 'transparent'; }}
                         >
-                            {sec.id === 'all' ? <strong>{sec.label}</strong> : sec.label}
+                            {sec.label}
                         </button>
                     ))}
                 </div>
@@ -235,196 +225,231 @@ const SectionDropdown = ({ value, onChange }) => {
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
-   FEATURE REQUEST FORM
+   FIELD LABEL
    ══════════════════════════════════════════════════════════════════════════ */
-const FeatureRequestForm = ({ data, onChange }) => {
-    const inputStyle = {
-        width: '100%',
-        background: `${THEME.bg}80`,
-        border: `1px solid ${THEME.grid}`,
-        borderRadius: 8,
-        padding: '10px 12px',
-        color: THEME.textMain,
-        fontSize: 12,
-        outline: 'none',
-        resize: 'none',
-        fontFamily: 'inherit',
-        boxSizing: 'border-box',
-    };
-    const labelStyle = {
-        display: 'block', fontSize: 11, fontWeight: 700,
-        color: THEME.textMuted, marginBottom: 6,
-        textTransform: 'uppercase', letterSpacing: 0.5,
-    };
+const Label = ({ children }) => (
+    <div style={{
+        fontSize: 10, fontWeight: 600, color: D.muted,
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        marginBottom: 8, fontFamily: D.mono,
+    }}>
+        {children}
+    </div>
+);
 
-    return (
-        <div>
-            {/* Section this feature relates to */}
-            <div style={{ marginBottom: 14 }}>
-                <label style={labelStyle}>Related Section</label>
-                <SectionDropdown value={data.section} onChange={v => onChange('section', v)} />
-            </div>
-
-            {/* Feature title */}
-            <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>Feature Title</label>
-                <input
-                    type="text"
-                    value={data.title}
-                    onChange={e => onChange('title', e.target.value)}
-                    placeholder="Give your feature a short name"
-                    maxLength={120}
-                    style={{ ...inputStyle, resize: undefined }}
-                />
-            </div>
-
-            {/* Description */}
-            <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>Description / Use Case</label>
-                <textarea
-                    value={data.description}
-                    onChange={e => onChange('description', e.target.value)}
-                    placeholder="Describe the feature and why it would be useful..."
-                    rows={3}
-                    maxLength={500}
-                    style={inputStyle}
-                />
-                <div style={{ fontSize: 10, color: THEME.textMuted, textAlign: 'right', marginTop: 2 }}>
-                    {data.description.length}/500
-                </div>
-            </div>
-
-            {/* Remarks */}
-            <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>Additional Remarks / Suggested Approach</label>
-                <textarea
-                    value={data.remarks}
-                    onChange={e => onChange('remarks', e.target.value)}
-                    placeholder="Any implementation ideas or references?"
-                    rows={2}
-                    maxLength={500}
-                    style={inputStyle}
-                />
-            </div>
-
-            {/* ── Suggest a new tab ───────────────────────────────────────── */}
-            <div style={{
-                marginTop: 14,
-                padding: '12px 14px',
-                border: `1px dashed ${THEME.primary}40`,
-                borderRadius: 8,
-                background: `${THEME.primary}06`,
-            }}>
-                <label style={{ ...labelStyle, color: THEME.primary, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <PlusCircle size={12} /> Suggest a New Tab / Section
-                    <span style={{ fontSize: 10, fontWeight: 400, color: THEME.textMuted, textTransform: 'none', letterSpacing: 0, marginLeft: 4 }}>
-                        (optional)
-                    </span>
-                </label>
-                <input
-                    type="text"
-                    value={data.suggestedTab || ''}
-                    onChange={e => onChange('suggestedTab', e.target.value)}
-                    placeholder="e.g. Query History, Cost Estimator, Live Replication…"
-                    maxLength={80}
-                    style={{ ...inputStyle, resize: undefined, borderColor: data.suggestedTab ? THEME.primary : THEME.grid }}
-                />
-                {data.suggestedTab && (
-                    <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>
-                        Describe what this tab should do in the "Description" field above.
-                    </div>
-                )}
-            </div>
-
-            {/* Priority */}
-            <div style={{ marginTop: 14 }}>
-                <label style={labelStyle}>Priority</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                    {['Low', 'Medium', 'High'].map(p => (
-                        <button
-                            key={p}
-                            type="button"
-                            onClick={() => onChange('priority', p)}
-                            style={{
-                                flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, fontWeight: 700,
-                                border: `1px solid ${data.priority === p
-                                    ? p === 'High' ? THEME.danger : p === 'Medium' ? THEME.warning : THEME.success
-                                    : THEME.grid}`,
-                                background: data.priority === p
-                                    ? `${p === 'High' ? THEME.danger : p === 'Medium' ? THEME.warning : THEME.success}15`
-                                    : 'transparent',
-                                color: data.priority === p
-                                    ? p === 'High' ? THEME.danger : p === 'Medium' ? THEME.warning : THEME.success
-                                    : THEME.textDim,
-                                cursor: 'pointer', transition: 'all 0.2s',
-                            }}
-                        >
-                            {p}
-                        </button>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
+const inputBase = {
+    width: '100%', background: D.card,
+    border: `1px solid ${D.border}`,
+    borderRadius: D.radiusSm,
+    padding: '10px 14px',
+    color: D.text, fontSize: 13,
+    outline: 'none', resize: 'none',
+    fontFamily: "'DM Sans', sans-serif",
+    boxSizing: 'border-box',
+    transition: 'all 0.2s',
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
-   MAIN FEEDBACK WIDGET
+   SECTION FORM
+   ══════════════════════════════════════════════════════════════════════════ */
+const SectionForm = ({ sectionLabel, data, onChange, compact = false }) => (
+    <div style={{
+        border: `1px solid ${D.border}`,
+        borderRadius: D.radiusSm,
+        padding: compact ? '14px' : '18px',
+        marginBottom: 10,
+        background: D.card,
+    }}>
+        {compact && (
+            <div style={{
+                fontSize: 11, fontWeight: 600, color: D.accent,
+                marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6,
+                fontFamily: D.mono,
+            }}>
+                <Layers size={11} /> {sectionLabel}
+            </div>
+        )}
+
+        <div style={{ marginBottom: 14 }}>
+            <Label>Rating</Label>
+            <StarRating value={data.rating} onChange={v => onChange('rating', v)} />
+        </div>
+
+        <div style={{ marginBottom: 10 }}>
+            <Label>Feedback</Label>
+            <textarea
+                value={data.comment}
+                onChange={e => onChange('comment', e.target.value)}
+                placeholder="What do you love or what could be better?"
+                rows={compact ? 2 : 3}
+                maxLength={500}
+                className="fw-input"
+                style={inputBase}
+            />
+            <div style={{ fontSize: 10, color: D.dim, textAlign: 'right', marginTop: 3, fontFamily: D.mono }}>
+                {data.comment.length}/500
+            </div>
+        </div>
+
+        <div>
+            <Label>Suggestions</Label>
+            <textarea
+                value={data.remarks}
+                onChange={e => onChange('remarks', e.target.value)}
+                placeholder="Any specific improvements you'd recommend?"
+                rows={compact ? 2 : 3}
+                maxLength={500}
+                className="fw-input"
+                style={inputBase}
+            />
+            <div style={{ fontSize: 10, color: D.dim, textAlign: 'right', marginTop: 3, fontFamily: D.mono }}>
+                {data.remarks.length}/500
+            </div>
+        </div>
+    </div>
+);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FEATURE REQUEST FORM
+   ══════════════════════════════════════════════════════════════════════════ */
+const FeatureRequestForm = ({ data, onChange }) => (
+    <div>
+        <div style={{ marginBottom: 16 }}>
+            <Label>Related Section</Label>
+            <SectionDropdown value={data.section} onChange={v => onChange('section', v)} />
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+            <Label>Feature Title</Label>
+            <input
+                type="text"
+                value={data.title}
+                onChange={e => onChange('title', e.target.value)}
+                placeholder="Give your feature a short name"
+                maxLength={120}
+                className="fw-input"
+                style={{ ...inputBase, resize: undefined }}
+            />
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+            <Label>Description / Use Case</Label>
+            <textarea
+                value={data.description}
+                onChange={e => onChange('description', e.target.value)}
+                placeholder="Describe the feature and why it would be useful..."
+                rows={3}
+                maxLength={500}
+                className="fw-input"
+                style={inputBase}
+            />
+            <div style={{ fontSize: 10, color: D.dim, textAlign: 'right', marginTop: 3, fontFamily: D.mono }}>
+                {data.description.length}/500
+            </div>
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+            <Label>Additional Remarks</Label>
+            <textarea
+                value={data.remarks}
+                onChange={e => onChange('remarks', e.target.value)}
+                placeholder="Any implementation ideas or references?"
+                rows={2}
+                maxLength={500}
+                className="fw-input"
+                style={inputBase}
+            />
+        </div>
+
+        {/* Suggest new tab */}
+        <div style={{
+            padding: '14px', border: `1px dashed rgba(99,179,237,0.25)`,
+            borderRadius: D.radiusSm, background: 'rgba(99,179,237,0.03)',
+            marginBottom: 14,
+        }}>
+            <Label><span style={{ color: D.accent, display: 'flex', alignItems: 'center', gap: 5 }}><PlusCircle size={10} /> Suggest a New Tab <span style={{ color: D.dim, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></span></Label>
+            <input
+                type="text"
+                value={data.suggestedTab || ''}
+                onChange={e => onChange('suggestedTab', e.target.value)}
+                placeholder="e.g. Query History, Cost Estimator…"
+                maxLength={80}
+                className="fw-input"
+                style={{
+                    ...inputBase, resize: undefined,
+                    borderColor: data.suggestedTab ? 'rgba(99,179,237,0.4)' : D.border,
+                }}
+            />
+        </div>
+
+        {/* Priority */}
+        <div>
+            <Label>Priority</Label>
+            <div style={{ display: 'flex', gap: 8 }}>
+                {[
+                    { label: 'Low',    color: D.success },
+                    { label: 'Medium', color: D.warning },
+                    { label: 'High',   color: D.danger  },
+                ].map(({ label, color }) => {
+                    const active = data.priority === label;
+                    return (
+                        <button
+                            key={label}
+                            type="button"
+                            className="fw-prio"
+                            onClick={() => onChange('priority', label)}
+                            style={{
+                                flex: 1, padding: '8px 0',
+                                borderRadius: D.radiusSm,
+                                border: `1px solid ${active ? color : D.border}`,
+                                background: active ? `${color}18` : 'transparent',
+                                color: active ? color : D.muted,
+                                fontSize: 11, fontWeight: 600,
+                                cursor: 'pointer', fontFamily: D.font,
+                                transition: 'all 0.2s',
+                            }}
+                        >
+                            {label}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    </div>
+);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════════════ */
 const FeedbackWidget = () => {
-    const [isMinimized, setIsMinimized]     = useState(true);
-    const [activeTab, setActiveTab]         = useState('bug');       // bug | general | feature
-    const [section, setSection]             = useState('all');       // selected section id
-    const [sectionForms, setSectionForms]   = useState({ all: emptySection() }); // keyed by section id
-    const [featureData, setFeatureData]     = useState({
+    const [isMinimized, setIsMinimized] = useState(true);
+    const [activeTab, setActiveTab]     = useState('feature');
+    const [section, setSection]         = useState('all');
+    const [sectionForms, setSectionForms] = useState({ all: emptySection() });
+    const [featureData, setFeatureData] = useState({
         section: 'all', title: '', description: '', remarks: '', priority: 'Medium', suggestedTab: '',
     });
-    const [submitting, setSubmitting]       = useState(false);
-    const [sent, setSent]                   = useState(false);
-    const [error, setError]                 = useState('');
+    const [submitting, setSubmitting]   = useState(false);
+    const [sent, setSent]               = useState(false);
+    const [error, setError]             = useState('');
 
-    /* ── inject keyframe animation once ────────────────────────────────── */
+    /* Rate-limit: 1 submission per 5 min */
     useEffect(() => {
-        if (!document.getElementById('fw-keyframes')) {
-            const s = document.createElement('style');
-            s.id = 'fw-keyframes';
-            s.textContent = `
-                @keyframes fw-slideUp {
-                    from { opacity: 0; transform: translateY(14px); }
-                    to   { opacity: 1; transform: translateY(0);    }
-                }
-            `;
-            document.head.appendChild(s);
+        if (!isMinimized) {
+            const last = parseInt(localStorage.getItem('vigil_last_feedback') || '0', 10);
+            if (Date.now() - last < 5 * 60 * 1000) setError('Please wait a few minutes before submitting again.');
+            else setError('');
         }
-    }, []);
+    }, [isMinimized]);
 
-    /* ── auto-open once per session after 7-day cooldown ───────────────── */
-    useEffect(() => {
-        const lastFeedback   = localStorage.getItem('vigil_last_feedback');
-        const sessionShown   = sessionStorage.getItem('vigil_feedback_prompt_shown');
-        const cooldownPassed =
-            !lastFeedback ||
-            Date.now() - Number(lastFeedback) > 7 * 24 * 60 * 60 * 1000;
-
-        if (!sessionShown && cooldownPassed) {
-            const timer = setTimeout(() => {
-                setIsMinimized(false);
-                sessionStorage.setItem('vigil_feedback_prompt_shown', 'true');
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, []);
-
-    /* ── ensure form state exists when section changes ──────────────────── */
     useEffect(() => {
         if (!sectionForms[section]) {
             setSectionForms(prev => ({ ...prev, [section]: emptySection() }));
         }
     }, [section]);
 
-    /* ── helpers ─────────────────────────────────────────────────────────── */
     const resetAll = () => {
-        setActiveTab('bug');
+        setActiveTab('feature');
         setSection('all');
         setSectionForms({ all: emptySection() });
         setFeatureData({ section: 'all', title: '', description: '', remarks: '', priority: 'Medium', suggestedTab: '' });
@@ -444,7 +469,6 @@ const FeedbackWidget = () => {
         }));
     };
 
-    /* ── submit logic ────────────────────────────────────────────────────── */
     const buildPayload = () => {
         if (activeTab === 'feature') {
             return {
@@ -457,93 +481,72 @@ const FeedbackWidget = () => {
                 section: featureData.section,
                 suggested_tab: featureData.suggestedTab.trim() || null,
                 user_metadata: {
-                    page:       window.location.pathname,
-                    userAgent:  navigator.userAgent,
+                    page: window.location.pathname,
+                    userAgent: navigator.userAgent,
                     screenSize: `${window.screen.width}x${window.screen.height}`,
-                    timestamp:  new Date().toISOString(),
+                    timestamp: new Date().toISOString(),
                 },
             };
         }
-
-        // For bug / general — if section === 'all', send all section forms as array
         if (section === 'all') {
             const sectionEntries = APP_SECTIONS.filter(s => s.id !== 'all').map(s => ({
-                section_id:    s.id,
-                section_label: s.label,
-                rating:        (sectionForms[s.id] || emptySection()).rating,
-                comment:       (sectionForms[s.id] || emptySection()).comment.trim(),
-                remarks:       (sectionForms[s.id] || emptySection()).remarks.trim(),
+                section_id: s.id, section_label: s.label,
+                rating:     (sectionForms[s.id] || emptySection()).rating,
+                comment:    (sectionForms[s.id] || emptySection()).comment.trim(),
+                remarks:    (sectionForms[s.id] || emptySection()).remarks.trim(),
             }));
             return {
-                feedback_type: activeTab,
-                rating: null,
+                feedback_type: activeTab, rating: null,
                 comment: sectionEntries.map(e => `[${e.section_label}] ${e.comment}`).filter(s => s.trim()).join('\n'),
                 section_feedback: sectionEntries,
                 user_metadata: {
-                    page:       window.location.pathname,
-                    userAgent:  navigator.userAgent,
+                    page: window.location.pathname, userAgent: navigator.userAgent,
                     screenSize: `${window.screen.width}x${window.screen.height}`,
-                    timestamp:  new Date().toISOString(),
-                    mode:       'all-sections',
+                    timestamp: new Date().toISOString(), mode: 'all-sections',
                 },
             };
         }
-
         const form = sectionForms[section] || emptySection();
         return {
-            feedback_type: activeTab,
-            rating:        form.rating || null,
-            comment:       form.comment.trim(),
-            remarks:       form.remarks.trim(),
-            section:       section,
+            feedback_type: activeTab, rating: form.rating || null,
+            comment: form.comment.trim(), remarks: form.remarks.trim(),
+            section,
             user_metadata: {
-                page:       window.location.pathname,
-                userAgent:  navigator.userAgent,
+                page: window.location.pathname, userAgent: navigator.userAgent,
                 screenSize: `${window.screen.width}x${window.screen.height}`,
-                timestamp:  new Date().toISOString(),
+                timestamp: new Date().toISOString(),
             },
         };
     };
 
     const canSubmit = () => {
         if (sent || submitting) return false;
-        if (activeTab === 'feature') {
+        if (activeTab === 'feature')
             return featureData.title.trim().length > 0 && featureData.description.trim().length > 0;
-        }
-        if (section === 'all') {
-            // At least one section must have a non-empty comment
+        if (section === 'all')
             return APP_SECTIONS.some(s => s.id !== 'all' && (sectionForms[s.id]?.comment || '').trim().length > 0);
-        }
         return (sectionForms[section]?.comment || '').trim().length > 0;
     };
 
     const handleSubmit = async () => {
         if (!canSubmit()) return;
-        setSubmitting(true);
-        setError('');
-
+        setSubmitting(true); setError('');
         try {
             const token = localStorage.getItem(AUTH_TOKEN_KEY);
             if (!token) throw new Error('You are not logged in. Please refresh and try again.');
-
             const res = await fetch('/api/feedback', {
-                method:  'POST',
-                headers: {
-                    'Content-Type':  'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(buildPayload()),
             });
-
             if (res.status === 401) throw new Error('Session expired. Please log in again.');
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body.error || `Server error (${res.status})`);
             }
-
             setSent(true);
             localStorage.setItem('vigil_last_feedback', Date.now().toString());
-            setTimeout(handleClose, 2500);
+            setTimeout(handleClose, 2800);
         } catch (e) {
             console.error('Feedback error:', e);
             setError(e.message || 'Failed to send. Please try again.');
@@ -552,79 +555,104 @@ const FeedbackWidget = () => {
         }
     };
 
-    /* ── "All Sections" inline renders — only show sections that exist in form state ── */
     const allSectionsList = APP_SECTIONS.filter(s => s.id !== 'all');
+    const activeTabMeta = FEEDBACK_TABS.find(t => t.id === activeTab);
 
-    /* ══════════════════════════════════════════════════════════════════════
-       RENDER — Minimized FAB
-       ══════════════════════════════════════════════════════════════════════ */
+    /* ── FAB ──────────────────────────────────────────────────────────────── */
     if (isMinimized) {
         return (
             <button
+                className="fw-fab"
                 onClick={() => setIsMinimized(false)}
                 title="Send Feedback"
                 style={{
-                    position: 'fixed', bottom: 20, right: 20,
-                    width: 48, height: 48, borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`,
+                    position: 'fixed', bottom: 24, right: 24,
+                    width: 52, height: 52, borderRadius: '50%',
+                    background: `linear-gradient(135deg, #4299E1, #63B3ED)`,
                     color: '#fff', border: 'none', cursor: 'pointer',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+                    boxShadow: '0 4px 20px rgba(66,153,225,0.4)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    zIndex: 9999, transition: 'transform 0.2s',
+                    zIndex: 9999, transition: 'transform 0.2s, box-shadow 0.2s',
+                    animation: 'fw-pulse-ring 2.5s ease-out infinite',
                 }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 aria-label="Open feedback widget"
             >
-                <MessageSquare size={22} />
+                <MessageSquare size={22} strokeWidth={2} />
             </button>
         );
     }
 
-    /* ══════════════════════════════════════════════════════════════════════
-       RENDER — Expanded Widget
-       ══════════════════════════════════════════════════════════════════════ */
+    /* ── Widget ───────────────────────────────────────────────────────────── */
     return (
         <div style={{
-            position: 'fixed', bottom: 76, right: 20,
-            width: section === 'all' && activeTab !== 'feature' ? 500 : 360,
-            maxHeight: '82vh',
-            background: THEME.surface,
-            border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: 16,
-            boxShadow: '0 12px 48px rgba(0,0,0,0.45)',
+            position: 'fixed', bottom: 84, right: 24,
+            width: section === 'all' && activeTab !== 'feature' ? 480 : 360,
+            maxHeight: '84vh',
+            background: D.bg,
+            border: `1px solid ${D.border}`,
+            borderRadius: D.radius,
+            boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset',
             zIndex: 9999,
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden',
-            animation: 'fw-slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            animation: 'fw-rise 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
             transition: 'width 0.3s ease',
+            fontFamily: D.font,
+            backdropFilter: 'blur(20px)',
         }}>
 
-            {/* ── Header ─────────────────────────────────────────────────── */}
+            {/* ── Subtle top glow ─────────────────────────────────────────── */}
             <div style={{
-                padding: '14px 18px',
-                background: `linear-gradient(135deg, ${THEME.primary}18, transparent)`,
-                borderBottom: `1px solid ${THEME.grid}`,
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                position: 'absolute', top: 0, left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%', height: 1,
+                background: 'linear-gradient(90deg, transparent, rgba(99,179,237,0.5), transparent)',
+                pointerEvents: 'none',
+            }} />
+
+            {/* ── Header ──────────────────────────────────────────────────── */}
+            <div style={{
+                padding: '18px 20px 16px',
+                borderBottom: `1px solid ${D.border}`,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
                 flexShrink: 0,
             }}>
                 <div>
-                    <div style={{ fontWeight: 800, fontSize: 14, color: THEME.textMain }}>Help us improve Vigil</div>
-                    <div style={{ fontSize: 11, color: THEME.textMuted }}>Your feedback matters</div>
+                    <div style={{
+                        fontWeight: 700, fontSize: 16, color: D.text, letterSpacing: '-0.02em',
+                        marginBottom: 3,
+                    }}>
+                        Send Feedback
+                    </div>
+                    <div style={{
+                        fontSize: 10, color: D.muted, fontFamily: D.mono,
+                        letterSpacing: '0.1em', textTransform: 'uppercase',
+                    }}>
+                        Vigil · Database Monitor
+                    </div>
                 </div>
                 <button
+                    className="fw-close"
                     onClick={handleClose}
-                    aria-label="Close feedback"
-                    style={{ background: 'none', border: 'none', color: THEME.textDim, cursor: 'pointer', padding: 4 }}
+                    aria-label="Close"
+                    style={{
+                        background: 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${D.border}`,
+                        color: D.muted, cursor: 'pointer',
+                        width: 30, height: 30, borderRadius: 8,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s', flexShrink: 0,
+                    }}
                 >
-                    <X size={16} />
+                    <X size={14} strokeWidth={2} />
                 </button>
             </div>
 
-            {/* ── Tab Bar ────────────────────────────────────────────────── */}
+            {/* ── Tab Bar ─────────────────────────────────────────────────── */}
             <div style={{
-                display: 'flex', borderBottom: `1px solid ${THEME.grid}`,
-                flexShrink: 0, background: `${THEME.bg}60`,
+                display: 'flex', gap: 6, padding: '12px 16px 10px',
+                borderBottom: `1px solid ${D.border}`,
+                flexShrink: 0,
             }}>
                 {FEEDBACK_TABS.map(tab => {
                     const Icon = tab.icon;
@@ -632,66 +660,74 @@ const FeedbackWidget = () => {
                     return (
                         <button
                             key={tab.id}
+                            className="fw-tab-btn"
                             onClick={() => { setActiveTab(tab.id); setError(''); }}
                             style={{
-                                flex: 1, padding: '10px 6px',
-                                background: active ? `${THEME.primary}12` : 'transparent',
-                                border: 'none',
-                                borderBottom: `2px solid ${active ? THEME.primary : 'transparent'}`,
-                                color: active ? THEME.primary : THEME.textDim,
-                                cursor: 'pointer', fontSize: 11, fontWeight: active ? 700 : 500,
-                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-                                transition: 'all 0.2s',
+                                flex: 1, padding: '8px 6px',
+                                background: active ? `${tab.color}15` : 'transparent',
+                                border: `1px solid ${active ? `${tab.color}50` : D.border}`,
+                                borderRadius: 8,
+                                color: active ? tab.color : D.muted,
+                                cursor: 'pointer', fontSize: 11, fontWeight: active ? 600 : 400,
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                                transition: 'all 0.2s', opacity: active ? 1 : 0.7,
+                                fontFamily: D.font,
                             }}
                         >
-                            <Icon size={14} />
+                            <Icon size={13} strokeWidth={active ? 2 : 1.5} />
                             {tab.label}
                         </button>
                     );
                 })}
             </div>
 
-            {/* ── Scrollable Body ────────────────────────────────────────── */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+            {/* ── Body ────────────────────────────────────────────────────── */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
 
-                {/* SUCCESS STATE */}
                 {sent ? (
-                    <div style={{ textAlign: 'center', padding: '32px 0', color: THEME.success }}>
-                        <ThumbsUp size={44} style={{ marginBottom: 12 }} />
-                        <div style={{ fontWeight: 700, fontSize: 15 }}>Thank you!</div>
-                        <div style={{ fontSize: 12, opacity: 0.8, marginTop: 6 }}>
-                            Your feedback has been recorded.
+                    /* SUCCESS */
+                    <div style={{
+                        textAlign: 'center', padding: '36px 20px',
+                        animation: 'fw-checkmark 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    }}>
+                        <div style={{
+                            width: 60, height: 60, borderRadius: '50%',
+                            background: `${D.success}15`,
+                            border: `1px solid ${D.success}40`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 16px',
+                        }}>
+                            <ThumbsUp size={26} color={D.success} strokeWidth={1.5} />
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: 16, color: D.text, marginBottom: 8 }}>
+                            Thanks for the feedback!
+                        </div>
+                        <div style={{ fontSize: 12, color: D.muted, lineHeight: 1.6 }}>
+                            Your input helps us make Vigil better for everyone.
                         </div>
                     </div>
                 ) : activeTab === 'feature' ? (
-                    /* ── FEATURE REQUEST TAB ─────────────────────────────── */
                     <FeatureRequestForm
                         data={featureData}
                         onChange={(field, val) => setFeatureData(prev => ({ ...prev, [field]: val }))}
                     />
                 ) : (
-                    /* ── BUG / GENERAL TAB ───────────────────────────────── */
                     <>
-                        {/* Section Dropdown */}
-                        <div style={{ marginBottom: 4 }}>
-                            <div style={{
-                                fontSize: 11, fontWeight: 700, color: THEME.textMuted,
-                                textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6,
-                            }}>
-                                Section
-                            </div>
+                        <div style={{ marginBottom: 14 }}>
+                            <Label>Section</Label>
                             <SectionDropdown value={section} onChange={setSection} />
                         </div>
 
-                        {/* "All Sections" → inline forms for each section */}
                         {section === 'all' ? (
                             <div>
                                 <div style={{
-                                    fontSize: 11, color: THEME.textMuted, marginBottom: 12,
-                                    padding: '8px 10px', background: `${THEME.primary}08`,
-                                    border: `1px solid ${THEME.primary}20`, borderRadius: 6,
+                                    fontSize: 11, color: D.muted, marginBottom: 12,
+                                    padding: '8px 12px',
+                                    background: D.accentDim,
+                                    border: `1px solid rgba(99,179,237,0.2)`,
+                                    borderRadius: 8, lineHeight: 1.5,
                                 }}>
-                                    Fill in feedback for each section below. You may leave sections blank to skip them.
+                                    Fill in feedback for each section. You may leave sections blank to skip them.
                                 </div>
                                 {allSectionsList.map(sec => (
                                     <SectionForm
@@ -704,7 +740,6 @@ const FeedbackWidget = () => {
                                 ))}
                             </div>
                         ) : (
-                            /* Single section form */
                             <SectionForm
                                 sectionLabel={APP_SECTIONS.find(s => s.id === section)?.label}
                                 data={sectionForms[section] || emptySection()}
@@ -714,48 +749,55 @@ const FeedbackWidget = () => {
                     </>
                 )}
 
-                {/* Inline error */}
+                {/* Error */}
                 {error && (
                     <div style={{
-                        marginTop: 10, padding: '8px 12px', borderRadius: 8,
-                        background: `${THEME.danger}15`,
-                        border: `1px solid ${THEME.danger}40`,
-                        color: THEME.danger, fontSize: 11,
+                        marginTop: 12, padding: '10px 14px', borderRadius: 8,
+                        background: `${D.danger}10`,
+                        border: `1px solid ${D.danger}30`,
+                        color: D.danger, fontSize: 11, lineHeight: 1.5,
                     }}>
                         ⚠ {error}
                     </div>
                 )}
             </div>
 
-            {/* ── Footer / Submit ─────────────────────────────────────────── */}
+            {/* ── Footer ──────────────────────────────────────────────────── */}
             {!sent && (
                 <div style={{
-                    padding: '12px 16px',
-                    borderTop: `1px solid ${THEME.grid}`,
+                    padding: '12px 16px 16px',
+                    borderTop: `1px solid ${D.border}`,
                     flexShrink: 0,
-                    background: `${THEME.bg}60`,
                 }}>
                     <button
+                        className="fw-submit"
                         onClick={handleSubmit}
                         disabled={!canSubmit()}
                         style={{
-                            width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
+                            width: '100%', padding: '12px 0',
+                            borderRadius: 10,
                             background: canSubmit()
-                                ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`
-                                : THEME.grid,
-                            color: '#fff', fontWeight: 700, fontSize: 13,
+                                ? 'linear-gradient(135deg, #3182CE, #63B3ED)'
+                                : D.card,
+                            color: canSubmit() ? '#fff' : D.dim,
+                            fontWeight: 600, fontSize: 13,
                             cursor: canSubmit() ? 'pointer' : 'not-allowed',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            opacity: canSubmit() ? 1 : 0.55,
-                            transition: 'opacity 0.2s, background 0.2s',
+                            border: canSubmit() ? 'none' : `1px solid ${D.border}`,
+                            transition: 'all 0.25s',
+                            fontFamily: D.font,
+                            letterSpacing: '0.01em',
                         }}
                     >
-                        {submitting
-                            ? 'Sending…'
-                            : activeTab === 'feature'
-                                ? <><PlusCircle size={14} /> Submit Feature Request</>
-                                : <><Send size={14} /> Send Feedback</>
-                        }
+                        {submitting ? (
+                            <>
+                                <Zap size={14} /> Sending…
+                            </>
+                        ) : activeTab === 'feature' ? (
+                            <><PlusCircle size={14} /> Submit Feature Request</>
+                        ) : (
+                            <><Send size={14} /> Send Feedback</>
+                        )}
                     </button>
                 </div>
             )}
