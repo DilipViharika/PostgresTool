@@ -5,6 +5,7 @@ import {
     Search, RefreshCw, Cloud, Terminal, Users,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
 
@@ -41,7 +42,7 @@ const GlobalStyles = () => (
     <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Outfit:wght@300;400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; background: #05060E; overflow: hidden; }
+        html, body { height: 100%; overflow: hidden; }
 
         @keyframes fadeUp     { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn     { from{opacity:0} to{opacity:1} }
@@ -459,7 +460,7 @@ const LeftPanel = () => {
                                 <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 10, color: 'rgba(130,145,175,.52)' }}>{desc}</span>
                             </div>
                             {i < FEATURE_STATS.length - 1 && (
-                                <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,.06)', flexShrink: 0 }}/>
+                                <div style={{ width: 1, height: 14, background: THEME.grid, flexShrink: 0 }}/>
                             )}
                         </React.Fragment>
                     ))}
@@ -573,14 +574,14 @@ const InputField = React.forwardRef(function InputField(
         <div>
             <label style={{
                 display: 'block', marginBottom: 7, fontSize: 9, fontWeight: 600,
-                color: focused ? '#818AFF' : 'rgba(100,116,139,.55)',
+                color: focused ? '#818AFF' : THEME.textMuted,
                 textTransform: 'uppercase', letterSpacing: '1.6px',
                 fontFamily: "'JetBrains Mono',monospace", transition: 'color .2s',
             }}>{label}</label>
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                background: focused ? 'rgba(100,112,255,.06)' : 'rgba(255,255,255,.03)',
-                border: `1px solid ${focused ? 'rgba(100,112,255,.50)' : 'rgba(255,255,255,.08)'}`,
+                background: focused ? 'rgba(100,112,255,.06)' : THEME.surface,
+                border: `1px solid ${focused ? 'rgba(100,112,255,.50)' : THEME.grid}`,
                 borderRadius: 12, padding: '0 14px',
                 transition: 'all .25s',
                 boxShadow: focused
@@ -593,7 +594,7 @@ const InputField = React.forwardRef(function InputField(
                     placeholder={placeholder} autoComplete={autoComplete} disabled={disabled}
                     onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
                     className="vi-input"
-                    style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: '#E8EAF4', fontSize: 13.5, outline: 'none', fontFamily: "'Outfit',sans-serif", fontWeight: 400, opacity: disabled ? .4 : 1 }}
+                    style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: "'Outfit',sans-serif", fontWeight: 400, opacity: disabled ? .4 : 1 }}
                 />
                 {rightEl}
             </div>
@@ -621,6 +622,7 @@ const Corners = ({ color = 'rgba(100,112,255,.18)' }) => (
 //  LOGIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
+    useAdaptiveTheme();
     const { login, authLoading, error, clearError } = useAuth();
     const [username,     setUsername]     = useState('');
     const [password,     setPassword]     = useState('');
@@ -680,7 +682,7 @@ const LoginPage = () => {
         : 'none';
 
     return (
-        <div style={{ height: '100vh', width: '100vw', display: 'flex', background: '#05060E', fontFamily: "'Outfit',sans-serif", overflow: 'hidden' }}>
+        <div style={{ height: '100vh', width: '100vw', display: 'flex', background: THEME.bg, fontFamily: "'Outfit',sans-serif", overflow: 'hidden' }}>
             <GlobalStyles/>
             <LeftPanel/>
 
@@ -689,7 +691,7 @@ const LoginPage = () => {
                 width: 500, flexShrink: 0, position: 'relative',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 padding: '36px 46px',
-                background: 'rgba(4,5,12,.99)',
+                background: THEME.surfaceHover,
             }}>
                 {/* Ambient glows */}
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
@@ -710,24 +712,24 @@ const LoginPage = () => {
                     </div>
 
                     <div style={{ textAlign: 'center', marginBottom: 4, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
-                        <h1 style={{ fontSize: 30, fontWeight: 700, color: '#EAECF8', margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>
+                        <h1 style={{ fontSize: 30, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>
                             Welcome back
                         </h1>
-                        <p style={{ color: 'rgba(100,116,139,.52)', margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: "'Outfit',sans-serif", fontWeight: 300 }}>
+                        <p style={{ color: THEME.textMuted, margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: "'Outfit',sans-serif", fontWeight: 300 }}>
                             Sign in to your monitoring dashboard
                         </p>
                     </div>
 
                     <div style={{ margin: '18px 0 20px', display: 'flex', alignItems: 'center', gap: 12, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
-                        <div style={{ flex: 1, height: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,.06))' }}/>
+                        <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${THEME.grid})` }}/>
                         <ServerStatus status={serverStatus}/>
-                        <div style={{ flex: 1, height: 1, background: 'linear-gradient(to left, transparent, rgba(255,255,255,.06))' }}/>
+                        <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${THEME.grid})` }}/>
                     </div>
 
                     {/* Card */}
                     <div style={{
                         width: '100%', padding: '28px 26px 24px', borderRadius: 22,
-                        background: 'linear-gradient(160deg, rgba(10,12,28,.96) 0%, rgba(6,8,20,.98) 100%)',
+                        background: THEME.surface,
                         backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
                         border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.28)' : error ? 'rgba(239,68,68,.20)' : 'rgba(100,112,255,.11)'}`,
                         boxShadow: loginSuccess

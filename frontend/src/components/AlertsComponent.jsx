@@ -9,6 +9,7 @@ import {
   CornerDownRight, ExternalLink, ChevronRight, Minus, Edit3, Copy,
   Download, Upload, Moon, Sun, SlidersHorizontal
 } from 'lucide-react';
+import { THEME, useAdaptiveTheme } from '../utils/theme.jsx';
 
 /* ─────────────────────────────────────────────────────────────────
    VIGIL v2 – Advanced Monitoring & Alert Intelligence Platform
@@ -224,7 +225,7 @@ const MetricCard = ({ metricKey, data }) => {
         </span>
           <Sparkline data={data.data} color={color} />
         </div>
-        <div style={{ height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{ height: 3, background: THEME.grid, borderRadius: 2, overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${color}80, ${color})`, borderRadius: 2, transition: 'width 0.5s ease' }} />
         </div>
       </div>
@@ -235,6 +236,7 @@ const MetricCard = ({ metricKey, data }) => {
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────
 const VIGILDashboard = () => {
+  useAdaptiveTheme();
   const [activeTab, setActiveTab]           = useState('active');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailPanel, setShowDetailPanel] = useState(null);
@@ -354,14 +356,14 @@ const VIGILDashboard = () => {
 
   // ─── STYLES ────────────────────────────────────────────────────
   const css = {
-    wrap:      { color: '#e5e7eb', fontFamily: '"JetBrains Mono", "Fira Mono", "IBM Plex Mono", monospace' },
-    card:      { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8 },
-    input:     { background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 5, padding: '7px 10px', color: '#e5e7eb', width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
+    wrap:      { color: THEME.textMain, fontFamily: '"JetBrains Mono", "Fira Mono", "IBM Plex Mono", monospace' },
+    card:      { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8 },
+    input:     { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '7px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
     label:     { display: 'block', fontSize: 10, color: '#6b7280', marginBottom: 5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' },
     tab:       (on) => ({ background: on ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.3)' : 'transparent'}`, borderRadius: 6, padding: '7px 14px', color: on ? '#818cf8' : '#6b7280', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.06em', fontFamily: 'inherit' }),
-    btn:       (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: '#4f46e5', color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' } : { background: 'rgba(255,255,255,0.05)', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.08)' }) }),
+    btn:       (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: '#4f46e5', color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
     modal:     { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-    modalBox:  { background: '#0f1623', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, width: 520, maxWidth: '95vw', padding: 24, boxShadow: '0 32px 64px rgba(0,0,0,0.6)', color: '#e5e7eb', maxHeight: '90vh', overflowY: 'auto' },
+    modalBox:  { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 10, width: 520, maxWidth: '95vw', padding: 24, boxShadow: '0 32px 64px rgba(0,0,0,0.6)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
   };
 
   // ─── RENDER: HEADER STATS ──────────────────────────────────────
@@ -811,7 +813,7 @@ const VIGILDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 6, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 18 }}>
+        <div style={{ display: 'flex', gap: 6, paddingBottom: 16, borderBottom: `1px solid ${THEME.grid}`, marginBottom: 18 }}>
           <button onClick={() => setActiveTab('active')} style={css.tab(activeTab === 'active')}>
             <Bell size={12} /> ACTIVE
             {stats.unacked > 0 && <span style={{ background: SEVERITY.critical.color, color: '#fff', borderRadius: 3, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>{stats.unacked}</span>}

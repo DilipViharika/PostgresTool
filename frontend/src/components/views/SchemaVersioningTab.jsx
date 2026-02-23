@@ -887,7 +887,7 @@ const DependencyGraph = ({ data }) => {
             <svg width="100%" height="100%" viewBox="0 0 600 400" style={{ cursor: 'grab' }}>
                 <defs>
                     <marker id="sv-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                        <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255,255,255,.2)" />
+                        <polygon points="0 0, 10 3.5, 0 7" fill={THEME.textDim} />
                     </marker>
                     <filter id="sv-glow">
                         <feGaussianBlur stdDeviation="2" result="coloredBlur" />
@@ -906,7 +906,7 @@ const DependencyGraph = ({ data }) => {
                             <line key={i}
                                   x1={from.x + ox} y1={from.y + oy}
                                   x2={to.x - ox} y2={to.y - oy}
-                                  stroke="rgba(255,255,255,.18)" strokeWidth="1.5"
+                                  stroke={THEME.grid} strokeWidth="1.5"
                                   markerEnd="url(#sv-arrowhead)"
                             />
                         );
@@ -936,7 +936,7 @@ const DependencyGraph = ({ data }) => {
                             <text x={node.x} y={node.y - 2} textAnchor="middle" fill="#f1f5f9" fontSize="10" fontWeight="700" fontFamily="JetBrains Mono, monospace">
                                 {node.id.length > 12 ? node.id.slice(0, 10) + '…' : node.id}
                             </text>
-                            <text x={node.x} y={node.y + 11} textAnchor="middle" fill="rgba(255,255,255,.35)" fontSize="9" fontFamily="Syne, system-ui">{node.type}</text>
+                            <text x={node.x} y={node.y + 11} textAnchor="middle" fill={THEME.textMuted} fontSize="9" fontFamily="Syne, system-ui">{node.type}</text>
                             {node.connections > 0 && (
                                 <g>
                                     <circle cx={node.x + 20} cy={node.y - 20} r="10" fill={nodeColor} opacity="0.85" />
@@ -1276,9 +1276,9 @@ const SchemaVersioningTab = () => {
                                                 <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                                        <XAxis dataKey="month" stroke="rgba(255,255,255,.3)" fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
-                                        <YAxis stroke="rgba(255,255,255,.3)" fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                        <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
                                         <Tooltip content={<ChartTip />} />
                                         <Area type="monotone" dataKey="successful" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#sv-colorSuccess)" name="Successful" />
                                     </AreaChart>
@@ -1531,9 +1531,9 @@ const SchemaVersioningTab = () => {
                         <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 16 }}>Migration Success Rate (90d)</div>
                         <ResponsiveContainer width="100%" height={240}>
                             <LineChart data={MIGRATION_STATS}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                                <XAxis dataKey="month" stroke="rgba(255,255,255,.3)" fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
-                                <YAxis stroke="rgba(255,255,255,.3)" fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
                                 <Tooltip content={<ChartTip />} />
                                 <Line type="monotone" dataKey="successful" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981', r: 4 }} name="Successful" />
                                 <Line type="monotone" dataKey="failed"     stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', r: 4 }} name="Failed" />
@@ -1571,9 +1571,9 @@ const SchemaVersioningTab = () => {
                         <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 16 }}>Migration Volume by Month</div>
                         <ResponsiveContainer width="100%" height={240}>
                             <BarChart data={MIGRATION_STATS}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                                <XAxis dataKey="month" stroke="rgba(255,255,255,.3)" fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
-                                <YAxis stroke="rgba(255,255,255,.3)" fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
                                 <Tooltip content={<ChartTip />} />
                                 <Bar dataKey="successful" stackId="a" fill="#10b981" name="Successful" />
                                 <Bar dataKey="failed"     stackId="a" fill="#ef4444" name="Failed" />

@@ -454,7 +454,7 @@ const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => 
                     {danger ? <AlertTriangle size={18} color={T.danger} /> : <Info size={18} color={T.primary} />}
                 </div>
                 <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6, fontFamily: "'Syne',sans-serif" }}>{title}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.textMain, marginBottom: 6, fontFamily: "'Syne',sans-serif" }}>{title}</div>
                     <div style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.6 }}>{body}</div>
                 </div>
             </div>
@@ -637,7 +637,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             <Sparkles size={20} color="#fff" />
                         </div>
                         <div>
-                            <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', fontFamily: "'Syne',sans-serif", letterSpacing: '-0.02em' }}>Config Tuning Wizard</div>
+                            <div style={{ fontSize: 17, fontWeight: 800, color: T.textMain, fontFamily: "'Syne',sans-serif", letterSpacing: '-0.02em' }}>Config Tuning Wizard</div>
                             <div style={{ fontSize: 10, color: T.textDim }}>Step {step} of 2 · {step === 1 ? 'System Specifications' : 'Review Recommendations'}</div>
                         </div>
                     </div>
@@ -674,7 +674,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                             <f.icon size={14} color={T.primary} />
                                             <input type="number" value={inputs[f.key]} min={f.min||1} max={f.max||2048}
                                                    onChange={e => setInputs({...inputs, [f.key]: Number(e.target.value)})}
-                                                   style={{ background: 'transparent', border: 'none', color: '#fff', width: '100%', fontWeight: 800, fontSize: 14, fontFamily: "'DM Mono',monospace" }} />
+                                                   style={{ background: 'transparent', border: 'none', color: T.textMain, width: '100%', fontWeight: 800, fontSize: 14, fontFamily: "'DM Mono',monospace" }} />
                                             {f.unit && <span style={{ fontSize: 9.5, color: T.textDim, whiteSpace: 'nowrap' }}>{f.unit}</span>}
                                         </div>
                                     </div>
@@ -826,7 +826,7 @@ const ChangeLogModal = ({ onClose }) => (
             <div style={{ padding: '16px 22px', borderBottom: `1px solid ${T.grid}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(90deg, ${T.primary}06, transparent)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                     <History size={14} color={T.primary} />
-                    <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', fontFamily: "'Syne',sans-serif" }}>Configuration History</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: T.textMain, fontFamily: "'Syne',sans-serif" }}>Configuration History</span>
                 </div>
                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 4 }}><X size={16} /></button>
             </div>

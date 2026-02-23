@@ -248,7 +248,7 @@ const HealthGauge = ({ score }) => {
                     <PieChart>
                         <Pie data={data} cx="50%" cy="50%" innerRadius={28} outerRadius={36} startAngle={90} endAngle={-270} dataKey="value" stroke="none">
                             <Cell fill={color} />
-                            <Cell fill="rgba(255,255,255,.06)" />
+                            <Cell fill={THEME.grid} />
                         </Pie>
                     </PieChart>
                 </ResponsiveContainer>
@@ -584,12 +584,12 @@ export default function BloatAnalysisTab() {
                         </div>
                         <ResponsiveContainer width="100%" height={260}>
                             <BarChart data={chartDeadData} layout="vertical" margin={{ top: 0, right: 56, left: 0, bottom: 0 }} barSize={12}>
-                                <CartesianGrid horizontal={false} vertical={true} stroke="rgba(255,255,255,.04)" />
-                                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: 'rgba(255,255,255,.3)', fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
-                                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,.45)' }} tickLine={false} axisLine={false} width={100} />
-                                <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,.03)' }} />
+                                <CartesianGrid horizontal={false} vertical={true} stroke={THEME.grid} />
+                                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: THEME.textDim, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
+                                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: THEME.textMuted }} tickLine={false} axisLine={false} width={100} />
+                                <Tooltip content={<ChartTip />} cursor={{ fill: THEME.surface }} />
                                 <Bar dataKey="dead" name="Dead %" radius={[0, 4, 4, 0]}
-                                     label={{ position: 'right', fontSize: 10, fill: 'rgba(255,255,255,.4)', fontFamily: 'JetBrains Mono', formatter: v => `${v}%` }}
+                                     label={{ position: 'right', fontSize: 10, fill: THEME.textMuted, fontFamily: 'JetBrains Mono', formatter: v => `${v}%` }}
                                 >
                                     {chartDeadData.map((entry, i) => (
                                         <Cell key={i} fill={entry.dead > 20 ? '#ef4444' : entry.dead > 10 ? '#f59e0b' : '#10b981'} />
@@ -607,12 +607,12 @@ export default function BloatAnalysisTab() {
                         </div>
                         <ResponsiveContainer width="100%" height={260}>
                             <BarChart data={chartSizeData} layout="vertical" margin={{ top: 0, right: 72, left: 0, bottom: 0 }} barSize={12}>
-                                <CartesianGrid horizontal={false} vertical={true} stroke="rgba(255,255,255,.04)" />
-                                <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(255,255,255,.3)', fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={fmtBytes} />
-                                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,.45)' }} tickLine={false} axisLine={false} width={100} />
-                                <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,.03)' }} />
+                                <CartesianGrid horizontal={false} vertical={true} stroke={THEME.grid} />
+                                <XAxis type="number" tick={{ fontSize: 10, fill: THEME.textDim, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={fmtBytes} />
+                                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: THEME.textMuted }} tickLine={false} axisLine={false} width={100} />
+                                <Tooltip content={<ChartTip />} cursor={{ fill: THEME.surface }} />
                                 <Bar dataKey="size" name="Total Size" radius={[0, 4, 4, 0]}
-                                     label={{ position: 'right', fontSize: 10, fill: 'rgba(255,255,255,.4)', fontFamily: 'JetBrains Mono', formatter: fmtBytes }}
+                                     label={{ position: 'right', fontSize: 10, fill: THEME.textMuted, fontFamily: 'JetBrains Mono', formatter: fmtBytes }}
                                      fill="url(#sizeGrad)"
                                 />
                                 <defs>

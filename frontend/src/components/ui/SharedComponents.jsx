@@ -647,7 +647,7 @@ export const MetricCard = ({
 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                     {loading ? (
-                        <div style={{ width: 80, height: 28, borderRadius: 3, background: 'rgba(255,255,255,0.05)', animation: 'shimmer 1.5s infinite', backgroundSize: '400%' }} />
+                        <div style={{ width: 80, height: 28, borderRadius: 3, background: THEME.grid, animation: 'shimmer 1.5s infinite', backgroundSize: '400%' }} />
                     ) : (
                         <>
               <span style={{
@@ -714,7 +714,7 @@ export const ResourceGauge = ({ label, value, color, thresholds, size = 160, sub
                 <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart innerRadius="60%" outerRadius="88%" barSize={10} data={data} startAngle={210} endAngle={-30}>
                         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                        <RadialBar background={{ fill: 'rgba(255,255,255,0.04)' }} clockWise dataKey="value" cornerRadius={5}>
+                        <RadialBar background={{ fill: THEME.grid }} clockWise dataKey="value" cornerRadius={5}>
                             {data.map((_, i) => <Cell key={i} fill={resolvedColor} />)}
                         </RadialBar>
                     </RadialBarChart>
@@ -767,9 +767,9 @@ export const NeonProgressBar = ({
                 </div>
             )}
             <div style={{
-                width: '100%', height, background: 'rgba(255,255,255,0.04)',
+                width: '100%', height, background: THEME.grid,
                 borderRadius: 3, overflow: 'visible', position: 'relative',
-                border: '1px solid rgba(255,255,255,0.04)', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.3)'
+                border: `1px solid ${THEME.grid}`, boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.3)'
             }}>
                 {/* Track glow */}
                 <div style={{
@@ -871,7 +871,7 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < payload.length - 1 ? 5 : 0 }}>
                     <div style={{ width: 3, height: 16, borderRadius: 2, backgroundColor: entry.color, boxShadow: `0 0 8px ${entry.color}` }} />
                     <span style={{ fontSize: 10, color: THEME.textSub, fontFamily: THEME.fontMono }}>{entry.name}:</span>
-                    <span style={{ fontSize: 13, color: '#fff', fontWeight: 800, fontFamily: THEME.fontMono, marginLeft: 'auto' }}>
+                    <span style={{ fontSize: 13, color: THEME.textMain, fontWeight: 800, fontFamily: THEME.fontMono, marginLeft: 'auto' }}>
             {formatter ? formatter(entry.value, entry.name) : (typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value)}
                         {unit && <span style={{ fontSize: 10, color: THEME.textMuted }}> {unit}</span>}
           </span>
@@ -1129,7 +1129,7 @@ export const DataTable = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, background: 'rgba(0,245,255,0.02)', borderRadius: 3, padding: '7px 12px', border: `1px solid ${THEME.border}` }}>
                     <Search size={11} color={THEME.textMuted} />
                     <input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
-                           placeholder="Search records..." style={{ background: 'none', border: 'none', color: '#fff', fontSize: 11, outline: 'none', flex: 1, fontFamily: THEME.fontMono }}
+                           placeholder="Search records..." style={{ background: 'none', border: 'none', color: THEME.textMain, fontSize: 11, outline: 'none', flex: 1, fontFamily: THEME.fontMono }}
                     />
                     {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} /></button>}
                     <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>{sorted.length} results</span>
@@ -1390,10 +1390,10 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
     };
 
     return (
-        <div style={{ background: '#000d1a', borderRadius: 4, border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div style={{ background: THEME.bg, borderRadius: 4, border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
             <ScanlineOverlay opacity={0.015} />
             {/* Header */}
-            <div style={{ background: '#000509', padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}`, position: 'relative', zIndex: 2 }}>
+            <div style={{ background: THEME.surfaceHover, padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}`, position: 'relative', zIndex: 2 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 6px #ef444490' }} />
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 6px #f59e0b90' }} />
@@ -2090,7 +2090,7 @@ export const PulseRing = ({ value, max, color = THEME.plasma, size = 80, label }
     return (
         <div style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width={size} height={size} style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
-                <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={5} />
+                <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={THEME.grid} strokeWidth={5} />
                 <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={5} strokeLinecap="round"
                         strokeDasharray={circ} strokeDashoffset={offset}
                         style={{ transition: 'stroke-dashoffset 1s ease', filter: `drop-shadow(0 0 5px ${color})` }}
@@ -2154,7 +2154,7 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <div style={{ width: 8, height: 8, borderRadius: 1, background: seg.color, boxShadow: `0 0 6px ${seg.color}70` }} />
                         <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
-              {seg.label}: <span style={{ color: '#fff', fontWeight: 700 }}>{seg.value}</span>
+              {seg.label}: <span style={{ color: THEME.textMain, fontWeight: 700 }}>{seg.value}</span>
             </span>
                     </div>
                 ))}
@@ -2185,7 +2185,7 @@ export const SettingRow = ({ name, value, unit, description, category, context, 
                     <NeonToggle value={!!value} onChange={onChange} size="small" />
                 ) : (
                     <>
-                        <span style={{ fontSize: 14, fontFamily: THEME.fontMono, color: '#fff', fontWeight: 700 }}>{value}</span>
+                        <span style={{ fontSize: 14, fontFamily: THEME.fontMono, color: THEME.textMain, fontWeight: 700 }}>{value}</span>
                         {unit && <span style={{ fontSize: 10, color: THEME.textDim, marginLeft: 5, fontFamily: THEME.fontMono }}>{unit}</span>}
                     </>
                 )}
@@ -2276,8 +2276,8 @@ export const ExtensionCard = ({ name, version, schema, description, enabled }) =
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: THEME.fontBody }}>{name}</span>
-                    <span style={{ fontSize: 9, background: 'rgba(255,255,255,0.05)', padding: '2px 7px', borderRadius: 2, color: THEME.textMuted, fontFamily: THEME.fontMono }}>v{version}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontBody }}>{name}</span>
+                    <span style={{ fontSize: 9, background: THEME.grid, padding: '2px 7px', borderRadius: 2, color: THEME.textMuted, fontFamily: THEME.fontMono }}>v{version}</span>
                     {enabled !== undefined && <ChipBadge label={enabled ? 'ACTIVE' : 'DISABLED'} color={enabled ? THEME.aurora : THEME.textMuted} micro dot={enabled} />}
                 </div>
                 {description && <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{description}</div>}
@@ -2440,7 +2440,7 @@ export const CacheStatsRing = ({ size: cacheSize, maxSize, hitRate }) => {
     const usagePct = maxSize ? (cacheSize / maxSize) * 100 : 0;
     const data = [
         { name: 'Used', value: cacheSize, fill: THEME.plasma },
-        { name: 'Free', value: maxSize - cacheSize, fill: 'rgba(255,255,255,0.04)' },
+        { name: 'Free', value: maxSize - cacheSize, fill: THEME.grid },
     ];
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -2458,7 +2458,7 @@ export const CacheStatsRing = ({ size: cacheSize, maxSize, hitRate }) => {
             </div>
             <div>
                 <div style={{ fontSize: 9, color: THEME.textMuted, marginBottom: 6, fontFamily: THEME.fontDisplay, letterSpacing: '1px', textTransform: 'uppercase' }}>App Cache</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#fff', fontFamily: THEME.fontMono, lineHeight: 1 }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontMono, lineHeight: 1 }}>
                     {cacheSize}<span style={{ fontSize: 12, color: THEME.textMuted }}>/{maxSize}</span>
                 </div>
                 {hitRate !== undefined && (

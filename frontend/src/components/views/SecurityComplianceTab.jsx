@@ -377,7 +377,7 @@ const ScoreRing = ({ score }) => {
     return (
         <div style={{ position: 'relative', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="160" height="160" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r={r} stroke="rgba(255,255,255,0.06)" strokeWidth="8" fill="none" />
+                <circle cx="80" cy="80" r={r} stroke={THEME.grid} strokeWidth="8" fill="none" />
                 <circle
                     cx="80" cy="80" r={r}
                     stroke={color} strokeWidth="8" fill="none"

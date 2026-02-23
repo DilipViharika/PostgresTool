@@ -733,7 +733,7 @@ const ConnectionsTab = () => {
                         position: 'fixed', top: '50%', left: '50%',
                         transform: 'translate(-50%, -50%)',
                         width: '90%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto',
-                        background: '#111420',
+                        background: THEME.surface,
                         border: `1px solid ${THEME.glassBorder}`,
                         borderTop: `2px solid ${DB_TYPES[formData.dbType].accent}66`,
                         borderRadius: 14, padding: 30, zIndex: 1000,
