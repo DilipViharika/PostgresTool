@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react';
 // Custom hooks for handling dropdown listeners
 import useDropdownListener from '../hooks/useDropdownListener';
 
-const AUTH_TOKEN_KEY = 'authToken'; // Adjust based on your auth key
-
 const FeedbackModal = ({ isOpen, onClose, apiUrl }) => {
   const { handleDropdownChange } = useDropdownListener();
   const [feedbackText, setFeedbackText] = useState('');
@@ -19,34 +17,24 @@ const FeedbackModal = ({ isOpen, onClose, apiUrl }) => {
 
     return () => {
       console.log('Cleaning up FeedbackModal.');
-    }; 
+    };
   }, [apiUrl]);
 
   // Function to submit feedback via POST request
   const submitFeedback = async (feedback) => {
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? (apiUrl || 'https://postgrestoolbackend.vercel.app')
-      : 'http://localhost:5000';
+    const url = process.env.NODE_ENV === 'production' ? apiUrl : 'http://localhost:5000';
     
     try {
-      const token = localStorage.getItem(AUTH_TOKEN_KEY);
-      if (!token) {
-        throw new Error('Not authenticated — please refresh and log in again.');
-      }
-
-      const response = await fetch(`${baseUrl}/api/feedback`, {
+      const response = await fetch(`${url}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ feedback }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMsg = errorData?.error || errorData?.message || `HTTP ${response.status}`;
-        throw new Error(`Failed to submit feedback: ${errorMsg}`);
+        throw new Error(`Failed to submit feedback: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
