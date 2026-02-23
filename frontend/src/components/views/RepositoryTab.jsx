@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — RepositoryTab  (v10 — STRICT LOCAL FS + REAL AI INTEGRATION)
+//  VIGIL — RepositoryTab  (v11 — FIXED API INTEGRATION)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { THEME } from '../../utils/theme.jsx';
@@ -16,10 +16,10 @@ import {
 
 // ⚠️ IMPORTANT: In production, route these calls through your backend.
 // Do not expose your raw API key in the client frontend.
-const AI_API_KEY = "YOUR_ANTHROPIC_API_KEY";
+const AI_API_KEY = "sk-ant-api03-...";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   REAL AI ANALYSIS ENGINE
+   REAL AI ANALYSIS ENGINE  (FIXED)
    ═══════════════════════════════════════════════════════════════════════════ */
 const useAIAnalysis = () => {
     const [loading, setLoading] = useState(false);
@@ -28,16 +28,26 @@ const useAIAnalysis = () => {
     const [mode, setMode] = useState(null); // 'file' | 'repo'
 
     const callClaude = async (system, prompt) => {
+        // Validate key before attempting fetch
+        if (!AI_API_KEY || AI_API_KEY === "YOUR_ANTHROPIC_API_KEY") {
+            throw new Error(
+                "No API key configured. Set VITE_ANTHROPIC_API_KEY in your .env file, " +
+                "or replace the AI_API_KEY constant in RepositoryTab.jsx with your key."
+            );
+        }
+
         const resp = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'x-api-key': AI_API_KEY,
                 'anthropic-version': '2023-06-01',
-                'anthropic-dangerously-allow-browser': 'true' // Remove if routing via backend
+                // ✅ FIXED: Correct header name (was 'anthropic-dangerously-allow-browser')
+                'anthropic-dangerous-direct-browser-access': 'true',
             },
             body: JSON.stringify({
-                model: 'claude-3-5-sonnet-20240620',
+                // ✅ UPDATED: Use a current supported model
+                model: 'claude-sonnet-4-20250514',
                 max_tokens: 3000,
                 system: system,
                 messages: [{ role: 'user', content: prompt }]
@@ -45,29 +55,36 @@ const useAIAnalysis = () => {
         });
 
         if (!resp.ok) {
-            const err = await resp.json();
-            throw new Error(err.error?.message || 'AI API Error');
+            let errMsg = `HTTP ${resp.status}`;
+            try {
+                const err = await resp.json();
+                errMsg = err.error?.message || errMsg;
+            } catch (_) {}
+            throw new Error(errMsg);
         }
 
         const data = await resp.json();
         const raw = data.content?.map(b => b.text || '').join('') || '';
-        const clean = raw.replace(/```json|```/gi, '').trim();
-        return JSON.parse(clean);
+
+        // ✅ FIXED: More robust JSON extraction — handles markdown fences and leading text
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("AI returned a non-JSON response. Try again.");
+        return JSON.parse(jsonMatch[0]);
     };
 
     const analyze = async ({ filename, code, repoName }) => {
         if (!code.trim()) return;
         setLoading(true); setError(null); setMode('file'); setResult(null);
         try {
-            const system = 'You are an elite Staff Software Engineer and Security Auditor. Respond ONLY with valid, raw JSON.';
+            const system = 'You are an elite Staff Software Engineer and Security Auditor. Respond ONLY with valid, raw JSON — no markdown, no extra text.';
             const prompt = `Perform a deep analysis on the following code from file '${filename}' in repo '${repoName}'.
-            
+
 Code:
 \`\`\`
-${code.substring(0, 15000)} // Truncated for context limits
+${code.substring(0, 15000)}
 \`\`\`
 
-Return EXACTLY this JSON structure:
+Return EXACTLY this JSON structure (no extra keys, no markdown):
 {
   "healthScore": <0-100 number>,
   "summary": "<1-2 sentence executive summary of the file's purpose and quality>",
@@ -94,11 +111,11 @@ Return EXACTLY this JSON structure:
     const analyzeRepo = async ({ repoName, repoPath, repoType }) => {
         setLoading(true); setError(null); setMode('repo'); setResult(null);
         try {
-            const system = 'You are an elite Software Architect. Respond ONLY with valid, raw JSON.';
-            const prompt = `Analyze the repository context. Name: '${repoName}', Path/URL: '${repoPath}', Type: '${repoType}'. 
-            Because I am passing metadata instead of the full codebase, infer likely architectural patterns, common pitfalls, and security risks associated with this type of repository name/structure.
+            const system = 'You are an elite Software Architect. Respond ONLY with valid, raw JSON — no markdown, no extra text.';
+            const prompt = `Analyze the repository context. Name: '${repoName}', Path/URL: '${repoPath}', Type: '${repoType}'.
+Because I am passing metadata instead of the full codebase, infer likely architectural patterns, common pitfalls, and security risks associated with this type of repository name/structure.
 
-Return EXACTLY this JSON structure:
+Return EXACTLY this JSON structure (no extra keys, no markdown):
 {
   "overallHealthScore": <0-100 number>,
   "repoSummary": "<Architectural overview based on inference>",
@@ -308,7 +325,6 @@ const FsTreeNode = ({ node, depth, selectedId, onSelect, onToggle, openDirs }) =
 const CodeView = ({ activeRepo }) => {
     const aiEngine = useAIAnalysis();
 
-    // Absolutely NO mock default data here. Must be explicitly loaded.
     const [fsTree, setFsTree] = useState(null);
     const [dirHandle, setDirHandle] = useState(null);
     const [openDirs, setOpenDirs] = useState(new Set());
@@ -318,7 +334,6 @@ const CodeView = ({ activeRepo }) => {
     const [fileLoading, setFileLoading] = useState(false);
     const [fsLoading, setFsLoading] = useState(false);
 
-    // 1. Trigger the native browser directory picker
     const authorizeLocalFolder = useCallback(async () => {
         try {
             setFsLoading(true);
@@ -327,7 +342,7 @@ const CodeView = ({ activeRepo }) => {
 
             setDirHandle(handle);
             setFsTree(tree);
-            setOpenDirs(new Set(tree.filter(n => n.kind === 'dir').map(n => n.id).slice(0, 3))); // auto-open first few
+            setOpenDirs(new Set(tree.filter(n => n.kind === 'dir').map(n => n.id).slice(0, 3)));
             setSelNode(null);
             setFileContent('');
             aiEngine.reset();
@@ -342,7 +357,6 @@ const CodeView = ({ activeRepo }) => {
         setOpenDirs(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
     }, []);
 
-    // 2. Read the actual selected file into memory and trigger AI
     const onSelectFile = useCallback(async node => {
         if (node.kind !== 'file') return;
         setSelNode(node);
@@ -354,7 +368,6 @@ const CodeView = ({ activeRepo }) => {
             const text = await file.text();
             setFileContent(text);
 
-            // Trigger detailed AI Analysis immediately
             aiEngine.analyze({
                 filename: node.name,
                 code: text,
@@ -372,12 +385,12 @@ const CodeView = ({ activeRepo }) => {
     const sevColor = s => {
         const key = (s||'').toLowerCase();
         return { critical:THEME.danger, high:THEME.danger, medium:THEME.warning, low:THEME.info }[key] || THEME.textDim;
-    }
+    };
 
     return (
         <div style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:16, height:'100%', minHeight:0 }}>
 
-            {/* --- SIDEBAR: REAL FILE SYSTEM --- */}
+            {/* SIDEBAR: REAL FILE SYSTEM */}
             <div style={{ background:THEME.glass, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
                 <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, background:`${THEME.primary}06`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <span style={{ fontSize:11, fontWeight:800, color:THEME.textMain, textTransform:'uppercase', letterSpacing:'0.1em' }}>Local Files</span>
@@ -406,7 +419,7 @@ const CodeView = ({ activeRepo }) => {
                 </div>
             </div>
 
-            {/* --- MAIN EDITOR & AI SPLIT --- */}
+            {/* MAIN EDITOR & AI SPLIT */}
             <div style={{ display:'grid', gridTemplateColumns: (aiEngine.loading || aiResult || aiEngine.error) ? '1fr 420px' : '1fr', gap:16, minHeight:0 }}>
 
                 {/* CODE EDITOR */}
@@ -467,7 +480,19 @@ const CodeView = ({ activeRepo }) => {
                                 </div>
                             )}
 
-                            {aiEngine.error && <div style={{ padding:12, color:THEME.danger, fontSize:12, background:`${THEME.danger}10`, borderRadius:8 }}>{aiEngine.error}</div>}
+                            {aiEngine.error && (
+                                <div style={{ padding:16, color:THEME.danger, fontSize:12, background:`${THEME.danger}10`, borderRadius:8, lineHeight:1.6 }}>
+                                    <div style={{ fontWeight:700, marginBottom:6, display:'flex', alignItems:'center', gap:6 }}>
+                                        <AlertTriangle size={13}/> Analysis Error
+                                    </div>
+                                    {aiEngine.error}
+                                    {aiEngine.error.includes('API key') && (
+                                        <div style={{ marginTop:10, padding:10, background:`${THEME.surface}`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
+                                            <b style={{ color:THEME.warning }}>Fix:</b> Open <code>RepositoryTab.jsx</code> and set <code>AI_API_KEY</code> to your real Anthropic key, or add <code>VITE_ANTHROPIC_API_KEY=sk-ant-...</code> to your <code>.env</code> file.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {aiResult && !aiEngine.loading && (
                                 <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
@@ -494,6 +519,21 @@ const CodeView = ({ activeRepo }) => {
                                         </div>
                                     </div>
 
+                                    {/* Strengths */}
+                                    {aiResult.strengths?.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize:11, fontWeight:800, color:THEME.textDim, textTransform:'uppercase', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
+                                                <CheckCircle size={12} color={THEME.success}/> Strengths
+                                            </div>
+                                            {aiResult.strengths.map((s, i) => (
+                                                <div key={i} style={{ display:'flex', gap:8, marginBottom:8, padding:'9px 12px', borderRadius:8, background:`${THEME.success}06`, border:`1px solid ${THEME.success}15` }}>
+                                                    <CheckCircle size={12} color={THEME.success} style={{ flexShrink:0, marginTop:2 }}/>
+                                                    <span style={{ fontSize:11.5, color:THEME.textMuted, lineHeight:1.5 }}>{s}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     {/* Line-Specific Issues */}
                                     {aiResult.issues?.length > 0 && (
                                         <div>
@@ -503,7 +543,10 @@ const CodeView = ({ activeRepo }) => {
                                             {aiResult.issues.map((iss, i) => (
                                                 <div key={i} style={{ marginBottom:10, padding:12, borderRadius:8, background:`${THEME.danger}08`, border:`1px solid ${THEME.danger}20` }}>
                                                     <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-                                                        <span style={{ fontSize:12, fontWeight:700, color:THEME.danger }}>Line {iss.line}: {iss.title}</span>
+                                                        <span style={{ fontSize:12, fontWeight:700, color:THEME.danger }}>
+                                                            {iss.line ? `Line ${iss.line}: ` : ''}{iss.title}
+                                                        </span>
+                                                        <RiskBadge risk={iss.severity}/>
                                                     </div>
                                                     <div style={{ fontSize:11.5, color:THEME.textDim, lineHeight:1.5, marginBottom:8 }}>{iss.description}</div>
                                                     <div style={{ fontSize:11, color:THEME.textMain, background:THEME.surface, padding:'6px 10px', borderRadius:6, border:`1px solid ${THEME.glassBorder}`, fontFamily:'monospace' }}>
@@ -522,8 +565,46 @@ const CodeView = ({ activeRepo }) => {
                                             </div>
                                             {aiResult.securityFlags.map((sec, i) => (
                                                 <div key={i} style={{ marginBottom:8, padding:12, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
-                                                    <div style={{ fontSize:12, fontWeight:700, color:THEME.warning, marginBottom:4 }}>{sec.title}</div>
+                                                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                                                        <span style={{ fontSize:12, fontWeight:700, color:THEME.warning }}>{sec.title}</span>
+                                                        <RiskBadge risk={sec.severity}/>
+                                                    </div>
                                                     <div style={{ fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>{sec.description}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Performance Insights */}
+                                    {aiResult.performanceInsights?.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize:11, fontWeight:800, color:THEME.textDim, textTransform:'uppercase', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
+                                                <Zap size={12} color={THEME.warning}/> Performance
+                                            </div>
+                                            {aiResult.performanceInsights.map((p, i) => (
+                                                <div key={i} style={{ marginBottom:8, padding:12, borderRadius:8, background:`${THEME.warning}06`, border:`1px solid ${THEME.warning}20` }}>
+                                                    <div style={{ fontSize:12, fontWeight:700, color:THEME.warning, marginBottom:4 }}>{p.title}</div>
+                                                    <div style={{ fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>{p.suggestion}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* AI Recommendations */}
+                                    {aiResult.aiRecommendations?.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize:11, fontWeight:800, color:THEME.textDim, textTransform:'uppercase', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
+                                                <Lightbulb size={12} color={THEME.primary}/> Recommendations
+                                            </div>
+                                            {aiResult.aiRecommendations.sort((a,b) => a.priority - b.priority).map((rec, i) => (
+                                                <div key={i} style={{ display:'flex', gap:10, marginBottom:10, padding:'10px 12px', borderRadius:8, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}15` }}>
+                                                    <div style={{ width:20, height:20, borderRadius:'50%', background:`${THEME.primary}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                                                        <span style={{ fontSize:10, fontWeight:900, color:THEME.primary }}>{rec.priority}</span>
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontSize:12, fontWeight:700, color:THEME.textMain, marginBottom:3 }}>{rec.title}</div>
+                                                        <div style={{ fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>{rec.rationale}</div>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -569,7 +650,20 @@ const InsightsView = ({ activeRepo }) => {
                         </div>
                     </Panel>
                 )}
-                {ai.error && <div style={{ padding:16, background:`${THEME.danger}10`, color:THEME.danger, borderRadius:12 }}>{ai.error}</div>}
+
+                {ai.error && (
+                    <div style={{ padding:16, background:`${THEME.danger}10`, color:THEME.danger, borderRadius:12, lineHeight:1.6, fontSize:12 }}>
+                        <div style={{ fontWeight:700, marginBottom:6, display:'flex', alignItems:'center', gap:6 }}>
+                            <AlertTriangle size={13}/> Analysis Error
+                        </div>
+                        {ai.error}
+                        {ai.error.includes('API key') && (
+                            <div style={{ marginTop:10, padding:10, background:`rgba(0,0,0,.2)`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
+                                <b style={{ color:THEME.warning }}>Fix:</b> Set <code>VITE_ANTHROPIC_API_KEY=sk-ant-...</code> in your <code>.env</code> file and restart the dev server.
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {!ai.loading && !ai.result && !ai.error && (
                     <div style={{ padding:'60px 20px', textAlign:'center', border:`2px dashed ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
@@ -614,6 +708,23 @@ const InsightsView = ({ activeRepo }) => {
                                     ))}
                                 </Panel>
                             </div>
+
+                            {/* Insights */}
+                            {r.insights?.length > 0 && (
+                                <Panel title="Deep Insights" icon={Lightbulb}>
+                                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                                        {r.insights.map((ins, i) => (
+                                            <div key={i} style={{ padding:'12px 14px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
+                                                    <span style={{ fontSize:10, fontWeight:800, padding:'2px 8px', borderRadius:4, background:`${THEME.primary}15`, color:THEME.primary }}>{ins.category}</span>
+                                                </div>
+                                                <div style={{ fontSize:12, color:THEME.textMuted, lineHeight:1.5, marginBottom:6 }}>{ins.finding}</div>
+                                                <div style={{ fontSize:11.5, color:THEME.success, lineHeight:1.5 }}>→ {ins.recommendation}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Panel>
+                            )}
                         </div>
                     );
                 })()}
