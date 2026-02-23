@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
-    User, KeyRound, Shield, Zap, Cpu, Server, Bell
+    User, KeyRound, Shield, Zap, Cpu, Server, Bell, Activity, Lock, Check
 } from 'lucide-react';
 
 // Mocking useAuth for this standalone snippet:
@@ -10,7 +10,7 @@ const useAuth = () => ({ login: async () => new Promise(res => setTimeout(res, 1
 const API_BASE = 'http://localhost:5000'; // Mock API
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  GLOBAL STYLES (Simplified)
+//  GLOBAL STYLES
 // ─────────────────────────────────────────────────────────────────────────────
 const GlobalStyles = () => (
     <style>{`
@@ -21,7 +21,6 @@ const GlobalStyles = () => (
         @keyframes fadeUp    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
         @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes shake     { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
         @keyframes spin      { to{transform:rotate(360deg)} }
         @keyframes spinRev   { to{transform:rotate(-360deg)} }
         @keyframes pulseDot  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.78)} }
@@ -29,7 +28,6 @@ const GlobalStyles = () => (
         @keyframes successPop{ 0%{transform:scale(0) rotate(-45deg);opacity:0} 55%{transform:scale(1.15);opacity:1} 100%{transform:scale(1);opacity:1} }
         @keyframes logoPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
         @keyframes glowPulse { 0%,100%{box-shadow:0 0 28px rgba(129,140,248,.22)} 50%{box-shadow:0 0 46px rgba(129,140,248,.42)} }
-        @keyframes edgePulse { 0%,100%{opacity:.18} 50%{opacity:.75} }
 
         input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus {
             -webkit-box-shadow: 0 0 0 1000px #080e1a inset !important;
@@ -39,6 +37,11 @@ const GlobalStyles = () => (
         }
         .vi-input::placeholder { color:#1a2a44; opacity:1; }
         .vi-input:focus::placeholder { opacity:0; transition:opacity .2s; }
+        
+        /* Custom scrollbar for smaller screens */
+        .left-panel-scroll::-webkit-scrollbar { width: 6px; }
+        .left-panel-scroll::-webkit-scrollbar-track { background: transparent; }
+        .left-panel-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     `}</style>
 );
 
@@ -53,20 +56,51 @@ const PLATFORM_FEATURES = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LEFT PANEL (Clean & Static)
+//  MOCK UI DASHBOARD SNIPPET (Acts as our visual/image)
+// ─────────────────────────────────────────────────────────────────────────────
+const DashboardSnippet = () => (
+    <div style={{ marginTop: 40, padding: 20, borderRadius: 16, background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.06)', position: 'relative', overflow: 'hidden', animation: 'fadeUp 1s ease .4s backwards' }}>
+        {/* Glow effect inside card */}
+        <div style={{ position: 'absolute', top: -50, right: -50, width: 150, height: 150, background: 'radial-gradient(circle, rgba(129,140,248,0.15) 0%, transparent 70%)', filter: 'blur(20px)' }}/>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Activity size={14} color="#818CF8" />
+                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#A5B4FC', letterSpacing: '1px', textTransform: 'uppercase' }}>Global QPS Pulse</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(52,211,153,0.1)', padding: '4px 8px', borderRadius: 20, border: '1px solid rgba(52,211,153,0.2)' }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34D399', boxShadow: '0 0 8px #34D399' }} />
+                <span style={{ fontSize: 9, fontFamily: "'JetBrains Mono',monospace", color: '#34D399', fontWeight: 600 }}>14.2k req/s</span>
+            </div>
+        </div>
+
+        {/* Abstract Sparkline Chart */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 45, opacity: 0.8 }}>
+            {[20, 35, 25, 60, 45, 80, 55, 90, 70, 40, 65, 30, 85, 50, 75, 95, 60, 45].map((h, i) => (
+                <div key={i} style={{ flex: 1, height: `${h}%`, background: h > 80 ? '#FDE047' : '#818CF8', borderRadius: '2px 2px 0 0', opacity: h > 80 ? 0.9 : 0.4, transition: 'height 0.5s ease' }} />
+            ))}
+        </div>
+        <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.1)', marginTop: 4 }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+            <span style={{ fontSize: 9, color: 'rgba(148,163,184,0.6)', fontFamily: "'JetBrains Mono',monospace" }}>-1h</span>
+            <span style={{ fontSize: 9, color: 'rgba(148,163,184,0.6)', fontFamily: "'JetBrains Mono',monospace" }}>Now</span>
+        </div>
+    </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  LEFT PANEL (Clean, Static, Informative)
 // ─────────────────────────────────────────────────────────────────────────────
 const LeftPanel = () => {
     return (
-        <div style={{ flex: '1 1 0', minWidth: 0, height: '100vh', position: 'relative', overflow: 'hidden', background: '#07080F', borderRight: '1px solid rgba(255,255,255,.06)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 10%' }}>
+        <div className="left-panel-scroll" style={{ flex: '1 1 0', minWidth: 0, height: '100vh', position: 'relative', overflowY: 'auto', overflowX: 'hidden', background: '#07080F', borderRight: '1px solid rgba(255,255,255,.06)', display: 'flex', flexDirection: 'column', padding: '6% 10%' }}>
 
-            {/* Extremely subtle background glows to prevent it from looking completely flat */}
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, background: `radial-gradient(circle at 10% 20%, rgba(129,140,248,.06) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(52,211,153,.04) 0%, transparent 40%)`}}/>
+            {/* Extremely subtle background glows */}
+            <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: `radial-gradient(circle at 10% 20%, rgba(129,140,248,.06) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(52,211,153,.04) 0%, transparent 40%)`}}/>
+            <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, opacity: .018, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E")` }}/>
 
-            {/* Grain Texture */}
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, opacity: .018, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E")` }}/>
-
-            {/* Top Left Logo Array */}
-            <div style={{ position: 'absolute', top: 32, left: 40, zIndex: 8, display: 'flex', alignItems: 'center', gap: 11, animation: 'fadeIn .7s ease' }}>
+            {/* Top Logo Array */}
+            <div style={{ position: 'relative', zIndex: 8, display: 'flex', alignItems: 'center', gap: 11, marginBottom: '8vh', animation: 'fadeIn .7s ease' }}>
                 <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(145deg,#6366F1,#8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 1px rgba(255,255,255,.10) inset, 0 8px 24px rgba(99,102,241,.3)' }}>
                     <Database size={17} color="#fff"/>
                 </div>
@@ -76,21 +110,21 @@ const LeftPanel = () => {
                 </div>
             </div>
 
-            {/* Centered Content Block */}
-            <div style={{ position: 'relative', zIndex: 8, maxWidth: 640 }}>
+            {/* Main Content Container */}
+            <div style={{ position: 'relative', zIndex: 8, maxWidth: 640, margin: 'auto 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, animation: 'fadeUp .8s ease backwards' }}>
                     <div style={{ width: 24, height: 1, background: 'rgba(129,140,248,.70)' }}/>
                     <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: '#818CF8' }}>Database Observability</span>
                 </div>
 
                 <div style={{ marginBottom: 16, animation: 'fadeUp .8s ease .1s backwards' }}>
-                    <h1 style={{ margin: 0, fontFamily: "'DM Serif Display',serif", fontSize: 'clamp(32px,4vw,52px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.4px', color: '#E8EAF4' }}>
+                    <h1 style={{ margin: 0, fontFamily: "'DM Serif Display',serif", fontSize: 'clamp(32px,3.5vw,48px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.4px', color: '#E8EAF4' }}>
                         Monitor every query,<br/>
                         <em style={{ fontStyle: 'italic', color: '#818CF8' }}>beautifully.</em>
                     </h1>
                 </div>
 
-                <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(148,163,184,.9)', lineHeight: 1.6, margin: '0 0 40px', maxWidth: 480, fontFamily: "'DM Sans',sans-serif", animation: 'fadeUp .8s ease .2s backwards' }}>
+                <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(148,163,184,.9)', lineHeight: 1.6, margin: '0 0 32px', maxWidth: 480, fontFamily: "'DM Sans',sans-serif", animation: 'fadeUp .8s ease .2s backwards' }}>
                     Enterprise-grade visibility across your PostgreSQL ecosystem.
                     From dead-tuple accumulation to connection pooling health—nothing escapes.
                 </p>
@@ -98,7 +132,7 @@ const LeftPanel = () => {
                 {/* Grid Block */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', animation: 'fadeUp .8s ease .3s backwards' }}>
                     {PLATFORM_FEATURES.map((feat, idx) => (
-                        <div key={idx} style={{ background: 'rgba(255,255,255,.015)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10, transition: 'background .2s', cursor: 'default' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.03)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,.015)'}>
+                        <div key={idx} style={{ background: 'rgba(255,255,255,.015)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10, transition: 'all .2s', cursor: 'default' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.03)'; e.currentTarget.style.borderColor = `${feat.color}40`; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.05)'; }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div style={{ width: 26, height: 26, borderRadius: 6, background: `${feat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${feat.color}30` }}>
                                     <feat.icon size={13} color={feat.color} />
@@ -120,6 +154,26 @@ const LeftPanel = () => {
                         </div>
                     ))}
                 </div>
+
+                {/* The "Visual" Element */}
+                <DashboardSnippet />
+
+                {/* Trust & Compliance Footer */}
+                <div style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 24, animation: 'fadeIn 1s ease .6s backwards' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Lock size={12} color="#64748b" />
+                        <span style={{ fontSize: 10, color: '#64748b', fontFamily: "'JetBrains Mono',monospace", textTransform: 'uppercase', letterSpacing: '0.5px' }}>SOC2 Type II</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Shield size={12} color="#64748b" />
+                        <span style={{ fontSize: 10, color: '#64748b', fontFamily: "'JetBrains Mono',monospace", textTransform: 'uppercase', letterSpacing: '0.5px' }}>GDPR Compliant</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Check size={12} color="#34D399" />
+                        <span style={{ fontSize: 10, color: '#34D399', fontFamily: "'JetBrains Mono',monospace", textTransform: 'uppercase', letterSpacing: '0.5px' }}>99.99% SLA</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     );
