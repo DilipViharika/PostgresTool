@@ -61,6 +61,7 @@ const GlobalStyles = () => (
         @keyframes shimmer    { 0%{background-position:-200% center} 100%{background-position:200% center} }
         @keyframes borderGlow { 0%,100%{box-shadow:0 0 0 1px rgba(100,112,255,.12),0 32px 80px rgba(0,0,0,.7)} 50%{box-shadow:0 0 0 1px rgba(100,112,255,.30),0 32px 80px rgba(0,0,0,.7),0 0 60px rgba(100,112,255,.06)} }
         @keyframes dotBlink   { 0%,100%{opacity:1} 50%{opacity:.25} }
+        @keyframes slideIn    { from{width:0;opacity:0} to{opacity:1} }
 
         input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus {
             -webkit-box-shadow:0 0 0 1000px #080d1c inset !important;
@@ -367,17 +368,183 @@ const LeftPanel = () => {
                     <Database size={18} color="#fff" strokeWidth={1.8}/>
                 </div>
                 <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(235,238,252,.95)', fontFamily: "'Outfit',sans-serif", letterSpacing: '-.2px', lineHeight: 1 }}>PG MONITOR</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(235,238,252,.95)', fontFamily: "'Outfit',sans-serif", letterSpacing: '-.2px', lineHeight: 1 }}>pg_monitor</div>
                     <div style={{ fontSize: 8, color: 'rgba(100,112,255,.6)', fontFamily: "'JetBrains Mono',monospace", marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>PostgreSQL Intelligence</div>
                 </div>
             </div>
 
-            {/* Scrim — only covers bottom 36% */}
+            {/* Scrim — covers bottom 58% so cards + hero sit on dark base */}
             <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: '38%',
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: '58%',
                 pointerEvents: 'none', zIndex: 3,
-                background: 'linear-gradient(to top, rgba(5,6,14,1) 0%, rgba(5,6,14,.96) 30%, rgba(5,6,14,.55) 60%, transparent 100%)',
+                background: 'linear-gradient(to top, rgba(5,6,14,1) 0%, rgba(5,6,14,.98) 28%, rgba(5,6,14,.80) 50%, rgba(5,6,14,.30) 72%, transparent 100%)',
             }}/>
+
+            {/* ── FEATURE ILLUSTRATION CARDS ── */}
+            <div style={{
+                position:'absolute',
+                bottom:'36%',
+                left:0,right:0,
+                zIndex:7,
+                display:'flex',
+                alignItems:'flex-end',
+                justifyContent:'center',
+                gap:10,
+                padding:'0 32px 16px',
+                pointerEvents:'none',
+            }}>
+                {/* Card 1 — Query Explorer */}
+                <div style={{
+                    flex:'1 1 0',maxWidth:210,
+                    background:'linear-gradient(160deg,rgba(10,12,28,.90) 0%,rgba(6,8,20,.94) 100%)',
+                    backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',
+                    border:'1px solid rgba(100,112,255,.20)',
+                    borderRadius:13,padding:'12px 13px 10px',
+                    boxShadow:'0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05)',
+                    animation:'fadeUp 1s ease .55s backwards',
+                }}>
+                    <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:8}}>
+                        <div style={{width:22,height:22,borderRadius:6,background:'rgba(100,112,255,.15)',border:'1px solid rgba(100,112,255,.28)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                            <Zap size={11} color="#818AFF" strokeWidth={2.2}/>
+                        </div>
+                        <div>
+                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fontWeight:700,color:'rgba(200,205,240,.85)',letterSpacing:'.7px',textTransform:'uppercase',lineHeight:1}}>Query Explorer</div>
+                            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:8.5,color:'rgba(100,120,170,.50)',marginTop:2,lineHeight:1}}>Slow query analysis</div>
+                        </div>
+                    </div>
+                    <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                        {[
+                            {q:'SELECT * FROM orders…',ms:284,w:88,c:'#FF4F6D'},
+                            {q:'UPDATE sessions SET…', ms:142,w:55,c:'#F5C842'},
+                            {q:'INSERT INTO events…',  ms: 67,w:28,c:'#00D4A0'},
+                            {q:'SELECT id FROM users…',ms: 18,w:10,c:'#38BDF8'},
+                        ].map(({q,ms,w,c},i)=>(
+                            <div key={i} style={{display:'flex',alignItems:'center',gap:6}}>
+                                <div style={{flex:1,minWidth:0}}>
+                                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:6.5,color:'rgba(160,175,210,.50)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{q}</div>
+                                    <div style={{marginTop:2,height:2.5,borderRadius:2,background:'rgba(255,255,255,.06)',overflow:'hidden'}}>
+                                        <div style={{height:'100%',width:`${w}%`,background:`linear-gradient(to right,${c}70,${c})`,borderRadius:2}}/>
+                                    </div>
+                                </div>
+                                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:c,flexShrink:0,fontWeight:700}}>{ms}ms</span>
+                            </div>
+                        ))}
+                    </div>
+                    <div style={{marginTop:7,display:'flex',alignItems:'center',gap:5,borderTop:'1px solid rgba(255,255,255,.04)',paddingTop:6}}>
+                        <div style={{width:4,height:4,borderRadius:'50%',background:'#818AFF',boxShadow:'0 0 5px #818AFF',flexShrink:0}}/>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:'rgba(100,120,170,.42)',letterSpacing:'.4px'}}>EXPLAIN ANALYZE · auto-capture</span>
+                    </div>
+                </div>
+
+                {/* Card 2 — Schema Map (centre, slightly elevated) */}
+                <div style={{
+                    flex:'1 1 0',maxWidth:210,
+                    background:'linear-gradient(160deg,rgba(12,10,30,.90) 0%,rgba(8,6,22,.94) 100%)',
+                    backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',
+                    border:'1px solid rgba(167,139,250,.22)',
+                    borderRadius:13,padding:'12px 13px 10px',
+                    boxShadow:'0 20px 56px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(167,139,250,.06)',
+                    animation:'fadeUp 1s ease .68s backwards',
+                    marginBottom:10,
+                }}>
+                    <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:8}}>
+                        <div style={{width:22,height:22,borderRadius:6,background:'rgba(167,139,250,.15)',border:'1px solid rgba(167,139,250,.28)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                            <HardDrive size={11} color="#A78BFA" strokeWidth={2.2}/>
+                        </div>
+                        <div>
+                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fontWeight:700,color:'rgba(200,205,240,.85)',letterSpacing:'.7px',textTransform:'uppercase',lineHeight:1}}>Schema Map</div>
+                            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:8.5,color:'rgba(100,120,170,.50)',marginTop:2,lineHeight:1}}>Tables, indexes &amp; foreign keys</div>
+                        </div>
+                    </div>
+                    <svg width="100%" height="70" viewBox="0 0 184 70" style={{display:'block',overflow:'visible'}}>
+                        <defs>
+                            <linearGradient id="sg1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#A78BFA" stopOpacity=".7"/><stop offset="100%" stopColor="#818AFF" stopOpacity=".2"/></linearGradient>
+                            <linearGradient id="sg2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#38BDF8" stopOpacity=".7"/><stop offset="100%" stopColor="#818AFF" stopOpacity=".2"/></linearGradient>
+                        </defs>
+                        {/* Central table */}
+                        <rect x="64" y="18" width="56" height="28" rx="5" fill="rgba(167,139,250,.10)" stroke="rgba(167,139,250,.38)" strokeWidth="1"/>
+                        <text x="92" y="30" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="6.5" fill="rgba(200,200,240,.80)" fontWeight="700">orders</text>
+                        <line x1="92" y1="32" x2="92" y2="34" stroke="rgba(167,139,250,.25)" strokeWidth=".6"/>
+                        <text x="92" y="41" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5" fill="rgba(140,155,200,.40)">id · user_id · total</text>
+                        {/* Left */}
+                        <rect x="2" y="22" width="46" height="20" rx="4" fill="rgba(56,189,248,.08)" stroke="rgba(56,189,248,.30)" strokeWidth="1"/>
+                        <text x="25" y="31" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="6" fill="rgba(150,220,240,.75)" fontWeight="700">users</text>
+                        <text x="25" y="38" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5" fill="rgba(140,155,200,.38)">id · email</text>
+                        {/* Right */}
+                        <rect x="136" y="22" width="46" height="20" rx="4" fill="rgba(0,212,160,.07)" stroke="rgba(0,212,160,.28)" strokeWidth="1"/>
+                        <text x="159" y="31" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="6" fill="rgba(140,240,200,.72)" fontWeight="700">products</text>
+                        <text x="159" y="38" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5" fill="rgba(140,155,200,.38)">id · sku</text>
+                        {/* Bottom */}
+                        <rect x="64" y="56" width="56" height="14" rx="3" fill="rgba(245,200,66,.07)" stroke="rgba(245,200,66,.25)" strokeWidth="1"/>
+                        <text x="92" y="65" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5.5" fill="rgba(230,210,130,.68)" fontWeight="700">order_items</text>
+                        {/* Connectors */}
+                        <line x1="48" y1="32" x2="64" y2="32" stroke="url(#sg2)" strokeWidth=".8" strokeDasharray="3 2"/>
+                        <line x1="120" y1="32" x2="136" y2="32" stroke="url(#sg1)" strokeWidth=".8" strokeDasharray="3 2"/>
+                        <line x1="92" y1="46" x2="92" y2="56" stroke="rgba(245,200,66,.35)" strokeWidth=".8" strokeDasharray="3 2"/>
+                        {/* FK diamonds */}
+                        {[[48,32],[120,32],[92,46]].map(([x,y],i)=>(
+                            <polygon key={i} points={`${x},${y-2.5} ${x+3.5},${y} ${x},${y+2.5} ${x-3.5},${y}`} fill="rgba(167,139,250,.55)"/>
+                        ))}
+                    </svg>
+                    <div style={{marginTop:4,display:'flex',alignItems:'center',gap:5,borderTop:'1px solid rgba(255,255,255,.04)',paddingTop:6}}>
+                        <div style={{width:4,height:4,borderRadius:'50%',background:'#A78BFA',boxShadow:'0 0 5px #A78BFA',flexShrink:0}}/>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:'rgba(100,120,170,.42)',letterSpacing:'.4px'}}>14 tables · 38 indexes · 6 FK</span>
+                    </div>
+                </div>
+
+                {/* Card 3 — Replication Topology */}
+                <div style={{
+                    flex:'1 1 0',maxWidth:210,
+                    background:'linear-gradient(160deg,rgba(6,16,14,.90) 0%,rgba(4,10,10,.94) 100%)',
+                    backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',
+                    border:'1px solid rgba(0,212,160,.18)',
+                    borderRadius:13,padding:'12px 13px 10px',
+                    boxShadow:'0 16px 48px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.05)',
+                    animation:'fadeUp 1s ease .80s backwards',
+                }}>
+                    <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:8}}>
+                        <div style={{width:22,height:22,borderRadius:6,background:'rgba(0,212,160,.12)',border:'1px solid rgba(0,212,160,.28)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                            <Activity size={11} color="#00D4A0" strokeWidth={2.2}/>
+                        </div>
+                        <div>
+                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fontWeight:700,color:'rgba(200,205,240,.85)',letterSpacing:'.7px',textTransform:'uppercase',lineHeight:1}}>Replication</div>
+                            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:8.5,color:'rgba(100,120,170,.50)',marginTop:2,lineHeight:1}}>Primary / replica topology</div>
+                        </div>
+                    </div>
+                    <svg width="100%" height="70" viewBox="0 0 184 70" style={{display:'block'}}>
+                        <defs>
+                            <linearGradient id="rpl1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#00D4A0" stopOpacity=".85"/><stop offset="100%" stopColor="#00D4A0" stopOpacity=".10"/></linearGradient>
+                            <linearGradient id="rpl2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#818AFF" stopOpacity=".85"/><stop offset="100%" stopColor="#818AFF" stopOpacity=".10"/></linearGradient>
+                        </defs>
+                        {/* Primary */}
+                        <circle cx="50" cy="35" r="17" fill="rgba(0,212,160,.08)" stroke="rgba(0,212,160,.42)" strokeWidth="1.2"/>
+                        <circle cx="50" cy="35" r="23" fill="none" stroke="rgba(0,212,160,.08)" strokeWidth="1" style={{animation:'ringOut 3.5s ease-out infinite'}}/>
+                        <text x="50" y="31" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5.5" fill="rgba(0,212,160,.92)" fontWeight="700">PRIMARY</text>
+                        <text x="50" y="40" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5" fill="rgba(140,155,200,.48)">pg-main-01</text>
+                        {/* Replicas */}
+                        {[{cx:140,cy:18,label:'REPLICA 1',host:'pg-read-01',col:'#38BDF8'},{cx:140,cy:52,label:'REPLICA 2',host:'pg-read-02',col:'#818AFF'}].map(({cx,cy,label,host,col})=>(
+                            <g key={label}>
+                                <circle cx={cx} cy={cy} r="13" fill={`${col}0C`} stroke={`${col}38`} strokeWidth="1"/>
+                                <text x={cx} y={cy-2} textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5" fill={`${col}C8`} fontWeight="700">{label}</text>
+                                <text x={cx} y={cy+7} textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="4.5" fill="rgba(140,155,200,.42)">{host}</text>
+                            </g>
+                        ))}
+                        {/* WAL stream lines */}
+                        <line x1="67" y1="27" x2="127" y2="18" stroke="url(#rpl1)" strokeWidth="1.1" strokeDasharray="4 3"/>
+                        <line x1="67" y1="43" x2="127" y2="52" stroke="url(#rpl2)" strokeWidth="1.1" strokeDasharray="4 3"/>
+                        {/* Arrowheads */}
+                        <polygon points="127,15.5 131,18 127,20.5" fill="#38BDF8" opacity=".75"/>
+                        <polygon points="127,49.5 131,52 127,54.5" fill="#818AFF" opacity=".75"/>
+                        {/* Lag */}
+                        <text x="97" y="20" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5" fill="rgba(56,189,248,.60)">0ms lag</text>
+                        <text x="97" y="58" textAnchor="middle" fontFamily="'JetBrains Mono',monospace" fontSize="5" fill="rgba(130,138,255,.60)">4ms lag</text>
+                    </svg>
+                    <div style={{marginTop:4,display:'flex',alignItems:'center',gap:5,borderTop:'1px solid rgba(255,255,255,.04)',paddingTop:6}}>
+                        <div style={{width:4,height:4,borderRadius:'50%',background:'#00D4A0',boxShadow:'0 0 5px #00D4A0',flexShrink:0}}/>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:'rgba(100,120,170,.42)',letterSpacing:'.4px'}}>1 primary · 2 replicas · healthy</span>
+                    </div>
+                </div>
+            </div>
 
             {/* ── HERO BLOCK ── fixed 36% height, fully centred */}
             <div style={{
