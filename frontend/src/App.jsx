@@ -846,34 +846,8 @@ const FeedbackModal = ({ onClose, initialSection }) => {
         console.debug('[FeedbackModal] payload →', JSON.stringify(payload, null, 2));
 
         try {
-            const token = localStorage.getItem(AUTH_TOKEN_KEY);
-            if (!token) throw new Error('Not authenticated — please refresh and log in again.');
-
-            const res = await fetch('/api/feedback', {
-                method:  'POST',
-                headers: {
-                    'Content-Type':  'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify(payload),
-            });
-
-            /* Try to parse response body regardless of status */
-            let resBody = {};
-            try { resBody = await res.json(); } catch {}
-
-            if (!res.ok) {
-                const msg = resBody?.error || resBody?.message || resBody?.detail;
-                if      (res.status === 400) throw new Error(`Validation error: ${msg || 'check required fields'}`);
-                else if (res.status === 401) throw new Error('Session expired — please log in again.');
-                else if (res.status === 403) throw new Error('Permission denied (403).');
-                else if (res.status === 404) throw new Error('Feedback endpoint not found (404) — check server routing.');
-                else if (res.status === 405) throw new Error('Method not allowed (405) — server must accept POST /api/feedback.');
-                else if (res.status === 422) throw new Error(`Unprocessable data (422): ${msg || 'invalid payload shape'}`);
-                else if (res.status >= 500)  throw new Error(`Server error (${res.status})${msg ? ': ' + msg : ' — check server logs'}.`);
-                else                         throw new Error(`Request failed (${res.status})${msg ? ': ' + msg : ''}.`);
-            }
-
+            await postData('/api/feedback', payload);
+            
             /* ✓ Success */
             try { localStorage.setItem('vigil_last_feedback', Date.now().toString()); } catch {}
             setSent(true);
