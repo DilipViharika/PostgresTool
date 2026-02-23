@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import {
     Database, Plus, Edit, Trash2, Eye, EyeOff, Check, X,
     Server, Key, User, AlertCircle, CheckCircle, Link as LinkIcon,
@@ -158,18 +159,18 @@ const defaultFormData = (dbType = 'postgresql') => {
 const FONT_UI   = `'DM Sans', system-ui, sans-serif`;
 const FONT_MONO = `'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace`;
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles — getter-based so colors always reflect the current THEME ─────────
 const S = {
-    root: {
+    get root() { return {
         fontFamily: FONT_UI,
         minHeight: '100vh',
-        background: '#0d0f1a',
-        color: '#c9d1d9',
+        background: THEME.bg,
+        color: THEME.textMain,
         padding: '32px 28px',
-    },
+    }; },
     card: (accent) => ({
-        background: 'rgba(255,255,255,0.02)',
-        border: `1px solid rgba(255,255,255,0.06)`,
+        background: THEME.surface,
+        border: `1px solid ${THEME.glassBorder}`,
         borderTop: `2px solid ${accent}55`,
         borderRadius: 10,
         padding: 20,
@@ -191,17 +192,17 @@ const S = {
     }),
     input: (hasError) => ({
         width: '100%', boxSizing: 'border-box',
-        background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${hasError ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
-        borderRadius: 7, padding: '9px 12px', color: '#e5e7eb', fontSize: 13,
+        background: THEME.surfaceHover,
+        border: `1px solid ${hasError ? THEME.danger : THEME.glassBorder}`,
+        borderRadius: 7, padding: '9px 12px', color: THEME.textMain, fontSize: 13,
         outline: 'none', transition: 'border-color 0.2s',
         fontFamily: FONT_UI,
     }),
-    label: {
+    get label() { return {
         display: 'block', fontSize: 11, fontWeight: 700,
-        color: '#6b7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em',
+        color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em',
         fontFamily: FONT_UI,
-    },
+    }; },
 };
 
 // ─── DB Type Selector ─────────────────────────────────────────────────────────
@@ -216,7 +217,7 @@ const DBTypeSelector = ({ value, onChange }) => {
                 type="button"
                 onClick={() => setOpen(o => !o)}
                 style={{
-                    ...S.btn('rgba(255,255,255,0.04)', 'rgba(255,255,255,0.12)', '#e5e7eb'),
+                    ...S.btn(THEME.surface, THEME.glassBorder, THEME.textMain),
                     width: '100%', justifyContent: 'space-between', padding: '10px 14px', fontSize: 14,
                 }}
             >
@@ -225,12 +226,12 @@ const DBTypeSelector = ({ value, onChange }) => {
           <span style={{ fontWeight: 600 }}>{current.label}</span>
           <span style={S.badge(current.accent)}>:{current.defaultPort || 'N/A'}</span>
         </span>
-                <ChevronDown size={16} style={{ color: '#6b7280', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                <ChevronDown size={16} style={{ color: THEME.textMuted, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
             {open && (
                 <div style={{
                     position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 200,
-                    background: '#151726', border: '1px solid rgba(255,255,255,0.1)',
+                    background: THEME.surfaceRaised, border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: 10, overflow: 'hidden',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
                 }}>
@@ -252,8 +253,8 @@ const DBTypeSelector = ({ value, onChange }) => {
                             >
                                 <span style={{ fontSize: 18 }}>{db.icon}</span>
                                 <div>
-                                    <div style={{ fontSize: 13, fontWeight: 600, color: key === value ? db.accent : '#e5e7eb' }}>{db.label}</div>
-                                    <div style={{ fontSize: 11, color: '#6b7280' }}>port {db.defaultPort || '—'}</div>
+                                    <div style={{ fontSize: 13, fontWeight: 600, color: key === value ? db.accent : THEME.textMain }}>{db.label}</div>
+                                    <div style={{ fontSize: 11, color: THEME.textMuted }}>port {db.defaultPort || '—'}</div>
                                 </div>
                             </button>
                         ))}
@@ -305,7 +306,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                         rows={5}
                         style={{ ...S.input(!!formErrors[f]), resize: 'vertical', lineHeight: 1.5 }}
                         onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                        onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                        onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : THEME.glassBorder}
                     />
                     {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
                 </div>
@@ -330,7 +331,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                                     placeholder={field === 'port' ? (DB_TYPES[dbType].defaultPort || '') : m.placeholder}
                                     style={S.input(!!formErrors[field])}
                                     onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                                    onBlur={e => e.currentTarget.style.borderColor = formErrors[field] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                                    onBlur={e => e.currentTarget.style.borderColor = formErrors[field] ? '#ef4444' : THEME.glassBorder}
                                 />
                                 {formErrors[field] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[field]}</div>}
                             </div>
@@ -355,14 +356,14 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                             placeholder={meta.placeholder}
                             style={{ ...S.input(!!formErrors[f]), paddingRight: 42 }}
                             onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                            onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                            onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : THEME.glassBorder}
                         />
                         <button
                             type="button"
                             onClick={togglePasswordVisibility}
                             style={{
                                 position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                                background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 4,
+                                background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4,
                             }}
                         >
                             {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -386,7 +387,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                     placeholder={meta.placeholder}
                     style={S.input(!!formErrors[f])}
                     onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                    onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                    onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : THEME.glassBorder}
                 />
                 {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
             </div>
@@ -399,6 +400,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const ConnectionsTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [connections, setConnections] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingConnection, setEditingConnection] = useState(null);
@@ -666,9 +668,9 @@ const ConnectionsTab = () => {
 
                                 <button
                                     onClick={() => openEdit(conn)}
-                                    style={S.btn('rgba(255,255,255,0.04)', 'rgba(255,255,255,0.1)', '#9ca3af')}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                                    style={S.btn(THEME.surface, THEME.glassBorder, THEME.textMuted)}
+                                    onMouseEnter={e => e.currentTarget.style.background = THEME.surfaceHover}
+                                    onMouseLeave={e => e.currentTarget.style.background = THEME.surface}
                                     title="Edit"
                                 >
                                     <Edit size={12} />
@@ -700,11 +702,11 @@ const ConnectionsTab = () => {
                 {connections.length === 0 && (
                     <div style={{
                         gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px',
-                        background: 'rgba(255,255,255,0.01)', border: '1px dashed rgba(255,255,255,0.07)',
+                        background: THEME.surface, border: `1px dashed ${THEME.glassBorder}`,
                         borderRadius: 10,
                     }}>
                         <div style={{ fontSize: 48, marginBottom: 16 }}>🔌</div>
-                        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#e5e7eb', marginBottom: 8 }}>No connections yet</h3>
+                        <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>No connections yet</h3>
                         <p style={{ fontSize: 13, color: '#4b5563', marginBottom: 20 }}>
                             Connect to PostgreSQL, MySQL, MongoDB, Redis, Snowflake and more
                         </p>
@@ -732,7 +734,7 @@ const ConnectionsTab = () => {
                         transform: 'translate(-50%, -50%)',
                         width: '90%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto',
                         background: '#111420',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderTop: `2px solid ${DB_TYPES[formData.dbType].accent}66`,
                         borderRadius: 14, padding: 30, zIndex: 1000,
                         boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
@@ -745,9 +747,9 @@ const ConnectionsTab = () => {
                             </h2>
                             <button
                                 onClick={closeModal}
-                                style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 6, borderRadius: 6 }}
+                                style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 6 }}
                                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#6b7280'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = THEME.textMuted; }}
                             >
                                 <X size={18} />
                             </button>
@@ -767,7 +769,7 @@ const ConnectionsTab = () => {
                                     placeholder={`My ${DB_TYPES[formData.dbType].label} DB`}
                                     style={S.input(!!formErrors.name)}
                                     onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                                    onBlur={e => e.currentTarget.style.borderColor = formErrors.name ? '#ef4444' : 'rgba(255,255,255,0.1)'}
+                                    onBlur={e => e.currentTarget.style.borderColor = formErrors.name ? '#ef4444' : THEME.glassBorder}
                                 />
                                 {formErrors.name && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors.name}</div>}
                             </div>
@@ -803,9 +805,9 @@ const ConnectionsTab = () => {
                         <div style={{ display: 'flex', gap: 10, marginTop: 28, justifyContent: 'flex-end' }}>
                             <button
                                 onClick={closeModal}
-                                style={S.btn('rgba(255,255,255,0.04)', 'rgba(255,255,255,0.1)', '#9ca3af')}
-                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                                style={S.btn(THEME.surface, THEME.glassBorder, THEME.textMuted)}
+                                onMouseEnter={e => e.currentTarget.style.background = THEME.surfaceHover}
+                                onMouseLeave={e => e.currentTarget.style.background = THEME.surface}
                             >
                                 Cancel
                             </button>

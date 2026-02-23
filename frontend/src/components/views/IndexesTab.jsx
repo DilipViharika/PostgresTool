@@ -19,50 +19,44 @@ import {
    Pitch black substrate. Electric cyan signals. Plasma orange warnings.
    Verdant green success. Typography: IBM Plex Mono + Bebas Neue.
    ═══════════════════════════════════════════════════════════════════════════ */
+// K is a getter-based proxy so every property reads from the live THEME object.
+// useAdaptiveTheme() in the main component keeps THEME in sync with dark/light.
 const K = {
     /* Backgrounds */
-    void:        '#02030a',
-    deep:        '#050810',
-    surface:     '#080c18',
-    panel:       '#0c1020',
-    raised:      '#111829',
-
-    /* Primary signal — electric cyan */
-    cyan:        '#00d4ff',
-    cyanDim:     '#007a99',
-    cyanGlow:    'rgba(0,212,255,0.12)',
-    cyanGlowHot: 'rgba(0,212,255,0.25)',
-
-    /* Warning — plasma orange */
-    plasma:      '#ff6b1a',
-    plasmaGlow:  'rgba(255,107,26,0.15)',
-
-    /* Critical — neutron red */
-    nova:        '#ff2d55',
-    novaGlow:    'rgba(255,45,85,0.14)',
-
-    /* Safe — aurora green */
-    aurora:      '#00ff88',
-    auroraGlow:  'rgba(0,255,136,0.10)',
-
-    /* Stellar — soft gold */
-    stellar:     '#ffd60a',
-    stellarGlow: 'rgba(255,214,10,0.10)',
-
-    /* Nebula — muted violet accent */
-    nebula:      '#8b5cf6',
-    nebulaGlow:  'rgba(139,92,246,0.12)',
-
+    get void()        { return THEME.bg; },
+    get deep()        { return THEME.bgAlt; },
+    get surface()     { return THEME.surface; },
+    get panel()       { return THEME.surface; },
+    get raised()      { return THEME.surfaceRaised; },
+    /* Primary signal */
+    get cyan()        { return THEME.primary; },
+    get cyanDim()     { return THEME.primaryDark; },
+    get cyanGlow()    { return THEME.primaryFaint; },
+    get cyanGlowHot() { return `${THEME.primary}25`; },
+    /* Warning */
+    get plasma()      { return THEME.warning; },
+    get plasmaGlow()  { return `${THEME.warning}15`; },
+    /* Critical */
+    get nova()        { return THEME.danger; },
+    get novaGlow()    { return `${THEME.danger}14`; },
+    /* Safe */
+    get aurora()      { return THEME.success; },
+    get auroraGlow()  { return `${THEME.success}10`; },
+    /* Stellar */
+    get stellar()     { return THEME.warningLight; },
+    get stellarGlow() { return `${THEME.warning}10`; },
+    /* Nebula */
+    get nebula()      { return THEME.ai; },
+    get nebulaGlow()  { return `${THEME.ai}12`; },
     /* Grid / structure */
-    grid:        'rgba(0,212,255,0.04)',
-    gridLine:    'rgba(0,212,255,0.07)',
-    border:      'rgba(0,212,255,0.10)',
-    borderHot:   'rgba(0,212,255,0.30)',
-
+    get grid()        { return `${THEME.primary}04`; },
+    get gridLine()    { return `${THEME.primary}07`; },
+    get border()      { return THEME.glassBorder; },
+    get borderHot()   { return THEME.glassBorderHover; },
     /* Text */
-    textPrimary: '#e8f4f8',
-    textSub:     '#5a8a99',
-    textDim:     '#263340',
+    get textPrimary() { return THEME.textMain; },
+    get textSub()     { return THEME.textMuted; },
+    get textDim()     { return THEME.textDim; },
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════

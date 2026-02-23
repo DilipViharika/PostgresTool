@@ -20,27 +20,29 @@ import {
 /* ═══════════════════════════════════════════════════════════════════════════
    DESIGN TOKENS — Apex Dark
    ═══════════════════════════════════════════════════════════════════════════ */
+// T is getter-based so every property reads the live THEME value.
+// useAdaptiveTheme() in the main component keeps THEME in sync with dark/light.
 const T = {
-    bg:           '#08090d',
-    surface:      '#0f1117',
-    raised:       '#141720',
-    border:       '#1e2230',
-    borderHover:  '#2d3350',
+    get bg()          { return THEME.bg; },
+    get surface()     { return THEME.surface; },
+    get raised()      { return THEME.surfaceRaised; },
+    get border()      { return THEME.grid; },
+    get borderHover() { return THEME.gridAlt; },
     // Semantic
-    primary:      '#4f8cff',
-    primaryGlow:  '#4f8cff40',
-    secondary:    '#a78bfa',
-    success:      '#34d399',
-    warning:      '#fbbf24',
-    danger:       '#f87171',
-    ai:           '#e879f9',
+    get primary()     { return THEME.primary; },
+    get primaryGlow() { return `${THEME.primary}40`; },
+    get secondary()   { return THEME.ai; },
+    get success()     { return THEME.success; },
+    get warning()     { return THEME.warning; },
+    get danger()      { return THEME.danger; },
+    get ai()          { return THEME.ai; },
     // Text
-    text1:        '#f0f2ff',
-    text2:        '#9ba3c4',
-    text3:        '#4a506a',
+    get text1()       { return THEME.textMain; },
+    get text2()       { return THEME.textMuted; },
+    get text3()       { return THEME.textDim; },
     // Accent
-    cyan:         '#22d3ee',
-    orange:       '#fb923c',
+    get cyan()        { return THEME.primary; },
+    get orange()      { return THEME.warning; },
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════

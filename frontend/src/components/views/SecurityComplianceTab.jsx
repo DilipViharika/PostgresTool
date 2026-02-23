@@ -29,21 +29,21 @@ const SecStyles = () => (
 
         .sec-root {
             font-family: 'Syne', sans-serif;
-            background: #050d18;
+            background: ${THEME.bg};
             min-height: 100vh;
         }
 
         .card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: ${THEME.surface};
+            border: 1px solid ${THEME.grid};
             border-radius: 14px;
             overflow: hidden;
             transition: border-color 0.2s, box-shadow 0.2s;
             position: relative;
         }
         .card:hover {
-            border-color: rgba(99,215,255,0.2);
-            box-shadow: 0 0 24px rgba(99,215,255,0.05);
+            border-color: ${THEME.primary}33;
+            box-shadow: 0 0 24px ${THEME.primary}0d;
         }
 
         .card-glow-red:hover {
@@ -56,7 +56,7 @@ const SecStyles = () => (
         /* Scrollbar */
         .sec-scroll::-webkit-scrollbar { width: 4px; }
         .sec-scroll::-webkit-scrollbar-track { background: transparent; }
-        .sec-scroll::-webkit-scrollbar-thumb { background: rgba(99,215,255,0.2); border-radius: 2px; }
+        .sec-scroll::-webkit-scrollbar-thumb { background: ${THEME.primary}33; border-radius: 2px; }
 
         /* Tabs */
         .nav-tab {
@@ -69,14 +69,14 @@ const SecStyles = () => (
             border: none;
             transition: all 0.2s;
             background: transparent;
-            color: rgba(255,255,255,0.4);
+            color: ${THEME.textMuted};
             text-transform: uppercase;
         }
-        .nav-tab:hover { color: rgba(255,255,255,0.7); }
+        .nav-tab:hover { color: ${THEME.textMain}; }
         .nav-tab.active {
-            background: rgba(99,215,255,0.1);
-            color: #63d7ff;
-            border: 1px solid rgba(99,215,255,0.25);
+            background: ${THEME.primary}1a;
+            color: ${THEME.primary};
+            border: 1px solid ${THEME.primary}40;
         }
 
         /* Threat rows */
@@ -84,7 +84,7 @@ const SecStyles = () => (
             display: grid;
             grid-template-columns: 32px 1.8fr 1fr 90px 110px 36px;
             padding: 13px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid ${THEME.grid};
             align-items: center;
             font-size: 12px;
             transition: background 0.15s;
@@ -104,8 +104,8 @@ const SecStyles = () => (
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.25);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: ${THEME.textDim};
+            border-bottom: 1px solid ${THEME.grid};
             gap: 12px;
         }
 
@@ -122,7 +122,7 @@ const SecStyles = () => (
             cursor: pointer;
             margin-bottom: 6px;
         }
-        .comp-item:hover { border-color: rgba(99,215,255,0.15); background: rgba(99,215,255,0.03); }
+        .comp-item:hover { border-color: ${THEME.primary}26; background: ${THEME.primary}08; }
 
         /* Pulse animation for live indicator */
         @keyframes pulse-ring {
@@ -150,7 +150,7 @@ const SecStyles = () => (
         }
         .scan-line {
             position: absolute; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(99,215,255,0.6), transparent);
+            background: linear-gradient(90deg, transparent, ${THEME.primary}99, transparent);
             animation: scan-line 3s linear infinite;
             pointer-events: none;
         }
@@ -203,7 +203,7 @@ const SecStyles = () => (
         .timeline-event::before {
             content: '';
             position: absolute; left: 15px; top: 28px; bottom: 0;
-            width: 1px; background: rgba(255,255,255,0.07);
+            width: 1px; background: ${THEME.grid};
         }
         .timeline-event:last-child::before { display: none; }
 
@@ -211,17 +211,17 @@ const SecStyles = () => (
         .key-item {
             padding: 12px 16px;
             border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.07);
-            background: rgba(255,255,255,0.02);
+            border: 1px solid ${THEME.grid};
+            background: ${THEME.surface};
             margin-bottom: 8px;
             transition: all 0.2s;
         }
-        .key-item:hover { border-color: rgba(99,215,255,0.2); }
+        .key-item:hover { border-color: ${THEME.primary}33; }
 
         /* Expiry progress */
         .key-progress {
             height: 3px; border-radius: 2px;
-            background: rgba(255,255,255,0.06);
+            background: ${THEME.grid};
             margin-top: 8px; overflow: hidden;
         }
         .key-progress-fill {
@@ -231,32 +231,32 @@ const SecStyles = () => (
 
         /* Search bar */
         .search-input {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: ${THEME.surface};
+            border: 1px solid ${THEME.grid};
             border-radius: 8px; padding: 8px 14px 8px 36px;
-            color: #fff; font-size: 12px; width: 200px;
+            color: ${THEME.textMain}; font-size: 12px; width: 200px;
             outline: none; transition: all 0.2s;
             font-family: 'JetBrains Mono', monospace;
         }
         .search-input:focus {
-            border-color: rgba(99,215,255,0.35);
-            background: rgba(99,215,255,0.04);
+            border-color: ${THEME.primary}59;
+            background: ${THEME.primary}0a;
             width: 260px;
         }
-        .search-input::placeholder { color: rgba(255,255,255,0.25); }
+        .search-input::placeholder { color: ${THEME.textDim}; }
 
         /* MITRE ATT&CK badges */
         .mitre-tag {
             font-family: 'JetBrains Mono', monospace;
             font-size: 9px; padding: 2px 6px; border-radius: 3px;
-            background: rgba(99,215,255,0.08);
-            color: rgba(99,215,255,0.7);
-            border: 1px solid rgba(99,215,255,0.15);
+            background: ${THEME.primary}14;
+            color: ${THEME.primary}b3;
+            border: 1px solid ${THEME.primary}26;
         }
 
         /* Radar chart label */
         .recharts-polar-angle-axis-tick text {
-            fill: rgba(255,255,255,0.4) !important;
+            fill: ${THEME.textMuted} !important;
             font-size: 11px !important;
         }
     `}</style>
@@ -350,9 +350,9 @@ const ThreatBadge = ({ severity }) => (
 );
 
 const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: '#fff', letterSpacing: '0.02em' }}>
-            <Icon size={15} color={iconColor || '#63d7ff'} />
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: `1px solid ${THEME.grid}` }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: THEME.textMain, letterSpacing: '0.02em' }}>
+            <Icon size={15} color={iconColor || THEME.primary} />
             {title}
         </h3>
         {right}
@@ -360,12 +360,12 @@ const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
 );
 
 const MiniStat = ({ label, value, sub, color, icon: Icon }) => (
-    <div style={{ padding: '14px 18px', background: 'rgba(255,255,255,0.025)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>
+    <div style={{ padding: '14px 18px', background: THEME.surface, borderRadius: 10, border: `1px solid ${THEME.grid}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textMuted }}>
             {Icon && <Icon size={12} color={color} />} {label}
         </div>
-        <div style={{ fontSize: 26, fontWeight: 800, color: color || '#fff', lineHeight: 1, fontFamily: 'JetBrains Mono, monospace' }}>{value}</div>
-        {sub && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>{sub}</div>}
+        <div style={{ fontSize: 26, fontWeight: 800, color: color || THEME.textMain, lineHeight: 1, fontFamily: 'JetBrains Mono, monospace' }}>{value}</div>
+        {sub && <div style={{ fontSize: 11, color: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }}>{sub}</div>}
     </div>
 );
 
@@ -400,8 +400,8 @@ const ScoreRing = ({ score }) => {
             </svg>
             <div style={{ position: 'absolute', textAlign: 'center' }}>
                 <div style={{ fontSize: 36, fontWeight: 800, color, fontFamily: 'JetBrains Mono, monospace', lineHeight: 1 }}>{score}</div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginTop: 4 }}>SECURITY</div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em' }}>SCORE</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.12em', marginTop: 4 }}>SECURITY</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.12em' }}>SCORE</div>
             </div>
         </div>
     );
@@ -411,8 +411,8 @@ const ScoreRing = ({ score }) => {
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: '#0d1b2a', border: '1px solid rgba(99,215,255,0.2)', borderRadius: 8, padding: '8px 14px', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>
-            <div style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>{label}</div>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.primary}33`, borderRadius: 8, padding: '8px 14px', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>
+            <div style={{ color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ color: p.color || '#63d7ff' }}>{p.name}: <strong>{p.value}</strong></div>
             ))}
@@ -463,31 +463,31 @@ const ThreatMonitor = ({ search }) => {
                         >
                             <ShieldAlert size={14} color={SEV_COLORS[log.severity]} />
                             <div>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{log.type}</div>
-                                <div className="mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 2 }}>{log.type}</div>
+                                <div className="mono" style={{ fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 }}>
                                     {log.query}
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{log.user}</div>
-                                <div className="mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{log.source}</div>
+                                <div style={{ fontSize: 12, color: THEME.textMain }}>{log.user}</div>
+                                <div className="mono" style={{ fontSize: 10, color: THEME.textDim }}>{log.source}</div>
                             </div>
                             <span className="mitre-tag">{log.mitre}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <ThreatBadge severity={log.severity} />
                                 {log.blocked && <Badge label="blocked" color="#4ade80" />}
                             </div>
-                            <ChevronDown size={14} color="rgba(255,255,255,0.2)"
+                            <ChevronDown size={14} color={THEME.textDim}
                                          style={{ transform: expanded === log.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                         </div>
                         {expanded === log.id && (
                             <div className="fade-in" style={{ padding: '12px 20px 16px 52px', background: `${SEV_COLORS[log.severity]}06`, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                <div className="mono" style={{ fontSize: 11, color: '#63d7ff', padding: '8px 12px', background: 'rgba(0,0,0,0.4)', borderRadius: 6, border: '1px solid rgba(99,215,255,0.15)', marginBottom: 10 }}>
+                                <div className="mono" style={{ fontSize: 11, color: THEME.primary, padding: '8px 12px', background: THEME.bg, borderRadius: 6, border: `1px solid ${THEME.primary}26`, marginBottom: 10 }}>
                                     {log.query}
                                 </div>
-                                <div style={{ display: 'flex', gap: 24, fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
-                                    <span>Time: <strong style={{ color: 'rgba(255,255,255,0.7)' }}>{log.time}</strong></span>
-                                    <span>Origin: <strong style={{ color: 'rgba(255,255,255,0.7)' }}>{log.geo}</strong></span>
+                                <div style={{ display: 'flex', gap: 24, fontSize: 11, color: THEME.textMuted }}>
+                                    <span>Time: <strong style={{ color: THEME.textMain }}>{log.time}</strong></span>
+                                    <span>Origin: <strong style={{ color: THEME.textMain }}>{log.geo}</strong></span>
                                     <span>Status: <strong style={{ color: log.blocked ? '#4ade80' : '#ff465a' }}>{log.blocked ? 'Blocked' : 'Allowed'}</strong></span>
                                 </div>
                             </div>
@@ -503,7 +503,7 @@ const ThreatMonitor = ({ search }) => {
 const ThreatTimeline = () => (
     <div className="card">
         <SectionHeader icon={Activity} title="Threat Activity (24h)" iconColor="#ff8c42"
-                       right={<span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>threats / hour</span>} />
+                       right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }}>threats / hour</span>} />
         <div style={{ padding: '16px 8px 8px' }}>
             <ResponsiveContainer width="100%" height={140}>
                 <AreaChart data={THREAT_TIMELINE} margin={{ top: 4, right: 16, left: -20, bottom: 0 }}>
@@ -517,9 +517,9 @@ const ThreatTimeline = () => (
                             <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
                         </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                    <XAxis dataKey="h" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9 }} axisLine={false} tickLine={false} interval={3} />
-                    <YAxis tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                    <XAxis dataKey="h" tick={{ fill: THEME.textDim, fontSize: 9 }} axisLine={false} tickLine={false} interval={3} />
+                    <YAxis tick={{ fill: THEME.textDim, fontSize: 9 }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTooltip />} />
                     <Area type="monotone" dataKey="threats" name="Threats" stroke="#ff465a" fill="url(#tGrad)" strokeWidth={2} dot={false} />
                     <Area type="monotone" dataKey="blocked" name="Blocked" stroke="#4ade80" fill="url(#bGrad)" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
@@ -539,10 +539,10 @@ const GeoThreatPanel = () => (
                 <div key={i} className="geo-cell" style={{ background: `${g.color}08`, border: `1px solid ${g.color}15` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: g.color, width: 24 }}>{g.code}</span>
-                        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{g.country}</span>
+                        <span style={{ fontSize: 12, color: THEME.textMain }}>{g.country}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 80, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
+                        <div style={{ width: 80, height: 4, background: THEME.grid, borderRadius: 2 }}>
                             <div style={{ width: `${g.pct}%`, height: '100%', background: g.color, borderRadius: 2 }} />
                         </div>
                         <span className="mono" style={{ fontSize: 11, color: g.color, width: 28, textAlign: 'right' }}>{g.count}</span>
@@ -569,7 +569,7 @@ const CompliancePanel = () => {
                                </div>
                            }
             />
-            <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 4, overflowX: 'auto' }}>
+            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 4, overflowX: 'auto' }}>
                 {standards.map(s => (
                     <button key={s} className={`nav-tab ${filter === s ? 'active' : ''}`}
                             style={{ padding: '4px 10px', fontSize: 10 }}
@@ -584,10 +584,10 @@ const CompliancePanel = () => {
                         <div key={item.id} className="comp-item">
                             <Icon size={16} color={color} />
                             <div>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: '#fff' }}>{item.label}</div>
-                                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{item.cat}</div>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: THEME.textMain }}>{item.label}</div>
+                                <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>{item.cat}</div>
                             </div>
-                            <Badge label={item.standard} color="rgba(255,255,255,0.4)" />
+                            <Badge label={item.standard} color={THEME.textMuted} />
                             <Badge label={item.status} color={color} />
                         </div>
                     );
@@ -603,8 +603,8 @@ const SecurityRadar = () => (
         <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor="#a78bfa" />
         <ResponsiveContainer width="100%" height={220}>
             <RadarChart data={RADAR_DATA} cx="50%" cy="50%" outerRadius={75}>
-                <PolarGrid stroke="rgba(255,255,255,0.07)" />
-                <PolarAngleAxis dataKey="axis" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} />
+                <PolarGrid stroke={THEME.grid} />
+                <PolarAngleAxis dataKey="axis" tick={{ fill: THEME.textMuted, fontSize: 11 }} />
                 <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
                 <Radar name="Score" dataKey="val" stroke="#a78bfa" fill="#a78bfa" fillOpacity={0.15} strokeWidth={2} dot={{ fill: '#a78bfa', r: 3 }} />
             </RadarChart>
@@ -616,31 +616,31 @@ const SecurityRadar = () => (
 const PIIAccessLog = () => (
     <div className="card">
         <SectionHeader icon={Fingerprint} title="PII / Sensitive Access" iconColor="#f472b6"
-                       right={<span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono' }}>last 24h</span>} />
+                       right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: 'JetBrains Mono' }}>last 24h</span>} />
         <div style={{ padding: '12px 20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 8, marginBottom: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textDim, borderBottom: `1px solid ${THEME.grid}`, paddingBottom: 8, marginBottom: 4 }}>
                 <div>Resource · Accessor</div>
                 <div>Hits</div>
                 <div>Trend</div>
                 <div>Risk</div>
             </div>
             {PII_ACCESS.map((a, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center', fontSize: 12 }}>
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', padding: '11px 0', borderBottom: `1px solid ${THEME.grid}`, alignItems: 'center', fontSize: 12 }}>
                     <div>
                         <div>
-                            <span style={{ color: 'rgba(255,255,255,0.4)' }}>{a.table}</span>
+                            <span style={{ color: THEME.textMuted }}>{a.table}</span>
                             <span style={{ color: '#f472b6', fontWeight: 700 }}>.{a.col}</span>
                         </div>
-                        <div className="mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{a.user}</div>
+                        <div className="mono" style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>{a.user}</div>
                     </div>
-                    <div className="mono" style={{ fontWeight: 700, color: '#fff' }}>{a.hits.toLocaleString()}</div>
+                    <div className="mono" style={{ fontWeight: 700, color: THEME.textMain }}>{a.hits.toLocaleString()}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         {a.trend > 0
                             ? <TrendingUp size={12} color="#f5c518" />
                             : a.trend < 0
                                 ? <TrendingDown size={12} color="#4ade80" />
-                                : <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>—</span>}
-                        <span className="mono" style={{ fontSize: 11, color: a.trend > 0 ? '#f5c518' : a.trend < 0 ? '#4ade80' : 'rgba(255,255,255,0.3)' }}>
+                                : <span style={{ color: THEME.textDim, fontSize: 11 }}>—</span>}
+                        <span className="mono" style={{ fontSize: 11, color: a.trend > 0 ? '#f5c518' : a.trend < 0 ? '#4ade80' : THEME.textDim }}>
                             {a.trend !== 0 ? `${a.trend > 0 ? '+' : ''}${a.trend}%` : ''}
                         </span>
                     </div>
@@ -671,12 +671,12 @@ const KeyVault = () => {
                         <div key={i} className="key-item">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{k.name}</div>
-                                    <div className="mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{k.algo}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{k.name}</div>
+                                    <div className="mono" style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>{k.algo}</div>
                                 </div>
                                 <Badge label={k.status} color={color} />
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: THEME.textMuted }}>
                                 <span>Rotated {k.rotated}</span>
                                 <span style={{ color }}>
                                     {k.daysLeft < 30 ? `⚠ ${k.daysLeft}d left` : `${k.daysLeft}d left`}
@@ -697,7 +697,7 @@ const KeyVault = () => {
 const AuditTimeline = () => (
     <div className="card" style={{ padding: 0 }}>
         <SectionHeader icon={Clock} title="Audit Events" iconColor="#63d7ff"
-                       right={<button style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
+                       right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
         <div style={{ padding: '16px 20px' }}>
             {AUDIT_EVENTS.map((ev, i) => {
                 const color = SEV_COLORS[ev.severity] || '#888';
@@ -708,10 +708,10 @@ const AuditTimeline = () => (
                         </div>
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ev.action}</span>
-                                <span className="mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{ev.ts}</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{ev.action}</span>
+                                <span className="mono" style={{ fontSize: 10, color: THEME.textDim }}>{ev.ts}</span>
                             </div>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+                            <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2 }}>
                                 <span style={{ color: '#63d7ff' }}>{ev.user}</span> → {ev.target}
                             </div>
                         </div>
@@ -749,25 +749,25 @@ const SecurityComplianceTab = () => {
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                             <Shield size={22} color="#63d7ff" />
-                            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
+                            <h1 style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
                                 Security & Compliance
                             </h1>
                             <Badge label="Protected" color="#4ade80" />
                         </div>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontFamily: 'JetBrains Mono, monospace' }}>
+                        <div style={{ fontSize: 12, color: THEME.textMuted, fontFamily: 'JetBrains Mono, monospace' }}>
                             Last scan: 12m ago &nbsp;·&nbsp; 4 active threats &nbsp;·&nbsp; 1 critical
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         {/* Search */}
                         <div style={{ position: 'relative' }}>
-                            <Search size={13} color="rgba(255,255,255,0.3)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                            <Search size={13} color={THEME.textDim} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                             <input className="search-input" placeholder="Search threats..." value={search} onChange={e => setSearch(e.target.value)} />
                         </div>
                         <button style={{ background: 'rgba(255,70,90,0.12)', color: '#ff465a', border: '1px solid rgba(255,70,90,0.3)', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'Syne, sans-serif' }}>
                             <AlertOctagon size={13} /> Run Scan
                         </button>
-                        <button style={{ background: '#63d7ff', color: '#050d18', border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'Syne, sans-serif' }}>
+                        <button style={{ background: THEME.primary, color: THEME.bg, border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'Syne, sans-serif' }}>
                             <FileText size={13} /> Export Report
                         </button>
                     </div>
@@ -858,8 +858,8 @@ const SecurityComplianceTab = () => {
                                 ].map((cert, i) => (
                                     <div key={i} style={{ padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div>
-                                            <div className="mono" style={{ fontSize: 12, color: '#fff' }}>{cert.domain}</div>
-                                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>Expires {cert.expires}</div>
+                                            <div className="mono" style={{ fontSize: 12, color: THEME.textMain }}>{cert.domain}</div>
+                                            <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 3 }}>Expires {cert.expires}</div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                             <span className="mono" style={{ fontSize: 11, color: cert.days < 30 ? '#ff465a' : '#4ade80' }}>{cert.days}d</span>
