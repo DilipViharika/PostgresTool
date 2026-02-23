@@ -1,6 +1,4 @@
-// ==========================================================================
-//  VIGIL — Login Page  (v7 — App.jsx section names on topology bubbles)
-// ==========================================================================
+
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
