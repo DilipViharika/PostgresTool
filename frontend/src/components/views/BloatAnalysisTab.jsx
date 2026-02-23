@@ -1,155 +1,370 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { THEME } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Layers, RefreshCw, AlertTriangle, Database, Activity, Search, AlertCircle, Filter, TrendingUp } from 'lucide-react';
+import {
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+    Cell, CartesianGrid, RadialBarChart, RadialBar, PieChart, Pie, AreaChart, Area
+} from 'recharts';
+import {
+    Layers, RefreshCw, AlertTriangle, Database, Activity, Search,
+    AlertCircle, Filter, TrendingUp, Zap, Shield, ChevronUp, ChevronDown,
+    Eye, ArrowRight, Clock, HardDrive, BarChart2, Cpu
+} from 'lucide-react';
 
 /**
  * REQUIRED BACKEND SQL QUERIES
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * GET /api/bloat/tables
- * ─────────────────────
- * SELECT
- *     schemaname,
- *     relname                                              AS tablename,
- *     pg_size_pretty(pg_total_relation_size(relid))        AS total_size,
- *     pg_total_relation_size(relid)                        AS total_bytes,
- *     n_live_tup,
- *     n_dead_tup,
- *     CASE WHEN (n_live_tup + n_dead_tup) > 0
- *          THEN ROUND(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
- *          ELSE 0
- *     END                                                  AS dead_pct,
- *     pg_size_pretty(
- *         GREATEST(
- *             pg_total_relation_size(relid) -
- *             (n_live_tup * 100),   -- rough heuristic; replace with pgstattuple if available
- *             0
- *         )
- *     )                                                    AS estimated_bloat_size
- * FROM pg_stat_user_tables
- * ORDER BY dead_pct DESC;
+ * SELECT schemaname, relname AS tablename,
+ *   pg_size_pretty(pg_total_relation_size(relid)) AS total_size,
+ *   pg_total_relation_size(relid) AS total_bytes,
+ *   n_live_tup, n_dead_tup,
+ *   CASE WHEN (n_live_tup+n_dead_tup)>0
+ *     THEN ROUND(100.0*n_dead_tup/(n_live_tup+n_dead_tup),2) ELSE 0 END AS dead_pct,
+ *   pg_size_pretty(GREATEST(pg_total_relation_size(relid)-(n_live_tup*100),0)) AS estimated_bloat_size
+ * FROM pg_stat_user_tables ORDER BY dead_pct DESC;
  *
  * GET /api/bloat/indexes
- * ──────────────────────
- * SELECT
- *     ix.schemaname,
- *     ix.indexrelname                                      AS indexname,
- *     ix.relname                                           AS tablename,
- *     pg_size_pretty(pg_relation_size(ix.indexrelid))      AS index_size,
- *     pg_relation_size(ix.indexrelid)                      AS index_bytes,
- *     ix.idx_scan,
- *     CASE WHEN ix.idx_tup_read > 0
- *          THEN ROUND(100.0 * (ix.idx_tup_read - ix.idx_tup_fetch) / ix.idx_tup_read, 2)
- *          ELSE 0
- *     END                                                  AS inefficiency_pct
- * FROM pg_stat_user_indexes ix
- * ORDER BY index_bytes DESC;
+ * SELECT ix.schemaname, ix.indexrelname AS indexname, ix.relname AS tablename,
+ *   pg_size_pretty(pg_relation_size(ix.indexrelid)) AS index_size,
+ *   pg_relation_size(ix.indexrelid) AS index_bytes, ix.idx_scan,
+ *   CASE WHEN ix.idx_tup_read>0
+ *     THEN ROUND(100.0*(ix.idx_tup_read-ix.idx_tup_fetch)/ix.idx_tup_read,2) ELSE 0 END AS inefficiency_pct
+ * FROM pg_stat_user_indexes ix ORDER BY index_bytes DESC;
  *
  * GET /api/bloat/summary
- * ──────────────────────
- * SELECT
- *     pg_size_pretty(pg_database_size(current_database()))  AS total_db_size,
- *     COUNT(*)                                               AS total_tables,
- *     SUM(CASE WHEN dead_pct >  10 THEN 1 ELSE 0 END)       AS high_bloat_tables,
- *     SUM(CASE WHEN dead_pct >  20 THEN 1 ELSE 0 END)       AS critical_bloat_tables,
- *     ROUND(AVG(dead_pct), 2)                                AS avg_dead_pct,
- *     SUM(n_dead_tup)                                        AS total_dead_tuples
- * FROM (
- *     SELECT
- *         n_dead_tup,
- *         CASE WHEN (n_live_tup + n_dead_tup) > 0
- *              THEN ROUND(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
- *              ELSE 0
- *         END AS dead_pct
- *     FROM pg_stat_user_tables
- * ) sub;
+ * SELECT pg_size_pretty(pg_database_size(current_database())) AS total_db_size,
+ *   COUNT(*) AS total_tables,
+ *   SUM(CASE WHEN dead_pct>10 THEN 1 ELSE 0 END) AS high_bloat_tables,
+ *   SUM(CASE WHEN dead_pct>20 THEN 1 ELSE 0 END) AS critical_bloat_tables,
+ *   ROUND(AVG(dead_pct),2) AS avg_dead_pct, SUM(n_dead_tup) AS total_dead_tuples
+ * FROM (SELECT n_dead_tup, CASE WHEN (n_live_tup+n_dead_tup)>0
+ *   THEN ROUND(100.0*n_dead_tup/(n_live_tup+n_dead_tup),2) ELSE 0 END AS dead_pct
+ *   FROM pg_stat_user_tables) sub;
  */
 
-const Styles = () => (
-    <style>{`
-        @keyframes baSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes baFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .ba-card   { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:baFade .3s ease; }
-        .ba-metric { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
-        .ba-head   { display:grid; gap:8px; padding:8px 14px; font-size:10px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid ${THEME.grid}; }
-        .ba-row    { display:grid; gap:8px; align-items:center; padding:10px 14px; border-bottom:1px solid ${THEME.grid}20; font-size:12px; }
-        .ba-row:hover { background:${THEME.primary}05; }
-        .ba-row:last-child { border-bottom:none; }
-        .ba-input  { background:${THEME.surface}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:8px; padding:8px 12px; font-size:13px; outline:none; }
-        .ba-input:focus { border-color:${THEME.primary}60; }
-    `}</style>
-);
-
+// ─── Helpers ───────────────────────────────────────────────────────────────
 const fmtBytes = b => {
     const n = Number(b) || 0;
-    if (n < 1024)        return `${n} B`;
-    if (n < 1048576)     return `${(n / 1024).toFixed(1)} KB`;
-    if (n < 1073741824)  return `${(n / 1048576).toFixed(1)} MB`;
+    if (n < 1024)       return `${n} B`;
+    if (n < 1048576)    return `${(n / 1024).toFixed(1)} KB`;
+    if (n < 1073741824) return `${(n / 1048576).toFixed(1)} MB`;
     return `${(n / 1073741824).toFixed(2)} GB`;
 };
 const fmt     = n  => (n == null ? '—' : Number(n).toLocaleString());
-const deadCol = p  => { const v = Number(p) || 0; if (v > 20) return THEME.danger; if (v > 10) return THEME.warning; return THEME.success; };
+const deadCol = p  => { const v = Number(p)||0; if(v>20) return '#ef4444'; if(v>10) return '#f59e0b'; return '#10b981'; };
+const healthScore = (avgDead, critCount, totalTables) => {
+    if (!totalTables) return 100;
+    const critRatio = (critCount / totalTables) * 100;
+    return Math.max(0, Math.round(100 - (avgDead * 1.5) - (critRatio * 2)));
+};
 
-const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary, warn }) => (
-    <div className="ba-metric" style={{ borderColor: warn ? `${THEME.warning}40` : undefined }}>
-        <div style={{ width:40, height:40, borderRadius:10, background:`${color}15`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <Icon size={20} color={color} />
-        </div>
-        <div>
-            <div style={{ fontSize:22, fontWeight:800, color:THEME.textMain, lineHeight:1 }}>{value}</div>
-            <div style={{ fontSize:11, color:THEME.textMuted, marginTop:3, fontWeight:600, textTransform:'uppercase', letterSpacing:.5 }}>{label}</div>
-            {sub && <div style={{ fontSize:11, color:warn ? THEME.warning : THEME.textDim, marginTop:2 }}>{sub}</div>}
-        </div>
-    </div>
+const normaliseTable = row => ({ ...row, tablename: row.tablename ?? row.relname ?? '', schemaname: row.schemaname ?? row.nspname ?? '' });
+const normaliseIndex = row => ({ ...row, indexname: row.indexname ?? row.indexrelname ?? '', tablename: row.tablename ?? row.relname ?? '', schemaname: row.schemaname ?? row.nspname ?? '' });
+
+// ─── Styles ────────────────────────────────────────────────────────────────
+const Styles = () => (
+    <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap');
+        @keyframes baSpin { to { transform: rotate(360deg) } }
+        @keyframes baFadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes baPulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+        @keyframes baGlow { 0%,100% { box-shadow: 0 0 8px #ef444440 } 50% { box-shadow: 0 0 20px #ef444470 } }
+        @keyframes baSlide { from { width: 0 } }
+        @keyframes baCounter { from { opacity:0; transform: scale(.8) } to { opacity:1; transform: scale(1) } }
+
+        .ba-wrap { font-family: 'Syne', system-ui, sans-serif; }
+        .ba-mono { font-family: 'JetBrains Mono', monospace !important; }
+
+        .ba-card {
+            background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 14px;
+            padding: 20px;
+            animation: baFadeUp .4s ease both;
+            backdrop-filter: blur(4px);
+            position: relative;
+            overflow: hidden;
+        }
+        .ba-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255,255,255,.015) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .ba-metric-card {
+            background: linear-gradient(145deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex; flex-direction: column; gap: 10px;
+            position: relative; overflow: hidden;
+            transition: transform .2s, border-color .2s;
+            cursor: default;
+            animation: baFadeUp .4s ease both;
+        }
+        .ba-metric-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
+        .ba-metric-card::after {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            opacity: .06;
+        }
+
+        .ba-row {
+            display: grid;
+            align-items: center;
+            padding: 11px 16px;
+            border-bottom: 1px solid rgba(255,255,255,.04);
+            font-size: 12.5px;
+            transition: background .15s;
+            position: relative;
+        }
+        .ba-row:hover { background: rgba(255,255,255,.03); }
+        .ba-row:last-child { border-bottom: none; }
+
+        .ba-head {
+            display: grid;
+            gap: 8px;
+            padding: 10px 16px;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255,255,255,.35);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            background: rgba(0,0,0,.2);
+        }
+
+        .ba-input {
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
+            color: rgba(255,255,255,.9);
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .2s, background .2s;
+            font-family: inherit;
+        }
+        .ba-input:focus { border-color: rgba(99,102,241,.6); background: rgba(255,255,255,.07); }
+        .ba-input::placeholder { color: rgba(255,255,255,.3); }
+
+        .ba-tab {
+            padding: 8px 18px;
+            border-radius: 9px;
+            border: 1px solid rgba(255,255,255,.1);
+            background: transparent;
+            color: rgba(255,255,255,.5);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Syne', system-ui;
+            transition: all .2s;
+            letter-spacing: .3px;
+        }
+        .ba-tab.active {
+            background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(139,92,246,.15));
+            border-color: rgba(99,102,241,.5);
+            color: #a5b4fc;
+            box-shadow: 0 0 16px rgba(99,102,241,.2);
+        }
+        .ba-tab:hover:not(.active) { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+
+        .ba-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px; font-weight: 700;
+            animation: baCounter .3s ease;
+        }
+
+        .ba-progress-track {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,.08);
+            overflow: visible;
+            position: relative;
+        }
+        .ba-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            animation: baSlide .6s ease both;
+            position: relative;
+        }
+        .ba-progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -1px; top: -2px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: inherit;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .ba-health-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+
+        .critical-glow { animation: baGlow 2s ease-in-out infinite; }
+
+        .ba-sort-btn {
+            background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,.35); padding: 0;
+            display: inline-flex; align-items: center; gap: 2px;
+            transition: color .15s; font-size: 10px; font-weight: 700;
+            font-family: inherit; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .ba-sort-btn:hover, .ba-sort-btn.active { color: #a5b4fc; }
+
+        .severity-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            display: inline-block; flex-shrink: 0;
+        }
+        .severity-dot.critical { background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: baPulse 1.5s ease infinite; }
+        .severity-dot.high { background: #f59e0b; }
+        .severity-dot.ok { background: #10b981; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
+    `}</style>
 );
 
-const DeadBar = ({ pct }) => {
-    const p = Math.min(100, Number(pct) || 0);
-    const c = deadCol(pct);
+// ─── Health Score Widget ───────────────────────────────────────────────────
+const HealthGauge = ({ score }) => {
+    const color = score > 70 ? '#10b981' : score > 40 ? '#f59e0b' : '#ef4444';
+    const label = score > 70 ? 'HEALTHY' : score > 40 ? 'DEGRADED' : 'CRITICAL';
+    const data = [{ value: score }, { value: 100 - score }];
     return (
-        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <div style={{ flex:1, height:5, borderRadius:3, background:THEME.grid, overflow:'hidden', minWidth:50 }}>
-                <div style={{ width:`${p}%`, height:'100%', background:c, borderRadius:3, transition:'width .3s' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <div style={{ position: 'relative', width: 80, height: 80 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie data={data} cx="50%" cy="50%" innerRadius={28} outerRadius={36} startAngle={90} endAngle={-270} dataKey="value" stroke="none">
+                            <Cell fill={color} />
+                            <Cell fill="rgba(255,255,255,.06)" />
+                        </Pie>
+                    </PieChart>
+                </ResponsiveContainer>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
+                </div>
             </div>
-            <span style={{ fontSize:11, fontWeight:700, color:c, minWidth:32, textAlign:'right' }}>{p.toFixed(1)}%</span>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color }}>{label}</span>
         </div>
     );
 };
 
+// ─── Mini sparkline bar ────────────────────────────────────────────────────
+const SparkBar = ({ value, max, color }) => {
+    const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+    return (
+        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
+            <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 2, transition: 'width .4s ease' }} />
+        </div>
+    );
+};
+
+// ─── Progress bar ──────────────────────────────────────────────────────────
+const DeadBar = ({ pct }) => {
+    const p = Math.min(100, Number(pct) || 0);
+    const c = deadCol(pct);
+    const grad = p > 20
+        ? `linear-gradient(90deg, #ef444490, #ef4444)`
+        : p > 10
+            ? `linear-gradient(90deg, #f59e0b90, #f59e0b)`
+            : `linear-gradient(90deg, #10b98190, #10b981)`;
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="ba-progress-track" style={{ flex: 1, minWidth: 60 }}>
+                <div className="ba-progress-fill" style={{ width: `${p}%`, background: grad }} />
+            </div>
+            <span className="ba-mono" style={{ fontSize: 11, fontWeight: 700, color: c, minWidth: 36, textAlign: 'right' }}>{p.toFixed(1)}%</span>
+        </div>
+    );
+};
+
+// ─── Inefficiency bar ──────────────────────────────────────────────────────
+const IneffBar = ({ pct }) => {
+    const p = Math.min(100, Number(pct) || 0);
+    const c = p > 50 ? '#ef4444' : p > 20 ? '#f59e0b' : '#10b981';
+    const grad = p > 50
+        ? `linear-gradient(90deg, #ef444470, #ef4444)`
+        : p > 20
+            ? `linear-gradient(90deg, #f59e0b70, #f59e0b)`
+            : `linear-gradient(90deg, #10b98170, #10b981)`;
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="ba-progress-track" style={{ flex: 1, minWidth: 60 }}>
+                <div className="ba-progress-fill" style={{ width: `${p}%`, background: grad }} />
+            </div>
+            <span className="ba-mono" style={{ fontSize: 11, fontWeight: 700, color: c, minWidth: 36, textAlign: 'right' }}>{p.toFixed(0)}%</span>
+        </div>
+    );
+};
+
+// ─── Tooltip ───────────────────────────────────────────────────────────────
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
-            <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
+        <div style={{ background: 'rgba(15,15,25,.95)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '10px 14px', fontSize: 12, backdropFilter: 'blur(8px)' }}>
+            <div style={{ color: 'rgba(255,255,255,.5)', marginBottom: 6, fontSize: 11 }}>{label}</div>
             {payload.map(p => (
-                <div key={p.name} style={{ color:p.fill || THEME.primary, fontWeight:600 }}>
-                    {p.name}: {typeof p.value === 'number' && p.value > 1000 ? fmtBytes(p.value) : p.value}
+                <div key={p.name} style={{ color: p.fill || '#a5b4fc', fontWeight: 700, display: 'flex', gap: 8 }}>
+                    <span style={{ color: 'rgba(255,255,255,.4)', fontWeight: 400 }}>{p.name}</span>
+                    <span>{typeof p.value === 'number' && p.value > 10000 ? fmtBytes(p.value) : typeof p.value === 'number' ? `${p.value}${p.name.includes('%') ? '%' : ''}` : p.value}</span>
                 </div>
             ))}
         </div>
     );
 };
 
-const COLS_TABLE = '2fr 1fr 1fr 1fr 1fr 1.5fr';
-const COLS_INDEX = '2fr 1fr 1fr 1fr 1fr';
+// ─── Metric Card ───────────────────────────────────────────────────────────
+const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, critical, delay = 0 }) => {
+    const borderColor = critical ? 'rgba(239,68,68,.35)' : warn ? 'rgba(245,158,11,.3)' : 'rgba(255,255,255,.1)';
+    const glowClass = critical ? 'critical-glow' : '';
+    return (
+        <div
+            className={`ba-metric-card ${glowClass}`}
+            style={{ borderColor, animationDelay: `${delay}ms` }}
+        >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: `${accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${accent}30` }}>
+                    <Icon size={18} color={accent} />
+                </div>
+                {(warn || critical) && (
+                    <span className={`severity-dot ${critical ? 'critical' : 'high'}`} style={{ marginTop: 6 }} />
+                )}
+            </div>
+            <div>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                {sub && <div style={{ fontSize: 11, color: critical ? '#ef4444' : warn ? '#f59e0b' : 'rgba(255,255,255,.3)', marginTop: 3 }}>{sub}</div>}
+            </div>
+        </div>
+    );
+};
 
-// ─── normalise a row returned by the backend ────────────────────────────────
-// pg_stat_user_tables exposes `relname` for the table name.
-// The backend SHOULD alias it to `tablename`, but if it doesn't we fall back.
-const normaliseTable = row => ({
-    ...row,
-    tablename:  row.tablename  ?? row.relname  ?? '',
-    schemaname: row.schemaname ?? row.nspname  ?? '',
-});
+// ─── Sortable column header ────────────────────────────────────────────────
+const SortHeader = ({ label, col, sortCol, sortDir, onSort }) => {
+    const active = sortCol === col;
+    return (
+        <button className={`ba-sort-btn ${active ? 'active' : ''}`} onClick={() => onSort(col)}>
+            {label}
+            {active ? (sortDir === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />) : null}
+        </button>
+    );
+};
 
-const normaliseIndex = row => ({
-    ...row,
-    indexname:  row.indexname  ?? row.indexrelname ?? '',
-    tablename:  row.tablename  ?? row.relname       ?? '',
-    schemaname: row.schemaname ?? row.nspname       ?? '',
-});
+// ─── Constants ─────────────────────────────────────────────────────────────
+const COLS_TABLE = '2.2fr 0.9fr 1fr 1fr 1.4fr 1fr';
+const COLS_INDEX = '2.2fr 1fr 0.9fr 0.9fr 1.4fr';
 
 export default function BloatAnalysisTab() {
     const [tables,     setTables]     = useState([]);
@@ -163,8 +378,10 @@ export default function BloatAnalysisTab() {
     const [activeTab,  setActiveTab]  = useState('tables');
     const [search,     setSearch]     = useState('');
     const [sortCol,    setSortCol]    = useState('dead_pct');
+    const [sortDir,    setSortDir]    = useState('desc');
     const [filterHigh, setFilterHigh] = useState(false);
-    const intervalRef                 = useRef(null);
+    const [selectedRow, setSelectedRow] = useState(null);
+    const intervalRef = useRef(null);
 
     const load = useCallback(async (initial = false) => {
         if (!initial) setRefreshing(true);
@@ -174,8 +391,7 @@ export default function BloatAnalysisTab() {
                 fetchData('/api/bloat/indexes'),
                 fetchData('/api/bloat/summary'),
             ]);
-            // normalise column names so frontend is resilient to backend aliasing
-            setTables((t  || []).map(normaliseTable));
+            setTables((t || []).map(normaliseTable));
             setIndexes((i || []).map(normaliseIndex));
             setSummary(s || {});
             setError(null);
@@ -189,7 +405,6 @@ export default function BloatAnalysisTab() {
     }, []);
 
     useEffect(() => { load(true); }, [load]);
-
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         if (autoRfsh > 0) intervalRef.current = setInterval(() => load(false), autoRfsh * 1000);
@@ -199,74 +414,108 @@ export default function BloatAnalysisTab() {
     const fmtRel = d => {
         if (!d) return '';
         const s = Math.floor((Date.now() - new Date(d)) / 1000);
-        if (s < 60)   return `${s}s ago`;
+        if (s < 60) return `${s}s ago`;
         if (s < 3600) return `${Math.floor(s / 60)}m ago`;
         return `${Math.floor(s / 3600)}h ago`;
     };
 
-    const filteredTables = tables
+    const handleSort = col => {
+        if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        else { setSortCol(col); setSortDir('desc'); }
+    };
+
+    const filteredTables = useMemo(() => tables
         .filter(t => {
             const matchSearch = !search || `${t.schemaname}.${t.tablename}`.toLowerCase().includes(search.toLowerCase());
             const matchHigh   = !filterHigh || Number(t.dead_pct) > 10;
             return matchSearch && matchHigh;
         })
         .sort((a, b) => {
-            if (sortCol === 'dead_pct')    return Number(b.dead_pct)    - Number(a.dead_pct);
-            if (sortCol === 'total_bytes') return Number(b.total_bytes) - Number(a.total_bytes);
-            if (sortCol === 'n_dead_tup')  return Number(b.n_dead_tup)  - Number(a.n_dead_tup);
-            return 0;
-        });
+            let va, vb;
+            if (sortCol === 'dead_pct')    { va = Number(a.dead_pct);    vb = Number(b.dead_pct); }
+            else if (sortCol === 'total_bytes') { va = Number(a.total_bytes); vb = Number(b.total_bytes); }
+            else if (sortCol === 'n_dead_tup')  { va = Number(a.n_dead_tup);  vb = Number(b.n_dead_tup); }
+            else { va = 0; vb = 0; }
+            return sortDir === 'asc' ? va - vb : vb - va;
+        }), [tables, search, filterHigh, sortCol, sortDir]);
 
-    const filteredIndexes = indexes
-        .filter(i => !search || `${i.schemaname}.${i.indexname}`.toLowerCase().includes(search.toLowerCase()))
-        .sort((a, b) => Number(b.index_bytes) - Number(a.index_bytes));
+    const filteredIndexes = useMemo(() => indexes
+            .filter(i => !search || `${i.schemaname}.${i.indexname}`.toLowerCase().includes(search.toLowerCase()))
+            .sort((a, b) => Number(b.index_bytes) - Number(a.index_bytes)),
+        [indexes, search]);
 
-    // Top 10 for charts
-    const chartData = [...tables]
-        .sort((a, b) => Number(b.dead_pct) - Number(a.dead_pct))
-        .slice(0, 10)
-        .map(t => ({
-            name: t.tablename.length > 14 ? t.tablename.slice(0, 12) + '…' : t.tablename,
-            dead: Math.round(Number(t.dead_pct) || 0),
-            size: Number(t.total_bytes) || 0,
-        }));
+    const chartDeadData = useMemo(() =>
+            [...tables].sort((a, b) => Number(b.dead_pct) - Number(a.dead_pct)).slice(0, 10)
+                .map(t => ({ name: t.tablename.length > 16 ? t.tablename.slice(0, 14) + '…' : t.tablename, dead: Math.round(Number(t.dead_pct) || 0) })),
+        [tables]);
 
-    const chartDataBySize = [...tables]
-        .sort((a, b) => Number(b.total_bytes) - Number(a.total_bytes))
-        .slice(0, 10)
-        .map(t => ({
-            name: t.tablename.length > 14 ? t.tablename.slice(0, 12) + '…' : t.tablename,
-            dead: Math.round(Number(t.dead_pct) || 0),
-            size: Number(t.total_bytes) || 0,
-        }));
+    const chartSizeData = useMemo(() =>
+            [...tables].sort((a, b) => Number(b.total_bytes) - Number(a.total_bytes)).slice(0, 10)
+                .map(t => ({ name: t.tablename.length > 16 ? t.tablename.slice(0, 14) + '…' : t.tablename, size: Number(t.total_bytes) || 0 })),
+        [tables]);
+
+    const score = useMemo(() => healthScore(
+        Number(summary?.avg_dead_pct) || 0,
+        Number(summary?.critical_bloat_tables) || 0,
+        Number(summary?.total_tables) || 1
+    ), [summary]);
+
+    // Severity distribution for mini pie
+    const severityData = useMemo(() => {
+        const critical = tables.filter(t => Number(t.dead_pct) > 20).length;
+        const high = tables.filter(t => Number(t.dead_pct) > 10 && Number(t.dead_pct) <= 20).length;
+        const ok = tables.length - critical - high;
+        return [{ value: critical, fill: '#ef4444' }, { value: high, fill: '#f59e0b' }, { value: ok, fill: '#10b981' }];
+    }, [tables]);
+
+    const maxDeadBytes = useMemo(() => Math.max(...tables.map(t => Number(t.total_bytes) || 0)), [tables]);
+    const maxIndexBytes = useMemo(() => Math.max(...indexes.map(i => Number(i.index_bytes) || 0)), [indexes]);
 
     if (loading) return (
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:300, color:THEME.textMuted }}>
-            <RefreshCw size={24} style={{ animation:'baSpin 1s linear infinite', marginRight:10 }} /> Loading bloat analysis…
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: 'rgba(255,255,255,.4)' }}>
+            <Styles />
+            <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid rgba(99,102,241,.3)', borderTopColor: '#6366f1', animation: 'baSpin 1s linear infinite' }} />
+            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: .5 }}>Analysing bloat…</span>
         </div>
     );
 
     return (
-        <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+        <div className="ba-wrap" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <Styles />
 
-            {/* ── Toolbar ─────────────────────────────────────────────────── */}
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', background:THEME.surface, borderRadius:12, border:`1px solid ${THEME.grid}` }}>
-                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                    <Layers size={20} color={THEME.primary} />
-                    <span style={{ fontWeight:700, fontSize:15, color:THEME.textMain }}>Bloat Analysis</span>
+            {/* ── Toolbar ──────────────────────────────────────────────────── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: 'linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.02))', borderRadius: 14, border: '1px solid rgba(255,255,255,.08)', backdropFilter: 'blur(8px)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(99,102,241,.3)' }}>
+                        <Layers size={18} color="#a5b4fc" />
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: '#f1f5f9', letterSpacing: -.2 }}>Bloat Analysis</div>
+                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 1 }}>{fmt(summary?.total_tables)} tables monitored</div>
+                    </div>
                     {Number(summary?.critical_bloat_tables) > 0 && (
-                        <span style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'2px 8px', borderRadius:5, fontSize:11, fontWeight:700, background:`${THEME.danger}15`, color:THEME.danger, border:`1px solid ${THEME.danger}30` }}>
-                            <AlertTriangle size={10} /> {summary.critical_bloat_tables} critical tables
+                        <span className="ba-badge" style={{ background: 'rgba(239,68,68,.12)', color: '#f87171', border: '1px solid rgba(239,68,68,.3)' }}>
+                            <AlertTriangle size={10} />
+                            {summary.critical_bloat_tables} critical
+                        </span>
+                    )}
+                    {Number(summary?.high_bloat_tables) > 0 && (
+                        <span className="ba-badge" style={{ background: 'rgba(245,158,11,.1)', color: '#fbbf24', border: '1px solid rgba(245,158,11,.25)' }}>
+                            {summary.high_bloat_tables} high bloat
                         </span>
                     )}
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                    <span style={{ fontSize:11, color:THEME.textDim }}>{lastAt ? `Updated ${fmtRel(lastAt)}` : ''}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {lastAt && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
+                            <Clock size={11} />
+                            {fmtRel(lastAt)}
+                        </div>
+                    )}
                     <select
                         value={autoRfsh}
                         onChange={e => setAutoRfsh(+e.target.value)}
-                        style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, color:THEME.textMain, borderRadius:6, padding:'4px 8px', fontSize:12 }}
+                        style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.7)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                         <option value={30}>30s</option>
                         <option value={60}>1m</option>
@@ -276,61 +525,101 @@ export default function BloatAnalysisTab() {
                     <button
                         onClick={() => load(false)}
                         disabled={refreshing}
-                        style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:8, border:`1px solid ${THEME.primary}40`, background:`${THEME.primary}10`, color:THEME.primary, cursor:'pointer', fontSize:13, fontWeight:600 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 9, border: '1px solid rgba(99,102,241,.4)', background: 'rgba(99,102,241,.12)', color: '#a5b4fc', cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
                     >
-                        <RefreshCw size={13} style={{ animation: refreshing ? 'baSpin 1s linear infinite' : 'none' }} /> Refresh
+                        <RefreshCw size={13} style={{ animation: refreshing ? 'baSpin 1s linear infinite' : 'none' }} />
+                        Refresh
                     </button>
                 </div>
             </div>
 
-            {/* ── Error banner ─────────────────────────────────────────────── */}
+            {/* ── Error ────────────────────────────────────────────────────── */}
             {error && (
-                <div style={{ padding:14, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:10, color:THEME.danger, fontSize:13, display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ padding: 14, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', borderRadius: 12, color: '#f87171', fontSize: 13, display: 'flex', alignItems: 'center', gap: 9 }}>
                     <AlertCircle size={16} /> {error}
                 </div>
             )}
 
-            {/* ── Summary metrics ──────────────────────────────────────────── */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
-                <MetricCard icon={Database}      label="Total DB Size"     value={summary?.total_db_size || '—'}           sub={`${fmt(summary?.total_tables)} tables`}    color={THEME.primary} />
-                <MetricCard icon={AlertTriangle} label="High Bloat Tables" value={fmt(summary?.high_bloat_tables)}          sub=">10% dead tuples"                          color={Number(summary?.high_bloat_tables) > 0 ? THEME.warning : THEME.success} warn={Number(summary?.high_bloat_tables) > 0} />
-                <MetricCard icon={Activity}      label="Critical Bloat"    value={fmt(summary?.critical_bloat_tables)}      sub=">20% dead tuples"                          color={Number(summary?.critical_bloat_tables) > 0 ? THEME.danger : THEME.success} warn={Number(summary?.critical_bloat_tables) > 0} />
-                <MetricCard icon={TrendingUp}    label="Avg Dead Tuple %"  value={`${summary?.avg_dead_pct || 0}%`}         sub={`${fmt(summary?.total_dead_tuples)} total dead`} color={Number(summary?.avg_dead_pct) > 10 ? THEME.warning : THEME.success} />
+            {/* ── Metrics row ──────────────────────────────────────────────── */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr 1fr auto', gap: 14, alignItems: 'stretch' }}>
+                <MetricCard icon={Database} label="Total DB Size" value={summary?.total_db_size || '—'} sub={`${fmt(summary?.total_tables)} tables`} accent="#6366f1" delay={0} />
+                <MetricCard icon={AlertTriangle} label="High Bloat" value={fmt(summary?.high_bloat_tables)} sub=">10% dead tuples" accent="#f59e0b" warn={Number(summary?.high_bloat_tables) > 0} delay={60} />
+                <MetricCard icon={Zap} label="Critical Bloat" value={fmt(summary?.critical_bloat_tables)} sub=">20% dead tuples" accent="#ef4444" critical={Number(summary?.critical_bloat_tables) > 0} delay={120} />
+                <MetricCard icon={TrendingUp} label="Avg Dead %" value={`${summary?.avg_dead_pct || 0}%`} sub={`${fmt(summary?.total_dead_tuples)} dead rows`} accent={Number(summary?.avg_dead_pct) > 10 ? '#f59e0b' : '#10b981'} warn={Number(summary?.avg_dead_pct) > 10} delay={180} />
+
+                {/* Health score + severity donut */}
+                <div className="ba-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 20, minWidth: 200 }}>
+                    <HealthGauge score={score} />
+                    <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.4)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 8 }}>Severity</div>
+                        {[
+                            { label: 'Critical', color: '#ef4444', count: tables.filter(t => Number(t.dead_pct) > 20).length },
+                            { label: 'High', color: '#f59e0b', count: tables.filter(t => Number(t.dead_pct) > 10 && Number(t.dead_pct) <= 20).length },
+                            { label: 'OK', color: '#10b981', count: tables.filter(t => Number(t.dead_pct) <= 10).length },
+                        ].map(({ label, color, count }) => (
+                            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
+                                <span style={{ width: 7, height: 7, borderRadius: 2, background: color, flexShrink: 0 }} />
+                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', flex: 1 }}>{label}</span>
+                                <span className="ba-mono" style={{ fontSize: 11, fontWeight: 700, color }}>{count}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* ── Charts ───────────────────────────────────────────────────── */}
-            {chartData.length > 0 && (
-                <div style={{ display:'grid', gridTemplateColumns:'1.4fr 1fr', gap:20 }}>
-                    {/* Dead % chart — sorted by dead_pct */}
+            {chartDeadData.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 18 }}>
+                    {/* Dead % chart */}
                     <div className="ba-card">
-                        <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:14, display:'flex', alignItems:'center', gap:8 }}>
-                            <Activity size={15} color={THEME.primary} /> Top 10 Tables by Dead Tuple %
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Activity size={14} color="#f59e0b" />
+                                <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>Top 10 — Dead Tuple %</span>
+                            </div>
+                            <span className="ba-badge" style={{ background: 'rgba(245,158,11,.1)', color: '#fbbf24', border: '1px solid rgba(245,158,11,.2)', fontSize: 10 }}>
+                                live
+                            </span>
                         </div>
-                        <ResponsiveContainer width="100%" height={180}>
-                            <BarChart data={chartData} layout="vertical" margin={{ top:0, right:40, left:0, bottom:0 }}>
-                                <XAxis type="number" domain={[0, 100]} tick={{ fontSize:10, fill:THEME.textDim }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
-                                <YAxis type="category" dataKey="name" tick={{ fontSize:10, fill:THEME.textDim }} tickLine={false} axisLine={false} width={70} />
-                                <Tooltip content={<ChartTip />} />
-                                <Bar dataKey="dead" name="Dead %" radius={[0, 3, 3, 0]} fill={THEME.warning}
-                                     label={{ position:'right', fontSize:10, fill:THEME.textDim, formatter: v => `${v}%` }}
-                                />
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={chartDeadData} layout="vertical" margin={{ top: 0, right: 44, left: 0, bottom: 0 }} barSize={10}>
+                                <CartesianGrid horizontal={false} vertical={true} stroke="rgba(255,255,255,.04)" />
+                                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: 'rgba(255,255,255,.3)', fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
+                                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,.45)' }} tickLine={false} axisLine={false} width={80} />
+                                <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,.03)' }} />
+                                <Bar dataKey="dead" name="Dead %" radius={[0, 4, 4, 0]}
+                                     label={{ position: 'right', fontSize: 10, fill: 'rgba(255,255,255,.4)', fontFamily: 'JetBrains Mono', formatter: v => `${v}%` }}
+                                >
+                                    {chartDeadData.map((entry, i) => (
+                                        <Cell key={i} fill={entry.dead > 20 ? '#ef4444' : entry.dead > 10 ? '#f59e0b' : '#10b981'} />
+                                    ))}
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
 
-                    {/* Size chart — sorted by total_bytes */}
+                    {/* Size chart */}
                     <div className="ba-card">
-                        <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:14, display:'flex', alignItems:'center', gap:8 }}>
-                            <Database size={15} color={THEME.secondary} /> Top 10 by Total Size
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                            <HardDrive size={14} color="#6366f1" />
+                            <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>Top 10 — Total Size</span>
                         </div>
-                        <ResponsiveContainer width="100%" height={180}>
-                            <BarChart data={chartDataBySize} layout="vertical" margin={{ top:0, right:40, left:0, bottom:0 }}>
-                                <XAxis type="number" tick={{ fontSize:10, fill:THEME.textDim }} tickLine={false} axisLine={false} tickFormatter={fmtBytes} />
-                                <YAxis type="category" dataKey="name" tick={{ fontSize:10, fill:THEME.textDim }} tickLine={false} axisLine={false} width={70} />
-                                <Tooltip content={<ChartTip />} />
-                                <Bar dataKey="size" name="Total Size" fill={THEME.primary} radius={[0, 3, 3, 0]}
-                                     label={{ position:'right', fontSize:10, fill:THEME.textDim, formatter: fmtBytes }}
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={chartSizeData} layout="vertical" margin={{ top: 0, right: 60, left: 0, bottom: 0 }} barSize={10}>
+                                <CartesianGrid horizontal={false} vertical={true} stroke="rgba(255,255,255,.04)" />
+                                <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(255,255,255,.3)', fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={fmtBytes} />
+                                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,.45)' }} tickLine={false} axisLine={false} width={80} />
+                                <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,.03)' }} />
+                                <Bar dataKey="size" name="Total Size" radius={[0, 4, 4, 0]}
+                                     label={{ position: 'right', fontSize: 10, fill: 'rgba(255,255,255,.4)', fontFamily: 'JetBrains Mono', formatter: fmtBytes }}
+                                     fill="url(#sizeGrad)"
                                 />
+                                <defs>
+                                    <linearGradient id="sizeGrad" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#6366f180" />
+                                        <stop offset="100%" stopColor="#818cf8" />
+                                    </linearGradient>
+                                </defs>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -338,119 +627,159 @@ export default function BloatAnalysisTab() {
             )}
 
             {/* ── Sub-tabs ─────────────────────────────────────────────────── */}
-            <div style={{ display:'flex', gap:6 }}>
-                {[{ id:'tables', label:'Table Bloat' }, { id:'indexes', label:'Index Bloat' }].map(({ id, label }) => (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {[{ id: 'tables', label: 'Table Bloat', icon: Database }, { id: 'indexes', label: 'Index Bloat', icon: BarChart2 }].map(({ id, label, icon: Icon }) => (
                     <button
                         key={id}
+                        className={`ba-tab ${activeTab === id ? 'active' : ''}`}
                         onClick={() => { setActiveTab(id); setSearch(''); }}
-                        style={{ padding:'8px 16px', borderRadius:8, border:`1px solid ${activeTab === id ? THEME.primary : THEME.grid}`, background: activeTab === id ? `${THEME.primary}12` : 'transparent', color: activeTab === id ? THEME.primary : THEME.textMuted, cursor:'pointer', fontSize:13, fontWeight:600, transition:'all .15s' }}
                     >
-                        {label}
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                            <Icon size={13} />
+                            {label}
+                        </span>
                     </button>
                 ))}
+                <div style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
+                    {activeTab === 'tables' ? `${filteredTables.length} tables` : `${filteredIndexes.length} indexes`}
+                </div>
             </div>
 
-            {/* ── Table Bloat tab ──────────────────────────────────────────── */}
+            {/* ── Table Bloat ──────────────────────────────────────────────── */}
             {activeTab === 'tables' && (
-                <div className="ba-card" style={{ padding:0 }}>
-                    <div style={{ padding:'14px 16px', display:'flex', gap:10, alignItems:'center', borderBottom:`1px solid ${THEME.grid}` }}>
-                        <div style={{ position:'relative', flex:1, maxWidth:300 }}>
-                            <Search size={13} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:THEME.textDim }} />
-                            <input
-                                className="ba-input"
-                                placeholder="Search tables…"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                style={{ paddingLeft:30, width:'100%' }}
-                            />
+                <div className="ba-card" style={{ padding: 0 }}>
+                    {/* Toolbar */}
+                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                        <div style={{ position: 'relative', flex: 1, maxWidth: 280 }}>
+                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)' }} />
+                            <input className="ba-input" placeholder="Search tables…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }} />
                         </div>
                         <button
                             onClick={() => setFilterHigh(f => !f)}
-                            style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 12px', borderRadius:8, border:`1px solid ${filterHigh ? THEME.warning : THEME.grid}`, background: filterHigh ? `${THEME.warning}10` : 'transparent', color: filterHigh ? THEME.warning : THEME.textMuted, cursor:'pointer', fontSize:12, fontWeight:600 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 13px', borderRadius: 9, border: `1px solid ${filterHigh ? 'rgba(245,158,11,.5)' : 'rgba(255,255,255,.1)'}`, background: filterHigh ? 'rgba(245,158,11,.12)' : 'transparent', color: filterHigh ? '#fbbf24' : 'rgba(255,255,255,.4)', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
                         >
                             <Filter size={12} /> High Bloat Only
                         </button>
-                        <select
-                            value={sortCol}
-                            onChange={e => setSortCol(e.target.value)}
-                            style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, color:THEME.textMain, borderRadius:6, padding:'6px 10px', fontSize:12 }}
-                        >
-                            <option value="dead_pct">Sort: Dead %</option>
-                            <option value="total_bytes">Sort: Size</option>
-                            <option value="n_dead_tup">Sort: Dead Rows</option>
-                        </select>
-                        <span style={{ fontSize:12, color:THEME.textDim }}>{filteredTables.length} tables</span>
                     </div>
-                    <div className="ba-head" style={{ gridTemplateColumns:COLS_TABLE }}>
-                        <span>Table</span><span>Total Size</span><span>Live Rows</span><span>Dead Rows</span><span>Dead %</span><span>Est. Bloat</span>
-                    </div>
-                    <div style={{ maxHeight:480, overflowY:'auto' }}>
-                        {filteredTables.length === 0
-                            ? <div style={{ padding:40, textAlign:'center', color:THEME.textDim }}>No tables match.</div>
-                            : filteredTables.map((t, i) => (
-                                <div key={i} className="ba-row" style={{ gridTemplateColumns:COLS_TABLE }}>
-                                    <div>
-                                        <div style={{ fontWeight:700, color:THEME.textMain, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.tablename}</div>
-                                        <div style={{ fontSize:10, color:THEME.textDim }}>{t.schemaname}</div>
-                                    </div>
-                                    <span style={{ fontFamily:'Space Mono,monospace', color:THEME.textMain }}>{t.total_size}</span>
-                                    <span style={{ fontFamily:'Space Mono,monospace', color:THEME.textMuted }}>{fmt(t.n_live_tup)}</span>
-                                    <span style={{ fontFamily:'Space Mono,monospace', color:Number(t.n_dead_tup) > 0 ? THEME.warning : THEME.textDim }}>{fmt(t.n_dead_tup)}</span>
-                                    <DeadBar pct={t.dead_pct} />
-                                    <span style={{ fontFamily:'Space Mono,monospace', color:THEME.danger, fontSize:11 }}>{t.estimated_bloat_size || '—'}</span>
-                                </div>
-                            ))
-                        }
-                    </div>
-                </div>
-            )}
 
-            {/* ── Index Bloat tab ──────────────────────────────────────────── */}
-            {activeTab === 'indexes' && (
-                <div className="ba-card" style={{ padding:0 }}>
-                    <div style={{ padding:'14px 16px', display:'flex', gap:10, alignItems:'center', borderBottom:`1px solid ${THEME.grid}` }}>
-                        <div style={{ position:'relative', flex:1, maxWidth:300 }}>
-                            <Search size={13} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:THEME.textDim }} />
-                            <input
-                                className="ba-input"
-                                placeholder="Search indexes…"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                style={{ paddingLeft:30, width:'100%' }}
-                            />
-                        </div>
-                        <span style={{ fontSize:12, color:THEME.textDim }}>{filteredIndexes.length} indexes</span>
+                    {/* Header */}
+                    <div className="ba-head" style={{ gridTemplateColumns: COLS_TABLE }}>
+                        <SortHeader label="Table" col="tablename" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                        <SortHeader label="Total Size" col="total_bytes" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                        <span>Live Rows</span>
+                        <SortHeader label="Dead Rows" col="n_dead_tup" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                        <SortHeader label="Dead %" col="dead_pct" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                        <span>Est. Bloat</span>
                     </div>
-                    <div className="ba-head" style={{ gridTemplateColumns:COLS_INDEX }}>
-                        <span>Index</span><span>Table</span><span>Size</span><span>Scans</span><span>Inefficiency</span>
-                    </div>
-                    <div style={{ maxHeight:480, overflowY:'auto' }}>
-                        {filteredIndexes.length === 0
-                            ? <div style={{ padding:40, textAlign:'center', color:THEME.textDim }}>No indexes found.</div>
-                            : filteredIndexes.map((ix, i) => {
-                                const ineff = Number(ix.inefficiency_pct) || 0;
+
+                    {/* Rows */}
+                    <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+                        {filteredTables.length === 0
+                            ? <div style={{ padding: 50, textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: 13 }}>No tables match your filters.</div>
+                            : filteredTables.map((t, i) => {
+                                const dead = Number(t.dead_pct) || 0;
+                                const isCritical = dead > 20;
+                                const isHigh = dead > 10 && dead <= 20;
                                 return (
-                                    <div key={i} className="ba-row" style={{ gridTemplateColumns:COLS_INDEX }}>
+                                    <div
+                                        key={i}
+                                        className="ba-row"
+                                        style={{ gridTemplateColumns: COLS_TABLE, cursor: 'pointer', borderLeft: `3px solid ${isCritical ? '#ef4444' : isHigh ? '#f59e0b' : 'transparent'}` }}
+                                        onClick={() => setSelectedRow(selectedRow === i ? null : i)}
+                                    >
                                         <div>
-                                            <div style={{ fontWeight:700, color:THEME.textMain, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ix.indexname}</div>
-                                            <div style={{ fontSize:10, color:THEME.textDim }}>{ix.schemaname}</div>
-                                        </div>
-                                        <span style={{ color:THEME.textMuted, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ix.tablename}</span>
-                                        <span style={{ fontFamily:'Space Mono,monospace' }}>{ix.index_size}</span>
-                                        <span style={{ fontFamily:'Space Mono,monospace', color:Number(ix.idx_scan) === 0 ? THEME.danger : THEME.textMuted }}>{fmt(ix.idx_scan)}</span>
-                                        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                                            <div style={{ flex:1, height:5, borderRadius:3, background:THEME.grid, overflow:'hidden', minWidth:40 }}>
-                                                <div style={{ width:`${Math.min(100, ineff)}%`, height:'100%', background: ineff > 50 ? THEME.danger : ineff > 20 ? THEME.warning : THEME.success, borderRadius:3 }} />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                <span className={`severity-dot ${isCritical ? 'critical' : isHigh ? 'high' : 'ok'}`} />
+                                                <span style={{ fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13 }}>{t.tablename}</span>
                                             </div>
-                                            <span style={{ fontSize:11, fontWeight:700, color: ineff > 50 ? THEME.danger : ineff > 20 ? THEME.warning : THEME.success, minWidth:32, textAlign:'right' }}>{ineff.toFixed(0)}%</span>
+                                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2, marginLeft: 14 }}>{t.schemaname}</div>
                                         </div>
+                                        <div>
+                                            <span className="ba-mono" style={{ fontSize: 12, color: '#e2e8f0' }}>{t.total_size}</span>
+                                            <SparkBar value={Number(t.total_bytes)} max={maxDeadBytes} color="#6366f160" />
+                                        </div>
+                                        <span className="ba-mono" style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{fmt(t.n_live_tup)}</span>
+                                        <span className="ba-mono" style={{ fontSize: 12, color: Number(t.n_dead_tup) > 0 ? '#f59e0b' : 'rgba(255,255,255,.3)' }}>{fmt(t.n_dead_tup)}</span>
+                                        <DeadBar pct={t.dead_pct} />
+                                        <span className="ba-mono" style={{ fontSize: 11, color: '#f87171' }}>{t.estimated_bloat_size || '—'}</span>
                                     </div>
                                 );
                             })
                         }
                     </div>
-                    <div style={{ padding:'12px 16px', borderTop:`1px solid ${THEME.grid}`, fontSize:11, color:THEME.textDim }}>
-                        ⓘ Inefficiency % = percentage of index tuples fetched that don't correspond to live heap rows. High values indicate index bloat or stale statistics.
+
+                    <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>
+                            {filteredTables.length} of {tables.length} tables
+                        </span>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>
+                            Click row to inspect · Left border = severity
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Index Bloat ──────────────────────────────────────────────── */}
+            {activeTab === 'indexes' && (
+                <div className="ba-card" style={{ padding: 0 }}>
+                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                        <div style={{ position: 'relative', flex: 1, maxWidth: 280 }}>
+                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)' }} />
+                            <input className="ba-input" placeholder="Search indexes…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }} />
+                        </div>
+                    </div>
+
+                    <div className="ba-head" style={{ gridTemplateColumns: COLS_INDEX }}>
+                        <span>Index</span>
+                        <span>Table</span>
+                        <span>Size</span>
+                        <span>Scans</span>
+                        <span>Inefficiency</span>
+                    </div>
+
+                    <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+                        {filteredIndexes.length === 0
+                            ? <div style={{ padding: 50, textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: 13 }}>No indexes found.</div>
+                            : filteredIndexes.map((ix, i) => {
+                                const ineff = Number(ix.inefficiency_pct) || 0;
+                                const isCritical = ineff > 50;
+                                const isHigh = ineff > 20 && ineff <= 50;
+                                const neverUsed = Number(ix.idx_scan) === 0;
+                                return (
+                                    <div key={i} className="ba-row" style={{ gridTemplateColumns: COLS_INDEX, borderLeft: `3px solid ${isCritical ? '#ef4444' : isHigh ? '#f59e0b' : 'transparent'}` }}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                <span className={`severity-dot ${isCritical ? 'critical' : isHigh ? 'high' : 'ok'}`} />
+                                                <span style={{ fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5 }}>{ix.indexname}</span>
+                                            </div>
+                                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2, marginLeft: 14 }}>{ix.schemaname}</div>
+                                        </div>
+                                        <span style={{ color: 'rgba(255,255,255,.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>{ix.tablename}</span>
+                                        <div>
+                                            <span className="ba-mono" style={{ fontSize: 12, color: '#e2e8f0' }}>{ix.index_size}</span>
+                                            <SparkBar value={Number(ix.index_bytes)} max={maxIndexBytes} color="#6366f160" />
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            {neverUsed && (
+                                                <span className="ba-badge" style={{ background: 'rgba(239,68,68,.1)', color: '#f87171', border: '1px solid rgba(239,68,68,.2)', fontSize: 9, padding: '2px 6px' }}>
+                                                    UNUSED
+                                                </span>
+                                            )}
+                                            <span className="ba-mono" style={{ fontSize: 12, color: neverUsed ? '#f87171' : 'rgba(255,255,255,.45)' }}>{fmt(ix.idx_scan)}</span>
+                                        </div>
+                                        <IneffBar pct={ix.inefficiency_pct} />
+                                    </div>
+                                );
+                            })
+                        }
+                    </div>
+
+                    <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>{filteredIndexes.length} indexes</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
+                            <Eye size={11} />
+                            Inefficiency = % of index reads not hitting live rows
+                        </div>
                     </div>
                 </div>
             )}
