@@ -12,9 +12,10 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { fetchData } from '../../utils/api';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 const DBATaskSchedulerTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

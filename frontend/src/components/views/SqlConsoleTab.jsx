@@ -5,7 +5,7 @@ import React, {
     useState, useEffect, useMemo, useRef, useCallback,
     useReducer, createContext, useContext, Suspense
 } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { postData } from '../../utils/api';
 
 import {
@@ -834,6 +834,7 @@ const Cell = ({ value }) => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const SqlConsoleTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     /* ── Tabs ── */
     const [tabs, dispatch] = useReducer(tabReducer, [makeTab(1)]);
     const [activeTab, setActiveTab] = useState(1);

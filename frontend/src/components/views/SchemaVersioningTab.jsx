@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 import {
     GitBranch, GitCommit, GitPullRequest, History, ArrowLeftRight,
@@ -974,6 +974,7 @@ const DependencyGraph = ({ data }) => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const SchemaVersioningTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [view, setView] = useState('timeline');
     const [envDiff, setEnvDiff] = useState({ source: 'staging', target: 'production' });
     const [searchQuery, setSearchQuery] = useState('');

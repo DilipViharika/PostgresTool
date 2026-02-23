@@ -2,7 +2,7 @@
 //  VIGIL — Capacity Planning & Forecasting (v1.0)
 // ==========================================================================
 import React, { useState, useMemo } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import {
     TrendingUp, HardDrive, Database, DollarSign, Calendar,
     AlertTriangle, CheckCircle, ArrowRight, Zap, Layers,
@@ -253,6 +253,7 @@ const RecommendationCard = ({ rec }) => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const CapacityPlanningTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [forecastWindow, setForecastWindow] = useState(90);
     const [scenario, setScenario] = useState({ growth: 10, users: 500 });
     const [thresholds, setThresholds] = useState({ storage: 85, connections: 80 });

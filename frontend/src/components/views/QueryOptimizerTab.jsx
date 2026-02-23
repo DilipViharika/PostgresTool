@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { postData } from '../../utils/api';
 import {
     Zap, Search, Play, Clock, Database, Server,
@@ -1257,6 +1257,7 @@ const ComparePanel = () => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const QueryOptimizerTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [query, setQuery] = useState(SAMPLE_QUERIES[0].sql);
     const [history, setHistory] = useState([]);
     const [analyzing, setAnalyzing] = useState(false);

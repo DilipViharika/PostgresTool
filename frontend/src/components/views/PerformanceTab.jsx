@@ -1,6 +1,6 @@
 // components/tabs/PerformanceTab.jsx
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { THEME, ChartDefs } from '../../utils/theme.jsx';
+import { THEME, ChartDefs, useAdaptiveTheme } from '../../utils/theme.jsx';
 import {
     GlassCard,
     MetricCard,
@@ -787,6 +787,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const PerformanceTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [activeView, setActiveView] = useState('activity');
     const [selectedQuery, setSelectedQuery] = useState(null);
     const [sessionFilter, setSessionFilter] = useState(null);

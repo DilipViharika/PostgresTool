@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -367,6 +367,7 @@ const COLS_TABLE = '2.2fr 0.9fr 1fr 1fr 1.4fr 1fr';
 const COLS_INDEX = '2.2fr 1fr 0.9fr 0.9fr 1.4fr';
 
 export default function BloatAnalysisTab() {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [tables,     setTables]     = useState([]);
     const [indexes,    setIndexes]    = useState([]);
     const [summary,    setSummary]    = useState(null);

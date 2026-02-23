@@ -2,7 +2,7 @@
 //  VIGIL — OverviewTab  (v4 — Advanced+)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { GlassCard, LiveStatusBadge } from '../ui/SharedComponents.jsx';
 import { fetchData } from '../../utils/api';
 
@@ -900,6 +900,7 @@ const VacuumHealthCard = ({ data }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const OverviewTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data, setData]               = useState(null);
     const [loading, setLoading]         = useState(true);
     const [refreshing, setRefreshing]   = useState(false);

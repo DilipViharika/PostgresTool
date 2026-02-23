@@ -2,7 +2,7 @@
 //  VIGIL — ResourcesTab  (v4 — Auto-Refresh)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { GlassCard, ResourceGauge, NeonProgressBar, EmptyState } from '../ui/SharedComponents.jsx';
 import { fetchData } from '../../utils/api';
 
@@ -495,6 +495,7 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const ResourcesTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [growth, setGrowth]               = useState([]);
     const [vacuum, setVacuum]               = useState([]);
     const [growthTrend, setGrowthTrend]     = useState(() => genGrowthTrend());

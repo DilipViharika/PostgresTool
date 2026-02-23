@@ -2,7 +2,7 @@
 //  VIGIL — ReliabilityTab  (v4 — Auto-Refresh)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { GlassCard, EmptyState } from '../ui/SharedComponents.jsx';
 import { fetchData } from '../../utils/api';
 
@@ -526,6 +526,7 @@ const UptimeHeatmap = ({ days }) => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const ReliabilityTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [alerts, setAlerts]           = useState([]);
     const [uptimeDays, setUptimeDays]   = useState(() => genUptimeDays());
     const [alertTrend, setAlertTrend]   = useState(() => genAlertTrend());

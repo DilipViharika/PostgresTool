@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData, postData } from '../../utils/api';
 import {
     Zap, RefreshCw, AlertTriangle, Clock, CheckCircle,
@@ -302,6 +302,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, c
 const COLS = '2.2fr 1fr 1.4fr 1fr 1fr 100px';
 
 export default function VacuumMaintenanceTab() {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data,       setData]       = useState(null);
     const [loading,    setLoading]    = useState(true);
     const [refreshing, setRefreshing] = useState(false);

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import {
     Zap, ShieldAlert, Settings, CheckCircle, Copy, Check,
     AlertTriangle, Info, ChevronDown, ChevronRight,
@@ -24,7 +24,8 @@ const fmtMs = ms => { if (ms == null) return '—'; const n = Number(ms); if (n 
 const fmtPct = (v, d=1) => v == null ? '—' : `${Number(v).toFixed(d)}%`;
 const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
 const lerp = (a,b,t) => a+(b-a)*t;
-const useCopy = () => { const [c,s] = useState(false); const fn = useCallback(t => { navigator.clipboard?.writeText(t).catch(()=>{}); s(true); setTimeout(()=>s(false),2000); },[]); return [c,fn]; };
+const useCopy = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle const [c,s] = useState(false); const fn = useCallback(t => { navigator.clipboard?.writeText(t).catch(()=>{}); s(true); setTimeout(()=>s(false),2000); },[]); return [c,fn]; };
 const useAnimVal = (target, dur=600) => { const [v,set] = useState(0); const r = useRef({s:0,st:null,f:null}); useEffect(()=>{ r.current.s=v; r.current.st=null; const go=ts=>{ if(!r.current.st) r.current.st=ts; const p=Math.min((ts-r.current.st)/dur,1); set(lerp(r.current.s,target,1-Math.pow(1-p,3))); if(p<1) r.current.f=requestAnimationFrame(go); }; r.current.f=requestAnimationFrame(go); return ()=>cancelAnimationFrame(r.current.f); },[target,dur]); return v; };
 const genSpark = (base, v=0.2, len=24) => Array.from({length:len}, ()=>clamp(base*(1+(Math.random()-0.5)*v*2),0,base*2));
 const sevOrder = {critical:0,high:1,medium:2,low:3,info:4};

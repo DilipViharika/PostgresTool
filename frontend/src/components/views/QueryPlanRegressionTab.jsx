@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData, postData, deleteData } from '../../utils/api';
 import { TrendingUp, RefreshCw, AlertTriangle, CheckCircle, Play, Trash2, Database, Clock, AlertCircle, PlusCircle, GitCompare, BookOpen } from 'lucide-react';
 
@@ -73,6 +73,7 @@ const PlanTree = ({ plan, title, accent }) => {
 };
 
 export default function QueryPlanRegressionTab() {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [baselines,   setBaselines]   = useState([]);
     const [loading,     setLoading]     = useState(true);
     const [query,       setQuery]       = useState('');

@@ -4,7 +4,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { THEME } from '../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../utils/theme.jsx';
 import { UsersTable, PermissionMatrix } from './Toggle/TableAndMatrix.jsx';
 import { AuditLog, SecurityPanel } from './PermissionMatrix/AuditAndSecurity.jsx';
 import { UserDrawer, PasswordModal, UserFormModal } from './PermissionMatrix/Modals.jsx';
@@ -303,6 +303,7 @@ const TabPanel = memo(({ activeTab, children }) => {
    SECTION 9 — ROOT COMPONENT
 ═══════════════════════════════════════════════════════════════════════════ */
 const UserManagementTab = ({ initialUsers = [] }) => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [state, dispatch] = useReducer(reducer, initialState);
     const { activeTab, modal, bulkSelection } = state;
     const { toasts, toast }    = useToast();

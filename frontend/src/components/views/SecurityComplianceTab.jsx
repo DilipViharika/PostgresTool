@@ -2,7 +2,7 @@
 //  VIGIL — Security & Compliance Center (v2.0)
 // ==========================================================================
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 import {
     Shield, Lock, AlertOctagon, FileText, Key, Eye,
@@ -726,6 +726,7 @@ const AuditTimeline = () => (
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const SecurityComplianceTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [activeTab, setActiveTab] = useState('overview');
     const [search, setSearch] = useState('');
     const [score] = useState(88);

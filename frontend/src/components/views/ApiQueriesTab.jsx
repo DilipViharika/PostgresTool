@@ -2,7 +2,7 @@
 //  VIGIL — ApiQueriesTab  (v8 — Apex Observability)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api';
 import {
     Network, Cpu, ArrowRight, Search, X, TrendingUp, TrendingDown,
@@ -686,6 +686,7 @@ const LoadingState = () => (
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const ApiQueriesTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [endpoints, setEndpoints]   = useState([]);
     const [selected, setSelected]     = useState(null);
     const [tab, setTab]               = useState('trace');

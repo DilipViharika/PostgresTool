@@ -1,14 +1,17 @@
 import React from 'react';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// THEME SYSTEM — Velvet Protocol
+// THEME SYSTEM — Velvet Protocol  (adaptive dark / light)
 //
-// Ultra-dark purple-void foundations meet electric cyan and aquamarine.
-// Like a deep-space signal trace — precise, luminous, uncompromising.
-// No other tool uses this palette.
+// THEME is a *mutable* shared object. Call useAdaptiveTheme() at the top of
+// any component to update it in-place for the current colour mode, so that
+// every sub-component and CSS-in-JS template in the same render tree
+// automatically picks up the right tokens without prop-drilling.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export const THEME = {
+// ── Internal token sets (not exported) ───────────────────────────────────────
+const _DARK = {
     // ── Backgrounds — purple-void, deepest night ──────────────────────────────
     bg:            '#07030D',
     bgAlt:         '#0C0516',
@@ -111,6 +114,130 @@ export const THEME = {
 
     // ── Spacing ───────────────────────────────────────────────────────────────
     space: (n) => `${n * 4}px`,
+};
+
+// ── Internal light-mode token set ────────────────────────────────────────────
+const _LIGHT = {
+    // ── Backgrounds — clean slate ─────────────────────────────────────────────
+    bg:            '#f0f4f8',
+    bgAlt:         '#e2e8f0',
+    surface:       '#ffffff',
+    surfaceHover:  '#f8fafc',
+    surfaceRaised: '#f1f5f9',
+
+    // ── Glass ─────────────────────────────────────────────────────────────────
+    glass:             'rgba(255, 255, 255, 0.85)',
+    glassHeavy:        'rgba(248, 250, 252, 0.95)',
+    glassBorder:       'rgba(14, 165, 233, 0.15)',
+    glassBorderHover:  'rgba(14, 165, 233, 0.35)',
+
+    // ── Typography ────────────────────────────────────────────────────────────
+    textMain:    '#0f172a',
+    textMuted:   '#475569',
+    textDim:     '#94a3b8',
+    textInverse: '#f8fafc',
+
+    // ── Sky Blue — primary pulse ───────────────────────────────────────────────
+    primary:      '#0ea5e9',
+    primaryDark:  '#0284c7',
+    primaryLight: '#38bdf8',
+    primaryFaint: 'rgba(14, 165, 233, 0.08)',
+
+    // ── Emerald — secondary contrast ──────────────────────────────────────────
+    secondary:      '#10b981',
+    secondaryDark:  '#059669',
+    secondaryLight: '#34d399',
+    secondaryFaint: 'rgba(16, 185, 129, 0.08)',
+
+    // ── Success ───────────────────────────────────────────────────────────────
+    success:      '#16a34a',
+    successDark:  '#15803d',
+    successLight: '#4ade80',
+
+    // ── Danger ────────────────────────────────────────────────────────────────
+    danger:      '#dc2626',
+    dangerDark:  '#b91c1c',
+    dangerLight: '#f87171',
+
+    // ── Warning ───────────────────────────────────────────────────────────────
+    warning:      '#d97706',
+    warningDark:  '#b45309',
+    warningLight: '#fcd34d',
+
+    // ── Info ──────────────────────────────────────────────────────────────────
+    info:      '#0284c7',
+    infoDark:  '#0369a1',
+    infoLight: '#38bdf8',
+
+    // ── Indigo — AI/system ────────────────────────────────────────────────────
+    ai:      '#7c3aed',
+    aiDark:  '#6d28d9',
+    aiLight: '#a78bfa',
+
+    // ── Structural accents ────────────────────────────────────────────────────
+    grid:      '#e2e8f0',
+    gridAlt:   '#cbd5e1',
+    pearl:     '#1e293b',
+    deepTeal:  '#e0f2fe',
+    inkBlack:  '#f8fafc',
+    phosphor:  '#0ea5e9',
+    biolume:   '#10b981',
+    mariana:   '#f0f9ff',
+
+    // ── Shadows — softer ──────────────────────────────────────────────────────
+    shadowSm:     '0 1px 3px rgba(0,0,0,0.10)',
+    shadowMd:     '0 4px 12px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+    shadowLg:     '0 12px 30px rgba(0,0,0,0.10), 0 4px 10px rgba(0,0,0,0.06)',
+    shadowXl:     '0 24px 50px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.08)',
+    shadowInner:  'inset 0 2px 8px rgba(0,0,0,0.06)',
+    shadowNeon:       (color) => `0 0 4px ${color}30, 0 0 12px ${color}15, 0 0 30px ${color}08`,
+    shadowNeonStrong: (color) => `0 0 5px ${color}55, 0 0 16px ${color}30, 0 0 45px ${color}15`,
+    shadowGold:   '0 0 6px rgba(16,185,129,0.25), 0 0 18px rgba(16,185,129,0.12)',
+    shadowTeal:   '0 0 6px rgba(14,165,233,0.30), 0 0 18px rgba(14,165,233,0.14)',
+    shadowDeep:   '0 30px 80px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06)',
+
+    // ── Border Radius (same) ──────────────────────────────────────────────────
+    radiusXs:   '4px',
+    radiusSm:   '7px',
+    radiusMd:   '12px',
+    radiusLg:   '18px',
+    radiusXl:   '26px',
+    radius2Xl:  '36px',
+    radiusFull: '9999px',
+
+    // ── Transitions (same) ────────────────────────────────────────────────────
+    transitionFast:   'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+    transitionBase:   'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transitionSlow:   'all 0.55s cubic-bezier(0.4, 0, 0.2, 1)',
+    transitionSpring: 'all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    transitionBounce: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+
+    // ── Typography (same) ─────────────────────────────────────────────────────
+    fontDisplay:     "'Cinzel', 'Playfair Display', Georgia, serif",
+    fontBody:        "'DM Sans', 'Outfit', sans-serif",
+    fontMono:        "'JetBrains Mono', 'Fira Code', monospace",
+    fontDecorative:  "'Cormorant Garamond', Georgia, serif",
+
+    // ── Spacing (same) ────────────────────────────────────────────────────────
+    space: (n) => `${n * 4}px`,
+};
+
+// ── Exported mutable object — starts in dark mode ────────────────────────────
+// All importing modules hold a reference to this same object. When
+// useAdaptiveTheme() mutates it in-place, every sub-component that reads
+// THEME.xxx inside a function body automatically gets the updated value
+// on the next render triggered by ThemeContext.
+export const THEME = { ..._DARK };
+
+// ── Hook: subscribe + update THEME in-place ───────────────────────────────────
+// Call this once at the top of any tab/panel component. It:
+//   1. Subscribes the component to ThemeContext (re-renders on toggle).
+//   2. Mutates THEME so module-level sub-components (Styles, MetricCard…)
+//      also see the correct tokens when they render.
+export const useAdaptiveTheme = () => {
+    const { isDark } = useTheme();
+    Object.assign(THEME, isDark ? _DARK : _LIGHT);
+    return THEME;
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

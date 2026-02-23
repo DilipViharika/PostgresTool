@@ -18,7 +18,7 @@ import {
     Zap,
 } from 'lucide-react';
 import { fetchData } from '../../utils/api';
-import { THEME } from '../../utils/theme';
+import { THEME, useAdaptiveTheme } from '../../utils/theme';
 
 // ============================================================================
 // STYLES COMPONENT (Keyframes)
@@ -54,6 +54,7 @@ const Styles = () => (
 // MAIN COMPONENT
 // ============================================================================
 export default function AlertCorrelationTab() {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

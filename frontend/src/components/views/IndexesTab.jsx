@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api';
 import {
     Layers, AlertTriangle, Zap, Cpu, Database, TrendingDown,
@@ -1083,6 +1083,7 @@ const IndexTable = ({ rows, view, onSelect }) => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const IndexesTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [view, setView]       = useState('missing');
     const [data, setData]       = useState({ missing: [], duplicates: [], bloat: [], unused: [], health: DATA.health });
     const [detail, setDetail]   = useState(null);

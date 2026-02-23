@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import {
@@ -66,6 +66,7 @@ const ChartTip = ({ active, payload, label }) => {
 };
 
 export default function ReplicationWALTab() {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data,       setData]       = useState(null);
     const [loading,    setLoading]    = useState(true);
     const [refreshing, setRefreshing] = useState(false);

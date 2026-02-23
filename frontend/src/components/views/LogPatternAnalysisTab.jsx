@@ -20,7 +20,7 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api.js';
 
 const Styles = () => (
@@ -722,6 +722,7 @@ const HealthInsights = ({ data }) => {
 
 // Main Component
 export default function LogPatternAnalysisTab() {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);

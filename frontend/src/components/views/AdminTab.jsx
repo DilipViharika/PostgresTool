@@ -2,7 +2,7 @@
 //  VIGIL — AdminTab (v7 — ADVANCED VISUAL EDITION)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef, useReducer } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData, postData } from '../../utils/api';
 import {
     Settings, Puzzle, Database, Trash2, Search, X, Copy, Check,
@@ -34,25 +34,24 @@ const SortAsc      = ({ size, color }) => <ChevronUp size={size} color={color} /
 const SortDesc     = ({ size, color }) => <ChevronDown size={size} color={color} />;
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   THEME NORMALIZATION
+   THEME NORMALIZATION — live getters so T always reflects the current THEME
    ═══════════════════════════════════════════════════════════════════════════ */
 const T = {
-    primary:     THEME.primary     || '#3b82f6',
-    secondary:   THEME.secondary   || '#818cf8',
-    success:     THEME.success     || '#10b981',
-    warning:     THEME.warning     || '#f59e0b',
-    danger:      THEME.danger      || '#ef4444',
-    info:        THEME.info        || '#38bdf8',
-    teal:        THEME.teal        || '#14b8a6',
-    glass:       THEME.glass       || 'rgba(255,255,255,0.04)',
-    glassBorder: THEME.glassBorder || 'rgba(255,255,255,0.08)',
-    surface:     THEME.surface     || 'rgba(255,255,255,0.06)',
-    grid:        THEME.grid        || 'rgba(255,255,255,0.08)',
-    textMain:    THEME.textMain    || '#f1f5f9',
-    textMuted:   THEME.textMuted   || '#94a3b8',
-    textDim:     THEME.textDim     || '#64748b',
+    get primary()     { return THEME.primary     || '#3b82f6'; },
+    get secondary()   { return THEME.secondary   || '#818cf8'; },
+    get success()     { return THEME.success     || '#10b981'; },
+    get warning()     { return THEME.warning     || '#f59e0b'; },
+    get danger()      { return THEME.danger      || '#ef4444'; },
+    get info()        { return THEME.info        || '#38bdf8'; },
+    get teal()        { return THEME.primary     || '#14b8a6'; },
+    get glass()       { return THEME.glass       || 'rgba(255,255,255,0.04)'; },
+    get glassBorder() { return THEME.glassBorder || 'rgba(255,255,255,0.08)'; },
+    get surface()     { return THEME.surface     || 'rgba(255,255,255,0.06)'; },
+    get grid()        { return THEME.grid        || 'rgba(255,255,255,0.08)'; },
+    get textMain()    { return THEME.textMain    || '#f1f5f9'; },
+    get textMuted()   { return THEME.textMuted   || '#94a3b8'; },
+    get textDim()     { return THEME.textDim     || '#64748b'; },
 };
-Object.assign(THEME, T);
 
 /* ── history reducer ── */
 const historyReducer = (state, action) => {
@@ -1527,6 +1526,7 @@ const SettingsView = ({
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const AdminTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [activeSub, setActiveSub] = useState('settings');
     const [settingsData, setSettingsData] = useState([]);
     const [extData, setExtData]     = useState([]);

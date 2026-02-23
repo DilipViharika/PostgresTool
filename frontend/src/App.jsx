@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
-import { THEME, ChartDefs } from './utils/theme.jsx';
+import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
 import LoginPage from './components/auth/LoginPage.jsx';
 
@@ -1891,6 +1891,7 @@ const useWebSocket = (onMessage) => {
 const Dashboard = () => {
     const { logout, currentUser } = useAuth();
     const { isDark } = useTheme();
+    useAdaptiveTheme(); // also keeps module-level THEME in sync for ChartDefs + GlobalStyles
 
     /* Keep module-level DS in sync with ThemeContext on every render */
     DS = isDark ? DS_DARK : DS_LIGHT;

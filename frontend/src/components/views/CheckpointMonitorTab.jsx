@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import {
@@ -61,6 +61,7 @@ const ChartTip = ({ active, payload, label }) => {
    CHECKPOINT MONITOR TAB
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function CheckpointMonitorTab() {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data,       setData]       = useState(null);
     const [loading,    setLoading]    = useState(true);
     const [refreshing, setRefreshing] = useState(false);

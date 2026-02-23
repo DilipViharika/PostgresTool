@@ -2,7 +2,7 @@
 //  VIGIL — RepositoryTab  (v11 — FIXED API INTEGRATION)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import {
     GitBranch, FolderOpen, File, FileCode, FileJson, FileText,
     Plus, Trash2, Search, X, Copy, Check, ChevronRight, ChevronDown,
@@ -865,6 +865,7 @@ const RepoCard = ({ repo, onOpen, onDelete }) => {
 };
 
 const RepositoryTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [view, setView] = useState('repos');
     const [repos, setRepos] = useState([]);
     const [activeRepo, setActiveRepo] = useState(null);
