@@ -816,7 +816,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
             if (!token) throw new Error('Not authenticated — please refresh and log in again.');
 
             // 🛠️ FIX APPLIED: Force routing directly to backend OR use environment variable
-            const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const baseUrl = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 
             const res = await fetch(`${baseUrl}/api/feedback`, {
                 method:  'POST',
