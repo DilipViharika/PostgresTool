@@ -1,8 +1,4 @@
-// ==========================================================================
-//  VIGIL — AdvancedAnalysisPanel v5 (Enterprise Monitoring Engine)
-//  Inspired by: pganalyze, Datadog DB Monitoring, pgDash, Percona PMM,
-//  PGHero, pg_stat_monitor, pgMustard, Aiven Console
-// ==========================================================================
+
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { THEME } from '../../utils/theme.jsx';
 import {

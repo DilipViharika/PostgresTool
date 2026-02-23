@@ -877,7 +877,7 @@ app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE
     try {
         const r = await pool.query(`
             SELECT
-                schemaname, tablename, indexname,
+                schemaname, relname, indexname,
                 pg_size_pretty(pg_relation_size(indexrelid))                AS index_size,
                 pg_relation_size(indexrelid)                                AS index_bytes,
                 idx_scan, idx_tup_read, idx_tup_fetch,
