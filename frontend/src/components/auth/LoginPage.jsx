@@ -367,7 +367,7 @@ const LeftPanel = () => {
                     <Database size={18} color="#fff" strokeWidth={1.8}/>
                 </div>
                 <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(235,238,252,.95)', fontFamily: "'Outfit',sans-serif", letterSpacing: '-.2px', lineHeight: 1 }}>pg_monitor</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(235,238,252,.95)', fontFamily: "'Outfit',sans-serif", letterSpacing: '-.2px', lineHeight: 1 }}>PG MONITOR</div>
                     <div style={{ fontSize: 8, color: 'rgba(100,112,255,.6)', fontFamily: "'JetBrains Mono',monospace", marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>PostgreSQL Intelligence</div>
                 </div>
             </div>
