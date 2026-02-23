@@ -158,7 +158,7 @@ const defaultFormData = (dbType = 'postgresql') => {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
   root: {
-    fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
     minHeight: '100vh',
     background: '#0d0f1a',
     color: '#c9d1d9',

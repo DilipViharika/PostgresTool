@@ -89,8 +89,9 @@ const METRIC_DEFS = [
 ];
 
 const REFRESH_OPTIONS = [
-    { label: '1m', value: 60000 },
-    { label: '5m', value: 300000 },
+    { label: '30s', value: 30000 },
+    { label: '1m',  value: 60000 },
+    { label: '5m',  value: 300000 },
     { label: '15m', value: 900000 },
     { label: 'Off', value: 0 },
 ];
@@ -310,7 +311,7 @@ const MetricCard = ({ def, datapoints, loading }) => {
             {/* Value */}
             {loading ? (
                 <div style={{ height: 36, borderRadius: 8, background: THEME.surface, marginBottom: 14,
-                    animation: 'shimmer 2s infinite',
+                    animation: 'cwShimmer 2s infinite',
                     backgroundImage: `linear-gradient(90deg, ${THEME.surface} 20%, ${THEME.surfaceHover || '#1A1029'} 50%, ${THEME.surface} 80%)`,
                     backgroundSize: '300% 100%',
                 }} />
@@ -327,7 +328,7 @@ const MetricCard = ({ def, datapoints, loading }) => {
             {/* Sparkline */}
             {loading ? (
                 <div style={{ height: 60, borderRadius: 6, background: THEME.surface,
-                    animation: 'shimmer 2.5s infinite',
+                    animation: 'cwShimmer 2.5s infinite',
                     backgroundImage: `linear-gradient(90deg, ${THEME.surface} 20%, ${THEME.surfaceHover || '#1A1029'} 50%, ${THEME.surface} 80%)`,
                     backgroundSize: '300% 100%',
                 }} />
@@ -364,6 +365,8 @@ export default function CloudWatchTab() {
     const [metricsLoading, setMetricsLoading] = useState(false);
     const [error, setError]           = useState(null);
     const [refreshInterval, setRefreshInterval] = useState(300000);
+    const [customInterval, setCustomInterval]   = useState('');
+    const [showCustomInput, setShowCustomInput] = useState(false);
     const [timeRange, setTimeRange]   = useState(3600);
     const [lastRefresh, setLastRefresh] = useState(null);
     const timerRef = useRef(null);
@@ -435,7 +438,8 @@ export default function CloudWatchTab() {
     if (loading) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-                <RefreshCw size={18} color={THEME.primary} style={{ animation: 'spin 1s linear infinite' }} />
+                <style>{`@keyframes cwSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+                <RefreshCw size={18} color={THEME.primary} style={{ animation: 'cwSpin 1s linear infinite' }} />
                 <span style={{ color: THEME.textMuted, fontSize: 14 }}>Checking CloudWatch configuration…</span>
             </div>
         );
@@ -447,8 +451,8 @@ export default function CloudWatchTab() {
             <div style={{ minHeight: '100%', background: 'transparent' }}>
                 <style>{`
                     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-                    @keyframes shimmer { 0% { background-position: -300% 0; } 100% { background-position: 300% 0; } }
-                    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                    @keyframes cwShimmer { 0% { background-position: -300% 0; } 100% { background-position: 300% 0; } }
+                    @keyframes cwSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 `}</style>
 
                 {/* Banner */}
@@ -472,8 +476,9 @@ export default function CloudWatchTab() {
     return (
         <div style={{ padding: '20px 24px', minHeight: '100%' }}>
             <style>{`
-                @keyframes shimmer { 0% { background-position: -300% 0; } 100% { background-position: 300% 0; } }
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @keyframes cwShimmer { 0% { background-position: -300% 0; } 100% { background-position: 300% 0; } }
+                @keyframes cwSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
             `}</style>
 
             {/* Header */}
@@ -528,16 +533,56 @@ export default function CloudWatchTab() {
                     </div>
 
                     {/* Refresh */}
-                    <div style={{ display: 'flex', background: THEME.surface, borderRadius: 8, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
-                        {REFRESH_OPTIONS.map(o => (
-                            <button key={o.value} onClick={() => setRefreshInterval(o.value)} style={{
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ display: 'flex', background: THEME.surface, borderRadius: 8, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
+                            {REFRESH_OPTIONS.map(o => (
+                                <button key={o.value} onClick={() => { setRefreshInterval(o.value); setShowCustomInput(false); }} style={{
+                                    padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                    border: 'none', borderRight: `1px solid ${THEME.glassBorder}`,
+                                    background: refreshInterval === o.value && !showCustomInput ? `${THEME.secondary}20` : 'transparent',
+                                    color: refreshInterval === o.value && !showCustomInput ? THEME.secondary : THEME.textMuted,
+                                    transition: 'all 0.15s', fontFamily: THEME.fontMono || 'monospace',
+                                }}>{o.label}</button>
+                            ))}
+                            <button onClick={() => setShowCustomInput(p => !p)} style={{
                                 padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                                border: 'none', borderRight: `1px solid ${THEME.glassBorder}`,
-                                background: refreshInterval === o.value ? `${THEME.secondary}20` : 'transparent',
-                                color: refreshInterval === o.value ? THEME.secondary : THEME.textMuted,
+                                border: 'none',
+                                background: showCustomInput ? `${THEME.primary}20` : 'transparent',
+                                color: showCustomInput ? THEME.primary : THEME.textMuted,
                                 transition: 'all 0.15s',
-                            }}>{o.label}</button>
-                        ))}
+                            }}>Custom</button>
+                        </div>
+                        {showCustomInput && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <input
+                                    type="number"
+                                    value={customInterval}
+                                    onChange={e => setCustomInterval(e.target.value)}
+                                    placeholder="sec"
+                                    min="10"
+                                    style={{
+                                        width: 72, padding: '5px 8px', fontSize: 12,
+                                        background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 6, color: THEME.textMain, outline: 'none',
+                                        fontFamily: THEME.fontMono || 'monospace',
+                                    }}
+                                />
+                                <button
+                                    onClick={() => {
+                                        const secs = parseInt(customInterval);
+                                        if (!isNaN(secs) && secs >= 10) {
+                                            setRefreshInterval(secs * 1000);
+                                            setShowCustomInput(false);
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '5px 10px', fontSize: 12, fontWeight: 600,
+                                        background: `${THEME.primary}15`, border: `1px solid ${THEME.primary}35`,
+                                        borderRadius: 6, color: THEME.primary, cursor: 'pointer',
+                                    }}
+                                >Set</button>
+                            </div>
+                        )}
                     </div>
 
                     <button onClick={fetchMetrics} disabled={metricsLoading} style={{
@@ -546,7 +591,7 @@ export default function CloudWatchTab() {
                         borderRadius: 8, color: THEME.primary, fontSize: 12, fontWeight: 600,
                         cursor: metricsLoading ? 'not-allowed' : 'pointer', opacity: metricsLoading ? 0.6 : 1,
                     }}>
-                        <RefreshCw size={13} style={{ animation: metricsLoading ? 'spin 1s linear infinite' : 'none' }} />
+                        <RefreshCw size={13} style={{ animation: metricsLoading ? 'cwSpin 1s linear infinite' : 'none' }} />
                         Refresh
                     </button>
                 </div>
