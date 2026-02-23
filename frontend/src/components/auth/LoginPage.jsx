@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
@@ -12,10 +10,8 @@ const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Section names pulled directly from App.jsx TAB_CONFIG
-//  Primary = the product itself; 6 hubs = the 6 sidebar sections
 // ─────────────────────────────────────────────────────────────────────────────
 const NODE_DEFS = {
-    //          label (App.jsx section)   sub-line          hex          icon key   r
     primary: { label: 'Database',        sub: 'pg_monitor', color: '#6470FF', icon: 'Database',  r: 14 },
     hub0:    { label: 'Core',            sub: 'Monitoring',  color: '#38BDF8', icon: 'Activity',  r: 9.5 },
     hub1:    { label: 'Query',           sub: '& Indexes',   color: '#F5C842', icon: 'Zap',       r: 9.5 },
@@ -27,16 +23,14 @@ const NODE_DEFS = {
 
 const ICON_MAP = { Database, Activity, Zap, HardDrive, Lock, Cloud, Terminal, Search, RefreshCw, Users };
 
-// Canvas palette — matches NODE_DEFS order (primary first, then hubs 0-5, then micro extras)
 const PALETTE = [
-    { h: 232, s: 100, l: 72 }, // primary — indigo
-    { h: 199, s: 100, l: 61 }, // hub0 — sky blue   (Core Monitoring)
-    { h:  44, s:  95, l: 62 }, // hub1 — amber       (Query & Indexes)
-    { h: 165, s: 100, l: 54 }, // hub2 — emerald     (Infrastructure)
-    { h: 348, s: 100, l: 66 }, // hub3 — rose        (Schema & Security)
-    { h:  27, s: 100, l: 65 }, // hub4 — orange      (Observability)
-    { h: 264, s:  80, l: 72 }, // hub5 — violet      (Developer Tools)
-    // micro extras
+    { h: 232, s: 100, l: 72 },
+    { h: 199, s: 100, l: 61 },
+    { h:  44, s:  95, l: 62 },
+    { h: 165, s: 100, l: 54 },
+    { h: 348, s: 100, l: 66 },
+    { h:  27, s: 100, l: 65 },
+    { h: 264, s:  80, l: 72 },
     { h: 200, s: 100, l: 65 },
     { h: 320, s:  70, l: 68 },
     { h:  20, s:  90, l: 68 },
@@ -82,11 +76,11 @@ const GlobalStyles = () => (
 //  CANVAS + HTML-LABEL HOOK
 // ─────────────────────────────────────────────────────────────────────────────
 function useNetworkCanvas(canvasRef) {
-    const nodesRef   = useRef([]);
-    const edgesRef   = useRef([]);
-    const mouseRef   = useRef({ x: -999, y: -999 });
-    const packetsRef = useRef([]);
-    const animRef    = useRef(null);
+    const nodesRef    = useRef([]);
+    const edgesRef    = useRef([]);
+    const mouseRef    = useRef({ x: -999, y: -999 });
+    const packetsRef  = useRef([]);
+    const animRef     = useRef(null);
     const [labelPos, setLabelPos] = useState([]);
 
     useEffect(() => {
@@ -97,17 +91,15 @@ function useNetworkCanvas(canvasRef) {
         function buildGraph(W, H) {
             const nodes = [], edges = [];
 
-            // Primary — centre canvas, slightly above mid
             nodes.push({ x: W * 0.44, y: H * 0.38, vx: 0, vy: 0, r: NODE_DEFS.primary.r, ci: 0, role: 'primary', phase: 0, pulse: 0, key: 'primary' });
 
-            // 6 hubs — orbital positions chosen to not crowd the bottom text
             const hubPos = [
-                { x: 0.19, y: 0.16, key: 'hub0' }, // Core Monitoring     — top-left
-                { x: 0.63, y: 0.10, key: 'hub1' }, // Query & Indexes     — top-right
-                { x: 0.78, y: 0.40, key: 'hub2' }, // Infrastructure      — right
-                { x: 0.68, y: 0.64, key: 'hub3' }, // Schema & Security   — bottom-right (above text)
-                { x: 0.22, y: 0.60, key: 'hub4' }, // Observability       — bottom-left  (above text)
-                { x: 0.10, y: 0.38, key: 'hub5' }, // Developer Tools     — left
+                { x: 0.19, y: 0.16, key: 'hub0' },
+                { x: 0.63, y: 0.10, key: 'hub1' },
+                { x: 0.78, y: 0.40, key: 'hub2' },
+                { x: 0.68, y: 0.64, key: 'hub3' },
+                { x: 0.22, y: 0.60, key: 'hub4' },
+                { x: 0.10, y: 0.38, key: 'hub5' },
             ];
             hubPos.forEach(({ x, y, key }, i) => nodes.push({
                 x: W * x + (Math.random() - .5) * 16,
@@ -117,23 +109,19 @@ function useNetworkCanvas(canvasRef) {
                 phase: Math.random() * Math.PI * 2, pulse: 0, key,
             }));
 
-            // Micro nodes — keep above 62% height so they don't bleed into the text block
             for (let i = 0; i < 18; i++) {
                 const ci = 7 + Math.floor(Math.random() * 3);
                 nodes.push({
                     x: W * (.06 + Math.random() * .88),
-                    y: H * (.04 + Math.random() * .58),   // max 62% height
+                    y: H * (.04 + Math.random() * .58),
                     vx: (Math.random() - .5) * .15, vy: (Math.random() - .5) * .15,
                     r: 1.2 + Math.random() * 2.0, ci: Math.min(ci, PALETTE.length - 1),
                     role: 'micro', phase: Math.random() * Math.PI * 2, pulse: 0, key: null,
                 });
             }
 
-            // Edges: primary → each hub
             for (let i = 1; i <= 6; i++) edges.push({ a: 0, b: i, s: 1.0 });
-            // Hub ring connections (hexagon)
             [[1,2],[2,3],[3,4],[4,5],[5,6],[6,1],[1,4],[2,5]].forEach(([a, b]) => edges.push({ a, b, s: 0.5 }));
-            // Micros → nearest hub
             for (let i = 7; i < nodes.length; i++) {
                 let best = 0, bestD = Infinity;
                 for (let j = 0; j <= 6; j++) {
@@ -143,7 +131,6 @@ function useNetworkCanvas(canvasRef) {
                 }
                 edges.push({ a: best, b: i, s: 0.28 });
             }
-            // Short micro-micro
             for (let i = 7; i < nodes.length; i++) {
                 for (let j = i + 1; j < nodes.length; j++) {
                     const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
@@ -152,8 +139,8 @@ function useNetworkCanvas(canvasRef) {
                 }
             }
 
-            nodesRef.current  = nodes;
-            edgesRef.current  = edges;
+            nodesRef.current   = nodes;
+            edgesRef.current   = edges;
             packetsRef.current = [];
         }
 
@@ -176,7 +163,6 @@ function useNetworkCanvas(canvasRef) {
             const nodes = nodesRef.current, edges = edgesRef.current, pkts = packetsRef.current;
             ctx.clearRect(0, 0, W, H);
 
-            // Physics
             nodes.forEach(n => {
                 if (n.role === 'primary') return;
                 n.phase += .007;
@@ -194,7 +180,6 @@ function useNetworkCanvas(canvasRef) {
                 if (d < 100 && d > 0) { const f = (1 - d / 100) * .22; n.vx += (dx / d) * f; n.vy += (dy / d) * f; }
             });
 
-            // Edges
             edges.forEach(e => {
                 const a = nodes[e.a], b = nodes[e.b];
                 const dist = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
@@ -207,7 +192,6 @@ function useNetworkCanvas(canvasRef) {
                 ctx.strokeStyle = g; ctx.lineWidth = e.s * .7; ctx.stroke();
             });
 
-            // Packets
             for (let pi = pkts.length - 1; pi >= 0; pi--) {
                 const pk = pkts[pi]; pk.t += pk.sp;
                 if (pk.t >= 1) { pkts.splice(pi, 1); continue; }
@@ -220,7 +204,6 @@ function useNetworkCanvas(canvasRef) {
                 ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fillStyle = hsl(PALETTE[a.ci], .92); ctx.fill();
             }
 
-            // Nodes
             nodes.forEach(n => {
                 n.phase += .008;
                 const rr = n.r * (Math.sin(n.phase) * .14 + 1);
@@ -248,7 +231,6 @@ function useNetworkCanvas(canvasRef) {
                 }
             });
 
-            // Push label positions every 2 frames
             frame++;
             if (frame % 2 === 0) {
                 setLabelPos(nodes.filter(n => n.role !== 'micro').map(n => ({ x: n.x, y: n.y, key: n.key, ci: n.ci, r: n.r, role: n.role })));
@@ -275,7 +257,7 @@ function useNetworkCanvas(canvasRef) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  NODE LABEL — HTML chip synced to canvas position
+//  NODE LABEL
 // ─────────────────────────────────────────────────────────────────────────────
 const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
     const def = NODE_DEFS[nodeKey];
@@ -283,23 +265,16 @@ const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
     const IconComp = ICON_MAP[def.icon];
     const color = def.color;
     const isPrimary = role === 'primary';
-    const chipH = isPrimary ? 46 : 38;
     const connH = isPrimary ? 14 : 10;
-    // Offset the chip below the node's visual bottom edge
     const offset = r + (isPrimary ? 28 : 22);
 
     return (
         <div style={{ position: 'absolute', left: x, top: y, pointerEvents: 'none', zIndex: 5 }}>
-            {/* Icon centred on the node */}
             <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%,-50%)', width: isPrimary ? 22 : 16, height: isPrimary ? 22 : 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {IconComp && <IconComp size={isPrimary ? 13 : 9} color="rgba(255,255,255,.92)" strokeWidth={1.8}/>}
             </div>
-
-            {/* Chip anchored below node */}
             <div style={{ position: 'absolute', top: offset, left: 0, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'labelIn .5s ease both', whiteSpace: 'nowrap' }}>
-                {/* connector line */}
                 <div style={{ width: 1, height: connH, background: `linear-gradient(to bottom, ${color}00, ${color}55)`, flexShrink: 0 }}/>
-                {/* chip */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: isPrimary ? 6 : 5, background: 'rgba(7,8,15,0.80)', backdropFilter: 'blur(10px)', border: `1px solid ${color}30`, borderRadius: isPrimary ? 9 : 7, padding: isPrimary ? '5px 10px' : '3px 8px' }}>
                     <div style={{ width: isPrimary ? 6 : 4.5, height: isPrimary ? 6 : 4.5, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }}/>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -317,13 +292,23 @@ const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  STATUS DOTS (bottom strip) — using same section names
+//  BOTTOM STATUS DOTS
 // ─────────────────────────────────────────────────────────────────────────────
 const BOTTOM_DOTS = [
     { label: 'Core Monitoring',  color: '#38BDF8' },
     { label: 'Query & Indexes',  color: '#F5C842' },
     { label: 'Infrastructure',   color: '#00D4A0' },
     { label: 'Observability',    color: '#FB923C' },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  FEATURE STATS
+// ─────────────────────────────────────────────────────────────────────────────
+const FEATURE_STATS = [
+    { val: '6',     desc: 'Monitoring Modules' },
+    { val: '< 1s',  desc: 'Metric Latency'     },
+    { val: '∞',     desc: 'Query History'       },
+    { val: '100%',  desc: 'Open Telemetry'      },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -334,14 +319,19 @@ const LeftPanel = () => {
     const labelPos  = useNetworkCanvas(canvasRef);
 
     return (
-        <div style={{ flex: '1 1 0', minWidth: 0, height: '100vh', position: 'relative', overflow: 'hidden', background: '#07080F', borderRight: '1px solid rgba(255,255,255,.06)' }}>
-
+        <div style={{
+            flex: '1 1 0', minWidth: 0, height: '100vh', position: 'relative',
+            overflow: 'hidden', background: '#07080F',
+            borderRight: '1px solid rgba(255,255,255,.06)',
+        }}>
             {/* Canvas */}
             <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}/>
 
             {/* HTML label overlay */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
-                {labelPos.map(n => <NodeLabel key={n.key} x={n.x} y={n.y} nodeKey={n.key} ci={n.ci} r={n.r} role={n.role}/>)}
+                {labelPos.map(n => (
+                    <NodeLabel key={n.key} x={n.x} y={n.y} nodeKey={n.key} ci={n.ci} r={n.r} role={n.role}/>
+                ))}
             </div>
 
             {/* Atmospheric mesh */}
@@ -352,13 +342,23 @@ const LeftPanel = () => {
             `}}/>
 
             {/* Grain */}
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2, opacity: .018,
+            <div style={{
+                position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2, opacity: .018,
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E")`
             }}/>
 
             {/* Wordmark */}
-            <div style={{ position: 'absolute', top: 26, left: 34, zIndex: 8, display: 'flex', alignItems: 'center', gap: 11, animation: 'fadeUp .7s ease .05s backwards' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(145deg,#4A54E8,#8A46DB)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 1px rgba(255,255,255,.10) inset, 0 8px 24px rgba(74,84,232,.52)' }}>
+            <div style={{
+                position: 'absolute', top: 26, left: 34, zIndex: 8,
+                display: 'flex', alignItems: 'center', gap: 11,
+                animation: 'fadeUp .7s ease .05s backwards',
+            }}>
+                <div style={{
+                    width: 38, height: 38, borderRadius: 12,
+                    background: 'linear-gradient(145deg,#4A54E8,#8A46DB)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 0 0 1px rgba(255,255,255,.10) inset, 0 8px 24px rgba(74,84,232,.52)',
+                }}>
                     <Database size={17} color="#fff"/>
                 </div>
                 <div>
@@ -367,39 +367,108 @@ const LeftPanel = () => {
                 </div>
             </div>
 
-            {/* Bottom gradient scrim — starts at 46% so labels near 60% are still visible */}
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '46%', pointerEvents: 'none', zIndex: 3, background: 'linear-gradient(to top, rgba(7,8,15,.95) 0%, rgba(7,8,15,.65) 38%, transparent 100%)' }}/>
+            {/* Bottom gradient scrim */}
+            <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: '54%',
+                pointerEvents: 'none', zIndex: 3,
+                background: 'linear-gradient(to top, rgba(7,8,15,1) 0%, rgba(7,8,15,.78) 44%, transparent 100%)',
+            }}/>
 
-            {/* ── Hero text block ── */}
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 40px 28px', zIndex: 8 }}>
+            {/* ── Hero text block — horizontally centred ── */}
+            <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                padding: '0 32px 28px',
+                zIndex: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+            }}>
 
                 {/* Eyebrow */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, animation: 'fadeUp .8s ease .15s backwards' }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10,
+                    animation: 'fadeUp .8s ease .15s backwards',
+                }}>
                     <div style={{ width: 20, height: 1, background: 'rgba(100,112,255,.70)' }}/>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9.5, letterSpacing: '3px', textTransform: 'uppercase', color: '#6470FF' }}>
+                    <span style={{
+                        fontFamily: "'JetBrains Mono',monospace", fontSize: 9.5,
+                        letterSpacing: '3px', textTransform: 'uppercase', color: '#6470FF',
+                    }}>
                         Database Observability
                     </span>
+                    <div style={{ width: 20, height: 1, background: 'rgba(100,112,255,.70)' }}/>
                 </div>
 
-                {/* Headline */}
-                <div style={{ marginBottom: 8, animation: 'fadeUp .8s ease .22s backwards' }}>
-                    <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 'clamp(24px,2.6vw,42px)', fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.4px', color: '#E8EAF4' }}>
-                        Monitor every<br/>
-                        query, <em style={{ fontStyle: 'italic', color: '#818AFF' }}>beautifully.</em>
+                {/* Headline — single line, no forced break */}
+                <div style={{ marginBottom: 10, animation: 'fadeUp .8s ease .22s backwards' }}>
+                    <div style={{
+                        fontFamily: "'DM Serif Display',serif",
+                        fontSize: 'clamp(24px,2.6vw,42px)',
+                        fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.4px', color: '#E8EAF4',
+                        whiteSpace: 'nowrap',
+                    }}>
+                        Monitor every query,{' '}
+                        <em style={{ fontStyle: 'italic', color: '#818AFF' }}>beautifully.</em>
                     </div>
                 </div>
 
                 {/* Sub-text */}
-                <p style={{ fontSize: 12, fontWeight: 300, color: 'rgba(107,119,153,.78)', lineHeight: 1.70, margin: '0 0 16px', maxWidth: 390, fontFamily: "'DM Sans',sans-serif", animation: 'fadeUp .8s ease .30s backwards' }}>
-                    Real-time intelligence across your entire PostgreSQL fleet.<br/>
-                    From slow queries to replication lag — nothing escapes .
+                <p style={{
+                    fontSize: 12, fontWeight: 300, color: 'rgba(107,119,153,.78)',
+                    lineHeight: 1.72, margin: '0 0 14px', maxWidth: 480,
+                    fontFamily: "'DM Sans',sans-serif",
+                    animation: 'fadeUp .8s ease .30s backwards',
+                }}>
+                    Real-time intelligence across your entire PostgreSQL fleet. From slow queries and
+                    replication lag to table bloat, vacuum cycles, and index health — nothing escapes
+                    pg_monitor. Six unified modules give your DBA team instant clarity on every layer
+                    of the stack, from connection pooling to cloud storage metrics.
                 </p>
 
-                {/* Status dots — one row */}
-                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '7px 18px', animation: 'fadeUp .8s ease .38s backwards' }}>
+                {/* Feature stats pills */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, marginBottom: 14,
+                    animation: 'fadeUp .8s ease .34s backwards',
+                    flexWrap: 'wrap',
+                }}>
+                    {FEATURE_STATS.map(({ val, desc }) => (
+                        <div key={desc} style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            padding: '6px 16px',
+                            borderRadius: 8,
+                            background: 'rgba(100,112,255,.06)',
+                            border: '1px solid rgba(100,112,255,.13)',
+                        }}>
+                            <span style={{
+                                fontFamily: "'JetBrains Mono',monospace", fontSize: 13,
+                                fontWeight: 700, color: '#818AFF', lineHeight: 1,
+                            }}>{val}</span>
+                            <span style={{
+                                fontFamily: "'DM Sans',sans-serif", fontSize: 9.5,
+                                color: 'rgba(107,119,153,.60)', marginTop: 3, whiteSpace: 'nowrap',
+                            }}>{desc}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Status dots */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexWrap: 'wrap', gap: '7px 18px',
+                    animation: 'fadeUp .8s ease .38s backwards',
+                }}>
                     {BOTTOM_DOTS.map(({ label, color }) => (
-                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: "'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '.6px', color: 'rgba(148,163,184,.62)' }}>
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0, boxShadow: `0 0 6px ${color}` }}/>
+                        <div key={label} style={{
+                            display: 'flex', alignItems: 'center', gap: 7,
+                            fontFamily: "'JetBrains Mono',monospace", fontSize: 9,
+                            letterSpacing: '.6px', color: 'rgba(148,163,184,.62)',
+                        }}>
+                            <span style={{
+                                width: 6, height: 6, borderRadius: '50%',
+                                background: color, flexShrink: 0, boxShadow: `0 0 6px ${color}`,
+                            }}/>
                             {label}
                         </div>
                     ))}
@@ -460,7 +529,9 @@ const ServerStatus = ({ status }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 //  INPUT FIELD
 // ─────────────────────────────────────────────────────────────────────────────
-const InputField = React.forwardRef(function InputField({ icon: Icon, label, type = 'text', value, onChange, placeholder, autoComplete, disabled, rightEl }, ref) {
+const InputField = React.forwardRef(function InputField(
+    { icon: Icon, label, type = 'text', value, onChange, placeholder, autoComplete, disabled, rightEl }, ref
+) {
     const [focused, setFocused] = useState(false);
     const hasVal = value.length > 0;
     return (
@@ -468,8 +539,12 @@ const InputField = React.forwardRef(function InputField({ icon: Icon, label, typ
             <label style={{ display: 'block', marginBottom: 7, fontSize: 9.5, fontWeight: 600, color: focused ? '#6470FF' : '#2E3A58', textTransform: 'uppercase', letterSpacing: '1.4px', fontFamily: "'JetBrains Mono',monospace", transition: 'color .2s' }}>{label}</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: focused ? 'rgba(100,112,255,.05)' : 'rgba(255,255,255,.025)', border: `1px solid ${focused ? 'rgba(100,112,255,.45)' : 'rgba(255,255,255,.07)'}`, borderRadius: 13, padding: '0 14px', transition: 'all .25s', boxShadow: focused ? '0 0 0 3.5px rgba(100,112,255,.08),inset 0 1px 0 rgba(255,255,255,.04)' : 'inset 0 1px 0 rgba(255,255,255,.025)' }}>
                 <Icon size={15} color={focused ? '#6470FF' : hasVal ? '#2E3A58' : '#161B2E'} style={{ flexShrink: 0, transition: 'color .2s' }}/>
-                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input"
-                       style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: '#E8EAF4', fontSize: 13.5, outline: 'none', fontFamily: "'DM Sans',sans-serif", fontWeight: 400, opacity: disabled ? .4 : 1 }}/>
+                <input
+                    ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)}
+                    placeholder={placeholder} autoComplete={autoComplete} disabled={disabled}
+                    onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input"
+                    style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: '#E8EAF4', fontSize: 13.5, outline: 'none', fontFamily: "'DM Sans',sans-serif", fontWeight: 400, opacity: disabled ? .4 : 1 }}
+                />
                 {rightEl}
             </div>
         </div>
@@ -482,11 +557,13 @@ const InputField = React.forwardRef(function InputField({ icon: Icon, label, typ
 const Corners = ({ color = 'rgba(100,112,255,.18)' }) => (
     <>
         {[
-            { top: 0, left: 0,    borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}`,    borderRadius: '3px 0 0 0' },
-            { top: 0, right: 0,   borderTop: `1px solid ${color}`, borderRight: `1px solid ${color}`,   borderRadius: '0 3px 0 0' },
-            { bottom: 0, left: 0,  borderBottom: `1px solid ${color}`, borderLeft: `1px solid ${color}`,  borderRadius: '0 0 0 3px' },
-            { bottom: 0, right: 0, borderBottom: `1px solid ${color}`, borderRight: `1px solid ${color}`, borderRadius: '0 0 3px 0' },
-        ].map(({ borderRadius, ...s }, i) => <div key={i} style={{ position: 'absolute', width: 14, height: 14, pointerEvents: 'none', borderRadius, ...s }}/>)}
+            { top: 0,    left: 0,   borderTop: `1px solid ${color}`,    borderLeft: `1px solid ${color}`,   borderRadius: '3px 0 0 0' },
+            { top: 0,    right: 0,  borderTop: `1px solid ${color}`,    borderRight: `1px solid ${color}`,  borderRadius: '0 3px 0 0' },
+            { bottom: 0, left: 0,   borderBottom: `1px solid ${color}`, borderLeft: `1px solid ${color}`,   borderRadius: '0 0 0 3px' },
+            { bottom: 0, right: 0,  borderBottom: `1px solid ${color}`, borderRight: `1px solid ${color}`,  borderRadius: '0 0 3px 0' },
+        ].map(({ borderRadius, ...s }, i) => (
+            <div key={i} style={{ position: 'absolute', width: 14, height: 14, pointerEvents: 'none', borderRadius, ...s }}/>
+        ))}
     </>
 );
 
@@ -563,7 +640,9 @@ const LoginPage = () => {
 
                 <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 365, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-                    <div style={{ marginBottom: 20, animation: 'fadeUp .6s ease .1s backwards' }}><LogoEmblem success={loginSuccess}/></div>
+                    <div style={{ marginBottom: 20, animation: 'fadeUp .6s ease .1s backwards' }}>
+                        <LogoEmblem success={loginSuccess}/>
+                    </div>
 
                     <div style={{ textAlign: 'center', marginBottom: 4, animation: 'fadeUp .6s ease .18s backwards', width: '100%' }}>
                         <h1 style={{ fontSize: 29, fontWeight: 400, color: '#E8EAF4', margin: 0, lineHeight: 1.1, letterSpacing: '-.04em', fontFamily: "'DM Serif Display',serif" }}>Welcome back</h1>
@@ -577,7 +656,17 @@ const LoginPage = () => {
                     </div>
 
                     {/* Card */}
-                    <div style={{ width: '100%', padding: '26px 24px 22px', borderRadius: 20, background: 'rgba(6,10,22,.88)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)', border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : error ? 'rgba(239,68,68,.25)' : 'rgba(255,255,255,.07)'}`, boxShadow: loginSuccess ? '0 0 70px rgba(34,197,94,.1),0 28px 60px rgba(0,0,0,.6)' : '0 28px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.03)', transition: 'border-color .55s,box-shadow .55s', animation: shake ? 'shake .5s ease' : 'fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{
+                        width: '100%', padding: '26px 24px 22px', borderRadius: 20,
+                        background: 'rgba(6,10,22,.88)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)',
+                        border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : error ? 'rgba(239,68,68,.25)' : 'rgba(255,255,255,.07)'}`,
+                        boxShadow: loginSuccess
+                            ? '0 0 70px rgba(34,197,94,.1),0 28px 60px rgba(0,0,0,.6)'
+                            : '0 28px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.03)',
+                        transition: 'border-color .55s,box-shadow .55s',
+                        animation: shake ? 'shake .5s ease' : 'fadeUp .7s ease .32s backwards',
+                        position: 'relative', overflow: 'hidden',
+                    }}>
                         <div style={{ position: 'absolute', top: 0, left: '8%', right: '8%', height: 1, background: loginSuccess ? 'linear-gradient(90deg,transparent,rgba(34,197,94,.55),transparent)' : 'linear-gradient(90deg,transparent,rgba(100,112,255,.38),transparent)', transition: 'background .55s', animation: 'edgePulse 3s ease-in-out infinite' }}/>
                         <Corners color={loginSuccess ? 'rgba(34,197,94,.20)' : 'rgba(100,112,255,.17)'}/>
 
@@ -598,9 +687,26 @@ const LoginPage = () => {
                         )}
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading || loginSuccess}/>
-                            <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading || loginSuccess}
-                                        rightEl={<button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#161B2E', padding: 4, display: 'flex', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#6B7799'} onMouseLeave={e => e.currentTarget.style.color = '#161B2E'}>{showPwd ? <EyeOff size={14}/> : <Eye size={14}/>}</button>}
+                            <InputField
+                                ref={userRef} icon={User} label="Username"
+                                value={username} onChange={setUsername}
+                                placeholder="Enter your username" autoComplete="username"
+                                disabled={authLoading || loginSuccess}
+                            />
+                            <InputField
+                                ref={pwdRef} icon={KeyRound} label="Password"
+                                type={showPwd ? 'text' : 'password'}
+                                value={password} onChange={setPassword}
+                                placeholder="Enter your password" autoComplete="current-password"
+                                disabled={authLoading || loginSuccess}
+                                rightEl={
+                                    <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#161B2E', padding: 4, display: 'flex', transition: 'color .2s' }}
+                                            onMouseEnter={e => e.currentTarget.style.color = '#6B7799'}
+                                            onMouseLeave={e => e.currentTarget.style.color = '#161B2E'}>
+                                        {showPwd ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                    </button>
+                                }
                             />
 
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: -2 }}>
@@ -610,22 +716,45 @@ const LoginPage = () => {
                                     </div>
                                     <span style={{ fontSize: 12, color: '#2E3A58', fontFamily: "'DM Sans',sans-serif" }}>Remember me</span>
                                 </div>
-                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#2E3A58', fontFamily: "'DM Sans',sans-serif", padding: 0, transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = '#2E3A58'}>
+                                <button type="button"
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#2E3A58', fontFamily: "'DM Sans',sans-serif", padding: 0, transition: 'color .2s' }}
+                                        onMouseEnter={e => e.currentTarget.style.color = '#818AFF'}
+                                        onMouseLeave={e => e.currentTarget.style.color = '#2E3A58'}>
                                     Forgot password?
                                 </button>
                             </div>
 
-                            <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
-                                    style={{ position: 'relative', overflow: 'hidden', background: btnBg, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.3)' : 'rgba(100,112,255,.28)'}` : '1px solid rgba(255,255,255,.04)', padding: '13px 20px', borderRadius: 12, color: 'white', fontWeight: 500, fontSize: 14, fontFamily: "'DM Sans',sans-serif", cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all .28s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
-                                {authLoading  ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }}/><span>Authenticating…</span></>
-                                    : loginSuccess ? <><CheckCircle size={15}/><span>Access Granted</span></>
-                                        :               <><span>Sign In</span><ArrowRight size={15} style={{ transition: 'transform .25s', transform: btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>}
+                            <button
+                                type="submit" disabled={!canSubmit}
+                                onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
+                                style={{
+                                    position: 'relative', overflow: 'hidden',
+                                    background: btnBg,
+                                    border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.3)' : 'rgba(100,112,255,.28)'}` : '1px solid rgba(255,255,255,.04)',
+                                    padding: '13px 20px', borderRadius: 12,
+                                    color: 'white', fontWeight: 500, fontSize: 14,
+                                    fontFamily: "'DM Sans',sans-serif",
+                                    cursor: canSubmit ? 'pointer' : 'not-allowed',
+                                    marginTop: 4,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                    transition: 'all .28s cubic-bezier(.4,0,.2,1)',
+                                    boxShadow: btnShadow,
+                                    transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)',
+                                }}>
+                                {authLoading
+                                    ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }}/><span>Authenticating…</span></>
+                                    : loginSuccess
+                                        ? <><CheckCircle size={15}/><span>Access Granted</span></>
+                                        : <><span>Sign In</span><ArrowRight size={15} style={{ transition: 'transform .25s', transform: btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>
+                                }
                             </button>
                         </form>
 
                         {!loginSuccess && (
                             <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,.04)', textAlign: 'center' }}>
-                                <span style={{ fontSize: 9, color: '#161B2E', fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.04em' }}>Admin access only · Contact your DBA for credentials</span>
+                                <span style={{ fontSize: 9, color: '#161B2E', fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.04em' }}>
+                                    Admin access only · Contact your DBA for credentials
+                                </span>
                             </div>
                         )}
                     </div>
