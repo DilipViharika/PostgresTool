@@ -1,36 +1,37 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
 import { THEME, ChartDefs } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
 import LoginPage from './components/auth/LoginPage.jsx';
 
-import OverviewTab from './components/views/OverviewTab.jsx';
-import PerformanceTab from './components/views/PerformanceTab.jsx';
-import ReliabilityTab from './components/views/ReliabilityTab.jsx';
-import ResourcesTab from './components/views/ResourcesTab.jsx';
-import IndexesTab from './components/views/IndexesTab.jsx';
-import AdminTab from './components/views/AdminTab.jsx';
-import SqlConsoleTab from './components/views/SqlConsoleTab.jsx';
-import ApiQueriesTab from './components/views/ApiQueriesTab.jsx';
-import UserManagementTab from './usermanagement/UserManagementTab.jsx';
-import RepositoryTab from './components/views/RepositoryTab.jsx';
-import AlertsComponent from './components/AlertsComponent';
-import QueryOptimizerTab from './components/views/QueryOptimizerTab.jsx';
-import ConnectionPoolTab from './components/views/ConnectionPoolTab.jsx';
-import SchemaVersioningTab from "./components/views/SchemaVersioningTab.jsx";
-import SecurityComplianceTab from './components/views/SecurityComplianceTab.jsx';
-import CapacityPlanningTab from './components/views/CapacityPlanningTab.jsx';
-import BackupRecoveryTab from './components/views/BackupRecoveryTab.jsx';
-import CheckpointMonitorTab from './components/views/CheckpointMonitorTab.jsx';
-import VacuumMaintenanceTab from './components/views/VacuumMaintenanceTab.jsx';
-import ReplicationWALTab from './components/views/ReplicationWALTab.jsx';
-import BloatAnalysisTab from './components/views/BloatAnalysisTab.jsx';
-import QueryPlanRegressionTab from './components/views/QueryPlanRegressionTab.jsx';
-import CloudWatchTab from './components/views/CloudWatchTab.jsx';
-import DBATaskSchedulerTab from './components/views/DBATaskSchedulerTab.jsx';
-import LogPatternAnalysisTab from './components/views/LogPatternAnalysisTab.jsx';
-import AlertCorrelationTab from './components/views/AlertCorrelationTab.jsx';
+/* ── Lazy-loaded tab components for faster initial load ── */
+const OverviewTab          = lazy(() => import('./components/views/OverviewTab.jsx'));
+const PerformanceTab       = lazy(() => import('./components/views/PerformanceTab.jsx'));
+const ReliabilityTab       = lazy(() => import('./components/views/ReliabilityTab.jsx'));
+const ResourcesTab         = lazy(() => import('./components/views/ResourcesTab.jsx'));
+const IndexesTab           = lazy(() => import('./components/views/IndexesTab.jsx'));
+const AdminTab             = lazy(() => import('./components/views/AdminTab.jsx'));
+const SqlConsoleTab        = lazy(() => import('./components/views/SqlConsoleTab.jsx'));
+const ApiQueriesTab        = lazy(() => import('./components/views/ApiQueriesTab.jsx'));
+const UserManagementTab    = lazy(() => import('./usermanagement/UserManagementTab.jsx'));
+const RepositoryTab        = lazy(() => import('./components/views/RepositoryTab.jsx'));
+const AlertsComponent      = lazy(() => import('./components/AlertsComponent'));
+const QueryOptimizerTab    = lazy(() => import('./components/views/QueryOptimizerTab.jsx'));
+const ConnectionPoolTab    = lazy(() => import('./components/views/ConnectionPoolTab.jsx'));
+const SchemaVersioningTab  = lazy(() => import('./components/views/SchemaVersioningTab.jsx'));
+const SecurityComplianceTab= lazy(() => import('./components/views/SecurityComplianceTab.jsx'));
+const CapacityPlanningTab  = lazy(() => import('./components/views/CapacityPlanningTab.jsx'));
+const BackupRecoveryTab    = lazy(() => import('./components/views/BackupRecoveryTab.jsx'));
+const CheckpointMonitorTab = lazy(() => import('./components/views/CheckpointMonitorTab.jsx'));
+const VacuumMaintenanceTab = lazy(() => import('./components/views/VacuumMaintenanceTab.jsx'));
+const ReplicationWALTab    = lazy(() => import('./components/views/ReplicationWALTab.jsx'));
+const BloatAnalysisTab     = lazy(() => import('./components/views/BloatAnalysisTab.jsx'));
+const QueryPlanRegressionTab = lazy(() => import('./components/views/QueryPlanRegressionTab.jsx'));
+const CloudWatchTab        = lazy(() => import('./components/views/CloudWatchTab.jsx'));
+const DBATaskSchedulerTab  = lazy(() => import('./components/views/DBATaskSchedulerTab.jsx'));
+const LogPatternAnalysisTab= lazy(() => import('./components/views/LogPatternAnalysisTab.jsx'));
+const AlertCorrelationTab  = lazy(() => import('./components/views/AlertCorrelationTab.jsx'));
 
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
@@ -398,26 +399,22 @@ const StatusPill = ({ connected }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────────
-   THEME TOGGLE — swaps the mutable DS object and forces full re-render
+   THEME TOGGLE — uses ThemeContext as single source of truth and
+   also keeps the mutable DS object in sync for legacy consumers
    ───────────────────────────────────────────────────────────────── */
 const ThemeToggle = () => {
-    const [isDark, setIsDark] = useState(() => DS._dark);
+    const { isDark, toggleTheme } = useTheme();
 
-    const toggle = () => {
+    const handleToggle = () => {
         const next = !isDark;
-        setIsDark(next);
+        /* Sync module-level DS so legacy inline styles re-read it on next render */
         DS = next ? DS_DARK : DS_LIGHT;
-        try { localStorage.setItem('vigil_theme', next ? 'dark' : 'light'); } catch {}
-        document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-        document.body.style.background = DS.bg;
-        document.body.style.color = DS.textPrimary;
-        // Force every ancestor that listens to re-render
-        window.dispatchEvent(new CustomEvent('vigil-theme-change', { detail: { isDark: next } }));
+        toggleTheme();
     };
 
     return (
         <button
-            onClick={toggle}
+            onClick={handleToggle}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             title={isDark ? 'Light mode' : 'Dark mode'}
             style={{
@@ -1893,6 +1890,10 @@ const useWebSocket = (onMessage) => {
    ───────────────────────────────────────────────────────────────── */
 const Dashboard = () => {
     const { logout, currentUser } = useAuth();
+    const { isDark } = useTheme();
+
+    /* Keep module-level DS in sync with ThemeContext on every render */
+    DS = isDark ? DS_DARK : DS_LIGHT;
 
     const [activeTab, setActiveTab] = useState(() => { try { return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || 'overview'; } catch { return 'overview'; } });
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true'; } catch { return false; } });
@@ -1901,15 +1902,7 @@ const Dashboard = () => {
     const [showFeedback, setShowFeedback] = useState(false);
     const [showProfile, setShowProfile]   = useState(false);
     const [profileUser, setProfileUser]   = useState(currentUser);
-    const [, forceRender] = useState(0);
     const prevTabRef = useRef(activeTab);
-
-    // Listen for theme changes — forces full re-render so all components pick up new DS
-    useEffect(() => {
-        const onThemeChange = () => forceRender(n => n + 1);
-        window.addEventListener('vigil-theme-change', onThemeChange);
-        return () => window.removeEventListener('vigil-theme-change', onThemeChange);
-    }, []);
 
     // Feedback prompt
     useEffect(() => {
@@ -2064,9 +2057,16 @@ const Dashboard = () => {
 
                     <div style={{ padding: '28px 32px', maxWidth: 1640, margin: '0 auto', minHeight: '100%' }}>
                         <ErrorBoundary key={activeTab}>
-                            <div key={activeTab} className="tab-mount">
-                                {ActiveComponent && <ActiveComponent />}
-                            </div>
+                            <Suspense fallback={
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, gap: 12, color: DS.textMuted, fontFamily: DS.fontUI }}>
+                                    <div style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${DS.border}`, borderTopColor: DS.cyan, animation: 'rotate 0.9s linear infinite' }} />
+                                    <span style={{ fontSize: 13 }}>Loading…</span>
+                                </div>
+                            }>
+                                <div key={activeTab} className="tab-mount">
+                                    {ActiveComponent && <ActiveComponent />}
+                                </div>
+                            </Suspense>
                         </ErrorBoundary>
                     </div>
                 </div>

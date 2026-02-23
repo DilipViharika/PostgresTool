@@ -155,10 +155,13 @@ const defaultFormData = (dbType = 'postgresql') => {
     };
 };
 
+const FONT_UI   = `'DM Sans', system-ui, sans-serif`;
+const FONT_MONO = `'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace`;
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
     root: {
-        fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+        fontFamily: FONT_UI,
         minHeight: '100vh',
         background: '#0d0f1a',
         color: '#c9d1d9',
@@ -192,11 +195,12 @@ const S = {
         border: `1px solid ${hasError ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
         borderRadius: 7, padding: '9px 12px', color: '#e5e7eb', fontSize: 13,
         outline: 'none', transition: 'border-color 0.2s',
-        fontFamily: 'inherit',
+        fontFamily: FONT_UI,
     }),
     label: {
         display: 'block', fontSize: 11, fontWeight: 700,
         color: '#6b7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em',
+        fontFamily: FONT_UI,
     },
 };
 
@@ -732,7 +736,7 @@ const ConnectionsTab = () => {
                         borderTop: `2px solid ${DB_TYPES[formData.dbType].accent}66`,
                         borderRadius: 14, padding: 30, zIndex: 1000,
                         boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
-                        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                        fontFamily: FONT_UI,
                     }}>
                         {/* Modal header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
