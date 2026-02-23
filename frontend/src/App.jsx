@@ -45,15 +45,9 @@ import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.j
 /* ─────────────────────────────────────────────────────────────────
    DESIGN TOKENS — single source of truth for the new visual system
    ───────────────────────────────────────────────────────────────── */
-const DS = {
-    // Palette
-    bg:           '#04060f',
-    bgDeep:       '#020409',
-    surface:      '#0a0f1e',
-    surfaceHover: '#0e1528',
-    border:       'rgba(255,255,255,0.06)',
-    borderAccent: 'rgba(56,189,248,0.25)',
 
+/* Accent colors shared by both themes */
+const DS_ACCENTS = {
     cyan:         '#38bdf8',
     cyanDim:      'rgba(56,189,248,0.15)',
     cyanGlow:     'rgba(56,189,248,0.35)',
@@ -63,20 +57,68 @@ const DS = {
     amber:        '#fbbf24',
     rose:         '#fb7185',
 
-    textPrimary:  '#f0f4ff',
-    textSub:      '#94a3b8',
-    textMuted:    '#475569',
-
     // Fonts
     fontMono: `'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace`,
     fontUI:   `'DM Sans', 'Sora', system-ui, sans-serif`,
-
-    // Shadows / Glows
-    glowCyan:   '0 0 20px rgba(56,189,248,0.18), 0 0 60px rgba(56,189,248,0.06)',
-    glowViolet: '0 0 20px rgba(129,140,248,0.18), 0 0 60px rgba(129,140,248,0.06)',
-    shadowCard: '0 4px 24px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.8)',
-    shadowDeep: '0 20px 60px rgba(0,0,0,0.7)',
 };
+
+const DS_DARK = {
+    ...DS_ACCENTS,
+    bg:           '#04060f',
+    bgDeep:       '#020409',
+    surface:      '#0a0f1e',
+    surfaceHover: '#0e1528',
+    border:       'rgba(255,255,255,0.06)',
+    borderAccent: 'rgba(56,189,248,0.25)',
+    textPrimary:  '#f0f4ff',
+    textSub:      '#94a3b8',
+    textMuted:    '#475569',
+    glowCyan:     '0 0 20px rgba(56,189,248,0.18), 0 0 60px rgba(56,189,248,0.06)',
+    glowViolet:   '0 0 20px rgba(129,140,248,0.18), 0 0 60px rgba(129,140,248,0.06)',
+    shadowCard:   '0 4px 24px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.8)',
+    shadowDeep:   '0 20px 60px rgba(0,0,0,0.7)',
+    sidebarBg:    '#050810',
+    sidebarBorder:'rgba(255,255,255,0.07)',
+    sidebarText:  '#64748b',
+    sidebarHover: 'rgba(255,255,255,0.03)',
+    headerBg:     'rgba(4,6,15,0.85)',
+    logoBg:       'linear-gradient(135deg, #38bdf8 0%, #818cf8 100%)',
+    logoText:     '#f0f4ff',
+    logoSub:      '#475569',
+    _dark: true,
+};
+
+const DS_LIGHT = {
+    ...DS_ACCENTS,
+    bg:           '#f0f4f8',
+    bgDeep:       '#e2e8f0',
+    surface:      '#ffffff',
+    surfaceHover: '#f1f5f9',
+    border:       'rgba(0,0,0,0.09)',
+    borderAccent: 'rgba(14,165,233,0.35)',
+    textPrimary:  '#0f172a',
+    textSub:      '#334155',
+    textMuted:    '#64748b',
+    glowCyan:     '0 0 20px rgba(14,165,233,0.12), 0 0 40px rgba(14,165,233,0.04)',
+    glowViolet:   '0 0 20px rgba(99,102,241,0.12), 0 0 40px rgba(99,102,241,0.04)',
+    shadowCard:   '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+    shadowDeep:   '0 20px 60px rgba(0,0,0,0.12)',
+    sidebarBg:    '#f8fafc',
+    sidebarBorder:'rgba(0,0,0,0.08)',
+    sidebarText:  '#475569',
+    sidebarHover: 'rgba(0,0,0,0.04)',
+    headerBg:     'rgba(240,244,248,0.92)',
+    logoBg:       'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
+    logoText:     '#0f172a',
+    logoSub:      '#64748b',
+    _dark: false,
+};
+
+/* Mutable DS — swapped by ThemeToggle, picked up on re-render */
+let DS = (() => {
+    try { return localStorage.getItem('vigil_theme') === 'light' ? DS_LIGHT : DS_DARK; }
+    catch { return DS_DARK; }
+})();
 
 /* ─────────────────────────────────────────────────────────────────
    TAB CONFIG
@@ -211,12 +253,12 @@ const AppStyles = () => (
 
         /* ── Nav hover transition ── */
         .nav-item { transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
-        .nav-item:hover { background: rgba(255,255,255,0.04) !important; }
+        .nav-item:hover { background: ${DS.sidebarHover} !important; }
         .nav-item:hover .nav-icon { opacity: 1 !important; }
 
         /* ── Section header ── */
         .section-btn { transition: all 0.15s ease; }
-        .section-btn:hover { background: rgba(255,255,255,0.03) !important; }
+        .section-btn:hover { background: ${DS.sidebarHover} !important; }
 
         /* ── Section tab animation ── */
         .section-open { animation: sectionOpen 0.18s ease-out both; }
@@ -267,7 +309,7 @@ const AppStyles = () => (
    AMBIENT BACKGROUND ORBS (decorative, pointer-events: none)
    ───────────────────────────────────────────────────────────────── */
 const AmbientOrbs = () => (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden', opacity: DS._dark ? 1 : 0.15, transition: 'opacity 0.4s ease' }}>
         {/* Top-left cyan orb */}
         <div style={{
             position: 'absolute', top: -120, left: -80, width: 500, height: 500,
@@ -356,26 +398,21 @@ const StatusPill = ({ connected }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────────
-   THEME TOGGLE
+   THEME TOGGLE — swaps the mutable DS object and forces full re-render
    ───────────────────────────────────────────────────────────────── */
 const ThemeToggle = () => {
-    const [isDark, setIsDark] = useState(() => {
-        try { return localStorage.getItem('vigil_theme') !== 'light'; }
-        catch { return true; }
-    });
+    const [isDark, setIsDark] = useState(() => DS._dark);
 
     const toggle = () => {
         const next = !isDark;
         setIsDark(next);
+        DS = next ? DS_DARK : DS_LIGHT;
         try { localStorage.setItem('vigil_theme', next ? 'dark' : 'light'); } catch {}
         document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-        if (next) {
-            document.body.style.background = '#04060f';
-            document.body.style.color = '#f0f4ff';
-        } else {
-            document.body.style.background = '#f1f5f9';
-            document.body.style.color = '#0f172a';
-        }
+        document.body.style.background = DS.bg;
+        document.body.style.color = DS.textPrimary;
+        // Force every ancestor that listens to re-render
+        window.dispatchEvent(new CustomEvent('vigil-theme-change', { detail: { isDark: next } }));
     };
 
     return (
@@ -385,17 +422,17 @@ const ThemeToggle = () => {
             title={isDark ? 'Light mode' : 'Dark mode'}
             style={{
                 width: 38, height: 38, borderRadius: 10,
-                background: isDark ? 'rgba(251,191,36,0.08)' : 'rgba(56,189,248,0.08)',
-                border: `1px solid ${isDark ? 'rgba(251,191,36,0.25)' : 'rgba(56,189,248,0.25)'}`,
+                background: isDark ? 'rgba(251,191,36,0.08)' : 'rgba(14,165,233,0.08)',
+                border: `1px solid ${isDark ? 'rgba(251,191,36,0.25)' : 'rgba(14,165,233,0.3)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', transition: 'all 0.2s ease',
+                cursor: 'pointer', transition: 'all 0.25s ease',
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
         >
             {isDark
                 ? <Sun size={16} color="rgba(251,191,36,0.9)" />
-                : <Moon size={16} color="rgba(56,189,248,0.9)" />
+                : <Moon size={16} color="rgba(14,165,233,0.9)" />
             }
         </button>
     );
@@ -1481,8 +1518,8 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
         <aside style={{
             width: W,
             minWidth: W,
-            background: '#050810',
-            borderRight: '1px solid rgba(255,255,255,0.07)',
+            background: DS.sidebarBg,
+            borderRight: `1px solid ${DS.sidebarBorder}`,
             display: 'flex',
             flexDirection: 'column',
             zIndex: 50,
@@ -1505,12 +1542,12 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 justifyContent: collapsed ? 'center' : 'flex-start',
                 padding: collapsed ? 0 : '0 18px',
                 gap: 12,
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                borderBottom: `1px solid ${DS.border}`,
             }}>
                 {/* Icon mark */}
                 <div style={{
                     width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                    background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 100%)',
+                    background: DS.logoBg,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: '0 0 16px rgba(56,189,248,0.35)',
                 }}>
@@ -1522,13 +1559,13 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
                         <span style={{
                             fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em',
-                            color: '#f0f4ff',
+                            color: DS.logoText,
                         }}>
-                            PG <span style={{ color: '#38bdf8' }}>Monitor</span>
+                            PG <span style={{ color: DS.cyan }}>Monitor</span>
                         </span>
                         <span style={{
                             fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase',
-                            color: '#475569', fontFamily: DS.fontMono, marginTop: 2,
+                            color: DS.logoSub, fontFamily: DS.fontMono, marginTop: 2,
                         }}>
                             Database Intelligence
                         </span>
@@ -1583,7 +1620,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                         letterSpacing: '0.1em',
                                         textTransform: 'uppercase',
                                         fontFamily: DS.fontMono,
-                                        color: hasActive ? group.accent : '#334155',
+                                        color: hasActive ? group.accent : DS.sidebarText,
                                     }}>
                                         {group.section}
                                     </span>
@@ -1631,7 +1668,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                                         ? `3px solid ${group.accent}`
                                                         : '3px solid transparent',
                                                     cursor: 'pointer',
-                                                    color: isActive ? group.accent : '#64748b',
+                                                    color: isActive ? group.accent : DS.sidebarText,
                                                     fontWeight: isActive ? 600 : 400,
                                                     fontSize: 13,
                                                     textAlign: 'left',
@@ -1644,14 +1681,14 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                                 }}
                                                 onMouseEnter={e => {
                                                     if (!isActive) {
-                                                        e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-                                                        e.currentTarget.style.color = '#94a3b8';
+                                                        e.currentTarget.style.background = DS.sidebarHover;
+                                                        e.currentTarget.style.color = DS.textSub;
                                                     }
                                                 }}
                                                 onMouseLeave={e => {
                                                     if (!isActive) {
                                                         e.currentTarget.style.background = 'transparent';
-                                                        e.currentTarget.style.color = '#64748b';
+                                                        e.currentTarget.style.color = DS.sidebarText;
                                                     }
                                                 }}
                                             >
@@ -1708,7 +1745,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
 
             {/* ── FOOTER ── */}
             <div style={{
-                borderTop: '1px solid rgba(255,255,255,0.06)',
+                borderTop: `1px solid ${DS.border}`,
                 padding: collapsed ? '10px 0' : '10px 8px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -1758,13 +1795,13 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                         display: 'flex', alignItems: 'center',
                         justifyContent: collapsed ? 'center' : 'flex-start',
                         gap: 10, background: 'transparent', border: 'none',
-                        color: '#475569', cursor: 'pointer',
+                        color: DS.sidebarText, cursor: 'pointer',
                         padding: collapsed ? '9px 0' : '8px 10px',
                         fontSize: 13, fontWeight: 400, borderRadius: 8, width: '100%',
                         fontFamily: DS.fontUI, transition: 'color 0.15s, background 0.15s',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.color = DS.violet; e.currentTarget.style.background = 'rgba(129,140,248,0.08)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = DS.sidebarText; e.currentTarget.style.background = 'transparent'; }}
                 >
                     <MessageSquarePlus size={15} style={{ flexShrink: 0 }} />
                     {!collapsed && 'Feedback'}
@@ -1778,13 +1815,13 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                         display: 'flex', alignItems: 'center',
                         justifyContent: collapsed ? 'center' : 'flex-start',
                         gap: 10, background: 'none', border: 'none',
-                        color: '#475569', cursor: 'pointer',
+                        color: DS.sidebarText, cursor: 'pointer',
                         padding: collapsed ? '9px 0' : '8px 10px',
                         fontSize: 13, borderRadius: 8, width: '100%',
                         fontFamily: DS.fontUI, transition: 'color 0.15s, background 0.15s',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.color = DS.rose; e.currentTarget.style.background = 'rgba(251,113,133,0.08)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'none'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = DS.sidebarText; e.currentTarget.style.background = 'none'; }}
                 >
                     <LogOut size={15} style={{ flexShrink: 0 }} />
                     {!collapsed && 'Sign Out'}
@@ -1798,24 +1835,24 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 style={{
                     position: 'absolute', right: -11, top: 76,
                     width: 22, height: 22, borderRadius: '50%',
-                    background: '#0a0f1e',
-                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: DS.surface,
+                    border: `1px solid ${DS.border}`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: '#475569', zIndex: 51,
+                    cursor: 'pointer', color: DS.sidebarText, zIndex: 51,
                     transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                    boxShadow: DS.shadowCard,
                 }}
                 onMouseEnter={e => {
                     e.currentTarget.style.background = DS.cyan;
-                    e.currentTarget.style.color = '#020409';
+                    e.currentTarget.style.color = DS._dark ? '#020409' : '#ffffff';
                     e.currentTarget.style.borderColor = DS.cyan;
                     e.currentTarget.style.boxShadow = DS.glowCyan;
                     e.currentTarget.style.transform = 'scale(1.15)';
                 }}
                 onMouseLeave={e => {
-                    e.currentTarget.style.background = '#0a0f1e';
-                    e.currentTarget.style.color = '#475569';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                    e.currentTarget.style.background = DS.surface;
+                    e.currentTarget.style.color = DS.sidebarText;
+                    e.currentTarget.style.borderColor = DS.border;
                     e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
                     e.currentTarget.style.transform = 'scale(1)';
                 }}
@@ -1864,7 +1901,15 @@ const Dashboard = () => {
     const [showFeedback, setShowFeedback] = useState(false);
     const [showProfile, setShowProfile]   = useState(false);
     const [profileUser, setProfileUser]   = useState(currentUser);
+    const [, forceRender] = useState(0);
     const prevTabRef = useRef(activeTab);
+
+    // Listen for theme changes — forces full re-render so all components pick up new DS
+    useEffect(() => {
+        const onThemeChange = () => forceRender(n => n + 1);
+        window.addEventListener('vigil-theme-change', onThemeChange);
+        return () => window.removeEventListener('vigil-theme-change', onThemeChange);
+    }, []);
 
     // Feedback prompt
     useEffect(() => {
@@ -1946,7 +1991,7 @@ const Dashboard = () => {
                     display: 'flex', alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '0 28px',
-                    background: 'rgba(4,6,15,0.85)',
+                    background: DS.headerBg,
                     backdropFilter: 'blur(20px)',
                     position: 'sticky', top: 0, zIndex: 40,
                 }}>
