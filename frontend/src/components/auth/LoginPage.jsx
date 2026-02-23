@@ -367,107 +367,115 @@ const LeftPanel = () => {
                 </div>
             </div>
 
-            {/* Bottom gradient scrim */}
+            {/* Bottom gradient scrim — taller so text block sits on solid dark */}
             <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: '54%',
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
                 pointerEvents: 'none', zIndex: 3,
-                background: 'linear-gradient(to top, rgba(7,8,15,1) 0%, rgba(7,8,15,.78) 44%, transparent 100%)',
+                background: 'linear-gradient(to top, rgba(7,8,15,1) 0%, rgba(7,8,15,.92) 55%, transparent 100%)',
             }}/>
 
-            {/* ── Hero text block — horizontally centred ── */}
+            {/* ── Hero text block — centred, compact, fixed height ── */}
             <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0,
-                padding: '0 32px 28px',
+                height: '34%',
                 zIndex: 8,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
                 textAlign: 'center',
+                padding: '0 48px',
+                gap: 10,
             }}>
 
                 {/* Eyebrow */}
                 <div style={{
-                    display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10,
+                    display: 'flex', alignItems: 'center', gap: 10,
                     animation: 'fadeUp .8s ease .15s backwards',
                 }}>
-                    <div style={{ width: 20, height: 1, background: 'rgba(100,112,255,.70)' }}/>
+                    <div style={{ width: 18, height: 1, background: 'rgba(100,112,255,.60)' }}/>
                     <span style={{
-                        fontFamily: "'JetBrains Mono',monospace", fontSize: 9.5,
+                        fontFamily: "'JetBrains Mono',monospace", fontSize: 9,
                         letterSpacing: '3px', textTransform: 'uppercase', color: '#6470FF',
                     }}>
                         Database Observability
                     </span>
-                    <div style={{ width: 20, height: 1, background: 'rgba(100,112,255,.70)' }}/>
+                    <div style={{ width: 18, height: 1, background: 'rgba(100,112,255,.60)' }}/>
                 </div>
 
-                {/* Headline — single line, no forced break */}
-                <div style={{ marginBottom: 10, animation: 'fadeUp .8s ease .22s backwards' }}>
+                {/* Headline */}
+                <div style={{ animation: 'fadeUp .8s ease .22s backwards' }}>
                     <div style={{
                         fontFamily: "'DM Serif Display',serif",
-                        fontSize: 'clamp(24px,2.6vw,42px)',
-                        fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.4px', color: '#E8EAF4',
+                        fontSize: 'clamp(22px,2.2vw,36px)',
+                        fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.3px', color: '#E8EAF4',
                         whiteSpace: 'nowrap',
                     }}>
-                        Monitor every query,{' '}
+                        Monitor every query,&nbsp;
                         <em style={{ fontStyle: 'italic', color: '#818AFF' }}>beautifully.</em>
                     </div>
                 </div>
 
-                {/* Sub-text */}
+                {/* Sub-text — short, 1 line */}
                 <p style={{
-                    fontSize: 12, fontWeight: 300, color: 'rgba(107,119,153,.78)',
-                    lineHeight: 1.72, margin: '0 0 14px', maxWidth: 480,
+                    fontSize: 11.5, fontWeight: 300, color: 'rgba(107,119,153,.72)',
+                    lineHeight: 1.65, margin: 0, maxWidth: 520,
                     fontFamily: "'DM Sans',sans-serif",
                     animation: 'fadeUp .8s ease .30s backwards',
                 }}>
-                    Real-time intelligence across your entire PostgreSQL fleet. From slow queries and
-                    replication lag to table bloat, vacuum cycles, and index health — nothing escapes
-                    pg_monitor. Six unified modules give your DBA team instant clarity on every layer
-                    of the stack, from connection pooling to cloud storage metrics.
+                    Real-time intelligence across your PostgreSQL fleet — slow queries, replication lag,
+                    vacuum cycles, index health, and bloat. Six modules, zero blind spots.
                 </p>
 
-                {/* Feature stats pills */}
+                {/* Stats + dots in one horizontal row */}
                 <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    gap: 8, marginBottom: 14,
+                    gap: 6,
                     animation: 'fadeUp .8s ease .34s backwards',
-                    flexWrap: 'wrap',
+                    flexWrap: 'nowrap',
                 }}>
-                    {FEATURE_STATS.map(({ val, desc }) => (
-                        <div key={desc} style={{
-                            display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            padding: '6px 16px',
-                            borderRadius: 8,
-                            background: 'rgba(100,112,255,.06)',
-                            border: '1px solid rgba(100,112,255,.13)',
-                        }}>
-                            <span style={{
-                                fontFamily: "'JetBrains Mono',monospace", fontSize: 13,
-                                fontWeight: 700, color: '#818AFF', lineHeight: 1,
-                            }}>{val}</span>
-                            <span style={{
-                                fontFamily: "'DM Sans',sans-serif", fontSize: 9.5,
-                                color: 'rgba(107,119,153,.60)', marginTop: 3, whiteSpace: 'nowrap',
-                            }}>{desc}</span>
-                        </div>
+                    {FEATURE_STATS.map(({ val, desc }, i) => (
+                        <React.Fragment key={desc}>
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                padding: '4px 12px',
+                                borderRadius: 7,
+                                background: 'rgba(100,112,255,.06)',
+                                border: '1px solid rgba(100,112,255,.12)',
+                                whiteSpace: 'nowrap',
+                            }}>
+                                <span style={{
+                                    fontFamily: "'JetBrains Mono',monospace", fontSize: 11,
+                                    fontWeight: 700, color: '#818AFF',
+                                }}>{val}</span>
+                                <span style={{
+                                    fontFamily: "'DM Sans',sans-serif", fontSize: 9,
+                                    color: 'rgba(107,119,153,.55)',
+                                }}>{desc}</span>
+                            </div>
+                            {i < FEATURE_STATS.length - 1 && (
+                                <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,.07)', flexShrink: 0 }}/>
+                            )}
+                        </React.Fragment>
                     ))}
                 </div>
 
                 {/* Status dots */}
                 <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexWrap: 'wrap', gap: '7px 18px',
-                    animation: 'fadeUp .8s ease .38s backwards',
+                    gap: 20,
+                    animation: 'fadeUp .8s ease .40s backwards',
                 }}>
                     {BOTTOM_DOTS.map(({ label, color }) => (
                         <div key={label} style={{
-                            display: 'flex', alignItems: 'center', gap: 7,
-                            fontFamily: "'JetBrains Mono',monospace", fontSize: 9,
-                            letterSpacing: '.6px', color: 'rgba(148,163,184,.62)',
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            fontFamily: "'JetBrains Mono',monospace", fontSize: 8.5,
+                            letterSpacing: '.5px', color: 'rgba(148,163,184,.55)',
+                            whiteSpace: 'nowrap',
                         }}>
                             <span style={{
-                                width: 6, height: 6, borderRadius: '50%',
-                                background: color, flexShrink: 0, boxShadow: `0 0 6px ${color}`,
+                                width: 5, height: 5, borderRadius: '50%',
+                                background: color, flexShrink: 0, boxShadow: `0 0 5px ${color}`,
                             }}/>
                             {label}
                         </div>
