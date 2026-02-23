@@ -15,21 +15,28 @@ import {
     Trash2, ArrowUp, ArrowDown, Code, BookOpen, Star,
     ChevronRight, Timer, Layers, Eye, Keyboard, Pause,
     Maximize2, Minimize2, Hash, RefreshCw, X, History,
-    Braces, FileJson, FileSpreadsheet, Columns, Shield,
-    Activity, Network, HardDrive, Lock, ArrowUpRight,
-    Plus, Minus, GitBranch, Diff, AlignLeft, Settings,
-    Bell, Share2, Save, FolderOpen, Tag, Filter,
-    ChevronLeft, MoreHorizontal, Cpu, MemoryStick,
-    SplitSquareHorizontal, Bookmark, Variable, FlaskConical,
+    FileJson, FileSpreadsheet, Columns, Shield,
+    Activity, Network, HardDrive, Lock,
+    Plus, GitBranch, Settings,
+    Save, Filter,
+    ChevronLeft, Bookmark, Variable,
     ShieldOff, AlignJustify, ChevronLast, ChevronFirst,
-    SkipBack, SkipForward, PanelRightClose, PanelRightOpen,
-    Scissors, Wand2, Circle, TrendingUp, Gauge, Globe, Info,
-    ListFilter, LayoutGrid, List, Sparkles, Lightbulb,
-    MessageSquare, FileCode, WifiOff, RefreshCcw, PieChart,
-    Sliders, Eye as EyeIcon, EyeOff, Pin, Unpin, RotateCcw,
-    BrainCircuit, FlameKindling, Workflow, Boxes, Layers2,
-    CopyCheck, ClipboardList, ScanLine, Telescope, LineChart
+    PanelRightClose, PanelRightOpen,
+    Scissors, Circle, TrendingUp, Gauge, Globe,
+    Sparkles, Lightbulb,
+    RefreshCcw,
+    Sliders, EyeOff, Pin, RotateCcw,
+    Cpu, Diff, MoreHorizontal,
+    TrendingDown, LineChart,
+    ClipboardList, Workflow,
+    FlameKindling, GitMerge,
+    CopyCheck, Brain
 } from 'lucide-react';
+
+// Aliases for icons that may differ by version
+const BrainCircuit = Brain;
+const EyeIcon = Eye;
+const Unpin = Pin;
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT
