@@ -8,8 +8,7 @@ import {
   AlertOctagon, Cpu, Database, Server, Wifi, HardDrive, GitBranch,
   CornerDownRight, ExternalLink, ChevronRight, Minus, Edit3, Copy,
   Download, Upload, Moon, Sun, SlidersHorizontal, MessageSquare,
-  Users, UserCheck, UserX, AtSign, Send, Lock, Unlock, Radio,
-  Network, CheckSquare, XSquare, Play, CalendarOff, FlaskConical
+  Users, AtSign, Send, Lock, GitMerge, CheckCircle, XCircle
 } from 'lucide-react';
 import { THEME, useAdaptiveTheme } from '../utils/theme.jsx';
 
@@ -480,7 +479,7 @@ const VIGILDashboard = () => {
     const scoreColor = score >= 8 ? SEVERITY.critical.color : score >= 5 ? SEVERITY.warning.color : SEVERITY.info.color;
     return (
         <div style={{ background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 16px 14px 56px' }}>
-          <div style={{ ...css.sHdr, marginBottom: 12 }}><Network size={9} /> Impact Radius Estimator</div>
+          <div style={{ ...css.sHdr, marginBottom: 12 }}><GitMerge size={9} /> Impact Radius Estimator</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr', gap: 16, alignItems: 'center', marginBottom: 12 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', border: `3px solid ${scoreColor}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `${scoreColor}10` }}>
@@ -527,8 +526,8 @@ const VIGILDashboard = () => {
             <div style={{ fontSize: 10, color: '#6b7280' }}>Ack requested by <span style={{ color: '#9ca3af' }}>{pending.requestedBy || 'you'}</span></div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={() => approveAck(alert.id)} style={css.btn('success')}><CheckSquare size={11} /> Approve</button>
-            <button onClick={() => rejectAck(alert.id)} style={css.btn('danger')}><XSquare size={11} /> Reject</button>
+            <button onClick={() => approveAck(alert.id)} style={css.btn('success')}><CheckCircle size={11} /> Approve</button>
+            <button onClick={() => rejectAck(alert.id)} style={css.btn('danger')}><XCircle size={11} /> Reject</button>
           </div>
         </div>
     );
@@ -622,7 +621,7 @@ const VIGILDashboard = () => {
                                 <button onClick={() => escalateAlert(alert.id)} style={{ ...css.btn('ghost'), color: '#f87171', borderColor: 'rgba(248,113,113,0.2)' }}><ArrowUpRight size={11} /> Escalate</button>
                                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 5 }}>
                                   <button onClick={() => setShowImpactPanel(isImpact ? null : alert.id)} style={{ ...css.btn('ghost'), color: isImpact ? '#38bdf8' : '#6b7280', borderColor: isImpact ? 'rgba(56,189,248,0.25)' : 'transparent' }}>
-                                    <Network size={11} /> Impact
+                                    <GitMerge size={11} /> Impact
                                     {alert.impactRadius?.users > 0 && <span style={{ fontSize: 9, background: 'rgba(56,189,248,0.15)', color: '#38bdf8', borderRadius: 2, padding: '1px 4px' }}>{alert.impactRadius.users >= 1000 ? `${(alert.impactRadius.users/1000).toFixed(0)}k` : alert.impactRadius.users}</span>}
                                   </button>
                                   <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), color: isComments ? '#818cf8' : '#6b7280', borderColor: isComments ? 'rgba(99,102,241,0.3)' : 'transparent' }}>
@@ -676,7 +675,7 @@ const VIGILDashboard = () => {
         <div style={{ ...css.card, padding: 16, marginBottom: 16, borderColor: 'rgba(99,102,241,0.2)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <FlaskConical size={14} color="#818cf8" />
+              <Zap size={14} color="#818cf8" />
               <div>
                 <div style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>Alert Rule Simulator</div>
                 <div style={{ fontSize: 10, color: '#4b5563' }}>Fire a test alert without affecting production</div>
@@ -694,7 +693,7 @@ const VIGILDashboard = () => {
             <button onClick={runSimulator} disabled={simState.running} style={{ ...css.btn('primary'), opacity: simState.running ? 0.7 : 1, minWidth: 130 }}>
               {simState.running
                   ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Simulating…</>
-                  : <><Play size={12} /> Run Simulation</>}
+                  : <><PlayCircle size={12} /> Run Simulation</>}
             </button>
           </div>
           {simState.result && (
@@ -780,7 +779,7 @@ const VIGILDashboard = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div>
               <div style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 700, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CalendarOff size={12} color="#6b7280" /> Suppression Windows
+                <Shield size={12} color="#6b7280" /> Suppression Windows
               </div>
               <div style={{ fontSize: 10, color: '#4b5563' }}>Schedule maintenance windows to suppress expected alerts</div>
             </div>
@@ -819,7 +818,7 @@ const VIGILDashboard = () => {
       <div>
         {/* Notification Channel Health */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ ...css.sHdr, marginBottom: 12 }}><Radio size={9} /> Notification Channel Health</div>
+          <div style={{ ...css.sHdr, marginBottom: 12 }}><Wifi size={9} /> Notification Channel Health</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
             {CHANNEL_STATUS.map(ch => {
               const statusColor = ch.status === 'operational' ? SEVERITY.resolved.color : ch.status === 'degraded' ? SEVERITY.warning.color : SEVERITY.critical.color;
