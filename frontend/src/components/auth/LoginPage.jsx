@@ -40,7 +40,6 @@ const hsl = (c, a) => `hsla(${c.h},${c.s}%,${c.l}%,${a})`;
 // ─────────────────────────────────────────────────────────────────────────────
 const GlobalStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Outfit:wght@300;400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; }
 
@@ -293,10 +292,10 @@ const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
                 }}>
                     <div style={{ width: isPrimary ? 7 : 5, height: isPrimary ? 7 : 5, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}CC`, flexShrink: 0 }}/>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: isPrimary ? 9 : 7.5, fontWeight: 700, color: 'rgba(235,238,252,.95)', letterSpacing: '1px', textTransform: 'uppercase', lineHeight: 1 }}>
+                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 9 : 7.5, fontWeight: 700, color: 'rgba(235,238,252,.95)', letterSpacing: '1px', textTransform: 'uppercase', lineHeight: 1 }}>
                             {def.label}
                         </span>
-                        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: isPrimary ? 7.5 : 6.5, color: `${color}99`, letterSpacing: '.5px', lineHeight: 1 }}>
+                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 7.5 : 6.5, color: `${color}99`, letterSpacing: '.5px', lineHeight: 1 }}>
                             {def.sub}
                         </span>
                     </div>
@@ -368,8 +367,8 @@ const LeftPanel = () => {
                     <Database size={18} color="#fff" strokeWidth={1.8}/>
                 </div>
                 <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(235,238,252,.95)', fontFamily: "'Outfit',sans-serif", letterSpacing: '-.2px', lineHeight: 1 }}>PG MONITOR</div>
-                    <div style={{ fontSize: 8, color: 'rgba(100,112,255,.6)', fontFamily: "'JetBrains Mono',monospace", marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>PostgreSQL Intelligence</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(235,238,252,.95)', fontFamily: THEME.fontBody, letterSpacing: '-.2px', lineHeight: 1 }}>PG MONITOR</div>
+                    <div style={{ fontSize: 8, color: 'rgba(100,112,255,.6)', fontFamily: THEME.fontMono, marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>PostgreSQL Intelligence</div>
                 </div>
             </div>
 
@@ -404,7 +403,7 @@ const LeftPanel = () => {
                     animation: 'fadeUp .8s ease .1s backwards',
                 }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#6470FF', boxShadow: '0 0 8px #6470FF', display: 'inline-block', animation: 'dotBlink 2.5s ease-in-out infinite' }}/>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 8.5, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(130,140,255,.80)' }}>
+                    <span style={{ fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(130,140,255,.80)' }}>
                         Database Observability Platform
                     </span>
                 </div>
@@ -437,7 +436,7 @@ const LeftPanel = () => {
                 <p style={{
                     fontSize: 11.5, fontWeight: 300, color: 'rgba(130,145,175,.68)',
                     lineHeight: 1.75, margin: 0, maxWidth: 500,
-                    fontFamily: "'Outfit',sans-serif",
+                    fontFamily: THEME.fontBody,
                     animation: 'fadeUp .85s ease .30s backwards',
                 }}>
                     Real-time intelligence across your PostgreSQL fleet — slow queries, replication lag,
@@ -456,8 +455,8 @@ const LeftPanel = () => {
                                 borderRadius: 8,
                                 cursor: 'default',
                             }}>
-                                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 700, color: '#8B94FF', letterSpacing: '-.3px' }}>{val}</span>
-                                <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 10, color: 'rgba(130,145,175,.52)' }}>{desc}</span>
+                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: '#8B94FF', letterSpacing: '-.3px' }}>{val}</span>
+                                <span style={{ fontFamily: THEME.fontBody, fontSize: 10, color: 'rgba(130,145,175,.52)' }}>{desc}</span>
                             </div>
                             {i < FEATURE_STATS.length - 1 && (
                                 <div style={{ width: 1, height: 14, background: THEME.grid, flexShrink: 0 }}/>
@@ -471,7 +470,7 @@ const LeftPanel = () => {
                     {BOTTOM_DOTS.map(({ label, color }) => (
                         <div key={label} style={{
                             display: 'flex', alignItems: 'center', gap: 6,
-                            fontFamily: "'JetBrains Mono',monospace", fontSize: 8.5,
+                            fontFamily: THEME.fontMono, fontSize: 8.5,
                             letterSpacing: '.5px', color: 'rgba(140,155,185,.48)',
                         }}>
                             <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}AA`, flexShrink: 0 }}/>
@@ -541,7 +540,7 @@ const ServerStatus = ({ status }) => {
             display: 'inline-flex', alignItems: 'center', gap: 7,
             padding: '5px 14px 5px 10px', borderRadius: 100,
             background: `${color}0D`, border: `1px solid ${color}28`,
-            fontFamily: "'JetBrains Mono',monospace", fontSize: 9.5,
+            fontFamily: THEME.fontMono, fontSize: 9.5,
         }}>
             {chk
                 ? <><Loader size={9} color="#334155" style={{ animation: 'spin 1s linear infinite' }}/><span style={{ color: '#334155', letterSpacing: '.05em' }}>CHECKING…</span></>
@@ -576,7 +575,7 @@ const InputField = React.forwardRef(function InputField(
                 display: 'block', marginBottom: 7, fontSize: 9, fontWeight: 600,
                 color: focused ? '#818AFF' : THEME.textMuted,
                 textTransform: 'uppercase', letterSpacing: '1.6px',
-                fontFamily: "'JetBrains Mono',monospace", transition: 'color .2s',
+                fontFamily: THEME.fontMono, transition: 'color .2s',
             }}>{label}</label>
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -594,7 +593,7 @@ const InputField = React.forwardRef(function InputField(
                     placeholder={placeholder} autoComplete={autoComplete} disabled={disabled}
                     onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
                     className="vi-input"
-                    style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: "'Outfit',sans-serif", fontWeight: 400, opacity: disabled ? .4 : 1 }}
+                    style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}
                 />
                 {rightEl}
             </div>
@@ -682,7 +681,7 @@ const LoginPage = () => {
         : 'none';
 
     return (
-        <div style={{ height: '100vh', width: '100vw', display: 'flex', background: THEME.bg, fontFamily: "'Outfit',sans-serif", overflow: 'hidden' }}>
+        <div style={{ height: '100vh', width: '100vw', display: 'flex', background: THEME.bg, fontFamily: THEME.fontBody, overflow: 'hidden' }}>
             <GlobalStyles/>
             <LeftPanel/>
 
@@ -715,7 +714,7 @@ const LoginPage = () => {
                         <h1 style={{ fontSize: 30, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>
                             Welcome back
                         </h1>
-                        <p style={{ color: THEME.textMuted, margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: "'Outfit',sans-serif", fontWeight: 300 }}>
+                        <p style={{ color: THEME.textMuted, margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: THEME.fontBody, fontWeight: 300 }}>
                             Sign in to your monitoring dashboard
                         </p>
                     </div>
@@ -753,14 +752,14 @@ const LoginPage = () => {
                                 <div style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', border: '2px solid rgba(34,197,94,.28)', animation: 'ripple 1.1s ease-out forwards' }}/>
                                 <CheckCircle size={44} color="#22c55e" style={{ animation: 'successPop .5s cubic-bezier(.34,1.56,.64,1) backwards', marginBottom: 14 }}/>
                                 <div style={{ color: '#22c55e', fontSize: 16, fontWeight: 700, fontFamily: "'Playfair Display',serif", animation: 'fadeUp .4s ease .2s backwards' }}>Authenticated</div>
-                                <div style={{ color: 'rgba(100,116,139,.58)', fontSize: 10, marginTop: 6, fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.06em', animation: 'fadeUp .4s ease .35s backwards' }}>Redirecting to dashboard…</div>
+                                <div style={{ color: 'rgba(100,116,139,.58)', fontSize: 10, marginTop: 6, fontFamily: THEME.fontMono, letterSpacing: '.06em', animation: 'fadeUp .4s ease .35s backwards' }}>Redirecting to dashboard…</div>
                             </div>
                         )}
 
                         {error && (
                             <div style={{ marginBottom: 18, padding: '10px 14px', borderRadius: 11, background: 'rgba(239,68,68,.07)', border: '1px solid rgba(239,68,68,.20)', display: 'flex', alignItems: 'center', gap: 10, animation: 'slideDown .3s ease backwards' }}>
                                 <AlertCircle size={13} color="#ef4444" style={{ flexShrink: 0 }}/>
-                                <span style={{ color: '#ef4444', fontSize: 12, fontWeight: 500, fontFamily: "'Outfit',sans-serif" }}>{error}</span>
+                                <span style={{ color: '#ef4444', fontSize: 12, fontWeight: 500, fontFamily: THEME.fontBody }}>{error}</span>
                             </div>
                         )}
 
@@ -779,15 +778,15 @@ const LoginPage = () => {
                                     <div style={{ width: 16, height: 16, borderRadius: 5, flexShrink: 0, border: `1.5px solid ${rememberMe ? '#6470FF' : 'rgba(255,255,255,.12)'}`, background: rememberMe ? '#6470FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .25s cubic-bezier(.34,1.56,.64,1)', boxShadow: rememberMe ? '0 0 12px rgba(100,112,255,.45)' : 'none' }}>
                                         {rememberMe && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                     </div>
-                                    <span style={{ fontSize: 12, color: 'rgba(100,116,139,.58)', fontFamily: "'Outfit',sans-serif" }}>Remember me</span>
+                                    <span style={{ fontSize: 12, color: 'rgba(100,116,139,.58)', fontFamily: THEME.fontBody }}>Remember me</span>
                                 </div>
-                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(100,116,139,.48)', fontFamily: "'Outfit',sans-serif", padding: 0, transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(100,116,139,.48)'}>
+                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(100,116,139,.48)', fontFamily: THEME.fontBody, padding: 0, transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(100,116,139,.48)'}>
                                     Forgot password?
                                 </button>
                             </div>
 
                             <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
-                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : 'rgba(100,112,255,.32)'}` : '1px solid rgba(255,255,255,.05)', padding: '14px 20px', borderRadius: 13, color: 'white', fontWeight: 600, fontSize: 14, fontFamily: "'Outfit',sans-serif", letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
+                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : 'rgba(100,112,255,.32)'}` : '1px solid rgba(255,255,255,.05)', padding: '14px 20px', borderRadius: 13, color: 'white', fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
                                 {canSubmit && !authLoading && !loginSuccess && (
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%)', backgroundSize: '200% auto', animation: btnHover ? 'shimmer 1.2s ease forwards' : 'none', borderRadius: 13 }}/>
                                 )}
@@ -804,7 +803,7 @@ const LoginPage = () => {
 
                         {!loginSuccess && (
                             <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.05)', textAlign: 'center' }}>
-                                <span style={{ fontSize: 9, color: 'rgba(100,116,139,.26)', fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.06em' }}>
+                                <span style={{ fontSize: 9, color: 'rgba(100,116,139,.26)', fontFamily: THEME.fontMono, letterSpacing: '.06em' }}>
                                     Admin access only · Contact your DBA for credentials
                                 </span>
                             </div>
@@ -813,7 +812,7 @@ const LoginPage = () => {
 
                     <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
                         <Shield size={8} color="rgba(100,116,139,.22)"/>
-                        <span style={{ fontSize: 8.5, color: 'rgba(100,116,139,.26)', fontFamily: "'JetBrains Mono',monospace", letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
+                        <span style={{ fontSize: 8.5, color: 'rgba(100,116,139,.26)', fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
                     </div>
                 </div>
             </div>

@@ -321,10 +321,10 @@ const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{node.op}</span>
-                            {node.table && <span style={{ fontSize: 11, color: THEME.primary, fontFamily: 'monospace' }}>on {node.table}</span>}
+                            {node.table && <span style={{ fontSize: 11, color: THEME.primary, fontFamily: THEME.fontMono }}>on {node.table}</span>}
                             {node.index && <span style={{ fontSize: 10, color: THEME.success, padding: '1px 6px', borderRadius: 3, background: `${THEME.success}10`, border: `1px solid ${THEME.success}20` }}>idx: {node.index}</span>}
                         </div>
-                        <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, fontFamily: 'monospace' }}>{node.detail}</div>
+                        <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono }}>{node.detail}</div>
                         {node.rowsRemoved && (
                             <div style={{ fontSize: 10, color: THEME.warning, marginTop: 1 }}>⚠ {node.rowsRemoved.toLocaleString()} rows removed by filter</div>
                         )}
@@ -338,7 +338,7 @@ const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
                         <div style={{ width: `${costPct}%`, height: '100%', background: color, borderRadius: 2 }} />
                     </div>
                     {node.actualTime && (
-                        <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: 'monospace' }}>{node.actualTime}ms</span>
+                        <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>{node.actualTime}ms</span>
                     )}
                 </div>
             </div>
@@ -473,7 +473,7 @@ const WaitEventBreakdown = ({ conns }) => {
                         return (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 7, background: `${THEME.grid}15`, border: `1px solid ${THEME.grid}25` }}>
                                 <span style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
-                                <span style={{ flex: 1, fontSize: 11, color: THEME.textMuted, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.event}</span>
+                                <span style={{ flex: 1, fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.event}</span>
                                 <div style={{ width: 60, flexShrink: 0 }}><SeverityBar value={row.count} max={maxCount} color={color} /></div>
                                 <span style={{ fontSize: 11, fontWeight: 700, color, fontVariantNumeric: 'tabular-nums', flexShrink: 0, minWidth: 20, textAlign: 'right' }}>{row.count}</span>
                             </div>
@@ -623,7 +623,7 @@ const JITCompilationPanel = ({ slowQueries }) => {
                     {jitData.map((q, i) => (
                         <tr key={i}  className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
                             <td style={{ padding: '8px 12px', maxWidth: 180 }}>
-                                <span style={{ fontSize: 11, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{q.query?.substring(0, 28) || `Query ${i+1}`}…</span>
+                                <span style={{ fontSize: 11, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{q.query?.substring(0, 28) || `Query ${i+1}`}…</span>
                             </td>
                             <td style={{ padding: '8px 12px', textAlign: 'center' }}>
                                 {q.hasJit ? (
@@ -735,7 +735,7 @@ const ParallelQueryPanel = ({ stats }) => {
                                 </div>
                                 <span style={{ fontSize: 10, fontWeight: 700, color: THEME.success }}>{q.saving} faster</span>
                             </div>
-                            <div style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textDim, marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.query}</div>
+                            <div style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textDim, marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.query}</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <div style={{ flex: 1, display: 'flex', gap: 3 }}>
                                     {Array.from({ length: maxWorkersPerGather }, (_, j) => (
@@ -796,15 +796,15 @@ const LockTreeNode = ({ node, depth = 0, isLast = false }) => {
                             <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 4, background: `${color}15`, color, border: `1px solid ${color}25`, textTransform: 'uppercase' }}>
                                 {node.role === 'holder' ? 'HOLDING' : 'WAITING'}
                             </span>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>PID {node.pid}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontMono }}>PID {node.pid}</span>
                             <span style={{ fontSize: 10, color: THEME.textDim }}>{node.app}</span>
                             <span style={{ fontSize: 10, color: THEME.textDim }}>·</span>
-                            <span style={{ fontSize: 10, color: THEME.primary, fontFamily: 'monospace' }}>{node.lockType}</span>
+                            <span style={{ fontSize: 10, color: THEME.primary, fontFamily: THEME.fontMono }}>{node.lockType}</span>
                             <span style={{ fontSize: 10, color: THEME.textDim }}>on</span>
-                            <span style={{ fontSize: 10, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{node.relation}</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: THEME.primary, fontFamily: THEME.fontMono }}>{node.relation}</span>
                             {node.waitTime && <span style={{ fontSize: 10, fontWeight: 700, color: color, marginLeft: 4 }}>({node.waitTime})</span>}
                         </div>
-                        <div style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.query}</div>
+                        <div style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.query}</div>
                     </div>
                     {hasBlockees && (
                         <div style={{ flexShrink: 0, color: THEME.textDim }}>
@@ -948,9 +948,9 @@ const DeadlockHistory = () => {
                                     </span>
                                 </div>
                                 <div style={{ fontSize: 10, color: THEME.textDim }}>
-                                    <span style={{ color: THEME.primary, fontFamily: 'monospace' }}>{dl.table1}</span>
+                                    <span style={{ color: THEME.primary, fontFamily: THEME.fontMono }}>{dl.table1}</span>
                                     <span> ↔ </span>
-                                    <span style={{ color: THEME.primary, fontFamily: 'monospace' }}>{dl.table2}</span>
+                                    <span style={{ color: THEME.primary, fontFamily: THEME.fontMono }}>{dl.table2}</span>
                                     <span style={{ color: THEME.textDim }}> · {dl.app} · {dl.duration}ms</span>
                                 </div>
                             </div>
@@ -975,7 +975,7 @@ const DeadlockHistory = () => {
                                             <span style={{ fontSize: 10, fontWeight: 700, color: p.color }}>{p.label}</span>
                                             {p.isVictim && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: `${THEME.danger}18`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 800 }}>ROLLED BACK</span>}
                                         </div>
-                                        <div style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMuted, lineHeight: 1.5 }}>{p.query}</div>
+                                        <div style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textMuted, lineHeight: 1.5 }}>{p.query}</div>
                                     </div>
                                 ))}
                             </div>
@@ -1067,7 +1067,7 @@ const GenericCustomPlanPanel = ({ slowQueries }) => {
                     {planData.stmts.map((s, i) => (
                         <tr key={i} className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
                             <td style={{ padding: '8px 12px', maxWidth: 200 }}>
-                                <span style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{s.query}</span>
+                                <span style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{s.query}</span>
                             </td>
                             <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.primary, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.genericCalls.toLocaleString()}</td>
                             <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.success, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.customCalls.toLocaleString()}</td>
@@ -1163,7 +1163,7 @@ const TempFileTracker = ({ slowQueries }) => {
                         <div key={i} style={{ padding: '10px 14px', borderRadius: 8, background: `${sizeColor}04`, border: `1px solid ${sizeColor}15` }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>{q.query}</div>
+                                    <div style={{ fontSize: 11, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>{q.query}</div>
                                     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                                         <span style={{ fontSize: 10, color: THEME.textDim }}>
                                             Files: <span style={{ fontWeight: 700, color: THEME.warning }}>{q.tempFiles}</span>
@@ -1231,7 +1231,7 @@ const GanttChart = ({ queries }) => {
                     const color = row.duration > 5000 ? THEME.danger : row.duration > 1000 ? THEME.warning : THEME.primary;
                     return (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                            <div style={{ width: 170, fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'monospace', textAlign: 'right' }}>
+                            <div style={{ width: 170, fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: THEME.fontMono, textAlign: 'right' }}>
                                 {row.query?.substring(0, 24) || `Query ${i + 1}`}…
                             </div>
                             <div style={{ flex: 1, height: 22, background: `${THEME.grid}20`, borderRadius: 4, position: 'relative', overflow: 'hidden' }}>
@@ -1280,12 +1280,12 @@ const LockWaitDetails = ({ locks, conns }) => {
                 <div key={i} style={{ padding: 14, borderRadius: 10, background: `${THEME.danger}05`, border: `1px solid ${THEME.danger}15` }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ padding: '2px 8px', borderRadius: 4, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>{chain.lockType}</span>
-                        <span>on <span style={{ color: THEME.primary, fontFamily: 'monospace' }}>{chain.relation}</span></span>
+                        <span>on <span style={{ color: THEME.primary, fontFamily: THEME.fontMono }}>{chain.relation}</span></span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}15` }}>
                             <div style={{ fontSize: 10, color: THEME.danger, fontWeight: 700, marginBottom: 4 }}>WAITING — PID {chain.waiter.pid} ({chain.waiter.waitTime})</div>
-                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.waiter.query}</div>
+                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.waiter.query}</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
                             <ArrowRight size={14} color={THEME.warning} />
@@ -1293,7 +1293,7 @@ const LockWaitDetails = ({ locks, conns }) => {
                         </div>
                         <div style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
                             <div style={{ fontSize: 10, color: THEME.warning, fontWeight: 700, marginBottom: 4 }}>HOLDING — PID {chain.holder.pid} ({chain.holder.application_name || 'app'})</div>
-                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || 'BEGIN; UPDATE...'}</div>
+                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || 'BEGIN; UPDATE...'}</div>
                         </div>
                     </div>
                 </div>
@@ -1324,7 +1324,7 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
                     <button onClick={onClose} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: THEME.textDim, cursor: 'pointer', padding: 4 }}><X size={16} /></button>
                 </div>
                 <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{ padding: 12, borderRadius: 8, background: THEME.bg, border: `1px solid ${THEME.grid}40`, fontFamily: 'monospace', fontSize: 11, color: THEME.textMuted, maxHeight: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ padding: 12, borderRadius: 8, background: THEME.bg, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, maxHeight: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {query.query?.substring(0, 120)}…
                     </div>
                     <div>
@@ -1403,7 +1403,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                     )}
                                 </div>
                                 <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                                    <span>PID <span style={{ color: THEME.textMain, fontWeight: 600, fontFamily: 'monospace' }}>{queryData.pid || 8821}</span></span>
+                                    <span>PID <span style={{ color: THEME.textMain, fontWeight: 600, fontFamily: THEME.fontMono }}>{queryData.pid || 8821}</span></span>
                                     <span>Duration <span style={{ color: THEME.danger, fontWeight: 600 }}>{Number(queryData.mean_time_ms).toFixed(1)}ms</span></span>
                                     <span>Cache Hit <span style={{ color: THEME.success, fontWeight: 600 }}>{queryData.cacheHit || '94.2'}%</span></span>
                                     <span>Temp Files <span style={{ color: queryData.tempFiles > 0 ? THEME.warning : THEME.textDim, fontWeight: 600 }}>{queryData.tempFiles || 0}</span></span>
@@ -1446,7 +1446,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                                 <span style={{ width: 8, height: 8, borderRadius: 2, background: THEME.danger }} />
                                                 <span style={{ fontSize: 10, fontWeight: 700, color: THEME.danger, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Original Query</span>
                                             </div>
-                                            <div style={{ background: `${THEME.danger}06`, border: `1px solid ${THEME.danger}18`, padding: '14px 16px', borderRadius: 8, fontFamily: '"JetBrains Mono", "Fira Code", monospace', fontSize: 12, lineHeight: 1.7, color: '#ffaaaa', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ background: `${THEME.danger}06`, border: `1px solid ${THEME.danger}18`, padding: '14px 16px', borderRadius: 8, fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.7, color: '#ffaaaa', position: 'relative', overflow: 'hidden' }}>
                                                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: THEME.danger, borderRadius: '8px 0 0 8px' }} />
                                                 <code style={{ paddingLeft: 8, display: 'block', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{queryData.query}</code>
                                             </div>
@@ -1464,7 +1464,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                                 </div>
                                                 <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: `${THEME.success}15`, color: THEME.success, border: `1px solid ${THEME.success}20` }}>{opt.fixType}</span>
                                             </div>
-                                            <div style={{ background: `${THEME.success}06`, border: `1px solid ${THEME.success}18`, padding: '14px 16px', borderRadius: 8, fontFamily: '"JetBrains Mono", "Fira Code", monospace', fontSize: 12, lineHeight: 1.7, color: '#aaffcc', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ background: `${THEME.success}06`, border: `1px solid ${THEME.success}18`, padding: '14px 16px', borderRadius: 8, fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.7, color: '#aaffcc', position: 'relative', overflow: 'hidden' }}>
                                                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: THEME.success, borderRadius: '8px 0 0 8px' }} />
                                                 <code style={{ paddingLeft: 8, display: 'block', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{opt.optimized}</code>
                                             </div>
@@ -1952,7 +1952,7 @@ const PerformanceTab = () => {
                                     </div>
                                     {(groupedQueries || []).map((g, i) => (
                                         <div key={i} className="perf-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}20`, alignItems: 'center' }}>
-                                            <div style={{ fontFamily: 'monospace', fontSize: 11, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 8px' }}>
+                                            <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 8px' }}>
                                                 <Hash size={10} color={THEME.textDim} style={{ marginRight: 5 }} />
                                                 {g.fingerprint}
                                             </div>
@@ -2008,7 +2008,7 @@ const PerformanceTab = () => {
                                                         <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 4, background: p.severity === 'high' ? `${THEME.danger}18` : `${THEME.warning}15`, color: p.severity === 'high' ? THEME.danger : THEME.warning, border: `1px solid ${p.severity === 'high' ? `${THEME.danger}25` : `${THEME.warning}20`}`, textTransform: 'uppercase' }}>{p.severity} N+1</span>
                                                         <span style={{ fontSize: 13, fontWeight: 800, color: p.severity === 'high' ? THEME.danger : THEME.warning, fontVariantNumeric: 'tabular-nums' }}>{p.callCount.toLocaleString()}× calls</span>
                                                     </div>
-                                                    <div style={{ fontFamily: 'monospace', fontSize: 11, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.fingerprint}</div>
+                                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.fingerprint}</div>
                                                     <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 6 }}>
                                                         ⚡ Consider batching with <code style={{ color: THEME.primary }}>IN (?, ?, ...)</code> or using a JOIN to eliminate repetition
                                                     </div>
@@ -2074,7 +2074,7 @@ const PerformanceTab = () => {
                     {insightsSubView === 'jit' && (
                         <GlassCard title="JIT Compilation Analysis" rightNode={
                             <div style={{ display: 'flex', gap: 8 }}>
-                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: 'monospace' }}>
+                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono }}>
                                     jit = on
                                 </span>
                             </div>
@@ -2087,7 +2087,7 @@ const PerformanceTab = () => {
                     {insightsSubView === 'parallel' && (
                         <GlassCard title="Parallel Query Utilization" rightNode={
                             <div style={{ display: 'flex', gap: 8 }}>
-                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: 'monospace' }}>
+                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono }}>
                                     max_parallel_workers = {stats?.max_parallel_workers || 8}
                                 </span>
                             </div>
@@ -2131,7 +2131,7 @@ const PerformanceTab = () => {
                     {/* ── TEMP FILES ── */}
                     {insightsSubView === 'temp_files' && (
                         <GlassCard title="Temporary File Usage — Queries Spilling to Disk" rightNode={
-                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: 'monospace' }}>work_mem = 4MB</span>
+                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>work_mem = 4MB</span>
                         }>
                             <TempFileTracker slowQueries={rawSlowQueries} />
                         </GlassCard>

@@ -27,7 +27,6 @@ import {
    ═══════════════════════════════════════════════════════════════════════════ */
 const RelStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Syne:wght@600;700;800&display=swap');
         @keyframes relFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes relPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
         @keyframes relPulseRing { 0%{transform:scale(0.8);opacity:0.6} 100%{transform:scale(2.4);opacity:0} }
@@ -61,8 +60,8 @@ const RelStyles = () => (
         .rel-link:hover{text-decoration:underline;opacity:0.9}
         .rel-tab-btn{transition:all 0.2s}
         .rel-tab-btn:hover{opacity:0.85}
-        * { font-family: 'Syne', sans-serif; }
-        code, .mono { font-family: 'IBM Plex Mono', monospace !important; }
+        * { font-family: ${THEME.fontBody}; }
+        code, .mono { font-family: ${THEME.fontMono} !important; }
     `}</style>
 );
 
@@ -126,12 +125,12 @@ const ChartTooltip = ({ active, payload, label, unit = '' }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{ background: THEME.glassHeavy, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
-            <div style={{ fontWeight: 800, color: THEME.textMain, marginBottom: 6, fontFamily: 'IBM Plex Mono' }}>{label}</div>
+            <div style={{ fontWeight: 800, color: THEME.textMain, marginBottom: 6, fontFamily: THEME.fontMono }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                     <span style={{ width: 8, height: 3, borderRadius: 1, background: p.color }} />
                     <span style={{ color: THEME.textMuted, flex: 1 }}>{p.name}:</span>
-                    <span style={{ fontWeight: 700, color: p.color, fontFamily: 'IBM Plex Mono' }}>{p.value}{unit}</span>
+                    <span style={{ fontWeight: 700, color: p.color, fontFamily: THEME.fontMono }}>{p.value}{unit}</span>
                 </div>
             ))}
         </div>
@@ -379,7 +378,7 @@ const AlertCard = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
                 </div>
                 {alert.metric_value && (
                     <div style={{ textAlign: 'right', flexShrink: 0, marginRight: 8 }}>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: sev.color, fontFamily: 'IBM Plex Mono', lineHeight: 1 }}>{alert.metric_value}</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: sev.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{alert.metric_value}</div>
                         {alert.threshold && <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 3 }}>threshold {alert.threshold}</div>}
                     </div>
                 )}
@@ -453,7 +452,7 @@ const UptimeHeatmap = ({ days }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}55`, fontSize: 11 }}>
                     <span className="mono" style={{ color: THEME.textDim }}>{hoveredDay.date}</span>
                     <StatusBadge label={hoveredDay.status === 'up' ? 'Operational' : hoveredDay.status === 'degraded' ? 'Degraded' : 'Outage'} color={statusColor(hoveredDay.status)} />
-                    <span style={{ fontWeight: 800, color: THEME.textMain, fontFamily: 'IBM Plex Mono' }}>{hoveredDay.uptime.toFixed(2)}%</span>
+                    <span style={{ fontWeight: 800, color: THEME.textMain, fontFamily: THEME.fontMono }}>{hoveredDay.uptime.toFixed(2)}%</span>
                 </div>
             )}
             <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim, marginTop: hoveredDay ? 8 : 0 }}>
@@ -487,7 +486,7 @@ const OnCallWidget = () => {
                             background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary}20)`,
                             border: `1px solid ${THEME.primary}20`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 11, fontWeight: 800, color: THEME.primary, fontFamily: 'IBM Plex Mono',
+                            fontSize: 11, fontWeight: 800, color: THEME.primary, fontFamily: THEME.fontMono,
                         }}>{p.avatar}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 2 }}>{p.name}</div>
@@ -529,12 +528,12 @@ const NoiseReductionPanel = ({ alerts }) => {
                         />
                     </svg>
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 16, fontWeight: 800, color: scoreColor, fontFamily: 'IBM Plex Mono' }}>{score}%</span>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: scoreColor, fontFamily: THEME.fontMono }}>{score}%</span>
                     </div>
                 </div>
                 <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 11, color: THEME.textDim, marginBottom: 8 }}>
-                        <strong style={{ color: scoreColor, fontFamily: 'IBM Plex Mono' }}>{autoResolved}</strong> of <strong style={{ color: THEME.textMuted, fontFamily: 'IBM Plex Mono' }}>{total}</strong> alerts auto-resolved
+                        <strong style={{ color: scoreColor, fontFamily: THEME.fontMono }}>{autoResolved}</strong> of <strong style={{ color: THEME.textMuted, fontFamily: THEME.fontMono }}>{total}</strong> alerts auto-resolved
                     </div>
                     <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.5 }}>
                         {score >= 60 ? '✓ Automation handling noise well — team is focused on real issues.' : score >= 35 ? '△ Some noise present — review auto-resolution rules.' : '✗ High manual burden — tune alert thresholds.'}
@@ -654,7 +653,7 @@ const AlertGroupView = ({ alerts }) => {
                                 <div style={{ fontSize: 10, color: THEME.textDim }}>{g.items.length} alerts · {g.active} active</div>
                             </div>
                             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                {g.active > 0 && <span style={{ fontSize: 11, fontWeight: 800, color: sev.color, fontFamily: 'IBM Plex Mono' }}>{g.active}</span>}
+                                {g.active > 0 && <span style={{ fontSize: 11, fontWeight: 800, color: sev.color, fontFamily: THEME.fontMono }}>{g.active}</span>}
                                 <StatusBadge label={sev.label} color={sev.color} />
                                 <ChevronDown size={13} color={THEME.textDim} style={{ transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'none' }} />
                             </div>
@@ -667,7 +666,7 @@ const AlertGroupView = ({ alerts }) => {
                                         <div key={item.id} className="rel-slide-in" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}35` }}>
                                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: is.color, flexShrink: 0 }} />
                                             <span style={{ fontSize: 11, color: THEME.textMuted, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
-                                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: 'IBM Plex Mono' }}>{fmtTime(item.created_at)}</span>
+                                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{fmtTime(item.created_at)}</span>
                                             {item.acknowledged && <CheckCheck size={10} color={THEME.success} />}
                                             {item.runbook && <Link2 size={10} color={THEME.info} />}
                                         </div>
@@ -703,7 +702,7 @@ const SloBurnRatePanel = ({ burnData }) => {
                         }}>
                             <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600, marginBottom: 6, lineHeight: 1.3 }}>{s.name}</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
-                                <span style={{ fontSize: 16, fontWeight: 800, color: bc, fontFamily: 'IBM Plex Mono' }}>{s.current.toFixed(2)}%</span>
+                                <span style={{ fontSize: 16, fontWeight: 800, color: bc, fontFamily: THEME.fontMono }}>{s.current.toFixed(2)}%</span>
                             </div>
                             <div style={{ height: 3, borderRadius: 2, background: `${THEME.grid}40`, overflow: 'hidden' }}>
                                 <div style={{ width: `${s.budgetRemaining}%`, height: '100%', background: bc, borderRadius: 2, transition: 'width 0.5s ease' }} />
@@ -723,7 +722,7 @@ const SloBurnRatePanel = ({ burnData }) => {
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                     <span style={{ fontSize: 11, color: THEME.textDim }}>Budget Consumed</span>
-                                    <span style={{ fontSize: 11, fontWeight: 800, color: burnColor, fontFamily: 'IBM Plex Mono' }}>{100 - slo.budgetRemaining}%</span>
+                                    <span style={{ fontSize: 11, fontWeight: 800, color: burnColor, fontFamily: THEME.fontMono }}>{100 - slo.budgetRemaining}%</span>
                                 </div>
                                 <div style={{ height: 8, borderRadius: 4, background: `${THEME.grid}40`, overflow: 'hidden' }}>
                                     <div className={slo.alert ? 'rel-burn-critical' : ''} style={{ width: `${100 - slo.budgetRemaining}%`, height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${burnColor}, ${burnColor}cc)`, transition: 'width 0.6s ease' }} />
@@ -739,7 +738,7 @@ const SloBurnRatePanel = ({ burnData }) => {
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
                                     <span style={{ fontSize: 11, color: THEME.textMuted }}>{r.label}</span>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <span style={{ fontSize: 14, fontWeight: 800, color: rc, fontFamily: 'IBM Plex Mono' }}>{r.value}×</span>
+                                        <span style={{ fontSize: 14, fontWeight: 800, color: rc, fontFamily: THEME.fontMono }}>{r.value}×</span>
                                         <StatusBadge label={r.value > r.warn * 2 ? 'Critical' : r.value > r.warn ? 'Elevated' : 'Normal'} color={rc} pulse={r.value > r.warn * 2} />
                                     </div>
                                 </div>
@@ -943,7 +942,7 @@ const ReliabilityTab = () => {
                 display: 'inline-flex', alignItems: 'center', gap: 5,
             }}>
                 {label}
-                {count > 0 && <span style={{ fontSize: 9, fontWeight: 800, fontFamily: 'IBM Plex Mono', opacity: 0.8 }}>{count}</span>}
+                {count > 0 && <span style={{ fontSize: 9, fontWeight: 800, fontFamily: THEME.fontMono, opacity: 0.8 }}>{count}</span>}
             </button>
         );
     };
@@ -1005,7 +1004,7 @@ const ReliabilityTab = () => {
                         </div>
                         <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
-                            <div style={{ fontSize: 18, fontWeight: 800, color: m.color, fontFamily: 'IBM Plex Mono', lineHeight: 1 }}>{m.value}</div>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: m.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{m.value}</div>
                             <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 3, lineHeight: 1 }}>{m.sub}</div>
                         </div>
                     </div>
@@ -1121,7 +1120,7 @@ const ReliabilityTab = () => {
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                                                 <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted }}>{s.label}</span>
                                                 <div style={{ display: 'flex', gap: 8, fontSize: 10 }}>
-                                                    <span style={{ color: s.color, fontWeight: 800, fontFamily: 'IBM Plex Mono' }}>{s.active} active</span>
+                                                    <span style={{ color: s.color, fontWeight: 800, fontFamily: THEME.fontMono }}>{s.active} active</span>
                                                     <span style={{ color: THEME.textDim }}>{s.count} total</span>
                                                 </div>
                                             </div>
@@ -1149,8 +1148,8 @@ const ReliabilityTab = () => {
                                             <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain }}>{r.sev}</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11 }}>
-                                            <span style={{ color: THEME.textDim }}>target: <strong style={{ color: THEME.textMuted, fontFamily: 'IBM Plex Mono' }}>{r.target}</strong></span>
-                                            <span style={{ color: THEME.textDim }}>actual: <strong style={{ color: r.met ? THEME.success : THEME.danger, fontFamily: 'IBM Plex Mono' }}>{r.actual}</strong></span>
+                                            <span style={{ color: THEME.textDim }}>target: <strong style={{ color: THEME.textMuted, fontFamily: THEME.fontMono }}>{r.target}</strong></span>
+                                            <span style={{ color: THEME.textDim }}>actual: <strong style={{ color: r.met ? THEME.success : THEME.danger, fontFamily: THEME.fontMono }}>{r.actual}</strong></span>
                                             {r.met ? <CheckCircle size={11} color={THEME.success} /> : <XCircle size={11} color={THEME.danger} />}
                                         </div>
                                     </div>
@@ -1176,7 +1175,7 @@ const ReliabilityTab = () => {
                                         <s.icon size={20} color={s.color} />
                                     </div>
                                     <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
-                                    <div style={{ fontSize: 26, fontWeight: 800, color: s.color, fontFamily: 'IBM Plex Mono', lineHeight: 1 }}>{s.value}</div>
+                                    <div style={{ fontSize: 26, fontWeight: 800, color: s.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{s.value}</div>
                                     <div style={{ fontSize: 10, color: THEME.textDim }}>target: {s.target}</div>
                                 </div>
                             </Panel>
@@ -1205,7 +1204,7 @@ const ReliabilityTab = () => {
                                                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: c, flexShrink: 0 }} />
                                                     <span className="mono" style={{ fontSize: 10, color: THEME.textDim, width: 70, flexShrink: 0 }}>{d.date}</span>
                                                     <StatusBadge label={d.status === 'outage' ? 'Outage' : 'Degraded'} color={c} />
-                                                    <span style={{ fontWeight: 800, color: THEME.textMain, fontFamily: 'IBM Plex Mono', marginLeft: 'auto', fontSize: 12 }}>{d.uptime.toFixed(2)}%</span>
+                                                    <span style={{ fontWeight: 800, color: THEME.textMain, fontFamily: THEME.fontMono, marginLeft: 'auto', fontSize: 12 }}>{d.uptime.toFixed(2)}%</span>
                                                 </div>
                                             );
                                         })}
@@ -1247,7 +1246,7 @@ const ReliabilityTab = () => {
                                 </div>
                                 <div>
                                     <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{s.label}</div>
-                                    <div style={{ fontSize: 14, fontWeight: 800, color: s.color, fontFamily: 'IBM Plex Mono' }}>{s.value}</div>
+                                    <div style={{ fontSize: 14, fontWeight: 800, color: s.color, fontFamily: THEME.fontMono }}>{s.value}</div>
                                 </div>
                             </div>
                         ))}
@@ -1276,7 +1275,7 @@ const ReliabilityTab = () => {
                                                 <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{inc.title}</div>
                                             </div>
                                             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                                <div style={{ fontSize: 17, fontWeight: 800, color: THEME.warning, fontFamily: 'IBM Plex Mono', lineHeight: 1 }}>{inc.duration}</div>
+                                                <div style={{ fontSize: 17, fontWeight: 800, color: THEME.warning, fontFamily: THEME.fontMono, lineHeight: 1 }}>{inc.duration}</div>
                                                 <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>duration</div>
                                             </div>
                                         </div>

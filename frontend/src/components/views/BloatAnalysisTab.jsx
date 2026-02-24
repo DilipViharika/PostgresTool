@@ -66,7 +66,6 @@ const normaliseIndex = row => ({ ...row, indexname: row.indexname ?? row.indexre
 // ─── Styles ────────────────────────────────────────────────────────────────
 const Styles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap');
         @keyframes baSpin { to { transform: rotate(360deg) } }
         @keyframes baFadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
         @keyframes baPulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
@@ -74,8 +73,8 @@ const Styles = () => (
         @keyframes baSlide { from { width: 0 } }
         @keyframes baCounter { from { opacity:0; transform: scale(.8) } to { opacity:1; transform: scale(1) } }
 
-        .ba-wrap { font-family: 'Syne', system-ui, sans-serif; }
-        .ba-mono { font-family: 'JetBrains Mono', monospace !important; }
+        .ba-wrap { font-family: ${THEME.fontBody}; }
+        .ba-mono { font-family: ${THEME.fontMono} !important; }
 
         .ba-card {
             background: ${THEME.glass};
@@ -165,7 +164,7 @@ const Styles = () => (
             cursor: pointer;
             font-size: 13px;
             font-weight: 700;
-            font-family: 'Syne', system-ui;
+            font-family: inherit;
             transition: all .2s;
             letter-spacing: .3px;
         }
@@ -585,11 +584,11 @@ export default function BloatAnalysisTab() {
                         <ResponsiveContainer width="100%" height={260}>
                             <BarChart data={chartDeadData} layout="vertical" margin={{ top: 0, right: 56, left: 0, bottom: 0 }} barSize={12}>
                                 <CartesianGrid horizontal={false} vertical={true} stroke={THEME.grid} />
-                                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: THEME.textDim, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
+                                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: THEME.textDim, fontFamily: THEME.fontMono }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
                                 <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: THEME.textMuted }} tickLine={false} axisLine={false} width={100} />
                                 <Tooltip content={<ChartTip />} cursor={{ fill: THEME.surface }} />
                                 <Bar dataKey="dead" name="Dead %" radius={[0, 4, 4, 0]}
-                                     label={{ position: 'right', fontSize: 10, fill: THEME.textMuted, fontFamily: 'JetBrains Mono', formatter: v => `${v}%` }}
+                                     label={{ position: 'right', fontSize: 10, fill: THEME.textMuted, fontFamily: THEME.fontMono, formatter: v => `${v}%` }}
                                 >
                                     {chartDeadData.map((entry, i) => (
                                         <Cell key={i} fill={entry.dead > 20 ? '#ef4444' : entry.dead > 10 ? '#f59e0b' : '#10b981'} />
@@ -608,11 +607,11 @@ export default function BloatAnalysisTab() {
                         <ResponsiveContainer width="100%" height={260}>
                             <BarChart data={chartSizeData} layout="vertical" margin={{ top: 0, right: 72, left: 0, bottom: 0 }} barSize={12}>
                                 <CartesianGrid horizontal={false} vertical={true} stroke={THEME.grid} />
-                                <XAxis type="number" tick={{ fontSize: 10, fill: THEME.textDim, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} tickFormatter={fmtBytes} />
+                                <XAxis type="number" tick={{ fontSize: 10, fill: THEME.textDim, fontFamily: THEME.fontMono }} tickLine={false} axisLine={false} tickFormatter={fmtBytes} />
                                 <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: THEME.textMuted }} tickLine={false} axisLine={false} width={100} />
                                 <Tooltip content={<ChartTip />} cursor={{ fill: THEME.surface }} />
                                 <Bar dataKey="size" name="Total Size" radius={[0, 4, 4, 0]}
-                                     label={{ position: 'right', fontSize: 10, fill: THEME.textMuted, fontFamily: 'JetBrains Mono', formatter: fmtBytes }}
+                                     label={{ position: 'right', fontSize: 10, fill: THEME.textMuted, fontFamily: THEME.fontMono, formatter: fmtBytes }}
                                      fill="url(#sizeGrad)"
                                 />
                                 <defs>

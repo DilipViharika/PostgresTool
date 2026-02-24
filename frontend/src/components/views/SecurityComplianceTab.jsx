@@ -25,10 +25,8 @@ import {
    ═══════════════════════════════════════════════════════════════════════════ */
 const SecStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap');
-
         .sec-root {
-            font-family: 'Syne', sans-serif;
+            font-family: ${THEME.fontBody};
             background: ${THEME.bg};
             min-height: 100vh;
         }
@@ -51,7 +49,7 @@ const SecStyles = () => (
             box-shadow: 0 0 24px rgba(255,70,90,0.08) !important;
         }
 
-        .mono { font-family: 'JetBrains Mono', monospace; }
+        .mono { font-family: ${THEME.fontMono}; }
 
         /* Scrollbar */
         .sec-scroll::-webkit-scrollbar { width: 4px; }
@@ -236,7 +234,7 @@ const SecStyles = () => (
             border-radius: 8px; padding: 8px 14px 8px 36px;
             color: ${THEME.textMain}; font-size: 12px; width: 200px;
             outline: none; transition: all 0.2s;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: ${THEME.fontMono};
         }
         .search-input:focus {
             border-color: ${THEME.primary}59;
@@ -247,7 +245,7 @@ const SecStyles = () => (
 
         /* MITRE ATT&CK badges */
         .mitre-tag {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: ${THEME.fontMono};
             font-size: 9px; padding: 2px 6px; border-radius: 3px;
             background: ${THEME.primary}14;
             color: ${THEME.primary}b3;
@@ -364,8 +362,8 @@ const MiniStat = ({ label, value, sub, color, icon: Icon }) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textMuted }}>
             {Icon && <Icon size={12} color={color} />} {label}
         </div>
-        <div style={{ fontSize: 26, fontWeight: 800, color: color || THEME.textMain, lineHeight: 1, fontFamily: 'JetBrains Mono, monospace' }}>{value}</div>
-        {sub && <div style={{ fontSize: 11, color: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }}>{sub}</div>}
+        <div style={{ fontSize: 26, fontWeight: 800, color: color || THEME.textMain, lineHeight: 1, fontFamily: THEME.fontMono }}>{value}</div>
+        {sub && <div style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>{sub}</div>}
     </div>
 );
 
@@ -399,7 +397,7 @@ const ScoreRing = ({ score }) => {
                 />
             </svg>
             <div style={{ position: 'absolute', textAlign: 'center' }}>
-                <div style={{ fontSize: 36, fontWeight: 800, color, fontFamily: 'JetBrains Mono, monospace', lineHeight: 1 }}>{score}</div>
+                <div style={{ fontSize: 36, fontWeight: 800, color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{score}</div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.12em', marginTop: 4 }}>SECURITY</div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.12em' }}>SCORE</div>
             </div>
@@ -411,7 +409,7 @@ const ScoreRing = ({ score }) => {
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.primary}33`, borderRadius: 8, padding: '8px 14px', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.primary}33`, borderRadius: 8, padding: '8px 14px', fontSize: 12, fontFamily: THEME.fontMono }}>
             <div style={{ color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ color: p.color || '#63d7ff' }}>{p.name}: <strong>{p.value}</strong></div>
@@ -441,7 +439,7 @@ const ThreatMonitor = ({ search }) => {
                 right={
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span className="live-dot" />
-                        <span style={{ fontSize: 11, color: '#ff465a', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace' }}>LIVE</span>
+                        <span style={{ fontSize: 11, color: '#ff465a', fontWeight: 700, fontFamily: THEME.fontMono }}>LIVE</span>
                     </div>
                 }
             />
@@ -503,7 +501,7 @@ const ThreatMonitor = ({ search }) => {
 const ThreatTimeline = () => (
     <div className="card">
         <SectionHeader icon={Activity} title="Threat Activity (24h)" iconColor="#ff8c42"
-                       right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }}>threats / hour</span>} />
+                       right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>threats / hour</span>} />
         <div style={{ padding: '16px 8px 8px' }}>
             <ResponsiveContainer width="100%" height={140}>
                 <AreaChart data={THREAT_TIMELINE} margin={{ top: 4, right: 16, left: -20, bottom: 0 }}>
@@ -616,7 +614,7 @@ const SecurityRadar = () => (
 const PIIAccessLog = () => (
     <div className="card">
         <SectionHeader icon={Fingerprint} title="PII / Sensitive Access" iconColor="#f472b6"
-                       right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: 'JetBrains Mono' }}>last 24h</span>} />
+                       right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>last 24h</span>} />
         <div style={{ padding: '12px 20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textDim, borderBottom: `1px solid ${THEME.grid}`, paddingBottom: 8, marginBottom: 4 }}>
                 <div>Resource · Accessor</div>
@@ -658,7 +656,7 @@ const KeyVault = () => {
         <div className="card" style={{ padding: 0 }}>
             <SectionHeader icon={Key} title="Encryption Key Vault" iconColor="#fbbf24"
                            right={
-                               <button style={{ fontSize: 11, color: '#63d7ff', background: 'rgba(99,215,255,0.08)', border: '1px solid rgba(99,215,255,0.2)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>
+                               <button style={{ fontSize: 11, color: '#63d7ff', background: 'rgba(99,215,255,0.08)', border: '1px solid rgba(99,215,255,0.2)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: THEME.fontBody, fontWeight: 700 }}>
                                    Rotate Keys
                                </button>
                            }
@@ -754,7 +752,7 @@ const SecurityComplianceTab = () => {
                             </h1>
                             <Badge label="Protected" color="#4ade80" />
                         </div>
-                        <div style={{ fontSize: 12, color: THEME.textMuted, fontFamily: 'JetBrains Mono, monospace' }}>
+                        <div style={{ fontSize: 12, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
                             Last scan: 12m ago &nbsp;·&nbsp; 4 active threats &nbsp;·&nbsp; 1 critical
                         </div>
                     </div>
@@ -764,10 +762,10 @@ const SecurityComplianceTab = () => {
                             <Search size={13} color={THEME.textDim} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                             <input className="search-input" placeholder="Search threats..." value={search} onChange={e => setSearch(e.target.value)} />
                         </div>
-                        <button style={{ background: 'rgba(255,70,90,0.12)', color: '#ff465a', border: '1px solid rgba(255,70,90,0.3)', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'Syne, sans-serif' }}>
+                        <button style={{ background: 'rgba(255,70,90,0.12)', color: '#ff465a', border: '1px solid rgba(255,70,90,0.3)', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
                             <AlertOctagon size={13} /> Run Scan
                         </button>
-                        <button style={{ background: THEME.primary, color: THEME.bg, border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'Syne, sans-serif' }}>
+                        <button style={{ background: THEME.primary, color: THEME.bg, border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
                             <FileText size={13} /> Export Report
                         </button>
                     </div>

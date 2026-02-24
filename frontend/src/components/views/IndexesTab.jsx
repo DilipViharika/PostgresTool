@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { THEME } from '../../utils/theme.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────
    DESIGN SYSTEM — Refined Dark / Single-accent
@@ -132,7 +133,6 @@ const genSQL = idx => {
 ───────────────────────────────────────────────────────────────────────── */
 const Styles = () => (
     <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     @keyframes fadeIn {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
     @keyframes slideR {from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
@@ -150,10 +150,10 @@ const Styles = () => (
     ::-webkit-scrollbar{width:3px;height:3px}
     ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}
     ::-webkit-scrollbar-track{background:transparent}
-    .btn{transition:all .15s;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    .btn{transition:all .15s;cursor:pointer;font-family:${THEME.fontBody};}
     .btn:hover{background:${C.surfaceHi}!important;border-color:${C.accent}!important;color:${C.accent}!important;}
-    .tab{transition:all .15s;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
-    .ir{background:none;border:none;outline:none;font-family:'DM Mono',monospace;color:${C.textSub};}
+    .tab{transition:all .15s;cursor:pointer;background:none;border:none;font-family:${THEME.fontBody};}
+    .ir{background:none;border:none;outline:none;font-family:${THEME.fontMono};color:${C.textSub};}
     .wv{animation:wave 1.1s ease-in-out infinite;}
     .wv:nth-child(2){animation-delay:.12s}.wv:nth-child(3){animation-delay:.24s}
     .wv:nth-child(4){animation-delay:.36s}.wv:nth-child(5){animation-delay:.48s}
@@ -165,17 +165,17 @@ const Styles = () => (
    ATOMS
 ───────────────────────────────────────────────────────────────────────── */
 const M = ({c,sz=11,w=400,children,style={}}) =>
-    <span style={{fontFamily:"'DM Mono',monospace",fontSize:sz,color:c||C.textSub,fontWeight:w,...style}}>{children}</span>;
+    <span style={{fontFamily:THEME.fontMono,fontSize:sz,color:c||C.textSub,fontWeight:w,...style}}>{children}</span>;
 
 const Lbl = ({c,children}) =>
-    <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.1em',textTransform:'uppercase',color:c||C.textDim,fontWeight:500}}>{children}</span>;
+    <span style={{fontFamily:THEME.fontMono,fontSize:9,letterSpacing:'.1em',textTransform:'uppercase',color:c||C.textDim,fontWeight:500}}>{children}</span>;
 
 const Sev = ({level}) => {
     const m={critical:{l:'Critical',c:C.err,bg:C.errBg},high:{l:'High',c:C.warn,bg:C.warnBg},
         medium:{l:'Medium',c:C.accent,bg:C.accentBg},low:{l:'Low',c:C.ok,bg:C.okBg}}[level]||{l:level,c:C.textSub,bg:'transparent'};
     return <span style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:10,fontWeight:600,
         padding:'3px 9px',borderRadius:4,background:m.bg,color:m.c,border:`1px solid ${m.c}25`,
-        fontFamily:"'DM Sans',sans-serif"}}>
+        fontFamily:THEME.fontBody}}>
     <span style={{width:5,height:5,borderRadius:'50%',background:m.c,flexShrink:0,
         animation:level==='critical'?'pulse 1.4s infinite':'none'}}/>
         {m.l}
@@ -214,7 +214,7 @@ const Arc = ({value,max=100,color,size=88,label}) => {
         </svg>
         <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',
             alignItems:'center',justifyContent:'center',gap:2}}>
-            <span style={{fontSize:15,fontWeight:700,color,fontFamily:"'DM Sans',sans-serif",lineHeight:1}}>{value}{max===100?'%':''}</span>
+            <span style={{fontSize:15,fontWeight:700,color,fontFamily:THEME.fontBody,lineHeight:1}}>{value}{max===100?'%':''}</span>
             {label&&<Lbl color={C.textDim}>{label}</Lbl>}
         </div>
     </div>;
@@ -233,7 +233,7 @@ const CH = ({title,right,sub}) =>
         padding:'13px 18px',borderBottom:`1px solid ${C.border}`}}>
         <div>
             <Lbl>{title}</Lbl>
-            {sub&&<div style={{fontSize:11,color:C.textDim,fontFamily:"'DM Sans',sans-serif",marginTop:2}}>{sub}</div>}
+            {sub&&<div style={{fontSize:11,color:C.textDim,fontFamily:THEME.fontBody,marginTop:2}}>{sub}</div>}
         </div>
         {right}
     </div>;
@@ -251,12 +251,12 @@ const SqlBlock = ({sql}) => {
             <Lbl>SQL · PostgreSQL 14+</Lbl>
             <button onClick={()=>{navigator.clipboard?.writeText(sql);setCp(true);setTimeout(()=>setCp(false),2000);}}
                     className="btn" style={{background:'none',border:`1px solid ${C.border}`,borderRadius:4,
-                color:cp?C.ok:C.textSub,fontSize:11,fontFamily:"'DM Mono',monospace",padding:'3px 10px'}}>
+                color:cp?C.ok:C.textSub,fontSize:11,fontFamily:THEME.fontMono,padding:'3px 10px'}}>
                 {cp?'✓ Copied':'Copy'}
             </button>
         </div>
         <pre style={{margin:0,padding:'14px 16px',fontSize:12,lineHeight:1.8,background:C.bg,
-            color:C.textPrimary,fontFamily:"'DM Mono',monospace",overflowX:'auto',whiteSpace:'pre-wrap'}}>
+            color:C.textPrimary,fontFamily:THEME.fontMono,overflowX:'auto',whiteSpace:'pre-wrap'}}>
       <code dangerouslySetInnerHTML={{__html:h}}/>
     </pre>
     </div>;
@@ -295,12 +295,12 @@ const CmdPalette = ({onClose,data,onSelect}) => {
                     display:'flex',gap:12,alignItems:'center'}}>
                     <div style={{width:3,height:30,background:item._c,borderRadius:2,flexShrink:0}}/>
                     <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif",
+                        <div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody,
                             overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                             {item.table||item.indexName}
                             {item.column&&<span style={{color:C.textSub,fontWeight:400,marginLeft:8}}>· {item.column}</span>}
                         </div>
-                        <div style={{fontSize:11,color:C.textSub,fontFamily:"'DM Sans',sans-serif",marginTop:1,display:'flex',gap:10}}>
+                        <div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,marginTop:1,display:'flex',gap:10}}>
                             <span>{item.schema}</span><span style={{color:item._c}}>{item._g}</span>
                         </div>
                     </div>
@@ -308,7 +308,7 @@ const CmdPalette = ({onClose,data,onSelect}) => {
                 </div>)}
             </div>
             <div style={{padding:'8px 16px',borderTop:`1px solid ${C.border}`,
-                display:'flex',gap:14,fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace"}}>
+                display:'flex',gap:14,fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>
                 <span>↑↓ navigate</span><span>↵ open</span><span>ESC close</span>
             </div>
         </div>
@@ -335,12 +335,12 @@ const Drawer = ({index,onClose,onApply}) => {
                     <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
                         {index.severity&&<Sev level={index.severity}/>}
                         <span style={{fontSize:10,color:C.textDim,background:C.surface,border:`1px solid ${C.border}`,
-                            padding:'2px 8px',borderRadius:4,fontFamily:"'DM Mono',monospace"}}>{index.type}</span>
+                            padding:'2px 8px',borderRadius:4,fontFamily:THEME.fontMono}}>{index.type}</span>
                     </div>
                     <button onClick={onClose} className="btn" style={{background:'none',border:`1px solid ${C.border}`,
                         borderRadius:5,color:C.textSub,padding:'5px 12px',fontSize:12}}>Close</button>
                 </div>
-                <div style={{fontSize:15,fontWeight:700,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif",marginBottom:4}}>
+                <div style={{fontSize:15,fontWeight:700,color:C.textPrimary,fontFamily:THEME.fontBody,marginBottom:4}}>
                     {index.indexName||`${index.schema}.${index.table}`}
                 </div>
                 <M c={C.textSub} sz={12}>{index.schema}.{index.table}{index.column&&` · (${index.column})`}</M>
@@ -374,13 +374,13 @@ const Drawer = ({index,onClose,onApply}) => {
                         ].filter(Boolean).map((m,i)=><div key={i} style={{padding:'12px 14px',background:C.surface,
                             border:`1px solid ${C.border}`,borderRadius:6}}>
                             <Lbl style={{display:'block',marginBottom:6}}>{m.l}</Lbl>
-                            <div style={{fontSize:20,fontWeight:700,color:m.c,fontFamily:"'DM Sans',sans-serif",lineHeight:1,marginTop:6}}>{m.v}</div>
+                            <div style={{fontSize:20,fontWeight:700,color:m.c,fontFamily:THEME.fontBody,lineHeight:1,marginTop:6}}>{m.v}</div>
                         </div>)}
                     </div>
                     {id&&<Card style={{padding:'14px'}}>
                         <Lbl>Covered by</Lbl>
                         <M c={C.ok} sz={12} style={{display:'block',marginTop:6}}>{index.shadowedBy}</M>
-                        <div style={{fontSize:11,color:C.textSub,fontFamily:"'DM Sans',sans-serif",marginTop:6,lineHeight:1.6}}>
+                        <div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,marginTop:6,lineHeight:1.6}}>
                             Dropping won't affect any queries. Covering index handles all access patterns.
                         </div>
                     </Card>}
@@ -397,10 +397,10 @@ const Drawer = ({index,onClose,onApply}) => {
                         ].map((r,i)=><div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',
                             padding:'8px 0',borderBottom:i<2?`1px solid ${C.borderSub}`:'none'}}>
                             <div>
-                                <div style={{fontSize:12,color:C.textSub,fontFamily:"'DM Sans',sans-serif"}}>{r.l}</div>
-                                <div style={{fontSize:11,color:C.textDim,fontFamily:"'DM Sans',sans-serif",marginTop:1}}>{r.n}</div>
+                                <div style={{fontSize:12,color:C.textSub,fontFamily:THEME.fontBody}}>{r.l}</div>
+                                <div style={{fontSize:11,color:C.textDim,fontFamily:THEME.fontBody,marginTop:1}}>{r.n}</div>
                             </div>
-                            <span style={{fontSize:12,fontWeight:600,color:r.g?C.ok:C.warn,fontFamily:"'DM Sans',sans-serif"}}>{r.v}</span>
+                            <span style={{fontSize:12,fontWeight:600,color:r.g?C.ok:C.warn,fontFamily:THEME.fontBody}}>{r.v}</span>
                         </div>)}
                     </Card>
                 </>}
@@ -409,7 +409,7 @@ const Drawer = ({index,onClose,onApply}) => {
                     <SqlBlock sql={sql}/>
                     <Card style={{padding:'14px'}}>
                         <Lbl style={{display:'block',marginBottom:8}}>Expected plan change</Lbl>
-                        <pre style={{fontSize:11,color:C.textSub,fontFamily:"'DM Mono',monospace",lineHeight:1.8,margin:0,whiteSpace:'pre-wrap'}}>
+                        <pre style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontMono,lineHeight:1.8,margin:0,whiteSpace:'pre-wrap'}}>
 {`Seq Scan on ${index.table}
   cost=0.00..${((index.currentLatency||400)*4.2).toFixed(0)}
 ↓
@@ -424,25 +424,25 @@ Index Scan using new_idx
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
                             {[{l:'Current',v:`${index.currentLatency}ms`,c:C.err},{l:'Projected',v:`${index.estLatency}ms`,c:C.ok}].map(m=><Card key={m.l} style={{padding:'14px',textAlign:'center'}}>
                                 <Lbl style={{display:'block',marginBottom:8}}>{m.l} latency</Lbl>
-                                <div style={{fontSize:28,fontWeight:700,color:m.c,fontFamily:"'DM Sans',sans-serif"}}>{m.v}</div>
+                                <div style={{fontSize:28,fontWeight:700,color:m.c,fontFamily:THEME.fontBody}}>{m.v}</div>
                             </Card>)}
                         </div>
                         <Card style={{padding:'14px',textAlign:'center'}}>
                             <Lbl style={{display:'block',marginBottom:4}}>Performance gain</Lbl>
-                            <div style={{fontSize:44,fontWeight:700,color:C.ok,fontFamily:"'DM Sans',sans-serif",lineHeight:1}}>
+                            <div style={{fontSize:44,fontWeight:700,color:C.ok,fontFamily:THEME.fontBody,lineHeight:1}}>
                                 {Math.round(((index.currentLatency-index.estLatency)/index.currentLatency)*100)}%
                             </div>
                         </Card>
                     </>}
                     {id&&<Card style={{padding:'20px',textAlign:'center'}}>
-                        <div style={{fontSize:32,fontWeight:700,color:C.ok,fontFamily:"'DM Sans',sans-serif",marginBottom:6}}>Zero impact</div>
-                        <div style={{fontSize:12,color:C.textSub,fontFamily:"'DM Sans',sans-serif"}}>Queries auto-rerouted to covering index</div>
+                        <div style={{fontSize:32,fontWeight:700,color:C.ok,fontFamily:THEME.fontBody,marginBottom:6}}>Zero impact</div>
+                        <div style={{fontSize:12,color:C.textSub,fontFamily:THEME.fontBody}}>Queries auto-rerouted to covering index</div>
                     </Card>}
                     <Card style={{padding:'14px'}}>
                         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
                             <span>✦</span><Lbl>AI prediction</Lbl>
                         </div>
-                        <div style={{fontSize:12,color:C.textSub,fontFamily:"'DM Sans',sans-serif",lineHeight:1.7}}>
+                        <div style={{fontSize:12,color:C.textSub,fontFamily:THEME.fontBody,lineHeight:1.7}}>
                             {im&&`Based on ${index.seq_scan?.toLocaleString()} seq scans/day and ${index.reads?.toLocaleString()} reads/min, this index will reduce CPU load by ~${14+Math.floor(Math.random()*8)}% during peak hours.`}
                             {ib&&`Rebuilding reclaims ${index.wastedSpace}. Expect ${10+Math.floor(index.bloatPct/5)}% faster range scans post-rebuild.`}
                             {id&&`Dropping reduces INSERT overhead by ~${3+Math.floor(Math.random()*4)}% (${index.writes} writes/min). Zero query regressions expected.`}
@@ -470,7 +470,7 @@ Index Scan using new_idx
                             {l:'Lock wait',v:'0.2ms',c:C.ok},{l:'Dead tuples',v:'~4.1K',c:C.textSub}].map(m=>
                             <Card key={m.l} style={{padding:'12px 14px'}}>
                                 <Lbl style={{display:'block',marginBottom:5}}>{m.l}</Lbl>
-                                <div style={{fontSize:18,fontWeight:700,color:m.c,fontFamily:"'DM Sans',sans-serif"}}>{m.v}</div>
+                                <div style={{fontSize:18,fontWeight:700,color:m.c,fontFamily:THEME.fontBody}}>{m.v}</div>
                             </Card>)}
                     </div>
                 </>}
@@ -478,11 +478,11 @@ Index Scan using new_idx
 
             <div style={{padding:'14px 22px',borderTop:`1px solid ${C.border}`,background:C.bg,display:'flex',gap:10,flexShrink:0}}>
                 <button onClick={()=>onApply(index)} style={{flex:2,padding:'11px',borderRadius:6,background:C.accent,
-                    border:'none',color:'#fff',fontWeight:600,fontSize:13,fontFamily:"'DM Sans',sans-serif",cursor:'pointer'}}>
+                    border:'none',color:'#fff',fontWeight:600,fontSize:13,fontFamily:THEME.fontBody,cursor:'pointer'}}>
                     Apply fix
                 </button>
                 <button className="btn" style={{flex:1,padding:'11px',borderRadius:6,background:C.surface,
-                    border:`1px solid ${C.border}`,color:C.textSub,fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>
+                    border:`1px solid ${C.border}`,color:C.textSub,fontSize:12,fontFamily:THEME.fontBody}}>
                     Export SQL
                 </button>
             </div>
@@ -505,7 +505,7 @@ const ApplyModal = ({index,onClose}) => {
                 display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
                     <Lbl style={{display:'block',marginBottom:4}}>Apply index operation</Lbl>
-                    <div style={{fontSize:14,fontWeight:700,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif"}}>{index.table||index.indexName}</div>
+                    <div style={{fontSize:14,fontWeight:700,color:C.textPrimary,fontFamily:THEME.fontBody}}>{index.table||index.indexName}</div>
                 </div>
                 <button onClick={onClose} className="btn" style={{background:'none',border:`1px solid ${C.border}`,
                     borderRadius:5,color:C.textSub,padding:'5px 12px',fontSize:12}}>Close</button>
@@ -522,7 +522,7 @@ const ApplyModal = ({index,onClose}) => {
                                 <div style={{width:26,height:26,borderRadius:'50%',border:`1.5px solid ${col}`,
                                     background:done||active?`${C.accent}15`:'transparent',
                                     display:'flex',alignItems:'center',justifyContent:'center',
-                                    fontSize:11,color:col,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+                                    fontSize:11,color:col,fontWeight:600,fontFamily:THEME.fontBody}}>
                                     {done?'✓':i+1}
                                 </div>
                                 <Lbl color={active?C.accent:done?C.textSub:C.textDim}>{s}</Lbl>
@@ -537,7 +537,7 @@ const ApplyModal = ({index,onClose}) => {
                     <button onClick={()=>{setStep('dry-run');setTimeout(()=>setStep('confirm'),1400);}}
                             style={{width:'100%',marginTop:14,padding:'11px',borderRadius:6,background:C.surface,
                                 border:`1px solid ${C.border}`,color:C.textPrimary,fontSize:13,fontWeight:600,
-                                fontFamily:"'DM Sans',sans-serif",cursor:'pointer'}}>
+                                fontFamily:THEME.fontBody,cursor:'pointer'}}>
                         Run dry-run analysis
                     </button>
                 </>}
@@ -550,7 +550,7 @@ const ApplyModal = ({index,onClose}) => {
 
                 {step==='confirm'&&<>
           <pre style={{padding:'14px',background:C.surface,border:`1px solid ${C.border}`,
-              borderRadius:6,fontSize:11,color:C.ok,fontFamily:"'DM Mono',monospace",lineHeight:1.8,whiteSpace:'pre-wrap',marginBottom:14}}>
+              borderRadius:6,fontSize:11,color:C.ok,fontFamily:THEME.fontMono,lineHeight:1.8,whiteSpace:'pre-wrap',marginBottom:14}}>
 {`-- DRY RUN RESULTS
 -- Lock required:  NONE (CONCURRENTLY)
 -- Est. size:      ${index.estSize||index.size||'N/A'}
@@ -562,10 +562,10 @@ const ApplyModal = ({index,onClose}) => {
           </pre>
                     <div style={{display:'flex',gap:10}}>
                         <button onClick={onClose} className="btn" style={{flex:1,padding:'11px',borderRadius:6,
-                            background:C.surface,border:`1px solid ${C.border}`,color:C.textSub,fontSize:13,fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>Cancel</button>
+                            background:C.surface,border:`1px solid ${C.border}`,color:C.textSub,fontSize:13,fontFamily:THEME.fontBody,fontWeight:500}}>Cancel</button>
                         <button onClick={()=>{setStep('executing');setTimeout(()=>setStep('done'),2200);}}
                                 style={{flex:2,padding:'11px',borderRadius:6,background:C.accent,border:'none',
-                                    color:'#fff',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:'pointer'}}>
+                                    color:'#fff',fontSize:13,fontWeight:600,fontFamily:THEME.fontBody,cursor:'pointer'}}>
                             Confirm &amp; execute
                         </button>
                     </div>
@@ -581,7 +581,7 @@ const ApplyModal = ({index,onClose}) => {
                     </div>
                     {['Acquiring metadata snapshot…','Building index structure…','Validating…'].map((t,i)=>
                         <div key={i} style={{display:'flex',gap:8,alignItems:'center',padding:'5px 0',
-                            fontSize:12,color:C.textSub,fontFamily:"'DM Sans',sans-serif"}}>
+                            fontSize:12,color:C.textSub,fontFamily:THEME.fontBody}}>
                             <div style={{width:6,height:6,borderRadius:'50%',background:C.ok,flexShrink:0}}/>
                             {t}
                         </div>)}
@@ -591,8 +591,8 @@ const ApplyModal = ({index,onClose}) => {
                     <div style={{width:56,height:56,borderRadius:'50%',background:C.okBg,
                         border:`2px solid ${C.ok}`,display:'flex',alignItems:'center',justifyContent:'center',
                         margin:'0 auto 14px',fontSize:24}}>✓</div>
-                    <div style={{fontSize:18,fontWeight:700,color:C.ok,fontFamily:"'DM Sans',sans-serif",marginBottom:6}}>Applied successfully</div>
-                    <div style={{fontSize:12,color:C.textSub,fontFamily:"'DM Sans',sans-serif"}}>Added to operation log · ANALYZE scheduled</div>
+                    <div style={{fontSize:18,fontWeight:700,color:C.ok,fontFamily:THEME.fontBody,marginBottom:6}}>Applied successfully</div>
+                    <div style={{fontSize:12,color:C.textSub,fontFamily:THEME.fontBody}}>Added to operation log · ANALYZE scheduled</div>
                 </div>}
             </div>
         </div>
@@ -616,7 +616,7 @@ const IndexTable = ({rows,view,onSelect}) => {
     const TH=({f,children,right})=><th onClick={()=>f&&tog(f)} style={{padding:'10px 16px',
         textAlign:right?'right':'left',fontSize:9.5,fontWeight:500,
         color:sort.field===f?C.accent:C.textDim,cursor:f?'pointer':'default',
-        fontFamily:"'DM Mono',monospace",letterSpacing:'.08em',textTransform:'uppercase',
+        fontFamily:THEME.fontMono,letterSpacing:'.08em',textTransform:'uppercase',
         borderBottom:`1px solid ${C.border}`,background:C.bg,whiteSpace:'nowrap',userSelect:'none'}}>
         {children}{f&&sort.field===f&&<span style={{marginLeft:3,fontSize:9}}>{sort.dir==='asc'?'↑':'↓'}</span>}
     </th>;
@@ -647,49 +647,49 @@ const IndexTable = ({rows,view,onSelect}) => {
                     {view==='missing'&&<>
                         <td style={{padding:'12px 16px'}}><Sev level={row.severity}/></td>
                         <td style={{padding:'12px 16px'}}>
-                            <div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif"}}>{row.table}</div>
-                            <div style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace",marginTop:1}}>{row.schema}</div>
+                            <div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody}}>{row.table}</div>
+                            <div style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono,marginTop:1}}>{row.schema}</div>
                         </td>
                         <td style={{padding:'12px 16px',maxWidth:200}}>
                             <M c={C.ok} sz={11} style={{background:C.okBg,padding:'2px 8px',borderRadius:4,display:'inline-block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{row.column}</M>
                         </td>
-                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:500,color:row.seq_scan>100000?C.err:C.warn}}>{row.seq_scan.toLocaleString()}</td>
+                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:THEME.fontMono,fontSize:13,fontWeight:500,color:row.seq_scan>100000?C.err:C.warn}}>{row.seq_scan.toLocaleString()}</td>
                         <td style={{padding:'12px 16px',textAlign:'right'}}>
-                            <div style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:C.err}}>{row.currentLatency}ms</div>
-                            <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.ok}}>→ {row.estLatency}ms</div>
+                            <div style={{fontFamily:THEME.fontMono,fontSize:12,color:C.err}}>{row.currentLatency}ms</div>
+                            <div style={{fontFamily:THEME.fontMono,fontSize:11,color:C.ok}}>→ {row.estLatency}ms</div>
                         </td>
                         <td style={{padding:'12px 16px',minWidth:90}}>
-                            <div style={{fontSize:11,color:C.ok,fontFamily:"'DM Mono',monospace",marginBottom:4}}>{Math.round(((row.currentLatency-row.estLatency)/row.currentLatency)*100)}%</div>
+                            <div style={{fontSize:11,color:C.ok,fontFamily:THEME.fontMono,marginBottom:4}}>{Math.round(((row.currentLatency-row.estLatency)/row.currentLatency)*100)}%</div>
                             <SegBar pct={(1-(row.estLatency/row.currentLatency))*100} color={C.ok}/>
                         </td>
-                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace",background:C.surface,border:`1px solid ${C.border}`,padding:'2px 6px',borderRadius:4}}>#{row.hash}</span></td>
+                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono,background:C.surface,border:`1px solid ${C.border}`,padding:'2px 6px',borderRadius:4}}>#{row.hash}</span></td>
                     </>}
 
                     {view==='bloat'&&<>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.textPrimary}}>{row.indexName}</td>
-                        <td style={{padding:'12px 16px'}}><div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif"}}>{row.table}</div><div style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace"}}>{row.schema}</div></td>
-                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:600,color:row.bloatPct>50?C.err:C.warn}}>{row.bloatPct}%</td>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.textSub}}>{row.size}</td>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.err}}>{row.wastedSpace}</td>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.textDim}}>{row.lastVacuum}</td>
-                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace"}}>#{row.hash}</span></td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.textPrimary}}>{row.indexName}</td>
+                        <td style={{padding:'12px 16px'}}><div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody}}>{row.table}</div><div style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>{row.schema}</div></td>
+                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:THEME.fontMono,fontSize:14,fontWeight:600,color:row.bloatPct>50?C.err:C.warn}}>{row.bloatPct}%</td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.textSub}}>{row.size}</td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.err}}>{row.wastedSpace}</td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.textDim}}>{row.lastVacuum}</td>
+                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>#{row.hash}</span></td>
                     </>}
 
                     {view==='duplicates'&&<>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.err}}>{row.indexName}</td>
-                        <td style={{padding:'12px 16px'}}><div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif"}}>{row.table}</div><div style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace"}}>{row.schema}</div></td>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:11,color:C.ok}}>{row.shadowedBy}</td>
-                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:"'DM Mono',monospace",fontSize:13,color:C.warn}}>{row.wastedSpace}</td>
-                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace"}}>#{row.hash}</span></td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.err}}>{row.indexName}</td>
+                        <td style={{padding:'12px 16px'}}><div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody}}>{row.table}</div><div style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>{row.schema}</div></td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:11,color:C.ok}}>{row.shadowedBy}</td>
+                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:THEME.fontMono,fontSize:13,color:C.warn}}>{row.wastedSpace}</td>
+                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>#{row.hash}</span></td>
                     </>}
 
                     {view==='unused'&&<>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.textPrimary}}>{row.indexName}</td>
-                        <td style={{padding:'12px 16px'}}><div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif"}}>{row.table}</div><div style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace"}}>{row.schema}</div></td>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.accent}}>{row.size}</td>
-                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:600,color:row.scans===0?C.err:C.textSub}}>{row.scans}</td>
-                        <td style={{padding:'12px 16px',fontFamily:"'DM Mono',monospace",fontSize:12,color:C.textSub}}>{row.lastUsed}</td>
-                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:"'DM Mono',monospace"}}>#{row.hash}</span></td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.textPrimary}}>{row.indexName}</td>
+                        <td style={{padding:'12px 16px'}}><div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody}}>{row.table}</div><div style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>{row.schema}</div></td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.accent}}>{row.size}</td>
+                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:THEME.fontMono,fontSize:13,fontWeight:600,color:row.scans===0?C.err:C.textSub}}>{row.scans}</td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.textSub}}>{row.lastUsed}</td>
+                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>#{row.hash}</span></td>
                     </>}
                 </tr>)}
                 </tbody>
@@ -716,7 +716,7 @@ const HealthPanel = ({data}) => <>
                     {l:'Seq scan rate',v:`${data.seqScanRate}%`,c:C.warn,spark:data.seqHistory}].map(m=>
                     <div key={m.l} style={{padding:'10px 12px',background:C.surfaceHi,borderRadius:6}}>
                         <Lbl style={{display:'block',marginBottom:5}}>{m.l}</Lbl>
-                        <div style={{fontSize:18,fontWeight:700,color:m.c,fontFamily:"'DM Sans',sans-serif",marginBottom:6}}>{m.v}</div>
+                        <div style={{fontSize:18,fontWeight:700,color:m.c,fontFamily:THEME.fontBody,marginBottom:6}}>{m.v}</div>
                         <Spark data={m.spark} color={m.c} w={88} h={20}/>
                     </div>)}
             </div>
@@ -757,23 +757,23 @@ const AIPanel = ({view}) => {
         <CH title="AI analysis" right={<Lbl color={C.textDim}>{view}</Lbl>}/>
         <div style={{padding:'14px 18px',display:'flex',flexDirection:'column',gap:10}}>
             <div style={{padding:'10px 12px',background:C.accentBg,border:`1px solid ${C.accent}20`,borderRadius:6}}>
-                <div style={{fontSize:12,fontWeight:600,color:C.accent,fontFamily:"'DM Sans',sans-serif",lineHeight:1.4}}>{a.title}</div>
+                <div style={{fontSize:12,fontWeight:600,color:C.accent,fontFamily:THEME.fontBody,lineHeight:1.4}}>{a.title}</div>
             </div>
             {(exp?a.items:a.items.slice(0,2)).map((it,i)=><div key={i} style={{display:'flex',gap:10,
                 padding:'10px 12px',background:C.surfaceHi,borderRadius:6}}>
                 <span style={{fontSize:15,flexShrink:0,marginTop:1}}>{it.icon}</span>
                 <div>
-                    <div style={{fontSize:11,fontWeight:600,color:C.textPrimary,fontFamily:"'DM Sans',sans-serif",marginBottom:2}}>{it.head}</div>
-                    <div style={{fontSize:11,color:C.textSub,fontFamily:"'DM Sans',sans-serif",lineHeight:1.6}}>{it.body}</div>
+                    <div style={{fontSize:11,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody,marginBottom:2}}>{it.head}</div>
+                    <div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,lineHeight:1.6}}>{it.body}</div>
                 </div>
             </div>)}
             <button onClick={()=>setExp(e=>!e)} className="btn" style={{padding:'7px',background:C.surface,
-                border:`1px solid ${C.border}`,borderRadius:5,color:C.textSub,fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>
+                border:`1px solid ${C.border}`,borderRadius:5,color:C.textSub,fontSize:11,fontFamily:THEME.fontBody}}>
                 {exp?'Show less ↑':'Show all insights ↓'}
             </button>
             <div style={{padding:'10px 12px',background:C.okBg,border:`1px solid ${C.ok}18`,borderRadius:6}}>
                 <Lbl color={C.ok} style={{display:'block',marginBottom:4}}>Recommendation</Lbl>
-                <div style={{fontSize:11,color:C.textSub,fontFamily:"'DM Sans',sans-serif",lineHeight:1.6}}>{a.action}</div>
+                <div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,lineHeight:1.6}}>{a.action}</div>
             </div>
         </div>
     </Card>;
@@ -792,7 +792,7 @@ const TrendPanel = ({rows,view}) => {
         <CH title="30-day trend" right={
             <select value={sel} onChange={e=>setSel(+e.target.value)}
                     style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:4,
-                        color:C.textSub,fontFamily:"'DM Mono',monospace",fontSize:10,padding:'3px 8px',
+                        color:C.textSub,fontFamily:THEME.fontMono,fontSize:10,padding:'3px 8px',
                         outline:'none',cursor:'pointer'}}>
                 {rows.map((r,i)=><option key={i} value={i}>{r.table||r.indexName}</option>)}
             </select>}/>
@@ -807,7 +807,7 @@ const TrendPanel = ({rows,view}) => {
                     {l:'Trend',v:`${+trend>0?'+':''}${trend}%`,c:+trend>0?C.err:C.ok}].map(m=>
                     <div key={m.l} style={{padding:'9px 10px',background:C.surfaceHi,borderRadius:5}}>
                         <Lbl style={{display:'block',marginBottom:4}}>{m.l}</Lbl>
-                        <div style={{fontSize:14,fontWeight:700,color:m.c,fontFamily:"'DM Sans',sans-serif"}}>{m.v}</div>
+                        <div style={{fontSize:14,fontWeight:700,color:m.c,fontFamily:THEME.fontBody}}>{m.v}</div>
                     </div>)}
             </div>
         </div>
@@ -826,7 +826,7 @@ const PgVectorPanel = ({pgvector}) => <Card>
                 </div>
                 <span style={{fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:4,
                     background:idx.status==='building'?C.warnBg:C.okBg,
-                    color:idx.status==='building'?C.warn:C.ok,fontFamily:"'DM Sans',sans-serif"}}>
+                    color:idx.status==='building'?C.warn:C.ok,fontFamily:THEME.fontBody}}>
           {idx.status==='building'?`Building ${idx.buildProgress}%`:'Healthy'}
         </span>
             </div>
@@ -839,11 +839,11 @@ const PgVectorPanel = ({pgvector}) => <Card>
                     {l:'Vectors',v:`${(idx.totalVectors/1e6).toFixed(1)}M`,c:C.textPrimary}].map(m=>
                     <div key={m.l} style={{padding:'7px',background:C.surface,borderRadius:4,textAlign:'center'}}>
                         <Lbl style={{display:'block',marginBottom:3}}>{m.l}</Lbl>
-                        <div style={{fontSize:13,fontWeight:700,color:m.c,fontFamily:"'DM Sans',sans-serif"}}>{m.v}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:m.c,fontFamily:THEME.fontBody}}>{m.v}</div>
                     </div>)}
             </div>
             {idx.annRecall<0.95&&<div style={{marginTop:8,padding:'7px 10px',background:C.warnBg,
-                border:`1px solid ${C.warn}20`,borderRadius:4,fontSize:11,color:C.textSub,fontFamily:"'DM Sans',sans-serif",lineHeight:1.5}}>
+                border:`1px solid ${C.warn}20`,borderRadius:4,fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,lineHeight:1.5}}>
                 Recall below 95% — increase lists or migrate to HNSW for better accuracy.
             </div>}
         </div>)}
@@ -859,16 +859,16 @@ const RowDivPanel = ({data}) => <Card>
                     <M sz={12} c={C.textPrimary} w={500}>{row.schema}.{row.table}</M>
                     <div style={{marginTop:2}}><M sz={10}>Last ANALYZE: {row.lastAnalyze}</M></div>
                 </div>
-                <span style={{fontSize:15,fontWeight:700,color:row.divergence>200?C.err:C.warn,fontFamily:"'DM Sans',sans-serif"}}>{row.divergence}×</span>
+                <span style={{fontSize:15,fontWeight:700,color:row.divergence>200?C.err:C.warn,fontFamily:THEME.fontBody}}>{row.divergence}×</span>
             </div>
             {[{l:'Planner',v:row.plannerEst,c:C.accent},{l:'Actual',v:row.actualRows,c:C.err}].map(b=><div key={b.l} style={{display:'flex',gap:8,alignItems:'center',marginBottom:4}}>
-                <div style={{width:50,fontSize:10,color:C.textDim,fontFamily:"'DM Sans',sans-serif"}}>{b.l}</div>
+                <div style={{width:50,fontSize:10,color:C.textDim,fontFamily:THEME.fontBody}}>{b.l}</div>
                 <div style={{flex:1,height:4,background:C.border,borderRadius:2,overflow:'hidden'}}>
                     <div style={{width:`${Math.max(2,(b.v/row.actualRows)*100)}%`,height:'100%',background:b.c,borderRadius:2,transformOrigin:'left',animation:'grow 1s cubic-bezier(.22,1,.36,1) both'}}/>
                 </div>
-                <div style={{width:70,fontSize:10,color:b.c,textAlign:'right',fontFamily:"'DM Mono',monospace",fontWeight:500}}>{b.v.toLocaleString()}</div>
+                <div style={{width:70,fontSize:10,color:b.c,textAlign:'right',fontFamily:THEME.fontMono,fontWeight:500}}>{b.v.toLocaleString()}</div>
             </div>)}
-            <div style={{marginTop:8,padding:'5px 8px',background:C.surface,borderRadius:4,fontSize:10.5,color:C.textSub,fontFamily:"'DM Mono',monospace"}}>
+            <div style={{marginTop:8,padding:'5px 8px',background:C.surface,borderRadius:4,fontSize:10.5,color:C.textSub,fontFamily:THEME.fontMono}}>
                 ANALYZE {row.schema}.{row.table};
             </div>
         </div>)}
@@ -890,7 +890,7 @@ const FKPanel = ({data}) => <Card>
                 <M sz={10}>{(fk.rowCount/1e6).toFixed(1)}M rows</M>
                 <M sz={10} c={C.warn}>{fk.writes.toLocaleString()} writes/min</M>
             </div>
-            <div style={{padding:'5px 8px',background:C.surface,borderRadius:4,fontSize:10.5,color:C.ok,fontFamily:"'DM Mono',monospace",lineHeight:1.6,overflowX:'auto',whiteSpace:'nowrap'}}>
+            <div style={{padding:'5px 8px',background:C.surface,borderRadius:4,fontSize:10.5,color:C.ok,fontFamily:THEME.fontMono,lineHeight:1.6,overflowX:'auto',whiteSpace:'nowrap'}}>
                 CREATE INDEX CONCURRENTLY idx_{fk.table}_{fk.fkColumn} ON {fk.schema}.{fk.table} ({fk.fkColumn});
             </div>
         </div>)}
@@ -905,12 +905,12 @@ const HistoryPanel = ({data}) => {
             {data.map((e,i)=><div key={i} style={{display:'flex',gap:12,alignItems:'center',padding:'10px 0',
                 borderBottom:i<data.length-1?`1px solid ${C.borderSub}`:'none'}}>
         <span style={{fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:4,flexShrink:0,
-            background:`${cols[e.action]||C.textSub}12`,color:cols[e.action]||C.textSub,fontFamily:"'DM Mono',monospace"}}>
+            background:`${cols[e.action]||C.textSub}12`,color:cols[e.action]||C.textSub,fontFamily:THEME.fontMono}}>
           {e.action}
         </span>
                 <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:12,color:C.textPrimary,fontFamily:"'DM Mono',monospace",overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.name}</div>
-                    <div style={{fontSize:10,color:C.textDim,fontFamily:"'DM Sans',sans-serif",marginTop:1}}>{e.ts} · {e.user} · {e.dur}</div>
+                    <div style={{fontSize:12,color:C.textPrimary,fontFamily:THEME.fontMono,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.name}</div>
+                    <div style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontBody,marginTop:1}}>{e.ts} · {e.user} · {e.dur}</div>
                 </div>
                 <span style={{fontSize:13,color:e.ok?C.ok:C.err,flexShrink:0}}>{e.ok?'✓':'✗'}</span>
             </div>)}
@@ -952,7 +952,7 @@ export default function IndexIntelligence() {
     ];
 
     return (
-        <div style={{background:C.bg,minHeight:'100vh',fontFamily:"'DM Sans',sans-serif"}}>
+        <div style={{background:C.bg,minHeight:'100vh',fontFamily:THEME.fontBody}}>
             <Styles/>
             <div style={{maxWidth:1400,margin:'0 auto',padding:'0 24px 48px'}}>
 
@@ -983,7 +983,7 @@ export default function IndexIntelligence() {
                         <button onClick={()=>setCmd(true)} className="btn" style={{display:'flex',gap:7,alignItems:'center',
                             padding:'7px 14px',border:`1px solid ${C.border}`,borderRadius:6,background:C.surface,color:C.textSub,fontSize:12}}>
                             Search
-                            <span style={{border:`1px solid ${C.border}`,padding:'1px 6px',fontSize:10,borderRadius:4,fontFamily:"'DM Mono',monospace"}}>⌘K</span>
+                            <span style={{border:`1px solid ${C.border}`,padding:'1px 6px',fontSize:10,borderRadius:4,fontFamily:THEME.fontMono}}>⌘K</span>
                         </button>
                         <button onClick={()=>setLive(l=>!l)} style={{display:'flex',gap:6,alignItems:'center',
                             padding:'7px 12px',border:`1px solid ${live?C.ok+'35':C.border}`,borderRadius:6,
@@ -1008,12 +1008,12 @@ export default function IndexIntelligence() {
                         border:`1px solid ${C.border}`,borderRadius:8,position:'relative',overflow:'hidden'}}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
                             <Lbl>{t.l}</Lbl>
-                            {t.trend!=null&&<span style={{fontSize:10,fontWeight:600,color:t.trend>0?C.ok:C.err,fontFamily:"'DM Sans',sans-serif"}}>
+                            {t.trend!=null&&<span style={{fontSize:10,fontWeight:600,color:t.trend>0?C.ok:C.err,fontFamily:THEME.fontBody}}>
                 {t.trend>0?'↑':'↓'}{Math.abs(t.trend)}%
               </span>}
                         </div>
-                        <div style={{fontSize:30,fontWeight:700,color:t.c,fontFamily:"'DM Sans',sans-serif",lineHeight:1,letterSpacing:'-.01em',marginBottom:4}}>{t.v}</div>
-                        {t.sub&&<div style={{fontSize:11,color:C.textSub,fontFamily:"'DM Sans',sans-serif",marginBottom:t.spark?8:0}}>{t.sub}</div>}
+                        <div style={{fontSize:30,fontWeight:700,color:t.c,fontFamily:THEME.fontBody,lineHeight:1,letterSpacing:'-.01em',marginBottom:4}}>{t.v}</div>
+                        {t.sub&&<div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,marginBottom:t.spark?8:0}}>{t.sub}</div>}
                         {t.spark&&<Spark data={t.spark} color={t.c} w={110} h={22}/>}
                     </div>)}
                 </div>
@@ -1028,7 +1028,7 @@ export default function IndexIntelligence() {
                                 padding:'10px 18px',borderBottom:view===v.id?`2px solid ${v.c}`:'2px solid transparent',
                                 color:view===v.id?v.c:C.textSub,fontSize:13,fontWeight:view===v.id?600:400}}>
                                 {v.label}
-                                <span style={{marginLeft:8,fontSize:11,fontWeight:700,color:view===v.id?v.c:C.textDim,fontFamily:"'DM Mono',monospace"}}>{v.n}</span>
+                                <span style={{marginLeft:8,fontSize:11,fontWeight:700,color:view===v.id?v.c:C.textDim,fontFamily:THEME.fontMono}}>{v.n}</span>
                             </button>)}
                         </div>
 

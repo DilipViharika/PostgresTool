@@ -35,7 +35,7 @@ function ensureStyles() {
         document.head.appendChild(el);
     }
     el.textContent = [
-        '.as2 { font-family: "DM Sans","Inter",system-ui,sans-serif; color:' + T.text + '; }',
+        '.as2 { font-family: ' + THEME.fontBody + '; color:' + T.text + '; }',
         '.as2 *, .as2 *::before, .as2 *::after { box-sizing: border-box; }',
 
         '.as2-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }',
@@ -268,7 +268,7 @@ export var AuditLog = function AuditLog() {
                                 React.createElement('div', null,
                                     React.createElement('div', {
                                         style:{ fontSize:12, fontWeight:700, color:T.text,
-                                            fontFamily:'"SF Mono","Fira Code",monospace' }
+                                            fontFamily: THEME.fontMono }
                                     }, entry.action),
                                     React.createElement('div', {
                                         style:{ fontSize:11, color:T.textDim, marginTop:2 }
@@ -285,7 +285,7 @@ export var AuditLog = function AuditLog() {
                                 /* detail */
                                 React.createElement('div', {
                                     style:{ fontSize:11, color:T.textDim,
-                                        fontFamily:'"SF Mono","Fira Code",monospace',
+                                        fontFamily: THEME.fontMono,
                                         background:T.surfaceHigh, padding:'4px 8px',
                                         borderRadius:5, overflow:'hidden',
                                         textOverflow:'ellipsis', whiteSpace:'nowrap' }
@@ -433,7 +433,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                                     ),
                                     React.createElement('div', {
                                         style:{ fontSize:11, color:T.textDim, marginTop:2,
-                                            fontFamily:'"SF Mono","Fira Code",monospace' }
+                                            fontFamily: THEME.fontMono }
                                     }, s.ip + ' · ' + s.location),
                                     React.createElement('div', {
                                         style:{ fontSize:11, color:T.textDim }
@@ -493,7 +493,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                                     },
                                     React.createElement('code', {
                                         style:{ fontSize:11, color:T.textDim,
-                                            fontFamily:'"SF Mono","Fira Code",monospace',
+                                            fontFamily: THEME.fontMono,
                                             background:T.surfaceHigh, padding:'2px 6px', borderRadius:4 }
                                     }, key.prefix + '............'),
                                     React.createElement('span', {
@@ -509,7 +509,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                             React.createElement('div', { style:{ textAlign:'right' } },
                                 React.createElement('div', {
                                     style:{ fontSize:12, fontWeight:700, color:T.text,
-                                        fontFamily:'"SF Mono","Fira Code",monospace' }
+                                        fontFamily: THEME.fontMono }
                                 }, key.calls.toLocaleString()),
                                 React.createElement('div', {
                                     style:{ fontSize:10, color:T.textDim }

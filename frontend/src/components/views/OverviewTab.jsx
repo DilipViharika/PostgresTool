@@ -30,8 +30,6 @@ import {
    ═══════════════════════════════════════════════════════════════════════════ */
 const OvStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
-
         @keyframes ovFadeIn {
             from { opacity: 0; transform: translateY(14px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -152,8 +150,8 @@ const OvStyles = () => (
         .ov-vacuum-urgent { animation: ovVacuumPulse 2s ease-in-out infinite; }
 
         /* Mono font for metrics */
-        .ov-mono { font-family: 'JetBrains Mono', monospace !important; }
-        .ov-display { font-family: 'Syne', sans-serif !important; }
+        .ov-mono { font-family: ${THEME.fontMono} !important; }
+        .ov-display { font-family: ${THEME.fontBody} !important; }
 
         .ov-card-shine {
             position: absolute;
@@ -217,7 +215,7 @@ const StatusBadge = ({ label, color, pulse }) => (
         display: 'inline-flex', alignItems: 'center', gap: 5,
         fontSize: 9.5, fontWeight: 700, padding: '3px 9px', borderRadius: 6,
         background: `${color}12`, color, border: `1px solid ${color}22`,
-        lineHeight: 1.3, whiteSpace: 'nowrap', fontFamily: 'JetBrains Mono, monospace',
+        lineHeight: 1.3, whiteSpace: 'nowrap', fontFamily: THEME.fontMono,
         letterSpacing: '0.04em',
     }}>
         <span style={{
@@ -493,7 +491,7 @@ const NotificationBell = () => {
                         minWidth: 16, height: 16, borderRadius: 8, padding: '0 4px',
                         background: SEVERITY_COLOR.critical, color: '#fff',
                         fontSize: 9, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: 'JetBrains Mono, monospace',
+                        fontFamily: THEME.fontMono,
                         boxShadow: `0 0 8px ${SEVERITY_COLOR.critical}60`,
                         animation: 'ovPulse 2s ease-in-out infinite',
                     }}>
@@ -1172,8 +1170,8 @@ const OverviewTab = () => {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid stroke={`${THEME.grid}35`} strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="time" tick={{ fontSize: 9.5, fill: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }} axisLine={false} tickLine={false} interval={4} />
-                                <YAxis tick={{ fontSize: 9.5, fill: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }} axisLine={false} tickLine={false} width={36} />
+                                <XAxis dataKey="time" tick={{ fontSize: 9.5, fill: THEME.textDim, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} interval={4} />
+                                <YAxis tick={{ fontSize: 9.5, fill: THEME.textDim, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={36} />
                                 <Tooltip content={<ChartTooltip />} />
                                 <Area type="monotone" dataKey="qps" name="Queries/sec" stroke={THEME.primary} strokeWidth={2.5} fill="url(#ovGradQps)" />
                                 <Area type="monotone" dataKey="tps" name="Txns/sec" stroke={THEME.secondary} strokeWidth={1.5} fill="url(#ovGradTps)" strokeDasharray="5 3" />
@@ -1266,7 +1264,7 @@ const OverviewTab = () => {
                         <LineChart data={txnLatencyData} margin={{ top: 8, right: 10, bottom: 0, left: -16 }}>
                             <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="i" hide />
-                            <YAxis tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }} axisLine={false} tickLine={false} width={28} unit="ms" />
+                            <YAxis tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={28} unit="ms" />
                             <Tooltip content={<ChartTooltip />} />
                             <ReferenceLine y={10} stroke={`${THEME.warning}40`} strokeDasharray="4 4" label={{ value: 'SLA', fontSize: 9, fill: THEME.warning, position: 'right' }} />
                             <Line type="monotone" dataKey="p50" name="P50" stroke="#34d399" strokeWidth={2} dot={false} />
@@ -1375,8 +1373,8 @@ const OverviewTab = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={opsPerSec} margin={{ top: 8, right: 4, bottom: 0, left: -20 }}>
                                 <CartesianGrid stroke={`${THEME.grid}35`} strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: 'JetBrains Mono, monospace' }} axisLine={false} tickLine={false} width={30} />
+                                <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={30} />
                                 <Tooltip content={<ChartTooltip />} />
                                 <Bar dataKey="reads"   name="Reads"   fill={THEME.primary}   radius={[2,2,0,0]} opacity={0.85} />
                                 <Bar dataKey="writes"  name="Writes"  fill={THEME.success}   radius={[2,2,0,0]} opacity={0.85} />

@@ -4,6 +4,7 @@ import React, {
 import { createPortal } from 'react-dom';
 
 import { T } from '../constants/theme.js';
+import { THEME } from '../../utils/theme.jsx';
 import { ROLES, DEPARTMENTS, LOCATIONS } from '../constants/index.js';
 import { generatePassword, validateUserForm } from '../helpers/index.js';
 import { Ico, RoleBadge, StatusBadge, FormField, Toggle } from '../shared/components/ui.jsx';
@@ -1060,7 +1061,7 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
                   background: T.surfaceHigh,
                   color: T.text,
                   fontSize: '13px',
-                  fontFamily: 'monospace',
+                  fontFamily: THEME.fontMono,
                 }}
               />
               <button

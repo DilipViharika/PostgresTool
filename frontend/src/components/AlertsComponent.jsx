@@ -198,7 +198,7 @@ const PulseDot = ({ color, size = 8 }) => (
 const SeverityBadge = ({ severity, small }) => {
   const s = SEVERITY[severity] || SEVERITY.info;
   return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 3, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: '"JetBrains Mono", "Fira Mono", monospace', fontWeight: 700, letterSpacing: '0.08em' }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 3, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: THEME.fontMono, fontWeight: 700, letterSpacing: '0.08em' }}>
       {s.label}
     </span>
   );
@@ -211,14 +211,14 @@ const Toggle = ({ on, onChange, accent = '#6366f1' }) => (
 );
 
 const ChannelDot = ({ active, label }) => (
-    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 4, background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`, fontSize: 8, fontWeight: 700, color: active ? '#818cf8' : '#4b5563', fontFamily: 'monospace', cursor: 'default', transition: 'all 0.2s' }}>
+    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 4, background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`, fontSize: 8, fontWeight: 700, color: active ? '#818cf8' : '#4b5563', fontFamily: THEME.fontMono, cursor: 'default', transition: 'all 0.2s' }}>
     {label.slice(0,2).toUpperCase()}
   </span>
 );
 
 const Avatar = ({ initials, online, size = 24 }) => (
     <span style={{ position: 'relative', display: 'inline-flex', flexShrink: 0 }}>
-    <span style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.35, fontWeight: 700, color: '#818cf8', fontFamily: 'monospace' }}>
+    <span style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.35, fontWeight: 700, color: '#818cf8', fontFamily: THEME.fontMono }}>
       {initials}
     </span>
       {online !== undefined && (
@@ -238,14 +238,14 @@ const MetricCard = ({ metricKey, data }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Icon size={13} color={color} />
-            <span style={{ fontSize: 11, color: '#6b7280', fontFamily: 'monospace', letterSpacing: '0.04em' }}>{m.label.toUpperCase()}</span>
+            <span style={{ fontSize: 11, color: '#6b7280', fontFamily: THEME.fontMono, letterSpacing: '0.04em' }}>{m.label.toUpperCase()}</span>
           </div>
           {data.trend === 'up' && <TrendingUp size={12} color={SEVERITY.warning.color} />}
           {data.trend === 'down' && <TrendingDown size={12} color={SEVERITY.resolved.color} />}
           {data.trend === 'stable' && <Minus size={12} color="#4b5563" />}
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1 }}>
+          <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: THEME.fontMono, lineHeight: 1 }}>
             {data.current}<span style={{ fontSize: 11, color: '#4b5563', fontWeight: 400, marginLeft: 3 }}>{m.unit}</span>
           </span>
           <Sparkline data={data.data} color={color} />
@@ -388,7 +388,7 @@ const VIGILDashboard = () => {
 
   // Styles
   const css = {
-    wrap:     { color: THEME.textMain, fontFamily: '"JetBrains Mono", "Fira Mono", "IBM Plex Mono", monospace' },
+    wrap:     { color: THEME.textMain, fontFamily: THEME.fontMono },
     card:     { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8 },
     input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '7px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
     label:    { display: 'block', fontSize: 10, color: '#6b7280', marginBottom: 5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' },
@@ -440,7 +440,7 @@ const VIGILDashboard = () => {
                     <span style={{ fontSize: 10, color: '#818cf8', fontWeight: 700 }}>{c.author}</span>
                     <span style={{ fontSize: 9, color: '#374151' }}>{formatAge(c.timestamp)}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: '"Inter", sans-serif', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontBody, lineHeight: 1.5 }}>
                     {c.text.split(/(@\w+\.\w+)/g).map((part, i) =>
                         part.startsWith('@') ? <span key={i} style={{ color: '#38bdf8', fontWeight: 600 }}>{part}</span> : part
                     )}
@@ -449,7 +449,7 @@ const VIGILDashboard = () => {
               </div>
           ))}
           {!(alert.comments?.length) && (
-              <div style={{ fontSize: 11, color: '#374151', fontFamily: '"Inter", sans-serif' }}>No comments yet. Add an incident note below.</div>
+              <div style={{ fontSize: 11, color: '#374151', fontFamily: THEME.fontBody }}>No comments yet. Add an incident note below.</div>
           )}
         </div>
         {/* Online team */}
@@ -489,7 +489,7 @@ const VIGILDashboard = () => {
             </div>
             <div>
               <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Users Affected</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#e5e7eb', fontFamily: 'monospace' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#e5e7eb', fontFamily: THEME.fontMono }}>
                 {ir.users.toLocaleString()}
                 {ir.users > 10000 && <span style={{ fontSize: 9, color: SEVERITY.critical.color, marginLeft: 6 }}>HIGH IMPACT</span>}
               </div>
@@ -497,7 +497,7 @@ const VIGILDashboard = () => {
             <div>
               <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Affected Services</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: '#818cf8', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 3, padding: '2px 6px', fontFamily: 'monospace' }}>{s}</span>)}
+                {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: '#818cf8', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 3, padding: '2px 6px', fontFamily: THEME.fontMono }}>{s}</span>)}
               </div>
             </div>
           </div>
@@ -600,13 +600,13 @@ const VIGILDashboard = () => {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 6 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
                               <SeverityBadge severity={alert.severity} />
-                              <span style={{ fontSize: 13, color: alert.acknowledged ? '#6b7280' : '#e5e7eb', fontFamily: '"Inter", sans-serif', fontWeight: 500 }}>{alert.message}</span>
+                              <span style={{ fontSize: 13, color: alert.acknowledged ? '#6b7280' : '#e5e7eb', fontFamily: THEME.fontBody, fontWeight: 500 }}>{alert.message}</span>
                               {alert.count > 1 && <span style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', borderRadius: 3, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>×{alert.count}</span>}
                             </div>
                             <span style={{ fontSize: 10, color: '#4b5563', whiteSpace: 'nowrap', flexShrink: 0 }}>{formatAge(alert.timestamp)}</span>
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: alert.acknowledged ? 0 : 10 }}>
-                            <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: 'monospace' }}>{alert.source}</span>
+                            <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: THEME.fontMono }}>{alert.source}</span>
                             <span style={{ fontSize: 10, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{alert.category}</span>
                             <span style={{ fontSize: 10, color: '#374151' }}>⟵ {alert.rule}</span>
                             {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: '#4b5563', borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)', padding: '1px 5px' }}>#{t}</span>)}
@@ -653,7 +653,7 @@ const VIGILDashboard = () => {
                             ].map(item => (
                                 <div key={item.label}>
                                   <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>{item.label}</div>
-                                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: 'monospace' }}>{item.val}</div>
+                                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontMono }}>{item.val}</div>
                                 </div>
                             ))}
                           </div>
@@ -716,7 +716,7 @@ const VIGILDashboard = () => {
                   ].map(item => (
                       <div key={item.label}>
                         <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', marginBottom: 3 }}>{item.label.toUpperCase()}</div>
-                        <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{item.val}</div>
+                        <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: THEME.fontMono }}>{item.val}</div>
                       </div>
                   ))}
                 </div>
@@ -744,7 +744,7 @@ const VIGILDashboard = () => {
                       <SeverityBadge severity={rule.severity} small />
                       <span style={{ fontSize: 9, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{rule.category}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#6b7280', fontFamily: 'monospace' }}>
+                    <div style={{ fontSize: 11, color: '#6b7280', fontFamily: THEME.fontMono }}>
                       <span style={{ color: '#818cf8' }}>{METRICS[rule.metric]?.label || rule.metric}</span>
                       <span style={{ color: '#4b5563' }}> {rule.condition === 'gt' ? '>' : rule.condition === 'lt' ? '<' : '='} </span>
                       <span style={{ color: '#9ca3af' }}>{rule.threshold}{METRICS[rule.metric]?.unit}</span>
@@ -794,7 +794,7 @@ const VIGILDashboard = () => {
                       <span style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>{sw.name}</span>
                       {sw.active && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}30`, color: SEVERITY.warning.color, borderRadius: 3, padding: '1px 6px', letterSpacing: '0.06em' }}>ACTIVE</span>}
                     </div>
-                    <div style={{ fontSize: 10, color: '#6b7280', fontFamily: 'monospace', marginBottom: 4 }}>
+                    <div style={{ fontSize: 10, color: '#6b7280', fontFamily: THEME.fontMono, marginBottom: 4 }}>
                       <Clock size={10} style={{ display: 'inline', marginRight: 4 }} />{sw.schedule}
                       <span style={{ color: '#374151', marginLeft: 12 }}>Next: {sw.nextRun}</span>
                     </div>
@@ -838,11 +838,11 @@ const VIGILDashboard = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: ch.quota ? 8 : 0 }}>
                       <div>
                         <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>DELIVERY</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.deliveryRate >= 98 ? SEVERITY.resolved.color : ch.deliveryRate >= 90 ? SEVERITY.warning.color : SEVERITY.critical.color, fontFamily: 'monospace' }}>{ch.deliveryRate}%</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.deliveryRate >= 98 ? SEVERITY.resolved.color : ch.deliveryRate >= 90 ? SEVERITY.warning.color : SEVERITY.critical.color, fontFamily: THEME.fontMono }}>{ch.deliveryRate}%</div>
                       </div>
                       <div>
                         <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>LATENCY</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.latency < 500 ? '#9ca3af' : SEVERITY.warning.color, fontFamily: 'monospace' }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.latency < 500 ? '#9ca3af' : SEVERITY.warning.color, fontFamily: THEME.fontMono }}>
                           {ch.latency < 1000 ? ch.latency + 'ms' : (ch.latency/1000).toFixed(1) + 's'}
                         </div>
                       </div>
@@ -851,7 +851,7 @@ const VIGILDashboard = () => {
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                             <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em' }}>API QUOTA</span>
-                            <span style={{ fontSize: 9, color: quotaPct > 0.85 ? SEVERITY.warning.color : '#6b7280', fontFamily: 'monospace' }}>
+                            <span style={{ fontSize: 9, color: quotaPct > 0.85 ? SEVERITY.warning.color : '#6b7280', fontFamily: THEME.fontMono }}>
                               {ch.quota.used.toLocaleString()} / {ch.quota.limit.toLocaleString()}
                             </span>
                           </div>
@@ -888,12 +888,12 @@ const VIGILDashboard = () => {
               <div key={item.id} style={{ padding: '12px 16px', borderBottom: i < filteredHistory.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 16, alignItems: 'center' }}>
                 <SeverityBadge severity={item.severity} small />
                 <div>
-                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: '"Inter", sans-serif', marginBottom: 3 }}>{item.message}</div>
+                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontBody, marginBottom: 3 }}>{item.message}</div>
                   <div style={{ fontSize: 10, color: '#374151' }}>resolved by <span style={{ color: '#4b5563' }}>{item.resolvedBy}</span></div>
                 </div>
-                <div style={{ fontSize: 11, color: '#6b7280', fontFamily: 'monospace' }}>{item.duration}</div>
-                <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'monospace' }}>{item.rule}</div>
-                <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'monospace' }}>{formatTime(item.timestamp)}</div>
+                <div style={{ fontSize: 11, color: '#6b7280', fontFamily: THEME.fontMono }}>{item.duration}</div>
+                <div style={{ fontSize: 10, color: '#4b5563', fontFamily: THEME.fontMono }}>{item.rule}</div>
+                <div style={{ fontSize: 10, color: '#4b5563', fontFamily: THEME.fontMono }}>{formatTime(item.timestamp)}</div>
               </div>
           ))}
           {filteredHistory.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: '#4b5563', fontSize: 12 }}>No historical alerts found</div>}
@@ -956,7 +956,7 @@ const VIGILDashboard = () => {
                   <input type="number" style={{ ...css.input, width: 60 }} value={newRule.duration} onChange={e => setNewRule(r => ({ ...r, duration: e.target.value }))} />
                   <span style={{ fontSize: 11, color: '#4b5563' }}>min</span>
                 </div>
-                <div style={{ marginTop: 10, padding: '8px 10px', background: 'rgba(99,102,241,0.06)', borderRadius: 4, fontSize: 11, color: '#6b7280', fontFamily: '"Inter", sans-serif' }}>
+                <div style={{ marginTop: 10, padding: '8px 10px', background: 'rgba(99,102,241,0.06)', borderRadius: 4, fontSize: 11, color: '#6b7280', fontFamily: THEME.fontBody }}>
                   Alert fires when <strong style={{ color: '#818cf8' }}>{METRICS[newRule.metric]?.label}</strong> is {newRule.condition === 'gt' ? 'above' : newRule.condition === 'lt' ? 'below' : 'equal to'} <strong style={{ color: '#9ca3af' }}>{newRule.threshold}{METRICS[newRule.metric]?.unit}</strong> for <strong style={{ color: '#9ca3af' }}>{newRule.duration} minutes</strong>
                 </div>
               </div>
@@ -983,7 +983,7 @@ const VIGILDashboard = () => {
 
   // ─── RENDER: TOAST ─────────────────────────────────────────────
   const renderToast = () => toast && (
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 2000, background: '#111827', border: `1px solid ${toast.type === 'warning' ? SEVERITY.warning.color : toast.type === 'info' ? SEVERITY.info.color : SEVERITY.resolved.color}40`, borderRadius: 8, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 12px 24px rgba(0,0,0,0.4)', animation: 'slideUp 0.2s ease', fontSize: 12, color: '#e5e7eb', fontFamily: '"JetBrains Mono", monospace' }}>
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 2000, background: '#111827', border: `1px solid ${toast.type === 'warning' ? SEVERITY.warning.color : toast.type === 'info' ? SEVERITY.info.color : SEVERITY.resolved.color}40`, borderRadius: 8, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 12px 24px rgba(0,0,0,0.4)', animation: 'slideUp 0.2s ease', fontSize: 12, color: '#e5e7eb', fontFamily: THEME.fontMono }}>
         {toast.type === 'warning' ? <AlertTriangle size={14} color={SEVERITY.warning.color} /> : toast.type === 'info' ? <Info size={14} color={SEVERITY.info.color} /> : <Check size={14} color={SEVERITY.resolved.color} />}
         {toast.msg}
       </div>

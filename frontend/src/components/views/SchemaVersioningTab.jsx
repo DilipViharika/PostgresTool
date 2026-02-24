@@ -77,8 +77,6 @@ const useWebSocket = (_url, onMessage) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const SchemaStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap');
-
         @keyframes svSpin     { to { transform: rotate(360deg) } }
         @keyframes svFadeUp   { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
         @keyframes svPulse    { 0%,100% { opacity:1 } 50% { opacity:.4 } }
@@ -91,8 +89,8 @@ const SchemaStyles = () => (
         @keyframes svFadeIn   { from { opacity:0 } to { opacity:1 } }
 
         /* ── Base ── */
-        .sv-wrap { font-family: 'Syne', system-ui, sans-serif; }
-        .sv-mono { font-family: 'JetBrains Mono', monospace !important; }
+        .sv-wrap { font-family: ${THEME.fontBody}; }
+        .sv-mono { font-family: ${THEME.fontMono} !important; }
 
         /* ── Card ── */
         .sv-card {
@@ -180,7 +178,7 @@ const SchemaStyles = () => (
             border-radius: 9px;
             background: transparent;
             color: rgba(255,255,255,.45);
-            font-family: 'Syne', system-ui;
+            font-family: ${THEME.fontBody};
             transition: all .2s;
             letter-spacing: .3px;
         }
@@ -220,7 +218,7 @@ const SchemaStyles = () => (
             font-size: 13px;
             outline: none;
             transition: border-color .2s, background .2s;
-            font-family: 'Syne', system-ui;
+            font-family: ${THEME.fontBody};
         }
         .sv-input:focus { border-color: rgba(99,102,241,.6); background: rgba(255,255,255,.07); }
         .sv-input::placeholder { color: rgba(255,255,255,.3); }
@@ -234,7 +232,7 @@ const SchemaStyles = () => (
             border: 1px solid rgba(255,255,255,.1);
             background: transparent;
             color: rgba(255,255,255,.45);
-            font-family: 'Syne', system-ui;
+            font-family: ${THEME.fontBody};
         }
         .sv-chip:hover { border-color: rgba(99,102,241,.4); color: #a5b4fc; background: rgba(99,102,241,.08); }
         .sv-chip.active { background: rgba(99,102,241,.2); color: #a5b4fc; border-color: rgba(99,102,241,.5); }
@@ -256,7 +254,7 @@ const SchemaStyles = () => (
         /* ── Code block ── */
         .sv-code {
             background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.08); border-radius: 10px;
-            padding: 14px 16px; font-family: 'JetBrains Mono', monospace;
+            padding: 14px 16px; font-family: ${THEME.fontMono};
             font-size: 12px; line-height: 1.7; color: rgba(255,255,255,.8);
             overflow-x: auto; position: relative;
         }
@@ -265,7 +263,7 @@ const SchemaStyles = () => (
             font-size: 9px; color: rgba(255,255,255,.25);
             background: rgba(255,255,255,.05); padding: 2px 7px;
             border-radius: 4px; border: 1px solid rgba(255,255,255,.08);
-            font-family: 'Syne', system-ui; font-weight: 700; letter-spacing: 1px;
+            font-family: ${THEME.fontBody}; font-weight: 700; letter-spacing: 1px;
         }
         .syntax-keyword { color: #C678DD; font-weight: 700; }
         .syntax-type    { color: #E5C07B; }
@@ -284,7 +282,7 @@ const SchemaStyles = () => (
             padding: 9px 18px; border-radius: 9px; font-weight: 700; font-size: 13px;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 7px;
-            font-family: 'Syne', system-ui;
+            font-family: ${THEME.fontBody};
         }
         .sv-btn-primary:hover { background: rgba(99,102,241,1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,.35); }
 
@@ -294,7 +292,7 @@ const SchemaStyles = () => (
             padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 12px;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 6px;
-            font-family: 'Syne', system-ui;
+            font-family: ${THEME.fontBody};
         }
         .sv-btn-secondary:hover { border-color: rgba(99,102,241,.45); color: #a5b4fc; background: rgba(99,102,241,.08); }
 
@@ -933,10 +931,10 @@ const DependencyGraph = ({ data }) => {
                                     strokeWidth={isSelected ? 2.5 : 1.5}
                                     opacity={isSelected ? 1 : 0.9}
                             />
-                            <text x={node.x} y={node.y - 2} textAnchor="middle" fill="#f1f5f9" fontSize="10" fontWeight="700" fontFamily="JetBrains Mono, monospace">
+                            <text x={node.x} y={node.y - 2} textAnchor="middle" fill="#f1f5f9" fontSize="10" fontWeight="700" fontFamily="inherit">
                                 {node.id.length > 12 ? node.id.slice(0, 10) + '…' : node.id}
                             </text>
-                            <text x={node.x} y={node.y + 11} textAnchor="middle" fill={THEME.textMuted} fontSize="9" fontFamily="Syne, system-ui">{node.type}</text>
+                            <text x={node.x} y={node.y + 11} textAnchor="middle" fill={THEME.textMuted} fontSize="9" fontFamily="inherit">{node.type}</text>
                             {node.connections > 0 && (
                                 <g>
                                     <circle cx={node.x + 20} cy={node.y - 20} r="10" fill={nodeColor} opacity="0.85" />
@@ -1137,7 +1135,7 @@ const SchemaVersioningTab = () => {
                                 </div>
                             ))}
                             {filterTags.length > 0 && (
-                                <button onClick={() => setFilterTags([])} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,.3)', fontSize: 11, cursor: 'pointer', fontFamily: 'Syne, system-ui' }}>
+                                <button onClick={() => setFilterTags([])} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,.3)', fontSize: 11, cursor: 'pointer', fontFamily: THEME.fontBody }}>
                                     Clear
                                 </button>
                             )}
@@ -1277,8 +1275,8 @@ const SchemaVersioningTab = () => {
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
-                                        <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
-                                        <YAxis stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                        <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
                                         <Tooltip content={<ChartTip />} />
                                         <Area type="monotone" dataKey="successful" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#sv-colorSuccess)" name="Successful" />
                                     </AreaChart>
@@ -1321,7 +1319,7 @@ const SchemaVersioningTab = () => {
                                     <select
                                         value={envDiff[key]}
                                         onChange={e => setEnvDiff({ ...envDiff, [key]: e.target.value })}
-                                        style={{ background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.8)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', outline: 'none', fontFamily: 'Syne, system-ui' }}
+                                        style={{ background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.8)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', outline: 'none', fontFamily: THEME.fontBody }}
                                     >
                                         {options.map(([val, lbl]) => <option key={val} value={val}>{lbl}</option>)}
                                     </select>
@@ -1532,8 +1530,8 @@ const SchemaVersioningTab = () => {
                         <ResponsiveContainer width="100%" height={240}>
                             <LineChart data={MIGRATION_STATS}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
-                                <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
-                                <YAxis stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
                                 <Tooltip content={<ChartTip />} />
                                 <Line type="monotone" dataKey="successful" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981', r: 4 }} name="Successful" />
                                 <Line type="monotone" dataKey="failed"     stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', r: 4 }} name="Failed" />
@@ -1572,8 +1570,8 @@ const SchemaVersioningTab = () => {
                         <ResponsiveContainer width="100%" height={240}>
                             <BarChart data={MIGRATION_STATS}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
-                                <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
-                                <YAxis stroke={THEME.textDim} fontSize={10} fontFamily="JetBrains Mono" tickLine={false} axisLine={false} />
+                                <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
                                 <Tooltip content={<ChartTip />} />
                                 <Bar dataKey="successful" stackId="a" fill="#10b981" name="Successful" />
                                 <Bar dataKey="failed"     stackId="a" fill="#ef4444" name="Failed" />

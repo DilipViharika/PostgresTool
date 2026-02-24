@@ -1,5 +1,6 @@
 import React from 'react';
 import { T } from '../../constants/theme.js';
+import { THEME } from '../../../utils/theme.jsx';
 
 /**
  * Injects all global CSS once at the app root.
@@ -8,12 +9,10 @@ import { T } from '../../constants/theme.js';
  */
 export const GlobalStyles = () => (
     <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     .um-root {
-        font-family: 'Outfit', sans-serif;
+        font-family: ${THEME.fontBody};
         color: ${T.text};
         background: ${T.bg};
         min-height: 100vh;
@@ -53,7 +52,7 @@ export const GlobalStyles = () => (
     .um-btn {
         display: inline-flex; align-items: center; gap: 7px;
         padding: 8px 16px; border-radius: 8px; border: none;
-        font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+        font-family: ${THEME.fontBody}; font-size: 13px; font-weight: 600;
         cursor: pointer; transition: all 0.15s; white-space: nowrap; outline: none;
     }
     .um-btn:active  { transform: scale(0.97); }
@@ -69,7 +68,7 @@ export const GlobalStyles = () => (
     /* ── Inputs ───────────────────────────────────────────────────────── */
     .um-input {
         background: ${T.surface}; border: 1px solid ${T.border}; border-radius: 8px;
-        color: ${T.text}; font-family: 'Outfit', sans-serif; font-size: 13px;
+        color: ${T.text}; font-family: ${THEME.fontBody}; font-size: 13px;
         outline: none; padding: 9px 12px;
         transition: border 0.2s, box-shadow 0.2s; width: 100%;
     }
@@ -81,7 +80,7 @@ export const GlobalStyles = () => (
     .um-tab {
         display: flex; align-items: center; gap: 8px;
         padding: 11px 18px; border: none; border-bottom: 2px solid transparent;
-        background: transparent; font-family: 'Outfit', sans-serif;
+        background: transparent; font-family: ${THEME.fontBody};
         font-size: 13px; font-weight: 600;
         color: ${T.textDim}; cursor: pointer;
         transition: all 0.2s; white-space: nowrap;
@@ -124,10 +123,10 @@ export const GlobalStyles = () => (
     .um-scroll::-webkit-scrollbar-thumb:hover { background: ${T.borderHigh}; }
 
     /* ── Utilities ────────────────────────────────────────────────────── */
-    .um-mono { font-family: 'Space Mono', monospace; }
+    .um-mono { font-family: ${THEME.fontMono}; }
     .um-perm-chip {
         padding: 3px 7px; border-radius: 5px; font-size: 10px; font-weight: 700;
-        letter-spacing: 0.06em; font-family: 'Space Mono', monospace;
+        letter-spacing: 0.06em; font-family: ${THEME.fontMono};
     }
     .shimmer-skeleton {
         background: linear-gradient(90deg, ${T.surface} 25%, ${T.surfaceHigh} 50%, ${T.surface} 75%);

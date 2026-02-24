@@ -263,7 +263,7 @@ export default function CheckpointMonitorTab() {
                                     <div style={{ width:8, height:8, borderRadius:2, background:color, flexShrink:0 }}/>
                                     {label}
                                 </span>
-                                <span style={{ fontWeight:700, color:THEME.textMain, fontFamily:'Space Mono, monospace', fontSize:12 }}>{fmt(value)}</span>
+                                <span style={{ fontWeight:700, color:THEME.textMain, fontFamily:THEME.fontMono, fontSize:12 }}>{fmt(value)}</span>
                             </div>
                         ))}
                     </div>
@@ -311,7 +311,7 @@ export default function CheckpointMonitorTab() {
                         {settings.map(s => (
                             <div key={s.name} className="cm-row">
                                 <span style={{ color:THEME.textMuted, fontSize:12 }}>{s.name}</span>
-                                <span style={{ fontFamily:'Space Mono, monospace', fontSize:12, color:THEME.textMain, fontWeight:600 }}>
+                                <span style={{ fontFamily:THEME.fontMono, fontSize:12, color:THEME.textMain, fontWeight:600 }}>
                                     {s.setting}{s.unit ? ` ${s.unit}` : ''}
                                 </span>
                             </div>
@@ -333,7 +333,7 @@ export default function CheckpointMonitorTab() {
                     ].map(({ label, value }) => (
                         <div key={label} style={{ padding:'12px 14px', background:`${THEME.bg}60`, borderRadius:8, border:`1px solid ${THEME.grid}` }}>
                             <div style={{ fontSize:11, color:THEME.textMuted, textTransform:'uppercase', letterSpacing:.5, marginBottom:6 }}>{label}</div>
-                            <div style={{ fontFamily:'Space Mono, monospace', fontSize:13, fontWeight:700, color:THEME.textMain }}>{value}</div>
+                            <div style={{ fontFamily:THEME.fontMono, fontSize:13, fontWeight:700, color:THEME.textMain }}>{value}</div>
                         </div>
                     ))}
                 </div>

@@ -19,8 +19,6 @@ import {
 ────────────────────────────────────────────────────────────────────────────*/
 const Styles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap');
-
         @keyframes vmSpin    { to { transform: rotate(360deg) } }
         @keyframes vmFadeUp  { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
         @keyframes vmPulse   { 0%,100% { opacity:1 } 50% { opacity:.4 } }
@@ -29,8 +27,8 @@ const Styles = () => (
         @keyframes vmCounter { from { opacity:0; transform: scale(.8) } to { opacity:1; transform: scale(1) } }
         @keyframes vmSuccessGlow { 0%,100% { box-shadow: 0 0 6px #10b98140 } 50% { box-shadow: 0 0 18px #10b98170 } }
 
-        .vm-wrap { font-family: 'Syne', system-ui, sans-serif; }
-        .vm-mono { font-family: 'JetBrains Mono', monospace !important; }
+        .vm-wrap { font-family: ${THEME.fontBody}; }
+        .vm-mono { font-family: ${THEME.fontMono} !important; }
 
         /* ── Base card ── */
         .vm-card {
@@ -113,7 +111,7 @@ const Styles = () => (
             font-size: 13px;
             outline: none;
             transition: border-color .2s, background .2s;
-            font-family: 'Syne', system-ui, sans-serif;
+            font-family: ${THEME.fontBody};
         }
         .vm-input:focus { border-color: rgba(99,102,241,.6); background: rgba(255,255,255,.07); }
         .vm-input::placeholder { color: rgba(255,255,255,.3); }
@@ -128,7 +126,7 @@ const Styles = () => (
             cursor: pointer;
             font-size: 13px;
             font-weight: 700;
-            font-family: 'Syne', system-ui;
+            font-family: ${THEME.fontBody};
             transition: all .2s;
             letter-spacing: .3px;
             display: inline-flex; align-items: center; gap: 7px;
@@ -195,7 +193,7 @@ const Styles = () => (
             background: rgba(99,102,241,.1);
             color: #a5b4fc;
             transition: all .15s;
-            font-family: 'Syne', system-ui;
+            font-family: ${THEME.fontBody};
         }
         .vm-action-btn:hover:not(:disabled) {
             background: rgba(99,102,241,.2);
@@ -385,7 +383,7 @@ export default function VacuumMaintenanceTab() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: 'rgba(255,255,255,.4)' }}>
             <Styles />
             <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid rgba(99,102,241,.3)', borderTopColor: '#6366f1', animation: 'vmSpin 1s linear infinite' }} />
-            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: .5, fontFamily: 'Syne, system-ui' }}>Loading vacuum statistics…</span>
+            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: .5, fontFamily: THEME.fontBody }}>Loading vacuum statistics…</span>
         </div>
     );
 
@@ -562,7 +560,7 @@ export default function VacuumMaintenanceTab() {
                         <Icon size={13} /> {label}
                     </button>
                 ))}
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(255,255,255,.25)', fontFamily: 'JetBrains Mono, monospace' }}>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(255,255,255,.25)', fontFamily: THEME.fontMono }}>
                     {activeTab === 'tables' ? `${filtered.length} of ${tables.length} tables` : `${settings.length} settings`}
                 </span>
             </div>

@@ -193,7 +193,7 @@ export default function BackupRecoveryTab() {
                         ].map(({ label, value }) => (
                             <div key={label} className="br-setting-row">
                                 <span style={{ color:THEME.textMuted }}>{label}</span>
-                                <span style={{ color:THEME.textMain, fontWeight:600, fontFamily:'Space Mono, monospace', fontSize:12, maxWidth:220, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{String(value)}</span>
+                                <span style={{ color:THEME.textMain, fontWeight:600, fontFamily:THEME.fontMono, fontSize:12, maxWidth:220, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{String(value)}</span>
                             </div>
                         ))}
                     </div>
@@ -224,7 +224,7 @@ export default function BackupRecoveryTab() {
                         ].map(({ label, value }) => (
                             <div key={label} className="br-setting-row">
                                 <span style={{ color:THEME.textMuted }}>{label}</span>
-                                <span style={{ color:THEME.textMain, fontWeight:600, fontFamily:'Space Mono, monospace', fontSize:12 }}>{value}</span>
+                                <span style={{ color:THEME.textMain, fontWeight:600, fontFamily:THEME.fontMono, fontSize:12 }}>{value}</span>
                             </div>
                         ))}
                     </div>
@@ -260,7 +260,7 @@ export default function BackupRecoveryTab() {
                     {settings.map(s => (
                         <div key={s.name} className="br-setting-row">
                             <span style={{ color:THEME.textMuted, fontSize:12 }}>{settingLabel[s.name] || s.name}</span>
-                            <span style={{ fontFamily:'Space Mono, monospace', fontSize:12, color:THEME.textMain, fontWeight:600, maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                            <span style={{ fontFamily:THEME.fontMono, fontSize:12, color:THEME.textMain, fontWeight:600, maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                                 {s.setting || '—'}
                             </span>
                         </div>

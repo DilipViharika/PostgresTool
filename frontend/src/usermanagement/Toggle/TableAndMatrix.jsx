@@ -80,7 +80,7 @@ function ensureStyles() {
         document.head.appendChild(el);
     }
     el.textContent = [
-        '.ut2{font-family:"DM Sans","Inter",system-ui,sans-serif;color:' + T.text + '}',
+        '.ut2{font-family:' + THEME.fontBody + ';color:' + T.text + '}',
         '.ut2 *,.ut2 *::before,.ut2 *::after{box-sizing:border-box}',
 
         '.ut2-search{position:relative;display:inline-flex;align-items:center}',
@@ -451,7 +451,7 @@ export var UsersTable = memo(function UsersTable(props) {
                                 }, u.department || '--'),
                                 /* last login */
                                 React.createElement('td', {
-                                    style:{ fontSize:12, color:T.textDim, fontFamily:'"SF Mono",monospace', whiteSpace:'nowrap' }
+                                    style:{ fontSize:12, color:T.textDim, fontFamily: THEME.fontMono, whiteSpace:'nowrap' }
                                 }, formatDate(u.last_login)),
                                 /* risk */
                                 React.createElement('td', null, React.createElement(RiskCell, { risk:u.risk||'' })),

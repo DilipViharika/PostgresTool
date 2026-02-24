@@ -219,11 +219,11 @@ export default function ReplicationWALTab() {
                                     <div style={{fontWeight:700,color:THEME.textMain}}>{r.application_name||'—'}</div>
                                     <div style={{fontSize:10,color:THEME.textDim,marginTop:2}}>{r.reply_time?`Last reply ${fmtDate(r.reply_time)}`:''}</div>
                                 </div>
-                                <span style={{fontFamily:'Space Mono,monospace',color:THEME.textMuted}}>{r.client_addr||'—'}</span>
+                                <span style={{fontFamily:THEME.fontMono,color:THEME.textMuted}}>{r.client_addr||'—'}</span>
                                 <StateBadge state={r.state} sync={r.sync_state}/>
-                                <span style={{fontFamily:'Space Mono,monospace',color:THEME.textMain}}>{fmtBytes(r.write_lag_bytes)}</span>
-                                <span style={{fontFamily:'Space Mono,monospace',color:THEME.textMain}}>{fmtBytes(r.flush_lag_bytes)}</span>
-                                <span style={{fontFamily:'Space Mono,monospace',color:Number(r.replay_lag_bytes)>104857600?THEME.danger:THEME.textMain,fontWeight:Number(r.replay_lag_bytes)>104857600?700:400}}>
+                                <span style={{fontFamily:THEME.fontMono,color:THEME.textMain}}>{fmtBytes(r.write_lag_bytes)}</span>
+                                <span style={{fontFamily:THEME.fontMono,color:THEME.textMain}}>{fmtBytes(r.flush_lag_bytes)}</span>
+                                <span style={{fontFamily:THEME.fontMono,color:Number(r.replay_lag_bytes)>104857600?THEME.danger:THEME.textMain,fontWeight:Number(r.replay_lag_bytes)>104857600?700:400}}>
                                     {fmtBytes(r.replay_lag_bytes)}
                                 </span>
                             </div>
@@ -248,7 +248,7 @@ export default function ReplicationWALTab() {
                             ].map(({label,value})=>(
                                 <div key={label} className="rw-row">
                                     <span style={{color:THEME.textMuted}}>{label}</span>
-                                    <span style={{fontFamily:'Space Mono,monospace',color:THEME.textMain,fontWeight:600,fontSize:11}}>{value||'—'}</span>
+                                    <span style={{fontFamily:THEME.fontMono,color:THEME.textMain,fontWeight:600,fontSize:11}}>{value||'—'}</span>
                                 </div>
                             ))}
                         </div>
@@ -279,7 +279,7 @@ export default function ReplicationWALTab() {
                                 <span style={{color:s.active?THEME.success:THEME.danger,fontWeight:700,display:'flex',alignItems:'center',gap:5}}>
                                     {s.active?<CheckCircle size={12}/>:<AlertTriangle size={12}/>} {s.active?'Active':'Inactive'}
                                 </span>
-                                <span style={{fontFamily:'Space Mono,monospace',color:Number(s.lag_bytes)>104857600?THEME.danger:THEME.textMain,fontWeight:Number(s.lag_bytes)>104857600?700:400}}>
+                                <span style={{fontFamily:THEME.fontMono,color:Number(s.lag_bytes)>104857600?THEME.danger:THEME.textMain,fontWeight:Number(s.lag_bytes)>104857600?700:400}}>
                                     {s.lag_pretty||'—'}
                                 </span>
                                 <span style={{color:s.wal_status==='reserved'?THEME.success:s.wal_status==='extended'?THEME.warning:THEME.danger,fontWeight:600,textTransform:'capitalize'}}>
@@ -301,7 +301,7 @@ export default function ReplicationWALTab() {
                         {settings.map(s=>(
                             <div key={s.name} className="rw-row">
                                 <span style={{color:THEME.textMuted}}>{s.name}</span>
-                                <span style={{fontFamily:'Space Mono,monospace',color:THEME.textMain,fontWeight:600,fontSize:11}}>{s.setting}{s.unit?` ${s.unit}`:''}</span>
+                                <span style={{fontFamily:THEME.fontMono,color:THEME.textMain,fontWeight:600,fontSize:11}}>{s.setting}{s.unit?` ${s.unit}`:''}</span>
                             </div>
                         ))}
                     </div>

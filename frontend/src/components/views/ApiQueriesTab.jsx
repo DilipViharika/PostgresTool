@@ -50,11 +50,9 @@ const T = {
    ═══════════════════════════════════════════════════════════════════════════ */
 const GlobalStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Syne:wght@700;800&display=swap');
-
         *, *::before, *::after { box-sizing: border-box; }
 
-        .vigil-root { font-family: 'IBM Plex Mono', monospace; background: ${T.bg}; color: ${T.text1}; min-height: 100vh; }
+        .vigil-root { font-family: ${THEME.fontMono}; background: ${T.bg}; color: ${T.text1}; min-height: 100vh; }
 
         @keyframes fadeUp    { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         @keyframes pulse     { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
@@ -85,7 +83,7 @@ const GlobalStyles = () => (
             padding:8px 14px; border:none; border-radius:6px;
             font-size:10px; font-weight:700; letter-spacing:0.07em;
             text-transform:uppercase; cursor:pointer; transition:all 0.15s;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: ${THEME.fontMono};
             color:${T.text2}; background:transparent;
             border-bottom: 2px solid transparent;
         }
@@ -147,7 +145,7 @@ const GlobalStyles = () => (
         }
 
         .waterfall-label {
-            font-size:10px; color:${T.text2}; font-family:'IBM Plex Mono',monospace;
+            font-size:10px; color:${T.text2}; font-family:${THEME.fontMono};
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
 
@@ -296,7 +294,7 @@ const ExplainPlan = ({ span }) => (
         <div style={{ fontSize: 9, fontWeight: 700, color: T.danger, marginBottom: 8, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
             ⚠ Slow Query — Execution Plan
         </div>
-        <div style={{ fontSize: 10, color: T.text2, fontFamily: 'IBM Plex Mono, monospace' }}>
+        <div style={{ fontSize: 10, color: T.text2, fontFamily: THEME.fontMono }}>
             <div style={{ color: T.danger, marginBottom: 4 }}>→ Seq Scan on "users" (cost=0..142 rows=4200)</div>
             <div style={{ paddingLeft: 14, color: T.text3, marginBottom: 4 }}>Filter: (email = $1)</div>
             <div style={{ paddingLeft: 14, color: T.text3 }}>Rows Removed by Filter: 4195</div>
@@ -326,7 +324,7 @@ const SpanDetail = ({ span }) => (
                 <div style={{ fontSize: 11, fontWeight: 700, color: span.error ? T.danger : T.success }}>{span.error ? 'ERROR' : 'OK'}</div>
             </div>
         </div>
-        <div style={{ fontSize: 10, color: T.text2, fontFamily: 'IBM Plex Mono, monospace', padding: '8px 10px', background: T.bg, borderRadius: 6, marginBottom: span.error || (span.type === 'db' && span.duration > 100) ? 0 : 0 }}>
+        <div style={{ fontSize: 10, color: T.text2, fontFamily: THEME.fontMono, padding: '8px 10px', background: T.bg, borderRadius: 6, marginBottom: span.error || (span.type === 'db' && span.duration > 100) ? 0 : 0 }}>
             {span.meta}
         </div>
         {span.type === 'db' && span.duration > 100 && <ExplainPlan span={span} />}
@@ -525,7 +523,7 @@ const WebVital = ({ label, value, unit, threshold, color }) => {
         <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${ok ? T.border : T.warning}30` }}>
             <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{label}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 22, fontWeight: 800, color: ok ? T.success : T.warning, fontFamily: 'Syne, sans-serif', lineHeight: 1 }}>{value}</span>
+                <span style={{ fontSize: 22, fontWeight: 800, color: ok ? T.success : T.warning, fontFamily: THEME.fontBody, lineHeight: 1 }}>{value}</span>
                 <span style={{ fontSize: 10, color: T.text3 }}>{unit}</span>
             </div>
             <div style={{ marginTop: 8, height: 3, background: T.border, borderRadius: 2 }}>
@@ -568,7 +566,7 @@ const SecurityPanel = ({ security, endpoint }) => {
                     <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Threat Level</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Radar size={20} color={tlColor} />
-                        <span style={{ fontSize: 18, fontWeight: 800, color: tlColor, fontFamily: 'Syne, sans-serif' }}>{threatLevel}</span>
+                        <span style={{ fontSize: 18, fontWeight: 800, color: tlColor, fontFamily: THEME.fontBody }}>{threatLevel}</span>
                     </div>
                 </div>
                 <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
@@ -851,7 +849,7 @@ const ApiQueriesTab = () => {
                             <Search size={11} color={T.text3} />
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                    placeholder="Filter endpoints..."
-                                   style={{ border: 'none', background: 'transparent', outline: 'none', color: T.text1, fontSize: 10, flex: 1, fontFamily: 'IBM Plex Mono, monospace' }} />
+                                   style={{ border: 'none', background: 'transparent', outline: 'none', color: T.text1, fontSize: 10, flex: 1, fontFamily: THEME.fontMono }} />
                             {search && <button onClick={()=>setSearch('')} style={{background:'none',border:'none',cursor:'pointer',color:T.text3,padding:0}}><X size={11}/></button>}
                         </div>
                         <div style={{ display: 'flex', gap: 4 }}>
@@ -860,7 +858,7 @@ const ApiQueriesTab = () => {
                                     padding: '3px 7px', borderRadius: 4, border: `1px solid ${filterMethod===m ? methodColor(m) : T.border}`,
                                     background: filterMethod===m ? `${methodColor(m)}15` : 'transparent',
                                     color: filterMethod===m ? methodColor(m) : T.text3,
-                                    fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Mono, monospace',
+                                    fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontMono,
                                     textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'all 0.15s'
                                 }}>{m}</button>
                             ))}
@@ -872,7 +870,7 @@ const ApiQueriesTab = () => {
                                 padding: '3px 8px', borderRadius: 4, border: `1px solid ${filterStatus===v ? T.primary : T.border}`,
                                 background: filterStatus===v ? `${T.primary}10` : 'transparent',
                                 color: filterStatus===v ? T.primary : T.text3,
-                                fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Mono, monospace', transition: 'all 0.15s'
+                                fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontMono, transition: 'all 0.15s'
                             }}>{l}</button>
                         ))}
                         <span style={{ marginLeft: 'auto', fontSize: 9, color: T.text3, padding: '3px 0' }}>{filtered.length}</span>
@@ -897,7 +895,7 @@ const ApiQueriesTab = () => {
                                         <span style={{ fontSize: 8, fontWeight: 800, color: methodColor(selected.method), background: `${methodColor(selected.method)}15`, padding: '3px 8px', borderRadius: 4, letterSpacing: '0.06em', flexShrink: 0 }}>
                                             {selected.method}
                                         </span>
-                                        <span style={{ fontSize: 14, fontWeight: 700, color: T.text1, fontFamily: 'IBM Plex Mono, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <span style={{ fontSize: 14, fontWeight: 700, color: T.text1, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {selected.endpoint}
                                         </span>
                                     </div>

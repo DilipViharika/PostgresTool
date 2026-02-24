@@ -21,7 +21,7 @@ const Styles = () => (
         .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:qrFade .3s ease; }
         .qr-metric      { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
         .qr-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700; }
-        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:8px; padding:12px; font-family:'Space Mono',monospace; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
+        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:8px; padding:12px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
         .qr-textarea:focus { border-color:${THEME.primary}60; }
         .qr-btn         { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:none; }
         .qr-btn:hover   { filter:brightness(1.1); }
@@ -29,7 +29,7 @@ const Styles = () => (
         .qr-baseline-row { padding:14px 16px; border-bottom:1px solid ${THEME.grid}20; display:flex; align-items:center; gap:12px; font-size:12px; transition:background .15s; }
         .qr-baseline-row:last-child { border-bottom:none; }
         .qr-baseline-row:hover { background:${THEME.primary}05; }
-        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius:8px; padding:14px; font-family:'Space Mono',monospace; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
+        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius:8px; padding:14px; font-family:${THEME.fontMono}; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
         .qr-tab-btn     { display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
         .qr-tab-btn.active { border-color:${THEME.primary}!important; background:${THEME.primary}12!important; color:${THEME.primary}!important; }
         .qr-watcher-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
@@ -849,7 +849,7 @@ export default function QueryPlanRegressionTab() {
                         <div key={b.fingerprint} className="qr-baseline-row">
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: 700, color: THEME.textMain, fontSize: 13 }}>{b.label}</div>
-                                <div style={{ fontFamily: 'Space Mono,monospace', fontSize: 10, color: THEME.textDim, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.queryPreview}</div>
+                                <div style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textDim, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.queryPreview}</div>
                             </div>
                             <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
                                 <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary }}>Cost: {Number(b.cost).toFixed(2)}</div>

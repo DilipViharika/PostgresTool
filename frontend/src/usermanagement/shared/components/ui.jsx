@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { T } from '../../constants/theme.js';
+import { THEME } from '../../../utils/theme.jsx';
 import { ROLES, PERM_COLORS } from '../../constants/index.js';
 import { relTime } from '../../helpers/index.js';
 
@@ -92,7 +93,7 @@ export const RiskRing = ({ score, size = 44 }) => {
                         style={{ transition: 'stroke-dasharray 0.6s ease' }}
                 />
             </svg>
-            <span style={{ position: 'absolute', fontSize: 11, fontWeight: 700, color, fontFamily: 'Space Mono, monospace' }}>
+            <span style={{ position: 'absolute', fontSize: 11, fontWeight: 700, color, fontFamily: THEME.fontMono }}>
                 {score}
             </span>
         </div>
@@ -151,7 +152,7 @@ export const RoleBadge = ({ roleId, size = 'md' }) => {
     const sm = size === 'sm';
     return (
         <span style={{
-            fontFamily: 'Space Mono, monospace',
+            fontFamily: THEME.fontMono,
             fontSize: sm ? 10 : 11, fontWeight: 700,
             color: role.color,
             background: `${role.color}18`,

@@ -51,6 +51,8 @@ const T = {
     get textMain()    { return THEME.textMain    || '#f1f5f9'; },
     get textMuted()   { return THEME.textMuted   || '#94a3b8'; },
     get textDim()     { return THEME.textDim     || '#64748b'; },
+    get fontBody()    { return THEME.fontBody    || "'DM Sans', sans-serif"; },
+    get fontMono()    { return THEME.fontMono    || "'JetBrains Mono', monospace"; },
 };
 
 /* ── history reducer ── */
@@ -71,7 +73,6 @@ const historyReducer = (state, action) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const AdminStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap');
 
         @keyframes admFadeIn      { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
         @keyframes admFadeInLeft  { from{opacity:0;transform:translateX(-12px);} to{opacity:1;transform:translateX(0);} }
@@ -126,7 +127,7 @@ const AdminStyles = () => (
         .adm-btn:hover { transform:translateY(-1px); }
         .adm-btn:active { transform:translateY(0); }
 
-        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:700; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:${T.textDim}; font-family:'DM Mono',monospace; }
+        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:700; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:${T.textDim}; font-family:${T.fontMono}; }
 
         .adm-tooltip { position:relative; }
         .adm-tooltip:hover .adm-tooltip-content { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
@@ -353,7 +354,7 @@ const RingGauge = ({ value, color, size = 80, strokeWidth = 6, label, sublabel }
                         style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.22,1,0.36,1)', filter: `drop-shadow(0 0 6px ${dangerColor}70)` }} />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                <span style={{ fontSize: size > 60 ? 17 : 10, fontWeight: 800, color: dangerColor, fontFamily: "'DM Mono',monospace", lineHeight: 1 }}>{value}%</span>
+                <span style={{ fontSize: size > 60 ? 17 : 10, fontWeight: 800, color: dangerColor, fontFamily: T.fontMono, lineHeight: 1 }}>{value}%</span>
                 {label && <span style={{ fontSize: 8, color: T.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>}
                 {sublabel && <span style={{ fontSize: 7, color: `${dangerColor}80`, fontWeight: 600 }}>{sublabel}</span>}
             </div>
@@ -389,7 +390,7 @@ const MiniSparkline = ({ data, color, height = 28, width = 80, filled = false })
 const TPSIndicator = ({ value, history, color }) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span style={{ fontSize: 22, fontWeight: 900, color, fontFamily: "'DM Mono',monospace", lineHeight: 1 }}>{value.toLocaleString()}</span>
+            <span style={{ fontSize: 22, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1 }}>{value.toLocaleString()}</span>
             <span style={{ fontSize: 9, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.08em' }}>TPS</span>
         </div>
         <MiniSparkline data={history} color={color} width={140} height={28} filled />
@@ -410,7 +411,7 @@ const StatCard = ({ label, value, icon: Icon, color, sub, spark, trend }) => (
                 </span>
             )}
         </div>
-        <div style={{ fontSize: 24, fontWeight: 900, color, fontFamily: "'DM Mono',monospace", lineHeight: 1, marginBottom: 4 }}>{value}</div>
+        <div style={{ fontSize: 24, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1, marginBottom: 4 }}>{value}</div>
         <div style={{ fontSize: 10, color: T.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: spark ? 8 : 0 }}>{label}</div>
         {sub && <div style={{ fontSize: 10, color: T.textDim, marginBottom: spark ? 6 : 0 }}>{sub}</div>}
         {spark && <MiniSparkline data={spark} color={color} width="100%" height={24} filled />}
@@ -434,7 +435,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {TIcon && <TIcon size={13} color={accent || T.primary} />}
-                    <span style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Syne',sans-serif" }}>{title}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: T.fontBody }}>{title}</span>
                 </div>
                 {rightNode}
             </div>
@@ -454,7 +455,7 @@ const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => 
                     {danger ? <AlertTriangle size={18} color={T.danger} /> : <Info size={18} color={T.primary} />}
                 </div>
                 <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: T.textMain, marginBottom: 6, fontFamily: "'Syne',sans-serif" }}>{title}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.textMain, marginBottom: 6, fontFamily: T.fontBody }}>{title}</div>
                     <div style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.6 }}>{body}</div>
                 </div>
             </div>
@@ -472,7 +473,7 @@ const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => 
 const DiffTag = ({ before, after }) => {
     if (!before || before === after) return null;
     return (
-        <span style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: `${T.warning}14`, color: T.warning, border: `1px solid ${T.warning}25`, fontFamily: "'DM Mono',monospace" }}>
+        <span style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: `${T.warning}14`, color: T.warning, border: `1px solid ${T.warning}25`, fontFamily: T.fontMono }}>
             <span style={{ opacity: 0.6, textDecoration: 'line-through' }}>{before}</span>
             <ArrowUpRight size={7} />
             <strong>{after}</strong>
@@ -502,7 +503,7 @@ const ServerSidebar = ({ collapsed, onToggle }) => {
     return (
         <div style={{ width: 210, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0 8px' }}>
-                <span style={{ fontSize: 9.5, fontWeight: 800, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Syne',sans-serif" }}>Server Status</span>
+                <span style={{ fontSize: 9.5, fontWeight: 800, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: T.fontBody }}>Server Status</span>
                 <button onClick={onToggle} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 2 }}><ChevronRight size={12} /></button>
             </div>
 
@@ -551,7 +552,7 @@ const ServerSidebar = ({ collapsed, onToggle }) => {
                         <MemoryStick size={10} color={T.textDim} />
                         <span style={{ fontSize: 9.5, color: T.textDim, fontWeight: 600 }}>Memory</span>
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: T.primary, fontFamily: "'DM Mono',monospace" }}>{s.ram.usedGB}/{s.ram.totalGB}GB</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: T.primary, fontFamily: T.fontMono }}>{s.ram.usedGB}/{s.ram.totalGB}GB</span>
                 </div>
                 <div style={{ height: 5, background: `${T.grid}50`, borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${ramPct}%`, height: '100%', background: `linear-gradient(90deg, ${T.primary}, ${T.secondary})`, borderRadius: 3, transition: 'width 1s ease' }} />
@@ -565,7 +566,7 @@ const ServerSidebar = ({ collapsed, onToggle }) => {
                         <HardDrive size={10} color={T.textDim} />
                         <span style={{ fontSize: 9.5, color: T.textDim, fontWeight: 600 }}>Disk I/O</span>
                     </div>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: T.secondary, fontFamily: "'DM Mono',monospace" }}>{diskPct}%</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, color: T.secondary, fontFamily: T.fontMono }}>{diskPct}%</span>
                 </div>
                 <div style={{ height: 4, background: `${T.grid}50`, borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
                     <div style={{ width: `${diskPct}%`, height: '100%', background: T.secondary, borderRadius: 2 }} />
@@ -637,7 +638,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             <Sparkles size={20} color="#fff" />
                         </div>
                         <div>
-                            <div style={{ fontSize: 17, fontWeight: 800, color: T.textMain, fontFamily: "'Syne',sans-serif", letterSpacing: '-0.02em' }}>Config Tuning Wizard</div>
+                            <div style={{ fontSize: 17, fontWeight: 800, color: T.textMain, fontFamily: T.fontBody, letterSpacing: '-0.02em' }}>Config Tuning Wizard</div>
                             <div style={{ fontSize: 10, color: T.textDim }}>Step {step} of 2 · {step === 1 ? 'System Specifications' : 'Review Recommendations'}</div>
                         </div>
                     </div>
@@ -674,7 +675,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                             <f.icon size={14} color={T.primary} />
                                             <input type="number" value={inputs[f.key]} min={f.min||1} max={f.max||2048}
                                                    onChange={e => setInputs({...inputs, [f.key]: Number(e.target.value)})}
-                                                   style={{ background: 'transparent', border: 'none', color: T.textMain, width: '100%', fontWeight: 800, fontSize: 14, fontFamily: "'DM Mono',monospace" }} />
+                                                   style={{ background: 'transparent', border: 'none', color: T.textMain, width: '100%', fontWeight: 800, fontSize: 14, fontFamily: T.fontMono }} />
                                             {f.unit && <span style={{ fontSize: 9.5, color: T.textDim, whiteSpace: 'nowrap' }}>{f.unit}</span>}
                                         </div>
                                     </div>
@@ -725,7 +726,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 </div>
                             </div>
 
-                            <button onClick={handleCalculate} style={{ padding: '14px', borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: 13, fontFamily: "'Syne',sans-serif", boxShadow: `0 6px 20px ${T.primary}50`, letterSpacing: '-0.01em' }}>
+                            <button onClick={handleCalculate} style={{ padding: '14px', borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: 13, fontFamily: T.fontBody, boxShadow: `0 6px 20px ${T.primary}50`, letterSpacing: '-0.01em' }}>
                                 <Sparkles size={16} /> Generate Recommendations
                             </button>
                         </div>
@@ -782,11 +783,11 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '10px 14px' }}>
-                                                    <div style={{ fontWeight: 600, color: T.textMain, fontFamily: "'DM Mono',monospace", fontSize: 11 }}>{rec.name}</div>
+                                                    <div style={{ fontWeight: 600, color: T.textMain, fontFamily: T.fontMono, fontSize: 11 }}>{rec.name}</div>
                                                     <div style={{ fontSize: 9, color: T.textDim }}>{rec.reason}</div>
                                                 </td>
-                                                <td style={{ padding: '10px 14px', fontFamily: "'DM Mono',monospace", color: T.textMuted, fontSize: 11 }}>{curr}</td>
-                                                <td style={{ padding: '10px 14px', fontFamily: "'DM Mono',monospace", fontWeight: 700, color: changed ? T.success : T.textDim, fontSize: 11 }}>
+                                                <td style={{ padding: '10px 14px', fontFamily: T.fontMono, color: T.textMuted, fontSize: 11 }}>{curr}</td>
+                                                <td style={{ padding: '10px 14px', fontFamily: T.fontMono, fontWeight: 700, color: changed ? T.success : T.textDim, fontSize: 11 }}>
                                                     {rec.val}{changed && <ArrowUpRight size={9} style={{ marginLeft: 3, display: 'inline', verticalAlign: 'middle' }} />}
                                                 </td>
                                                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>
@@ -805,7 +806,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 <button onClick={() => setStep(1)} style={{ flex: 1, padding: '12px', background: 'transparent', border: `1px solid ${T.grid}50`, borderRadius: 10, color: T.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
                                     <CornerUpLeft size={13} /> Back
                                 </button>
-                                <button onClick={() => onApply(recommendations.filter(r => selected.has(r.name)))} disabled={!selected.size} style={{ flex: 2, padding: '12px', background: selected.size ? `linear-gradient(135deg, ${T.success}, ${T.teal})` : T.grid, border: 'none', borderRadius: 10, color: selected.size ? '#000' : T.textDim, fontWeight: 800, cursor: selected.size ? 'pointer' : 'not-allowed', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: "'Syne',sans-serif", boxShadow: selected.size ? `0 4px 16px ${T.success}40` : 'none' }}>
+                                <button onClick={() => onApply(recommendations.filter(r => selected.has(r.name)))} disabled={!selected.size} style={{ flex: 2, padding: '12px', background: selected.size ? `linear-gradient(135deg, ${T.success}, ${T.teal})` : T.grid, border: 'none', borderRadius: 10, color: selected.size ? '#000' : T.textDim, fontWeight: 800, cursor: selected.size ? 'pointer' : 'not-allowed', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: T.fontBody, boxShadow: selected.size ? `0 4px 16px ${T.success}40` : 'none' }}>
                                     <Save size={14} /> Apply {selected.size} Recommendations
                                 </button>
                             </div>
@@ -826,7 +827,7 @@ const ChangeLogModal = ({ onClose }) => (
             <div style={{ padding: '16px 22px', borderBottom: `1px solid ${T.grid}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(90deg, ${T.primary}06, transparent)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                     <History size={14} color={T.primary} />
-                    <span style={{ fontSize: 14, fontWeight: 800, color: T.textMain, fontFamily: "'Syne',sans-serif" }}>Configuration History</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: T.textMain, fontFamily: T.fontBody }}>Configuration History</span>
                 </div>
                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 4 }}><X size={16} /></button>
             </div>
@@ -839,13 +840,13 @@ const ChangeLogModal = ({ onClose }) => (
                         </div>
                         <div style={{ flex: 1, padding: '12px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 10 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, fontWeight: 700, color: T.primary }}>{entry.param}</span>
+                                <span style={{ fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, color: T.primary }}>{entry.param}</span>
                                 <span style={{ fontSize: 9.5, color: T.textDim }}>{new Date(entry.ts).toLocaleDateString()} {new Date(entry.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: T.textDim, textDecoration: 'line-through' }}>{entry.before}</span>
+                                <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.textDim, textDecoration: 'line-through' }}>{entry.before}</span>
                                 <ArrowUpRight size={10} color={T.textDim} />
-                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, fontWeight: 700, color: T.success }}>{entry.after}</span>
+                                <span style={{ fontFamily: T.fontMono, fontSize: 11, fontWeight: 700, color: T.success }}>{entry.after}</span>
                             </div>
                             <div style={{ display: 'flex', gap: 8 }}>
                                 <span style={{ fontSize: 9.5, color: T.textDim }}>by <strong style={{ color: T.textMuted }}>{entry.user}</strong></span>
@@ -893,7 +894,7 @@ const CacheView = ({ onClear }) => {
                             ].map(item => (
                                 <div key={item.label} style={{ padding: '9px 10px', background: T.surface, borderRadius: 8, border: `1px solid ${T.grid}40` }}>
                                     <div style={{ fontSize: 9, color: T.textDim, marginBottom: 3 }}>{item.label}</div>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: item.color, fontFamily: "'DM Mono',monospace" }}>{item.val}</div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: item.color, fontFamily: T.fontMono }}>{item.val}</div>
                                 </div>
                             ))}
                         </div>
@@ -941,7 +942,7 @@ const CacheView = ({ onClear }) => {
                                     </div>
                                     <div style={{ display: 'flex', gap: 12 }}>
                                         <span style={{ fontSize: 9.5, color: T.textDim }}>{b.count} entries</span>
-                                        <span style={{ fontSize: 12, fontWeight: 800, color: T.textMain, fontFamily: "'DM Mono',monospace" }}>{b.size} KB</span>
+                                        <span style={{ fontSize: 12, fontWeight: 800, color: T.textMain, fontFamily: T.fontMono }}>{b.size} KB</span>
                                     </div>
                                 </div>
                                 <div style={{ height: 5, background: `${T.grid}40`, borderRadius: 3, overflow: 'hidden' }}>
@@ -957,7 +958,7 @@ const CacheView = ({ onClear }) => {
             <Panel title="Hit Rate Over Time" icon={TrendingUp} accent={T.success}>
                 <div style={{ padding: '4px 0 12px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
-                        <span style={{ fontSize: 32, fontWeight: 900, color: T.success, fontFamily: "'DM Mono',monospace", lineHeight: 1 }}>{c.hitRate}%</span>
+                        <span style={{ fontSize: 32, fontWeight: 900, color: T.success, fontFamily: T.fontMono, lineHeight: 1 }}>{c.hitRate}%</span>
                         <span style={{ fontSize: 11, color: T.success }}>↑ 2.1% vs yesterday</span>
                     </div>
                     <svg width="100%" height={60} style={{ overflow: 'visible' }}>
@@ -1078,17 +1079,17 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
                             const rowBg = isBlocked ? `${T.danger}05` : isLong ? `${T.warning}04` : 'transparent';
                             return (
                                 <tr key={c.pid} className="adm-conn-row" style={{ borderBottom: `1px solid ${T.grid}12`, background: rowBg, transition: 'background 0.15s' }}>
-                                    <td style={{ padding: '10px 14px', fontSize: 12, color: T.primary, fontFamily: "'DM Mono',monospace", fontWeight: 800 }}>{c.pid}</td>
+                                    <td style={{ padding: '10px 14px', fontSize: 12, color: T.primary, fontFamily: T.fontMono, fontWeight: 800 }}>{c.pid}</td>
                                     <td style={{ padding: '10px 14px' }}>
                                         <div style={{ fontSize: 12, color: T.textMuted, fontWeight: 600 }}>{c.user}</div>
                                         <div style={{ fontSize: 9, color: T.textDim }}>{c.appName}</div>
                                     </td>
-                                    <td style={{ padding: '10px 14px', fontSize: 11, color: T.textDim, fontFamily: "'DM Mono',monospace" }}>{c.db}</td>
+                                    <td style={{ padding: '10px 14px', fontSize: 11, color: T.textDim, fontFamily: T.fontMono }}>{c.db}</td>
                                     <td style={{ padding: '10px 14px' }}>
                                         <StatusBadge label={c.state} color={c.state==='active'?T.success:c.state==='idle'?T.textDim:T.warning} size="sm" pulse={c.state==='active'} />
                                     </td>
                                     <td style={{ padding: '10px 14px' }}>
-                                            <span style={{ fontSize: 12, fontFamily: "'DM Mono',monospace", fontWeight: 700, color: isLong ? T.danger : T.textMuted }}>
+                                            <span style={{ fontSize: 12, fontFamily: T.fontMono, fontWeight: 700, color: isLong ? T.danger : T.textMuted }}>
                                                 {c.duration}
                                                 {isLong && <AlertTriangle size={10} color={T.danger} style={{ marginLeft: 5, display: 'inline', verticalAlign: 'middle' }} />}
                                             </span>
@@ -1098,7 +1099,7 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
                                             <div style={{ width: 44, height: 4, background: `${T.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
                                                 <div style={{ width: `${Math.min(c.cpu,100)}%`, height: '100%', background: c.cpu>80?T.danger:c.cpu>40?T.warning:T.success, borderRadius: 2, transition: 'width 0.5s' }} />
                                             </div>
-                                            <span style={{ fontSize: 10, color: T.textDim, fontFamily: "'DM Mono',monospace" }}>{c.cpu}%</span>
+                                            <span style={{ fontSize: 10, color: T.textDim, fontFamily: T.fontMono }}>{c.cpu}%</span>
                                         </div>
                                     </td>
                                     <td style={{ padding: '10px 14px' }}>
@@ -1106,7 +1107,7 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
                                     </td>
                                     <td style={{ padding: '10px 14px', maxWidth: 220 }}>
                                         <Tooltip content={c.query}>
-                                            <span style={{ fontSize: 10.5, color: T.textDim, fontFamily: "'DM Mono',monospace", display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'default' }}>{c.query}</span>
+                                            <span style={{ fontSize: 10.5, color: T.textDim, fontFamily: T.fontMono, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'default' }}>{c.query}</span>
                                         </Tooltip>
                                     </td>
                                     <td style={{ padding: '10px 14px', textAlign: 'right', paddingRight: 16 }}>
@@ -1186,7 +1187,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
                     <div key={cat}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                             <div style={{ width: 4, height: 16, borderRadius: 2, background: catColor }} />
-                            <span style={{ fontSize: 10, fontWeight: 800, color: catColor, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Syne',sans-serif" }}>{cat}</span>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: catColor, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: T.fontBody }}>{cat}</span>
                             <div style={{ flex: 1, height: 1, background: `${catColor}15` }} />
                             <span style={{ fontSize: 9.5, color: T.textDim }}>{catItems.length} extension{catItems.length !== 1 ? 's' : ''}</span>
                         </div>
@@ -1201,12 +1202,12 @@ const ExtensionsView = ({ extData, onInstall }) => {
                                     {ext.active && <div style={{ position: 'absolute', top: 10, right: 10, width: 6, height: 6, borderRadius: '50%', background: T.success, boxShadow: `0 0 8px ${T.success}` }} />}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                                         <div>
-                                            <div style={{ fontWeight: 800, color: T.textMain, fontSize: 13, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7, fontFamily: "'Syne',sans-serif" }}>
+                                            <div style={{ fontWeight: 800, color: T.textMain, fontSize: 13, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7, fontFamily: T.fontBody }}>
                                                 {ext.name}
                                                 {ext.superuser && <Tooltip content="Requires superuser"><Lock size={9} color={T.warning} /></Tooltip>}
                                             </div>
                                             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                                                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}20`, fontFamily: "'DM Mono',monospace" }}>v{ext.version}</span>
+                                                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}20`, fontFamily: T.fontMono }}>v{ext.version}</span>
                                                 {ext.installed && <StatusBadge label={ext.active ? 'Active' : 'Installed'} color={ext.active ? T.success : T.warning} size="sm" />}
                                             </div>
                                         </div>
@@ -1309,7 +1310,7 @@ const SettingsView = ({
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
                 <input className="adm-input-field" type={isNum ? 'number' : 'text'} value={currentVal} onChange={e => onChange(e.target.value)} placeholder={s.boot_val}
-                       style={{ background: errs.length ? `${T.danger}08` : T.surface, border: `1px solid ${errs.length ? T.danger : T.grid}60`, color: T.textMain, borderRadius: 6, padding: '5px 9px', fontSize: 12, width: isNum ? 92 : 135, fontFamily: "'DM Mono',monospace" }} />
+                       style={{ background: errs.length ? `${T.danger}08` : T.surface, border: `1px solid ${errs.length ? T.danger : T.grid}60`, color: T.textMain, borderRadius: 6, padding: '5px 9px', fontSize: 12, width: isNum ? 92 : 135, fontFamily: T.fontMono }} />
                 {errs.map((e,i) => <span key={i} style={{ fontSize: 9, color: T.danger }}>{e}</span>)}
             </div>
         );
@@ -1338,7 +1339,7 @@ const SettingsView = ({
                     {catDef && <catDef.icon size={11} color={catDef.color} style={{ flexShrink: 0, opacity: 0.7 }} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.textMain, fontFamily: "'DM Mono',monospace" }}>{s.name}</span>
+                            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.textMain, fontFamily: T.fontMono }}>{s.name}</span>
                             {hasPending && <StatusBadge label="PENDING" color={T.success} size="sm" />}
                             {isModified && !hasPending && <StatusBadge label="CUSTOM" color={T.secondary} size="sm" />}
                             {s.pending_restart && <StatusBadge label="RESTART" color={T.warning} size="sm" />}
@@ -1366,7 +1367,7 @@ const SettingsView = ({
                             </div>
                         ) : (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <span style={{ fontSize: 13, fontWeight: 800, fontFamily: "'DM Mono',monospace", color: hasPending ? T.success : isModified ? T.secondary : T.textMuted }}>
+                                <span style={{ fontSize: 13, fontWeight: 800, fontFamily: T.fontMono, color: hasPending ? T.success : isModified ? T.secondary : T.textMuted }}>
                                     {displayVal}{!hasPending && s.unit ? ` ${s.unit}` : ''}
                                 </span>
                                 <button onClick={e => { e.stopPropagation(); copyVal(`${s.name} = ${s.setting}`, s.name); }}
@@ -1383,7 +1384,7 @@ const SettingsView = ({
                     <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.grid}25`, animation: 'admFadeIn 0.15s ease' }}>
                         <p style={{ fontSize: 11.5, color: T.textMuted, lineHeight: 1.65, margin: '0 0 10px' }}>{s.short_desc}</p>
                         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: 10, marginBottom: 12 }}>
-                            <span style={{ color: T.textDim }}>Default: <strong style={{ color: T.textMuted, fontFamily: "'DM Mono',monospace" }}>{s.boot_val}</strong></span>
+                            <span style={{ color: T.textDim }}>Default: <strong style={{ color: T.textMuted, fontFamily: T.fontMono }}>{s.boot_val}</strong></span>
                             <span style={{ color: T.textDim }}>Source: <strong style={{ color: T.textMuted }}>{s.source}</strong></span>
                         </div>
                         {riskDef && riskDef.label !== 'LOW RISK' && (
@@ -1676,7 +1677,7 @@ const AdminTab = () => {
                             background: activeSub === t.id ? `linear-gradient(135deg, ${T.primary}, ${T.secondary})` : 'transparent',
                             color: activeSub === t.id ? '#fff' : T.textMuted,
                             boxShadow: activeSub === t.id ? `0 4px 16px ${T.primary}35` : 'none',
-                            fontFamily: "'Syne',sans-serif",
+                            fontFamily: T.fontBody,
                             position: 'relative',
                         }}>
                             <t.i size={13} />
@@ -1741,7 +1742,7 @@ const AdminTab = () => {
             {toast && (
                 <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 10000, padding: '13px 18px', borderRadius: 12, background: T.surface, backdropFilter: 'blur(20px)', border: `1px solid ${toast.type === 'error' ? T.danger : T.success}35`, boxShadow: `0 10px 36px rgba(0,0,0,0.6), 0 0 0 1px ${toast.type === 'error' ? T.danger : T.success}12, 0 0 24px ${toast.type === 'error' ? T.danger : T.success}15`, display: 'flex', alignItems: 'center', gap: 11, animation: 'admSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)' }}>
                     {toast.type === 'error' ? <XCircle size={18} color={T.danger} /> : <CheckCircle size={18} color={T.success} />}
-                    <span style={{ fontWeight: 700, color: T.textMain, fontSize: 13, fontFamily: "'Syne',sans-serif" }}>{toast.msg}</span>
+                    <span style={{ fontWeight: 700, color: T.textMain, fontSize: 13, fontFamily: T.fontBody }}>{toast.msg}</span>
                     <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 0, marginLeft: 4 }}><X size={12} /></button>
                 </div>
             )}
