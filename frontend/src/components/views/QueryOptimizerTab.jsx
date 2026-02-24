@@ -17,7 +17,9 @@ import {
     Wrench, ShieldAlert, SlidersHorizontal,
     TimerReset, Workflow, PackageOpen, Boxes,
     SquareSlash, CircleDot, Siren, Hourglass,
-    XCircle, RotateCcw, Award, Percent
+    XCircle, RotateCcw, Award, Percent,
+    Wand2, Package, AlertOctagon, Layers3,
+    PieChart, Building2, Microscope
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -34,6 +36,9 @@ const OptimizerStyles = () => (
         @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes scoreReveal { from { stroke-dashoffset: 283; } to { } }
         @keyframes flamePop { 0% { transform: scaleY(0); transform-origin: bottom; } 100% { transform: scaleY(1); } }
+        @keyframes aiTyping { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+        @keyframes heatPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)} 50%{box-shadow:0 0 0 6px rgba(239,68,68,0)} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
         .opt-card {
             background: ${THEME.glass};
@@ -107,6 +112,11 @@ const OptimizerStyles = () => (
             cursor: pointer; transition: all 0.15s;
         }
         .tag-pill:hover { filter: brightness(1.2); }
+        .heat-node-critical { animation: heatPulse 2s infinite; }
+        .ai-cursor::after { content:'▋'; animation: aiTyping 0.8s infinite; }
+        .diff-added { background: ${THEME.success}15; border-left: 3px solid ${THEME.success}; }
+        .diff-removed { background: ${THEME.danger}10; border-left: 3px solid ${THEME.danger}; }
+        .param-highlight { background: ${THEME.warning}30; border-radius: 3px; padding: 0 2px; color: ${THEME.warning}; font-weight: 700; }
     `}</style>
 );
 
@@ -274,6 +284,68 @@ const MOCK_PG_CONFIG = [
     { name: 'max_connections', current: '100', recommended: '200', category: 'Connections', impact: 'MEDIUM', desc: 'Maximum client connections. Use PgBouncer for connection pooling.', unit: 'integer' },
 ];
 
+// NEW: Mock service attribution data
+const MOCK_SERVICE_ATTRIBUTION = [
+    { service: 'api-gateway', queries: 42840, total_time_ms: 8420000, avg_time: 196.6, p99: 1240, top_table: 'users', cost_share: 34.2, db: 'production', team: 'Platform' },
+    { service: 'order-service', queries: 28400, total_time_ms: 6840000, avg_time: 240.8, p99: 2890, top_table: 'orders', cost_share: 27.5, db: 'production', team: 'Commerce' },
+    { service: 'analytics-worker', queries: 480, total_time_ms: 4920000, avg_time: 10250.0, p99: 42000, top_table: 'order_items', cost_share: 19.8, db: 'analytics', team: 'Data' },
+    { service: 'session-manager', queries: 124500, total_time_ms: 1543800, avg_time: 12.4, p99: 84, top_table: 'sessions', cost_share: 12.1, db: 'production', team: 'Platform' },
+    { service: 'notification-svc', queries: 8200, total_time_ms: 492000, avg_time: 60.0, p99: 284, top_table: 'users', cost_share: 4.1, db: 'production', team: 'Growth' },
+    { service: 'search-indexer', queries: 240, total_time_ms: 192000, avg_time: 800.0, p99: 3200, top_table: 'products', cost_share: 2.3, db: 'production', team: 'Search' },
+];
+
+// NEW: Mock parameterization advisor data
+const MOCK_PARAM_ISSUES = [
+    {
+        id: 1,
+        query: "SELECT * FROM users WHERE email = 'john@example.com'",
+        parameterized: "SELECT * FROM users WHERE email = $1",
+        literals: ["'john@example.com'"],
+        risk: 'HIGH',
+        issue: 'SQL Injection Risk',
+        calls: 48200,
+        plan_cache_waste: '94%',
+        description: 'String literal in WHERE clause prevents plan caching and creates injection vulnerability. Each unique email generates a new plan.',
+        fix: "-- Use parameterized query:\nSELECT * FROM users WHERE email = $1\n-- Bind: ['john@example.com']"
+    },
+    {
+        id: 2,
+        query: "SELECT * FROM orders WHERE status = 'pending' AND created_at > '2024-01-01'",
+        parameterized: "SELECT * FROM orders WHERE status = $1 AND created_at > $2",
+        literals: ["'pending'", "'2024-01-01'"],
+        risk: 'HIGH',
+        issue: 'Plan Cache Pollution',
+        calls: 18400,
+        plan_cache_waste: '88%',
+        description: 'Two embedded string literals. With 30-day date ranges, this generates 60+ unique query plans cluttering pg_stat_statements.',
+        fix: "-- Use parameterized query:\nSELECT * FROM orders\nWHERE status = $1 AND created_at > $2\n-- Bind: ['pending', '2024-01-01']"
+    },
+    {
+        id: 3,
+        query: "DELETE FROM sessions WHERE token = 'abc123def456' AND expires_at < NOW()",
+        parameterized: "DELETE FROM sessions WHERE token = $1 AND expires_at < NOW()",
+        literals: ["'abc123def456'"],
+        risk: 'CRITICAL',
+        issue: 'SQL Injection + Token Exposure',
+        calls: 92400,
+        plan_cache_waste: '99%',
+        description: 'Session tokens embedded as literals are logged in pg_stat_statements, pg_log, and monitoring tools — a serious security breach.',
+        fix: "-- CRITICAL: Always parameterize tokens/secrets:\nDELETE FROM sessions\nWHERE token = $1 AND expires_at < NOW()\n-- Bind: [token_value]"
+    },
+    {
+        id: 4,
+        query: "UPDATE products SET price = 29.99 WHERE id = 1042",
+        parameterized: "UPDATE products SET price = $1 WHERE id = $2",
+        literals: ["29.99", "1042"],
+        risk: 'MEDIUM',
+        issue: 'Plan Cache Waste',
+        calls: 3800,
+        plan_cache_waste: '76%',
+        description: 'Numeric literals in UPDATE. While lower injection risk, unique plans per price value bloat the plan cache unnecessarily.',
+        fix: "-- Use parameterized query:\nUPDATE products SET price = $1 WHERE id = $2\n-- Bind: [29.99, 1042]"
+    },
+];
+
 /* ═══════════════════════════════════════════════════════════════════════════
    ANALYSIS ENGINE
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -319,17 +391,40 @@ const analyzePlan = (result) => {
     return { insights, indexRecommendations, rewrites };
 };
 
+// NEW: Get heatmap data — find most expensive node by time
+const getHeatmapData = (plan) => {
+    const nodes = [];
+    const walk = (node, path = '') => {
+        if (!node) return;
+        const id = `${node["Node Type"]}-${node["Relation Name"] || ''}-${path}`;
+        nodes.push({ id, time: node["Actual Total Time"] || 0, cost: node["Total Cost"] || 0 });
+        if (node.Plans) node.Plans.forEach((p, i) => walk(p, `${path}-${i}`));
+    };
+    walk(plan);
+    const maxTime = Math.max(...nodes.map(n => n.time), 1);
+    const result = {};
+    nodes.forEach(n => { result[n.id] = n.time / maxTime; });
+    return { heatmap: result, maxTime, hotNodeId: nodes.reduce((a, b) => a.time > b.time ? a : b, nodes[0])?.id };
+};
+
 /* ═══════════════════════════════════════════════════════════════════════════
    SUB-COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-// Recursive plan tree node
-const PlanNode = ({ node, maxCost, totalTime, depth = 0 }) => {
+// Recursive plan tree node — enhanced with heatmap overlay
+const PlanNode = ({ node, maxCost, totalTime, depth = 0, heatmapData, showHeatmap }) => {
     const [expanded, setExpanded] = useState(true);
     const costRatio = node["Total Cost"] / (maxCost || 1);
     const timeRatio = (node["Actual Total Time"] || 0) / (totalTime || 1);
     const isSeqScan = node["Node Type"] === "Seq Scan";
     const color = getCostColor(costRatio);
+
+    const nodeId = `${node["Node Type"]}-${node["Relation Name"] || ''}-${depth}`;
+    const heatRatio = heatmapData?.[nodeId] || timeRatio;
+    const isHotspot = showHeatmap && heatRatio > 0.7;
+    const heatColor = showHeatmap
+        ? `rgba(${Math.round(220 * heatRatio)}, ${Math.round(60 * (1 - heatRatio))}, ${Math.round(40 * (1 - heatRatio))}, ${0.15 + heatRatio * 0.25})`
+        : undefined;
 
     const misest = node["Actual Rows"] > 0
         ? Math.abs((node["Plan Rows"] || 0) - node["Actual Rows"]) / node["Actual Rows"]
@@ -356,18 +451,24 @@ const PlanNode = ({ node, maxCost, totalTime, depth = 0 }) => {
             )}
 
             <div
-                className="node-content opt-card"
+                className={`node-content opt-card ${isHotspot ? 'heat-node-critical' : ''}`}
                 onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
                 style={{
                     padding: '10px 14px', borderRadius: 10, marginBottom: 10,
-                    cursor: 'pointer', borderLeft: `4px solid ${color}`,
-                    background: `linear-gradient(135deg, ${THEME.surface}f8 0%, ${THEME.surface}ee 100%)`
+                    cursor: 'pointer', borderLeft: `4px solid ${showHeatmap ? (isHotspot ? THEME.danger : THEME.warning) : color}`,
+                    background: showHeatmap && heatColor ? heatColor : `linear-gradient(135deg, ${THEME.surface}f8 0%, ${THEME.surface}ee 100%)`,
+                    position: 'relative', overflow: 'hidden'
                 }}
             >
+                {/* Heatmap intensity bar (top) */}
+                {showHeatmap && (
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `rgba(${Math.round(220 * heatRatio)}, ${Math.round(40 * (1 - heatRatio))}, 0, ${heatRatio})`, borderRadius: '10px 10px 0 0' }} />
+                )}
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        <div style={{ width: 30, height: 30, borderRadius: 7, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <NodeIcon size={14} color={color} />
+                        <div style={{ width: 30, height: 30, borderRadius: 7, background: showHeatmap ? `rgba(${Math.round(220 * heatRatio)}, ${Math.round(60 * (1-heatRatio))}, 0, 0.2)` : `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <NodeIcon size={14} color={showHeatmap ? (isHotspot ? THEME.danger : THEME.warning) : color} />
                         </div>
                         <div>
                             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -376,17 +477,20 @@ const PlanNode = ({ node, maxCost, totalTime, depth = 0 }) => {
                                 {node["Index Name"] && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.success}20`, color: THEME.success, fontWeight: 700 }}>IDX</span>}
                                 {badEstimate && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.danger}20`, color: THEME.danger, fontWeight: 700 }}>MISEST</span>}
                                 {node["Parallel Aware"] && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.primary}20`, color: THEME.primary, fontWeight: 700 }}>PARALLEL</span>}
+                                {isHotspot && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.danger}25`, color: THEME.danger, fontWeight: 700 }}>🔥 HOTSPOT</span>}
                             </div>
                             <div style={{ fontSize: 10, color: THEME.textMuted, display: 'flex', gap: 10, marginTop: 3, flexWrap: 'wrap' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={9} /> {formatDuration(node["Actual Total Time"] || 0)}</span>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Database size={9} /> {formatRows(node["Actual Rows"] || 0)} rows</span>
+                                {badEstimate && <span style={{ color: THEME.danger, fontSize: 9 }}>est: {formatRows(node["Plan Rows"])}</span>}
                                 {node["Filter"] && <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: THEME.warning }}><Filter size={9} /> {node["Filter"]}</span>}
                             </div>
                         </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color }}>{node["Total Cost"].toFixed(1)}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: showHeatmap ? (isHotspot ? THEME.danger : THEME.warning) : color }}>{node["Total Cost"].toFixed(1)}</div>
                         <div style={{ fontSize: 9, color: THEME.textMuted }}>{(costRatio * 100).toFixed(0)}% total</div>
+                        {showHeatmap && <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 1 }}>{(heatRatio * 100).toFixed(0)}% time</div>}
                         {node.Plans && <div style={{ marginTop: 3, color: THEME.textMuted }}>{expanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}</div>}
                     </div>
                 </div>
@@ -395,7 +499,7 @@ const PlanNode = ({ node, maxCost, totalTime, depth = 0 }) => {
                         <div style={{ width: `${Math.min(100, costRatio * 100)}%`, height: '100%', background: color }} />
                     </div>
                     <div style={{ flex: 1, height: 3, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.min(100, timeRatio * 100)}%`, height: '100%', background: THEME.primary }} />
+                        <div style={{ width: `${Math.min(100, timeRatio * 100)}%`, height: '100%', background: showHeatmap ? `rgba(${Math.round(220 * heatRatio)},${Math.round(60*(1-heatRatio))},0,0.8)` : THEME.primary }} />
                     </div>
                 </div>
             </div>
@@ -403,7 +507,7 @@ const PlanNode = ({ node, maxCost, totalTime, depth = 0 }) => {
             {expanded && node.Plans && (
                 <div style={{ animation: 'optFadeIn 0.2s' }}>
                     {node.Plans.map((child, i) => (
-                        <PlanNode key={i} node={child} maxCost={maxCost} totalTime={totalTime} depth={depth + 1} />
+                        <PlanNode key={i} node={child} maxCost={maxCost} totalTime={totalTime} depth={depth + 1} heatmapData={heatmapData} showHeatmap={showHeatmap} />
                     ))}
                 </div>
             )}
@@ -568,7 +672,6 @@ const InsightsPanel = ({ insights, rewrites, indexRecs }) => {
     );
 };
 
-// Active users indicator — always shows 0 (no one using it)
 const ActiveUsersBadge = () => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 5, background: `${THEME.success}12`, border: `1px solid ${THEME.success}30` }}>
         <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, flexShrink: 0 }} />
@@ -576,7 +679,6 @@ const ActiveUsersBadge = () => (
     </div>
 );
 
-// Query Score Ring — grade A-F based on issue count/severity
 const QueryScoreRing = ({ insights }) => {
     const dangerCount = insights.filter(i => i.type === 'danger').length;
     const warningCount = insights.filter(i => i.type === 'warning').length;
@@ -607,7 +709,6 @@ const QueryScoreRing = ({ insights }) => {
     );
 };
 
-// Flamegraph-style horizontal stacked visualizer
 const FlameGraph = ({ plan }) => {
     const nodes = [];
     const flatten = (n, depth = 0) => {
@@ -657,6 +758,582 @@ const FlameGraph = ({ plan }) => {
     );
 };
 
+// ═══════════════════════════════════════════════════════════════════════
+// NEW: AI Query Rewrite Panel
+// ═══════════════════════════════════════════════════════════════════════
+const AIRewritePanel = ({ query, insights, onApplyRewrite }) => {
+    const [loading, setLoading] = useState(false);
+    const [rewrite, setRewrite] = useState(null);
+    const [error, setError] = useState(null);
+    const [copiedSection, setCopiedSection] = useState(null);
+    const [streamedText, setStreamedText] = useState('');
+
+    const copy = (text, key) => {
+        navigator.clipboard?.writeText(text).catch(() => {});
+        setCopiedSection(key);
+        setTimeout(() => setCopiedSection(null), 1800);
+    };
+
+    const generateRewrite = async () => {
+        setLoading(true);
+        setRewrite(null);
+        setError(null);
+        setStreamedText('');
+
+        const issuesSummary = insights.length > 0
+            ? insights.map(i => `- ${i.title}: ${i.desc}`).join('\n')
+            : 'No specific issues detected, but look for general optimizations.';
+
+        const prompt = `You are a PostgreSQL performance expert. Analyze this SQL query and the detected issues, then provide an optimized rewrite.
+
+ORIGINAL QUERY:
+${query}
+
+DETECTED ISSUES:
+${issuesSummary}
+
+Respond ONLY with a JSON object (no markdown, no backticks) with this exact structure:
+{
+  "optimized_query": "the rewritten SQL query",
+  "changes": [
+    {"type": "improvement|warning|info", "description": "what changed and why"}
+  ],
+  "estimated_improvement": "e.g. 60-80% faster",
+  "explanation": "2-3 sentence summary of the optimization strategy"
+}`;
+
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 1000,
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+
+            const data = await response.json();
+            const text = data.content?.map(c => c.text || '').join('') || '';
+
+            // Simulate streaming effect
+            let i = 0;
+            const interval = setInterval(() => {
+                i += 8;
+                setStreamedText(text.substring(0, i));
+                if (i >= text.length) {
+                    clearInterval(interval);
+                    try {
+                        const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+                        setRewrite(parsed);
+                    } catch {
+                        setError('Could not parse AI response. Raw output: ' + text.substring(0, 200));
+                    }
+                    setLoading(false);
+                }
+            }, 12);
+
+        } catch (err) {
+            setError('AI rewrite failed: ' + err.message);
+            setLoading(false);
+        }
+    };
+
+    const changeTypeColor = (type) => type === 'improvement' ? THEME.success : type === 'warning' ? THEME.warning : THEME.primary;
+    const changeTypeIcon = (type) => type === 'improvement' ? <CheckCircle size={11} color={THEME.success} /> : type === 'warning' ? <AlertTriangle size={11} color={THEME.warning} /> : <Info size={11} color={THEME.primary} />;
+
+    return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* Header */}
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0, background: `linear-gradient(135deg, ${THEME.primary}06, ${THEME.secondary || THEME.primary}04)` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary || '#a78bfa'}30)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Wand2 size={15} color={THEME.primary} />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>AI Query Rewriter</div>
+                        <div style={{ fontSize: 10, color: THEME.textDim }}>Claude analyzes anti-patterns and generates an optimized query</div>
+                    </div>
+                    <button onClick={generateRewrite} disabled={loading || !query.trim()} className="opt-btn"
+                            style={{ marginLeft: 'auto', padding: '7px 16px', borderRadius: 6, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`, color: '#fff', fontSize: 11, fontWeight: 600, cursor: loading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, opacity: (loading || !query.trim()) ? 0.6 : 1, boxShadow: `0 3px 12px ${THEME.primary}40` }}>
+                        {loading ? <RefreshCw size={13} style={{ animation: 'optSpin 1s linear infinite' }} /> : <Sparkles size={13} />}
+                        {loading ? 'Analyzing…' : 'Rewrite with AI'}
+                    </button>
+                </div>
+                {insights.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 9, color: THEME.textDim }}>Issues being addressed:</span>
+                        {insights.slice(0, 4).map((ins, i) => (
+                            <span key={i} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 9, background: ins.type === 'danger' ? `${THEME.danger}20` : `${THEME.warning}20`, color: ins.type === 'danger' ? THEME.danger : THEME.warning, fontWeight: 600 }}>{ins.title}</span>
+                        ))}
+                        {insights.length > 4 && <span style={{ fontSize: 9, color: THEME.textDim }}>+{insights.length - 4} more</span>}
+                    </div>
+                )}
+            </div>
+
+            <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                {/* Loading state */}
+                {loading && !rewrite && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: 8, background: `${THEME.primary}08`, border: `1px solid ${THEME.primary}20` }}>
+                            <RefreshCw size={14} color={THEME.primary} style={{ animation: 'optSpin 1s linear infinite', flexShrink: 0 }} />
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 600, color: THEME.primary }}>Claude is analyzing your query…</div>
+                                <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>Detecting anti-patterns, checking join strategies, evaluating index opportunities</div>
+                            </div>
+                        </div>
+                        {streamedText && (
+                            <div style={{ fontSize: 9, fontFamily: 'monospace', color: THEME.textDim, background: `${THEME.bg}80`, padding: 10, borderRadius: 6, border: `1px solid ${THEME.grid}40`, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                                {streamedText}<span className="ai-cursor" />
+                            </div>
+                        )}
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="skeleton" style={{ height: 60, borderRadius: 8 }} />
+                        ))}
+                    </div>
+                )}
+
+                {/* Error state */}
+                {error && (
+                    <div style={{ padding: 14, borderRadius: 8, background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}30` }}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+                            <AlertTriangle size={13} color={THEME.danger} />
+                            <span style={{ fontSize: 11, fontWeight: 700, color: THEME.danger }}>Rewrite Failed</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: THEME.textMuted }}>{error}</div>
+                    </div>
+                )}
+
+                {/* Empty state */}
+                {!loading && !rewrite && !error && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 32px', textAlign: 'center', color: THEME.textDim }}>
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                            <Wand2 size={28} color={THEME.primary} opacity={0.6} />
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: THEME.textMain, marginBottom: 6 }}>AI-Powered Query Optimization</div>
+                        <div style={{ fontSize: 11, lineHeight: 1.6, maxWidth: 320, color: THEME.textMuted }}>
+                            Claude will analyze your query, detect anti-patterns like missing indexes, bad join strategies, and inefficient subqueries, then generate an optimized rewrite with explanations.
+                        </div>
+                        <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {['Detects anti-patterns', 'Suggests indexes', 'Rewrites joins', 'Estimates improvements'].map(f => (
+                                <span key={f} style={{ fontSize: 10, padding: '3px 10px', borderRadius: 20, background: `${THEME.primary}12`, border: `1px solid ${THEME.primary}25`, color: THEME.textDim }}>✓ {f}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Results */}
+                {rewrite && !loading && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'slideUp 0.4s ease' }}>
+                        {/* Improvement estimate */}
+                        <div style={{ padding: '10px 14px', borderRadius: 8, background: `linear-gradient(135deg, ${THEME.success}12, ${THEME.success}06)`, border: `1px solid ${THEME.success}30`, display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <TrendingUp size={18} color={THEME.success} />
+                            <div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: THEME.success }}>Estimated Improvement: {rewrite.estimated_improvement}</div>
+                                <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 2 }}>{rewrite.explanation}</div>
+                            </div>
+                        </div>
+
+                        {/* Changes list */}
+                        {rewrite.changes && rewrite.changes.length > 0 && (
+                            <div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>What Changed</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    {rewrite.changes.map((change, i) => (
+                                        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '8px 10px', borderRadius: 6, background: `${changeTypeColor(change.type)}08`, border: `1px solid ${changeTypeColor(change.type)}20` }}>
+                                            <div style={{ marginTop: 1, flexShrink: 0 }}>{changeTypeIcon(change.type)}</div>
+                                            <div style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5 }}>{change.description}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Side-by-side diff */}
+                        <div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <GitCompare size={11} /> Before / After
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                {[
+                                    { label: 'Original', code: query, color: THEME.danger, labelBg: `${THEME.danger}15` },
+                                    { label: 'Optimized', code: rewrite.optimized_query, color: THEME.success, labelBg: `${THEME.success}15` }
+                                ].map((side, idx) => (
+                                    <div key={idx} style={{ borderRadius: 8, overflow: 'hidden', border: `1px solid ${side.color}25` }}>
+                                        <div style={{ padding: '5px 10px', background: side.labelBg, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: 9, fontWeight: 700, color: side.color, textTransform: 'uppercase' }}>{side.label}</span>
+                                            <button onClick={() => copy(side.code, `side-${idx}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2 }}>
+                                                {copiedSection === `side-${idx}` ? <Check size={9} color={THEME.success} /> : <Copy size={9} />}
+                                            </button>
+                                        </div>
+                                        <pre style={{ margin: 0, padding: '10px 12px', fontSize: 10, fontFamily: 'monospace', color: THEME.textMain, background: `${THEME.bg}90`, whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto' }}>{side.code}</pre>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Optimized query standalone with apply button */}
+                        <div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Optimized Query</div>
+                            <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: `1px solid ${THEME.success}30` }}>
+                                <pre style={{ margin: 0, padding: '12px 14px', fontSize: 11, fontFamily: 'monospace', color: THEME.success, background: `${THEME.bg}95`, whiteSpace: 'pre-wrap' }}>{rewrite.optimized_query}</pre>
+                                <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}>
+                                    <button onClick={() => copy(rewrite.optimized_query, 'optimized')} style={{ padding: '3px 8px', borderRadius: 4, background: `${THEME.grid}80`, border: `1px solid ${THEME.grid}`, cursor: 'pointer', color: THEME.textDim, fontSize: 9, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                        {copiedSection === 'optimized' ? <Check size={9} color={THEME.success} /> : <Copy size={9} />}
+                                        Copy
+                                    </button>
+                                    <button onClick={() => onApplyRewrite(rewrite.optimized_query)} className="opt-btn" style={{ padding: '3px 10px', borderRadius: 4, background: `${THEME.primary}20`, border: `1px solid ${THEME.primary}40`, cursor: 'pointer', color: THEME.primary, fontSize: 9, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                        <Play size={9} fill="currentColor" /> Apply to Editor
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Re-run button */}
+                        <button onClick={generateRewrite} className="opt-btn" style={{ padding: '8px', borderRadius: 6, border: `1px solid ${THEME.primary}30`, background: `${THEME.primary}08`, color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <RefreshCw size={12} /> Generate Another Variant
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// NEW: Service Cost Attribution Panel
+// ═══════════════════════════════════════════════════════════════════════
+const ServiceAttributionPanel = () => {
+    const [sortBy, setSortBy] = useState('cost_share');
+    const [view, setView] = useState('chart');
+    const sorted = [...MOCK_SERVICE_ATTRIBUTION].sort((a, b) => b[sortBy] - a[sortBy]);
+    const totalTime = MOCK_SERVICE_ATTRIBUTION.reduce((s, r) => s + r.total_time_ms, 0);
+    const maxCostShare = Math.max(...sorted.map(s => s.cost_share));
+
+    const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: '#a78bfa', Growth: '#34d399', Search: '#f472b6' };
+
+    return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* Summary row */}
+            <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
+                {[
+                    { label: 'Services Tracked', value: MOCK_SERVICE_ATTRIBUTION.length, color: THEME.textMain },
+                    { label: 'Total DB Time', value: formatDuration(totalTime), color: THEME.primary },
+                    { label: 'Slowest Avg (ms)', value: formatDuration(Math.max(...MOCK_SERVICE_ATTRIBUTION.map(s => s.avg_time))), color: THEME.danger },
+                    { label: 'Top Offender', value: sorted[0]?.service, color: THEME.warning },
+                ].map((k, i) => (
+                    <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
+                        <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{k.label}</div>
+                        <div style={{ fontSize: i === 3 ? 12 : 18, fontWeight: 800, color: k.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.value}</div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Toolbar */}
+            <div style={{ padding: '8px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase' }}>Sort:</span>
+                {[
+                    { key: 'cost_share', label: '% DB Cost' },
+                    { key: 'total_time_ms', label: 'Total Time' },
+                    { key: 'avg_time', label: 'Avg Time' },
+                    { key: 'queries', label: 'Query Count' },
+                ].map(s => (
+                    <button key={s.key} onClick={() => setSortBy(s.key)} style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${sortBy === s.key ? THEME.primary : THEME.grid}`, background: sortBy === s.key ? `${THEME.primary}20` : 'transparent', color: sortBy === s.key ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', fontWeight: 600 }}>{s.label}</button>
+                ))}
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                    {['chart', 'table'].map(v => (
+                        <button key={v} onClick={() => setView(v)} style={{ padding: '3px 9px', borderRadius: 4, border: `1px solid ${view === v ? THEME.primary : THEME.grid}`, background: view === v ? `${THEME.primary}20` : 'transparent', color: view === v ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', textTransform: 'capitalize' }}>{v}</button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                {view === 'chart' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {/* Stacked distribution bar */}
+                        <div style={{ marginBottom: 16 }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.06em' }}>Database Time Distribution by Service</div>
+                            <div style={{ height: 32, borderRadius: 6, overflow: 'hidden', display: 'flex' }}>
+                                {sorted.map((svc, i) => {
+                                    const colors = [THEME.primary, THEME.warning, '#a78bfa', '#34d399', THEME.danger, '#f472b6'];
+                                    return (
+                                        <div key={svc.service} title={`${svc.service}: ${svc.cost_share.toFixed(1)}%`}
+                                             style={{ flex: svc.cost_share, background: colors[i % colors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'flex 0.5s ease' }}>
+                                            {svc.cost_share > 8 && <span style={{ fontSize: 9, color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>{svc.service}</span>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
+                                {sorted.map((svc, i) => {
+                                    const colors = [THEME.primary, THEME.warning, '#a78bfa', '#34d399', THEME.danger, '#f472b6'];
+                                    return (
+                                        <span key={svc.service} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}>
+                                            <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[i % colors.length], flexShrink: 0 }} />
+                                            {svc.service} <span style={{ color: colors[i % colors.length], fontWeight: 700 }}>{svc.cost_share.toFixed(1)}%</span>
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Per-service cards */}
+                        {sorted.map((svc, i) => {
+                            const colors = [THEME.primary, THEME.warning, '#a78bfa', '#34d399', THEME.danger, '#f472b6'];
+                            const c = colors[i % colors.length];
+                            const teamColor = teamColors[svc.team] || THEME.textDim;
+                            return (
+                                <div key={svc.service} className="opt-card" style={{ padding: '14px 16px', borderRadius: 10, borderLeft: `4px solid ${c}`, animation: `optFadeIn 0.3s ${i * 0.06}s both` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <div style={{ width: 34, height: 34, borderRadius: 8, background: `${c}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Building2 size={15} color={c} />
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    {svc.service}
+                                                    <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: `${teamColor}18`, color: teamColor, fontWeight: 700 }}>{svc.team}</span>
+                                                    <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: `${THEME.grid}60`, color: THEME.textDim }}>{svc.db}</span>
+                                                </div>
+                                                <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>Hot table: <code style={{ color: THEME.primary, fontFamily: 'monospace' }}>{svc.top_table}</code></div>
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: 22, fontWeight: 800, color: c }}>{svc.cost_share.toFixed(1)}%</div>
+                                            <div style={{ fontSize: 9, color: THEME.textDim }}>of DB load</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Cost share bar */}
+                                    <div style={{ height: 6, background: `${THEME.grid}30`, borderRadius: 3, overflow: 'hidden', marginBottom: 10 }}>
+                                        <div style={{ width: `${(svc.cost_share / maxCostShare) * 100}%`, height: '100%', background: `linear-gradient(90deg, ${c}, ${c}99)`, borderRadius: 3, transition: 'width 0.8s ease' }} />
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                                        {[
+                                            { label: 'Queries', value: svc.queries.toLocaleString(), color: THEME.textMain },
+                                            { label: 'Avg Time', value: formatDuration(svc.avg_time), color: svc.avg_time > 1000 ? THEME.danger : svc.avg_time > 200 ? THEME.warning : THEME.success },
+                                            { label: 'P99 Time', value: formatDuration(svc.p99), color: svc.p99 > 5000 ? THEME.danger : THEME.warning },
+                                            { label: 'Total DB', value: formatDuration(svc.total_time_ms), color: THEME.textMuted },
+                                        ].map((stat, j) => (
+                                            <div key={j} style={{ textAlign: 'center', padding: '6px 8px', borderRadius: 6, background: `${THEME.grid}20` }}>
+                                                <div style={{ fontSize: 8, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 3 }}>{stat.label}</div>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Warning for high avg time */}
+                                    {svc.avg_time > 1000 && (
+                                        <div style={{ marginTop: 10, padding: '6px 10px', borderRadius: 5, background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}25`, display: 'flex', gap: 6, alignItems: 'center' }}>
+                                            <AlertTriangle size={11} color={THEME.danger} />
+                                            <span style={{ fontSize: 10, color: THEME.textMuted }}>Average query time exceeds 1s — investigate slow query log for this service</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                        <thead>
+                        <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
+                            {['Service', 'Team', 'DB', 'Queries', 'Avg Time', 'P99 Time', 'Total DB Time', 'Cost Share', 'Hot Table'].map(h => (
+                                <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {sorted.map((svc, i) => (
+                            <tr key={i} className="opt-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}30` }}>
+                                <td style={{ padding: '9px 12px', color: THEME.textMain, fontWeight: 600 }}>{svc.service}</td>
+                                <td style={{ padding: '9px 12px', color: teamColors[svc.team] || THEME.textMuted }}>{svc.team}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textDim, fontSize: 10 }}>{svc.db}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{svc.queries.toLocaleString()}</td>
+                                <td style={{ padding: '9px 12px', color: svc.avg_time > 1000 ? THEME.danger : svc.avg_time > 200 ? THEME.warning : THEME.success, fontWeight: 600 }}>{formatDuration(svc.avg_time)}</td>
+                                <td style={{ padding: '9px 12px', color: svc.p99 > 5000 ? THEME.danger : THEME.warning }}>{formatDuration(svc.p99)}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{formatDuration(svc.total_time_ms)}</td>
+                                <td style={{ padding: '9px 12px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <div style={{ width: 50, height: 5, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
+                                            <div style={{ width: `${(svc.cost_share / maxCostShare) * 100}%`, height: '100%', background: THEME.primary }} />
+                                        </div>
+                                        <span style={{ fontSize: 10, fontWeight: 700, color: THEME.primary }}>{svc.cost_share.toFixed(1)}%</span>
+                                    </div>
+                                </td>
+                                <td style={{ padding: '9px 12px', color: THEME.primary, fontFamily: 'monospace', fontSize: 10 }}>{svc.top_table}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+
+            <div style={{ padding: '8px 16px', borderTop: `1px solid ${THEME.grid}`, fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>
+                Data from <code style={{ color: THEME.primary }}>pg_stat_statements</code> joined with <code style={{ color: THEME.primary }}>application_name</code> connection param. Services must set <code style={{ color: THEME.primary }}>SET application_name = 'service-name'</code>.
+            </div>
+        </div>
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// NEW: Parameterization Advisor Panel
+// ═══════════════════════════════════════════════════════════════════════
+const ParameterizationAdvisorPanel = () => {
+    const [selected, setSelected] = useState(null);
+    const [copiedIdx, setCopiedIdx] = useState(null);
+    const copy = (text, key) => { navigator.clipboard?.writeText(text).catch(() => {}); setCopiedIdx(key); setTimeout(() => setCopiedIdx(null), 1800); };
+
+    const riskColor = (r) => r === 'CRITICAL' ? THEME.danger : r === 'HIGH' ? '#f97316' : THEME.warning;
+    const riskIcon = (r) => r === 'CRITICAL' ? <AlertOctagon size={12} color={THEME.danger} /> : r === 'HIGH' ? <ShieldAlert size={12} color="#f97316" /> : <AlertTriangle size={12} color={THEME.warning} />;
+
+    const totalCalls = MOCK_PARAM_ISSUES.reduce((s, q) => s + q.calls, 0);
+    const criticalCount = MOCK_PARAM_ISSUES.filter(q => q.risk === 'CRITICAL').length;
+
+    return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* Summary */}
+            <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
+                {[
+                    { label: 'Unparameterized', value: MOCK_PARAM_ISSUES.length, color: THEME.warning, icon: AlertTriangle },
+                    { label: 'Critical (Security)', value: criticalCount, color: THEME.danger, icon: ShieldAlert },
+                    { label: 'Affected Calls', value: totalCalls.toLocaleString(), color: THEME.textMain, icon: Database },
+                    { label: 'Cache Waste Avg', value: '89%', color: THEME.danger, icon: Gauge },
+                ].map((k, i) => (
+                    <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <k.icon size={16} color={k.color} />
+                        <div>
+                            <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>{k.label}</div>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: k.color }}>{k.value}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Context banner */}
+            <div style={{ padding: '10px 16px', background: `${THEME.danger}06`, borderBottom: `1px solid ${THEME.danger}20`, flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <ShieldAlert size={14} color={THEME.danger} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.6 }}>
+                        <strong style={{ color: THEME.textMain }}>Why this matters:</strong> String literals embedded in queries bypass PostgreSQL's plan cache (every unique value = a new plan), waste memory in <code style={{ color: THEME.primary, fontFamily: 'monospace' }}>pg_stat_statements</code>, and expose data to SQL injection. Parameterized queries with <code style={{ color: THEME.primary, fontFamily: 'monospace' }}>$1, $2…</code> fix all of this.
+                    </div>
+                </div>
+            </div>
+
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                {/* Query list */}
+                <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
+                    {MOCK_PARAM_ISSUES.map((q, i) => (
+                        <div key={q.id}
+                             onClick={() => setSelected(selected === q.id ? null : q.id)}
+                             className="opt-row-hover"
+                             style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}25`, cursor: 'pointer', borderLeft: selected === q.id ? `3px solid ${THEME.primary}` : '3px solid transparent', background: selected === q.id ? `${THEME.primary}05` : q.risk === 'CRITICAL' ? `${THEME.danger}04` : 'transparent', animation: `optFadeIn 0.3s ${i * 0.05}s both` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 5, flexWrap: 'wrap' }}>
+                                        {riskIcon(q.risk)}
+                                        <span style={{ fontSize: 10, fontWeight: 700, color: riskColor(q.risk) }}>{q.risk}</span>
+                                        <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: `${riskColor(q.risk)}15`, color: riskColor(q.risk) }}>{q.issue}</span>
+                                        <span style={{ fontSize: 9, color: THEME.textDim }}>{q.calls.toLocaleString()} calls/day</span>
+                                    </div>
+                                    <div style={{ fontSize: 10, color: THEME.textMain, fontFamily: 'monospace', background: `${THEME.bg}80`, padding: '6px 8px', borderRadius: 5, border: `1px solid ${THEME.grid}40`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {q.query}
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: THEME.danger }}>{q.plan_cache_waste}</div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim }}>cache waste</div>
+                                </div>
+                            </div>
+                            <div style={{ height: 5, background: `${THEME.grid}30`, borderRadius: 2, overflow: 'hidden' }}>
+                                <div style={{ width: q.plan_cache_waste, height: '100%', background: `linear-gradient(90deg, ${THEME.danger}, ${THEME.warning})`, borderRadius: 2 }} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Detail panel */}
+                {selected ? (() => {
+                    const q = MOCK_PARAM_ISSUES.find(p => p.id === selected);
+                    if (!q) return null;
+                    return (
+                        <div className="opt-scroll" style={{ width: 380, borderLeft: `1px solid ${THEME.grid}`, overflowY: 'auto', padding: 16, flexShrink: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                                {riskIcon(q.risk)}
+                                <span style={{ fontSize: 12, fontWeight: 700, color: riskColor(q.risk) }}>{q.issue}</span>
+                                <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 9, background: `${riskColor(q.risk)}20`, color: riskColor(q.risk), fontWeight: 700 }}>{q.risk}</span>
+                            </div>
+
+                            <div style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.6, marginBottom: 14, padding: '8px 10px', borderRadius: 6, background: `${riskColor(q.risk)}08`, border: `1px solid ${riskColor(q.risk)}20` }}>
+                                {q.description}
+                            </div>
+
+                            {/* Detected literals */}
+                            <div style={{ marginBottom: 14 }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>Detected Literals</div>
+                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                    {q.literals.map((lit, i) => (
+                                        <span key={i} style={{ padding: '2px 8px', borderRadius: 4, background: `${THEME.danger}18`, border: `1px solid ${THEME.danger}30`, fontSize: 10, fontFamily: 'monospace', color: THEME.danger, fontWeight: 600 }}>{lit}</span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Before / After */}
+                            <div style={{ marginBottom: 14 }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>Before → After</div>
+                                {[
+                                    { label: 'Unparameterized', code: q.query, color: THEME.danger, badge: '❌' },
+                                    { label: 'Parameterized', code: q.parameterized, color: THEME.success, badge: '✓' },
+                                ].map((side, idx) => (
+                                    <div key={idx} style={{ marginBottom: 8, borderRadius: 6, overflow: 'hidden', border: `1px solid ${side.color}25` }}>
+                                        <div style={{ padding: '4px 10px', background: `${side.color}12`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: 9, fontWeight: 700, color: side.color }}>{side.badge} {side.label}</span>
+                                        </div>
+                                        <pre style={{ margin: 0, padding: '8px 10px', fontSize: 10, fontFamily: 'monospace', color: THEME.textMain, background: `${THEME.bg}90`, whiteSpace: 'pre-wrap' }}>{side.code}</pre>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Fix */}
+                            <div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>Recommended Fix</div>
+                                <div style={{ position: 'relative' }}>
+                                    <pre style={{ margin: 0, padding: '10px 32px 10px 10px', fontSize: 10, fontFamily: 'monospace', color: THEME.success, background: `${THEME.bg}95`, borderRadius: 6, border: `1px solid ${THEME.success}30`, whiteSpace: 'pre-wrap' }}>{q.fix}</pre>
+                                    <button onClick={() => copy(q.fix, `param-fix-${q.id}`)} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2 }}>
+                                        {copiedIdx === `param-fix-${q.id}` ? <Check size={10} color={THEME.success} /> : <Copy size={10} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Stats */}
+                            <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                {[
+                                    { label: 'Daily Calls', value: q.calls.toLocaleString(), color: THEME.textMain },
+                                    { label: 'Plan Cache Waste', value: q.plan_cache_waste, color: THEME.danger },
+                                ].map((s, i) => (
+                                    <div key={i} style={{ padding: '8px 10px', borderRadius: 6, background: `${THEME.grid}25`, textAlign: 'center' }}>
+                                        <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
+                                        <div style={{ fontSize: 15, fontWeight: 700, color: s.color }}>{s.value}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })() : (
+                    <div style={{ width: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8, color: THEME.textDim }}>
+                        <Microscope size={28} opacity={0.3} />
+                        <div style={{ fontSize: 11 }}>Select a query to see details</div>
+                    </div>
+                )}
+            </div>
+
+            <div style={{ padding: '8px 16px', borderTop: `1px solid ${THEME.grid}`, fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>
+                Queries detected via <code style={{ color: THEME.primary }}>pg_stat_statements</code> pattern analysis. Literals are highlighted in <span style={{ color: THEME.danger }}>red</span>. Use prepared statements or ORMs with parameterized queries.
+            </div>
+        </div>
+    );
+};
+
 // Slow Query Log Panel
 const SlowQueryPanel = ({ onLoadQuery }) => {
     const [sortBy, setSortBy] = useState('mean_time');
@@ -675,9 +1352,7 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
 
     return (
         <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
-            {/* Left: Query list */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
-                {/* Toolbar */}
                 <div style={{ padding: '8px 12px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0, flexWrap: 'wrap' }}>
                     <div style={{ position: 'relative', flex: 1, minWidth: 120 }}>
                         <Search size={11} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
@@ -691,7 +1366,6 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                         <option value="calls">Sort: Calls</option>
                     </select>
                 </div>
-                {/* Tag filters */}
                 <div style={{ padding: '6px 12px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 5, flexWrap: 'wrap', flexShrink: 0 }}>
                     <button onClick={() => setTagFilter(null)} className="tag-pill" style={{ background: !tagFilter ? `${THEME.primary}25` : `${THEME.grid}40`, color: !tagFilter ? THEME.primary : THEME.textDim, border: `1px solid ${!tagFilter ? THEME.primary : 'transparent'}` }}>All</button>
                     {allTags.map(tag => (
@@ -722,7 +1396,6 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                                     <div style={{ fontSize: 9, color: THEME.textDim }}>{q.calls.toLocaleString()} calls</div>
                                 </div>
                             </div>
-                            {/* Sparkline of p50/p95/p99 */}
                             <div style={{ display: 'flex', gap: 3, marginTop: 6, alignItems: 'flex-end', height: 16 }}>
                                 {[q.mean_time, q.p95_time, q.p99_time].map((val, j) => {
                                     const maxVal = q.p99_time;
@@ -736,7 +1409,6 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                 </div>
             </div>
 
-            {/* Right: Detail panel */}
             {selected ? (
                 <div className="opt-scroll" style={{ width: 340, overflowY: 'auto', padding: 16, flexShrink: 0 }}>
                     <div style={{ marginBottom: 12 }}>
@@ -763,7 +1435,6 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                         ))}
                     </div>
 
-                    {/* Time distribution bar */}
                     <div style={{ marginBottom: 12 }}>
                         <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8 }}>Time Distribution</div>
                         <div style={{ position: 'relative', height: 24, borderRadius: 4, overflow: 'hidden', background: `${THEME.grid}30` }}>
@@ -777,8 +1448,6 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                             <span style={{ color: THEME.danger }}>p99: {formatDuration(selected.p99_time)}</span>
                         </div>
                     </div>
-
-                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>StdDev: <span style={{ color: THEME.textMuted }}>{formatDuration(selected.stddev)}</span></div>
                 </div>
             ) : (
                 <div style={{ width: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8, color: THEME.textDim }}>
@@ -795,12 +1464,10 @@ const LockMonitorPanel = () => {
     const [selected, setSelected] = useState(null);
     const blockedCount = MOCK_LOCKS.filter(l => l.blocked_by).length;
     const blockingCount = MOCK_LOCKS.filter(l => l.blocking?.length > 0).length;
-
     const stateColor = (s) => s === 'active' ? THEME.success : s === 'idle in transaction' ? THEME.danger : THEME.warning;
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {/* Summary KPIs */}
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
                     { label: 'Total Locks', value: MOCK_LOCKS.length, color: THEME.textMain, icon: Lock },
@@ -818,7 +1485,6 @@ const LockMonitorPanel = () => {
                 ))}
             </div>
 
-            {/* Lock chain visualization */}
             {blockedCount > 0 && (
                 <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}`, background: `${THEME.danger}05`, flexShrink: 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.danger, textTransform: 'uppercase', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -848,7 +1514,6 @@ const LockMonitorPanel = () => {
                 </div>
             )}
 
-            {/* Lock table */}
             <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                     <thead>
@@ -884,7 +1549,7 @@ const LockMonitorPanel = () => {
     );
 };
 
-// Maintenance / Autovacuum Panel
+// Maintenance Panel
 const MaintenancePanel = () => {
     const [running, setRunning] = useState({});
     const triggerVacuum = (table) => {
@@ -901,7 +1566,6 @@ const MaintenancePanel = () => {
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {/* Summary */}
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
                     { label: 'Tables Monitored', value: MOCK_MAINTENANCE.length, color: THEME.textMain },
@@ -959,12 +1623,6 @@ const MaintenancePanel = () => {
                                                 style={{ fontSize: 9, padding: '2px 8px', borderRadius: 3, background: isRunning ? `${THEME.primary}10` : `${THEME.primary}15`, color: isRunning ? THEME.textDim : THEME.primary, border: `1px solid ${THEME.primary}30`, cursor: isRunning ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
                                             {isRunning ? <><RefreshCw size={8} style={{ animation: 'optSpin 1s linear infinite' }} /> Running…</> : 'VACUUM'}
                                         </button>
-                                        {u === 'critical' && !isRunning && (
-                                            <button onClick={() => triggerVacuum(`${t.table}_analyze`)}
-                                                    style={{ fontSize: 9, padding: '2px 8px', borderRadius: 3, background: `${THEME.warning}15`, color: THEME.warning, border: `1px solid ${THEME.warning}30`, cursor: 'pointer' }}>
-                                                ANALYZE
-                                            </button>
-                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -974,20 +1632,19 @@ const MaintenancePanel = () => {
                 </table>
             </div>
             <div style={{ padding: '8px 16px', borderTop: `1px solid ${THEME.grid}`, fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>
-                Tip: Run <code style={{ color: THEME.primary }}>VACUUM ANALYZE</code> on tables with &gt;10% bloat. Schedule autovacuum more aggressively for high-write tables.
+                Tip: Run <code style={{ color: THEME.primary }}>VACUUM ANALYZE</code> on tables with &gt;10% bloat.
             </div>
         </div>
     );
 };
 
-// PostgreSQL Configuration Advisor
+// Config Advisor Panel
 const ConfigAdvisorPanel = () => {
     const [category, setCategory] = useState('All');
     const categories = ['All', ...new Set(MOCK_PG_CONFIG.map(c => c.category))];
     const filtered = category === 'All' ? MOCK_PG_CONFIG : MOCK_PG_CONFIG.filter(c => c.category === category);
     const [copiedKey, setCopiedKey] = useState(null);
     const copy = (text, key) => { navigator.clipboard?.writeText(text).catch(() => {}); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1800); };
-
     const impactColor = (i) => i === 'HIGH' ? THEME.danger : i === 'MEDIUM' ? THEME.warning : THEME.success;
 
     return (
@@ -1009,11 +1666,7 @@ const ConfigAdvisorPanel = () => {
                         const needsChange = cfg.current !== cfg.recommended;
                         const setCmd = `ALTER SYSTEM SET ${cfg.name} = '${cfg.recommended}';`;
                         return (
-                            <div key={i} className="opt-card" style={{
-                                padding: '14px 16px', borderRadius: 9,
-                                borderLeft: `4px solid ${needsChange ? impactColor(cfg.impact) : THEME.success}`,
-                                animation: `optFadeIn 0.3s ${i * 0.04}s both`
-                            }}>
+                            <div key={i} className="opt-card" style={{ padding: '14px 16px', borderRadius: 9, borderLeft: `4px solid ${needsChange ? impactColor(cfg.impact) : THEME.success}`, animation: `optFadeIn 0.3s ${i * 0.04}s both` }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -1055,9 +1708,8 @@ const ConfigAdvisorPanel = () => {
                     })}
                 </div>
             </div>
-
             <div style={{ padding: '8px 16px', borderTop: `1px solid ${THEME.grid}`, fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>
-                After applying changes, run: <code style={{ color: THEME.primary }}>SELECT pg_reload_conf();</code> — or restart PostgreSQL for settings that require it.
+                After changes: <code style={{ color: THEME.primary }}>SELECT pg_reload_conf();</code>
             </div>
         </div>
     );
@@ -1072,7 +1724,6 @@ const IndexAdvisorPanel = () => {
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginRight: 4, textTransform: 'uppercase' }}>Filter:</span>
                 {['all', 'healthy', 'bloated', 'unused'].map(f => (
                     <button key={f} onClick={() => setFilter(f)} style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${filter === f ? THEME.primary : THEME.grid}`, background: filter === f ? `${THEME.primary}20` : 'transparent', color: filter === f ? THEME.primary : THEME.textMuted, fontSize: 10, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{f}</button>
                 ))}
@@ -1105,16 +1756,11 @@ const IndexAdvisorPanel = () => {
                     </tbody>
                 </table>
             </div>
-            <div style={{ padding: '8px 16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', gap: 16, fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>
-                {[{ label: 'Total', value: MOCK_INDEXES.length, color: THEME.textMuted }, { label: 'Healthy', value: MOCK_INDEXES.filter(i => i.status === 'healthy').length, color: THEME.success }, { label: 'Bloated', value: MOCK_INDEXES.filter(i => i.status === 'bloated').length, color: THEME.warning }, { label: 'Unused', value: MOCK_INDEXES.filter(i => i.status === 'unused').length, color: THEME.danger }].map(s => (
-                    <span key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ color: s.color, fontWeight: 700 }}>{s.value}</span>{s.label}</span>
-                ))}
-            </div>
         </div>
     );
 };
 
-// Table Statistics
+// Table Stats
 const TableStatsPanel = () => {
     const maxRows = Math.max(...MOCK_TABLE_STATS.map(t => t.rows));
     return (
@@ -1163,14 +1809,11 @@ const TableStatsPanel = () => {
                     </tbody>
                 </table>
             </div>
-            <div style={{ padding: '8px 16px', borderTop: `1px solid ${THEME.grid}`, fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>
-                Tip: Tables with &gt;10% dead tuples need <strong style={{ color: THEME.textMain }}>VACUUM</strong>. High seq_scans suggest missing indexes.
-            </div>
         </div>
     );
 };
 
-// Side-by-side compare
+// Compare Panel
 const ComparePanel = () => {
     const [queryA, setQueryA] = useState(SAMPLE_QUERIES[0].sql);
     const [queryB, setQueryB] = useState(SAMPLE_QUERIES[2].sql);
@@ -1227,11 +1870,6 @@ const ComparePanel = () => {
                     <DiffBadge a={resultA.Plan["Total Cost"]} b={resultB.Plan["Total Cost"]} label="Cost" />
                     <DiffBadge a={resultA.Plan["Actual Total Time"]} b={resultB.Plan["Actual Total Time"]} label="Exec Time" />
                     <DiffBadge a={resultA.Plan["Shared Read Blocks"] || 1} b={resultB.Plan["Shared Read Blocks"] || 1} label="Disk Reads" />
-                    <div style={{ flex: 1 }} />
-                    <div style={{ fontSize: 10, color: THEME.textDim, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ color: THEME.primary, fontWeight: 700 }}>A:</span>{formatDuration(resultA.Plan["Actual Total Time"])} ·
-                        <span style={{ color: THEME.warning, fontWeight: 700 }}>B:</span>{formatDuration(resultB.Plan["Actual Total Time"])}
-                    </div>
                 </div>
             )}
 
@@ -1257,12 +1895,13 @@ const ComparePanel = () => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const QueryOptimizerTab = () => {
-    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
+    useAdaptiveTheme();
     const [query, setQuery] = useState(SAMPLE_QUERIES[0].sql);
     const [history, setHistory] = useState([]);
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState(null);
     const [viewMode, setViewMode] = useState('visual');
+    const [showHeatmap, setShowHeatmap] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
     const [showSamples, setShowSamples] = useState(false);
     const [activeTab, setActiveTab] = useState('plan');
@@ -1313,8 +1952,11 @@ const QueryOptimizerTab = () => {
         return analyzePlan(result);
     }, [result]);
 
+    const heatmapData = useMemo(() => result ? getHeatmapData(result.Plan) : null, [result]);
+
     const mainTabs = [
         { id: 'plan', label: 'Execution Plan', icon: Share2 },
+        { id: 'ai-rewrite', label: 'AI Rewrite', icon: Wand2, isNew: true },
         { id: 'breakdown', label: 'Cost Breakdown', icon: BarChart3 },
         { id: 'flamegraph', label: 'Flamegraph', icon: Flame },
         { id: 'slow', label: 'Slow Queries', icon: TrendingDown },
@@ -1323,6 +1965,8 @@ const QueryOptimizerTab = () => {
         { id: 'tables', label: 'Table Stats', icon: Table },
         { id: 'maintenance', label: 'Maintenance', icon: Wrench },
         { id: 'config', label: 'PG Config', icon: SlidersHorizontal },
+        { id: 'parameterization', label: 'Param Advisor', icon: ShieldAlert, isNew: true },
+        { id: 'attribution', label: 'Cost Attribution', icon: Building2, isNew: true },
         { id: 'compare', label: 'Compare', icon: GitCompare },
     ];
 
@@ -1338,30 +1982,26 @@ const QueryOptimizerTab = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>Query Optimizer</div>
-                        <div style={{ fontSize: 10, color: THEME.textDim }}>EXPLAIN ANALYZE · Index Advisor · Plan Diff · Table Stats</div>
+                        <div style={{ fontSize: 10, color: THEME.textDim }}>EXPLAIN ANALYZE · AI Rewrite · Param Advisor · Cost Attribution</div>
                     </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <ActiveUsersBadge />
-
                     {result && (
                         <button onClick={exportPlan} className="opt-btn" style={{ background: 'transparent', color: THEME.textMuted, border: `1px solid ${THEME.grid}`, padding: '5px 10px', borderRadius: 5, cursor: 'pointer', display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
                             <Download size={12} /> Export Plan
                         </button>
                     )}
-
                     <button onClick={() => setShowSamples(!showSamples)} className="opt-btn" style={{ background: showSamples ? `${THEME.primary}20` : 'transparent', color: showSamples ? THEME.primary : THEME.textMuted, border: `1px solid ${showSamples ? THEME.primary : THEME.grid}`, padding: '5px 10px', borderRadius: 5, cursor: 'pointer', display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
                         <BookOpen size={12} /> Samples
                     </button>
-
                     <button onClick={() => setShowHistory(!showHistory)} className="opt-btn" style={{ background: showHistory ? `${THEME.primary}20` : 'transparent', color: showHistory ? THEME.primary : THEME.textMuted, border: `1px solid ${showHistory ? THEME.primary : THEME.grid}`, padding: '5px 10px', borderRadius: 5, cursor: 'pointer', display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
                         <History size={12} /> History {history.length > 0 && `(${history.length})`}
                     </button>
                 </div>
             </div>
 
-            {/* Sample queries strip */}
             {showSamples && (
                 <div style={{ padding: '8px 20px', borderBottom: `1px solid ${THEME.grid}`, background: `${THEME.surface}90`, display: 'flex', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
                     {SAMPLE_QUERIES.map((s, i) => (
@@ -1387,7 +2027,6 @@ const QueryOptimizerTab = () => {
                         </div>
                     </div>
 
-                    {/* Editor with line numbers */}
                     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 36, background: `${THEME.surface}80`, borderRight: `1px solid ${THEME.grid}30`, display: 'flex', flexDirection: 'column', paddingTop: 14, userSelect: 'none', pointerEvents: 'none', zIndex: 1 }}>
                             {query.split('\n').map((_, i) => (
@@ -1411,7 +2050,6 @@ const QueryOptimizerTab = () => {
                         </button>
                     </div>
 
-                    {/* History */}
                     {showHistory && history.length > 0 && (
                         <div style={{ height: 220, borderTop: `1px solid ${THEME.grid}`, background: THEME.surface, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                             <div style={{ padding: '6px 14px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>RECENT RUNS</div>
@@ -1436,18 +2074,33 @@ const QueryOptimizerTab = () => {
                 {/* RIGHT: Results */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-                    {/* Main tab bar - scrollable */}
+                    {/* Main tab bar */}
                     <div style={{ flexShrink: 0, borderBottom: `1px solid ${THEME.grid}`, background: THEME.surface, display: 'flex', alignItems: 'center', paddingLeft: 12, overflowX: 'auto' }} className="opt-scroll">
                         {mainTabs.map(t => (
                             <button key={t.id} onClick={() => setActiveTab(t.id)} className="opt-tab-btn" style={{ padding: '11px 14px', border: 'none', borderBottom: activeTab === t.id ? `2px solid ${THEME.primary}` : '2px solid transparent', background: 'transparent', color: activeTab === t.id ? THEME.primary : THEME.textMuted, fontSize: 11, fontWeight: activeTab === t.id ? 700 : 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1, whiteSpace: 'nowrap', flexShrink: 0 }}>
                                 <t.icon size={12} />
                                 {t.label}
+                                {t.isNew && <span style={{ fontSize: 7, padding: '1px 4px', borderRadius: 3, background: `${THEME.primary}25`, color: THEME.primary, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NEW</span>}
                                 {t.id === 'plan' && insights.length > 0 && (
                                     <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.danger, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{insights.length}</span>
+                                )}
+                                {t.id === 'parameterization' && (
+                                    <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.danger, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{MOCK_PARAM_ISSUES.length}</span>
                                 )}
                             </button>
                         ))}
                     </div>
+
+                    {/* AI REWRITE TAB */}
+                    {activeTab === 'ai-rewrite' && (
+                        <AIRewritePanel query={query} insights={insights} onApplyRewrite={(rewritten) => { setQuery(rewritten); setActiveTab('plan'); }} />
+                    )}
+
+                    {/* SERVICE ATTRIBUTION TAB */}
+                    {activeTab === 'attribution' && <ServiceAttributionPanel />}
+
+                    {/* PARAMETERIZATION TAB */}
+                    {activeTab === 'parameterization' && <ParameterizationAdvisorPanel />}
 
                     {/* PLAN TAB */}
                     {activeTab === 'plan' && (
@@ -1459,7 +2112,7 @@ const QueryOptimizerTab = () => {
                                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Ready to Optimize</div>
                                 <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 22 }}>Paste a query and click Explain Analyze</div>
                                 <div style={{ display: 'flex', gap: 16, fontSize: 10, color: THEME.textDim, flexWrap: 'wrap', justifyContent: 'center' }}>
-                                    {['Execution Plan Tree', 'Cost & Time Breakdown', 'Index Recommendations', 'Query Rewrite Suggestions'].map(f => (
+                                    {['Execution Plan Tree', 'Cost & Time Breakdown', 'AI Query Rewrite', 'Heatmap Overlay', 'Index Recommendations'].map(f => (
                                         <span key={f} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><CheckCircle size={10} color={THEME.success} /> {f}</span>
                                     ))}
                                 </div>
@@ -1493,7 +2146,11 @@ const QueryOptimizerTab = () => {
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                                         <div style={{ padding: '8px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                                             <div style={{ fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}><Share2 size={12} /> Execution Plan Tree</div>
-                                            <div style={{ display: 'flex', gap: 4 }}>
+                                            <div style={{ display: 'flex', gap: 6 }}>
+                                                {/* Heatmap toggle */}
+                                                <button onClick={() => setShowHeatmap(!showHeatmap)} className="opt-btn" style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${showHeatmap ? THEME.danger : THEME.grid}`, background: showHeatmap ? `${THEME.danger}18` : 'transparent', color: showHeatmap ? THEME.danger : THEME.textMuted, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                    <Flame size={10} /> {showHeatmap ? 'Heatmap ON' : 'Heatmap'}
+                                                </button>
                                                 {['visual', 'json'].map(mode => (
                                                     <button key={mode} onClick={() => setViewMode(mode)} style={{ padding: '3px 9px', borderRadius: 4, border: `1px solid ${viewMode === mode ? THEME.primary : THEME.grid}`, background: viewMode === mode ? `${THEME.primary}20` : 'transparent', color: viewMode === mode ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', textTransform: 'capitalize' }}>{mode}</button>
                                                 ))}
@@ -1501,10 +2158,25 @@ const QueryOptimizerTab = () => {
                                         </div>
                                         <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
                                             {viewMode === 'visual'
-                                                ? <PlanNode node={result.Plan} maxCost={maxCost} totalTime={totalTime} />
+                                                ? <PlanNode node={result.Plan} maxCost={maxCost} totalTime={totalTime} heatmapData={heatmapData?.heatmap} showHeatmap={showHeatmap} />
                                                 : <pre style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMuted, margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
                                             }
                                         </div>
+                                        {showHeatmap && (
+                                            <div style={{ padding: '6px 16px', borderTop: `1px solid ${THEME.grid}`, flexShrink: 0, display: 'flex', gap: 16, alignItems: 'center', background: `${THEME.danger}05` }}>
+                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <div style={{ display: 'flex', height: 6, width: 80, borderRadius: 3, overflow: 'hidden' }}>
+                                                        {Array.from({length:20}, (_, i) => (
+                                                            <div key={i} style={{ flex:1, background:`rgba(${Math.round(220*i/19)},${Math.round(60*(1-i/19))},0,0.8)` }} />
+                                                        ))}
+                                                    </div>
+                                                    <span style={{ fontSize: 9, color: THEME.textDim }}>Cool → Hot (execution time share)</span>
+                                                </div>
+                                                <span style={{ fontSize: 9, color: THEME.danger, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                    <Flame size={9} /> Nodes above 70% time share are HOTSPOTS
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Insights sidebar */}
@@ -1515,6 +2187,14 @@ const QueryOptimizerTab = () => {
                                             {insights.length > 0 && <span style={{ marginLeft: 'auto', fontSize: 9, padding: '2px 7px', borderRadius: 9, background: `${THEME.danger}20`, color: THEME.danger, fontWeight: 700 }}>{insights.length} issue{insights.length > 1 ? 's' : ''}</span>}
                                         </div>
                                         <InsightsPanel insights={insights} rewrites={rewrites} indexRecs={indexRecommendations} />
+                                        {/* Quick AI rewrite link */}
+                                        {insights.length > 0 && (
+                                            <div style={{ padding: '8px 12px', borderTop: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
+                                                <button onClick={() => setActiveTab('ai-rewrite')} className="opt-btn" style={{ width: '100%', padding: '7px', borderRadius: 6, border: `1px solid ${THEME.primary}30`, background: `linear-gradient(135deg, ${THEME.primary}12, ${THEME.primary}06)`, color: THEME.primary, fontSize: 10, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                                    <Wand2 size={11} /> Fix with AI Rewriter →
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1532,7 +2212,6 @@ const QueryOptimizerTab = () => {
                                             <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 16px', letterSpacing: '0.06em' }}>Node-by-Node Cost & Time</h3>
                                             <CostBreakdownChart plan={result} />
                                         </div>
-
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                                             <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
                                                 <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>Buffer Usage</h3>
@@ -1553,40 +2232,21 @@ const QueryOptimizerTab = () => {
                                                     </div>
                                                 ))}
                                             </div>
-
                                             <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
-                                                <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>JIT Compilation</h3>
-                                                {result.JIT ? (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                                                            <span style={{ color: THEME.textMuted }}>Functions compiled</span>
-                                                            <span style={{ color: THEME.textMain, fontWeight: 700 }}>{result.JIT.Functions}</span>
+                                                <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>Timing Summary</h3>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                                    {[
+                                                        { label: 'Planning', val: formatDuration(result["Planning Time"] || 1.2), color: THEME.textDim },
+                                                        { label: 'Execution', val: formatDuration(result["Execution Time"] || totalTime), color: THEME.primary },
+                                                        { label: 'Buffer Hit Rate', val: `${hitRate}%`, color: parseFloat(hitRate) > 90 ? THEME.success : THEME.warning },
+                                                        { label: 'Workers', val: `${result.Plan["Workers Launched"] || 0}`, color: THEME.textMuted },
+                                                    ].map((s, i) => (
+                                                        <div key={i} style={{ textAlign: 'center', padding: 12, borderRadius: 8, background: `${THEME.grid}30` }}>
+                                                            <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase' }}>{s.label}</div>
+                                                            <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.val}</div>
                                                         </div>
-                                                        {Object.entries(result.JIT.Options || {}).map(([k, v]) => (
-                                                            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                                                                <span style={{ color: THEME.textMuted }}>{k}</span>
-                                                                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 3, background: v ? `${THEME.success}15` : `${THEME.danger}15`, color: v ? THEME.success : THEME.danger, fontWeight: 700 }}>{v ? 'ON' : 'OFF'}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : <div style={{ fontSize: 11, color: THEME.textDim }}>JIT not used</div>}
-                                            </div>
-                                        </div>
-
-                                        <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
-                                            <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>Timing Summary</h3>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-                                                {[
-                                                    { label: 'Planning', val: formatDuration(result["Planning Time"] || 1.2), color: THEME.textDim },
-                                                    { label: 'Execution', val: formatDuration(result["Execution Time"] || totalTime), color: THEME.primary },
-                                                    { label: 'Buffer Hit Rate', val: `${hitRate}%`, color: parseFloat(hitRate) > 90 ? THEME.success : THEME.warning },
-                                                    { label: 'Workers', val: `${result.Plan["Workers Launched"] || 0}`, color: THEME.textMuted },
-                                                ].map((s, i) => (
-                                                    <div key={i} style={{ textAlign: 'center', padding: 12, borderRadius: 8, background: `${THEME.grid}30` }}>
-                                                        <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase' }}>{s.label}</div>
-                                                        <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.val}</div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1610,14 +2270,10 @@ const QueryOptimizerTab = () => {
                                 ? <div style={{ textAlign: 'center', color: THEME.textDim, paddingTop: 60, fontSize: 13 }}>Run a query first to see the flamegraph</div>
                                 : (
                                     <div>
-                                        <div style={{ marginBottom: 16 }}>
-                                            <h3 style={{ fontSize: 12, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 4px', letterSpacing: '0.06em' }}>Plan Flamegraph</h3>
-                                            <div style={{ fontSize: 10, color: THEME.textDim }}>Each bar's width represents its share of total execution time. Hover for details.</div>
-                                        </div>
-                                        <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
+                                        <div className="opt-card" style={{ padding: 20, borderRadius: 10, marginBottom: 20 }}>
                                             <FlameGraph plan={result} />
                                         </div>
-                                        <div className="opt-card" style={{ marginTop: 20, padding: 20, borderRadius: 10 }}>
+                                        <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
                                             <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>Node-by-Node Cost & Time</h3>
                                             <CostBreakdownChart plan={result} />
                                         </div>
