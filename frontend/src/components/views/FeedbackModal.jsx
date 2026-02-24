@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 // Custom hooks for handling dropdown listeners
 import useDropdownListener from '../hooks/useDropdownListener';
+import { API_BASE } from '../../utils/api';
 
 const AUTH_TOKEN_KEY = 'authToken'; // Adjust based on your auth key
 
@@ -14,19 +15,14 @@ const FeedbackModal = ({ isOpen, onClose, apiUrl }) => {
 
   // Effect to handle API URL configuration based on the environment
   useEffect(() => {
-    const url = process.env.NODE_ENV === 'production' ? apiUrl : 'http://localhost:5000';
-    console.log(`API URL set to: ${url}`);
-
     return () => {
-      console.log('Cleaning up FeedbackModal.');
-    }; 
+      // cleanup on unmount
+    };
   }, [apiUrl]);
 
   // Function to submit feedback via POST request
   const submitFeedback = async (feedback) => {
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? (apiUrl || 'https://postgrestoolbackend.vercel.app')
-      : 'http://localhost:5000';
+    const baseUrl = API_BASE;
     
     try {
       const token = localStorage.getItem(AUTH_TOKEN_KEY);

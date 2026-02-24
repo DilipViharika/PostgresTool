@@ -262,9 +262,9 @@ function validateExplainQuery(sql) {
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .trim();
     if (!stripped) return 'Query is empty';
-    if (DANGEROUS_SQL.test(stripped)) return 'Query contains disallowed SQL operations (only SELECT is allowed here)';
-    // Block multiple statements via semicolons
+    // Block multiple statements first (catches injections even without dangerous keywords)
     if (/;/.test(stripped.replace(/;$/, ''))) return 'Multiple SQL statements are not allowed';
+    if (DANGEROUS_SQL.test(stripped)) return 'Query contains disallowed SQL operations (only SELECT is allowed here)';
     return null;
 }
 

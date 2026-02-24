@@ -132,7 +132,7 @@ const HealthRadar = ({metrics,size=150})=>{
         {[25,50,75,100].map(lv=><polygon key={lv} points={metrics.map((_,i)=>{const p=pt(i,lv);return`${p.x},${p.y}`;}).join(' ')} fill="none" stroke={`${THEME.grid}28`} strokeWidth=".5" strokeDasharray={lv<100?'2,3':'none'}/>)}
         {metrics.map((_,i)=>{const p=pt(i,100);return<line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke={`${THEME.grid}18`} strokeWidth=".5"/>;})}
         <polygon points={poly} fill={`${THEME.primary}12`} stroke={THEME.primary} strokeWidth="1.5" strokeLinejoin="round"/>
-        {metrics.map((m,i)=>{const p=pt(i,m.value),lp=pt(i,124);return<g key={i}><circle cx={p.x} cy={p.y} r="3" fill={m.color} stroke="#0d1117" strokeWidth="1.5"/><text x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="central" style={{fontSize:7,fontWeight:700,fill:THEME.textDim,fontFamily:'inherit'}}>{m.label}</text></g>;})}
+        {metrics.map((m,i)=>{const p=pt(i,m.value),lp=pt(i,124);return<g key={i}><circle cx={p.x} cy={p.y} r="3" fill={m.color} stroke={THEME.surface} strokeWidth="1.5"/><text x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="central" style={{fontSize:7,fontWeight:700,fill:THEME.textDim,fontFamily:'inherit'}}>{m.label}</text></g>;})}
     </svg>);
 };
 
