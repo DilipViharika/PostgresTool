@@ -1773,10 +1773,10 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                             <User size={14} color={DS.cyan} />
                         </div>
                         <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: '#f0f4ff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {currentUser?.name}
+                            <div style={{ fontSize: 12, fontWeight: 600, color: DS.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {currentUser?.name || currentUser?.username || 'User'}
                             </div>
-                            <div style={{ fontSize: 10, color: '#38bdf8', fontFamily: DS.fontMono, letterSpacing: '0.06em' }}>
+                            <div style={{ fontSize: 10, color: DS.cyan, fontFamily: DS.fontMono, letterSpacing: '0.06em' }}>
                                 ● Online
                             </div>
                         </div>
