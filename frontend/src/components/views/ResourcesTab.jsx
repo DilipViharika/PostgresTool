@@ -11,17 +11,14 @@ import {
     Cpu, Server, Trash2, RefreshCw, CheckCircle, Filter,
     AlertTriangle, ArrowUpRight, ArrowDownRight, Clock, Layers, BarChart3,
     Activity, Zap, TrendingUp, TrendingDown, Eye, GitBranch,
-    Table2, ArrowUp, ArrowDown, Gauge, Network, ChevronLeft,
+    Table2, ArrowUp, ArrowDown, Gauge, Network,
     Timer, Radio, ShieldAlert, Settings, PieChart as PieIcon,
-    MemoryStick, X, Wifi, WifiOff, Snowflake, Archive,
-    Package, Plus, Save, Trash,
-    Calendar, Ban, Archive, Shield, Eye, AlertCircle,
+    MemoryStick, X, Wifi, WifiOff,
 } from 'lucide-react';
 import {
     ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line,
     XAxis, YAxis, Tooltip, CartesianGrid, Cell,
-    PieChart as RePieChart, Pie, Legend,
-    RadarChart, Radar, PolarGrid, PolarAngleAxis,
+    PieChart as RePieChart, Pie,
 } from 'recharts';
 import AdvancedAnalysisPanel from './AdvancedAnalysisPanel';
 
@@ -730,7 +727,7 @@ const PartitionTreePanel = ({ partitions, refreshing }) => {
 const FreezeUrgencyPanel = ({ data, refreshing }) => {
     const top8 = data.slice(0, 8);
     return (
-        <Panel title="XID Freeze Urgency" icon={Snowflake} refreshing={refreshing}
+        <Panel title="XID Freeze Urgency" icon={Zap} refreshing={refreshing}
                rightNode={
                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                        {data.filter(d => d.oldest_xid_age > 1_500_000_000).length > 0 && (
@@ -746,7 +743,7 @@ const FreezeUrgencyPanel = ({ data, refreshing }) => {
                     const isCritical = d.oldest_xid_age > 1_500_000_000;
                     return (
                         <div key={i} className={isCritical ? 'res-freeze-urgent' : ''} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <Snowflake size={11} color={color} style={{ flexShrink: 0, opacity: isCritical ? 1 : 0.6 }} />
+                            <Zap size={11} color={color} style={{ flexShrink: 0, opacity: isCritical ? 1 : 0.6 }} />
                             <span style={{ fontSize: 11.5, color: THEME.textMuted, width: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{d.table_name}</span>
                             <div style={{ flex: 1, height: 5, borderRadius: 3, background: `${THEME.grid}40`, overflow: 'hidden' }}>
                                 <div className="res-bar-animate" style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 3, background: `linear-gradient(90deg, ${color}80, ${color})`, animationDelay: `${i * 0.05}s` }} />
@@ -757,7 +754,7 @@ const FreezeUrgencyPanel = ({ data, refreshing }) => {
                     );
                 })}
                 <div style={{ paddingTop: 8, borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim, display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <AlertCircle size={9} />
+                    <AlertTriangle size={9} />
                     Freeze threshold: 2B transactions. VACUUM FREEZE recommended when &gt;75%.
                 </div>
             </div>
@@ -836,7 +833,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                         </div>
                     ))}
                     <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: THEME.textDim }}>
-                        <AlertCircle size={11} color={THEME.warning} />
+                        <AlertTriangle size={11} color={THEME.warning} />
                         Zero-read columns may indicate deprecated features. Verify before dropping.
                     </div>
                 </div>
@@ -855,7 +852,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
     const [newPolicy, setNewPolicy] = useState({ table: '', action: 'archive', age_days: 365, partition_col: '' });
 
     const actionColor = (a) => a === 'delete' ? THEME.danger : THEME.warning;
-    const actionIcon = (a) => a === 'delete' ? Trash : Archive;
+    const actionIcon = (a) => a === 'delete' ? Trash2 : HardDrive;
 
     const toggleEnabled = (id) => {
         setPolicies(prev => prev.map(p => p.id === id ? { ...p, enabled: !p.enabled } : p));
@@ -881,7 +878,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
     return (
         <Panel
             title="Data Retention Policies"
-            icon={Calendar}
+            icon={Clock}
             refreshing={refreshing}
             rightNode={
                 <button onClick={() => setShowNew(v => !v)} style={{
@@ -891,7 +888,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                     background: `${THEME.primary}18`, color: THEME.primary,
                     transition: 'all 0.15s',
                 }}>
-                    <Plus size={11} /> New Policy
+                    <CheckCircle size={11} /> New Policy
                 </button>
             }
         >
@@ -923,7 +920,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                     <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => setShowNew(false)} style={{ padding: '7px 14px', borderRadius: 7, border: `1px solid ${THEME.grid}50`, background: 'transparent', color: THEME.textDim, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
                         <button onClick={addPolicy} style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Save size={11} /> Save Policy
+                            <CheckCircle size={11} /> Save Policy
                         </button>
                     </div>
                 </div>
@@ -954,7 +951,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                                     <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
                                 </div>
                                 <div style={{ fontSize: 10.5, color: THEME.textDim, display: 'flex', gap: 14 }}>
-                                    <span><Calendar size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
+                                    <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
                                     {p.partition_col && <span style={{ fontFamily: 'monospace' }}>on {p.partition_col}</span>}
                                     <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />Last: {p.last_run}</span>
                                     <span>Runs: {p.runs}</span>
@@ -964,7 +961,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                             {/* Actions (revealed on hover via CSS) */}
                             <div className="res-policy-actions" style={{ display: 'flex', gap: 6, opacity: 0, transition: 'opacity 0.15s' }}>
                                 <button onClick={() => deletePolicy(p.id)} title="Delete policy" style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${THEME.danger}20`, background: `${THEME.danger}0a`, color: THEME.danger, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Trash size={11} />
+                                    <Trash2 size={11} />
                                 </button>
                             </div>
                         </div>
@@ -977,7 +974,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                 <span><strong style={{ color: THEME.success }}>{policies.filter(p => p.enabled).length}</strong> active</span>
                 <span><strong style={{ color: THEME.textMuted }}>{policies.filter(p => !p.enabled).length}</strong> disabled</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <AlertCircle size={9} color={THEME.warning} />
+                    <AlertTriangle size={9} color={THEME.warning} />
                     Delete policies are irreversible — enable only after archival is confirmed.
                 </span>
             </div>
@@ -1275,7 +1272,7 @@ const ResourcesTab = () => {
                     <TabBtn id="analytics" label="Analytics"       icon={BarChart3} />
                     <TabBtn id="storage"   label="Storage & I/O"   icon={HardDrive} />
                     <TabBtn id="deadcode"  label="Dead Code"        icon={Eye}       badge={deadCount > 0 ? deadCount : undefined} />
-                    <TabBtn id="retention" label="Retention"        icon={Calendar} count={DEFAULT_POLICIES.filter(p => p.enabled).length} />
+                    <TabBtn id="retention" label="Retention"        icon={Clock} count={DEFAULT_POLICIES.filter(p => p.enabled).length} />
                     <TabBtn id="logs"      label="Maintenance"      icon={History}      count={logs.length} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
@@ -1797,7 +1794,7 @@ const ResourcesTab = () => {
                     <RetentionPolicyManager refreshing={refreshingPanels.has('logs')} />
 
                     {/* Partition detach candidates */}
-                    <Panel title="Partition Detach Candidates" icon={Package} refreshing={refreshingPanels.has('inventory')}
+                    <Panel title="Partition Detach Candidates" icon={Database} refreshing={refreshingPanels.has('inventory')}
                            rightNode={<StatusBadge label={`${partitions.flatMap(p => p.children).filter(c => c.status === 'detach_ready').length} ready to archive`} color={THEME.warning} />}
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1808,7 +1805,7 @@ const ResourcesTab = () => {
                             ).map((c, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}18` }}>
                                     <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                        <Archive size={14} color={THEME.warning} />
+                                        <HardDrive size={14} color={THEME.warning} />
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace', marginBottom: 3 }}>{c.name}</div>
@@ -1817,7 +1814,7 @@ const ResourcesTab = () => {
                                     <StatusBadge label="Archive Ready" color={THEME.warning} />
                                     <div style={{ display: 'flex', gap: 8 }}>
                                         <button style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: `${THEME.warning}15`, color: THEME.warning, transition: 'all 0.15s' }}>
-                                            <Archive size={11} /> Detach &amp; Archive
+                                            <HardDrive size={11} /> Detach &amp; Archive
                                         </button>
                                     </div>
                                 </div>
