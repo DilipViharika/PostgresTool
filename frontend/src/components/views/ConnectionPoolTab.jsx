@@ -284,7 +284,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                         onChange={e => setFormData(p => ({ ...p, [f]: e.target.checked }))}
                         style={{ cursor: 'pointer', accentColor: '#818cf8', width: 16, height: 16 }}
                     />
-                    <label htmlFor={`chk-${f}`} style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: '#9ca3af' }}>
+                    <label htmlFor={`chk-${f}`} style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
                         {meta.label}
                     </label>
                 </div>
@@ -374,7 +374,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
         rows.push(
             <div key={f}>
-                <label style={S.label}>{meta.label} {!meta.optional ? '*' : <span style={{ color: '#4b5563', textTransform: 'none', fontSize: 10 }}>(optional)</span>}</label>
+                <label style={S.label}>{meta.label} {!meta.optional ? '*' : <span style={{ color: THEME.textMuted, textTransform: 'none', fontSize: 10 }}>(optional)</span>}</label>
                 <input
                     type={meta.type || 'text'}
                     value={formData[f] || ''}
@@ -578,18 +578,18 @@ const ConnectionsTab = () => {
             {/* ── Header ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
                 <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f0f0f0', margin: 0, letterSpacing: '-0.02em' }}>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
                         Database Connections
                     </h2>
-                    <p style={{ fontSize: 13, color: '#4b5563', marginTop: 4, fontWeight: 500 }}>
+                    <p style={{ fontSize: 13, color: THEME.textMuted, marginTop: 4, fontWeight: 500 }}>
                         {connections.length} connection{connections.length !== 1 ? 's' : ''} · PostgreSQL, MySQL, MongoDB, Redis & more
                     </p>
                 </div>
                 <button
                     onClick={openNew}
-                    style={S.btn('rgba(99,102,241,0.18)', 'rgba(99,102,241,0.4)', '#a5b4fc')}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.28)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.18)'}
+                    style={S.btn(THEME.primary + '2E', THEME.primary + '66', THEME.primary)}
+                    onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '4D'}
+                    onMouseLeave={e => e.currentTarget.style.background = THEME.primary + '2E'}
                 >
                     <Plus size={16} />
                     New Connection
@@ -612,10 +612,10 @@ const ConnectionsTab = () => {
                                     <span style={{ fontSize: 24 }}>{dbMeta.icon}</span>
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <span style={{ fontSize: 15, fontWeight: 700, color: '#f0f0f0' }}>{conn.name}</span>
+                                            <span style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain }}>{conn.name}</span>
                                             {conn.isDefault && <span style={S.badge('#4ade80')}>DEFAULT</span>}
                                         </div>
-                                        <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2 }}>
+                                        <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 2 }}>
                                             <span style={{ color: dbMeta.accent }}>{dbMeta.label}</span>
                                             {conn.host && ` · ${conn.host}${conn.port ? `:${conn.port}` : ''}`}
                                             {conn.filePath && ` · ${conn.filePath}`}
@@ -626,39 +626,39 @@ const ConnectionsTab = () => {
                                 </div>
                             </div>
 
-                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 6, padding: '8px 12px', marginBottom: 14, fontSize: 12 }}>
+                            <div style={{ background: THEME.surfaceHover, borderRadius: 6, padding: '8px 12px', marginBottom: 14, fontSize: 12 }}>
                                 {conn.database && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: '#4b5563' }}>database</span>
-                                        <span style={{ color: '#9ca3af' }}>{conn.database}</span>
+                                        <span style={{ color: THEME.textMuted }}>database</span>
+                                        <span style={{ color: THEME.textDim }}>{conn.database}</span>
                                     </div>
                                 )}
                                 {conn.username && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: '#4b5563' }}>user</span>
-                                        <span style={{ color: '#9ca3af' }}>{conn.username}</span>
+                                        <span style={{ color: THEME.textMuted }}>user</span>
+                                        <span style={{ color: THEME.textDim }}>{conn.username}</span>
                                     </div>
                                 )}
                                 {conn.keyspace && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: '#4b5563' }}>keyspace</span>
-                                        <span style={{ color: '#9ca3af' }}>{conn.keyspace}</span>
+                                        <span style={{ color: THEME.textMuted }}>keyspace</span>
+                                        <span style={{ color: THEME.textDim }}>{conn.keyspace}</span>
                                     </div>
                                 )}
                                 {conn.warehouse && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: '#4b5563' }}>warehouse</span>
-                                        <span style={{ color: '#9ca3af' }}>{conn.warehouse}</span>
+                                        <span style={{ color: THEME.textMuted }}>warehouse</span>
+                                        <span style={{ color: THEME.textDim }}>{conn.warehouse}</span>
                                     </div>
                                 )}
                                 {conn.dataset && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: '#4b5563' }}>dataset</span>
-                                        <span style={{ color: '#9ca3af' }}>{conn.dataset}</span>
+                                        <span style={{ color: THEME.textMuted }}>dataset</span>
+                                        <span style={{ color: THEME.textDim }}>{conn.dataset}</span>
                                     </div>
                                 )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: '#4b5563' }}>ssl</span>
+                                    <span style={{ color: THEME.textMuted }}>ssl</span>
                                     <span style={{ color: conn.ssl ? '#4ade80' : '#374151' }}>{conn.ssl ? 'on' : 'off'}</span>
                                 </div>
                             </div>
@@ -748,14 +748,14 @@ const ConnectionsTab = () => {
                     }}>
                         <div style={{ fontSize: 48, marginBottom: 16 }}>🔌</div>
                         <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>No connections yet</h3>
-                        <p style={{ fontSize: 13, color: '#4b5563', marginBottom: 20 }}>
+                        <p style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 20 }}>
                             Connect to PostgreSQL, MySQL, MongoDB, Redis, Snowflake and more
                         </p>
                         <button
                             onClick={openNew}
-                            style={S.btn('rgba(99,102,241,0.18)', 'rgba(99,102,241,0.4)', '#a5b4fc')}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.28)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.18)'}
+                            style={S.btn(THEME.primary + '2E', THEME.primary + '66', THEME.primary)}
+                            onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '4D'}
+                            onMouseLeave={e => e.currentTarget.style.background = THEME.primary + '2E'}
                         >
                             <Plus size={16} /> Add First Connection
                         </button>
@@ -783,7 +783,7 @@ const ConnectionsTab = () => {
                     }}>
                         {/* Modal header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f0f0f0', margin: 0 }}>
+                            <h2 style={{ fontSize: 18, fontWeight: 800, color: THEME.textMain, margin: 0 }}>
                                 {editingConnection ? '✏️ Edit Connection' : '🔌 New Connection'}
                             </h2>
                             <button
@@ -831,7 +831,7 @@ const ConnectionsTab = () => {
                                         onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
                                         style={{ cursor: 'pointer', accentColor: '#818cf8', width: 16, height: 16 }}
                                     />
-                                    <label htmlFor="isDefault" style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: '#9ca3af' }}>
+                                    <label htmlFor="isDefault" style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
                                         Set as default connection
                                     </label>
                                 </div>
@@ -868,9 +868,9 @@ const ConnectionsTab = () => {
                             </button>
                             <button
                                 onClick={saveConnection}
-                                style={S.btn('rgba(99,102,241,0.2)', 'rgba(99,102,241,0.45)', '#a5b4fc')}
-                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.32)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.2)'}
+                                style={S.btn(THEME.primary + '33', THEME.primary + '73', THEME.primary)}
+                                onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '52'}
+                                onMouseLeave={e => e.currentTarget.style.background = THEME.primary + '33'}
                             >
                                 <Check size={16} />
                                 {editingConnection ? 'Update' : 'Add Connection'}

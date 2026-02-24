@@ -75,48 +75,52 @@ const useWebSocket = (_url, onMessage) => {
    Progress bars: slide animation, glowing tip
    Dots: pulsing critical / static high / ok
    ═══════════════════════════════════════════════════════════════════════════ */
-const SchemaStyles = () => (
-    <style>{`
-        @keyframes svSpin     { to { transform: rotate(360deg) } }
-        @keyframes svFadeUp   { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes svPulse    { 0%,100% { opacity:1 } 50% { opacity:.4 } }
-        @keyframes svGlow     { 0%,100% { box-shadow:0 0 8px #ef444440 } 50% { box-shadow:0 0 20px #ef444470 } }
-        @keyframes svSlide    { from { width:0 } }
-        @keyframes svCounter  { from { opacity:0; transform:scale(.8) } to { opacity:1; transform:scale(1) } }
-        @keyframes svShimmer  { 0% { background-position:-1000px 0 } 100% { background-position:1000px 0 } }
-        @keyframes svSlideIn  { from { transform:translateX(-10px); opacity:0 } to { transform:translateX(0); opacity:1 } }
-        @keyframes svSlideUp  { from { transform:translateY(20px); opacity:0 } to { transform:translateY(0); opacity:1 } }
-        @keyframes svFadeIn   { from { opacity:0 } to { opacity:1 } }
+const SV_STYLE_ID = 'sv-adaptive-styles';
+function ensureSvStyles() {
+    if (typeof document === 'undefined') return;
+    let el = document.getElementById(SV_STYLE_ID);
+    if (!el) { el = document.createElement('style'); el.id = SV_STYLE_ID; document.head.appendChild(el); }
+    el.textContent = [
+        '@keyframes svSpin     { to { transform: rotate(360deg) } }',
+        '@keyframes svFadeUp   { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }',
+        '@keyframes svPulse    { 0%,100% { opacity:1 } 50% { opacity:.4 } }',
+        '@keyframes svGlow     { 0%,100% { box-shadow:0 0 8px #ef444440 } 50% { box-shadow:0 0 20px #ef444470 } }',
+        '@keyframes svSlide    { from { width:0 } }',
+        '@keyframes svCounter  { from { opacity:0; transform:scale(.8) } to { opacity:1; transform:scale(1) } }',
+        '@keyframes svShimmer  { 0% { background-position:-1000px 0 } 100% { background-position:1000px 0 } }',
+        '@keyframes svSlideIn  { from { transform:translateX(-10px); opacity:0 } to { transform:translateX(0); opacity:1 } }',
+        '@keyframes svSlideUp  { from { transform:translateY(20px); opacity:0 } to { transform:translateY(0); opacity:1 } }',
+        '@keyframes svFadeIn   { from { opacity:0 } to { opacity:1 } }',
 
-        /* ── Base ── */
-        .sv-wrap { font-family: ${THEME.fontBody}; }
-        .sv-mono { font-family: ${THEME.fontMono} !important; }
+        '/* ── Base ── */',
+        `.sv-wrap { font-family: ${THEME.fontBody}; }`,
+        `.sv-mono { font-family: ${THEME.fontMono} !important; }`,
 
-        /* ── Card ── */
-        .sv-card {
-            background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
-            border: 1px solid rgba(255,255,255,.08);
+        '/* ── Card ── */',
+        `.sv-card {
+            background: linear-gradient(135deg, ${THEME.surface} 0%, ${THEME.surface} 100%);
+            border: 1px solid ${THEME.grid};
             border-radius: 14px;
             padding: 20px;
             animation: svFadeUp .4s ease both;
             backdrop-filter: blur(4px);
             position: relative;
             overflow: hidden;
-        }
-        .sv-card::before {
+        }`,
+        `.sv-card::before {
             content: '';
             position: absolute;
             inset: 0;
             border-radius: 14px;
-            background: linear-gradient(135deg, rgba(255,255,255,.015) 0%, transparent 60%);
+            background: linear-gradient(135deg, ${THEME.surface} 0%, transparent 60%);
             pointer-events: none;
-        }
-        .sv-card:hover { border-color: rgba(255,255,255,.13); }
+        }`,
+        `.sv-card:hover { border-color: ${THEME.glassBorder}; }`,
 
-        /* ── Metric card ── */
-        .sv-metric-card {
-            background: linear-gradient(145deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%);
-            border: 1px solid rgba(255,255,255,.1);
+        '/* ── Metric card ── */',
+        `.sv-metric-card {
+            background: linear-gradient(145deg, ${THEME.surfaceHover} 0%, ${THEME.surface} 100%);
+            border: 1px solid ${THEME.grid};
             border-radius: 16px;
             padding: 20px 24px;
             display: flex; flex-direction: column; gap: 10px;
@@ -124,221 +128,222 @@ const SchemaStyles = () => (
             transition: transform .2s, border-color .2s;
             cursor: default;
             animation: svFadeUp .4s ease both;
-        }
-        .sv-metric-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
-        .sv-metric-card::after {
+        }`,
+        `.sv-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorder}; }`,
+        `.sv-metric-card::after {
             content: '';
             position: absolute;
             top: -30px; right: -30px;
             width: 100px; height: 100px;
             border-radius: 50%;
             opacity: .06;
-        }
-        .sv-metric-card.warn { border-color: rgba(245,158,11,.3); }
-        .sv-metric-card.crit { border-color: rgba(239,68,68,.35); animation: svGlow 2s ease-in-out infinite; }
+        }`,
+        '.sv-metric-card.warn { border-color: rgba(245,158,11,.3); }',
+        '.sv-metric-card.crit { border-color: rgba(239,68,68,.35); animation: svGlow 2s ease-in-out infinite; }',
 
-        /* ── Migration card ── */
-        .sv-mig-card {
+        '/* ── Migration card ── */',
+        `.sv-mig-card {
             position: relative; display: flex; gap: 14px; padding: 16px;
             border-radius: 10px;
-            background: linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-            border: 1px solid rgba(255,255,255,.08);
+            background: linear-gradient(135deg, ${THEME.surface}, ${THEME.surface});
+            border: 1px solid ${THEME.grid};
             transition: all .25s;
             cursor: pointer;
             animation: svSlideIn .3s ease both;
-        }
-        .sv-mig-card:hover {
-            background: rgba(255,255,255,.05);
+        }`,
+        `.sv-mig-card:hover {
+            background: ${THEME.surfaceHover};
             border-color: rgba(99,102,241,.35);
             transform: translateY(-1px);
             box-shadow: 0 4px 16px rgba(99,102,241,.12);
-        }
-        .sv-mig-card.is-hovered { border-color: rgba(99,102,241,.5); }
+        }`,
+        '.sv-mig-card.is-hovered { border-color: rgba(99,102,241,.5); }',
 
-        /* ── Timeline ── */
-        .sv-timeline-node { position: relative; padding-left: 32px; margin-bottom: 16px; }
-        .sv-timeline-node::before {
+        '/* ── Timeline ── */',
+        '.sv-timeline-node { position: relative; padding-left: 32px; margin-bottom: 16px; }',
+        `.sv-timeline-node::before {
             content: ''; position: absolute; left: 7px; top: 28px; bottom: -16px;
-            width: 2px; background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
-        }
-        .sv-timeline-node:last-child::before { display: none; }
-        .sv-timeline-dot {
+            width: 2px; background: linear-gradient(180deg, ${THEME.grid}, ${THEME.surface});
+        }`,
+        '.sv-timeline-node:last-child::before { display: none; }',
+        '.sv-timeline-dot {
             width: 16px; height: 16px; border-radius: 50%;
             position: absolute; left: 0; top: 20px; z-index: 2;
             transition: transform .2s, box-shadow .2s;
             cursor: pointer;
-        }
-        .sv-timeline-dot:hover { transform: scale(1.3); }
+        }',
+        '.sv-timeline-dot:hover { transform: scale(1.3); }',
 
-        /* ── Tab button ── */
-        .sv-tab {
+        '/* ── Tab button ── */',
+        `.sv-tab {
             display: flex; align-items: center; gap: 8px;
             padding: 9px 16px; cursor: pointer; font-size: 13px; font-weight: 700;
-            border: 1px solid rgba(255,255,255,.1);
+            border: 1px solid ${THEME.grid};
             border-radius: 9px;
             background: transparent;
-            color: rgba(255,255,255,.45);
+            color: ${THEME.textDim};
             font-family: ${THEME.fontBody};
             transition: all .2s;
             letter-spacing: .3px;
-        }
-        .sv-tab.active {
+        }`,
+        '.sv-tab.active {
             background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(139,92,246,.15));
             border-color: rgba(99,102,241,.5);
             color: #a5b4fc;
             box-shadow: 0 0 16px rgba(99,102,241,.2);
-        }
-        .sv-tab:hover:not(.active) { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+        }',
+        `.sv-tab:hover:not(.active) { border-color: ${THEME.glassBorder}; color: ${THEME.textMain}; }`,
 
-        /* ── Badge ── */
-        .sv-badge {
+        '/* ── Badge ── */',
+        '.sv-badge {
             display: inline-flex; align-items: center; gap: 4px;
             padding: 3px 9px; border-radius: 6px;
             font-size: 11px; font-weight: 700;
             animation: svCounter .3s ease;
-        }
+        }',
 
-        /* ── Severity dots ── */
-        .sv-dot {
+        '/* ── Severity dots ── */',
+        '.sv-dot {
             width: 6px; height: 6px; border-radius: 50%;
             display: inline-block; flex-shrink: 0;
-        }
-        .sv-dot.critical { background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: svPulse 1.5s ease infinite; }
-        .sv-dot.high     { background: #f59e0b; }
-        .sv-dot.ok       { background: #10b981; }
-        .sv-dot.live     { background: #10b981; box-shadow: 0 0 6px #10b981; animation: svPulse 2s ease infinite; }
+        }',
+        '.sv-dot.critical { background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: svPulse 1.5s ease infinite; }',
+        '.sv-dot.high     { background: #f59e0b; }',
+        '.sv-dot.ok       { background: #10b981; }',
+        '.sv-dot.live     { background: #10b981; box-shadow: 0 0 6px #10b981; animation: svPulse 2s ease infinite; }',
 
-        /* ── Input ── */
-        .sv-input {
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.1);
-            color: rgba(255,255,255,.9);
+        '/* ── Input ── */',
+        `.sv-input {
+            background: ${THEME.surfaceHover};
+            border: 1px solid ${THEME.grid};
+            color: ${THEME.textMain};
             border-radius: 10px;
             padding: 9px 12px;
             font-size: 13px;
             outline: none;
             transition: border-color .2s, background .2s;
             font-family: ${THEME.fontBody};
-        }
-        .sv-input:focus { border-color: rgba(99,102,241,.6); background: rgba(255,255,255,.07); }
-        .sv-input::placeholder { color: rgba(255,255,255,.3); }
+        }`,
+        '.sv-input:focus { border-color: rgba(99,102,241,.6); background: rgba(99,102,241,.08); }',
+        `.sv-input::placeholder { color: ${THEME.textDim}; }`,
 
-        /* ── Filter chip ── */
-        .sv-chip {
+        '/* ── Filter chip ── */',
+        `.sv-chip {
             display: inline-flex; align-items: center; gap: 5px;
             padding: 5px 11px; border-radius: 20px;
             font-size: 11px; font-weight: 700; cursor: pointer;
             transition: all .2s;
-            border: 1px solid rgba(255,255,255,.1);
+            border: 1px solid ${THEME.grid};
             background: transparent;
-            color: rgba(255,255,255,.45);
+            color: ${THEME.textDim};
             font-family: ${THEME.fontBody};
-        }
-        .sv-chip:hover { border-color: rgba(99,102,241,.4); color: #a5b4fc; background: rgba(99,102,241,.08); }
-        .sv-chip.active { background: rgba(99,102,241,.2); color: #a5b4fc; border-color: rgba(99,102,241,.5); }
+        }`,
+        '.sv-chip:hover { border-color: rgba(99,102,241,.4); color: #a5b4fc; background: rgba(99,102,241,.08); }',
+        '.sv-chip.active { background: rgba(99,102,241,.2); color: #a5b4fc; border-color: rgba(99,102,241,.5); }',
 
-        /* ── Progress bar ── */
-        .sv-progress-track {
-            width: 100%; height: 6px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: visible; position: relative;
-        }
-        .sv-progress-fill {
+        '/* ── Progress bar ── */',
+        `.sv-progress-track {
+            width: 100%; height: 6px; background: ${THEME.grid}; border-radius: 3px; overflow: visible; position: relative;
+        }`,
+        '.sv-progress-fill {
             height: 100%; border-radius: 3px; animation: svSlide .6s ease both; position: relative;
-        }
-        .sv-progress-fill::after {
-            content: '';
+        }',
+        '.sv-progress-fill::after {
+            content: \\'\\';
             position: absolute; right: -1px; top: -2px;
             width: 10px; height: 10px; border-radius: 50%;
             background: inherit; box-shadow: 0 0 8px currentColor;
-        }
+        }',
 
-        /* ── Code block ── */
-        .sv-code {
-            background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.08); border-radius: 10px;
+        '/* ── Code block ── */',
+        `.sv-code {
+            background: ${THEME.surfaceHover}; border: 1px solid ${THEME.grid}; border-radius: 10px;
             padding: 14px 16px; font-family: ${THEME.fontMono};
-            font-size: 12px; line-height: 1.7; color: rgba(255,255,255,.8);
+            font-size: 12px; line-height: 1.7; color: ${THEME.textMain};
             overflow-x: auto; position: relative;
-        }
-        .sv-code::before {
+        }`,
+        `.sv-code::before {
             content: 'SQL'; position: absolute; top: 8px; right: 10px;
-            font-size: 9px; color: rgba(255,255,255,.25);
-            background: rgba(255,255,255,.05); padding: 2px 7px;
-            border-radius: 4px; border: 1px solid rgba(255,255,255,.08);
+            font-size: 9px; color: ${THEME.textDim};
+            background: ${THEME.surface}; padding: 2px 7px;
+            border-radius: 4px; border: 1px solid ${THEME.grid};
             font-family: ${THEME.fontBody}; font-weight: 700; letter-spacing: 1px;
-        }
-        .syntax-keyword { color: #C678DD; font-weight: 700; }
-        .syntax-type    { color: #E5C07B; }
-        .syntax-string  { color: #98C379; }
-        .syntax-table   { color: #61AFEF; }
-        .syntax-comment { color: rgba(255,255,255,.3); font-style: italic; }
+        }`,
+        '.syntax-keyword { color: #C678DD; font-weight: 700; }',
+        '.syntax-type    { color: #E5C07B; }',
+        '.syntax-string  { color: #98C379; }',
+        '.syntax-table   { color: #61AFEF; }',
+        `.syntax-comment { color: ${THEME.textDim}; font-style: italic; }`,
 
-        /* ── Diff labels ── */
-        .diff-added   { background: rgba(16,185,129,.15); color: #34d399; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
-        .diff-removed { background: rgba(239,68,68,.12); color: #f87171; text-decoration: line-through; padding: 2px 7px; border-radius: 4px; opacity: .8; }
-        .diff-changed { background: rgba(245,158,11,.12); color: #fbbf24; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+        '/* ── Diff labels ── */',
+        '.diff-added   { background: rgba(16,185,129,.15); color: #34d399; padding: 2px 7px; border-radius: 4px; font-weight: 700; }',
+        '.diff-removed { background: rgba(239,68,68,.12); color: #f87171; text-decoration: line-through; padding: 2px 7px; border-radius: 4px; opacity: .8; }',
+        '.diff-changed { background: rgba(245,158,11,.12); color: #fbbf24; padding: 2px 7px; border-radius: 4px; font-weight: 700; }',
 
-        /* ── Action buttons ── */
-        .sv-btn-primary {
+        '/* ── Action buttons ── */',
+        '.sv-btn-primary {
             background: rgba(99,102,241,.85); color: white; border: none;
             padding: 9px 18px; border-radius: 9px; font-weight: 700; font-size: 13px;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 7px;
             font-family: ${THEME.fontBody};
-        }
-        .sv-btn-primary:hover { background: rgba(99,102,241,1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,.35); }
+        }',
+        '.sv-btn-primary:hover { background: rgba(99,102,241,1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,.35); }',
 
-        .sv-btn-secondary {
-            background: transparent; color: rgba(255,255,255,.5);
-            border: 1px solid rgba(255,255,255,.12);
+        '.sv-btn-secondary {
+            background: transparent; color: ${THEME.textMuted};
+            border: 1px solid ${THEME.glassBorder};
             padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 12px;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 6px;
             font-family: ${THEME.fontBody};
-        }
-        .sv-btn-secondary:hover { border-color: rgba(99,102,241,.45); color: #a5b4fc; background: rgba(99,102,241,.08); }
+        }',
+        '.sv-btn-secondary:hover { border-color: rgba(99,102,241,.45); color: #a5b4fc; background: rgba(99,102,241,.08); }',
 
-        /* ── Modal ── */
-        .sv-modal-overlay {
+        '/* ── Modal ── */',
+        '.sv-modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
             z-index: 999; display: flex; align-items: center; justify-content: center;
             animation: svFadeIn .2s ease;
-        }
-        .sv-modal-content {
+        }',
+        `.sv-modal-content {
             background: linear-gradient(135deg, rgba(20,20,35,.98), rgba(12,12,25,.98));
-            border: 1px solid rgba(255,255,255,.1);
+            border: 1px solid ${THEME.grid};
             border-radius: 16px; max-width: 820px; width: 90%;
             max-height: 85vh; overflow-y: auto;
             box-shadow: 0 24px 80px rgba(0,0,0,.6);
             animation: svSlideUp .3s cubic-bezier(.4,0,.2,1);
-        }
+        }`,
 
-        /* ── Skeleton ── */
-        .sv-skeleton {
-            background: linear-gradient(90deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 100%);
+        '/* ── Skeleton ── */',
+        `.sv-skeleton {
+            background: linear-gradient(90deg, ${THEME.surfaceHover} 0%, ${THEME.grid} 50%, ${THEME.surfaceHover} 100%);
             background-size: 1000px 100%; animation: svShimmer 2s infinite; border-radius: 4px;
-        }
+        }`,
 
-        /* ── Dep node ── */
-        .sv-dep-node { cursor: pointer; }
+        '/* ── Dep node ── */',
+        '.sv-dep-node { cursor: pointer; }',
 
-        /* ── Expandable ── */
-        .sv-expandable { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1); }
-        .sv-expandable.expanded { max-height: 2000px; }
+        '/* ── Expandable ── */',
+        '.sv-expandable { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1); }',
+        '.sv-expandable.expanded { max-height: 2000px; }',
 
-        /* ── Fav button ── */
-        .sv-fav-btn {
+        '/* ── Fav button ── */',
+        '.sv-fav-btn {
             background: transparent; border: none; cursor: pointer;
             padding: 4px; border-radius: 6px; transition: all .2s;
             display: inline-flex; align-items: center;
-        }
-        .sv-fav-btn:hover { transform: scale(1.2); }
+        }',
+        '.sv-fav-btn:hover { transform: scale(1.2); }',
 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
-    `}</style>
-);
+        '::-webkit-scrollbar { width: 4px; height: 4px; }',
+        '::-webkit-scrollbar-track { background: transparent; }',
+        `.sv-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }`,
+        `::-webkit-scrollbar-thumb:hover { background: ${THEME.glassBorder}; }`
+    ].join('\n');
+}
+const Styles = () => { useAdaptiveTheme(); ensureSvStyles(); return null; };
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MOCK DATA (unchanged)
@@ -565,7 +570,7 @@ const getNodeColor = (type) => {
     if (type === 'table')    return '#6366f1';
     if (type === 'view')     return '#10b981';
     if (type === 'function') return '#f59e0b';
-    return 'rgba(255,255,255,.4)';
+    return THEME.textDim;
 };
 
 const highlightSQL = (sql) => {
@@ -583,7 +588,7 @@ const highlightSQL = (sql) => {
 
 /* ── Metric card ── */
 const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, critical, delay = 0 }) => {
-    const borderColor = critical ? 'rgba(239,68,68,.35)' : warn ? 'rgba(245,158,11,.3)' : 'rgba(255,255,255,.1)';
+    const borderColor = critical ? 'rgba(239,68,68,.35)' : warn ? 'rgba(245,158,11,.3)' : THEME.grid;
     return (
         <div
             className={`sv-metric-card${critical ? ' crit' : warn ? ' warn' : ''}`}
@@ -603,9 +608,9 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, c
                 )}
             </div>
             <div>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
-                {sub && <div style={{ fontSize: 11, color: critical ? '#ef4444' : warn ? '#f59e0b' : 'rgba(255,255,255,.3)', marginTop: 3 }}>{sub}</div>}
+                <div style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
+                <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                {sub && <div style={{ fontSize: 11, color: critical ? '#ef4444' : warn ? '#f59e0b' : THEME.textDim, marginTop: 3 }}>{sub}</div>}
             </div>
         </div>
     );
@@ -648,11 +653,11 @@ const StatusBadge = ({ status }) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: 'rgba(10,10,20,.96)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '10px 14px', fontSize: 12, backdropFilter: 'blur(8px)' }}>
-            <div style={{ color: 'rgba(255,255,255,.45)', marginBottom: 6, fontSize: 11 }}>{label}</div>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 12, backdropFilter: 'blur(8px)' }}>
+            <div style={{ color: THEME.textDim, marginBottom: 6, fontSize: 11 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color: p.stroke || p.fill || '#a5b4fc', fontWeight: 700, display: 'flex', gap: 8 }}>
-                    <span style={{ color: 'rgba(255,255,255,.4)', fontWeight: 400 }}>{p.name}</span>
+                    <span style={{ color: THEME.textDim, fontWeight: 400 }}>{p.name}</span>
                     <span>{p.value}</span>
                 </div>
             ))}
@@ -685,11 +690,11 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                                <span className="sv-mono" style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc' }}>{mig.version}</span>
-                                <span style={{ color: 'rgba(255,255,255,.2)' }}>·</span>
-                                <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{mig.name}</span>
+                                <span className="sv-mono" style={{ fontSize: 13, fontWeight: 700, color: THEME.primary }}>{mig.version}</span>
+                                <span style={{ color: THEME.textMuted }}>·</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{mig.name}</span>
                             </div>
-                            <div className="sv-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,.25)' }}>{mig.id}</div>
+                            <div className="sv-mono" style={{ fontSize: 10, color: THEME.textDim }}>{mig.id}</div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <button
@@ -699,18 +704,18 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                             >
                                 {isFavorite
                                     ? <Star size={14} color="#f59e0b" fill="#f59e0b" />
-                                    : <StarOff size={14} color="rgba(255,255,255,.3)" />
+                                    : <StarOff size={14} color={THEME.textDim} />
                                 }
                             </button>
                             {pending ? <RiskBadge risk={mig.risk} /> : <StatusBadge status={mig.status} />}
                             {expanded
-                                ? <ChevronDown size={15} color="rgba(255,255,255,.35)" />
-                                : <ChevronRight size={15} color="rgba(255,255,255,.35)" />}
+                                ? <ChevronDown size={15} color={THEME.textDim} />
+                                : <ChevronRight size={15} color={THEME.textDim} />}
                         </div>
                     </div>
 
                     {/* Meta */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, fontSize: 11, color: 'rgba(255,255,255,.4)', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, fontSize: 11, color: THEME.textDim, marginBottom: 8 }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><User size={11} />{mig.author}</span>
                         {mig.applied_at && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={11} />{mig.applied_at}</span>}
                         {mig.duration && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Zap size={11} color="#f59e0b" />{mig.duration}</span>}
@@ -722,7 +727,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                     {mig.tags?.length > 0 && (
                         <div style={{ display: 'flex', gap: 5, marginBottom: 10, flexWrap: 'wrap' }}>
                             {mig.tags.map(tag => (
-                                <span key={tag} className="sv-mono" style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: 'rgba(255,255,255,.04)', color: 'rgba(255,255,255,.3)', border: '1px solid rgba(255,255,255,.07)', textTransform: 'uppercase', letterSpacing: '.8px' }}>{tag}</span>
+                                <span key={tag} className="sv-mono" style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: THEME.surface, color: THEME.textDim, border: `1px solid ${THEME.grid}`, textTransform: 'uppercase', letterSpacing: '.8px' }}>{tag}</span>
                             ))}
                         </div>
                     )}
@@ -731,11 +736,11 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                     <div className={`sv-expandable ${expanded ? 'expanded' : ''}`}>
                         {mig.changes?.length > 0 && (
                             <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>Changes</div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>Changes</div>
                                 {mig.changes.map((change, idx) => (
-                                    <div key={idx} className="sv-mono" style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', marginLeft: 12, padding: '5px 10px', background: 'rgba(0,0,0,.25)', borderRadius: 6, marginBottom: 4, borderLeft: '2px solid rgba(99,102,241,.3)' }}>
-                                        {change.type}: <span style={{ color: '#a5b4fc' }}>{change.target}</span>
-                                        {change.fields && <span style={{ color: 'rgba(255,255,255,.35)' }}> ({change.fields} fields)</span>}
+                                    <div key={idx} className="sv-mono" style={{ fontSize: 11, color: THEME.textDim, marginLeft: 12, padding: '5px 10px', background: THEME.surfaceHover, borderRadius: 6, marginBottom: 4, borderLeft: `2px solid rgba(99,102,241,.3)` }}>
+                                        {change.type}: <span style={{ color: THEME.primary }}>{change.target}</span>
+                                        {change.fields && <span style={{ color: THEME.textDim }}> ({change.fields} fields)</span>}
                                         {change.concurrent && <span style={{ color: '#10b981' }}> [CONCURRENT]</span>}
                                     </div>
                                 ))}
@@ -744,7 +749,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
 
                         {mig.sql && (
                             <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>SQL</div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>SQL</div>
                                 <div
                                     className="sv-code"
                                     dangerouslySetInnerHTML={{ __html: highlightSQL(mig.sql.slice(0, 300) + (mig.sql.length > 300 ? '…' : '')) }}
@@ -761,8 +766,8 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                                 {mig.issues.map((issue, idx) => (
                                     <div key={idx} style={{ fontSize: 11, marginBottom: 6, paddingLeft: 18, position: 'relative' }}>
                                         <span style={{ position: 'absolute', left: 0, top: 3, width: 8, height: 8, borderRadius: '50%', background: getSeverityColor(issue.severity), opacity: .5, display: 'block' }} />
-                                        <div style={{ color: '#f1f5f9', fontWeight: 700 }}>[{issue.severity.toUpperCase()}] {issue.code}</div>
-                                        <div style={{ color: 'rgba(255,255,255,.4)', marginTop: 2 }}>{issue.message}</div>
+                                        <div style={{ color: THEME.textMain, fontWeight: 700 }}>[{issue.severity.toUpperCase()}] {issue.code}</div>
+                                        <div style={{ color: THEME.textDim, marginTop: 2 }}>{issue.message}</div>
                                     </div>
                                 ))}
                             </div>
@@ -770,10 +775,10 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
 
                         {pending && mig.pre_checks && (
                             <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>Pre-flight Checks</div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>Pre-flight Checks</div>
                                 {mig.pre_checks.map((check, idx) => (
-                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(0,0,0,.2)', borderRadius: 6, marginBottom: 4, fontSize: 11 }}>
-                                        <span style={{ color: 'rgba(255,255,255,.5)' }}>{check.name}</span>
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: THEME.surfaceHover, borderRadius: 6, marginBottom: 4, fontSize: 11 }}>
+                                        <span style={{ color: THEME.textMuted }}>{check.name}</span>
                                         <span className="sv-mono" style={{ padding: '2px 7px', borderRadius: 4, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', background: check.status === 'passed' ? 'rgba(16,185,129,.15)' : 'rgba(245,158,11,.12)', color: check.status === 'passed' ? '#34d399' : '#fbbf24' }}>{check.status}</span>
                                     </div>
                                 ))}
@@ -813,10 +818,10 @@ const MigrationDetailModal = ({ migration, onClose }) => {
     return (
         <div className="sv-modal-overlay" onClick={onClose}>
             <div className="sv-modal-content" onClick={e => e.stopPropagation()}>
-                <div style={{ padding: '22px 28px', borderBottom: '1px solid rgba(255,255,255,.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ padding: '22px 28px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <div style={{ fontSize: 17, fontWeight: 800, color: '#f1f5f9' }}>{migration.name}</div>
-                        <div className="sv-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 4 }}>{migration.id}</div>
+                        <div style={{ fontSize: 17, fontWeight: 800, color: THEME.textMain }}>{migration.name}</div>
+                        <div className="sv-mono" style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>{migration.id}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         {migration.status ? <StatusBadge status={migration.status} /> : <RiskBadge risk={migration.risk} />}
@@ -830,33 +835,33 @@ const MigrationDetailModal = ({ migration, onClose }) => {
                             { label: 'Version',  value: migration.version },
                             { label: 'Duration', value: migration.duration || migration.estimated_time || '—' },
                         ].map(({ label, value }) => (
-                            <div key={label} style={{ padding: 14, background: 'rgba(0,0,0,.25)', borderRadius: 10, border: '1px solid rgba(255,255,255,.07)' }}>
-                                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4, fontWeight: 700 }}>{label}</div>
-                                <div className="sv-mono" style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>{value}</div>
+                            <div key={label} style={{ padding: 14, background: THEME.surfaceHover, borderRadius: 10, border: `1px solid ${THEME.grid}` }}>
+                                <div style={{ fontSize: 10, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4, fontWeight: 700 }}>{label}</div>
+                                <div className="sv-mono" style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>{value}</div>
                             </div>
                         ))}
                     </div>
 
                     {migration.sql && (
                         <div style={{ marginBottom: 20 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>Full SQL</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>Full SQL</div>
                             <div className="sv-code" dangerouslySetInnerHTML={{ __html: highlightSQL(migration.sql) }} style={{ maxHeight: 300, overflowY: 'auto' }} />
                         </div>
                     )}
 
                     {migration.issues?.length > 0 && (
                         <div style={{ marginBottom: 20 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>Issues</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>Issues</div>
                             {migration.issues.map((issue, i) => (
                                 <div key={i} style={{ padding: '10px 14px', marginBottom: 6, borderRadius: 8, background: `${getSeverityColor(issue.severity)}08`, border: `1px solid ${getSeverityColor(issue.severity)}25`, fontSize: 12 }}>
                                     <span style={{ fontWeight: 700, color: getSeverityColor(issue.severity) }}>[{issue.severity.toUpperCase()}]</span>
-                                    <span style={{ color: 'rgba(255,255,255,.5)', marginLeft: 8 }}>{issue.message}</span>
+                                    <span style={{ color: THEME.textMuted, marginLeft: 8 }}>{issue.message}</span>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.07)' }}>
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 16, borderTop: `1px solid ${THEME.grid}` }}>
                         <button className="sv-btn-secondary" onClick={onClose}>Close</button>
                         <button className="sv-btn-secondary"><Copy size={13} /> Copy SQL</button>
                         <button className="sv-btn-secondary"><Download size={13} /> Export</button>
@@ -881,7 +886,7 @@ const DependencyGraph = ({ data }) => {
     }, [data]);
 
     return (
-        <div style={{ position: 'relative', height: 400, background: 'rgba(0,0,0,.3)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.06)' }}>
+        <div style={{ position: 'relative', height: 400, background: THEME.surfaceHover, borderRadius: 12, overflow: 'hidden', border: `1px solid ${THEME.grid}` }}>
             <svg width="100%" height="100%" viewBox="0 0 600 400" style={{ cursor: 'grab' }}>
                 <defs>
                     <marker id="sv-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -947,21 +952,21 @@ const DependencyGraph = ({ data }) => {
             </svg>
 
             {/* Legend */}
-            <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(15,15,25,.9)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, padding: '10px 14px', fontSize: 11, backdropFilter: 'blur(8px)' }}>
-                <div style={{ fontWeight: 800, marginBottom: 8, color: '#f1f5f9', fontSize: 11 }}>Legend</div>
+            <div style={{ position: 'absolute', top: 12, right: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 11, backdropFilter: 'blur(8px)' }}>
+                <div style={{ fontWeight: 800, marginBottom: 8, color: THEME.textMain, fontSize: 11 }}>Legend</div>
                 {[['Table', 'table'], ['View', 'view'], ['Function', 'function']].map(([label, type]) => (
                     <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
                         <div style={{ width: 8, height: 8, background: getNodeColor(type), borderRadius: '50%' }} />
-                        <span style={{ color: 'rgba(255,255,255,.4)' }}>{label}</span>
+                        <span style={{ color: THEME.textDim }}>{label}</span>
                     </div>
                 ))}
             </div>
 
             {selectedNode && (
-                <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(15,15,25,.9)', border: `2px solid ${getNodeColor(positions[selectedNode].type)}`, borderRadius: 10, padding: '12px 16px', minWidth: 200, backdropFilter: 'blur(8px)' }}>
-                    <div className="sv-mono" style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 }}>{selectedNode}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', marginBottom: 3 }}>Type: <span style={{ color: '#a5b4fc' }}>{positions[selectedNode].type}</span></div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)' }}>Outgoing: <span style={{ color: '#a5b4fc' }}>{positions[selectedNode].connections}</span></div>
+                <div style={{ position: 'absolute', bottom: 12, left: 12, background: THEME.surface, border: `2px solid ${getNodeColor(positions[selectedNode].type)}`, borderRadius: 10, padding: '12px 16px', minWidth: 200, backdropFilter: 'blur(8px)' }}>
+                    <div className="sv-mono" style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>{selectedNode}</div>
+                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 3 }}>Type: <span style={{ color: THEME.primary }}>{positions[selectedNode].type}</span></div>
+                    <div style={{ fontSize: 10, color: THEME.textDim }}>Outgoing: <span style={{ color: THEME.primary }}>{positions[selectedNode].connections}</span></div>
                 </div>
             )}
         </div>
@@ -1047,7 +1052,7 @@ const SchemaVersioningTab = () => {
 
     return (
         <div className="sv-wrap" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <SchemaStyles />
+            <Styles />
 
             {selectedMigration && (
                 <MigrationDetailModal migration={selectedMigration} onClose={() => setSelectedMigration(null)} />
@@ -1057,20 +1062,20 @@ const SchemaVersioningTab = () => {
             <div style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '14px 20px',
-                background: 'linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.02))',
-                borderRadius: 14, border: '1px solid rgba(255,255,255,.08)', backdropFilter: 'blur(8px)',
+                background: `linear-gradient(135deg, ${THEME.surfaceHover}, ${THEME.surface})`,
+                borderRadius: 14, border: `1px solid ${THEME.grid}`, backdropFilter: 'blur(8px)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(99,102,241,.3)' }}>
                         <GitBranch size={18} color="#a5b4fc" />
                     </div>
                     <div>
-                        <div style={{ fontWeight: 800, fontSize: 16, color: '#f1f5f9', letterSpacing: -.2 }}>Schema Versioning &amp; Migrations</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 2 }}>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: THEME.textMain, letterSpacing: -.2 }}>Schema Versioning &amp; Migrations</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: THEME.textDim, marginTop: 2 }}>
                             <span className="sv-mono">v1.5.2</span>
-                            <span style={{ color: 'rgba(255,255,255,.15)' }}>·</span>
+                            <span style={{ color: THEME.textDim }}>·</span>
                             <span style={{ color: '#34d399' }}>✓ Synced</span>
-                            <span style={{ color: 'rgba(255,255,255,.15)' }}>·</span>
+                            <span style={{ color: THEME.textDim }}>·</span>
                             <span>{MIGRATIONS.length} applied, {PENDING_MIGRATIONS.length} pending</span>
                         </div>
                     </div>
@@ -1116,7 +1121,7 @@ const SchemaVersioningTab = () => {
                     {/* Search + filters */}
                     <div style={{ marginBottom: 16 }}>
                         <div style={{ position: 'relative', marginBottom: 10 }}>
-                            <Search size={14} color="rgba(255,255,255,.3)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                            <Search size={14} color={THEME.textDim} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
                             <input
                                 type="text"
                                 placeholder="Search by name, version, or author…"
@@ -1127,15 +1132,15 @@ const SchemaVersioningTab = () => {
                             />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            <Filter size={12} color="rgba(255,255,255,.3)" />
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', fontWeight: 700 }}>Filter:</span>
+                            <Filter size={12} color={THEME.textDim} />
+                            <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 700 }}>Filter:</span>
                             {allTags.map(tag => (
                                 <div key={tag} className={`sv-chip${filterTags.includes(tag) ? ' active' : ''}`} onClick={() => toggleFilter(tag)}>
                                     <Tag size={9} /> {tag}
                                 </div>
                             ))}
                             {filterTags.length > 0 && (
-                                <button onClick={() => setFilterTags([])} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,.3)', fontSize: 11, cursor: 'pointer', fontFamily: THEME.fontBody }}>
+                                <button onClick={() => setFilterTags([])} style={{ background: 'transparent', border: 'none', color: THEME.textDim, fontSize: 11, cursor: 'pointer', fontFamily: THEME.fontBody }}>
                                     Clear
                                 </button>
                             )}
@@ -1149,7 +1154,7 @@ const SchemaVersioningTab = () => {
                             {filteredMigrations.some(m => pendingIds.has(m.id)) && (
                                 <>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 800, color: '#f1f5f9' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 800, color: THEME.textMain }}>
                                             <Clock size={16} color="#f59e0b" />
                                             Migration Queue
                                             <span className="sv-badge" style={{ background: 'rgba(245,158,11,.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,.2)' }}>
@@ -1168,13 +1173,13 @@ const SchemaVersioningTab = () => {
                                             onSelect={setSelectedMigration}
                                         />
                                     ))}
-                                    <div style={{ borderTop: '2px dashed rgba(255,255,255,.07)', margin: '20px 0' }} />
+                                    <div style={{ borderTop: `2px dashed ${THEME.grid}`, margin: '20px 0' }} />
                                 </>
                             )}
 
                             {/* Applied history */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 800, color: '#f1f5f9' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 800, color: THEME.textMain }}>
                                     <CheckCircle size={16} color="#10b981" /> Applied History
                                 </div>
                                 <button className="sv-btn-secondary" style={{ fontSize: 11 }}><Download size={12} /> Export Log</button>
@@ -1191,7 +1196,7 @@ const SchemaVersioningTab = () => {
                             ))}
 
                             {filteredMigrations.length === 0 && (
-                                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,.25)' }}>
+                                <div style={{ textAlign: 'center', padding: '60px 20px', color: THEME.textDim }}>
                                     <Search size={36} style={{ marginBottom: 12, opacity: .3 }} />
                                     <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>No migrations found</div>
                                     <div style={{ fontSize: 12 }}>Try adjusting your search or filters</div>
@@ -1205,20 +1210,20 @@ const SchemaVersioningTab = () => {
                             <div className="sv-card" style={{ borderColor: 'rgba(239,68,68,.2)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
                                     <AlertTriangle size={15} color="#f59e0b" />
-                                    <span style={{ fontSize: 13, fontWeight: 800, color: '#f1f5f9' }}>Risk Analysis</span>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: THEME.textMain }}>Risk Analysis</span>
                                 </div>
-                                <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', lineHeight: 1.7, marginBottom: 12 }}>
+                                <div style={{ fontSize: 12, color: THEME.textDim, lineHeight: 1.7, marginBottom: 12 }}>
                                     <b style={{ color: '#f87171' }}>2 high-risk operations</b> detected in migration{' '}
-                                    <span className="sv-mono" style={{ color: '#a5b4fc', fontSize: 11 }}>1.6.0</span>:
+                                    <span className="sv-mono" style={{ color: THEME.primary, fontSize: 11 }}>1.6.0</span>:
                                 </div>
-                                <div style={{ fontSize: 12, color: 'rgba(255,255,255,.35)', lineHeight: 1.8, marginBottom: 14 }}>
+                                <div style={{ fontSize: 12, color: THEME.textDim, lineHeight: 1.8, marginBottom: 14 }}>
                                     · DROP COLUMN requires exclusive table lock<br />
                                     · Data type change may cause truncation
                                 </div>
                                 <div className="sv-progress-track" style={{ marginBottom: 8 }}>
                                     <div className="sv-progress-fill" style={{ width: '75%', background: 'linear-gradient(90deg, #ef444490, #ef4444)' }} />
                                 </div>
-                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginBottom: 14 }}>
+                                <div style={{ fontSize: 11, color: THEME.textDim, marginBottom: 14 }}>
                                     Risk Score: <span className="sv-mono" style={{ color: '#f87171', fontWeight: 700 }}>7.5/10</span>
                                 </div>
                                 <button className="sv-btn-primary" style={{ width: '100%', justifyContent: 'center', background: 'rgba(245,158,11,.8)' }}>
@@ -1229,15 +1234,15 @@ const SchemaVersioningTab = () => {
                             {/* Starred */}
                             {favorites.length > 0 && (
                                 <div className="sv-card">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, fontSize: 13, fontWeight: 800, color: '#f1f5f9' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, fontSize: 13, fontWeight: 800, color: THEME.textMain }}>
                                         <Star size={14} color="#f59e0b" fill="#f59e0b" /> Starred ({favorites.length})
                                     </div>
                                     {[...MIGRATIONS, ...PENDING_MIGRATIONS]
                                         .filter(m => favorites.includes(m.id))
                                         .map(m => (
-                                            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.05)', fontSize: 12 }}>
-                                                <span className="sv-mono" style={{ color: '#a5b4fc' }}>{m.name}</span>
-                                                <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 11 }}>{m.version}</span>
+                                            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${THEME.grid}`, fontSize: 12 }}>
+                                                <span className="sv-mono" style={{ color: THEME.primary }}>{m.name}</span>
+                                                <span style={{ color: THEME.textDim, fontSize: 11 }}>{m.version}</span>
                                             </div>
                                         ))
                                     }
@@ -1246,7 +1251,7 @@ const SchemaVersioningTab = () => {
 
                             {/* Quick actions */}
                             <div className="sv-card">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, fontSize: 13, fontWeight: 800, color: '#f1f5f9' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, fontSize: 13, fontWeight: 800, color: THEME.textMain }}>
                                     <Zap size={14} color="#a5b4fc" /> Quick Actions
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -1265,7 +1270,7 @@ const SchemaVersioningTab = () => {
 
                             {/* Activity chart */}
                             <div className="sv-card">
-                                <div style={{ fontSize: 13, fontWeight: 800, color: '#f1f5f9', marginBottom: 14 }}>Recent Activity</div>
+                                <div style={{ fontSize: 13, fontWeight: 800, color: THEME.textMain, marginBottom: 14 }}>Recent Activity</div>
                                 <ResponsiveContainer width="100%" height={140}>
                                     <AreaChart data={MIGRATION_STATS}>
                                         <defs>
@@ -1307,7 +1312,7 @@ const SchemaVersioningTab = () => {
             {view === 'diff' && (
                 <div className="sv-card" style={{ padding: 0, minHeight: 600 }}>
                     {/* Toolbar */}
-                    <div style={{ padding: '16px 22px', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', gap: 20, background: 'rgba(0,0,0,.2)', flexWrap: 'wrap', borderRadius: '14px 14px 0 0' }}>
+                    <div style={{ padding: '16px 22px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', alignItems: 'center', gap: 20, background: THEME.surfaceHover, flexWrap: 'wrap', borderRadius: '14px 14px 0 0' }}>
                         {[
                             { label: 'Source', key: 'source', options: [['dev', 'Development'], ['staging', 'Staging'], ['uat', 'UAT']] },
                             { label: 'Target', key: 'target', options: [['production', 'Production'], ['dr', 'DR Site'], ['staging', 'Staging']] },
@@ -1315,11 +1320,11 @@ const SchemaVersioningTab = () => {
                             <React.Fragment key={key}>
                                 {i > 0 && <ArrowRight size={16} color="#6366f1" strokeWidth={2.5} />}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.8px' }}>{label}</span>
+                                    <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.8px' }}>{label}</span>
                                     <select
                                         value={envDiff[key]}
                                         onChange={e => setEnvDiff({ ...envDiff, [key]: e.target.value })}
-                                        style={{ background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.8)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', outline: 'none', fontFamily: THEME.fontBody }}
+                                        style={{ background: THEME.surface, color: THEME.textMain, border: `1px solid ${THEME.grid}`, borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', outline: 'none', fontFamily: THEME.fontBody }}
                                     >
                                         {options.map(([val, lbl]) => <option key={val} value={val}>{lbl}</option>)}
                                     </select>
@@ -1343,7 +1348,7 @@ const SchemaVersioningTab = () => {
                             ].map(({ label, count, color }) => (
                                 <div key={label} className="sv-metric-card" style={{ borderColor: `${color}25`, animationDelay: '0ms' }}>
                                     <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1 }}>{count}</div>
-                                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
                                 </div>
                             ))}
                         </div>
@@ -1351,31 +1356,31 @@ const SchemaVersioningTab = () => {
                         {/* Diff items */}
                         {SCHEMA_DIFF.map((item, i) => (
                             <div key={i} style={{ marginBottom: 28 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,.07)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, paddingBottom: 10, borderBottom: `1px solid ${THEME.grid}` }}>
                                     {item.type === 'added'    && <CheckCircle size={16} color="#10b981" />}
                                     {item.type === 'removed'  && <XCircle size={16} color="#ef4444" />}
                                     {item.type === 'modified' && <RefreshCw size={16} color="#f59e0b" />}
-                                    <span className="sv-mono" style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>{item.schema}.{item.table}</span>
+                                    <span className="sv-mono" style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>{item.schema}.{item.table}</span>
                                     <span className="sv-badge" style={{
                                         background: item.type === 'added' ? 'rgba(16,185,129,.12)' : item.type === 'removed' ? 'rgba(239,68,68,.12)' : 'rgba(245,158,11,.12)',
                                         color: item.type === 'added' ? '#34d399' : item.type === 'removed' ? '#f87171' : '#fbbf24',
                                         border: `1px solid ${item.type === 'added' ? 'rgba(16,185,129,.25)' : item.type === 'removed' ? 'rgba(239,68,68,.25)' : 'rgba(245,158,11,.25)'}`,
                                     }}>{item.type}</span>
-                                    {item.reason && <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', fontStyle: 'italic' }}>— {item.reason}</span>}
+                                    {item.reason && <span style={{ fontSize: 11, color: THEME.textDim, fontStyle: 'italic' }}>— {item.reason}</span>}
                                 </div>
 
                                 {/* Columns */}
                                 {item.changes?.length > 0 && (
                                     <div style={{ marginBottom: 14 }}>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.4)', marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Columns</div>
-                                        <div style={{ background: 'rgba(0,0,0,.25)', borderRadius: 10, border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Columns</div>
+                                        <div style={{ background: THEME.surfaceHover, borderRadius: 10, border: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
                                             {item.changes.map((c, j) => (
                                                 <div key={j} style={{
                                                     display: 'grid', gridTemplateColumns: '180px 1fr', gap: 16, padding: '10px 14px',
-                                                    borderBottom: j < item.changes.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none',
+                                                    borderBottom: j < item.changes.length - 1 ? `1px solid ${THEME.grid}` : 'none',
                                                     background: c.status === 'added' ? 'rgba(16,185,129,.03)' : c.status === 'removed' ? 'rgba(239,68,68,.03)' : 'transparent',
                                                 }}>
-                                                    <span className="sv-mono" style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    <span className="sv-mono" style={{ color: THEME.textMain, fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                                                         {c.status === 'added'           && <span style={{ color: '#34d399' }}>+</span>}
                                                         {c.status === 'removed'         && <span style={{ color: '#f87171' }}>-</span>}
                                                         {c.status === 'changed'         && <span style={{ color: '#fbbf24' }}>~</span>}
@@ -1405,16 +1410,16 @@ const SchemaVersioningTab = () => {
                                 {/* Indexes */}
                                 {item.indexes?.length > 0 && (
                                     <div style={{ marginBottom: 14 }}>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.4)', marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Indexes</div>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Indexes</div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                                             {item.indexes.map((idx, j) => (
-                                                <div key={j} className="sv-mono" style={{ padding: '8px 12px', background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8, fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span style={{ color: '#f1f5f9' }}>
+                                                <div key={j} className="sv-mono" style={{ padding: '8px 12px', background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 8, fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <span style={{ color: THEME.textMain }}>
                                                         {idx.status === 'added' && <span style={{ color: '#34d399', marginRight: 6 }}>+</span>}
-                                                        {idx.name} <span style={{ color: 'rgba(255,255,255,.35)' }}>({idx.columns.join(', ')})</span>
+                                                        {idx.name} <span style={{ color: THEME.textDim }}>({idx.columns.join(', ')})</span>
                                                     </span>
                                                     <div style={{ display: 'flex', gap: 5 }}>
-                                                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', fontWeight: 700 }}>{idx.type}</span>
+                                                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{idx.type}</span>
                                                         {idx.unique  && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,.15)', color: '#a5b4fc', textTransform: 'uppercase', fontWeight: 700 }}>UNIQUE</span>}
                                                         {idx.primary && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(16,185,129,.15)', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>PRIMARY</span>}
                                                     </div>
@@ -1427,18 +1432,18 @@ const SchemaVersioningTab = () => {
                                 {/* Constraints */}
                                 {item.constraints?.length > 0 && (
                                     <div>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.4)', marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Constraints</div>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Constraints</div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                                             {item.constraints.map((con, j) => (
-                                                <div key={j} className="sv-mono" style={{ padding: '9px 12px', background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8, fontSize: 11 }}>
+                                                <div key={j} className="sv-mono" style={{ padding: '9px 12px', background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 8, fontSize: 11 }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                                        <span style={{ color: '#f1f5f9' }}>
+                                                        <span style={{ color: THEME.textMain }}>
                                                             {con.status === 'added' && <span style={{ color: '#34d399', marginRight: 6 }}>+</span>}
                                                             {con.name}
                                                         </span>
-                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.4)', textTransform: 'uppercase', fontWeight: 700 }}>{con.type.replace('_', ' ')}</span>
+                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{con.type.replace('_', ' ')}</span>
                                                     </div>
-                                                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', fontStyle: 'italic' }}>{con.definition}</div>
+                                                    <div style={{ fontSize: 10, color: THEME.textDim, fontStyle: 'italic' }}>{con.definition}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1457,7 +1462,7 @@ const SchemaVersioningTab = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                     <div className="sv-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                            <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9' }}>Schema Dependency Topology</div>
+                            <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain }}>Schema Dependency Topology</div>
                             <div style={{ display: 'flex', gap: 8 }}>
                                 <button className="sv-btn-secondary"><Download size={13} /> Export SVG</button>
                                 <button className="sv-btn-secondary"><Settings size={13} /> Layout</button>
@@ -1469,11 +1474,11 @@ const SchemaVersioningTab = () => {
                                 <Info size={15} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
                                 <div>
                                     <div style={{ fontWeight: 800, marginBottom: 4, color: '#fbbf24' }}>Impact Analysis</div>
-                                    <div style={{ color: 'rgba(255,255,255,.45)' }}>
-                                        Modifying <span className="sv-mono" style={{ color: '#a5b4fc', fontSize: 11 }}>users</span> will cascade to:
-                                        <span style={{ color: 'rgba(255,255,255,.6)', marginLeft: 6 }}>view_user_stats</span> (~5s rebuild),{' '}
-                                        <span style={{ color: 'rgba(255,255,255,.6)' }}>func_auth_check</span> (recompile),{' '}
-                                        <span style={{ color: 'rgba(255,255,255,.6)' }}>orders, api_keys, user_preferences</span> (FK constraints)
+                                    <div style={{ color: THEME.textDim }}>
+                                        Modifying <span className="sv-mono" style={{ color: THEME.primary, fontSize: 11 }}>users</span> will cascade to:
+                                        <span style={{ color: THEME.textMuted, marginLeft: 6 }}>view_user_stats</span> (~5s rebuild),{' '}
+                                        <span style={{ color: THEME.textMuted }}>func_auth_check</span> (recompile),{' '}
+                                        <span style={{ color: THEME.textMuted }}>orders, api_keys, user_preferences</span> (FK constraints)
                                     </div>
                                 </div>
                             </div>
@@ -1482,13 +1487,13 @@ const SchemaVersioningTab = () => {
 
                     {/* Dependency matrix */}
                     <div className="sv-card">
-                        <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 16 }}>Dependency Matrix</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Dependency Matrix</div>
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
                                 <thead>
-                                <tr style={{ background: 'rgba(0,0,0,.2)' }}>
+                                <tr style={{ background: THEME.surfaceHover }}>
                                     {['Object', 'Type', 'Dependencies', 'Dependents', 'Risk Level'].map(h => (
-                                        <th key={h} style={{ padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,.07)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '.8px', color: 'rgba(255,255,255,.35)' }}>{h}</th>
+                                        <th key={h} style={{ padding: '10px 14px', textAlign: 'left', borderBottom: `1px solid ${THEME.grid}`, fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '.8px', color: THEME.textDim }}>{h}</th>
                                     ))}
                                 </tr>
                                 </thead>
@@ -1499,16 +1504,16 @@ const SchemaVersioningTab = () => {
                                     const riskLevel = deps > 3 ? 'high' : deps > 1 ? 'medium' : 'low';
                                     return (
                                         <tr key={node.id}
-                                            style={{ borderBottom: '1px solid rgba(255,255,255,.05)', transition: 'background .15s' }}
-                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.03)'}
+                                            style={{ borderBottom: `1px solid ${THEME.grid}`, transition: 'background .15s' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = THEME.surfaceHover}
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                         >
-                                            <td className="sv-mono" style={{ padding: '10px 14px', fontWeight: 700, color: '#f1f5f9' }}>{node.id}</td>
+                                            <td className="sv-mono" style={{ padding: '10px 14px', fontWeight: 700, color: THEME.textMain }}>{node.id}</td>
                                             <td style={{ padding: '10px 14px' }}>
                                                 <span className="sv-badge" style={{ background: `${getNodeColor(node.type)}18`, color: getNodeColor(node.type), border: `1px solid ${getNodeColor(node.type)}28` }}>{node.type}</span>
                                             </td>
-                                            <td className="sv-mono" style={{ padding: '10px 14px', color: 'rgba(255,255,255,.4)' }}>{deps}</td>
-                                            <td className="sv-mono" style={{ padding: '10px 14px', color: 'rgba(255,255,255,.4)' }}>{dependents}</td>
+                                            <td className="sv-mono" style={{ padding: '10px 14px', color: THEME.textDim }}>{deps}</td>
+                                            <td className="sv-mono" style={{ padding: '10px 14px', color: THEME.textDim }}>{dependents}</td>
                                             <td style={{ padding: '10px 14px' }}><RiskBadge risk={riskLevel} /></td>
                                         </tr>
                                     );
@@ -1526,7 +1531,7 @@ const SchemaVersioningTab = () => {
             {view === 'analytics' && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
                     <div className="sv-card">
-                        <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 16 }}>Migration Success Rate (90d)</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Migration Success Rate (90d)</div>
                         <ResponsiveContainer width="100%" height={240}>
                             <LineChart data={MIGRATION_STATS}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
@@ -1541,7 +1546,7 @@ const SchemaVersioningTab = () => {
                     </div>
 
                     <div className="sv-card">
-                        <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 16 }}>Migration Types Distribution</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Migration Types Distribution</div>
                         <ResponsiveContainer width="100%" height={240}>
                             <PieChart>
                                 <Pie
@@ -1566,7 +1571,7 @@ const SchemaVersioningTab = () => {
                     </div>
 
                     <div className="sv-card" style={{ gridColumn: 'span 2' }}>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 16 }}>Migration Volume by Month</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Migration Volume by Month</div>
                         <ResponsiveContainer width="100%" height={240}>
                             <BarChart data={MIGRATION_STATS}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />

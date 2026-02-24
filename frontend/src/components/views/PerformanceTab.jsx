@@ -1757,9 +1757,9 @@ const PerformanceTab = () => {
     const ViewTab = ({ id, label, icon: Icon, badge }) => {
         const active = activeView === id;
         return (
-            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', whiteSpace: 'nowrap', background: active ? THEME.primary : THEME.surface, color: active ? '#fff' : THEME.textMuted, border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
+            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', whiteSpace: 'nowrap', background: active ? THEME.primary : THEME.surface, color: active ? THEME.buttonText || '#fff' : THEME.textMuted, border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
                 <Icon size={14} style={{ flexShrink: 0 }} /> {label}
-                {badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.warning}15`, color: active ? '#fff' : THEME.warning, border: active ? '1px solid rgba(255,255,255,0.2)' : `1px solid ${THEME.warning}25`, marginLeft: 2 }}>{badge}</span>}
+                {badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 10, background: active ? `${THEME.primary}30` : `${THEME.warning}15`, color: active ? THEME.primary : THEME.warning, border: active ? `1px solid ${THEME.primary}40` : `1px solid ${THEME.warning}25`, marginLeft: 2 }}>{badge}</span>}
             </button>
         );
     };

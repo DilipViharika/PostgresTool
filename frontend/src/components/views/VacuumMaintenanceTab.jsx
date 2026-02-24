@@ -17,43 +17,47 @@ import {
    - Rows: subtle hover, left-border severity
    - Dots: pulsing critical / static high / ok
 ────────────────────────────────────────────────────────────────────────────*/
-const Styles = () => (
-    <style>{`
-        @keyframes vmSpin    { to { transform: rotate(360deg) } }
-        @keyframes vmFadeUp  { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes vmPulse   { 0%,100% { opacity:1 } 50% { opacity:.4 } }
-        @keyframes vmGlow    { 0%,100% { box-shadow: 0 0 8px #ef444440 } 50% { box-shadow: 0 0 20px #ef444470 } }
-        @keyframes vmSlide   { from { width: 0 } }
-        @keyframes vmCounter { from { opacity:0; transform: scale(.8) } to { opacity:1; transform: scale(1) } }
-        @keyframes vmSuccessGlow { 0%,100% { box-shadow: 0 0 6px #10b98140 } 50% { box-shadow: 0 0 18px #10b98170 } }
+const VM_STYLE_ID = 'vm-adaptive-styles';
+function ensureVmStyles() {
+    if (typeof document === 'undefined') return;
+    let el = document.getElementById(VM_STYLE_ID);
+    if (!el) { el = document.createElement('style'); el.id = VM_STYLE_ID; document.head.appendChild(el); }
+    el.textContent = [
+        `@keyframes vmSpin    { to { transform: rotate(360deg) } }`,
+        `@keyframes vmFadeUp  { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }`,
+        `@keyframes vmPulse   { 0%,100% { opacity:1 } 50% { opacity:.4 } }`,
+        `@keyframes vmGlow    { 0%,100% { box-shadow: 0 0 8px ${THEME.danger}66 } 50% { box-shadow: 0 0 20px ${THEME.danger}99 } }`,
+        `@keyframes vmSlide   { from { width: 0 } }`,
+        `@keyframes vmCounter { from { opacity:0; transform: scale(.8) } to { opacity:1; transform: scale(1) } }`,
+        `@keyframes vmSuccessGlow { 0%,100% { box-shadow: 0 0 6px ${THEME.success}66 } 50% { box-shadow: 0 0 18px ${THEME.success}99 } }`,
 
-        .vm-wrap { font-family: ${THEME.fontBody}; }
-        .vm-mono { font-family: ${THEME.fontMono} !important; }
+        `.vm-wrap { font-family: ${THEME.fontBody}; }`,
+        `.vm-mono { font-family: ${THEME.fontMono} !important; }`,
 
         /* ── Base card ── */
-        .vm-card {
-            background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
-            border: 1px solid rgba(255,255,255,.08);
+        `.vm-card {
+            background: linear-gradient(135deg, ${THEME.surface} 0%, ${THEME.surface} 100%);
+            border: 1px solid ${THEME.grid};
             border-radius: 14px;
             padding: 20px;
             animation: vmFadeUp .4s ease both;
             backdrop-filter: blur(4px);
             position: relative;
             overflow: hidden;
-        }
-        .vm-card::before {
+        }`,
+        `.vm-card::before {
             content: '';
             position: absolute;
             inset: 0;
             border-radius: 14px;
-            background: linear-gradient(135deg, rgba(255,255,255,.015) 0%, transparent 60%);
+            background: linear-gradient(135deg, ${THEME.surface} 0%, transparent 60%);
             pointer-events: none;
-        }
+        }`,
 
         /* ── Metric card ── */
-        .vm-metric-card {
-            background: linear-gradient(145deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%);
-            border: 1px solid rgba(255,255,255,.1);
+        `.vm-metric-card {
+            background: linear-gradient(145deg, ${THEME.surfaceHover} 0%, ${THEME.surface} 100%);
+            border: 1px solid ${THEME.grid};
             border-radius: 16px;
             padding: 20px 24px;
             display: flex; flex-direction: column; gap: 10px;
@@ -61,68 +65,68 @@ const Styles = () => (
             transition: transform .2s, border-color .2s;
             cursor: default;
             animation: vmFadeUp .4s ease both;
-        }
-        .vm-metric-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
-        .vm-metric-card::after {
+        }`,
+        `.vm-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.grid}; }`,
+        `.vm-metric-card::after {
             content: '';
             position: absolute;
             top: -30px; right: -30px;
             width: 100px; height: 100px;
             border-radius: 50%;
             opacity: .06;
-        }
-        .vm-metric-card.warn  { border-color: rgba(245,158,11,.3); }
-        .vm-metric-card.crit  { border-color: rgba(239,68,68,.35); animation: vmGlow 2s ease-in-out infinite; }
+        }`,
+        `.vm-metric-card.warn  { border-color: ${THEME.warning}4D; }`,
+        `.vm-metric-card.crit  { border-color: ${THEME.danger}59; animation: vmGlow 2s ease-in-out infinite; }`,
 
         /* ── Table rows ── */
-        .vm-row {
+        `.vm-row {
             display: grid;
             align-items: center;
             padding: 11px 16px;
-            border-bottom: 1px solid rgba(255,255,255,.04);
+            border-bottom: 1px solid ${THEME.surface};
             font-size: 12.5px;
             transition: background .15s;
             position: relative;
-        }
-        .vm-row:hover { background: rgba(255,255,255,.03); }
-        .vm-row:last-child { border-bottom: none; }
+        }`,
+        `.vm-row:hover { background: ${THEME.surfaceHover}; }`,
+        `.vm-row:last-child { border-bottom: none; }`,
 
         /* ── Column header ── */
-        .vm-head {
+        `.vm-head {
             display: grid;
             gap: 8px;
             padding: 10px 16px;
             font-size: 10px;
             font-weight: 700;
-            color: rgba(255,255,255,.35);
+            color: ${THEME.textDim};
             text-transform: uppercase;
             letter-spacing: 1px;
-            border-bottom: 1px solid rgba(255,255,255,.06);
-            background: rgba(0,0,0,.2);
-        }
+            border-bottom: 1px solid ${THEME.grid};
+            background: ${THEME.surfaceHover};
+        }`,
 
         /* ── Input ── */
-        .vm-input {
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.1);
-            color: rgba(255,255,255,.9);
+        `.vm-input {
+            background: ${THEME.surface};
+            border: 1px solid ${THEME.grid};
+            color: ${THEME.textMain};
             border-radius: 10px;
             padding: 9px 12px;
             font-size: 13px;
             outline: none;
             transition: border-color .2s, background .2s;
             font-family: ${THEME.fontBody};
-        }
-        .vm-input:focus { border-color: rgba(99,102,241,.6); background: rgba(255,255,255,.07); }
-        .vm-input::placeholder { color: rgba(255,255,255,.3); }
+        }`,
+        `.vm-input:focus { border-color: ${THEME.primary}99; background: ${THEME.surfaceHover}; }`,
+        `.vm-input::placeholder { color: ${THEME.textDim}; }`,
 
         /* ── Tabs ── */
-        .vm-tab {
+        `.vm-tab {
             padding: 8px 18px;
             border-radius: 9px;
-            border: 1px solid rgba(255,255,255,.1);
+            border: 1px solid ${THEME.grid};
             background: transparent;
-            color: rgba(255,255,255,.5);
+            color: ${THEME.textMuted};
             cursor: pointer;
             font-size: 13px;
             font-weight: 700;
@@ -130,39 +134,39 @@ const Styles = () => (
             transition: all .2s;
             letter-spacing: .3px;
             display: inline-flex; align-items: center; gap: 7px;
-        }
-        .vm-tab.active {
-            background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(139,92,246,.15));
-            border-color: rgba(99,102,241,.5);
-            color: #a5b4fc;
-            box-shadow: 0 0 16px rgba(99,102,241,.2);
-        }
-        .vm-tab:hover:not(.active) { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+        }`,
+        `.vm-tab.active {
+            background: linear-gradient(135deg, ${THEME.primary}40, ${THEME.primary}26);
+            border-color: ${THEME.primary}80;
+            color: ${THEME.primary};
+            box-shadow: 0 0 16px ${THEME.primary}33;
+        }`,
+        `.vm-tab:hover:not(.active) { border-color: ${THEME.grid}; color: ${THEME.textMain}; }`,
 
         /* ── Badge ── */
-        .vm-badge {
+        `.vm-badge {
             display: inline-flex; align-items: center; gap: 4px;
             padding: 3px 9px;
             border-radius: 6px;
             font-size: 11px; font-weight: 700;
             animation: vmCounter .3s ease;
-        }
+        }`,
 
         /* ── Progress bar ── */
-        .vm-progress-track {
+        `.vm-progress-track {
             height: 6px;
             border-radius: 3px;
-            background: rgba(255,255,255,.08);
+            background: ${THEME.grid};
             overflow: visible;
             position: relative;
-        }
-        .vm-progress-fill {
+        }`,
+        `.vm-progress-fill {
             height: 100%;
             border-radius: 3px;
             animation: vmSlide .6s ease both;
             position: relative;
-        }
-        .vm-progress-fill::after {
+        }`,
+        `.vm-progress-fill::after {
             content: '';
             position: absolute;
             right: -1px; top: -2px;
@@ -170,79 +174,80 @@ const Styles = () => (
             border-radius: 50%;
             background: inherit;
             box-shadow: 0 0 8px currentColor;
-        }
+        }`,
 
         /* ── Severity dots ── */
-        .vm-dot {
+        `.vm-dot {
             width: 6px; height: 6px; border-radius: 50%;
             display: inline-block; flex-shrink: 0;
-        }
-        .vm-dot.critical { background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: vmPulse 1.5s ease infinite; }
-        .vm-dot.high     { background: #f59e0b; }
-        .vm-dot.ok       { background: #10b981; }
-        .vm-dot.active   { background: #10b981; box-shadow: 0 0 6px #10b981; animation: vmPulse 1.5s ease infinite; }
+        }`,
+        `.vm-dot.critical { background: ${THEME.danger}; box-shadow: 0 0 6px ${THEME.danger}; animation: vmPulse 1.5s ease infinite; }`,
+        `.vm-dot.high     { background: ${THEME.warning}; }`,
+        `.vm-dot.ok       { background: ${THEME.success}; }`,
+        `.vm-dot.active   { background: ${THEME.success}; box-shadow: 0 0 6px ${THEME.success}; animation: vmPulse 1.5s ease infinite; }`,
 
         /* ── Action button ── */
-        .vm-action-btn {
+        `.vm-action-btn {
             display: inline-flex; align-items: center; gap: 5px;
             padding: 5px 12px;
             border-radius: 7px;
             font-size: 11px; font-weight: 700;
             cursor: pointer;
-            border: 1px solid rgba(99,102,241,.3);
-            background: rgba(99,102,241,.1);
-            color: #a5b4fc;
+            border: 1px solid ${THEME.primary}4D;
+            background: ${THEME.primary}1A;
+            color: ${THEME.primary};
             transition: all .15s;
             font-family: ${THEME.fontBody};
-        }
-        .vm-action-btn:hover:not(:disabled) {
-            background: rgba(99,102,241,.2);
-            border-color: rgba(99,102,241,.5);
-            box-shadow: 0 0 12px rgba(99,102,241,.2);
-        }
-        .vm-action-btn:disabled { opacity: .5; cursor: not-allowed; }
+        }`,
+        `.vm-action-btn:hover:not(:disabled) {
+            background: ${THEME.primary}33;
+            border-color: ${THEME.primary}80;
+            box-shadow: 0 0 12px ${THEME.primary}33;
+        }`,
+        `.vm-action-btn:disabled { opacity: .5; cursor: not-allowed; }`,
 
         /* ── Setting row ── */
-        .vm-setting-row {
+        `.vm-setting-row {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,.05);
+            border-bottom: 1px solid ${THEME.surface};
             font-size: 12px;
-        }
-        .vm-setting-row:last-child { border-bottom: none; }
+        }`,
+        `.vm-setting-row:last-child { border-bottom: none; }`,
 
         /* ── Worker card ── */
-        .vm-worker {
+        `.vm-worker {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 16px;
-            background: rgba(16,185,129,.06);
+            background: ${THEME.success}0F;
             border-radius: 10px;
-            border: 1px solid rgba(16,185,129,.18);
+            border: 1px solid ${THEME.success}2E;
             animation: vmFadeUp .3s ease both;
-        }
+        }`,
 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
-    `}</style>
-);
+        `::-webkit-scrollbar { width: 4px; height: 4px; }`,
+        `::-webkit-scrollbar-track { background: transparent; }`,
+        `::-webkit-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }`,
+        `::-webkit-scrollbar-thumb:hover { background: ${THEME.grid}; }`,
+    ].join('\n');
+}
+const Styles = () => { useAdaptiveTheme(); ensureVmStyles(); return null; };
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 const fmt = (n) => n == null ? '—' : Number(n).toLocaleString();
 
 const fmtDate = (d) => {
-    if (!d) return <span style={{ color: 'rgba(255,255,255,.2)', fontStyle: 'italic', fontSize: 11 }}>Never</span>;
+    if (!d) return <span style={{ color: THEME.textDim, fontStyle: 'italic', fontSize: 11 }}>Never</span>;
     const ago = Math.floor((Date.now() - new Date(d)) / 86400000);
     const label = ago === 0 ? 'Today' : ago === 1 ? 'Yesterday' : `${ago}d ago`;
-    return <span title={new Date(d).toLocaleString()} style={{ color: 'rgba(255,255,255,.5)' }}>{label}</span>;
+    return <span title={new Date(d).toLocaleString()} style={{ color: THEME.textMuted }}>{label}</span>;
 };
 
 const deadCol = (pct) => {
     const p = Number(pct) || 0;
-    if (p > 20) return '#ef4444';
-    if (p > 10) return '#f59e0b';
-    return '#10b981';
+    if (p > 20) return THEME.danger;
+    if (p > 10) return THEME.warning;
+    return THEME.success;
 };
 
 /* ── DeadBar ─────────────────────────────────────────────────────────────── */
@@ -250,10 +255,10 @@ const DeadBar = ({ pct }) => {
     const p = Math.min(100, Number(pct) || 0);
     const c = deadCol(pct);
     const grad = p > 20
-        ? `linear-gradient(90deg, #ef444490, #ef4444)`
+        ? `linear-gradient(90deg, ${THEME.danger}55, ${THEME.danger})`
         : p > 10
-            ? `linear-gradient(90deg, #f59e0b90, #f59e0b)`
-            : `linear-gradient(90deg, #10b98190, #10b981)`;
+            ? `linear-gradient(90deg, ${THEME.warning}55, ${THEME.warning})`
+            : `linear-gradient(90deg, ${THEME.success}55, ${THEME.success})`;
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div className="vm-progress-track" style={{ flex: 1, minWidth: 50 }}>
@@ -265,8 +270,8 @@ const DeadBar = ({ pct }) => {
 };
 
 /* ── MetricCard ──────────────────────────────────────────────────────────── */
-const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, critical, delay = 0 }) => {
-    const borderColor = critical ? 'rgba(239,68,68,.35)' : warn ? 'rgba(245,158,11,.3)' : 'rgba(255,255,255,.1)';
+const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, warn, critical, delay = 0 }) => {
+    const borderColor = critical ? `${THEME.danger}59` : warn ? `${THEME.warning}4D` : THEME.grid;
     return (
         <div
             className={`vm-metric-card${critical ? ' crit' : warn ? ' warn' : ''}`}
@@ -286,9 +291,9 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, c
                 )}
             </div>
             <div>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
-                {sub && <div style={{ fontSize: 11, color: critical ? '#ef4444' : warn ? '#f59e0b' : 'rgba(255,255,255,.3)', marginTop: 3 }}>{sub}</div>}
+                <div style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
+                <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                {sub && <div style={{ fontSize: 11, color: critical ? THEME.danger : warn ? THEME.warning : THEME.textDim, marginTop: 3 }}>{sub}</div>}
             </div>
         </div>
     );
@@ -380,9 +385,9 @@ export default function VacuumMaintenanceTab() {
 
     /* ── Loading ── */
     if (loading) return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: 'rgba(255,255,255,.4)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: THEME.textDim }}>
             <Styles />
-            <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid rgba(99,102,241,.3)', borderTopColor: '#6366f1', animation: 'vmSpin 1s linear infinite' }} />
+            <div style={{ width: 48, height: 48, borderRadius: '50%', border: `2px solid ${THEME.primary}4D`, borderTopColor: THEME.primary, animation: 'vmSpin 1s linear infinite' }} />
             <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: .5, fontFamily: THEME.fontBody }}>Loading vacuum statistics…</span>
         </div>
     );
@@ -395,38 +400,38 @@ export default function VacuumMaintenanceTab() {
             <div style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '14px 20px',
-                background: 'linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.02))',
+                background: `linear-gradient(135deg, ${THEME.surfaceHover}, ${THEME.surface})`,
                 borderRadius: 14,
-                border: '1px solid rgba(255,255,255,.08)',
+                border: `1px solid ${THEME.grid}`,
                 backdropFilter: 'blur(8px)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{
                         width: 36, height: 36, borderRadius: 10,
-                        background: 'rgba(99,102,241,.15)',
+                        background: `${THEME.primary}26`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: '1px solid rgba(99,102,241,.3)'
+                        border: `1px solid ${THEME.primary}4D`
                     }}>
-                        <Zap size={18} color="#a5b4fc" />
+                        <Zap size={18} color={THEME.primary} />
                     </div>
                     <div>
-                        <div style={{ fontWeight: 800, fontSize: 16, color: '#f1f5f9', letterSpacing: -.2 }}>Vacuum & Maintenance</div>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 1 }}>{fmt(tables.length)} tables monitored</div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: THEME.textMain, letterSpacing: -.2 }}>Vacuum & Maintenance</div>
+                        <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 1 }}>{fmt(tables.length)} tables monitored</div>
                     </div>
                     {workers.length > 0 && (
-                        <span className="vm-badge" style={{ background: 'rgba(16,185,129,.12)', color: '#34d399', border: '1px solid rgba(16,185,129,.3)', animation: 'vmPulse 2s infinite' }}>
+                        <span className="vm-badge" style={{ background: `${THEME.success}1F`, color: THEME.success, border: `1px solid ${THEME.success}4D`, animation: 'vmPulse 2s infinite' }}>
                             <Activity size={10} /> {workers.length} worker{workers.length > 1 ? 's' : ''} active
                         </span>
                     )}
                     {critBloat > 0 && (
-                        <span className="vm-badge" style={{ background: 'rgba(239,68,68,.12)', color: '#f87171', border: '1px solid rgba(239,68,68,.3)' }}>
+                        <span className="vm-badge" style={{ background: `${THEME.danger}1F`, color: THEME.danger, border: `1px solid ${THEME.danger}4D` }}>
                             <AlertTriangle size={10} /> {critBloat} critical
                         </span>
                     )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {lastAt && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: THEME.textDim }}>
                             <Clock size={11} /> {fmtRel(lastAt)}
                         </div>
                     )}
@@ -434,9 +439,9 @@ export default function VacuumMaintenanceTab() {
                         value={autoRfsh}
                         onChange={e => setAutoRfsh(+e.target.value)}
                         style={{
-                            background: 'rgba(255,255,255,.06)',
-                            border: '1px solid rgba(255,255,255,.1)',
-                            color: 'rgba(255,255,255,.7)',
+                            background: THEME.surface,
+                            border: `1px solid ${THEME.grid}`,
+                            color: THEME.textMain,
                             borderRadius: 8, padding: '5px 10px',
                             fontSize: 12, outline: 'none', cursor: 'pointer',
                             fontFamily: 'inherit'
@@ -453,9 +458,9 @@ export default function VacuumMaintenanceTab() {
                         style={{
                             display: 'flex', alignItems: 'center', gap: 7,
                             padding: '7px 16px', borderRadius: 9,
-                            border: '1px solid rgba(99,102,241,.4)',
-                            background: 'rgba(99,102,241,.12)',
-                            color: '#a5b4fc', cursor: 'pointer',
+                            border: `1px solid ${THEME.primary}66`,
+                            background: `${THEME.primary}1F`,
+                            color: THEME.primary, cursor: 'pointer',
                             fontSize: 13, fontWeight: 700,
                             fontFamily: 'inherit', transition: 'all .2s'
                         }}
@@ -469,9 +474,9 @@ export default function VacuumMaintenanceTab() {
             {/* ── Error ─────────────────────────────────────────────────── */}
             {error && (
                 <div style={{
-                    padding: 14, background: 'rgba(239,68,68,.1)',
-                    border: '1px solid rgba(239,68,68,.3)',
-                    borderRadius: 12, color: '#f87171',
+                    padding: 14, background: `${THEME.danger}1A`,
+                    border: `1px solid ${THEME.danger}4D`,
+                    borderRadius: 12, color: THEME.danger,
                     fontSize: 13, display: 'flex', alignItems: 'center', gap: 9
                 }}>
                     <AlertCircle size={16} /> {error}
@@ -485,7 +490,7 @@ export default function VacuumMaintenanceTab() {
                     label="Active Workers"
                     value={workers.length}
                     sub={workers.length === 0 ? 'All idle' : workers.map(w => w.table_name || w.datname).join(', ').slice(0, 28) + '…'}
-                    accent={workers.length > 0 ? '#10b981' : '#6366f1'}
+                    accent={workers.length > 0 ? THEME.success : THEME.primary}
                     delay={0}
                 />
                 <MetricCard
@@ -493,7 +498,7 @@ export default function VacuumMaintenanceTab() {
                     label="High-Bloat Tables"
                     value={highBloat}
                     sub=">10% dead tuples"
-                    accent="#f59e0b"
+                    accent={THEME.warning}
                     warn={highBloat > 0}
                     delay={60}
                 />
@@ -502,7 +507,7 @@ export default function VacuumMaintenanceTab() {
                     label="Never Vacuumed"
                     value={neverVac}
                     sub="No vacuum history"
-                    accent="#ef4444"
+                    accent={THEME.danger}
                     critical={neverVac > 0}
                     delay={120}
                 />
@@ -511,7 +516,7 @@ export default function VacuumMaintenanceTab() {
                     label="Avg Dead Tuple %"
                     value={`${avgDeadPct}%`}
                     sub={`${fmt(totalDead)} total dead rows`}
-                    accent={Number(avgDeadPct) > 10 ? '#f59e0b' : '#10b981'}
+                    accent={Number(avgDeadPct) > 10 ? THEME.warning : THEME.success}
                     warn={Number(avgDeadPct) > 10}
                     delay={180}
                 />
@@ -519,11 +524,11 @@ export default function VacuumMaintenanceTab() {
 
             {/* ── Active autovacuum workers ─────────────────────────────── */}
             {workers.length > 0 && (
-                <div className="vm-card" style={{ borderColor: 'rgba(16,185,129,.25)' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Activity size={14} color="#10b981" />
+                <div className="vm-card" style={{ borderColor: `${THEME.success}40` }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Activity size={14} color={THEME.success} />
                         Active Autovacuum Workers
-                        <span className="vm-badge" style={{ background: 'rgba(16,185,129,.1)', color: '#34d399', border: '1px solid rgba(16,185,129,.2)', marginLeft: 4 }}>
+                        <span className="vm-badge" style={{ background: `${THEME.success}1A`, color: THEME.success, border: `1px solid ${THEME.success}33`, marginLeft: 4 }}>
                             {workers.length} running
                         </span>
                     </div>
@@ -533,11 +538,11 @@ export default function VacuumMaintenanceTab() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <span className="vm-dot active" />
                                     <div>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{w.table_name || w.datname}</div>
-                                        <div className="vm-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', marginTop: 2 }}>PID {w.pid} · {w.datname}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{w.table_name || w.datname}</div>
+                                        <div className="vm-mono" style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>PID {w.pid} · {w.datname}</div>
                                     </div>
                                 </div>
-                                <span className="vm-mono" style={{ fontSize: 12, color: '#34d399', fontWeight: 700 }}>
+                                <span className="vm-mono" style={{ fontSize: 12, color: THEME.success, fontWeight: 700 }}>
                                     {w.duration_sec ? `${w.duration_sec}s` : 'Running'}
                                 </span>
                             </div>
@@ -560,7 +565,7 @@ export default function VacuumMaintenanceTab() {
                         <Icon size={13} /> {label}
                     </button>
                 ))}
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(255,255,255,.25)', fontFamily: THEME.fontMono }}>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>
                     {activeTab === 'tables' ? `${filtered.length} of ${tables.length} tables` : `${settings.length} settings`}
                 </span>
             </div>
@@ -569,9 +574,9 @@ export default function VacuumMaintenanceTab() {
             {activeTab === 'tables' && (
                 <div className="vm-card" style={{ padding: 0 }}>
                     {/* Filters */}
-                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: `1px solid ${THEME.grid}` }}>
                         <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
-                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)' }} />
+                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
                             <input
                                 className="vm-input"
                                 placeholder="Search tables…"
@@ -585,9 +590,9 @@ export default function VacuumMaintenanceTab() {
                             style={{
                                 display: 'flex', alignItems: 'center', gap: 6,
                                 padding: '8px 14px', borderRadius: 9,
-                                border: `1px solid ${filterHigh ? 'rgba(245,158,11,.5)' : 'rgba(255,255,255,.1)'}`,
-                                background: filterHigh ? 'rgba(245,158,11,.1)' : 'transparent',
-                                color: filterHigh ? '#fbbf24' : 'rgba(255,255,255,.4)',
+                                border: `1px solid ${filterHigh ? `${THEME.warning}80` : THEME.grid}`,
+                                background: filterHigh ? `${THEME.warning}1A` : 'transparent',
+                                color: filterHigh ? THEME.warning : THEME.textDim,
                                 cursor: 'pointer', fontSize: 12, fontWeight: 700,
                                 fontFamily: 'inherit', transition: 'all .2s'
                             }}
@@ -609,7 +614,7 @@ export default function VacuumMaintenanceTab() {
                     {/* Rows */}
                     <div style={{ maxHeight: 480, overflowY: 'auto' }}>
                         {filtered.length === 0 ? (
-                            <div style={{ padding: 50, textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: 13 }}>
+                            <div style={{ padding: 50, textAlign: 'center', color: THEME.textDim, fontSize: 13 }}>
                                 No tables match the current filter.
                             </div>
                         ) : (
@@ -626,20 +631,20 @@ export default function VacuumMaintenanceTab() {
                                         className="vm-row"
                                         style={{
                                             gridTemplateColumns: COLS,
-                                            borderLeft: `3px solid ${isCritical ? '#ef4444' : isHigh ? '#f59e0b' : 'transparent'}`
+                                            borderLeft: `3px solid ${isCritical ? THEME.danger : isHigh ? THEME.warning : 'transparent'}`
                                         }}
                                     >
                                         {/* Table name */}
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                                 <span className={`vm-dot ${isCritical ? 'critical' : isHigh ? 'high' : 'ok'}`} />
-                                                <span style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.relname}</span>
+                                                <span style={{ fontWeight: 700, color: THEME.textMain, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.relname}</span>
                                             </div>
-                                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2, marginLeft: 14 }}>{t.schemaname} · {t.total_size}</div>
+                                            <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, marginLeft: 14 }}>{t.schemaname} · {t.total_size}</div>
                                         </div>
 
                                         {/* Dead tuples */}
-                                        <span className="vm-mono" style={{ fontSize: 12, color: Number(t.n_dead_tup) > 0 ? '#fbbf24' : 'rgba(255,255,255,.3)' }}>
+                                        <span className="vm-mono" style={{ fontSize: 12, color: Number(t.n_dead_tup) > 0 ? THEME.warning : THEME.textDim }}>
                                             {fmt(t.n_dead_tup)}
                                         </span>
 
@@ -655,7 +660,7 @@ export default function VacuumMaintenanceTab() {
                                         {/* Action */}
                                         <div>
                                             {msg ? (
-                                                <span className="vm-mono" style={{ fontSize: 11, fontWeight: 700, color: msg.startsWith('✓') ? '#34d399' : '#f87171' }}>
+                                                <span className="vm-mono" style={{ fontSize: 11, fontWeight: 700, color: msg.startsWith('✓') ? THEME.success : THEME.danger }}>
                                                     {msg}
                                                 </span>
                                             ) : (
@@ -678,11 +683,11 @@ export default function VacuumMaintenanceTab() {
                     </div>
 
                     {/* Footer */}
-                    <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>
+                    <div style={{ padding: '10px 16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: THEME.textDim }}>
                             {filtered.length} of {tables.length} tables
                         </span>
-                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>
+                        <span style={{ fontSize: 11, color: THEME.textDim }}>
                             Left border = severity · Click Vacuum to run VACUUM ANALYZE
                         </span>
                     </div>
@@ -692,22 +697,22 @@ export default function VacuumMaintenanceTab() {
             {/* ── Autovacuum settings ───────────────────────────────────── */}
             {activeTab === 'settings' && (
                 <div className="vm-card">
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Settings size={14} color="rgba(255,255,255,.4)" />
+                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Settings size={14} color={THEME.textDim} />
                         Autovacuum Configuration
                     </div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.3)', marginBottom: 20, lineHeight: 1.6 }}>
-                        Read from <span className="vm-mono" style={{ color: 'rgba(255,255,255,.5)', fontSize: 11 }}>pg_settings</span>. To modify, edit <span className="vm-mono" style={{ color: 'rgba(255,255,255,.5)', fontSize: 11 }}>postgresql.conf</span> or use <span className="vm-mono" style={{ color: '#a5b4fc', fontSize: 11 }}>ALTER SYSTEM</span> + <span className="vm-mono" style={{ color: '#a5b4fc', fontSize: 11 }}>SELECT pg_reload_conf()</span>.
+                    <div style={{ fontSize: 12, color: THEME.textDim, marginBottom: 20, lineHeight: 1.6 }}>
+                        Read from <span className="vm-mono" style={{ color: THEME.textMuted, fontSize: 11 }}>pg_settings</span>. To modify, edit <span className="vm-mono" style={{ color: THEME.textMuted, fontSize: 11 }}>postgresql.conf</span> or use <span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>ALTER SYSTEM</span> + <span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>SELECT pg_reload_conf()</span>.
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 48px' }}>
                         {settings.map(s => (
                             <div key={s.name} className="vm-setting-row">
                                 <div style={{ flex: 1 }}>
-                                    <div className="vm-mono" style={{ fontWeight: 600, color: '#e2e8f0', fontSize: 12 }}>{s.name}</div>
-                                    {s.short_desc && <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 3 }}>{s.short_desc}</div>}
+                                    <div className="vm-mono" style={{ fontWeight: 600, color: THEME.textMain, fontSize: 12 }}>{s.name}</div>
+                                    {s.short_desc && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 3 }}>{s.short_desc}</div>}
                                 </div>
-                                <span className="vm-mono" style={{ fontSize: 12, fontWeight: 700, color: '#a5b4fc', marginLeft: 16, whiteSpace: 'nowrap' }}>
+                                <span className="vm-mono" style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginLeft: 16, whiteSpace: 'nowrap' }}>
                                     {s.setting}{s.unit ? ` ${s.unit}` : ''}
                                 </span>
                             </div>
@@ -717,18 +722,18 @@ export default function VacuumMaintenanceTab() {
                     {/* Tuning tips */}
                     <div style={{
                         marginTop: 24, padding: '16px 18px',
-                        background: 'rgba(99,102,241,.07)',
-                        border: '1px solid rgba(99,102,241,.2)',
+                        background: `${THEME.primary}12`,
+                        border: `1px solid ${THEME.primary}33`,
                         borderRadius: 12
                     }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#a5b4fc', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 7 }}>
-                            <Zap size={12} color="#a5b4fc" /> Tuning Tips
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 7 }}>
+                            <Zap size={12} color={THEME.primary} /> Tuning Tips
                         </div>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', lineHeight: 1.8 }}>
-                            • Reduce <span className="vm-mono" style={{ color: '#e2e8f0', fontSize: 11 }}>autovacuum_vacuum_scale_factor</span> (e.g. 0.01) for large tables to vacuum more aggressively.<br />
-                            • Increase <span className="vm-mono" style={{ color: '#e2e8f0', fontSize: 11 }}>autovacuum_vacuum_cost_delay</span> to reduce I/O impact during business hours.<br />
-                            • Set <span className="vm-mono" style={{ color: '#e2e8f0', fontSize: 11 }}>autovacuum_max_workers</span> higher if multiple large tables bloat simultaneously.<br />
-                            • Use per-table storage parameters (<span className="vm-mono" style={{ color: '#a5b4fc', fontSize: 11 }}>ALTER TABLE … SET autovacuum_…</span>) to override global settings.
+                        <div style={{ fontSize: 12, color: THEME.textDim, lineHeight: 1.8 }}>
+                            • Reduce <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>autovacuum_vacuum_scale_factor</span> (e.g. 0.01) for large tables to vacuum more aggressively.<br />
+                            • Increase <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>autovacuum_vacuum_cost_delay</span> to reduce I/O impact during business hours.<br />
+                            • Set <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>autovacuum_max_workers</span> higher if multiple large tables bloat simultaneously.<br />
+                            • Use per-table storage parameters (<span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>ALTER TABLE … SET autovacuum_…</span>) to override global settings.
                         </div>
                     </div>
                 </div>

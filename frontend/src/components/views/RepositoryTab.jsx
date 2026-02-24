@@ -204,7 +204,7 @@ const RepoStyles = () => (
 );
 
 const PROV = {
-    github:    { label:'GitHub',    Icon:Github,    color:'#e2e8f4' },
+    github:    { label:'GitHub',    Icon:Github,    color:'#6e7681' },
     gitlab:    { label:'GitLab',    Icon:Gitlab,    color:'#fc6d26' },
     local:     { label:'Local',     Icon:HardDrive, color:THEME.info },
     bitbucket: { label:'Bitbucket', Icon:GitBranch, color:'#0052cc' },
