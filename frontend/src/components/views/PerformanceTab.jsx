@@ -129,12 +129,6 @@ const MiniSparkline = ({ data, color, width = 80, height = 24 }) => {
     const id = `msp-${color.replace(/[^a-z0-9]/gi, '')}${Math.random().toString(36).slice(2, 6)}`;
     return (
         <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
-            <defs>
-                <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={color} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={color} stopOpacity={0} />
-                </linearGradient>
-            </defs>
             <polygon points={`0,${height} ${pts} ${width},${height}`} fill={`url(#${id})`} />
             <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -720,7 +714,7 @@ const ParallelQueryPanel = ({ stats }) => {
                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[0, maxWorkers + 1]} />
                         <Tooltip content={<ChartTooltip />} />
                         <ReferenceLine y={maxWorkers} stroke={`${THEME.danger}50`} strokeDasharray="4 4" label={{ value: 'max', position: 'right', fontSize: 9, fill: THEME.danger }} />
-                        <Area type="monotone" dataKey="workers" stroke={THEME.primary} fill={`${THEME.primary}15`} strokeWidth={2} name="Active Workers" />
+                        <Area type="monotone" dataKey="workers" stroke={THEME.primary} fill="none" strokeWidth={2} name="Active Workers" />
                         <Bar dataKey="queries" fill={`${THEME.success}30`} radius={[2, 2, 0, 0]} name="Parallel Queries" />
                     </ComposedChart>
                 </ResponsiveContainer>
@@ -1048,22 +1042,12 @@ const GenericCustomPlanPanel = ({ slowQueries }) => {
             <GlassCard title="Plan Selection Over Time">
                 <ResponsiveContainer width="100%" height={130}>
                     <AreaChart data={planData.timelineData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                        <defs>
-                            <linearGradient id="genGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.3} />
-                                <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="custGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={THEME.success} stopOpacity={0.3} />
-                                <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
                         <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Area type="monotone" dataKey="generic" stroke={THEME.primary} fill="url(#genGrad)" strokeWidth={1.5} name="Generic Plans" />
-                        <Area type="monotone" dataKey="custom" stroke={THEME.success} fill="url(#custGrad)" strokeWidth={1.5} name="Custom Plans" />
+                        <Area type="monotone" dataKey="generic" stroke={THEME.primary} fill="none" strokeWidth={1.5} name="Generic Plans" />
+                        <Area type="monotone" dataKey="custom" stroke={THEME.success} fill="none" strokeWidth={1.5} name="Custom Plans" />
                         <Bar dataKey="replan" fill={`${THEME.warning}50`} radius={[1, 1, 0, 0]} name="Re-plans" />
                     </AreaChart>
                 </ResponsiveContainer>
@@ -1162,7 +1146,7 @@ const TempFileTracker = ({ slowQueries }) => {
                         <YAxis yAxisId="size" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                         <YAxis yAxisId="files" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Area yAxisId="size" type="monotone" dataKey="sizeKB" stroke={THEME.warning} fill={`${THEME.warning}15`} strokeWidth={1.5} name="Size KB" />
+                        <Area yAxisId="size" type="monotone" dataKey="sizeKB" stroke={THEME.warning} fill="none" strokeWidth={1.5} name="Size KB" />
                         <Bar yAxisId="files" dataKey="files" fill={`${THEME.danger}40`} radius={[2, 2, 0, 0]} name="File Count" />
                     </ComposedChart>
                 </ResponsiveContainer>
@@ -1329,7 +1313,7 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
     return (
         <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}>
             <div onClick={e => e.stopPropagation()} style={{ width: 480, background: THEME.surface, border: `1px solid ${THEME.danger}30`, borderRadius: 16, overflow: 'hidden' }}>
-                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, background: `linear-gradient(135deg, ${THEME.danger}10, transparent)`, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, background: THEME.surface, display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 8, background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <XCircle size={18} color={THEME.danger} />
                     </div>
@@ -1403,7 +1387,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
             <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                 <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {/* Header */}
-                    <div style={{ padding: '16px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(135deg, ${THEME.danger}08, transparent)` }}>
+                    <div style={{ padding: '16px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <div style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, '--glow-color': THEME.danger }}>
                                 <AlertTriangle size={18} color={THEME.danger} />
@@ -1508,7 +1492,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                                     <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={2} />
                                                     <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                                                     <Tooltip content={<ChartTooltip />} />
-                                                    <Area type="monotone" dataKey="ms" stroke={THEME.danger} fill={`${THEME.danger}10`} strokeWidth={2} />
+                                                    <Area type="monotone" dataKey="ms" stroke={THEME.danger} fill="none" strokeWidth={2} />
                                                     <ReferenceLine y={Number(queryData.mean_time_ms)} stroke={`${THEME.warning}60`} strokeDasharray="4 4" label={{ value: 'avg', position: 'right', fontSize: 9, fill: THEME.warning }} />
                                                 </ComposedChart>
                                             </ResponsiveContainer>
@@ -1577,7 +1561,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                                 onMouseEnter={e => { e.currentTarget.style.borderColor = THEME.primary; e.currentTarget.style.color = THEME.primary; }}
                                                 onMouseLeave={e => { e.currentTarget.style.borderColor = THEME.glassBorder; e.currentTarget.style.color = THEME.textMuted; }}
                                         ><Play size={13} /> Test in Sandbox</button>
-                                        <button onClick={handleApply} disabled={isApplying} style={{ padding: 11, borderRadius: 8, border: 'none', cursor: isApplying ? 'wait' : 'pointer', fontWeight: 700, fontSize: 12, color: '#fff', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isApplying ? 0.8 : 1 }}>
+                                        <button onClick={handleApply} disabled={isApplying} style={{ padding: 11, borderRadius: 8, border: 'none', cursor: isApplying ? 'wait' : 'pointer', fontWeight: 700, fontSize: 12, color: '#fff', background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isApplying ? 0.8 : 1 }}>
                                             {isApplying ? <RotateCcw size={13} className="perf-spin" /> : <Sparkles size={13} />}
                                             {isApplying ? 'Applying…' : 'Apply Optimization'}
                                         </button>
@@ -1773,7 +1757,7 @@ const PerformanceTab = () => {
     const ViewTab = ({ id, label, icon: Icon, badge }) => {
         const active = activeView === id;
         return (
-            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', whiteSpace: 'nowrap', background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})` : THEME.surface, color: active ? '#fff' : THEME.textMuted, border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
+            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', whiteSpace: 'nowrap', background: active ? THEME.primary : THEME.surface, color: active ? '#fff' : THEME.textMuted, border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
                 <Icon size={14} style={{ flexShrink: 0 }} /> {label}
                 {badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.warning}15`, color: active ? '#fff' : THEME.warning, border: active ? '1px solid rgba(255,255,255,0.2)' : `1px solid ${THEME.warning}25`, marginLeft: 2 }}>{badge}</span>}
             </button>
@@ -1886,22 +1870,12 @@ const PerformanceTab = () => {
                         <div style={{ flex: 1, width: '100%', minHeight: 180 }}>
                             <ResponsiveContainer width="100%" height={180}>
                                 <AreaChart data={sessionTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                    <defs>
-                                        <linearGradient id="perfActiveGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.35} />
-                                            <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
-                                        </linearGradient>
-                                        <linearGradient id="perfIdleGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor={THEME.textDim} stopOpacity={0.15} />
-                                            <stop offset="100%" stopColor={THEME.textDim} stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
                                     <CartesianGrid stroke={`${THEME.grid}40`} strokeDasharray="3 3" vertical={false} />
                                     <XAxis dataKey="t" tick={{ fontSize: 10, fill: THEME.textDim }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                                     <YAxis tick={{ fontSize: 10, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
                                     <Tooltip content={<ChartTooltip />} />
-                                    <Area type="monotone" dataKey="idle" stroke={`${THEME.textDim}60`} strokeWidth={1.5} fill="url(#perfIdleGrad)" fillOpacity={1} />
-                                    <Area type="monotone" dataKey="active" stroke={THEME.primary} strokeWidth={2} fill="url(#perfActiveGrad)" fillOpacity={1} />
+                                    <Area type="monotone" dataKey="idle" stroke={`${THEME.textDim}60`} strokeWidth={1.5} fill="none" />
+                                    <Area type="monotone" dataKey="active" stroke={THEME.primary} strokeWidth={2} fill="none" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -2127,7 +2101,7 @@ const PerformanceTab = () => {
                         <GlassCard title="Lock Blocking Tree" rightNode={
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 {locks.length > 0 && <LiveDot color={THEME.danger} size={7} />}
-                                <span style={{  padding: '3px 10px', borderRadius: 5, background: locks.length > 0 ? `${THEME.danger}12` : `${THEME.success}10`, color: locks.length > 0 ? THEME.danger : THEME.success, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}`, fontWeight: 700, fontSize: 10 }}>
+                                <span style={{   padding: '3px 10px', borderRadius: 5, background: locks.length > 0 ? `${THEME.danger}12` : `${THEME.success}10`, color: locks.length > 0 ? THEME.danger : THEME.success, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}`, fontWeight: 700, fontSize: 10 }}>
                                     {locks.length > 0 ? `${locks.length} active blocks` : 'No blocks'}
                                 </span>
                             </div>
@@ -2283,7 +2257,7 @@ const PerformanceTab = () => {
                                 </GlassCard>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.glass, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
                                 {[
                                     { label: 'Cache Hit', value: `${stats?.cache_hit_ratio || 99.2}%`, color: THEME.success, icon: CheckCircle },
                                     { label: 'Tx/sec', value: stats?.tps || '1.2k', color: THEME.primary, icon: Zap },
@@ -2341,21 +2315,13 @@ const PerformanceTab = () => {
                             <GlassCard title="Memory Usage Trends">
                                 <ResponsiveContainer width="100%" height={220}>
                                     <AreaChart data={memTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                        <defs>
-                                            {[['memUsed', THEME.success], ['memSwap', THEME.warning], ['memBuf', THEME.primary]].map(([id, color]) => (
-                                                <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor={color} stopOpacity={0.3} />
-                                                    <stop offset="100%" stopColor={color} stopOpacity={0} />
-                                                </linearGradient>
-                                            ))}
-                                        </defs>
                                         <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="%" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Area type="monotone" dataKey="buffers" stroke={THEME.primary} fill="url(#memBuf)" strokeWidth={1.5} name="Buffers %" />
-                                        <Area type="monotone" dataKey="swap" stroke={THEME.warning} fill="url(#memSwap)" strokeWidth={1.5} name="Swap %" />
-                                        <Area type="monotone" dataKey="used" stroke={THEME.success} fill="url(#memUsed)" strokeWidth={2} name="RAM %" />
+                                        <Area type="monotone" dataKey="buffers" stroke={THEME.primary} fill="none" strokeWidth={1.5} name="Buffers %" />
+                                        <Area type="monotone" dataKey="swap" stroke={THEME.warning} fill="none" strokeWidth={1.5} name="Swap %" />
+                                        <Area type="monotone" dataKey="used" stroke={THEME.success} fill="none" strokeWidth={2} name="RAM %" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </GlassCard>
@@ -2398,20 +2364,12 @@ const PerformanceTab = () => {
                             <GlassCard title="Network Throughput (KB/s)">
                                 <ResponsiveContainer width="100%" height={220}>
                                     <AreaChart data={networkTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                        <defs>
-                                            {[['netIn', THEME.primary], ['netOut', THEME.success]].map(([id, color]) => (
-                                                <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor={color} stopOpacity={0.3} />
-                                                    <stop offset="100%" stopColor={color} stopOpacity={0} />
-                                                </linearGradient>
-                                            ))}
-                                        </defs>
                                         <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="KB" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Area type="monotone" dataKey="bytesIn" stroke={THEME.primary} fill="url(#netIn)" strokeWidth={2} name="In KB/s" />
-                                        <Area type="monotone" dataKey="bytesOut" stroke={THEME.success} fill="url(#netOut)" strokeWidth={2} name="Out KB/s" />
+                                        <Area type="monotone" dataKey="bytesIn" stroke={THEME.primary} fill="none" strokeWidth={2} name="In KB/s" />
+                                        <Area type="monotone" dataKey="bytesOut" stroke={THEME.success} fill="none" strokeWidth={2} name="Out KB/s" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </GlassCard>
@@ -2434,7 +2392,7 @@ const PerformanceTab = () => {
                                         <YAxis yAxisId="ratio" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[94, 100]} unit="%" />
                                         <YAxis yAxisId="dirty" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="%" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Area yAxisId="ratio" type="monotone" dataKey="hitRatio" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={2} name="Hit Ratio %" />
+                                        <Area yAxisId="ratio" type="monotone" dataKey="hitRatio" stroke={THEME.success} fill="none" strokeWidth={2} name="Hit Ratio %" />
                                         <Line yAxisId="dirty" type="monotone" dataKey="dirtyPages" stroke={THEME.warning} strokeWidth={1.5} dot={false} name="Dirty %" />
                                         {bufferData.map((d, i) => d.checkpoints > 0 && (
                                             <ReferenceLine key={i} yAxisId="ratio" x={d.t} stroke={`${THEME.primary}60`} strokeDasharray="3 3" label={{ value: '⟳', position: 'top', fontSize: 10, fill: THEME.primary }} />

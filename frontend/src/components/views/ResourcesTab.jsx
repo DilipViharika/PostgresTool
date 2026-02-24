@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — ResourcesTab  (v4 — Auto-Refresh)
+//  VIGIL — ResourcesTab  (v5 — Full Analytics Suite)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
@@ -11,14 +11,18 @@ import {
     Cpu, Server, Trash2, RefreshCw, CheckCircle, Filter,
     AlertTriangle, ArrowUpRight, ArrowDownRight, Clock, Layers, BarChart3,
     Activity, Zap, TrendingUp, TrendingDown, Eye, GitBranch,
-    Table2, ArrowUp, ArrowDown, Gauge, Network,
+    Table2, ArrowUp, ArrowDown, Gauge, Network, ChevronLeft,
     Timer, Radio, ShieldAlert, Settings, PieChart as PieIcon,
-    MemoryStick, X, Wifi, WifiOff
+    MemoryStick, X, Wifi, WifiOff, Snowflake, Archive,
+    Package, Scan, TriangleAlert, Flame, FlaskConical,
+    CalendarDays, Ban, Plus, Edit3, Save, Trash, RotateCcw,
+    PackageOpen, Shield, EyeOff, AlertCircle, FileX, Layers3,
 } from 'lucide-react';
 import {
-    ResponsiveContainer, AreaChart, Area, BarChart, Bar,
+    ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line,
     XAxis, YAxis, Tooltip, CartesianGrid, Cell,
-    PieChart as RePieChart, Pie
+    PieChart as RePieChart, Pie, Legend,
+    RadarChart, Radar, PolarGrid, PolarAngleAxis,
 } from 'recharts';
 import AdvancedAnalysisPanel from './AdvancedAnalysisPanel';
 
@@ -60,6 +64,15 @@ const ResStyles = () => (
             40%  { box-shadow: 0 0 0 6px ${THEME.success}30; }
             100% { box-shadow: 0 0 0 0 ${THEME.success}00; }
         }
+        @keyframes resTreeExpand {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes resFreezeShiver {
+            0%, 100% { transform: translateX(0); }
+            25%      { transform: translateX(-1px); }
+            75%      { transform: translateX(1px); }
+        }
         .res-resolved-flash { animation: resResolveFlash 0.8s ease-out; }
         .res-stagger > * { animation: resFadeIn 0.4s ease-out both; }
         .res-stagger > *:nth-child(1) { animation-delay: 0.00s; }
@@ -78,20 +91,23 @@ const ResStyles = () => (
         .res-scrollbar::-webkit-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }
         .res-refresh-spin { animation: resSpin 0.8s linear infinite; }
         .res-metric-flash { animation: resFlashBg 1s ease-out; }
+        .res-tree-node { animation: resTreeExpand 0.2s ease-out both; }
+        .res-freeze-urgent { animation: resFreezeShiver 0.4s ease-in-out 2; }
+        .res-policy-row:hover .res-policy-actions { opacity: 1 !important; }
     `}</style>
 );
 
 /* ── Refresh interval options ── */
 const REFRESH_INTERVALS = [
-    { label: '10s',  value: 10 },
-    { label: '30s',  value: 30 },
-    { label: '1m',   value: 60 },
-    { label: '5m',   value: 300 },
-    { label: 'Off',  value: 0 },
+    { label: '10s', value: 10 },
+    { label: '30s', value: 30 },
+    { label: '1m',  value: 60 },
+    { label: '5m',  value: 300 },
+    { label: 'Off', value: 0 },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PANEL — manual glass card
+   PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
 const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing }) => (
     <div style={{
@@ -130,7 +146,6 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
 /* ═══════════════════════════════════════════════════════════════════════════
    MICRO-COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
-
 const StatusBadge = ({ label, color }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -179,8 +194,7 @@ const RingGauge = ({ value, color, size = 44, strokeWidth = 4 }) => {
                 <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={strokeWidth}
                         strokeDasharray={`${filled} ${circ - filled}`} strokeLinecap="round"
                         transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                        style={{ transition: 'stroke-dasharray 1s ease' }}
-                />
+                        style={{ transition: 'stroke-dasharray 1s ease' }} />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>{value}%</div>
         </div>
@@ -205,6 +219,12 @@ const ChartTooltip = ({ active, payload, label }) => {
 
 /* ── Helpers ── */
 const bloatColor = (pct) => pct > 30 ? THEME.danger : pct > 15 ? THEME.warning : THEME.success;
+const freezeColor = (age) => age > 1_500_000_000 ? THEME.danger : age > 1_000_000_000 ? THEME.warning : age > 500_000_000 ? `${THEME.warning}aa` : THEME.success;
+const fmtXID = (n) => {
+    if (n >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
+    if (n >= 1e6) return `${(n / 1e6).toFixed(0)}M`;
+    return String(n);
+};
 
 const fmtSize = (gb) => {
     if (gb == null) return '—';
@@ -252,12 +272,118 @@ const genDiskIO = () => {
     }));
 };
 
+/* ── NEW: Table Growth Rate (MB/day over 14 days for top 10 tables) ── */
+const genTableGrowthRate = (tables) => {
+    const days = Array.from({ length: 14 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (13 - i));
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    const top10 = tables.slice(0, 10);
+    const COLORS = [
+        THEME.primary, THEME.secondary, THEME.success, THEME.warning, THEME.danger,
+        '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899',
+    ];
+
+    return {
+        days,
+        series: top10.map((t, i) => {
+            const baseRate = Number(t.total_size_gb || 1) * (Math.random() * 3 + 0.5);
+            return {
+                name: t.table_name,
+                color: COLORS[i % COLORS.length],
+                data: days.map(() => Math.max(0, baseRate + (Math.random() - 0.3) * baseRate * 0.6)),
+            };
+        }),
+    };
+};
+
+/* ── NEW: Tablespace I/O breakdown ── */
+const genTablespaceIO = () => [
+    { name: 'pg_default',    readsMB: 1240, writesMB: 580,  sizePct: 72, tables: 34, status: 'Normal' },
+    { name: 'pg_global',     readsMB: 88,   writesMB: 12,   sizePct: 4,  tables: 5,  status: 'Normal' },
+    { name: 'tbs_archive',   readsMB: 320,  writesMB: 40,   sizePct: 18, tables: 12, status: 'Normal' },
+    { name: 'tbs_audit',     readsMB: 610,  writesMB: 890,  sizePct: 6,  tables: 3,  status: 'High Write' },
+];
+
+/* ── NEW: Partitioned table hierarchy ── */
+const genPartitions = () => [
+    {
+        parent: 'events_log',
+        total_gb: 48.2,
+        strategy: 'RANGE (created_at)',
+        children: [
+            { name: 'events_log_2025_q1', gb: 14.1, rows: 8_200_000, status: 'detach_ready' },
+            { name: 'events_log_2025_q2', gb: 12.8, rows: 7_600_000, status: 'active' },
+            { name: 'events_log_2025_q3', gb: 11.4, rows: 6_900_000, status: 'active' },
+            { name: 'events_log_2025_q4', gb: 9.9,  rows: 5_800_000, status: 'active' },
+        ],
+    },
+    {
+        parent: 'audit_events',
+        total_gb: 21.7,
+        strategy: 'RANGE (event_date)',
+        children: [
+            { name: 'audit_events_2024',  gb: 9.3,  rows: 3_100_000, status: 'detach_ready' },
+            { name: 'audit_events_2025',  gb: 12.4, rows: 4_200_000, status: 'active' },
+        ],
+    },
+    {
+        parent: 'user_sessions',
+        total_gb: 6.8,
+        strategy: 'HASH (user_id, 4)',
+        children: [
+            { name: 'user_sessions_p0', gb: 1.8, rows: 920_000,  status: 'active' },
+            { name: 'user_sessions_p1', gb: 1.7, rows: 880_000,  status: 'active' },
+            { name: 'user_sessions_p2', gb: 1.6, rows: 850_000,  status: 'active' },
+            { name: 'user_sessions_p3', gb: 1.7, rows: 870_000,  status: 'active' },
+        ],
+    },
+];
+
+/* ── NEW: Freeze urgency data ── */
+const genFreezeData = (tables) => {
+    return tables.map(t => ({
+        table_name: t.table_name,
+        oldest_xid_age: Math.round(Math.random() * 1_800_000_000 + 50_000_000),
+        freeze_threshold: 2_000_000_000,
+        last_freeze: `${Math.round(Math.random() * 30 + 1)}d ago`,
+    })).sort((a, b) => b.oldest_xid_age - a.oldest_xid_age);
+};
+
+/* ── NEW: Dead code detector ── */
+const genDeadCode = () => ({
+    tables: [
+        { name: 'legacy_sms_queue',      last_read: '97 days ago',  reads_90d: 0,    size_gb: 2.1,  rows: 145_000,   columns: 12, risk: 'High'   },
+        { name: 'temp_migration_2023',   last_read: '190 days ago', reads_90d: 0,    size_gb: 0.8,  rows: 42_000,    columns: 8,  risk: 'High'   },
+        { name: 'deprecated_webhooks',   last_read: '112 days ago', reads_90d: 0,    size_gb: 0.3,  rows: 18_000,    columns: 15, risk: 'Medium' },
+        { name: 'beta_feature_flags_v1', last_read: '65 days ago',  reads_90d: 3,    size_gb: 0.1,  rows: 200,       columns: 6,  risk: 'Medium' },
+        { name: 'ab_test_results_2022',  last_read: '240 days ago', reads_90d: 0,    size_gb: 4.7,  rows: 3_200_000, columns: 22, risk: 'High'   },
+        { name: 'push_notification_log', last_read: '78 days ago',  reads_90d: 2,    size_gb: 1.2,  rows: 890_000,   columns: 9,  risk: 'Low'    },
+    ],
+    columns: [
+        { table: 'user_profiles',      column: 'fax_number',         last_read: '420 days ago', type: 'varchar', nullable: true },
+        { table: 'orders',             column: 'legacy_coupon_code',  last_read: '180 days ago', type: 'varchar', nullable: true },
+        { table: 'products',           column: 'discontinued_at_v1',  last_read: '95 days ago',  type: 'timestamp', nullable: true },
+        { table: 'notification_audit', column: 'sms_fallback_ref',    last_read: '310 days ago', type: 'uuid',    nullable: true },
+        { table: 'events_log',         column: 'geo_deprecated',      last_read: '200 days ago', type: 'jsonb',   nullable: true },
+    ],
+});
+
+/* ── NEW: Retention policies ── */
+const DEFAULT_POLICIES = [
+    { id: 1, table: 'events_log',           action: 'archive',  age_days: 365,  partition_col: 'created_at',  enabled: true,  last_run: '2026-02-01', runs: 24 },
+    { id: 2, table: 'audit_events',         action: 'archive',  age_days: 730,  partition_col: 'event_date',  enabled: true,  last_run: '2026-01-28', runs: 8  },
+    { id: 3, table: 'temp_migration_2023',  action: 'delete',   age_days: 1,    partition_col: null,          enabled: false, last_run: 'Never',      runs: 0  },
+    { id: 4, table: 'session_tokens',       action: 'delete',   age_days: 30,   partition_col: 'expires_at',  enabled: true,  last_run: '2026-02-10', runs: 60 },
+];
+
 /* ═══════════════════════════════════════════════════════════════════════════
    COUNTDOWN BAR
    ═══════════════════════════════════════════════════════════════════════════ */
 const CountdownBar = ({ intervalSec, lastRefreshed }) => {
     const [progress, setProgress] = useState(100);
-
     useEffect(() => {
         if (!intervalSec || !lastRefreshed) { setProgress(100); return; }
         const tick = () => {
@@ -268,7 +394,6 @@ const CountdownBar = ({ intervalSec, lastRefreshed }) => {
         const id = setInterval(tick, 250);
         return () => clearInterval(id);
     }, [intervalSec, lastRefreshed]);
-
     if (!intervalSec) return null;
     return (
         <div style={{ height: 2, background: `${THEME.primary}18`, borderRadius: 1, overflow: 'hidden' }}>
@@ -295,23 +420,17 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
             border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
             fontSize: 11,
         }}>
-            {/* Connection */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 {error ? <WifiOff size={11} color={THEME.danger} /> : <Wifi size={11} color={THEME.success} />}
                 <span style={{ color: error ? THEME.danger : THEME.success, fontWeight: 600 }}>
                     {error ? 'Connection error' : 'Connected'}
                 </span>
             </div>
-
             <div style={{ width: 1, height: 12, background: THEME.grid, flexShrink: 0 }} />
-
-            {/* Last updated */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: THEME.textDim }}>
                 <Clock size={10} />
                 <span>Last updated: <strong style={{ color: THEME.textMuted }}>{fmtLastRefreshed(lastRefreshed)}</strong></span>
             </div>
-
-            {/* Interval picker */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ color: THEME.textDim }}>Auto-refresh:</span>
                 <div style={{ display: 'flex', gap: 3 }}>
@@ -329,10 +448,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
                     })}
                 </div>
             </div>
-
             <div style={{ flex: 1 }} />
-
-            {/* Manual refresh */}
             <button onClick={onRefresh} disabled={isRefreshing} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 padding: '5px 12px', borderRadius: 7, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
@@ -341,8 +457,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
                 color: THEME.primary, transition: 'all 0.15s', opacity: isRefreshing ? 0.7 : 1,
             }}
                     onMouseEnter={e => { if (!isRefreshing) e.currentTarget.style.background = `${THEME.primary}28`; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = isRefreshing ? `${THEME.primary}10` : `${THEME.primary}18`; }}
-            >
+                    onMouseLeave={e => { e.currentTarget.style.background = isRefreshing ? `${THEME.primary}10` : `${THEME.primary}18`; }}>
                 <RefreshCw size={11} className={isRefreshing ? 'res-refresh-spin' : ''} />
                 {isRefreshing ? 'Refreshing…' : 'Refresh Now'}
             </button>
@@ -350,41 +465,21 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
     );
 };
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    CONFIRM OPTIMIZATION PANEL
-   Shows a checklist the user must verify before marking as done.
    ═══════════════════════════════════════════════════════════════════════════ */
 const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) => {
-    const [checks, setChecks] = useState({
-        ran:     false,
-        bloat:   false,
-        perf:    false,
-    });
-
+    const [checks, setChecks] = useState({ ran: false, bloat: false, perf: false });
     const allChecked = Object.values(checks).every(Boolean);
-
     const toggle = (key) => setChecks(prev => ({ ...prev, [key]: !prev[key] }));
-
     const CHECKLIST = [
         { key: 'ran',   label: 'I ran the optimization SQL (VACUUM, REINDEX, or suggested script)' },
         { key: 'bloat', label: `I verified bloat has dropped — either by re-querying or running ANALYZE on ${tableName}` },
         { key: 'perf',  label: 'No errors or lock timeouts were reported during execution' },
     ];
-
     return (
-        <div style={{
-            borderRadius: 12, overflow: 'hidden',
-            background: THEME.glass, backdropFilter: 'blur(16px)',
-            border: `1px solid ${THEME.primary}30`,
-            animation: 'resFadeIn 0.2s ease-out',
-        }}>
-            {/* Header */}
-            <div style={{
-                padding: '13px 18px',
-                borderBottom: `1px solid ${THEME.glassBorder}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
+        <div style={{ borderRadius: 12, overflow: 'hidden', background: THEME.glass, backdropFilter: 'blur(16px)', border: `1px solid ${THEME.primary}30`, animation: 'resFadeIn 0.2s ease-out' }}>
+            <div style={{ padding: '13px 18px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 26, height: 26, borderRadius: 7, background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <ShieldAlert size={13} color={THEME.warning} />
@@ -394,94 +489,31 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                         <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>{tableName} · {bloatPct}% bloat</div>
                     </div>
                 </div>
-                <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, display: 'flex', padding: 4 }}>
-                    <X size={13} />
-                </button>
+                <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, display: 'flex', padding: 4 }}><X size={13} /></button>
             </div>
-
             <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {/* Warning notice */}
-                <div style={{
-                    padding: '8px 12px', borderRadius: 8,
-                    background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}18`,
-                    fontSize: 11, color: THEME.textMuted, lineHeight: 1.5,
-                }}>
+                <div style={{ padding: '8px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}18`, fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>
                     ⚠ Marking without actually applying the fix will hide this issue from the bloat list until the next DB refresh reveals it again.
                 </div>
-
-                {/* Checklist */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {CHECKLIST.map(({ key, label }) => {
                         const checked = checks[key];
                         return (
-                            <div
-                                key={key}
-                                onClick={() => toggle(key)}
-                                style={{
-                                    display: 'flex', alignItems: 'flex-start', gap: 10,
-                                    padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
-                                    background: checked ? `${THEME.success}08` : THEME.surface,
-                                    border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`,
-                                    transition: 'all 0.15s',
-                                }}
-                            >
-                                {/* Checkbox */}
-                                <div style={{
-                                    width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 1,
-                                    border: `2px solid ${checked ? THEME.success : THEME.grid}`,
-                                    background: checked ? THEME.success : 'transparent',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    transition: 'all 0.15s',
-                                }}>
-                                    {checked && (
-                                        <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                                            <path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    )}
+                            <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
+                                <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                                    {checked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                 </div>
-                                <span style={{ fontSize: 12, color: checked ? THEME.textMain : THEME.textMuted, lineHeight: 1.5, transition: 'color 0.15s' }}>
-                                    {label}
-                                </span>
+                                <span style={{ fontSize: 12, color: checked ? THEME.textMain : THEME.textMuted, lineHeight: 1.5, transition: 'color 0.15s' }}>{label}</span>
                             </div>
                         );
                     })}
                 </div>
-
-                {/* Progress hint */}
                 <div style={{ fontSize: 10, color: THEME.textDim, textAlign: 'center' }}>
-                    {Object.values(checks).filter(Boolean).length} / {CHECKLIST.length} items confirmed
-                    {!allChecked && ' — check all items to proceed'}
+                    {Object.values(checks).filter(Boolean).length} / {CHECKLIST.length} items confirmed{!allChecked && ' — check all items to proceed'}
                 </div>
-
-                {/* Action buttons */}
                 <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={onCancel} style={{
-                        flex: 1, padding: '9px', borderRadius: 8, border: `1px solid ${THEME.grid}50`,
-                        background: 'transparent', color: THEME.textMuted, fontSize: 12, fontWeight: 600,
-                        cursor: 'pointer', transition: 'all 0.15s',
-                    }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = THEME.grid}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = `${THEME.grid}50`}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        disabled={!allChecked}
-                        onClick={() => onConfirm(tableName, `Bloat fix verified & applied (was ${bloatPct}%)`)}
-                        style={{
-                            flex: 2, padding: '9px', borderRadius: 8, border: 'none',
-                            fontSize: 12, fontWeight: 700, cursor: allChecked ? 'pointer' : 'not-allowed',
-                            background: allChecked
-                                ? `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)`
-                                : `${THEME.grid}30`,
-                            color: allChecked ? '#fff' : THEME.textDim,
-                            boxShadow: allChecked ? `0 3px 12px ${THEME.success}40` : 'none',
-                            transition: 'all 0.2s',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        }}
-                        onMouseEnter={e => { if (allChecked) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 5px 18px ${THEME.success}55`; }}}
-                        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = allChecked ? `0 3px 12px ${THEME.success}40` : 'none'; }}
-                    >
+                    <button onClick={onCancel} style={{ flex: 1, padding: '9px', borderRadius: 8, border: `1px solid ${THEME.grid}50`, background: 'transparent', color: THEME.textMuted, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                    <button disabled={!allChecked} onClick={() => onConfirm(tableName, `Bloat fix verified & applied (was ${bloatPct}%)`)} style={{ flex: 2, padding: '9px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 700, cursor: allChecked ? 'pointer' : 'not-allowed', background: allChecked ? `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)` : `${THEME.grid}30`, color: allChecked ? '#fff' : THEME.textDim, boxShadow: allChecked ? `0 3px 12px ${THEME.success}40` : 'none', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <CheckCircle size={13} />
                         {allChecked ? 'Confirmed — Mark as Done' : 'Check all items above first'}
                     </button>
@@ -492,21 +524,516 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   NEW: TABLE GROWTH RATE CHART — MB/day per top-10 table over 14 days
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TableGrowthRateChart = ({ growthRateData, refreshing }) => {
+    const [activeSeries, setActiveSeries] = useState(null);
+    if (!growthRateData) return null;
+    const { days, series } = growthRateData;
+
+    const chartData = days.map((day, i) => {
+        const point = { day };
+        series.forEach(s => { point[s.name] = Math.round(s.data[i] * 10) / 10; });
+        return point;
+    });
+
+    return (
+        <Panel title="Table Growth Rate — MB/day (14-day window)" icon={TrendingUp} refreshing={refreshing}
+               rightNode={
+                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: THEME.textDim }}>
+                       <span>Top 10 largest tables</span>
+                   </div>
+               }
+        >
+            <div style={{ height: 260 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={2} />
+                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={34} unit=" MB" />
+                        <Tooltip content={<ChartTooltip />} />
+                        {series.map(s => (
+                            <Line
+                                key={s.name}
+                                type="monotone"
+                                dataKey={s.name}
+                                stroke={s.color}
+                                strokeWidth={activeSeries === null || activeSeries === s.name ? 2 : 0.5}
+                                dot={false}
+                                opacity={activeSeries === null || activeSeries === s.name ? 1 : 0.2}
+                                strokeDasharray={activeSeries && activeSeries !== s.name ? '0' : '0'}
+                                style={{ transition: 'opacity 0.2s, stroke-width 0.2s' }}
+                            />
+                        ))}
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+            {/* Legend */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                {series.map(s => (
+                    <button
+                        key={s.name}
+                        onMouseEnter={() => setActiveSeries(s.name)}
+                        onMouseLeave={() => setActiveSeries(null)}
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                            padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                            fontSize: 9.5, fontWeight: 600, transition: 'all 0.15s',
+                            background: activeSeries === s.name ? `${s.color}18` : `${THEME.grid}20`,
+                            color: activeSeries === s.name ? s.color : THEME.textDim,
+                            outline: activeSeries === s.name ? `1px solid ${s.color}30` : 'none',
+                        }}
+                    >
+                        <span style={{ width: 18, height: 2, borderRadius: 1, background: s.color }} />
+                        {s.name}
+                    </button>
+                ))}
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW: TABLESPACE I/O BREAKDOWN
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
+    const maxIO = Math.max(...tablespaceData.map(t => t.readsMB + t.writesMB));
+    return (
+        <Panel title="Tablespace I/O Breakdown" icon={Layers3} refreshing={refreshing}
+               rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>{tablespaceData.length} tablespaces</span>}
+        >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {tablespaceData.map((ts, i) => {
+                    const total = ts.readsMB + ts.writesMB;
+                    const readPct = (ts.readsMB / maxIO) * 100;
+                    const writePct = (ts.writesMB / maxIO) * 100;
+                    const statusColor = ts.status === 'Normal' ? THEME.success : THEME.warning;
+                    return (
+                        <div key={i}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, boxShadow: `0 0 4px ${statusColor}60` }} />
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{ts.name}</span>
+                                    <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 4, background: `${THEME.primary}0a`, color: THEME.textDim, border: `1px solid ${THEME.grid}30` }}>{ts.tables} tables · {ts.sizePct}% capacity</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 14, fontSize: 11 }}>
+                                    <span style={{ color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>↑ {ts.readsMB} MB/s</span>
+                                    <span style={{ color: THEME.success, fontVariantNumeric: 'tabular-nums' }}>↓ {ts.writesMB} MB/s</span>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                {/* Reads bar */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Read</span>
+                                    <div style={{ flex: 1, height: 5, borderRadius: 3, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                        <div className="res-bar-animate" style={{ width: `${readPct}%`, height: '100%', borderRadius: 3, background: THEME.primary, animationDelay: `${i * 0.08}s` }} />
+                                    </div>
+                                </div>
+                                {/* Writes bar */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Write</span>
+                                    <div style={{ flex: 1, height: 5, borderRadius: 3, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                        <div className="res-bar-animate" style={{ width: `${writePct}%`, height: '100%', borderRadius: 3, background: THEME.success, animationDelay: `${i * 0.08 + 0.04}s` }} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {/* Summary row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingTop: 12, borderTop: `1px solid ${THEME.glassBorder}`, marginTop: 2 }}>
+                    {[
+                        { label: 'Total Read',  value: `${tablespaceData.reduce((s, t) => s + t.readsMB, 0)} MB/s`, color: THEME.primary },
+                        { label: 'Total Write', value: `${tablespaceData.reduce((s, t) => s + t.writesMB, 0)} MB/s`, color: THEME.success },
+                        { label: 'Tablespaces', value: tablespaceData.length,                                         color: THEME.secondary },
+                    ].map((m, i) => (
+                        <div key={i} style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: m.color, fontVariantNumeric: 'tabular-nums' }}>{m.value}</div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginTop: 2 }}>{m.label}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW: PARTITION TREE VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const PartitionTreePanel = ({ partitions, refreshing }) => {
+    const [expanded, setExpanded] = useState(() => new Set(partitions.map(p => p.parent)));
+
+    const toggle = (name) => setExpanded(prev => {
+        const n = new Set(prev);
+        n.has(name) ? n.delete(name) : n.add(name);
+        return n;
+    });
+
+    const statusMeta = (s) => {
+        if (s === 'detach_ready') return { label: 'Archive Ready', color: THEME.warning };
+        return { label: 'Active', color: THEME.success };
+    };
+
+    return (
+        <Panel title="Partition Hierarchy" icon={GitBranch} refreshing={refreshing}
+               rightNode={<StatusBadge label={`${partitions.length} parent tables`} color={THEME.secondary} />}
+        >
+            <div className="res-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 340, overflowY: 'auto' }}>
+                {partitions.map((p, pi) => {
+                    const open = expanded.has(p.parent);
+                    return (
+                        <div key={pi}>
+                            {/* Parent row */}
+                            <div
+                                onClick={() => toggle(p.parent)}
+                                style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 8, cursor: 'pointer', background: open ? `${THEME.primary}07` : 'transparent', border: `1px solid ${open ? `${THEME.primary}18` : 'transparent'}`, transition: 'all 0.15s', marginBottom: 2 }}
+                            >
+                                <div style={{ width: 20, height: 20, borderRadius: 5, background: `${THEME.primary}12`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    {open ? <ChevronDown size={11} color={THEME.primary} /> : <ChevronRight size={11} color={THEME.primary} />}
+                                </div>
+                                <Layers size={12} color={THEME.primary} style={{ flexShrink: 0 }} />
+                                <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, flex: 1 }}>{p.parent}</span>
+                                <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: 'monospace' }}>{p.strategy}</span>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(p.total_gb)}</span>
+                                <span style={{ fontSize: 10, color: THEME.textDim }}>{p.children.length} parts</span>
+                            </div>
+
+                            {/* Children */}
+                            {open && (
+                                <div style={{ marginLeft: 28, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 2, borderLeft: `1.5px solid ${THEME.primary}18`, paddingLeft: 12 }}>
+                                    {p.children.map((c, ci) => {
+                                        const sm = statusMeta(c.status);
+                                        return (
+                                            <div key={ci} className="res-tree-node res-row-hover" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 7, animationDelay: `${ci * 0.04}s` }}>
+                                                <div style={{ width: 4, height: 4, borderRadius: '50%', background: sm.color, flexShrink: 0 }} />
+                                                <span style={{ fontSize: 11.5, color: THEME.textMuted, flex: 1, fontFamily: 'monospace' }}>{c.name}</span>
+                                                <StatusBadge label={sm.label} color={sm.color} />
+                                                <span style={{ fontSize: 11, color: THEME.textDim, fontVariantNumeric: 'tabular-nums' }}>{fmtNum(c.rows)} rows</span>
+                                                <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, fontVariantNumeric: 'tabular-nums', minWidth: 52, textAlign: 'right' }}>{fmtSize(c.gb)}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW: FREEZE URGENCY LIST
+   ═══════════════════════════════════════════════════════════════════════════ */
+const FreezeUrgencyPanel = ({ data, refreshing }) => {
+    const top8 = data.slice(0, 8);
+    return (
+        <Panel title="XID Freeze Urgency" icon={Snowflake} refreshing={refreshing}
+               rightNode={
+                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                       {data.filter(d => d.oldest_xid_age > 1_500_000_000).length > 0 && (
+                           <StatusBadge label={`${data.filter(d => d.oldest_xid_age > 1_500_000_000).length} critical`} color={THEME.danger} />
+                       )}
+                   </div>
+               }
+        >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {top8.map((d, i) => {
+                    const pct = (d.oldest_xid_age / d.freeze_threshold) * 100;
+                    const color = freezeColor(d.oldest_xid_age);
+                    const isCritical = d.oldest_xid_age > 1_500_000_000;
+                    return (
+                        <div key={i} className={isCritical ? 'res-freeze-urgent' : ''} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <Snowflake size={11} color={color} style={{ flexShrink: 0, opacity: isCritical ? 1 : 0.6 }} />
+                            <span style={{ fontSize: 11.5, color: THEME.textMuted, width: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{d.table_name}</span>
+                            <div style={{ flex: 1, height: 5, borderRadius: 3, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                <div className="res-bar-animate" style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 3, background: `linear-gradient(90deg, ${color}80, ${color})`, animationDelay: `${i * 0.05}s` }} />
+                            </div>
+                            <span style={{ fontSize: 10.5, fontWeight: 700, color, fontVariantNumeric: 'tabular-nums', minWidth: 50, textAlign: 'right' }}>{fmtXID(d.oldest_xid_age)}</span>
+                            <span style={{ fontSize: 9.5, color: THEME.textDim, minWidth: 40, textAlign: 'right' }}>{pct.toFixed(0)}%</span>
+                        </div>
+                    );
+                })}
+                <div style={{ paddingTop: 8, borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <AlertCircle size={9} />
+                    Freeze threshold: 2B transactions. VACUUM FREEZE recommended when &gt;75%.
+                </div>
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW: DEAD CODE DETECTOR
+   ═══════════════════════════════════════════════════════════════════════════ */
+const DeadCodeDetector = ({ deadCode, refreshing }) => {
+    const [view, setView] = useState('tables'); // 'tables' | 'columns'
+    const riskColor = (r) => r === 'High' ? THEME.danger : r === 'Medium' ? THEME.warning : THEME.success;
+
+    const totalReclaimable = deadCode.tables.reduce((s, t) => s + t.size_gb, 0);
+
+    return (
+        <Panel
+            title="Dead Code Detector"
+            icon={EyeOff}
+            refreshing={refreshing}
+            rightNode={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, color: THEME.textDim }}>{fmtSize(totalReclaimable)} reclaimable</span>
+                    <div style={{ display: 'flex', border: `1px solid ${THEME.grid}40`, borderRadius: 6, overflow: 'hidden' }}>
+                        {['tables', 'columns'].map(v => (
+                            <button key={v} onClick={() => setView(v)} style={{ padding: '4px 10px', border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, textTransform: 'capitalize', background: view === v ? `${THEME.primary}20` : 'transparent', color: view === v ? THEME.primary : THEME.textDim, transition: 'all 0.15s' }}>{v}</button>
+                        ))}
+                    </div>
+                </div>
+            }
+        >
+            {view === 'tables' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
+                        {['Table', 'Size', 'Rows', 'Last Read', 'Risk'].map((h, i) => (
+                            <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
+                        ))}
+                    </div>
+                    {deadCode.tables.map((t, i) => {
+                        const rc = riskColor(t.risk);
+                        return (
+                            <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 8, padding: '9px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+                                    <FileX size={11} color={rc} style={{ flexShrink: 0 }} />
+                                    <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</span>
+                                </div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtSize(t.size_gb)}</div>
+                                <div style={{ fontSize: 11, color: THEME.textDim, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtNum(t.rows)}</div>
+                                <div style={{ fontSize: 10.5, color: THEME.textDim, textAlign: 'right' }}>{t.last_read}</div>
+                                <div style={{ textAlign: 'right' }}><StatusBadge label={t.risk} color={rc} /></div>
+                            </div>
+                        );
+                    })}
+                    <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: THEME.textDim }}>
+                        <EyeOff size={11} color={THEME.warning} />
+                        Tables with 0 reads in 90+ days. Consider archival or DROP after verification.
+                    </div>
+                </div>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 80px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
+                        {['Table', 'Column', 'Type', 'Last Read'].map((h, i) => (
+                            <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</div>
+                        ))}
+                    </div>
+                    {deadCode.columns.map((c, i) => (
+                        <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 80px', gap: 8, padding: '9px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
+                            <span style={{ fontSize: 11.5, color: THEME.textDim }}>{c.table}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontSize: 11.5, fontWeight: 600, color: THEME.textMain, fontFamily: 'monospace' }}>{c.column}</span>
+                                {c.nullable && <span style={{ fontSize: 8.5, padding: '1px 5px', borderRadius: 3, background: `${THEME.grid}30`, color: THEME.textDim }}>NULL</span>}
+                            </div>
+                            <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: THEME.secondary }}>{c.type}</span>
+                            <span style={{ fontSize: 10.5, color: THEME.textDim }}>{c.last_read}</span>
+                        </div>
+                    ))}
+                    <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: THEME.textDim }}>
+                        <AlertCircle size={11} color={THEME.warning} />
+                        Zero-read columns may indicate deprecated features. Verify before dropping.
+                    </div>
+                </div>
+            )}
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW: DATA RETENTION POLICY MANAGER
+   ═══════════════════════════════════════════════════════════════════════════ */
+const RetentionPolicyManager = ({ refreshing }) => {
+    const [policies, setPolicies] = useState(DEFAULT_POLICIES);
+    const [editing, setEditing] = useState(null); // policy id being edited
+    const [showNew, setShowNew] = useState(false);
+    const [newPolicy, setNewPolicy] = useState({ table: '', action: 'archive', age_days: 365, partition_col: '' });
+
+    const actionColor = (a) => a === 'delete' ? THEME.danger : THEME.warning;
+    const actionIcon = (a) => a === 'delete' ? Trash : Archive;
+
+    const toggleEnabled = (id) => {
+        setPolicies(prev => prev.map(p => p.id === id ? { ...p, enabled: !p.enabled } : p));
+    };
+
+    const deletePolicy = (id) => {
+        setPolicies(prev => prev.filter(p => p.id !== id));
+    };
+
+    const addPolicy = () => {
+        if (!newPolicy.table) return;
+        setPolicies(prev => [...prev, { ...newPolicy, id: Date.now(), enabled: false, last_run: 'Never', runs: 0 }]);
+        setShowNew(false);
+        setNewPolicy({ table: '', action: 'archive', age_days: 365, partition_col: '' });
+    };
+
+    const inputStyle = {
+        padding: '6px 10px', borderRadius: 6, border: `1px solid ${THEME.grid}50`,
+        background: THEME.surface, color: THEME.textMain, fontSize: 11,
+        outline: 'none', width: '100%',
+    };
+
+    return (
+        <Panel
+            title="Data Retention Policies"
+            icon={CalendarDays}
+            refreshing={refreshing}
+            rightNode={
+                <button onClick={() => setShowNew(v => !v)} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    padding: '5px 12px', borderRadius: 7, border: 'none', cursor: 'pointer',
+                    fontSize: 11, fontWeight: 700,
+                    background: `${THEME.primary}18`, color: THEME.primary,
+                    transition: 'all 0.15s',
+                }}>
+                    <Plus size={11} /> New Policy
+                </button>
+            }
+        >
+            {/* New policy form */}
+            {showNew && (
+                <div style={{ marginBottom: 16, padding: 14, borderRadius: 10, background: `${THEME.primary}07`, border: `1px solid ${THEME.primary}18`, animation: 'resFadeIn 0.2s ease-out' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.textMain, marginBottom: 10 }}>New Retention Rule</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 1fr', gap: 8, marginBottom: 10 }}>
+                        <div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Table Name</div>
+                            <input style={inputStyle} placeholder="e.g. events_log" value={newPolicy.table} onChange={e => setNewPolicy(p => ({ ...p, table: e.target.value }))} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Action</div>
+                            <select style={{ ...inputStyle }} value={newPolicy.action} onChange={e => setNewPolicy(p => ({ ...p, action: e.target.value }))}>
+                                <option value="archive">Archive (move to cold storage)</option>
+                                <option value="delete">Delete (DROP rows)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Age (days)</div>
+                            <input style={inputStyle} type="number" value={newPolicy.age_days} onChange={e => setNewPolicy(p => ({ ...p, age_days: Number(e.target.value) }))} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Partition Column</div>
+                            <input style={inputStyle} placeholder="e.g. created_at" value={newPolicy.partition_col} onChange={e => setNewPolicy(p => ({ ...p, partition_col: e.target.value }))} />
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => setShowNew(false)} style={{ padding: '7px 14px', borderRadius: 7, border: `1px solid ${THEME.grid}50`, background: 'transparent', color: THEME.textDim, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                        <button onClick={addPolicy} style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Save size={11} /> Save Policy
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Policy list */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {policies.map((p) => {
+                    const AIcon = actionIcon(p.action);
+                    const ac = actionColor(p.action);
+                    return (
+                        <div key={p.id} className="res-policy-row" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderRadius: 10, background: p.enabled ? `${THEME.surface}` : `${THEME.grid}10`, border: `1px solid ${p.enabled ? `${THEME.grid}50` : `${THEME.grid}25`}`, opacity: p.enabled ? 1 : 0.65, transition: 'all 0.15s' }}>
+
+                            {/* Toggle */}
+                            <div onClick={() => toggleEnabled(p.id)} style={{ width: 34, height: 18, borderRadius: 9, flexShrink: 0, cursor: 'pointer', background: p.enabled ? THEME.success : `${THEME.grid}60`, display: 'flex', alignItems: 'center', padding: '0 2px', transition: 'background 0.2s', justifyContent: p.enabled ? 'flex-end' : 'flex-start' }}>
+                                <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'all 0.2s' }} />
+                            </div>
+
+                            {/* Action icon */}
+                            <div style={{ width: 28, height: 28, borderRadius: 7, background: `${ac}12`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <AIcon size={13} color={ac} />
+                            </div>
+
+                            {/* Details */}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                                    <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{p.table}</span>
+                                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
+                                </div>
+                                <div style={{ fontSize: 10.5, color: THEME.textDim, display: 'flex', gap: 14 }}>
+                                    <span><CalendarDays size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
+                                    {p.partition_col && <span style={{ fontFamily: 'monospace' }}>on {p.partition_col}</span>}
+                                    <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />Last: {p.last_run}</span>
+                                    <span>Runs: {p.runs}</span>
+                                </div>
+                            </div>
+
+                            {/* Actions (revealed on hover via CSS) */}
+                            <div className="res-policy-actions" style={{ display: 'flex', gap: 6, opacity: 0, transition: 'opacity 0.15s' }}>
+                                <button onClick={() => deletePolicy(p.id)} title="Delete policy" style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${THEME.danger}20`, background: `${THEME.danger}0a`, color: THEME.danger, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Trash size={11} />
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Footer */}
+            <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 16, fontSize: 10.5, color: THEME.textDim }}>
+                <span><strong style={{ color: THEME.success }}>{policies.filter(p => p.enabled).length}</strong> active</span>
+                <span><strong style={{ color: THEME.textMuted }}>{policies.filter(p => !p.enabled).length}</strong> disabled</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertCircle size={9} color={THEME.warning} />
+                    Delete policies are irreversible — enable only after archival is confirmed.
+                </span>
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW: ENHANCED TABLE ROW — with TOAST + Index ratio inline
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TOASTRatioCell = ({ table }) => {
+    const total = Number(table.total_size_gb) || 0.01;
+    const toast = Number(table.toast_size_gb) || 0;
+    const idx   = Number(table.index_size_gb) || 0;
+    const data  = Math.max(0, total - toast - idx);
+    const toastPct = (toast / total) * 100;
+    const idxPct   = (idx / total) * 100;
+    const dataPct  = (data / total) * 100;
+
+    return (
+        <div title={`Data: ${fmtSize(data)} · Index: ${fmtSize(idx)} · TOAST: ${fmtSize(toast)}`} style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 64 }}>
+            <div style={{ display: 'flex', height: 5, borderRadius: 3, overflow: 'hidden', background: `${THEME.grid}30` }}>
+                <div style={{ width: `${dataPct}%`, background: THEME.primary,   height: '100%' }} />
+                <div style={{ width: `${idxPct}%`, background: THEME.secondary, height: '100%' }} />
+                <div style={{ width: `${toastPct}%`, background: THEME.warning,  height: '100%' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4, fontSize: 8.5, color: THEME.textDim }}>
+                {toastPct > 2 && <span style={{ color: THEME.warning }}>{toastPct.toFixed(0)}%T</span>}
+                <span style={{ color: THEME.secondary }}>{idxPct.toFixed(0)}%I</span>
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const ResourcesTab = () => {
-    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
+    useAdaptiveTheme();
     const [growth, setGrowth]               = useState([]);
     const [vacuum, setVacuum]               = useState([]);
     const [growthTrend, setGrowthTrend]     = useState(() => genGrowthTrend());
     const [diskIO, setDiskIO]               = useState(() => genDiskIO());
-    const [logs, setLogs]                   = useState([
-        { id: 1, table: 'notification_audit',    action: 'VACUUM FULL', date: '2026-02-08', saved: '1.2 GB',  status: 'Success', duration: '3m 12s' },
-        { id: 2, table: 'api_monitoring_payload', action: 'REINDEX',    date: '2026-02-05', saved: '400 MB',  status: 'Success', duration: '1m 45s' },
-        { id: 3, table: 'session_tokens',         action: 'VACUUM',     date: '2026-02-03', saved: '80 MB',   status: 'Success', duration: '0m 28s' },
-        { id: 4, table: 'audit_events',            action: 'CLUSTER',   date: '2026-01-28', saved: '2.1 GB',  status: 'Success', duration: '8m 04s' },
-        { id: 5, table: 'user_profiles',           action: 'ANALYZE',   date: '2026-01-25', saved: '—',       status: 'Success', duration: '0m 12s' },
-        { id: 6, table: 'videos',                  action: 'VACUUM',    date: '2026-01-20', saved: '340 MB',  status: 'Failed',  duration: '—' },
+    const [tablespaceIO, setTablespaceIO]   = useState(() => genTablespaceIO());
+    const [partitions]                       = useState(() => genPartitions());
+    const [deadCode]                         = useState(() => genDeadCode());
+    const [tableGrowthRate, setTableGrowthRate] = useState(null);
+    const [freezeData, setFreezeData]       = useState([]);
+    const [logs, setLogs] = useState([
+        { id: 1, table: 'notification_audit',     action: 'VACUUM FULL', date: '2026-02-08', saved: '1.2 GB', status: 'Success', duration: '3m 12s' },
+        { id: 2, table: 'api_monitoring_payload', action: 'REINDEX',     date: '2026-02-05', saved: '400 MB', status: 'Success', duration: '1m 45s' },
+        { id: 3, table: 'session_tokens',         action: 'VACUUM',      date: '2026-02-03', saved: '80 MB',  status: 'Success', duration: '0m 28s' },
+        { id: 4, table: 'audit_events',           action: 'CLUSTER',     date: '2026-01-28', saved: '2.1 GB', status: 'Success', duration: '8m 04s' },
+        { id: 5, table: 'user_profiles',          action: 'ANALYZE',     date: '2026-01-25', saved: '—',      status: 'Success', duration: '0m 12s' },
+        { id: 6, table: 'videos',                 action: 'VACUUM',      date: '2026-01-20', saved: '340 MB', status: 'Failed',  duration: '—' },
     ]);
 
     // Refresh state
@@ -529,10 +1056,9 @@ const ResourcesTab = () => {
     /* ── Core fetch ── */
     const fetchAll = useCallback(async (isInitial = false) => {
         if (!isInitial) setIsRefreshing(true);
-        setRefreshingPanels(new Set(['inventory', 'bloat', 'storage', 'io', 'logs', 'resources']));
+        setRefreshingPanels(new Set(['inventory', 'bloat', 'storage', 'io', 'logs', 'resources', 'analytics']));
 
         try {
-            // Growth / table inventory
             const growthData = await fetchData('/api/resources/growth').catch(() => null);
             const enriched = (growthData || []).map(t => ({
                 ...t,
@@ -545,24 +1071,25 @@ const ResourcesTab = () => {
                 idx_scan: t.idx_scan || Math.round(Math.random() * 500000),
             }));
             setGrowth(enriched);
-            setRefreshingPanels(p => { const n = new Set(p); n.delete('inventory'); n.delete('storage'); return n; });
+            // Build growth rate chart data from enriched tables
+            if (enriched.length > 0) {
+                setTableGrowthRate(genTableGrowthRate([...enriched].sort((a, b) => Number(b.total_size_gb) - Number(a.total_size_gb)).slice(0, 10)));
+                setFreezeData(genFreezeData(enriched));
+            }
+            setRefreshingPanels(p => { const n = new Set(p); n.delete('inventory'); n.delete('storage'); n.delete('analytics'); return n; });
 
-            // Vacuum / bloat
             const vacuumData = await fetchData('/api/resources/vacuum-status').catch(() => null);
             setVacuum(vacuumData || []);
             setRefreshingPanels(p => { const n = new Set(p); n.delete('bloat'); return n; });
 
-            // Disk I/O
             const ioData = await fetchData('/api/resources/disk-io').catch(() => null);
             setDiskIO(ioData && ioData.length > 0 ? ioData : genDiskIO());
             setRefreshingPanels(p => { const n = new Set(p); n.delete('io'); return n; });
 
-            // Growth trend chart
             const trendData = await fetchData('/api/resources/growth-trend').catch(() => null);
             setGrowthTrend(trendData && trendData.length > 0 ? trendData : genGrowthTrend());
             setRefreshingPanels(p => { const n = new Set(p); n.delete('resources'); return n; });
 
-            // Maintenance logs
             const logsData = await fetchData('/api/resources/maintenance-logs').catch(() => null);
             if (logsData && logsData.length > 0) setLogs(logsData);
             setRefreshingPanels(p => { const n = new Set(p); n.delete('logs'); return n; });
@@ -578,10 +1105,8 @@ const ResourcesTab = () => {
         }
     }, []);
 
-    /* ── Initial load ── */
     useEffect(() => { fetchAll(true); }, [fetchAll]);
 
-    /* ── Auto-refresh interval ── */
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         if (refreshInterval > 0) {
@@ -591,50 +1116,24 @@ const ResourcesTab = () => {
     }, [refreshInterval, fetchAll]);
 
     /* ── Resolved optimization tracking ── */
-    // { [tableName]: { ts: number, note: string } }
     const [resolvedOptimizations, setResolvedOptimizations] = useState({});
-    // confirmPending: tableName currently in the "verify before marking done" step
     const [confirmPending, setConfirmPending] = useState(null);
 
-    // Step 1 — user clicks "Mark Optimization Done" → opens confirmation panel
-    const handleRequestConfirm = useCallback((tableName) => {
-        setConfirmPending(tableName);
-    }, []);
-
-    // Step 2 — user has verified and clicks "Yes, I applied it"
+    const handleRequestConfirm = useCallback((tableName) => { setConfirmPending(tableName); }, []);
     const handleMarkResolved = useCallback((tableName, note = 'Optimization applied') => {
-        setResolvedOptimizations(prev => ({
-            ...prev,
-            [tableName]: { ts: Date.now(), note },
-        }));
+        setResolvedOptimizations(prev => ({ ...prev, [tableName]: { ts: Date.now(), note } }));
         setConfirmPending(null);
     }, []);
-
-    const handleCancelConfirm = useCallback(() => {
-        setConfirmPending(null);
-    }, []);
-
+    const handleCancelConfirm = useCallback(() => { setConfirmPending(null); }, []);
     const handleUnmarkResolved = useCallback((tableName) => {
-        setResolvedOptimizations(prev => {
-            const next = { ...prev };
-            delete next[tableName];
-            return next;
-        });
+        setResolvedOptimizations(prev => { const next = { ...prev }; delete next[tableName]; return next; });
     }, []);
 
-    // After each DB refresh, auto-clear resolved entries whose bloat_ratio_pct
-    // dropped below 10 — the DB has confirmed the fix, marker no longer needed
     useEffect(() => {
         if (!vacuum.length) return;
         setResolvedOptimizations(prev => {
-            const next = { ...prev };
-            let changed = false;
-            vacuum.forEach(v => {
-                if (next[v.table_name] && v.bloat_ratio_pct < 10) {
-                    delete next[v.table_name];
-                    changed = true;
-                }
-            });
+            const next = { ...prev }; let changed = false;
+            vacuum.forEach(v => { if (next[v.table_name] && v.bloat_ratio_pct < 10) { delete next[v.table_name]; changed = true; } });
             return changed ? next : prev;
         });
     }, [vacuum]);
@@ -667,6 +1166,7 @@ const ResourcesTab = () => {
     const totalRows  = growth.reduce((s, t) => s + (t.row_count || 0), 0);
     const avgBloat   = vacuum.length ? vacuum.reduce((s, v) => s + v.bloat_ratio_pct, 0) / vacuum.length : 0;
     const highBloat  = vacuum.filter(v => v.bloat_ratio_pct > 20 && !resolvedOptimizations[v.table_name]).length;
+    const deadCount  = deadCode.tables.length;
 
     const storageBreakdown = useMemo(() => {
         const tblData   = growth.reduce((s, t) => s + Math.max(0, Number(t.total_size_gb || 0) - Number(t.index_size_gb || 0) - Number(t.toast_size_gb || 0)), 0);
@@ -684,7 +1184,7 @@ const ResourcesTab = () => {
     const totalStorageGB = storageBreakdown.reduce((s, d) => s + d.value, 0);
 
     /* ── Tab button ── */
-    const TabBtn = ({ id, label, icon: Icon, count }) => {
+    const TabBtn = ({ id, label, icon: Icon, count, badge }) => {
         const active = activeTab === id;
         return (
             <button onClick={() => setActiveTab(id)} style={{
@@ -700,11 +1200,10 @@ const ResourcesTab = () => {
                 <Icon size={13} style={{ flexShrink: 0 }} />
                 {label}
                 {count != null && (
-                    <span style={{
-                        fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10,
-                        background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`,
-                        color: active ? '#fff' : THEME.primary, fontVariantNumeric: 'tabular-nums',
-                    }}>{count}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`, color: active ? '#fff' : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+                )}
+                {badge && (
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.danger}15`, color: active ? '#fff' : THEME.danger }}>{badge}</span>
                 )}
             </button>
         );
@@ -714,14 +1213,7 @@ const ResourcesTab = () => {
     const SortTh = ({ label, sortId, align = 'left', width }) => {
         const active = sortKey === sortId;
         return (
-            <th onClick={() => toggleSort(sortId)} style={{
-                padding: '10px 16px', textAlign: align, width,
-                fontSize: 10, fontWeight: 700, color: active ? THEME.primary : THEME.textDim,
-                textTransform: 'uppercase', letterSpacing: '0.05em',
-                borderBottom: `1px solid ${THEME.grid}50`,
-                cursor: 'pointer', userSelect: 'none', transition: 'color 0.15s',
-                position: 'sticky', top: 0, background: THEME.surface, zIndex: 1,
-            }}>
+            <th onClick={() => toggleSort(sortId)} style={{ padding: '10px 16px', textAlign: align, width, fontSize: 10, fontWeight: 700, color: active ? THEME.primary : THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, cursor: 'pointer', userSelect: 'none', transition: 'color 0.15s', position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: align === 'right' ? 'flex-end' : 'flex-start' }}>
                     {label}
                     {active && (sortDir === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
@@ -751,15 +1243,15 @@ const ResourcesTab = () => {
 
     /* ── Metric cards ── */
     const metricCards = [
-        { label: 'Total Storage', value: `${totalSize.toFixed(1)} GB`, sub: `of ${totalStorageGB.toFixed(0)} GB capacity`, color: THEME.primary, icon: HardDrive },
-        { label: 'Total Rows', value: fmtNum(totalRows), sub: `${growth.length} tables tracked`, color: THEME.secondary, icon: Table2 },
-        { label: 'Avg Bloat', value: `${avgBloat.toFixed(1)}%`, sub: highBloat > 0 ? `${highBloat} need attention` : 'all healthy', color: avgBloat > 20 ? THEME.danger : THEME.success, icon: Trash2 },
-        { label: 'Disk I/O', value: fmtNum(diskIO[diskIO.length - 1].reads + diskIO[diskIO.length - 1].writes), sub: 'ops/sec now', color: THEME.warning, icon: Activity },
+        { label: 'Total Storage',   value: `${totalSize.toFixed(1)} GB`, sub: `of ${totalStorageGB.toFixed(0)} GB capacity`,                color: THEME.primary,   icon: HardDrive },
+        { label: 'Total Rows',      value: fmtNum(totalRows),             sub: `${growth.length} tables tracked`,                             color: THEME.secondary, icon: Table2 },
+        { label: 'Avg Bloat',       value: `${avgBloat.toFixed(1)}%`,    sub: highBloat > 0 ? `${highBloat} need attention` : 'all healthy', color: avgBloat > 20 ? THEME.danger : THEME.success, icon: Trash2 },
+        { label: 'Dead Code',       value: deadCount,                      sub: `${deadCode.tables.reduce((s, t) => s + t.size_gb, 0).toFixed(1)} GB reclaimable`, color: THEME.warning, icon: EyeOff },
     ];
 
-    /* ═══════════════════════════════════════════════════════════════════
+    /* ═══════════════════════════════════════════════════════════════
        RENDER
-       ═══════════════════════════════════════════════════════════════════ */
+       ═══════════════════════════════════════════════════════════════ */
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 40px 24px' }}>
             <ResStyles />
@@ -778,11 +1270,14 @@ const ResourcesTab = () => {
             </div>
 
             {/* ── Tabs ── */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: 8 }}>
-                    <TabBtn id="inventory" label="Table Inventory" icon={Database} count={growth.length} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <TabBtn id="inventory" label="Table Inventory" icon={Database}     count={growth.length} />
+                    <TabBtn id="analytics" label="Analytics"       icon={BarChart3} />
                     <TabBtn id="storage"   label="Storage & I/O"   icon={HardDrive} />
-                    <TabBtn id="logs"      label="Maintenance"      icon={History}   count={logs.length} />
+                    <TabBtn id="deadcode"  label="Dead Code"        icon={EyeOff}       badge={deadCount > 0 ? deadCount : undefined} />
+                    <TabBtn id="retention" label="Retention"        icon={CalendarDays} count={DEFAULT_POLICIES.filter(p => p.enabled).length} />
+                    <TabBtn id="logs"      label="Maintenance"      icon={History}      count={logs.length} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
                     <LiveDot color={refreshError ? THEME.danger : THEME.success} size={6} />
@@ -793,17 +1288,7 @@ const ResourcesTab = () => {
             {/* ── Quick metric strip ── */}
             <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                 {metricCards.map((m, i) => (
-                    <div key={i}
-                         className={isRefreshing ? 'res-metric-flash' : ''}
-                         style={{
-                             display: 'flex', alignItems: 'center', gap: 14,
-                             padding: '15px 18px', borderRadius: 14,
-                             background: THEME.glass, backdropFilter: 'blur(12px)',
-                             border: `1px solid ${isRefreshing ? `${THEME.primary}25` : THEME.glassBorder}`,
-                             transition: 'border-color 0.3s',
-                             animationDelay: `${i * 0.05}s`,
-                         }}
-                    >
+                    <div key={i} className={isRefreshing ? 'res-metric-flash' : ''} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '15px 18px', borderRadius: 14, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${isRefreshing ? `${THEME.primary}25` : THEME.glassBorder}`, transition: 'border-color 0.3s', animationDelay: `${i * 0.05}s` }}>
                         <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                             <m.icon size={18} color={m.color} />
                         </div>
@@ -822,28 +1307,26 @@ const ResourcesTab = () => {
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'inventory' && (
                 <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 20, alignItems: 'start' }}>
-
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-                        {/* Table inventory */}
+                        {/* Table inventory — with TOAST/Index ratio column */}
                         <Panel title="Table Inventory" icon={Database} noPad refreshing={refreshingPanels.has('inventory')}
                                rightNode={<span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>{growth.length} tables</span>}
                         >
                             {growth.length === 0 ? (
-                                <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
-                                    <EmptyState icon={Database} text="No table data" />
-                                </div>
+                                <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}><EmptyState icon={Database} text="No table data" /></div>
                             ) : (
                                 <div className="res-scrollbar" style={{ overflowY: 'auto', maxHeight: 400 }}>
                                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                         <thead>
                                         <tr>
-                                            <SortTh label="Table"  sortId="name"   width="32%" />
-                                            <SortTh label="Size"   sortId="size"   align="right" width="14%" />
-                                            <SortTh label="Rows"   sortId="rows"   align="right" width="14%" />
-                                            <SortTh label="Growth" sortId="growth" align="right" width="14%" />
-                                            <th style={{ padding: '10px 14px', width: '14%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Trend</th>
-                                            <th style={{ padding: '10px 8px', width: '12%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Scans</th>
+                                            <SortTh label="Table"      sortId="name"   width="28%" />
+                                            <SortTh label="Size"       sortId="size"   align="right" width="12%" />
+                                            <SortTh label="Rows"       sortId="rows"   align="right" width="11%" />
+                                            <SortTh label="Growth"     sortId="growth" align="right" width="11%" />
+                                            <th style={{ padding: '10px 8px', width: '13%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Composition</th>
+                                            <th style={{ padding: '10px 8px', width: '12%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Trend</th>
+                                            <th style={{ padding: '10px 8px', width: '13%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Scans</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -854,26 +1337,32 @@ const ResourcesTab = () => {
                                             return (
                                                 <tr key={t.table_name} onClick={() => setSelectedTable(t)} className="res-row-hover"
                                                     style={{ cursor: 'pointer', background: sel ? `${THEME.primary}08` : 'transparent', borderLeft: sel ? `2px solid ${THEME.primary}` : '2px solid transparent' }}>
-                                                    <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 600, color: sel ? THEME.textMain : THEME.textMuted, borderBottom: `1px solid ${THEME.grid}20`, transition: 'color 0.15s' }}>
+                                                    <td style={{ padding: '9px 16px', fontSize: 12, fontWeight: 600, color: sel ? THEME.textMain : THEME.textMuted, borderBottom: `1px solid ${THEME.grid}20`, transition: 'color 0.15s' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                                             <Database size={11} color={sel ? THEME.primary : THEME.textDim} style={{ flexShrink: 0 }} />
                                                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.table_name}</span>
                                                         </div>
                                                     </td>
-                                                    <td style={{ padding: '10px 16px', fontSize: 12, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: THEME.primary, fontWeight: 700, borderBottom: `1px solid ${THEME.grid}20` }}>{fmtSize(t.total_size_gb)}</td>
-                                                    <td style={{ padding: '10px 16px', fontSize: 12, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}20` }}>{fmtNum(t.row_count)}</td>
-                                                    <td style={{ padding: '10px 16px', fontSize: 11, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, borderBottom: `1px solid ${THEME.grid}20`, color: gr > 0 ? THEME.success : gr < 0 ? THEME.danger : THEME.textDim }}>
+                                                    <td style={{ padding: '9px 8px', fontSize: 12, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: THEME.primary, fontWeight: 700, borderBottom: `1px solid ${THEME.grid}20` }}>{fmtSize(t.total_size_gb)}</td>
+                                                    <td style={{ padding: '9px 8px', fontSize: 12, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}20` }}>{fmtNum(t.row_count)}</td>
+                                                    <td style={{ padding: '9px 8px', fontSize: 11, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, borderBottom: `1px solid ${THEME.grid}20`, color: gr > 0 ? THEME.success : gr < 0 ? THEME.danger : THEME.textDim }}>
                                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                                                             {gr > 0 ? <ArrowUpRight size={10} /> : gr < 0 ? <ArrowDownRight size={10} /> : null}
                                                             {gr > 0 ? '+' : ''}{t.growth_rate}%
                                                         </span>
                                                     </td>
-                                                    <td style={{ padding: '10px 14px', borderBottom: `1px solid ${THEME.grid}20` }}>
+                                                    {/* ── NEW: TOAST + index composition bar ── */}
+                                                    <td style={{ padding: '9px 8px', borderBottom: `1px solid ${THEME.grid}20` }}>
                                                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                            <MiniSparkline data={t.spark} color={gr >= 0 ? THEME.primary : THEME.danger} width={52} height={16} />
+                                                            <TOASTRatioCell table={t} />
                                                         </div>
                                                     </td>
-                                                    <td style={{ padding: '10px 8px', borderBottom: `1px solid ${THEME.grid}20`, textAlign: 'right' }}>
+                                                    <td style={{ padding: '9px 8px', borderBottom: `1px solid ${THEME.grid}20` }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                            <MiniSparkline data={t.spark} color={gr >= 0 ? THEME.primary : THEME.danger} width={48} height={16} />
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '9px 8px', borderBottom: `1px solid ${THEME.grid}20`, textAlign: 'right' }}>
                                                         <div title={`${(scanRatio).toFixed(0)}% index scans`} style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
                                                             <div style={{ width: 32, height: 4, borderRadius: 2, background: `${THEME.grid}60`, overflow: 'hidden' }}>
                                                                 <div style={{ width: `${scanRatio}%`, height: '100%', borderRadius: 2, background: scanRatio > 80 ? THEME.success : scanRatio > 50 ? THEME.warning : THEME.danger }} />
@@ -888,6 +1377,15 @@ const ResourcesTab = () => {
                                     </table>
                                 </div>
                             )}
+                            {/* ── NEW: Legend for composition column ── */}
+                            <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 9.5, color: THEME.textDim }}>
+                                {[{ l: 'Data', c: THEME.primary }, { l: 'Indexes', c: THEME.secondary }, { l: 'TOAST', c: THEME.warning }].map(x => (
+                                    <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                        <span style={{ width: 8, height: 4, borderRadius: 1, background: x.c }} /> {x.l}
+                                    </span>
+                                ))}
+                                <span style={{ marginLeft: 'auto', color: THEME.textDim }}>Composition = table data · index · TOAST ratio</span>
+                            </div>
                         </Panel>
 
                         {/* Bloat & Vacuum */}
@@ -895,13 +1393,7 @@ const ResourcesTab = () => {
                                rightNode={
                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                        {['all', 'high', 'medium', 'low'].map(f => (
-                                           <button key={f} onClick={() => setBloatFilter(f)} style={{
-                                               padding: '3px 9px', borderRadius: 5, border: 'none', cursor: 'pointer',
-                                               fontSize: 10, fontWeight: 700, textTransform: 'capitalize',
-                                               background: bloatFilter === f ? `${THEME.primary}20` : 'transparent',
-                                               color: bloatFilter === f ? THEME.primary : THEME.textDim,
-                                               transition: 'all 0.15s',
-                                           }}>{f}</button>
+                                           <button key={f} onClick={() => setBloatFilter(f)} style={{ padding: '3px 9px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, textTransform: 'capitalize', background: bloatFilter === f ? `${THEME.primary}20` : 'transparent', color: bloatFilter === f ? THEME.primary : THEME.textDim, transition: 'all 0.15s' }}>{f}</button>
                                        ))}
                                        {highBloat > 0 && <StatusBadge label={`${highBloat} critical`} color={THEME.danger} />}
                                    </div>
@@ -916,62 +1408,28 @@ const ResourcesTab = () => {
                                         const resolved = resolvedOptimizations[v.table_name];
                                         const bc = resolved ? THEME.success : bloatColor(v.bloat_ratio_pct);
                                         return (
-                                            <div key={i} onClick={() => setSelectedTable(v)}
-                                                 className={resolved ? 'res-resolved-flash' : ''}
-                                                 style={{
-                                                     padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                                                     background: resolved ? `${THEME.success}06` : sel ? `${bc}08` : THEME.surface,
-                                                     border: `1px solid ${resolved ? `${THEME.success}25` : sel ? `${bc}35` : `${THEME.grid}50`}`,
-                                                     transition: 'all 0.2s',
-                                                     opacity: resolved ? 0.72 : 1,
-                                                 }}
+                                            <div key={i} onClick={() => setSelectedTable(v)} className={resolved ? 'res-resolved-flash' : ''} style={{ padding: '12px 14px', borderRadius: 10, cursor: 'pointer', background: resolved ? `${THEME.success}06` : sel ? `${bc}08` : THEME.surface, border: `1px solid ${resolved ? `${THEME.success}25` : sel ? `${bc}35` : `${THEME.grid}50`}`, transition: 'all 0.2s', opacity: resolved ? 0.72 : 1 }}
                                                  onMouseEnter={e => { if (!sel && !resolved) e.currentTarget.style.borderColor = `${THEME.grid}90`; }}
-                                                 onMouseLeave={e => { if (!sel && !resolved) e.currentTarget.style.borderColor = `${THEME.grid}50`; }}
-                                            >
+                                                 onMouseLeave={e => { if (!sel && !resolved) e.currentTarget.style.borderColor = `${THEME.grid}50`; }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                                        {resolved
-                                                            ? <CheckCircle size={11} color={THEME.success} style={{ flexShrink: 0 }} />
-                                                            : <Trash2 size={11} color={bc} style={{ flexShrink: 0 }} />
-                                                        }
+                                                        {resolved ? <CheckCircle size={11} color={THEME.success} style={{ flexShrink: 0 }} /> : <Trash2 size={11} color={bc} style={{ flexShrink: 0 }} />}
                                                         <span style={{ fontSize: 12, fontWeight: 600, color: resolved ? THEME.textDim : THEME.textMain }}>{v.table_name}</span>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                         {resolved ? (
                                                             <>
-                                                                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: `${THEME.success}12`, color: THEME.success, border: `1px solid ${THEME.success}20` }}>
-                                                                    ✓ Optimization Applied
-                                                                </span>
-                                                                <button
-                                                                    onClick={e => { e.stopPropagation(); handleUnmarkResolved(v.table_name); }}
-                                                                    title="Undo — mark as still pending"
-                                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2, display: 'flex', alignItems: 'center' }}
-                                                                >
-                                                                    <X size={10} />
-                                                                </button>
+                                                                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: `${THEME.success}12`, color: THEME.success, border: `1px solid ${THEME.success}20` }}>✓ Optimization Applied</span>
+                                                                <button onClick={e => { e.stopPropagation(); handleUnmarkResolved(v.table_name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2, display: 'flex', alignItems: 'center' }}><X size={10} /></button>
                                                             </>
                                                         ) : (
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                                 <span style={{ fontSize: 12, fontWeight: 800, color: bc, fontVariantNumeric: 'tabular-nums' }}>{v.bloat_ratio_pct}%</span>
                                                                 {sel ? (
-                                                                    <button
-                                                                        onClick={e => { e.stopPropagation(); setSelectedTable(v); handleRequestConfirm(v.table_name); }}
-                                                                        style={{
-                                                                            display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                                            padding: '4px 10px', borderRadius: 6,  cursor: 'pointer',
-                                                                            fontSize: 10, fontWeight: 700,
-                                                                            background: `${THEME.success}18`, color: THEME.success,
-                                                                            border: `1px solid ${THEME.success}30`,
-                                                                            transition: 'all 0.15s',
-                                                                        }}
-                                                                        onMouseEnter={e => e.currentTarget.style.background = `${THEME.success}28`}
-                                                                        onMouseLeave={e => e.currentTarget.style.background = `${THEME.success}18`}
-                                                                    >
+                                                                    <button onClick={e => { e.stopPropagation(); setSelectedTable(v); handleRequestConfirm(v.table_name); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 700, background: `${THEME.success}18`, color: THEME.success, border: `1px solid ${THEME.success}30`, transition: 'all 0.15s' }}>
                                                                         <CheckCircle size={10} /> Mark Optimized
                                                                     </button>
-                                                                ) : (
-                                                                    <ChevronRight size={12} color={THEME.textDim} />
-                                                                )}
+                                                                ) : <ChevronRight size={12} color={THEME.textDim} />}
                                                             </div>
                                                         )}
                                                     </div>
@@ -981,11 +1439,7 @@ const ResourcesTab = () => {
                                                         <div className="res-bar-animate" style={{ width: `${Math.min(v.bloat_ratio_pct, 100)}%`, height: '100%', borderRadius: 2, background: `linear-gradient(90deg, ${bc}90, ${bc})`, boxShadow: `0 0 8px ${bc}40`, animationDelay: `${i * 0.06}s` }} />
                                                     </div>
                                                 )}
-                                                {resolved && (
-                                                    <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>
-                                                        {resolved.note} — pending DB confirmation on next refresh
-                                                    </div>
-                                                )}
+                                                {resolved && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>{resolved.note} — pending DB confirmation on next refresh</div>}
                                                 {!resolved && (v.last_autovacuum || v.dead_tuples != null) && (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 7, fontSize: 10, color: THEME.textDim }}>
                                                         {v.last_autovacuum && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}><Clock size={9} /> {v.last_autovacuum}</span>}
@@ -1002,20 +1456,14 @@ const ResourcesTab = () => {
 
                     {/* Right: Analysis panel */}
                     <div style={{ position: 'sticky', top: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-                        {/* ── Optimization status banner ── */}
                         {selectedTable && (() => {
                             const vEntry = vacuum.find(v => v.table_name === selectedTable.table_name);
                             if (!vEntry) return null;
                             const res = resolvedOptimizations[selectedTable.table_name];
-                            const bc   = bloatColor(vEntry.bloat_ratio_pct);
+                            const bc = bloatColor(vEntry.bloat_ratio_pct);
                             if (res) {
                                 return (
-                                    <div style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '10px 16px', borderRadius: 10,
-                                        background: `${THEME.success}08`, border: `1px solid ${THEME.success}25`,
-                                    }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: 10, background: `${THEME.success}08`, border: `1px solid ${THEME.success}25` }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                             <CheckCircle size={14} color={THEME.success} />
                                             <div>
@@ -1023,22 +1471,14 @@ const ResourcesTab = () => {
                                                 <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>{res.note} — will auto-clear from bloat list on next DB refresh if bloat &lt; 10%</div>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleUnmarkResolved(selectedTable.table_name)} style={{
-                                            background: 'none', border: `1px solid ${THEME.grid}40`, borderRadius: 5,
-                                            cursor: 'pointer', color: THEME.textDim, fontSize: 10, fontWeight: 600,
-                                            padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: 4,
-                                        }}>
+                                        <button onClick={() => handleUnmarkResolved(selectedTable.table_name)} style={{ background: 'none', border: `1px solid ${THEME.grid}40`, borderRadius: 5, cursor: 'pointer', color: THEME.textDim, fontSize: 10, fontWeight: 600, padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                             <X size={9} /> Undo
                                         </button>
                                     </div>
                                 );
                             }
                             return (
-                                <div style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    padding: '10px 16px', borderRadius: 10,
-                                    background: `${bc}07`, border: `1px solid ${bc}25`,
-                                }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: 10, background: `${bc}07`, border: `1px solid ${bc}25` }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                         <AlertTriangle size={13} color={bc} />
                                         <div>
@@ -1046,19 +1486,7 @@ const ResourcesTab = () => {
                                             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>Apply the optimization below, then click the button →</div>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleRequestConfirm(selectedTable.table_name)}
-                                        style={{
-                                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                                            padding: '7px 14px', borderRadius: 7, border: 'none', cursor: 'pointer',
-                                            fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
-                                            background: `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)`,
-                                            color: '#fff', boxShadow: `0 3px 12px ${THEME.success}40`,
-                                            transition: 'all 0.15s',
-                                        }}
-                                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 5px 18px ${THEME.success}55`; }}
-                                        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `0 3px 12px ${THEME.success}40`; }}
-                                    >
+                                    <button onClick={() => handleRequestConfirm(selectedTable.table_name)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', background: `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)`, color: '#fff', boxShadow: `0 3px 12px ${THEME.success}40`, transition: 'all 0.15s' }}>
                                         <CheckCircle size={12} /> Mark Optimization Done
                                     </button>
                                 </div>
@@ -1083,7 +1511,8 @@ const ResourcesTab = () => {
                                     resolvedOptimizations={resolvedOptimizations}
                                     onMarkResolved={handleMarkResolved}
                                     onUnmarkResolved={handleUnmarkResolved}
-                                /></>
+                                />
+                            </>
                         ) : (
                             <Panel style={{ minHeight: 500 }}>
                                 <div style={{ height: '100%', minHeight: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 40 }}>
@@ -1097,7 +1526,7 @@ const ResourcesTab = () => {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                                        {['Schema', 'Indexes', 'Bloat', 'Growth'].map(tag => (
+                                        {['Schema', 'Indexes', 'Bloat', 'Growth', 'TOAST'].map(tag => (
                                             <span key={tag} style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: `${THEME.primary}08`, color: THEME.textDim, border: `1px solid ${THEME.primary}12` }}>{tag}</span>
                                         ))}
                                     </div>
@@ -1110,13 +1539,75 @@ const ResourcesTab = () => {
 
 
             {/* ════════════════════════════════════════════════════════════
+                ANALYTICS VIEW — NEW TAB
+               ════════════════════════════════════════════════════════════ */}
+            {activeTab === 'analytics' && (
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                    {/* Table growth rate chart */}
+                    {tableGrowthRate && (
+                        <TableGrowthRateChart growthRateData={tableGrowthRate} refreshing={refreshingPanels.has('analytics')} />
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                        {/* Partition tree */}
+                        <PartitionTreePanel partitions={partitions} refreshing={refreshingPanels.has('inventory')} />
+
+                        {/* Freeze urgency */}
+                        {freezeData.length > 0 && (
+                            <FreezeUrgencyPanel data={freezeData} refreshing={refreshingPanels.has('analytics')} />
+                        )}
+                    </div>
+
+                    {/* Index-to-table ratio panel */}
+                    <Panel title="Index-to-Table Size Ratio" icon={Layers} refreshing={refreshingPanels.has('inventory')}
+                           rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>Higher ratio may indicate over-indexing</span>}
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 120px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 4 }}>
+                                {['Table', 'Table Size', 'Index Size', 'TOAST', 'Index Ratio'].map((h, i) => (
+                                    <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
+                                ))}
+                            </div>
+                            {sortedGrowth.slice(0, 12).map((t, i) => {
+                                const total = Number(t.total_size_gb) || 0.01;
+                                const idx   = Number(t.index_size_gb) || 0;
+                                const toast = Number(t.toast_size_gb) || 0;
+                                const ratio = idx / Math.max(total - idx - toast, 0.001);
+                                const ratioColor = ratio > 1.5 ? THEME.danger : ratio > 0.8 ? THEME.warning : THEME.success;
+                                return (
+                                    <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 120px', gap: 8, padding: '8px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
+                                        <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.table_name}</span>
+                                        <span style={{ fontSize: 11, textAlign: 'right', color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(total - idx - toast)}</span>
+                                        <span style={{ fontSize: 11, textAlign: 'right', color: THEME.secondary, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(idx)}</span>
+                                        <span style={{ fontSize: 11, textAlign: 'right', color: THEME.warning, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(toast)}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                                            <div style={{ flex: 1, height: 4, borderRadius: 2, background: `${THEME.grid}40`, overflow: 'hidden', maxWidth: 60 }}>
+                                                <div className="res-bar-animate" style={{ width: `${Math.min(ratio / 2, 1) * 100}%`, height: '100%', borderRadius: 2, background: ratioColor, animationDelay: `${i * 0.04}s` }} />
+                                            </div>
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: ratioColor, fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>{ratio.toFixed(2)}×</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div style={{ paddingTop: 10, marginTop: 6, borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim, display: 'flex', gap: 20 }}>
+                            <span style={{ color: THEME.success }}>●  &lt;0.8× normal</span>
+                            <span style={{ color: THEME.warning }}>●  0.8–1.5× review</span>
+                            <span style={{ color: THEME.danger }}>●  &gt;1.5× over-indexed</span>
+                        </div>
+                    </Panel>
+                </div>
+            )}
+
+
+            {/* ════════════════════════════════════════════════════════════
                 STORAGE & I/O VIEW
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'storage' && (
                 <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20 }}>
-
                         {/* Storage Donut */}
                         <Panel title="Storage Breakdown" icon={PieIcon} refreshing={refreshingPanels.has('storage')}
                                rightNode={<span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{totalStorageGB.toFixed(0)} GB</span>}
@@ -1150,8 +1641,8 @@ const ResourcesTab = () => {
                                    <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim }}>
                                        {[{ l: 'Tables', c: THEME.primary }, { l: 'Indexes', c: THEME.secondary }, { l: 'TOAST', c: THEME.warning }].map(x => (
                                            <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                            <span style={{ width: 10, height: 3, borderRadius: 2, background: x.c }} /> {x.l}
-                                        </span>
+                                               <span style={{ width: 10, height: 3, borderRadius: 2, background: x.c }} /> {x.l}
+                                           </span>
                                        ))}
                                    </div>
                                }
@@ -1177,8 +1668,10 @@ const ResourcesTab = () => {
                         </Panel>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
+                    {/* NEW: Tablespace I/O */}
+                    <TablespaceIOPanel tablespaceData={tablespaceIO} refreshing={refreshingPanels.has('io')} />
 
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
                         {/* Disk I/O */}
                         <Panel title="Disk I/O Throughput" icon={Activity} refreshing={refreshingPanels.has('io')}
                                rightNode={
@@ -1206,9 +1699,9 @@ const ResourcesTab = () => {
                         <Panel title="System Resources" icon={Cpu} refreshing={refreshingPanels.has('resources')}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 {[
-                                    { label: 'CPU',    value: 45, color: THEME.primary,   detail: '4 cores • 2.1 load avg',     icon: Cpu },
-                                    { label: 'Memory', value: 72, color: THEME.secondary, detail: '12 GB / 16 GB allocated',     icon: Server },
-                                    { label: 'Disk',   value: 54, color: THEME.warning,   detail: '108 GB / 200 GB SSD vol',     icon: HardDrive },
+                                    { label: 'CPU',    value: 45, color: THEME.primary,   detail: '4 cores • 2.1 load avg',  icon: Cpu },
+                                    { label: 'Memory', value: 72, color: THEME.secondary, detail: '12 GB / 16 GB allocated',  icon: Server },
+                                    { label: 'Disk',   value: 54, color: THEME.warning,   detail: '108 GB / 200 GB SSD vol', icon: HardDrive },
                                 ].map((r, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                                         <RingGauge value={r.value} color={r.color} size={48} strokeWidth={4.5} />
@@ -1233,17 +1726,14 @@ const ResourcesTab = () => {
                                 const maxSize = Number(sortedGrowth[0]?.total_size_gb) || 1;
                                 const pct = (Number(t.total_size_gb) / maxSize) * 100;
                                 const idxPct = (Number(t.index_size_gb || 0) / Math.max(Number(t.total_size_gb), 0.01)) * 100;
+                                const toastPct = (Number(t.toast_size_gb || 0) / Math.max(Number(t.total_size_gb), 0.01)) * 100;
                                 return (
-                                    <div key={i} style={{
-                                        display: 'grid', gridTemplateColumns: '150px 1fr 70px',
-                                        alignItems: 'center', gap: 16,
-                                        padding: '9px 20px',
-                                        borderBottom: i < 7 ? `1px solid ${THEME.grid}20` : 'none',
-                                    }}>
+                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 70px', alignItems: 'center', gap: 16, padding: '9px 20px', borderBottom: i < 7 ? `1px solid ${THEME.grid}20` : 'none' }}>
                                         <div style={{ fontSize: 11.5, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.table_name}</div>
                                         <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', background: `${THEME.grid}40` }}>
-                                            <div className="res-bar-animate" style={{ width: `${pct * (100 - idxPct) / 100}%`, background: THEME.primary,   height: '100%', animationDelay: `${i * 0.05}s` }} />
-                                            <div className="res-bar-animate" style={{ width: `${pct * idxPct / 100}%`,           background: THEME.secondary, height: '100%', animationDelay: `${i * 0.05 + 0.08}s` }} />
+                                            <div className="res-bar-animate" style={{ width: `${pct * (100 - idxPct - toastPct) / 100}%`, background: THEME.primary,   height: '100%', animationDelay: `${i * 0.05}s` }} />
+                                            <div className="res-bar-animate" style={{ width: `${pct * idxPct / 100}%`,                   background: THEME.secondary, height: '100%', animationDelay: `${i * 0.05 + 0.06}s` }} />
+                                            <div className="res-bar-animate" style={{ width: `${pct * toastPct / 100}%`,                 background: THEME.warning,   height: '100%', animationDelay: `${i * 0.05 + 0.12}s` }} />
                                         </div>
                                         <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.textMain, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtSize(t.total_size_gb)}</div>
                                     </div>
@@ -1253,6 +1743,89 @@ const ResourcesTab = () => {
                         <div style={{ display: 'flex', gap: 20, padding: '10px 20px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.primary }} /> Data</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.secondary }} /> Indexes</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.warning }} /> TOAST</span>
+                        </div>
+                    </Panel>
+                </div>
+            )}
+
+
+            {/* ════════════════════════════════════════════════════════════
+                DEAD CODE VIEW — NEW TAB
+               ════════════════════════════════════════════════════════════ */}
+            {activeTab === 'deadcode' && (
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                    {/* Summary banner */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+                        {[
+                            { label: 'Unused Tables',     value: deadCode.tables.length, sub: 'zero reads in 90+ days', color: THEME.danger,   icon: FileX },
+                            { label: 'Unused Columns',    value: deadCode.columns.length, sub: 'potential dead fields',  color: THEME.warning,  icon: EyeOff },
+                            { label: 'Space Reclaimable', value: fmtSize(deadCode.tables.reduce((s, t) => s + t.size_gb, 0)), sub: 'if all unused tables dropped', color: THEME.success, icon: HardDrive },
+                        ].map((m, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '15px 18px', borderRadius: 14, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}` }}>
+                                <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
+                                    <m.icon size={18} color={m.color} />
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
+                                    <div style={{ fontSize: 22, fontWeight: 800, color: m.color, fontVariantNumeric: 'tabular-nums', lineHeight: 1, letterSpacing: '-0.02em' }}>{m.value}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 3, lineHeight: 1 }}>{m.sub}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <DeadCodeDetector deadCode={deadCode} refreshing={refreshingPanels.has('inventory')} />
+
+                    {/* Safety notice */}
+                    <div style={{ padding: '14px 18px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}15`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                        <ShieldAlert size={16} color={THEME.warning} style={{ flexShrink: 0, marginTop: 1 }} />
+                        <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
+                            <strong style={{ color: THEME.warning }}>Before archiving or dropping:</strong> Verify with application owners, check for indirect reads through ORMs, background workers, or reporting pipelines. Zero-read in the past 90 days does not guarantee zero-use — some tables are queried rarely but are still critical (e.g., configuration, audit, disaster-recovery). Use <code style={{ background: `${THEME.grid}30`, padding: '1px 5px', borderRadius: 3, fontSize: 11 }}>pg_stat_user_tables</code> to confirm.
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {/* ════════════════════════════════════════════════════════════
+                RETENTION POLICY VIEW — NEW TAB
+               ════════════════════════════════════════════════════════════ */}
+            {activeTab === 'retention' && (
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                    <RetentionPolicyManager refreshing={refreshingPanels.has('logs')} />
+
+                    {/* Partition detach candidates */}
+                    <Panel title="Partition Detach Candidates" icon={PackageOpen} refreshing={refreshingPanels.has('inventory')}
+                           rightNode={<StatusBadge label={`${partitions.flatMap(p => p.children).filter(c => c.status === 'detach_ready').length} ready to archive`} color={THEME.warning} />}
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {partitions.flatMap(p =>
+                                p.children
+                                    .filter(c => c.status === 'detach_ready')
+                                    .map(c => ({ ...c, parent: p.parent, strategy: p.strategy }))
+                            ).map((c, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}18` }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <Archive size={14} color={THEME.warning} />
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace', marginBottom: 3 }}>{c.name}</div>
+                                        <div style={{ fontSize: 10.5, color: THEME.textDim }}>Parent: {c.parent} · {c.strategy} · {fmtNum(c.rows)} rows · {fmtSize(c.gb)}</div>
+                                    </div>
+                                    <StatusBadge label="Archive Ready" color={THEME.warning} />
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <button style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: `${THEME.warning}15`, color: THEME.warning, transition: 'all 0.15s' }}>
+                                            <Archive size={11} /> Detach &amp; Archive
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {partitions.flatMap(p => p.children).filter(c => c.status === 'detach_ready').length === 0 && (
+                                <div style={{ textAlign: 'center', padding: 24, color: THEME.textDim, fontSize: 13 }}>No partitions are currently flagged for archival.</div>
+                            )}
                         </div>
                     </Panel>
                 </div>
@@ -1291,9 +1864,7 @@ const ResourcesTab = () => {
                                     <tr key={log.id} className="res-row-hover" style={{ background: fail ? `${THEME.danger}04` : 'transparent' }}>
                                         <td style={{ padding: '13px 20px', fontSize: 12, color: THEME.textDim, borderBottom: `1px solid ${THEME.grid}20`, fontVariantNumeric: 'tabular-nums' }}>{log.date}</td>
                                         <td style={{ padding: '13px 20px', fontSize: 12.5, fontWeight: 600, color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}20` }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                                <Database size={11} color={THEME.textDim} style={{ flexShrink: 0 }} /> {log.table}
-                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}><Database size={11} color={THEME.textDim} style={{ flexShrink: 0 }} /> {log.table}</div>
                                         </td>
                                         <td style={{ padding: '13px 20px', borderBottom: `1px solid ${THEME.grid}20` }}>
                                             <span style={{ display: 'inline-block', padding: '3px 9px', borderRadius: 5, background: `${THEME.primary}0a`, border: `1px solid ${THEME.primary}15`, fontSize: 10.5, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{log.action}</span>
@@ -1314,10 +1885,10 @@ const ResourcesTab = () => {
                         {/* Summary footer */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderTop: `1px solid ${THEME.glassBorder}` }}>
                             {[
-                                { label: 'Total Saved',  value: '4.12 GB', color: THEME.success, icon: TrendingUp },
+                                { label: 'Total Saved',  value: '4.12 GB',  color: THEME.success,   icon: TrendingUp },
                                 { label: 'Operations',   value: String(logs.length), color: THEME.primary, icon: Zap },
                                 { label: 'Success Rate', value: `${Math.round(logs.filter(l => l.status === 'Success').length / logs.length * 100)}%`, color: logs.some(l => l.status === 'Failed') ? THEME.warning : THEME.success, icon: CheckCircle },
-                                { label: 'Avg Duration', value: '2m 40s', color: THEME.warning, icon: Timer },
+                                { label: 'Avg Duration', value: '2m 40s',   color: THEME.warning,   icon: Timer },
                             ].map((s, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 20px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
                                     <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
