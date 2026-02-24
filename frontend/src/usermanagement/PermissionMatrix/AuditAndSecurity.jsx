@@ -5,31 +5,35 @@
  */
 
 import React, { useState, memo } from 'react';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 /* ─── Theme ─────────────────────────────────────────────────────── */
 const T = {
-    surface:     '#12121f',
-    surfaceHigh: '#1a1a2e',
-    surfaceMid:  '#16162a',
-    border:      '#252538',
-    primary:     '#6c63ff',
-    primaryDim:  '#6c63ff1a',
-    success:     '#10b981',
-    warning:     '#f59e0b',
-    warningDim:  '#f59e0b1a',
-    danger:      '#ef4444',
-    text:        '#e8eaf0',
-    textDim:     '#9395a5',
-    textMuted:   '#565870',
+    get surface()    { return THEME.surface; },
+    get surfaceHigh(){ return THEME.surfaceRaised; },
+    get surfaceMid() { return THEME.surfaceHover; },
+    get border()     { return THEME.grid; },
+    get primary()    { return THEME.primary; },
+    get primaryDim() { return THEME.primaryFaint; },
+    get success()    { return THEME.success; },
+    get warning()    { return THEME.warning; },
+    get warningDim() { return `${THEME.warning}26`; },
+    get danger()     { return THEME.danger; },
+    get text()       { return THEME.textMain; },
+    get textDim()    { return THEME.textMuted; },
+    get textMuted()  { return THEME.textDim; },
 };
 
-/* ─── CSS injected once ──────────────────────────────────────────── */
+/* ─── CSS updated on every render ───────────────────────────────── */
 const STYLE_ID = 'as2-styles';
 function ensureStyles() {
     if (typeof document === 'undefined') return;
-    if (document.getElementById(STYLE_ID)) return;
-    var el = document.createElement('style');
-    el.id = STYLE_ID;
+    var el = document.getElementById(STYLE_ID);
+    if (!el) {
+        el = document.createElement('style');
+        el.id = STYLE_ID;
+        document.head.appendChild(el);
+    }
     el.textContent = [
         '.as2 { font-family: "DM Sans","Inter",system-ui,sans-serif; color:' + T.text + '; }',
         '.as2 *, .as2 *::before, .as2 *::after { box-sizing: border-box; }',
@@ -53,7 +57,6 @@ function ensureStyles() {
         '@keyframes as2-pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }',
         '.as2-pulse { animation: as2-pulse 2s infinite; }',
     ].join('\n');
-    document.head.appendChild(el);
 }
 
 /* ─── SVG icons ──────────────────────────────────────────────────── */
@@ -199,6 +202,7 @@ var INITIAL_API_KEYS = [
 
 /* ─── Audit Log ──────────────────────────────────────────────────── */
 export var AuditLog = function AuditLog() {
+    useAdaptiveTheme();
     ensureStyles();
     var _f = useState('all');
     var filter    = _f[0];
@@ -305,6 +309,7 @@ export var AuditLog = function AuditLog() {
 
 /* ─── Security Panel ─────────────────────────────────────────────── */
 export var SecurityPanel = function SecurityPanel(props) {
+    useAdaptiveTheme();
     ensureStyles();
     var users = props.users || [];
 

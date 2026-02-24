@@ -193,7 +193,7 @@ function useStaleWhileRevalidate(users, fetchUsers) {
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 5 — GLOBAL STYLES
 ═══════════════════════════════════════════════════════════════════════════ */
-const GlobalStylesInjector = memo(() => (
+const GlobalStylesInjector = () => (
     <style>{`
     @keyframes umSlideUp    { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
     @keyframes umFade       { from { opacity:0 } to { opacity:1 } }
@@ -228,7 +228,7 @@ const GlobalStylesInjector = memo(() => (
     @media(max-width:600px){ .um-grid-4,.um-grid-2{ grid-template-columns:1fr; } }
     .um-scroll { overflow-y:auto; scrollbar-width:thin; scrollbar-color:${T.grid || '#1A0E2B'} transparent; }
   `}</style>
-));
+);
 GlobalStylesInjector.displayName = 'GlobalStylesInjector';
 
 /* ═══════════════════════════════════════════════════════════════════════════

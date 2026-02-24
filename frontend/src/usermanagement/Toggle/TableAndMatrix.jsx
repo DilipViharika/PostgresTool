@@ -5,20 +5,21 @@
  */
 
 import React, { useState, useMemo, useCallback, memo } from 'react';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 const T = {
-    surface:     '#12121f',
-    surfaceHigh: '#1a1a2e',
-    surfaceMid:  '#16162a',
-    border:      '#252538',
-    primary:     '#6c63ff',
-    primaryGlow: '#6c63ff22',
-    green:       '#10b981',
-    yellow:      '#f59e0b',
-    red:         '#ef4444',
-    text:        '#e8eaf0',
-    textDim:     '#9395a5',
-    textMuted:   '#565870',
+    get surface()     { return THEME.surface; },
+    get surfaceHigh() { return THEME.surfaceRaised; },
+    get surfaceMid()  { return THEME.surfaceHover; },
+    get border()      { return THEME.grid; },
+    get primary()     { return THEME.primary; },
+    get primaryGlow() { return THEME.primaryFaint; },
+    get green()       { return THEME.success; },
+    get yellow()      { return THEME.warning; },
+    get red()         { return THEME.danger; },
+    get text()        { return THEME.textMain; },
+    get textDim()     { return THEME.textMuted; },
+    get textMuted()   { return THEME.textDim; },
 };
 
 const ROLE_CFG = {
@@ -72,9 +73,12 @@ const formatDate = (raw) => {
 const STYLE_ID = 'ut2-styles-v3';
 function ensureStyles() {
     if (typeof document === 'undefined') return;
-    if (document.getElementById(STYLE_ID)) return;
-    var el = document.createElement('style');
-    el.id = STYLE_ID;
+    var el = document.getElementById(STYLE_ID);
+    if (!el) {
+        el = document.createElement('style');
+        el.id = STYLE_ID;
+        document.head.appendChild(el);
+    }
     el.textContent = [
         '.ut2{font-family:"DM Sans","Inter",system-ui,sans-serif;color:' + T.text + '}',
         '.ut2 *,.ut2 *::before,.ut2 *::after{box-sizing:border-box}',
@@ -127,7 +131,6 @@ function ensureStyles() {
         '@keyframes ut2-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}',
         '.ut2-in{animation:ut2-in .18s ease-out both}',
     ].join('\n');
-    document.head.appendChild(el);
 }
 
 /* SVG icons - no special chars */
@@ -180,6 +183,7 @@ var StatusBadge = memo(function(props) {
 });
 
 var RiskCell = memo(function(props) {
+    useAdaptiveTheme();
     var risk = props.risk || '';
     if (!risk) return React.createElement('span', { style:{ color:T.textMuted, fontSize:12 } }, '--');
     var c = RISK_CFG[risk.toLowerCase()] || { label: risk, color: T.textDim, pct: 30 };
@@ -215,6 +219,7 @@ var COLS = [
 ];
 
 export var UsersTable = memo(function UsersTable(props) {
+    useAdaptiveTheme();
     var users        = props.users || [];
     var onSelectUser = props.onSelectUser;
     var onEditUser   = props.onEditUser;
@@ -504,6 +509,7 @@ UsersTable.displayName = 'UsersTable';
 
 
 export var PermissionMatrix = memo(function PermissionMatrix() {
+    useAdaptiveTheme();
     var roles   = ['superadmin','admin','editor','viewer','guest'];
     var actions = ['View','Create','Edit','Delete','Export','Admin'];
     var perms   = {
