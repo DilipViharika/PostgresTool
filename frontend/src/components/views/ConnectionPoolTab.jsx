@@ -270,7 +270,6 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
     const fields = DB_TYPES[dbType].fields;
     const rows = [];
 
-    // Group host+port together, port+database together, etc.
     let i = 0;
     while (i < fields.length) {
         const f = fields[i];
@@ -400,7 +399,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const ConnectionsTab = () => {
-    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
+    useAdaptiveTheme();
     const [connections, setConnections] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingConnection, setEditingConnection] = useState(null);
@@ -408,8 +407,10 @@ const ConnectionsTab = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState(defaultFormData());
     const [formErrors, setFormErrors] = useState({});
+    const [errorMsg, setErrorMsg] = useState('');
 
-    const API_BASE = 'http://localhost:5000';
+    // ✅ FIX: Use relative URLs so it works on any host (Vercel, local, etc.)
+    const API_BASE = '';
     const getAuthToken = () => localStorage.getItem('authToken');
 
     useEffect(() => { fetchConnections(); }, []);
@@ -419,8 +420,14 @@ const ConnectionsTab = () => {
             const res = await fetch(`${API_BASE}/api/connections`, {
                 headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
-            if (res.ok) setConnections(await res.json());
-        } catch (e) { console.error(e); }
+            if (res.ok) {
+                setConnections(await res.json());
+            } else {
+                console.error('Failed to fetch connections:', res.status, res.statusText);
+            }
+        } catch (e) {
+            console.error('Network error fetching connections:', e.message);
+        }
     };
 
     const validateForm = () => {
@@ -433,7 +440,7 @@ const ConnectionsTab = () => {
         fields.forEach(f => {
             const meta = FIELD_META[f];
             if (meta.optional || meta.type === 'checkbox') return;
-            if (f === 'password' && editingConnection) return; // allow blank on edit
+            if (f === 'password' && editingConnection) return;
             const val = formData[f];
             if (!val || (typeof val === 'string' && !val.trim())) {
                 errors[f] = `${meta.label} is required`;
@@ -449,8 +456,10 @@ const ConnectionsTab = () => {
         return Object.keys(errors).length === 0;
     };
 
+    // ✅ FIX: Proper error parsing + display instead of bare alert
     const saveConnection = async () => {
         if (!validateForm()) return;
+        setErrorMsg('');
         try {
             const url = editingConnection
                 ? `${API_BASE}/api/connections/${editingConnection.id}`
@@ -460,9 +469,21 @@ const ConnectionsTab = () => {
                 headers: { Authorization: `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
-            if (res.ok) { await fetchConnections(); closeModal(); }
-            else { const e = await res.json(); alert(e.error || 'Failed to save'); }
-        } catch (e) { alert('Failed to save connection'); }
+            if (res.ok) {
+                await fetchConnections();
+                closeModal();
+            } else {
+                const text = await res.text();
+                let msg = `Server error (${res.status})`;
+                try {
+                    const json = JSON.parse(text);
+                    msg = json.error || json.message || msg;
+                } catch {}
+                setErrorMsg(msg);
+            }
+        } catch (e) {
+            setErrorMsg(`Network error: ${e.message}`);
+        }
     };
 
     const deleteConnection = async (id) => {
@@ -472,20 +493,33 @@ const ConnectionsTab = () => {
                 method: 'DELETE', headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
             if (res.ok) fetchConnections();
-            else alert('Failed to delete');
-        } catch (e) { console.error(e); }
+            else {
+                const text = await res.text();
+                let msg = 'Failed to delete';
+                try { msg = JSON.parse(text).error || msg; } catch {}
+                alert(msg);
+            }
+        } catch (e) {
+            alert(`Network error: ${e.message}`);
+        }
     };
 
+    // ✅ FIX: Better test connection error reporting
     const testConnection = async (conn) => {
         setTestingConnection(conn.id);
         try {
             const res = await fetch(`${API_BASE}/api/connections/${conn.id}/test`, {
                 method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
-            const r = await res.json();
-            alert(r.success ? '✅ Connection successful!' : `❌ Failed: ${r.error}`);
-        } catch (e) { alert('Failed to test'); }
-        finally { setTestingConnection(null); }
+            const text = await res.text();
+            let r = {};
+            try { r = JSON.parse(text); } catch {}
+            alert(r.success ? '✅ Connection successful!' : `❌ Failed: ${r.error || text || res.statusText}`);
+        } catch (e) {
+            alert(`Network error: ${e.message}`);
+        } finally {
+            setTestingConnection(null);
+        }
     };
 
     const setDefaultConnection = async (id) => {
@@ -501,6 +535,7 @@ const ConnectionsTab = () => {
         setEditingConnection(null);
         setFormData(defaultFormData());
         setFormErrors({});
+        setErrorMsg('');
         setShowPassword(false);
         setShowModal(true);
     };
@@ -509,6 +544,7 @@ const ConnectionsTab = () => {
         setEditingConnection(conn);
         setFormData({ ...defaultFormData(conn.dbType || 'postgresql'), ...conn, password: '' });
         setFormErrors({});
+        setErrorMsg('');
         setShowPassword(false);
         setShowModal(true);
     };
@@ -518,14 +554,16 @@ const ConnectionsTab = () => {
         setEditingConnection(null);
         setFormData(defaultFormData());
         setFormErrors({});
+        setErrorMsg('');
     };
 
     const handleDbTypeChange = (type) => {
         setFormData(prev => ({
             ...defaultFormData(type),
-            name: prev.name, // preserve connection name
+            name: prev.name,
         }));
         setFormErrors({});
+        setErrorMsg('');
     };
 
     return (
@@ -557,7 +595,6 @@ const ConnectionsTab = () => {
                     const dbMeta = DB_TYPES[conn.dbType] || DB_TYPES.postgresql;
                     return (
                         <div key={conn.id} style={S.card(dbMeta.accent)}>
-                            {/* Subtle glow top-left */}
                             <div style={{
                                 position: 'absolute', top: -40, left: -40, width: 120, height: 120,
                                 borderRadius: '50%', background: `${dbMeta.accent}08`, pointerEvents: 'none',
@@ -582,7 +619,6 @@ const ConnectionsTab = () => {
                                 </div>
                             </div>
 
-                            {/* Key-value details */}
                             <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 6, padding: '8px 12px', marginBottom: 14, fontSize: 12 }}>
                                 {conn.database && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -620,7 +656,6 @@ const ConnectionsTab = () => {
                                 </div>
                             </div>
 
-                            {/* Last test status */}
                             {conn.lastTested && (
                                 <div style={{
                                     display: 'flex', alignItems: 'center', gap: 6,
@@ -637,7 +672,6 @@ const ConnectionsTab = () => {
                                 </div>
                             )}
 
-                            {/* Actions */}
                             <div style={{ display: 'flex', gap: 8 }}>
                                 <button
                                     onClick={() => testConnection(conn)}
@@ -698,7 +732,6 @@ const ConnectionsTab = () => {
                     );
                 })}
 
-                {/* Empty state */}
                 {connections.length === 0 && (
                     <div style={{
                         gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px',
@@ -756,10 +789,8 @@ const ConnectionsTab = () => {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                            {/* DB Type selector */}
                             <DBTypeSelector value={formData.dbType} onChange={handleDbTypeChange} />
 
-                            {/* Connection name */}
                             <div>
                                 <label style={S.label}>Connection Name *</label>
                                 <input
@@ -774,7 +805,6 @@ const ConnectionsTab = () => {
                                 {formErrors.name && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors.name}</div>}
                             </div>
 
-                            {/* Dynamic fields per DB type */}
                             <DynamicFields
                                 dbType={formData.dbType}
                                 formData={formData}
@@ -784,7 +814,6 @@ const ConnectionsTab = () => {
                                 togglePasswordVisibility={() => setShowPassword(p => !p)}
                             />
 
-                            {/* Set as default */}
                             {!editingConnection && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <input
@@ -797,6 +826,25 @@ const ConnectionsTab = () => {
                                     <label htmlFor="isDefault" style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: '#9ca3af' }}>
                                         Set as default connection
                                     </label>
+                                </div>
+                            )}
+
+                            {/* ✅ FIX: Inline error banner instead of browser alert */}
+                            {errorMsg && (
+                                <div style={{
+                                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                                    padding: '12px 14px', borderRadius: 8,
+                                    background: 'rgba(239,68,68,0.08)',
+                                    border: '1px solid rgba(239,68,68,0.3)',
+                                }}>
+                                    <AlertCircle size={15} color="#ef4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                                    <span style={{ fontSize: 13, color: '#ef4444', lineHeight: 1.4 }}>{errorMsg}</span>
+                                    <button
+                                        onClick={() => setErrorMsg('')}
+                                        style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, flexShrink: 0 }}
+                                    >
+                                        <X size={14} />
+                                    </button>
                                 </div>
                             )}
                         </div>
