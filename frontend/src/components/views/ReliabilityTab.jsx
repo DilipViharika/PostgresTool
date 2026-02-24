@@ -2,15 +2,7 @@
 //  VIGIL — ReliabilityTab  (v5 — Full Feature Expansion)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-
-/* ── Inline THEME (standalone; replace with your real import in production) ── */
-const THEME = {
-    bg: '#0d0f14', surface: '#131720', glass: 'rgba(255,255,255,0.04)',
-    glassBorder: 'rgba(255,255,255,0.08)', glassHeavy: 'rgba(16,20,30,0.95)',
-    grid: 'rgba(255,255,255,0.07)', primary: '#6C8EEF', secondary: '#A78BFA',
-    success: '#34D399', danger: '#F87171', warning: '#FBBF24', info: '#60A5FA',
-    textMain: '#F0F4FF', textMuted: '#A8B4CC', textDim: '#5C6B82',
-};
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 import {
     AlertTriangle, AlertCircle, CheckCircle, Bell, BellRing, BellOff,
@@ -841,6 +833,7 @@ const ChangeFreezePanel = () => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const ReliabilityTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [alerts, setAlerts]           = useState(MOCK_ALERTS);
     const [uptimeDays]                  = useState(() => genUptimeDays());
     const [alertTrend, setAlertTrend]   = useState(() => genAlertTrend());
