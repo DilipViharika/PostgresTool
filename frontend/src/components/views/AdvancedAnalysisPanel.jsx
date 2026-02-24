@@ -58,18 +58,18 @@ const CodeBlock = ({code, lang='sql', maxH=350}) => {
         .replace(/\b(pg_\w+|repack\.\w+|current_\w+|information_schema)\b/g,'<span style="color:#7ee787">$1</span>')
         .replace(/\b(now|count|sum|avg|min|max|round|coalesce|nullif|extract|array_length|array_agg|string_agg|row_number|rank|dense_rank|lead|lag|first_value|last_value|generate_series|date_trunc|age|clock_timestamp)\b/gi,'<span style="color:#ffa657">$1</span>');
     return (
-        <div style={{position:'relative',borderRadius:8,overflow:'hidden',marginTop:8,border:'1px solid #21262d'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#161b22',padding:'5px 10px',borderBottom:'1px solid #21262d'}}>
+        <div style={{position:'relative',borderRadius:8,overflow:'hidden',marginTop:8,border:`1px solid ${THEME.grid}`}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:THEME.surfaceRaised,padding:'5px 10px',borderBottom:`1px solid ${THEME.grid}`}}>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
                     {['#ff5f56','#ffbd2e','#27c93f'].map(c=><span key={c} style={{width:7,height:7,borderRadius:'50%',background:c,display:'inline-block'}}/>)}
-                    <span style={{fontSize:8.5,color:'#484f58',fontWeight:600,marginLeft:5,textTransform:'uppercase',letterSpacing:'.04em'}}>{lang} · {lines.length}L</span>
+                    <span style={{fontSize:8.5,color:THEME.textDim,fontWeight:600,marginLeft:5,textTransform:'uppercase',letterSpacing:'.04em'}}>{lang} · {lines.length}L</span>
                 </div>
                 <div style={{display:'flex',gap:3}}>
-                    {need && <button onClick={()=>setExp(e=>!e)} style={{background:'#21262d',border:'1px solid #30363d',borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:8.5,fontWeight:600,color:'#8b949e',display:'flex',alignItems:'center',gap:2}}>{exp?<Minimize2 size={7}/>:<Maximize2 size={7}/>}{exp?'Less':`${lines.length}L`}</button>}
-                    <button onClick={()=>copy(code)} style={{background:cp?'#23803020':'#21262d',border:`1px solid ${cp?'#23803050':'#30363d'}`,borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:8.5,fontWeight:700,color:cp?'#3fb950':'#8b949e',display:'flex',alignItems:'center',gap:2,transition:'all .15s'}}>{cp?<><Check size={7}/>Copied</>:<><Copy size={7}/>Copy</>}</button>
+                    {need && <button onClick={()=>setExp(e=>!e)} style={{background:THEME.surfaceHover,border:`1px solid ${THEME.grid}`,borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:8.5,fontWeight:600,color:THEME.textMuted,display:'flex',alignItems:'center',gap:2}}>{exp?<Minimize2 size={7}/>:<Maximize2 size={7}/>}{exp?'Less':`${lines.length}L`}</button>}
+                    <button onClick={()=>copy(code)} style={{background:cp?`${THEME.success}18`:THEME.surfaceHover,border:`1px solid ${cp?`${THEME.success}40`:THEME.grid}`,borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:8.5,fontWeight:700,color:cp?THEME.success:THEME.textMuted,display:'flex',alignItems:'center',gap:2,transition:'all .15s'}}>{cp?<><Check size={7}/>Copied</>:<><Copy size={7}/>Copy</>}</button>
                 </div>
             </div>
-            <div style={{background:'#0d1117',maxHeight:need&&!exp?300:maxH,overflowY:'auto',overflowX:'auto',position:'relative'}}>
+            <div style={{background:THEME.surface,maxHeight:need&&!exp?300:maxH,overflowY:'auto',overflowX:'auto',position:'relative'}}>
                 <div style={{display:'flex'}}>
                     <div style={{padding:'7px 0',borderRight:`1px solid ${THEME.grid}`,userSelect:'none',flexShrink:0}}>{show.map((_,i)=><div key={i} style={{padding:'0 8px',fontSize:9.5,lineHeight:1.7,color:THEME.textDim,textAlign:'right',fontFamily:THEME.fontMono}}>{i+1}</div>)}</div>
                     <pre style={{margin:0,padding:'7px 11px',flex:1,fontFamily:THEME.fontMono,fontSize:10,lineHeight:1.7,color:THEME.textMain,whiteSpace:'pre',overflow:'visible'}} dangerouslySetInnerHTML={{__html:hl(show.join('\n'))}}/>
@@ -100,7 +100,7 @@ const AreaChart = ({data=[],color=THEME.primary,width=280,height=80,label,yFmt=v
             <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity=".18"/><stop offset="100%" stopColor={color} stopOpacity=".01"/></linearGradient></defs>
             {showGrid&&[0,.25,.5,.75,1].map(f=>{const y=p.t+ch-f*ch;return <g key={f}><line x1={p.l} y1={y} x2={width-p.r} y2={y} stroke={`${THEME.grid}18`} strokeWidth=".5" strokeDasharray="2,3"/><text x={p.l-3} y={y+3} textAnchor="end" style={{fontSize:6.5,fill:THEME.textDim,fontFamily:'inherit'}}>{yFmt(mn+rng*f)}</text></g>;})}
             <path d={area} fill={`url(#${gid})`}/><path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx={pts[pts.length-1].x} cy={pts[pts.length-1].y} r="2.5" fill={color} stroke="#0d1117" strokeWidth="1.5"/>
+            <circle cx={pts[pts.length-1].x} cy={pts[pts.length-1].y} r="2.5" fill={color} stroke={THEME.surface} strokeWidth="1.5"/>
         </svg>
     </div>);
 };

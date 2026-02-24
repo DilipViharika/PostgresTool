@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
     User, KeyRound, Shield, Activity, Zap, HardDrive, Lock,
-    Search, RefreshCw, Cloud, Terminal, Users,
+    Search, RefreshCw, Cloud, Terminal, Users, Sun, Moon,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { useTheme } from '../../context/ThemeContext.jsx';
 
 // ✅ FIX: Use env variable in production, fallback to deployed Vercel backend
 const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
@@ -546,6 +547,7 @@ const Corners = ({ color = 'rgba(100,112,255,.18)' }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
     useAdaptiveTheme();
+    const { isDark, toggleTheme } = useTheme();
     const { login, authLoading, error, clearError } = useAuth();
     const [username,     setUsername]     = useState('');
     const [password,     setPassword]     = useState('');
@@ -704,6 +706,50 @@ const LoginPage = () => {
                         <span style={{ fontSize: 8.5, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
                     </div>
                 </div>
+
+                {/* ── Theme Toggle ── */}
+                <button
+                    onClick={toggleTheme}
+                    title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                    style={{
+                        position: 'absolute',
+                        bottom: 24,
+                        left: 24,
+                        zIndex: 10,
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: THEME.surface,
+                        border: `1px solid ${THEME.glassBorder}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: THEME.textMuted,
+                        transition: 'all .25s cubic-bezier(.4,0,.2,1)',
+                        boxShadow: THEME.shadowSm,
+                        outline: 'none',
+                    }}
+                    onMouseEnter={e => {
+                        e.currentTarget.style.background = THEME.surfaceHover;
+                        e.currentTarget.style.borderColor = THEME.primary + '55';
+                        e.currentTarget.style.color = THEME.primary;
+                        e.currentTarget.style.transform = 'scale(1.08)';
+                        e.currentTarget.style.boxShadow = `${THEME.shadowSm}, 0 0 0 3px ${THEME.primary}18`;
+                    }}
+                    onMouseLeave={e => {
+                        e.currentTarget.style.background = THEME.surface;
+                        e.currentTarget.style.borderColor = THEME.glassBorder;
+                        e.currentTarget.style.color = THEME.textMuted;
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = THEME.shadowSm;
+                    }}
+                >
+                    {isDark
+                        ? <Sun size={15} strokeWidth={1.8}/>
+                        : <Moon size={15} strokeWidth={1.8}/>
+                    }
+                </button>
             </div>
         </div>
     );

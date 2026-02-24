@@ -334,7 +334,7 @@ const SEV_COLORS = {
     high: '#ff8c42',
     medium: '#f5c518',
     low: '#63d7ff',
-    info: 'rgba(255,255,255,0.3)',
+    info: '#60a5fa',
 };
 
 const Badge = ({ label, color }) => (

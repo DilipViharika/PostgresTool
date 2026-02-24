@@ -249,7 +249,7 @@ const AppStyles = () => (
         /* ── Sidebar scroll ── */
         .sidebar-nav::-webkit-scrollbar { width: 3px; }
         .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 2px; }
         .sidebar-nav::-webkit-scrollbar-thumb:hover { background: ${DS.cyan}60; }
 
         /* ── Nav hover transition ── */
@@ -301,7 +301,7 @@ const AppStyles = () => (
         /* ── Scrollbar global ── */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: ${DS.bgDeep}; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.3); }
     `}</style>
 );

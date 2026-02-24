@@ -127,7 +127,7 @@ const AdminStyles = () => (
         .adm-btn:hover { transform:translateY(-1px); }
         .adm-btn:active { transform:translateY(0); }
 
-        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:700; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:${T.textDim}; font-family:${T.fontMono}; }
+        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:700; background:${T.surface}; border:1px solid ${T.border}; color:${T.textDim}; font-family:${T.fontMono}; }
 
         .adm-tooltip { position:relative; }
         .adm-tooltip:hover .adm-tooltip-content { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }

@@ -139,7 +139,7 @@ const OvStyles = () => (
         }
 
         .ov-metric-card:hover {
-            border-color: rgba(255,255,255,0.12) !important;
+            border-color: ${THEME.glassBorderHover} !important;
             transform: translateY(-2px);
             transition: transform 0.2s ease, border-color 0.2s ease;
         }
