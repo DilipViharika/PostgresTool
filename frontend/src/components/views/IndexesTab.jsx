@@ -1,34 +1,31 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────
-   DESIGN SYSTEM — Refined Dark / Single-accent
-   Near-black backgrounds, slate grays, one electric blue accent.
-   Status colors used sparingly only for data meaning.
-   Font: DM Mono (monospace data) + DM Sans (UI text)
+   DESIGN SYSTEM — Adaptive light/dark via THEME
 ───────────────────────────────────────────────────────────────────────── */
 const C = {
-    bg:        '#0D0F14',
-    bgAlt:     '#111318',
-    surface:   '#161820',
-    surfaceHi: '#1C1F2A',
-    border:    '#252836',
-    borderSub: '#1E2030',
+    get bg()          { return THEME.surface; },
+    get bgAlt()       { return THEME.surfaceRaised || THEME.surface; },
+    get surface()     { return THEME.surfaceHover; },
+    get surfaceHi()   { return THEME.glass; },
+    get border()      { return THEME.grid; },
+    get borderSub()   { return THEME.glassBorder; },
 
-    accent:    '#4F8EF7',
-    accentDim: '#2A5BB4',
-    accentBg:  '#4F8EF710',
+    get accent()      { return THEME.primary; },
+    get accentDim()   { return THEME.primaryFaint; },
+    get accentBg()    { return THEME.primary + '10'; },
 
-    ok:        '#34C77B',
-    okBg:      '#34C77B0D',
-    warn:      '#F5A623',
-    warnBg:    '#F5A6230D',
-    err:       '#F05050',
-    errBg:     '#F0505010',
+    get ok()          { return THEME.success; },
+    get okBg()        { return THEME.success + '0D'; },
+    get warn()        { return THEME.warning; },
+    get warnBg()      { return THEME.warning + '0D'; },
+    get err()         { return THEME.danger; },
+    get errBg()       { return THEME.danger + '10'; },
 
-    textPrimary:'#E8ECF5',
-    textSub:    '#6B7592',
-    textDim:    '#3E4558',
+    get textPrimary() { return THEME.textMain; },
+    get textSub()     { return THEME.textMuted; },
+    get textDim()     { return THEME.textDim; },
 };
 
 const gen30 = (base, v) => Array.from({length:30},(_,i)=>
@@ -131,35 +128,40 @@ const genSQL = idx => {
 /* ─────────────────────────────────────────────────────────────────────────
    GLOBAL STYLES
 ───────────────────────────────────────────────────────────────────────── */
-const Styles = () => (
-    <style>{`
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    @keyframes fadeIn {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-    @keyframes slideR {from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
-    @keyframes grow   {from{transform:scaleX(0)}to{transform:scaleX(1)}}
-    @keyframes spin   {to{transform:rotate(360deg)}}
-    @keyframes pulse  {0%,100%{opacity:1}50%{opacity:.3}}
-    @keyframes wave   {0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
-    .fade-in{animation:fadeIn .35s ease both;}
-    .s1{animation-delay:.04s}.s2{animation-delay:.08s}.s3{animation-delay:.12s}
-    .s4{animation-delay:.16s}.s5{animation-delay:.20s}
-    .rh{transition:background .1s;cursor:pointer;}
-    .rh:hover{background:${C.surfaceHi}!important;}
-    .rh:hover .pk{opacity:1!important;}
-    .pk{opacity:0;transition:opacity .15s;}
-    ::-webkit-scrollbar{width:3px;height:3px}
-    ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}
-    ::-webkit-scrollbar-track{background:transparent}
-    .btn{transition:all .15s;cursor:pointer;font-family:${THEME.fontBody};}
-    .btn:hover{background:${C.surfaceHi}!important;border-color:${C.accent}!important;color:${C.accent}!important;}
-    .tab{transition:all .15s;cursor:pointer;background:none;border:none;font-family:${THEME.fontBody};}
-    .ir{background:none;border:none;outline:none;font-family:${THEME.fontMono};color:${C.textSub};}
-    .wv{animation:wave 1.1s ease-in-out infinite;}
-    .wv:nth-child(2){animation-delay:.12s}.wv:nth-child(3){animation-delay:.24s}
-    .wv:nth-child(4){animation-delay:.36s}.wv:nth-child(5){animation-delay:.48s}
-    .bar-g{transform-origin:left;animation:grow 1s cubic-bezier(.22,1,.36,1) both;}
-  `}</style>
-);
+const IDX_STYLE_ID = 'idx-adaptive-styles';
+function ensureIdxStyles() {
+    if (typeof document === 'undefined') return;
+    let el = document.getElementById(IDX_STYLE_ID);
+    if (!el) { el = document.createElement('style'); el.id = IDX_STYLE_ID; document.head.appendChild(el); }
+    el.textContent = [
+        '*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}',
+        '@keyframes fadeIn {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}',
+        '@keyframes slideR {from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}',
+        '@keyframes grow   {from{transform:scaleX(0)}to{transform:scaleX(1)}}',
+        '@keyframes spin   {to{transform:rotate(360deg)}}',
+        '@keyframes pulse  {0%,100%{opacity:1}50%{opacity:.3}}',
+        '@keyframes wave   {0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}',
+        '.fade-in{animation:fadeIn .35s ease both;}',
+        '.s1{animation-delay:.04s}.s2{animation-delay:.08s}.s3{animation-delay:.12s}',
+        '.s4{animation-delay:.16s}.s5{animation-delay:.20s}',
+        '.rh{transition:background .1s;cursor:pointer;}',
+        `.rh:hover{background:${C.surfaceHi}!important;}`,
+        '.rh:hover .pk{opacity:1!important;}',
+        '.pk{opacity:0;transition:opacity .15s;}',
+        '::-webkit-scrollbar{width:3px;height:3px}',
+        `::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}`,
+        '::-webkit-scrollbar-track{background:transparent}',
+        `.btn{transition:all .15s;cursor:pointer;font-family:${THEME.fontBody};}`,
+        `.btn:hover{background:${C.surfaceHi}!important;border-color:${C.accent}!important;color:${C.accent}!important;}`,
+        `.tab{transition:all .15s;cursor:pointer;background:none;border:none;font-family:${THEME.fontBody};}`,
+        `.ir{background:none;border:none;outline:none;font-family:${THEME.fontMono};color:${C.textSub};}`,
+        '.wv{animation:wave 1.1s ease-in-out infinite;}',
+        '.wv:nth-child(2){animation-delay:.12s}.wv:nth-child(3){animation-delay:.24s}',
+        '.wv:nth-child(4){animation-delay:.36s}.wv:nth-child(5){animation-delay:.48s}',
+        '.bar-g{transform-origin:left;animation:grow 1s cubic-bezier(.22,1,.36,1) both;}',
+    ].join('\n');
+}
+const Styles = () => { useAdaptiveTheme(); ensureIdxStyles(); return null; };
 
 /* ─────────────────────────────────────────────────────────────────────────
    ATOMS
@@ -922,6 +924,7 @@ const HistoryPanel = ({data}) => {
    MAIN
 ───────────────────────────────────────────────────────────────────────── */
 export default function IndexIntelligence() {
+    useAdaptiveTheme();
     const [view,setView]=useState('missing');
     const [data]=useState(DATA);
     const [detail,setDetail]=useState(null);
