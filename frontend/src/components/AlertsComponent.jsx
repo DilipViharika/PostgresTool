@@ -7,17 +7,18 @@ import {
   EyeOff, Volume2, VolumeX, Layers, BarChart2, Target, Terminal,
   AlertOctagon, Cpu, Database, Server, Wifi, HardDrive, GitBranch,
   CornerDownRight, ExternalLink, ChevronRight, Minus, Edit3, Copy,
-  Download, Upload, Moon, Sun, SlidersHorizontal
+  Download, Upload, Moon, Sun, SlidersHorizontal, MessageSquare,
+  Users, UserCheck, UserX, AtSign, Send, Lock, Unlock, Radio,
+  Network, CheckSquare, XSquare, Play, CalendarOff, FlaskConical
 } from 'lucide-react';
 import { THEME, useAdaptiveTheme } from '../utils/theme.jsx';
 
 /* ─────────────────────────────────────────────────────────────────
-   VIGIL v2 – Advanced Monitoring & Alert Intelligence Platform
-   Aesthetic: Refined dark-industrial terminal. Monospaced data,
-   sharp accent lines, layered glass panels, precision micro-motion.
+   VIGIL v3 – Advanced Monitoring & Alert Intelligence Platform
+   NEW: Team Collaboration, Approval Workflows, Channel Health,
+        Alert Simulator, Impact Radius, Suppression Windows, API Quotas
 ───────────────────────────────────────────────────────────────── */
 
-// ─── CONSTANTS ──────────────────────────────────────────────────
 const SEVERITY = {
   critical: { color: '#ff3b5c', glow: 'rgba(255,59,92,0.25)', bg: 'rgba(255,59,92,0.08)', icon: AlertOctagon, label: 'CRIT' },
   warning:  { color: '#ffaa00', glow: 'rgba(255,170,0,0.2)',   bg: 'rgba(255,170,0,0.07)',  icon: AlertTriangle, label: 'WARN' },
@@ -38,37 +39,112 @@ const METRICS = {
 
 const CATEGORIES = ['performance', 'security', 'reliability', 'resources', 'maintenance', 'network'];
 
-// ─── MOCK DATA ───────────────────────────────────────────────────
+const TEAM_MEMBERS = [
+  { id: 'u1', name: 'jane.doe',   avatar: 'JD', role: 'SRE Lead',     online: true  },
+  { id: 'u2', name: 'john.smith', avatar: 'JS', role: 'Backend Eng',  online: true  },
+  { id: 'u3', name: 'alex.kim',   avatar: 'AK', role: 'Platform Eng', online: false },
+  { id: 'u4', name: 'sam.wilson', avatar: 'SW', role: 'Security Eng', online: true  },
+  { id: 'u5', name: 'riley.chen', avatar: 'RC', role: 'Incident Mgr', online: false },
+];
+
 const MOCK_ALERTS = [
-  { id: 'alr-001', severity: 'critical', category: 'security',     message: 'Unauthorized root access attempt detected on prod-auth-02', timestamp: Date.now() - 120000,   acknowledged: false, source: '192.168.1.105', rule: 'Security Breach Detector', tags: ['auth', 'prod'], count: 7 },
-  { id: 'alr-002', severity: 'critical', category: 'reliability',  message: 'Database connection pool exhaustion — 0/200 connections free', timestamp: Date.now() - 300000,  acknowledged: false, source: 'db-primary-01', rule: 'DB Pool Monitor', tags: ['database', 'prod'], count: 1 },
-  { id: 'alr-003', severity: 'warning',  category: 'performance',  message: 'High memory usage (87%) sustained on node-04 for >15m', timestamp: Date.now() - 2700000,  acknowledged: false, source: 'node-04', rule: 'Memory High', tags: ['memory', 'k8s'], count: 3 },
-  { id: 'alr-004', severity: 'warning',  category: 'resources',    message: 'Disk utilization exceeding 78% on /var/log partition', timestamp: Date.now() - 5400000,  acknowledged: false, source: 'log-collector', rule: 'Disk Space Low', tags: ['disk', 'logs'], count: 2 },
-  { id: 'alr-005', severity: 'info',     category: 'maintenance',  message: 'Scheduled backup completed — 2.4 TB archived successfully', timestamp: Date.now() - 7200000,  acknowledged: true,  source: 'backup-service', rule: 'Backup Status', tags: ['backup'], acknowledged_by: 'System', count: 1 },
-  { id: 'alr-006', severity: 'warning',  category: 'network',      message: 'Packet loss 3.2% detected between us-east and eu-west', timestamp: Date.now() - 900000,   acknowledged: false, source: 'network-probe', rule: 'Packet Loss', tags: ['network', 'cross-region'], count: 5 },
-  { id: 'alr-007', severity: 'info',     category: 'performance',  message: 'API p99 latency elevated to 412ms — within acceptable range', timestamp: Date.now() - 10800000, acknowledged: true,  source: 'api-gateway', rule: 'Latency Monitor', tags: ['api'], acknowledged_by: 'jane.doe', count: 1 },
+  {
+    id: 'alr-001', severity: 'critical', category: 'security',
+    message: 'Unauthorized root access attempt detected on prod-auth-02',
+    timestamp: Date.now() - 120000, acknowledged: false,
+    source: '192.168.1.105', rule: 'Security Breach Detector', tags: ['auth', 'prod'], count: 7,
+    comments: [
+      { id: 'c1', author: 'jane.doe', avatar: 'JD', text: 'Reviewing auth logs now — looks like brute force from Tor exit node', timestamp: Date.now() - 90000 },
+      { id: 'c2', author: 'sam.wilson', avatar: 'SW', text: 'IP blocked via firewall rule #4421. @john.smith can you check if any sessions were established?', timestamp: Date.now() - 60000, mentions: ['john.smith'] },
+    ],
+    pendingApproval: { requestedBy: 'john.smith', requestedAt: Date.now() - 30000 },
+    impactRadius: { users: 12400, services: ['auth-service', 'api-gateway', 'user-portal'], severity_score: 9.2 },
+  },
+  {
+    id: 'alr-002', severity: 'critical', category: 'reliability',
+    message: 'Database connection pool exhaustion — 0/200 connections free',
+    timestamp: Date.now() - 300000, acknowledged: false,
+    source: 'db-primary-01', rule: 'DB Pool Monitor', tags: ['database', 'prod'], count: 1,
+    comments: [],
+    impactRadius: { users: 84000, services: ['all-services'], severity_score: 9.8 },
+  },
+  {
+    id: 'alr-003', severity: 'warning', category: 'performance',
+    message: 'High memory usage (87%) sustained on node-04 for >15m',
+    timestamp: Date.now() - 2700000, acknowledged: false,
+    source: 'node-04', rule: 'Memory High', tags: ['memory', 'k8s'], count: 3,
+    comments: [
+      { id: 'c3', author: 'alex.kim', avatar: 'AK', text: 'Scaling up the node pool. Should resolve in ~10m', timestamp: Date.now() - 1800000 },
+    ],
+    impactRadius: { users: 3200, services: ['worker-service', 'batch-processor'], severity_score: 5.4 },
+  },
+  {
+    id: 'alr-004', severity: 'warning', category: 'resources',
+    message: 'Disk utilization exceeding 78% on /var/log partition',
+    timestamp: Date.now() - 5400000, acknowledged: false,
+    source: 'log-collector', rule: 'Disk Space Low', tags: ['disk', 'logs'], count: 2,
+    comments: [],
+    impactRadius: { users: 0, services: ['log-collector'], severity_score: 3.1 },
+  },
+  {
+    id: 'alr-005', severity: 'info', category: 'maintenance',
+    message: 'Scheduled backup completed — 2.4 TB archived successfully',
+    timestamp: Date.now() - 7200000, acknowledged: true,
+    source: 'backup-service', rule: 'Backup Status', tags: ['backup'], acknowledged_by: 'System', count: 1,
+    comments: [],
+    impactRadius: { users: 0, services: ['backup-service'], severity_score: 0.5 },
+  },
+  {
+    id: 'alr-006', severity: 'warning', category: 'network',
+    message: 'Packet loss 3.2% detected between us-east and eu-west',
+    timestamp: Date.now() - 900000, acknowledged: false,
+    source: 'network-probe', rule: 'Packet Loss', tags: ['network', 'cross-region'], count: 5,
+    comments: [],
+    impactRadius: { users: 28000, services: ['cdn', 'api-gateway', 'asset-service'], severity_score: 6.7 },
+  },
+  {
+    id: 'alr-007', severity: 'info', category: 'performance',
+    message: 'API p99 latency elevated to 412ms — within acceptable range',
+    timestamp: Date.now() - 10800000, acknowledged: true,
+    source: 'api-gateway', rule: 'Latency Monitor', tags: ['api'], acknowledged_by: 'jane.doe', count: 1,
+    comments: [],
+    impactRadius: { users: 5100, services: ['api-gateway'], severity_score: 2.3 },
+  },
 ];
 
 const MOCK_RULES = [
-  { id: 'rule-001', name: 'Security Breach Detector', metric: 'error_rate',   condition: 'gt', threshold: 5,   severity: 'critical', active: true,  category: 'security',     duration: 1,  channels: { email: true, slack: true, pagerduty: true  }, triggerCount: 12, lastTriggered: Date.now() - 120000 },
-  { id: 'rule-002', name: 'High CPU Load',            metric: 'cpu_usage',    condition: 'gt', threshold: 90,  severity: 'critical', active: true,  category: 'performance',  duration: 5,  channels: { email: true, slack: true, pagerduty: false }, triggerCount: 8,  lastTriggered: Date.now() - 3600000 },
-  { id: 'rule-003', name: 'Memory High',              metric: 'memory_usage', condition: 'gt', threshold: 85,  severity: 'warning',  active: true,  category: 'performance',  duration: 15, channels: { email: true, slack: false, pagerduty: false }, triggerCount: 3,  lastTriggered: Date.now() - 2700000 },
-  { id: 'rule-004', name: 'Disk Space Low',           metric: 'disk_free',    condition: 'lt', threshold: 20,  severity: 'warning',  active: true,  category: 'resources',    duration: 10, channels: { email: true, slack: false, pagerduty: false }, triggerCount: 6,  lastTriggered: Date.now() - 86400000 },
-  { id: 'rule-005', name: 'API Latency Spike',        metric: 'api_latency',  condition: 'gt', threshold: 500, severity: 'warning',  active: false, category: 'performance',  duration: 2,  channels: { email: false, slack: true, pagerduty: false }, triggerCount: 21, lastTriggered: Date.now() - 172800000 },
-  { id: 'rule-006', name: 'DB Pool Monitor',          metric: 'throughput',   condition: 'lt', threshold: 10,  severity: 'critical', active: true,  category: 'reliability',  duration: 3,  channels: { email: true, slack: true, pagerduty: true  }, triggerCount: 2,  lastTriggered: Date.now() - 300000 },
-  { id: 'rule-007', name: 'Packet Loss',              metric: 'network_in',   condition: 'lt', threshold: 100, severity: 'warning',  active: true,  category: 'network',      duration: 5,  channels: { email: false, slack: true, pagerduty: false }, triggerCount: 5,  lastTriggered: Date.now() - 900000 },
+  { id: 'rule-001', name: 'Security Breach Detector', metric: 'error_rate',   condition: 'gt', threshold: 5,   severity: 'critical', active: true,  category: 'security',    duration: 1,  channels: { email: true, slack: true, pagerduty: true  }, triggerCount: 12, lastTriggered: Date.now() - 120000 },
+  { id: 'rule-002', name: 'High CPU Load',            metric: 'cpu_usage',    condition: 'gt', threshold: 90,  severity: 'critical', active: true,  category: 'performance', duration: 5,  channels: { email: true, slack: true, pagerduty: false }, triggerCount: 8,  lastTriggered: Date.now() - 3600000 },
+  { id: 'rule-003', name: 'Memory High',              metric: 'memory_usage', condition: 'gt', threshold: 85,  severity: 'warning',  active: true,  category: 'performance', duration: 15, channels: { email: true, slack: false, pagerduty: false }, triggerCount: 3,  lastTriggered: Date.now() - 2700000 },
+  { id: 'rule-004', name: 'Disk Space Low',           metric: 'disk_free',    condition: 'lt', threshold: 20,  severity: 'warning',  active: true,  category: 'resources',   duration: 10, channels: { email: true, slack: false, pagerduty: false }, triggerCount: 6,  lastTriggered: Date.now() - 86400000 },
+  { id: 'rule-005', name: 'API Latency Spike',        metric: 'api_latency',  condition: 'gt', threshold: 500, severity: 'warning',  active: false, category: 'performance', duration: 2,  channels: { email: false, slack: true, pagerduty: false }, triggerCount: 21, lastTriggered: Date.now() - 172800000 },
+  { id: 'rule-006', name: 'DB Pool Monitor',          metric: 'throughput',   condition: 'lt', threshold: 10,  severity: 'critical', active: true,  category: 'reliability', duration: 3,  channels: { email: true, slack: true, pagerduty: true  }, triggerCount: 2,  lastTriggered: Date.now() - 300000 },
+  { id: 'rule-007', name: 'Packet Loss',              metric: 'network_in',   condition: 'lt', threshold: 100, severity: 'warning',  active: true,  category: 'network',     duration: 5,  channels: { email: false, slack: true, pagerduty: false }, triggerCount: 5,  lastTriggered: Date.now() - 900000 },
 ];
 
 const MOCK_HISTORY = [
-  { id: 'hist-001', message: 'High CPU Load — prod-web-cluster sustained 94% for 12m', timestamp: Date.now() - 86400000,   severity: 'critical', duration: '45m', rule: 'High CPU Load',   resolvedBy: 'k8s-autoscaler' },
-  { id: 'hist-002', message: 'API Latency Spike — gateway p99 >500ms', timestamp: Date.now() - 172800000,  severity: 'warning',  duration: '8m',  rule: 'API Latency Spike', resolvedBy: 'john.smith' },
-  { id: 'hist-003', message: 'Memory High — node-02 at 89%', timestamp: Date.now() - 259200000,  severity: 'warning',  duration: '22m', rule: 'Memory High',        resolvedBy: 'auto-restart' },
-  { id: 'hist-004', message: 'SSL Certificate expiring in 7 days on api.example.com', timestamp: Date.now() - 345600000,  severity: 'info',     duration: '1d',  rule: 'Cert Expiry',       resolvedBy: 'cert-bot' },
-  { id: 'hist-005', message: 'Unauthorized login attempt from 185.220.101.x (Tor exit)', timestamp: Date.now() - 432000000, severity: 'critical', duration: '2m',  rule: 'Security Breach',   resolvedBy: 'firewall-auto-block' },
-  { id: 'hist-006', message: 'Disk Space Low — /var/log at 82%', timestamp: Date.now() - 518400000, severity: 'warning',  duration: '35m', rule: 'Disk Space Low',    resolvedBy: 'log-rotation' },
+  { id: 'hist-001', message: 'High CPU Load — prod-web-cluster sustained 94% for 12m',  timestamp: Date.now() - 86400000,  severity: 'critical', duration: '45m', rule: 'High CPU Load',   resolvedBy: 'k8s-autoscaler' },
+  { id: 'hist-002', message: 'API Latency Spike — gateway p99 >500ms',                  timestamp: Date.now() - 172800000, severity: 'warning',  duration: '8m',  rule: 'API Latency Spike', resolvedBy: 'john.smith' },
+  { id: 'hist-003', message: 'Memory High — node-02 at 89%',                            timestamp: Date.now() - 259200000, severity: 'warning',  duration: '22m', rule: 'Memory High',       resolvedBy: 'auto-restart' },
+  { id: 'hist-004', message: 'SSL Certificate expiring in 7 days on api.example.com',   timestamp: Date.now() - 345600000, severity: 'info',     duration: '1d',  rule: 'Cert Expiry',       resolvedBy: 'cert-bot' },
+  { id: 'hist-005', message: 'Unauthorized login attempt from 185.220.101.x (Tor exit)',timestamp: Date.now() - 432000000, severity: 'critical', duration: '2m',  rule: 'Security Breach',   resolvedBy: 'firewall-auto-block' },
+  { id: 'hist-006', message: 'Disk Space Low — /var/log at 82%',                        timestamp: Date.now() - 518400000, severity: 'warning',  duration: '35m', rule: 'Disk Space Low',    resolvedBy: 'log-rotation' },
 ];
 
-// Sparkline data generator
+const MOCK_SUPPRESSION = [
+  { id: 'sw-001', name: 'Weekly DB Maintenance', schedule: 'Sun 02:00–04:00 UTC', active: true,  nextRun: 'Sun Mar 2, 02:00', rules: ['DB Pool Monitor', 'Disk Space Low'], suppressCount: 14 },
+  { id: 'sw-002', name: 'Deployment Window',     schedule: 'Wed 18:00–20:00 UTC', active: true,  nextRun: 'Wed Feb 26, 18:00', rules: ['High CPU Load', 'API Latency Spike', 'Memory High'], suppressCount: 38 },
+  { id: 'sw-003', name: 'Monthly Backup',        schedule: '1st of month 03:00',  active: false, nextRun: 'Mar 1, 03:00', rules: ['Backup Status'], suppressCount: 6 },
+];
+
+const CHANNEL_STATUS = [
+  { id: 'ch-001', name: 'PagerDuty',      icon: '⚡', status: 'operational', deliveryRate: 99.8, lastAlert: Date.now() - 120000,  latency: 320,  quota: null },
+  { id: 'ch-002', name: 'Slack',          icon: '#',  status: 'operational', deliveryRate: 98.2, lastAlert: Date.now() - 120000,  latency: 180,  quota: null },
+  { id: 'ch-003', name: 'Email',          icon: '✉',  status: 'degraded',    deliveryRate: 91.4, lastAlert: Date.now() - 3600000, latency: 4200, quota: null },
+  { id: 'ch-004', name: 'AWS CloudWatch', icon: '☁',  status: 'operational', deliveryRate: 100,  lastAlert: Date.now() - 60000,   latency: 95,   quota: { used: 8200, limit: 10000, unit: 'API calls/hr' } },
+  { id: 'ch-005', name: 'Datadog',        icon: '⬡',  status: 'operational', deliveryRate: 99.5, lastAlert: Date.now() - 300000,  latency: 210,  quota: { used: 42000, limit: 50000, unit: 'events/day' } },
+];
+
 const genSparkData = (points = 20, base = 50, variance = 20) =>
     Array.from({ length: points }, (_, i) => ({
       v: Math.max(0, Math.min(100, base + (Math.random() - 0.5) * variance * 2 + Math.sin(i / 3) * 10)),
@@ -76,13 +152,12 @@ const genSparkData = (points = 20, base = 50, variance = 20) =>
     }));
 
 const LIVE_METRICS = {
-  cpu_usage:    { current: 73, data: genSparkData(20, 73, 15), trend: 'up' },
-  memory_usage: { current: 61, data: genSparkData(20, 61, 10), trend: 'stable' },
-  error_rate:   { current: 2.4, data: genSparkData(20, 2.4, 2), trend: 'down' },
+  cpu_usage:    { current: 73,  data: genSparkData(20, 73, 15),  trend: 'up' },
+  memory_usage: { current: 61,  data: genSparkData(20, 61, 10),  trend: 'stable' },
+  error_rate:   { current: 2.4, data: genSparkData(20, 2.4, 2),  trend: 'down' },
   api_latency:  { current: 187, data: genSparkData(20, 187, 80), trend: 'up' },
 };
 
-// ─── UTILITIES ───────────────────────────────────────────────────
 const formatAge = (ts) => {
   const s = Math.floor((Date.now() - ts) / 1000);
   if (s < 60) return `${s}s ago`;
@@ -90,12 +165,9 @@ const formatAge = (ts) => {
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return `${Math.floor(s / 86400)}d ago`;
 };
+const formatTime = (ts) => new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
 
-const formatTime = (ts) => new Date(ts).toLocaleString('en-US', {
-  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
-});
-
-// ─── SPARKLINE ───────────────────────────────────────────────────
+// ─── SUB-COMPONENTS ───────────────────────────────────────────────
 const Sparkline = ({ data, color, width = 80, height = 28 }) => {
   if (!data?.length) return null;
   const max = Math.max(...data.map(d => d.v), 0.01);
@@ -111,103 +183,58 @@ const Sparkline = ({ data, color, width = 80, height = 28 }) => {
   const lastY = height - ((lastPt.v - min) / range) * (height - 4) - 2;
   return (
       <svg width={width} height={height} style={{ overflow: 'visible' }}>
-        <defs>
-          <linearGradient id={`sg-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
         <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
         <circle cx={lastX} cy={lastY} r="2.5" fill={color} />
       </svg>
   );
 };
 
-// ─── PULSE DOT ───────────────────────────────────────────────────
 const PulseDot = ({ color, size = 8 }) => (
     <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size + 8, height: size + 8 }}>
-    <span style={{
-      position: 'absolute', borderRadius: '50%', background: color, opacity: 0.3,
-      width: size + 8, height: size + 8,
-      animation: 'pulse-ring 1.8s ease infinite',
-    }} />
+    <span style={{ position: 'absolute', borderRadius: '50%', background: color, opacity: 0.3, width: size + 8, height: size + 8, animation: 'pulse-ring 1.8s ease infinite' }} />
     <span style={{ borderRadius: '50%', background: color, width: size, height: size, display: 'block', position: 'relative', zIndex: 1 }} />
   </span>
 );
 
-// ─── MINI BADGE ──────────────────────────────────────────────────
 const SeverityBadge = ({ severity, small }) => {
   const s = SEVERITY[severity] || SEVERITY.info;
   return (
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', gap: 4,
-        padding: small ? '2px 6px' : '3px 8px',
-        borderRadius: 3,
-        background: s.bg,
-        border: `1px solid ${s.color}30`,
-        color: s.color,
-        fontSize: small ? 9 : 10,
-        fontFamily: '"JetBrains Mono", "Fira Mono", monospace',
-        fontWeight: 700,
-        letterSpacing: '0.08em',
-      }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 3, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: '"JetBrains Mono", "Fira Mono", monospace', fontWeight: 700, letterSpacing: '0.08em' }}>
       {s.label}
     </span>
   );
 };
 
-// ─── TOGGLE SWITCH ───────────────────────────────────────────────
 const Toggle = ({ on, onChange, accent = '#6366f1' }) => (
-    <button
-        onClick={onChange}
-        style={{
-          width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', padding: 0,
-          background: on ? accent : 'rgba(255,255,255,0.08)',
-          position: 'relative', transition: 'background 0.25s', outline: 'none', flexShrink: 0,
-        }}
-        aria-checked={on}
-        role="switch"
-    >
-    <span style={{
-      width: 14, height: 14, borderRadius: '50%', background: '#fff',
-      position: 'absolute', top: 3, left: on ? 19 : 3,
-      transition: 'left 0.2s cubic-bezier(.4,0,.2,1)',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-    }} />
+    <button onClick={onChange} style={{ width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', padding: 0, background: on ? accent : 'rgba(255,255,255,0.08)', position: 'relative', transition: 'background 0.25s', outline: 'none', flexShrink: 0 }} aria-checked={on} role="switch">
+      <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 19 : 3, transition: 'left 0.2s cubic-bezier(.4,0,.2,1)', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />
     </button>
 );
 
-// ─── CHANNEL ICONS ───────────────────────────────────────────────
 const ChannelDot = ({ active, label }) => (
-    <span title={label} style={{
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      width: 20, height: 20, borderRadius: 4,
-      background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
-      border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`,
-      fontSize: 8, fontWeight: 700, letterSpacing: 0.04,
-      color: active ? '#818cf8' : '#4b5563',
-      fontFamily: 'monospace',
-      cursor: 'default',
-      transition: 'all 0.2s',
-    }}>
+    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 4, background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`, fontSize: 8, fontWeight: 700, color: active ? '#818cf8' : '#4b5563', fontFamily: 'monospace', cursor: 'default', transition: 'all 0.2s' }}>
     {label.slice(0,2).toUpperCase()}
   </span>
 );
 
-// ─── LIVE METRIC CARD ────────────────────────────────────────────
+const Avatar = ({ initials, online, size = 24 }) => (
+    <span style={{ position: 'relative', display: 'inline-flex', flexShrink: 0 }}>
+    <span style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.35, fontWeight: 700, color: '#818cf8', fontFamily: 'monospace' }}>
+      {initials}
+    </span>
+      {online !== undefined && (
+          <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: online ? '#22d3a5' : '#4b5563', border: '1.5px solid rgba(15,20,30,1)' }} />
+      )}
+  </span>
+);
+
 const MetricCard = ({ metricKey, data }) => {
   const m = METRICS[metricKey];
   const Icon = m.icon;
   const pct = Math.min(100, (data.current / m.max) * 100);
   const color = pct > 85 ? SEVERITY.critical.color : pct > 65 ? SEVERITY.warning.color : SEVERITY.info.color;
   return (
-      <div style={{
-        background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        borderRadius: 8, padding: '14px 16px',
-        display: 'flex', flexDirection: 'column', gap: 10,
-        position: 'relative', overflow: 'hidden',
-      }}>
+      <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}00, ${color}, ${color}00)`, opacity: 0.6 }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -219,10 +246,9 @@ const MetricCard = ({ metricKey, data }) => {
           {data.trend === 'stable' && <Minus size={12} color="#4b5563" />}
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1 }}>
-          {data.current}
-          <span style={{ fontSize: 11, color: '#4b5563', fontWeight: 400, marginLeft: 3 }}>{m.unit}</span>
-        </span>
+          <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1 }}>
+            {data.current}<span style={{ fontSize: 11, color: '#4b5563', fontWeight: 400, marginLeft: 3 }}>{m.unit}</span>
+          </span>
           <Sparkline data={data.data} color={color} />
         </div>
         <div style={{ height: 3, background: THEME.grid, borderRadius: 2, overflow: 'hidden' }}>
@@ -237,29 +263,29 @@ const MetricCard = ({ metricKey, data }) => {
 // ─────────────────────────────────────────────────────────────────
 const VIGILDashboard = () => {
   useAdaptiveTheme();
-  const [activeTab, setActiveTab]           = useState('active');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDetailPanel, setShowDetailPanel] = useState(null);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [soundEnabled, setSoundEnabled]     = useState(true);
-  const [alerts, setAlerts]                 = useState(MOCK_ALERTS);
-  const [alertRules, setAlertRules]         = useState(MOCK_RULES);
-  const [history]                           = useState(MOCK_HISTORY);
-  const [liveMetrics]                       = useState(LIVE_METRICS);
-  const [tickCount, setTickCount]           = useState(0);
-  const [filters, setFilters]               = useState({ severity: 'all', category: 'all', search: '', acknowledged: 'all' });
-  const [histFilter, setHistFilter]         = useState('');
-  const [editingRule, setEditingRule]       = useState(null);
-  const [selectedAlerts, setSelectedAlerts] = useState(new Set());
-  const [bulkMenu, setBulkMenu]             = useState(false);
-  const [toast, setToast]                   = useState(null);
-  const [newRule, setNewRule]               = useState({
-    name: '', metric: 'cpu_usage', condition: 'gt', threshold: 80, duration: 5,
-    severity: 'warning', channels: { email: true, slack: false, pagerduty: false },
-    category: 'performance', description: ''
-  });
+  const [activeTab, setActiveTab]               = useState('active');
+  const [showCreateModal, setShowCreateModal]   = useState(false);
+  const [showDetailPanel, setShowDetailPanel]   = useState(null);
+  const [showCommentPanel, setShowCommentPanel] = useState(null);
+  const [showImpactPanel, setShowImpactPanel]   = useState(null);
+  const [maintenanceMode, setMaintenanceMode]   = useState(false);
+  const [soundEnabled, setSoundEnabled]         = useState(true);
+  const [alerts, setAlerts]                     = useState(MOCK_ALERTS);
+  const [alertRules, setAlertRules]             = useState(MOCK_RULES);
+  const [history]                               = useState(MOCK_HISTORY);
+  const [liveMetrics]                           = useState(LIVE_METRICS);
+  const [tickCount, setTickCount]               = useState(0);
+  const [filters, setFilters]                   = useState({ severity: 'all', category: 'all', search: '', acknowledged: 'all' });
+  const [histFilter, setHistFilter]             = useState('');
+  const [editingRule, setEditingRule]           = useState(null);
+  const [selectedAlerts, setSelectedAlerts]     = useState(new Set());
+  const [toast, setToast]                       = useState(null);
+  const [commentText, setCommentText]           = useState('');
+  const [approvalState, setApprovalState]       = useState({});
+  const [suppressionWindows, setSuppressionWindows] = useState(MOCK_SUPPRESSION);
+  const [simState, setSimState]                 = useState({ rule: 'rule-001', running: false, result: null });
+  const [newRule, setNewRule]                   = useState({ name: '', metric: 'cpu_usage', condition: 'gt', threshold: 80, duration: 5, severity: 'warning', channels: { email: true, slack: false, pagerduty: false }, category: 'performance', description: '' });
 
-  // Live clock tick
   useEffect(() => {
     const t = setInterval(() => setTickCount(c => c + 1), 10000);
     return () => clearInterval(t);
@@ -270,13 +296,11 @@ const VIGILDashboard = () => {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // ─── COMPUTED ──────────────────────────────────────────────────
   const stats = useMemo(() => ({
-    total:    alerts.length,
+    total: alerts.length,
     critical: alerts.filter(a => a.severity === 'critical').length,
-    warning:  alerts.filter(a => a.severity === 'warning').length,
-    info:     alerts.filter(a => a.severity === 'info').length,
-    unacked:  alerts.filter(a => !a.acknowledged).length,
+    warning: alerts.filter(a => a.severity === 'warning').length,
+    unacked: alerts.filter(a => !a.acknowledged).length,
     activeRules: alertRules.filter(r => r.active).length,
   }), [alerts, alertRules]);
 
@@ -285,95 +309,105 @@ const VIGILDashboard = () => {
     if (filters.category !== 'all' && a.category !== filters.category) return false;
     if (filters.acknowledged === 'unacked' && a.acknowledged) return false;
     if (filters.acknowledged === 'acked' && !a.acknowledged) return false;
-    if (filters.search && !a.message.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !a.source.toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.search && !a.message.toLowerCase().includes(filters.search.toLowerCase()) && !a.source.toLowerCase().includes(filters.search.toLowerCase())) return false;
     return true;
   }), [alerts, filters, tickCount]);
 
   const filteredHistory = useMemo(() =>
-          history.filter(h => !histFilter || h.message.toLowerCase().includes(histFilter.toLowerCase())),
-      [history, histFilter]
-  );
+      history.filter(h => !histFilter || h.message.toLowerCase().includes(histFilter.toLowerCase())), [history, histFilter]);
 
-  // ─── ACTIONS ───────────────────────────────────────────────────
+  // Actions
   const acknowledgeAlert = (id) => {
+    const alert = alerts.find(a => a.id === id);
+    if (alert?.severity === 'critical' && !approvalState[id]) {
+      setApprovalState(prev => ({ ...prev, [id]: { status: 'pending', requestedBy: 'you', requestedAt: Date.now() } }));
+      showToast('Approval request sent to L2 team', 'info');
+      return;
+    }
     setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true, acknowledged_by: 'you' } : a));
+    setApprovalState(prev => { const n = {...prev}; delete n[id]; return n; });
     showToast('Alert acknowledged');
   };
 
+  const approveAck = (id) => {
+    setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true, acknowledged_by: 'jane.doe (approved)' } : a));
+    setApprovalState(prev => { const n = {...prev}; delete n[id]; return n; });
+    showToast('Acknowledgment approved and applied');
+  };
+
+  const rejectAck = (id) => {
+    setApprovalState(prev => { const n = {...prev}; delete n[id]; return n; });
+    showToast('Acknowledgment request rejected', 'warning');
+  };
+
+  const snoozeAlert = (id) => { setAlerts(prev => prev.filter(a => a.id !== id)); showToast('Alert snoozed for 1 hour', 'info'); };
+  const escalateAlert = (id) => showToast(`Alert ${id} escalated to L2 on-call`, 'warning');
+  const toggleSelect = (id) => setSelectedAlerts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const selectAll = () => setSelectedAlerts(new Set(filteredAlerts.map(a => a.id)));
+  const clearSelection = () => setSelectedAlerts(new Set());
   const acknowledgeMany = () => {
     setAlerts(prev => prev.map(a => selectedAlerts.has(a.id) ? { ...a, acknowledged: true, acknowledged_by: 'you' } : a));
     showToast(`${selectedAlerts.size} alerts acknowledged`);
-    setSelectedAlerts(new Set()); setBulkMenu(false);
+    setSelectedAlerts(new Set());
   };
-
-  const snoozeAlert = (id) => {
-    setAlerts(prev => prev.filter(a => a.id !== id));
-    showToast('Alert snoozed for 1 hour', 'info');
-  };
-
-  const escalateAlert = (id) => showToast(`Alert ${id} escalated to L2 on-call`, 'warning');
-
-  const toggleSelect = (id) => {
-    setSelectedAlerts(prev => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  };
-
-  const selectAll = () => setSelectedAlerts(new Set(filteredAlerts.map(a => a.id)));
-  const clearSelection = () => setSelectedAlerts(new Set());
-
   const toggleRule = (id) => setAlertRules(prev => prev.map(r => r.id === id ? { ...r, active: !r.active } : r));
-
-  const deleteRule = (id) => {
-    setAlertRules(prev => prev.filter(r => r.id !== id));
-    showToast('Rule deleted', 'warning');
-  };
-
+  const deleteRule = (id) => { setAlertRules(prev => prev.filter(r => r.id !== id)); showToast('Rule deleted', 'warning'); };
   const handleCreateRule = (e) => {
     e.preventDefault();
     if (editingRule) {
       setAlertRules(prev => prev.map(r => r.id === editingRule ? { ...r, ...newRule } : r));
       showToast('Rule updated');
     } else {
-      setAlertRules(prev => [{
-        ...newRule, id: `rule-${Date.now()}`, active: true,
-        triggerCount: 0, lastTriggered: null
-      }, ...prev]);
+      setAlertRules(prev => [{ ...newRule, id: `rule-${Date.now()}`, active: true, triggerCount: 0, lastTriggered: null }, ...prev]);
       showToast('Alert rule created');
     }
     setShowCreateModal(false); setEditingRule(null);
     setNewRule({ name: '', metric: 'cpu_usage', condition: 'gt', threshold: 80, duration: 5, severity: 'warning', channels: { email: true, slack: false, pagerduty: false }, category: 'performance', description: '' });
   };
-
   const openEditRule = (rule) => {
     setEditingRule(rule.id);
     setNewRule({ name: rule.name, metric: rule.metric, condition: rule.condition, threshold: rule.threshold, duration: rule.duration, severity: rule.severity, channels: { ...rule.channels }, category: rule.category, description: rule.description || '' });
     setShowCreateModal(true);
   };
-
-  // ─── STYLES ────────────────────────────────────────────────────
-  const css = {
-    wrap:      { color: THEME.textMain, fontFamily: '"JetBrains Mono", "Fira Mono", "IBM Plex Mono", monospace' },
-    card:      { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8 },
-    input:     { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '7px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
-    label:     { display: 'block', fontSize: 10, color: '#6b7280', marginBottom: 5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' },
-    tab:       (on) => ({ background: on ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.3)' : 'transparent'}`, borderRadius: 6, padding: '7px 14px', color: on ? '#818cf8' : '#6b7280', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.06em', fontFamily: 'inherit' }),
-    btn:       (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: '#4f46e5', color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
-    modal:     { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-    modalBox:  { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 10, width: 520, maxWidth: '95vw', padding: 24, boxShadow: '0 32px 64px rgba(0,0,0,0.6)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
+  const addComment = (alertId) => {
+    if (!commentText.trim()) return;
+    setAlerts(prev => prev.map(a => a.id === alertId ? {
+      ...a, comments: [...(a.comments || []), { id: `c${Date.now()}`, author: 'you', avatar: 'YO', text: commentText, timestamp: Date.now() }]
+    } : a));
+    setCommentText('');
+    showToast('Comment added');
+  };
+  const runSimulator = () => {
+    setSimState(s => ({ ...s, running: true, result: null }));
+    setTimeout(() => {
+      const rule = alertRules.find(r => r.id === simState.rule);
+      const simVal = (rule?.threshold || 80) + Math.floor((Math.random() - 0.3) * 40);
+      const triggered = rule?.condition === 'gt' ? simVal > rule.threshold : simVal < rule.threshold;
+      setSimState(s => ({ ...s, running: false, result: { triggered, rule: rule?.name, channels: rule?.channels, simulatedValue: simVal, threshold: rule?.threshold, latency: Math.floor(Math.random() * 200) + 50 } }));
+    }, 1800);
   };
 
-  // ─── RENDER: HEADER STATS ──────────────────────────────────────
+  // Styles
+  const css = {
+    wrap:     { color: THEME.textMain, fontFamily: '"JetBrains Mono", "Fira Mono", "IBM Plex Mono", monospace' },
+    card:     { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8 },
+    input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '7px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
+    label:    { display: 'block', fontSize: 10, color: '#6b7280', marginBottom: 5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' },
+    tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.3)' : 'transparent'}`, borderRadius: 6, padding: '7px 14px', color: on ? '#818cf8' : '#6b7280', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.06em', fontFamily: 'inherit' }),
+    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: '#4f46e5', color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' } : v === 'success' ? { background: 'rgba(34,211,165,0.1)', color: '#22d3a5', border: '1px solid rgba(34,211,165,0.2)' } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
+    modal:    { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+    modalBox: { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 10, width: 520, maxWidth: '95vw', padding: 24, boxShadow: '0 32px 64px rgba(0,0,0,0.6)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
+    sHdr:     { fontSize: 9, color: '#374151', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 },
+  };
+
+  // ─── RENDER: STATS ─────────────────────────────────────────────
   const renderStats = () => (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
           { label: 'Total Alerts', val: stats.total,    sub: `${stats.unacked} unacknowledged`, color: '#e5e7eb' },
-          { label: 'Critical',     val: stats.critical, sub: 'requires attention', color: SEVERITY.critical.color },
-          { label: 'Warning',      val: stats.warning,  sub: 'monitor closely',   color: SEVERITY.warning.color },
-          { label: 'Active Rules', val: stats.activeRules + '/' + alertRules.length, sub: 'rules enabled', color: '#818cf8' },
+          { label: 'Critical',     val: stats.critical, sub: 'requires attention',              color: SEVERITY.critical.color },
+          { label: 'Warning',      val: stats.warning,  sub: 'monitor closely',                 color: SEVERITY.warning.color },
+          { label: 'Active Rules', val: `${stats.activeRules}/${alertRules.length}`, sub: 'rules enabled', color: '#818cf8' },
         ].map((s, i) => (
             <div key={i} style={{ ...css.card, padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', bottom: 0, right: 0, width: 60, height: 60, borderRadius: '50%', background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)` }} />
@@ -388,16 +422,121 @@ const VIGILDashboard = () => {
   // ─── RENDER: LIVE METRICS ──────────────────────────────────────
   const renderLiveMetrics = () => (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, marginBottom: 20 }}>
-        {Object.entries(liveMetrics).map(([k, v]) => (
-            <MetricCard key={k} metricKey={k} data={v} />
-        ))}
+        {Object.entries(liveMetrics).map(([k, v]) => <MetricCard key={k} metricKey={k} data={v} />)}
       </div>
   );
+
+  // ─── RENDER: COMMENT PANEL ─────────────────────────────────────
+  const renderCommentPanel = (alert) => (
+      <div style={{ background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 16px 14px 56px' }}>
+        <div style={{ ...css.sHdr, marginBottom: 10 }}>
+          <MessageSquare size={9} /> Incident Notes &amp; Comments ({alert.comments?.length || 0})
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          {(alert.comments || []).map(c => (
+              <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Avatar initials={c.avatar} size={22} />
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 6, padding: '8px 12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 10, color: '#818cf8', fontWeight: 700 }}>{c.author}</span>
+                    <span style={{ fontSize: 9, color: '#374151' }}>{formatAge(c.timestamp)}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: '"Inter", sans-serif', lineHeight: 1.5 }}>
+                    {c.text.split(/(@\w+\.\w+)/g).map((part, i) =>
+                        part.startsWith('@') ? <span key={i} style={{ color: '#38bdf8', fontWeight: 600 }}>{part}</span> : part
+                    )}
+                  </div>
+                </div>
+              </div>
+          ))}
+          {!(alert.comments?.length) && (
+              <div style={{ fontSize: 11, color: '#374151', fontFamily: '"Inter", sans-serif' }}>No comments yet. Add an incident note below.</div>
+          )}
+        </div>
+        {/* Online team */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <span style={{ fontSize: 9, color: '#4b5563' }}>ONLINE:</span>
+          {TEAM_MEMBERS.filter(m => m.online).map(m => (
+              <span key={m.id} title={`${m.name} — ${m.role}`}><Avatar initials={m.avatar} online={m.online} size={20} /></span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <input style={{ ...css.input, paddingRight: 34 }} placeholder="Add note… use @mentions to notify teammates"
+                   value={commentText} onChange={e => setCommentText(e.target.value)}
+                   onKeyDown={e => e.key === 'Enter' && addComment(alert.id)} />
+            <AtSign size={11} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: '#4b5563' }} />
+          </div>
+          <button onClick={() => addComment(alert.id)} style={css.btn('primary')}><Send size={11} /></button>
+        </div>
+      </div>
+  );
+
+  // ─── RENDER: IMPACT RADIUS ─────────────────────────────────────
+  const renderImpactPanel = (alert) => {
+    if (!alert?.impactRadius) return null;
+    const ir = alert.impactRadius;
+    const score = ir.severity_score;
+    const scoreColor = score >= 8 ? SEVERITY.critical.color : score >= 5 ? SEVERITY.warning.color : SEVERITY.info.color;
+    return (
+        <div style={{ background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 16px 14px 56px' }}>
+          <div style={{ ...css.sHdr, marginBottom: 12 }}><Network size={9} /> Impact Radius Estimator</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr', gap: 16, alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', border: `3px solid ${scoreColor}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `${scoreColor}10` }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>{score.toFixed(1)}</div>
+                <div style={{ fontSize: 8, color: '#4b5563', letterSpacing: '0.06em' }}>IMPACT</div>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Users Affected</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#e5e7eb', fontFamily: 'monospace' }}>
+                {ir.users.toLocaleString()}
+                {ir.users > 10000 && <span style={{ fontSize: 9, color: SEVERITY.critical.color, marginLeft: 6 }}>HIGH IMPACT</span>}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Affected Services</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: '#818cf8', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 3, padding: '2px 6px', fontFamily: 'monospace' }}>{s}</span>)}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em' }}>BLAST RADIUS</span>
+              <span style={{ fontSize: 9, color: scoreColor }}>{score >= 8 ? 'CRITICAL — INCIDENT RESPONSE REQUIRED' : score >= 5 ? 'SIGNIFICANT — MONITOR CLOSELY' : 'CONTAINED — LOW RISK'}</span>
+            </div>
+            <div style={{ height: 6, background: THEME.grid, borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${score * 10}%`, background: `linear-gradient(90deg, ${scoreColor}80, ${scoreColor})`, borderRadius: 3 }} />
+            </div>
+          </div>
+        </div>
+    );
+  };
+
+  // ─── RENDER: APPROVAL BANNER ───────────────────────────────────
+  const renderApprovalBanner = (alert) => {
+    const pending = alert.pendingApproval || approvalState[alert.id];
+    if (!pending || alert.acknowledged) return null;
+    return (
+        <div style={{ margin: '0 16px 10px', padding: '10px 14px', background: 'rgba(255,170,0,0.07)', border: `1px solid ${SEVERITY.warning.color}30`, borderRadius: 6, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Lock size={13} color={SEVERITY.warning.color} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: SEVERITY.warning.color, fontWeight: 700, marginBottom: 2 }}>Approval Required</div>
+            <div style={{ fontSize: 10, color: '#6b7280' }}>Ack requested by <span style={{ color: '#9ca3af' }}>{pending.requestedBy || 'you'}</span></div>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={() => approveAck(alert.id)} style={css.btn('success')}><CheckSquare size={11} /> Approve</button>
+            <button onClick={() => rejectAck(alert.id)} style={css.btn('danger')}><XSquare size={11} /> Reject</button>
+          </div>
+        </div>
+    );
+  };
 
   // ─── RENDER: ACTIVE ALERTS ─────────────────────────────────────
   const renderActive = () => (
       <div>
-        {/* Toolbar */}
         <div style={{ ...css.card, padding: '12px 16px', marginBottom: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
             <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#4b5563' }} />
@@ -408,8 +547,7 @@ const VIGILDashboard = () => {
             { key: 'category', options: ['all', ...CATEGORIES], label: { all: 'All Categories' } },
             { key: 'acknowledged', options: ['all','unacked','acked'], label: { all: 'All Status', unacked: 'Unacknowledged', acked: 'Acknowledged' } },
           ].map(f => (
-              <select key={f.key} style={{ ...css.input, width: 'auto', minWidth: 130 }}
-                      value={filters[f.key]} onChange={e => setFilters(p => ({ ...p, [f.key]: e.target.value }))}>
+              <select key={f.key} style={{ ...css.input, width: 'auto', minWidth: 130 }} value={filters[f.key]} onChange={e => setFilters(p => ({ ...p, [f.key]: e.target.value }))}>
                 {f.options.map(o => <option key={o} value={o}>{f.label?.[o] || (o.charAt(0).toUpperCase() + o.slice(1))}</option>)}
               </select>
           ))}
@@ -427,20 +565,13 @@ const VIGILDashboard = () => {
           </div>
         </div>
 
-        {/* Select all bar */}
         {filteredAlerts.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 8, paddingLeft: 4 }}>
-              <input type="checkbox" checked={selectedAlerts.size === filteredAlerts.length && filteredAlerts.length > 0}
-                     onChange={e => e.target.checked ? selectAll() : clearSelection()}
-                     style={{ accentColor: '#6366f1', cursor: 'pointer' }}
-              />
-              <span style={{ fontSize: 10, color: '#4b5563', letterSpacing: '0.06em' }}>
-            {filteredAlerts.length} ALERT{filteredAlerts.length !== 1 ? 'S' : ''}
-          </span>
+              <input type="checkbox" checked={selectedAlerts.size === filteredAlerts.length && filteredAlerts.length > 0} onChange={e => e.target.checked ? selectAll() : clearSelection()} style={{ accentColor: '#6366f1', cursor: 'pointer' }} />
+              <span style={{ fontSize: 10, color: '#4b5563', letterSpacing: '0.06em' }}>{filteredAlerts.length} ALERT{filteredAlerts.length !== 1 ? 'S' : ''}</span>
             </div>
         )}
 
-        {/* Alert List */}
         <div style={{ ...css.card, overflow: 'hidden' }}>
           {filteredAlerts.length === 0 ? (
               <div style={{ padding: 48, textAlign: 'center', color: '#4b5563' }}>
@@ -454,80 +585,72 @@ const VIGILDashboard = () => {
                 const Icon = s.icon;
                 const isSelected = selectedAlerts.has(alert.id);
                 const isDetail = showDetailPanel === alert.id;
+                const isComments = showCommentPanel === alert.id;
+                const isImpact = showImpactPanel === alert.id;
+                const hasPending = !!(alert.pendingApproval || approvalState[alert.id]);
+                const commentCount = alert.comments?.length || 0;
                 return (
                     <div key={alert.id}>
-                      <div
-                          style={{
-                            padding: '14px 16px',
-                            borderBottom: idx < filteredAlerts.length - 1 || isDetail ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                            display: 'flex', gap: 14, alignItems: 'flex-start',
-                            background: isSelected ? 'rgba(99,102,241,0.05)' : alert.acknowledged ? 'rgba(255,255,255,0.01)' : 'transparent',
-                            borderLeft: `2px solid ${isSelected ? '#6366f1' : s.color}`,
-                            transition: 'background 0.15s',
-                            cursor: 'default',
-                          }}
-                      >
-                        <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(alert.id)}
-                               style={{ accentColor: '#6366f1', marginTop: 3, cursor: 'pointer', flexShrink: 0 }} />
+                      {hasPending && renderApprovalBanner(alert)}
+                      <div style={{ padding: '14px 16px', borderBottom: idx < filteredAlerts.length - 1 || isDetail || isComments || isImpact ? '1px solid rgba(255,255,255,0.04)' : 'none', display: 'flex', gap: 14, alignItems: 'flex-start', background: isSelected ? 'rgba(99,102,241,0.05)' : alert.acknowledged ? 'rgba(255,255,255,0.01)' : 'transparent', borderLeft: `2px solid ${isSelected ? '#6366f1' : s.color}`, transition: 'background 0.15s' }}>
+                        <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(alert.id)} style={{ accentColor: '#6366f1', marginTop: 3, cursor: 'pointer', flexShrink: 0 }} />
                         <div style={{ marginTop: 2, flexShrink: 0 }}>
-                          {!alert.acknowledged
-                              ? <PulseDot color={s.color} size={8} />
-                              : <Icon size={14} color="#4b5563" />}
+                          {!alert.acknowledged ? <PulseDot color={s.color} size={8} /> : <Icon size={14} color="#4b5563" />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 6 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
                               <SeverityBadge severity={alert.severity} />
-                              <span style={{ fontSize: 13, color: alert.acknowledged ? '#6b7280' : '#e5e7eb', fontFamily: '"Inter", sans-serif', fontWeight: 500, letterSpacing: 0 }}>
-                          {alert.message}
-                        </span>
-                              {alert.count > 1 && (
-                                  <span style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', borderRadius: 3, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>
-                            ×{alert.count}
-                          </span>
-                              )}
+                              <span style={{ fontSize: 13, color: alert.acknowledged ? '#6b7280' : '#e5e7eb', fontFamily: '"Inter", sans-serif', fontWeight: 500 }}>{alert.message}</span>
+                              {alert.count > 1 && <span style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', borderRadius: 3, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>×{alert.count}</span>}
                             </div>
                             <span style={{ fontSize: 10, color: '#4b5563', whiteSpace: 'nowrap', flexShrink: 0 }}>{formatAge(alert.timestamp)}</span>
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: alert.acknowledged ? 0 : 10 }}>
-                      <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: 'monospace' }}>
-                        {alert.source}
-                      </span>
+                            <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: 'monospace' }}>{alert.source}</span>
                             <span style={{ fontSize: 10, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{alert.category}</span>
                             <span style={{ fontSize: 10, color: '#374151' }}>⟵ {alert.rule}</span>
-                            {alert.tags?.map(t => (
-                                <span key={t} style={{ fontSize: 9, color: '#4b5563', borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)', padding: '1px 5px' }}>#{t}</span>
-                            ))}
+                            {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: '#4b5563', borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)', padding: '1px 5px' }}>#{t}</span>)}
                             {alert.acknowledged && <span style={{ color: '#22d3a5', fontSize: 10 }}>✓ acked by {alert.acknowledged_by}</span>}
                           </div>
                           {!alert.acknowledged && (
-                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <button onClick={() => acknowledgeAlert(alert.id)} style={{ ...css.btn('ghost'), borderColor: 'rgba(34,211,165,0.25)', color: '#22d3a5' }}>
-                                  <Check size={11} /> Acknowledge
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <button onClick={() => acknowledgeAlert(alert.id)} style={{ ...css.btn('ghost'), borderColor: hasPending ? SEVERITY.warning.color+'40' : 'rgba(34,211,165,0.25)', color: hasPending ? SEVERITY.warning.color : '#22d3a5' }}>
+                                  {hasPending ? <><Lock size={11} /> Pending Approval</> : <><Check size={11} /> Acknowledge</>}
                                 </button>
-                                <button onClick={() => snoozeAlert(alert.id)} style={css.btn('ghost')}>
-                                  <Clock size={11} /> Snooze 1h
-                                </button>
-                                <button onClick={() => escalateAlert(alert.id)} style={{ ...css.btn('ghost'), color: '#f87171', borderColor: 'rgba(248,113,113,0.2)' }}>
-                                  <ArrowUpRight size={11} /> Escalate
-                                </button>
-                                <button onClick={() => setShowDetailPanel(isDetail ? null : alert.id)} style={{ ...css.btn('ghost'), marginLeft: 'auto' }}>
-                                  <ChevronRight size={11} style={{ transform: isDetail ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} /> Details
-                                </button>
+                                <button onClick={() => snoozeAlert(alert.id)} style={css.btn('ghost')}><Clock size={11} /> Snooze 1h</button>
+                                <button onClick={() => escalateAlert(alert.id)} style={{ ...css.btn('ghost'), color: '#f87171', borderColor: 'rgba(248,113,113,0.2)' }}><ArrowUpRight size={11} /> Escalate</button>
+                                <div style={{ marginLeft: 'auto', display: 'flex', gap: 5 }}>
+                                  <button onClick={() => setShowImpactPanel(isImpact ? null : alert.id)} style={{ ...css.btn('ghost'), color: isImpact ? '#38bdf8' : '#6b7280', borderColor: isImpact ? 'rgba(56,189,248,0.25)' : 'transparent' }}>
+                                    <Network size={11} /> Impact
+                                    {alert.impactRadius?.users > 0 && <span style={{ fontSize: 9, background: 'rgba(56,189,248,0.15)', color: '#38bdf8', borderRadius: 2, padding: '1px 4px' }}>{alert.impactRadius.users >= 1000 ? `${(alert.impactRadius.users/1000).toFixed(0)}k` : alert.impactRadius.users}</span>}
+                                  </button>
+                                  <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), color: isComments ? '#818cf8' : '#6b7280', borderColor: isComments ? 'rgba(99,102,241,0.3)' : 'transparent' }}>
+                                    <MessageSquare size={11} />
+                                    {commentCount > 0 && <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.15)', color: '#818cf8', borderRadius: 2, padding: '1px 4px' }}>{commentCount}</span>}
+                                  </button>
+                                  <button onClick={() => setShowDetailPanel(isDetail ? null : alert.id)} style={css.btn('ghost')}>
+                                    <ChevronRight size={11} style={{ transform: isDetail ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} /> Details
+                                  </button>
+                                </div>
                               </div>
+                          )}
+                          {alert.acknowledged && commentCount > 0 && (
+                              <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), marginTop: 6, fontSize: 10, color: '#4b5563' }}>
+                                <MessageSquare size={10} /> {commentCount} note{commentCount !== 1 ? 's' : ''}
+                              </button>
                           )}
                         </div>
                       </div>
-                      {/* Detail Drawer */}
                       {isDetail && (
                           <div style={{ background: 'rgba(0,0,0,0.25)', borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '16px 20px 16px 56px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
                             {[
-                              { label: 'First Seen',   val: formatTime(alert.timestamp - (alert.count - 1) * 60000) },
-                              { label: 'Last Seen',    val: formatTime(alert.timestamp) },
-                              { label: 'Occurrences',  val: alert.count },
-                              { label: 'Alert Rule',   val: alert.rule },
-                              { label: 'Source Host',  val: alert.source },
-                              { label: 'Category',     val: alert.category },
+                              { label: 'First Seen',  val: formatTime(alert.timestamp - (alert.count - 1) * 60000) },
+                              { label: 'Last Seen',   val: formatTime(alert.timestamp) },
+                              { label: 'Occurrences', val: alert.count },
+                              { label: 'Alert Rule',  val: alert.rule },
+                              { label: 'Source Host', val: alert.source },
+                              { label: 'Category',    val: alert.category },
                             ].map(item => (
                                 <div key={item.label}>
                                   <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>{item.label}</div>
@@ -536,6 +659,8 @@ const VIGILDashboard = () => {
                             ))}
                           </div>
                       )}
+                      {isImpact && renderImpactPanel(alert)}
+                      {isComments && renderCommentPanel(alert)}
                     </div>
                 );
               })
@@ -547,18 +672,68 @@ const VIGILDashboard = () => {
   // ─── RENDER: CONFIG ────────────────────────────────────────────
   const renderConfig = () => (
       <div>
+        {/* Alert Rule Simulator */}
+        <div style={{ ...css.card, padding: 16, marginBottom: 16, borderColor: 'rgba(99,102,241,0.2)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <FlaskConical size={14} color="#818cf8" />
+              <div>
+                <div style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>Alert Rule Simulator</div>
+                <div style={{ fontSize: 10, color: '#4b5563' }}>Fire a test alert without affecting production</div>
+              </div>
+            </div>
+            <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8', borderRadius: 3, padding: '2px 8px', letterSpacing: '0.08em' }}>SANDBOX</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <label style={css.label}>Select Rule to Test</label>
+              <select style={css.input} value={simState.rule} onChange={e => setSimState(s => ({ ...s, rule: e.target.value, result: null }))}>
+                {alertRules.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+            </div>
+            <button onClick={runSimulator} disabled={simState.running} style={{ ...css.btn('primary'), opacity: simState.running ? 0.7 : 1, minWidth: 130 }}>
+              {simState.running
+                  ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Simulating…</>
+                  : <><Play size={12} /> Run Simulation</>}
+            </button>
+          </div>
+          {simState.result && (
+              <div style={{ marginTop: 12, padding: '12px 14px', background: simState.result.triggered ? 'rgba(255,59,92,0.07)' : 'rgba(34,211,165,0.07)', border: `1px solid ${simState.result.triggered ? SEVERITY.critical.color : SEVERITY.resolved.color}30`, borderRadius: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  {simState.result.triggered
+                      ? <AlertTriangle size={13} color={SEVERITY.critical.color} />
+                      : <CheckCircle2 size={13} color={SEVERITY.resolved.color} />}
+                  <span style={{ fontSize: 12, fontWeight: 700, color: simState.result.triggered ? SEVERITY.critical.color : SEVERITY.resolved.color }}>
+                    {simState.result.triggered ? 'ALERT WOULD FIRE' : 'NO ALERT — BELOW THRESHOLD'}
+                  </span>
+                  <span style={{ fontSize: 9, color: '#4b5563', marginLeft: 'auto' }}>evaluated in {simState.result.latency}ms</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
+                  {[
+                    { label: 'Rule',             val: simState.result.rule },
+                    { label: 'Simulated Value',  val: `${simState.result.simulatedValue}` },
+                    { label: 'Threshold',        val: `${simState.result.threshold}` },
+                    { label: 'Channels Hit',     val: Object.entries(simState.result.channels || {}).filter(([,v]) => v).map(([k]) => k).join(', ') || 'none' },
+                  ].map(item => (
+                      <div key={item.label}>
+                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', marginBottom: 3 }}>{item.label.toUpperCase()}</div>
+                        <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{item.val}</div>
+                      </div>
+                  ))}
+                </div>
+              </div>
+          )}
+        </div>
+
+        {/* Alert Rules */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 700, marginBottom: 3 }}>Alert Rules</div>
             <div style={{ fontSize: 10, color: '#4b5563' }}>{stats.activeRules} active / {alertRules.length} total</div>
           </div>
-          <button onClick={() => { setEditingRule(null); setShowCreateModal(true); }} style={css.btn('primary')}>
-            <Plus size={13} /> New Rule
-          </button>
+          <button onClick={() => { setEditingRule(null); setShowCreateModal(true); }} style={css.btn('primary')}><Plus size={13} /> New Rule</button>
         </div>
-
-        {/* Rule List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
           {alertRules.map(rule => {
             const s = SEVERITY[rule.severity] || SEVERITY.info;
             return (
@@ -591,28 +766,50 @@ const VIGILDashboard = () => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      <button onClick={() => openEditRule(rule)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 4, borderRadius: 4, transition: 'color 0.15s' }}
-                              onMouseEnter={e => e.currentTarget.style.color = '#9ca3af'}
-                              onMouseLeave={e => e.currentTarget.style.color = '#4b5563'}>
-                        <Edit3 size={14} />
-                      </button>
-                      <button onClick={() => deleteRule(rule.id)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 4, borderRadius: 4, transition: 'color 0.15s' }}
-                              onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
-                              onMouseLeave={e => e.currentTarget.style.color = '#4b5563'}>
-                        <Trash2 size={14} />
-                      </button>
+                      <button onClick={() => openEditRule(rule)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 4, borderRadius: 4 }} onMouseEnter={e => e.currentTarget.style.color='#9ca3af'} onMouseLeave={e => e.currentTarget.style.color='#4b5563'}><Edit3 size={14} /></button>
+                      <button onClick={() => deleteRule(rule.id)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 4, borderRadius: 4 }} onMouseEnter={e => e.currentTarget.style.color='#f87171'} onMouseLeave={e => e.currentTarget.style.color='#4b5563'}><Trash2 size={14} /></button>
                     </div>
                   </div>
                 </div>
             );
           })}
-          {alertRules.length === 0 && (
-              <div style={{ ...css.card, padding: 40, textAlign: 'center', color: '#4b5563', borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.06)' }}>
-                <Target size={24} style={{ display: 'block', margin: '0 auto 12px' }} />
-                <div style={{ fontSize: 12 }}>No alert rules configured</div>
-                <div style={{ fontSize: 10, marginTop: 6 }}>Click "New Rule" to create your first rule</div>
+        </div>
+
+        {/* Suppression Windows */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 700, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CalendarOff size={12} color="#6b7280" /> Suppression Windows
               </div>
-          )}
+              <div style={{ fontSize: 10, color: '#4b5563' }}>Schedule maintenance windows to suppress expected alerts</div>
+            </div>
+            <button onClick={() => showToast('Window creation coming soon', 'info')} style={css.btn('ghost')}><Plus size={12} /> New Window</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {suppressionWindows.map(sw => (
+                <div key={sw.id} style={{ ...css.card, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, opacity: sw.active ? 1 : 0.6 }}>
+                  <Toggle on={sw.active} onChange={() => setSuppressionWindows(prev => prev.map(w => w.id === sw.id ? { ...w, active: !w.active } : w))} accent={SEVERITY.warning.color} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>{sw.name}</span>
+                      {sw.active && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}30`, color: SEVERITY.warning.color, borderRadius: 3, padding: '1px 6px', letterSpacing: '0.06em' }}>ACTIVE</span>}
+                    </div>
+                    <div style={{ fontSize: 10, color: '#6b7280', fontFamily: 'monospace', marginBottom: 4 }}>
+                      <Clock size={10} style={{ display: 'inline', marginRight: 4 }} />{sw.schedule}
+                      <span style={{ color: '#374151', marginLeft: 12 }}>Next: {sw.nextRun}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      {sw.rules.map(r => <span key={r} style={{ fontSize: 9, color: '#4b5563', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '1px 6px' }}>{r}</span>)}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>SUPPRESSED</div>
+                    <div style={{ fontSize: 14, color: '#9ca3af', fontWeight: 700 }}>{sw.suppressCount}×</div>
+                  </div>
+                </div>
+            ))}
+          </div>
         </div>
       </div>
   );
@@ -620,6 +817,62 @@ const VIGILDashboard = () => {
   // ─── RENDER: HISTORY ───────────────────────────────────────────
   const renderHistory = () => (
       <div>
+        {/* Notification Channel Health */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ ...css.sHdr, marginBottom: 12 }}><Radio size={9} /> Notification Channel Health</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+            {CHANNEL_STATUS.map(ch => {
+              const statusColor = ch.status === 'operational' ? SEVERITY.resolved.color : ch.status === 'degraded' ? SEVERITY.warning.color : SEVERITY.critical.color;
+              const quotaPct = ch.quota ? (ch.quota.used / ch.quota.limit) : 0;
+              return (
+                  <div key={ch.id} style={{ ...css.card, padding: '12px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <span style={{ fontSize: 14 }}>{ch.icon}</span>
+                        <span style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>{ch.name}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <PulseDot color={statusColor} size={6} />
+                        <span style={{ fontSize: 9, color: statusColor, letterSpacing: '0.06em', fontWeight: 700 }}>{ch.status.toUpperCase()}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: ch.quota ? 8 : 0 }}>
+                      <div>
+                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>DELIVERY</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.deliveryRate >= 98 ? SEVERITY.resolved.color : ch.deliveryRate >= 90 ? SEVERITY.warning.color : SEVERITY.critical.color, fontFamily: 'monospace' }}>{ch.deliveryRate}%</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>LATENCY</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.latency < 500 ? '#9ca3af' : SEVERITY.warning.color, fontFamily: 'monospace' }}>
+                          {ch.latency < 1000 ? ch.latency + 'ms' : (ch.latency/1000).toFixed(1) + 's'}
+                        </div>
+                      </div>
+                    </div>
+                    {ch.quota && (
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em' }}>API QUOTA</span>
+                            <span style={{ fontSize: 9, color: quotaPct > 0.85 ? SEVERITY.warning.color : '#6b7280', fontFamily: 'monospace' }}>
+                              {ch.quota.used.toLocaleString()} / {ch.quota.limit.toLocaleString()}
+                            </span>
+                          </div>
+                          <div style={{ height: 5, background: THEME.grid, borderRadius: 2, overflow: 'hidden', marginBottom: 3 }}>
+                            <div style={{ height: '100%', width: `${quotaPct * 100}%`, background: quotaPct > 0.85 ? `linear-gradient(90deg, ${SEVERITY.warning.color}80, ${SEVERITY.warning.color})` : 'linear-gradient(90deg, #818cf880, #818cf8)', borderRadius: 2, transition: 'width 0.5s' }} />
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 9, color: '#374151' }}>{ch.quota.unit}</span>
+                            {quotaPct > 0.85 && <span style={{ fontSize: 9, color: SEVERITY.warning.color }}>⚠ {Math.round((1 - quotaPct) * 100)}% remaining</span>}
+                          </div>
+                        </div>
+                    )}
+                    <div style={{ fontSize: 9, color: '#374151', marginTop: 6 }}>Last delivery {formatAge(ch.lastAlert)}</div>
+                  </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* History filter */}
         <div style={{ marginBottom: 14 }}>
           <div style={{ position: 'relative', maxWidth: 360 }}>
             <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#4b5563' }} />
@@ -644,27 +897,21 @@ const VIGILDashboard = () => {
                 <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'monospace' }}>{formatTime(item.timestamp)}</div>
               </div>
           ))}
-          {filteredHistory.length === 0 && (
-              <div style={{ padding: 40, textAlign: 'center', color: '#4b5563', fontSize: 12 }}>No historical alerts found</div>
-          )}
+          {filteredHistory.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: '#4b5563', fontSize: 12 }}>No historical alerts found</div>}
         </div>
       </div>
   );
 
-  // ─── RENDER: CREATE/EDIT MODAL ─────────────────────────────────
+  // ─── RENDER: MODAL ─────────────────────────────────────────────
   const renderModal = () => (
       <div style={css.modal} onClick={e => e.target === e.currentTarget && setShowCreateModal(false)}>
         <div style={css.modalBox}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#e5e7eb', marginBottom: 3 }}>
-                {editingRule ? 'Edit Alert Rule' : 'Create Alert Rule'}
-              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#e5e7eb', marginBottom: 3 }}>{editingRule ? 'Edit Alert Rule' : 'Create Alert Rule'}</div>
               <div style={{ fontSize: 10, color: '#4b5563' }}>Define conditions to trigger alerts and notifications</div>
             </div>
-            <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 4 }}>
-              <X size={18} />
-            </button>
+            <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 4 }}><X size={18} /></button>
           </div>
           <form onSubmit={handleCreateRule}>
             <div style={{ display: 'grid', gap: 16 }}>
@@ -717,14 +964,9 @@ const VIGILDashboard = () => {
               <div>
                 <label style={css.label}>Notification Channels</label>
                 <div style={{ display: 'flex', gap: 12 }}>
-                  {[
-                    { key: 'email', label: 'Email', icon: '✉' },
-                    { key: 'slack', label: 'Slack', icon: '#' },
-                    { key: 'pagerduty', label: 'PagerDuty', icon: '⚡' },
-                  ].map(ch => (
+                  {[{ key: 'email', label: 'Email', icon: '✉' }, { key: 'slack', label: 'Slack', icon: '#' }, { key: 'pagerduty', label: 'PagerDuty', icon: '⚡' }].map(ch => (
                       <label key={ch.key} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 12px', background: newRule.channels[ch.key] ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${newRule.channels[ch.key] ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.07)'}`, borderRadius: 6, transition: 'all 0.15s' }}>
-                        <input type="checkbox" checked={!!newRule.channels[ch.key]} style={{ accentColor: '#6366f1' }}
-                               onChange={e => setNewRule(r => ({ ...r, channels: { ...r.channels, [ch.key]: e.target.checked } }))} />
+                        <input type="checkbox" checked={!!newRule.channels[ch.key]} style={{ accentColor: '#6366f1' }} onChange={e => setNewRule(r => ({ ...r, channels: { ...r.channels, [ch.key]: e.target.checked } }))} />
                         <span style={{ fontSize: 12, color: newRule.channels[ch.key] ? '#818cf8' : '#6b7280' }}>{ch.icon} {ch.label}</span>
                       </label>
                   ))}
@@ -742,17 +984,8 @@ const VIGILDashboard = () => {
 
   // ─── RENDER: TOAST ─────────────────────────────────────────────
   const renderToast = () => toast && (
-      <div style={{
-        position: 'fixed', bottom: 24, right: 24, zIndex: 2000,
-        background: '#111827', border: `1px solid ${toast.type === 'warning' ? SEVERITY.warning.color : toast.type === 'info' ? SEVERITY.info.color : SEVERITY.resolved.color}40`,
-        borderRadius: 8, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10,
-        boxShadow: '0 12px 24px rgba(0,0,0,0.4)',
-        animation: 'slideUp 0.2s ease',
-        fontSize: 12, color: '#e5e7eb', fontFamily: '"JetBrains Mono", monospace',
-      }}>
-        {toast.type === 'warning' ? <AlertTriangle size={14} color={SEVERITY.warning.color} /> :
-            toast.type === 'info' ? <Info size={14} color={SEVERITY.info.color} /> :
-                <Check size={14} color={SEVERITY.resolved.color} />}
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 2000, background: '#111827', border: `1px solid ${toast.type === 'warning' ? SEVERITY.warning.color : toast.type === 'info' ? SEVERITY.info.color : SEVERITY.resolved.color}40`, borderRadius: 8, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 12px 24px rgba(0,0,0,0.4)', animation: 'slideUp 0.2s ease', fontSize: 12, color: '#e5e7eb', fontFamily: '"JetBrains Mono", monospace' }}>
+        {toast.type === 'warning' ? <AlertTriangle size={14} color={SEVERITY.warning.color} /> : toast.type === 'info' ? <Info size={14} color={SEVERITY.info.color} /> : <Check size={14} color={SEVERITY.resolved.color} />}
         {toast.msg}
       </div>
   );
@@ -761,19 +994,19 @@ const VIGILDashboard = () => {
   return (
       <div style={css.wrap}>
         <style>{`
-        @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:0.3} 50%{transform:scale(1.7);opacity:0} }
-        @keyframes slideUp { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
-        @keyframes fadeSlide { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
-        select option { background: #111827; color: #fff; }
-        input[type=number] { -moz-appearance: textfield; }
-        input[type=number]::-webkit-outer-spin-button,
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-      `}</style>
+          @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:0.3} 50%{transform:scale(1.7);opacity:0} }
+          @keyframes slideUp { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
+          @keyframes fadeSlide { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+          @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+          * { box-sizing: border-box; }
+          ::-webkit-scrollbar { width: 6px; height: 6px; }
+          ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+          ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+          ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+          select option { background: #111827; color: #fff; }
+          input[type=number] { -moz-appearance: textfield; }
+          input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        `}</style>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
@@ -781,16 +1014,16 @@ const VIGILDashboard = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
               <Terminal size={16} color="#818cf8" />
               <span style={{ fontSize: 16, fontWeight: 700, color: '#e5e7eb', letterSpacing: '0.06em' }}>VIGIL</span>
-              <span style={{ fontSize: 9, color: '#4b5563', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 6px', letterSpacing: '0.1em' }}>v2.0</span>
-              {maintenanceMode && (
-                  <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}40`, color: SEVERITY.warning.color, borderRadius: 3, padding: '2px 8px', letterSpacing: '0.1em', fontWeight: 700 }}>
-                MAINTENANCE WINDOW
-              </span>
-              )}
+              <span style={{ fontSize: 9, color: '#4b5563', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 6px', letterSpacing: '0.1em' }}>v3.0</span>
+              {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}40`, color: SEVERITY.warning.color, borderRadius: 3, padding: '2px 8px', letterSpacing: '0.1em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
             </div>
-            <div style={{ fontSize: 10, color: '#4b5563' }}>
-              <PulseDot color={SEVERITY.resolved.color} size={6} />
-              <span style={{ marginLeft: 6 }}>Connected · Last sync {formatAge(Date.now() - 8000)}</span>
+            <div style={{ fontSize: 10, color: '#4b5563', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ display: 'flex', alignItems: 'center' }}><PulseDot color={SEVERITY.resolved.color} size={6} /><span style={{ marginLeft: 6 }}>Connected · Last sync {formatAge(Date.now() - 8000)}</span></span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Users size={9} />
+                <span>{TEAM_MEMBERS.filter(m => m.online).length}/{TEAM_MEMBERS.length} online</span>
+                {TEAM_MEMBERS.filter(m => m.online).slice(0, 3).map(m => <Avatar key={m.id} initials={m.avatar} online={m.online} size={16} />)}
+              </span>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -801,14 +1034,10 @@ const VIGILDashboard = () => {
           </div>
         </div>
 
-        {/* Stats */}
         {renderStats()}
 
-        {/* Live Metrics */}
         <div style={{ marginBottom: 6 }}>
-          <div style={{ fontSize: 9, color: '#374151', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, fontWeight: 700 }}>
-            ▸ Live Metrics
-          </div>
+          <div style={{ ...css.sHdr }}>▸ Live Metrics</div>
           {renderLiveMetrics()}
         </div>
 
@@ -823,10 +1052,10 @@ const VIGILDashboard = () => {
           </button>
           <button onClick={() => setActiveTab('history')} style={css.tab(activeTab === 'history')}>
             <History size={12} /> HISTORY
+            {CHANNEL_STATUS.some(c => c.status !== 'operational') && <span style={{ fontSize: 9, color: SEVERITY.warning.color }}>⚠</span>}
           </button>
         </div>
 
-        {/* Tab Content */}
         <div style={{ animation: 'fadeSlide 0.2s ease' }} key={activeTab}>
           {activeTab === 'active'  && renderActive()}
           {activeTab === 'config'  && renderConfig()}
