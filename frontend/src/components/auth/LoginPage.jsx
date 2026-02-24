@@ -63,12 +63,12 @@ const GlobalStyles = () => (
         @keyframes dotBlink   { 0%,100%{opacity:1} 50%{opacity:.25} }
 
         input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus {
-            -webkit-box-shadow:0 0 0 1000px #080d1c inset !important;
-            -webkit-text-fill-color:#e2e8f0 !important;
-            caret-color:#e2e8f0;
+            -webkit-box-shadow:0 0 0 1000px ${THEME.surface} inset !important;
+            -webkit-text-fill-color:${THEME.textMain} !important;
+            caret-color:${THEME.textMain};
             transition:background-color 5000s ease-in-out 0s;
         }
-        .vi-input::placeholder { color:rgba(255,255,255,.10); opacity:1; }
+        .vi-input::placeholder { color:${THEME.textDim}; opacity:1; }
         .vi-input:focus::placeholder { opacity:0; transition:opacity .25s; }
         .stat-pill { transition:all .25s ease; }
         .stat-pill:hover { background:rgba(100,112,255,.12) !important; border-color:rgba(100,112,255,.28) !important; transform:translateY(-1px); }
@@ -551,7 +551,7 @@ const ServerStatus = ({ status }) => {
                     </div>
                     <span style={{ color, fontWeight: 700, letterSpacing: '.08em' }}>{label}</span>
                     {status.latency != null && (
-                        <span style={{ color: 'rgba(100,116,139,.5)', fontSize: 8.5, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.05)' }}>
+                        <span style={{ color: THEME.textMuted, fontSize: 8.5, padding: '1px 6px', borderRadius: 4, background: THEME.surfaceHover, border: `1px solid ${THEME.grid}` }}>
                             {status.latency}ms
                         </span>
                     )}
@@ -584,10 +584,10 @@ const InputField = React.forwardRef(function InputField(
                 borderRadius: 12, padding: '0 14px',
                 transition: 'all .25s',
                 boxShadow: focused
-                    ? '0 0 0 4px rgba(100,112,255,.09), inset 0 1px 0 rgba(255,255,255,.05)'
-                    : 'inset 0 1px 0 rgba(255,255,255,.03)',
+                    ? '0 0 0 4px rgba(100,112,255,.09)'
+                    : 'none',
             }}>
-                <Icon size={14} color={focused ? '#818AFF' : hasVal ? 'rgba(100,116,139,.65)' : 'rgba(100,116,139,.22)'} style={{ flexShrink: 0, transition: 'color .2s' }}/>
+                <Icon size={14} color={focused ? '#818AFF' : hasVal ? THEME.textMuted : THEME.textDim} style={{ flexShrink: 0, transition: 'color .2s' }}/>
                 <input
                     ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)}
                     placeholder={placeholder} autoComplete={autoComplete} disabled={disabled}
@@ -730,10 +730,10 @@ const LoginPage = () => {
                         width: '100%', padding: '28px 26px 24px', borderRadius: 22,
                         background: THEME.surface,
                         backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                        border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.28)' : error ? 'rgba(239,68,68,.20)' : 'rgba(100,112,255,.11)'}`,
+                        border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.28)' : error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`,
                         boxShadow: loginSuccess
-                            ? '0 0 80px rgba(34,197,94,.10), 0 32px 80px rgba(0,0,0,.7)'
-                            : '0 32px 80px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.04)',
+                            ? `0 0 60px rgba(34,197,94,.10), ${THEME.shadowMd}`
+                            : THEME.shadowMd,
                         transition: 'border-color .6s, box-shadow .6s',
                         animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards',
                         position: 'relative', overflow: 'hidden',
@@ -752,7 +752,7 @@ const LoginPage = () => {
                                 <div style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', border: '2px solid rgba(34,197,94,.28)', animation: 'ripple 1.1s ease-out forwards' }}/>
                                 <CheckCircle size={44} color="#22c55e" style={{ animation: 'successPop .5s cubic-bezier(.34,1.56,.64,1) backwards', marginBottom: 14 }}/>
                                 <div style={{ color: '#22c55e', fontSize: 16, fontWeight: 700, fontFamily: "'Playfair Display',serif", animation: 'fadeUp .4s ease .2s backwards' }}>Authenticated</div>
-                                <div style={{ color: 'rgba(100,116,139,.58)', fontSize: 10, marginTop: 6, fontFamily: THEME.fontMono, letterSpacing: '.06em', animation: 'fadeUp .4s ease .35s backwards' }}>Redirecting to dashboard…</div>
+                                <div style={{ color: THEME.textMuted, fontSize: 10, marginTop: 6, fontFamily: THEME.fontMono, letterSpacing: '.06em', animation: 'fadeUp .4s ease .35s backwards' }}>Redirecting to dashboard…</div>
                             </div>
                         )}
 
@@ -767,7 +767,7 @@ const LoginPage = () => {
                             <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading || loginSuccess}/>
                             <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading || loginSuccess}
                                         rightEl={
-                                            <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(100,116,139,.32)', padding: 4, display: 'flex', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(100,116,139,.32)'}>
+                                            <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 4, display: 'flex', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = THEME.textDim}>
                                                 {showPwd ? <EyeOff size={14}/> : <Eye size={14}/>}
                                             </button>
                                         }
@@ -775,18 +775,18 @@ const LoginPage = () => {
 
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: -2 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', userSelect: 'none' }} onClick={() => setRememberMe(r => !r)}>
-                                    <div style={{ width: 16, height: 16, borderRadius: 5, flexShrink: 0, border: `1.5px solid ${rememberMe ? '#6470FF' : 'rgba(255,255,255,.12)'}`, background: rememberMe ? '#6470FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .25s cubic-bezier(.34,1.56,.64,1)', boxShadow: rememberMe ? '0 0 12px rgba(100,112,255,.45)' : 'none' }}>
+                                    <div style={{ width: 16, height: 16, borderRadius: 5, flexShrink: 0, border: `1.5px solid ${rememberMe ? '#6470FF' : THEME.grid}`, background: rememberMe ? '#6470FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .25s cubic-bezier(.34,1.56,.64,1)', boxShadow: rememberMe ? '0 0 12px rgba(100,112,255,.45)' : 'none' }}>
                                         {rememberMe && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                     </div>
-                                    <span style={{ fontSize: 12, color: 'rgba(100,116,139,.58)', fontFamily: THEME.fontBody }}>Remember me</span>
+                                    <span style={{ fontSize: 12, color: THEME.textMuted, fontFamily: THEME.fontBody }}>Remember me</span>
                                 </div>
-                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(100,116,139,.48)', fontFamily: THEME.fontBody, padding: 0, transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(100,116,139,.48)'}>
+                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: THEME.textMuted, fontFamily: THEME.fontBody, padding: 0, transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = THEME.textMuted}>
                                     Forgot password?
                                 </button>
                             </div>
 
                             <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
-                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : 'rgba(100,112,255,.32)'}` : '1px solid rgba(255,255,255,.05)', padding: '14px 20px', borderRadius: 13, color: 'white', fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
+                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : 'rgba(100,112,255,.32)'}` : `1px solid ${THEME.grid}`, padding: '14px 20px', borderRadius: 13, color: 'white', fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
                                 {canSubmit && !authLoading && !loginSuccess && (
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%)', backgroundSize: '200% auto', animation: btnHover ? 'shimmer 1.2s ease forwards' : 'none', borderRadius: 13 }}/>
                                 )}
@@ -802,8 +802,8 @@ const LoginPage = () => {
                         </form>
 
                         {!loginSuccess && (
-                            <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.05)', textAlign: 'center' }}>
-                                <span style={{ fontSize: 9, color: 'rgba(100,116,139,.26)', fontFamily: THEME.fontMono, letterSpacing: '.06em' }}>
+                            <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
+                                <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.06em' }}>
                                     Admin access only · Contact your DBA for credentials
                                 </span>
                             </div>
@@ -811,8 +811,8 @@ const LoginPage = () => {
                     </div>
 
                     <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
-                        <Shield size={8} color="rgba(100,116,139,.22)"/>
-                        <span style={{ fontSize: 8.5, color: 'rgba(100,116,139,.26)', fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
+                        <Shield size={8} color={THEME.textDim}/>
+                        <span style={{ fontSize: 8.5, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
                     </div>
                 </div>
             </div>
