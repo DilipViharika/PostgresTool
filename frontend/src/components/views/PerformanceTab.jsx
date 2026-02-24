@@ -57,79 +57,16 @@ import {
    ═══════════════════════════════════════════════════════════════════════════ */
 const PerfStyles = () => (
     <style>{`
-        @keyframes perfFadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes perfSlideIn {
-            from { opacity: 0; transform: translateX(-16px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes perfPulse {
-            0%, 100% { opacity: 1; }
-            50%      { opacity: 0.4; }
-        }
         @keyframes perfSpin {
             to { transform: rotate(360deg); }
         }
-        @keyframes perfGlow {
-            0%, 100% { box-shadow: 0 0 4px var(--glow-color, ${THEME.primary}); }
-            50%      { box-shadow: 0 0 16px var(--glow-color, ${THEME.primary}), 0 0 32px color-mix(in srgb, var(--glow-color, ${THEME.primary}) 30%, transparent); }
-        }
-        @keyframes perfBarGrow {
-            from { transform: scaleX(0); }
-            to   { transform: scaleX(1); }
-        }
-        @keyframes perfModalIn {
-            from { opacity: 0; transform: scale(0.96) translateY(10px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes perfRipple {
-            0%   { transform: scale(0.8); opacity: 0.6; }
-            100% { transform: scale(2.4); opacity: 0; }
-        }
-        @keyframes ganttSlide {
-            from { transform: scaleX(0); }
-            to   { transform: scaleX(1); }
-        }
-        @keyframes treeExpand {
-            from { opacity: 0; max-height: 0; }
-            to   { opacity: 1; max-height: 800px; }
-        }
-        @keyframes lockTreeIn {
-            from { opacity: 0; transform: translateX(-8px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes jitFlash {
-            0%, 100% { background: transparent; }
-            50% { background: ${THEME.primary}08; }
-        }
-        .perf-stagger > * {
-            animation: perfFadeIn 0.4s ease-out both;
-        }
-        .perf-stagger > *:nth-child(1) { animation-delay: 0.00s; }
-        .perf-stagger > *:nth-child(2) { animation-delay: 0.06s; }
-        .perf-stagger > *:nth-child(3) { animation-delay: 0.12s; }
-        .perf-stagger > *:nth-child(4) { animation-delay: 0.18s; }
-        .perf-stagger > *:nth-child(5) { animation-delay: 0.24s; }
-        .perf-stagger > *:nth-child(6) { animation-delay: 0.30s; }
-        .perf-row-hover { transition: background 0.15s, transform 0.15s; }
         .perf-row-hover:hover {
             background: ${THEME.primary}08 !important;
-            transform: translateX(2px);
         }
         .perf-bar-animate {
             transform-origin: left;
-            animation: perfBarGrow 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .perf-spin { animation: perfSpin 1s linear infinite; }
-        .gantt-bar {
-            transform-origin: left;
-            animation: ganttSlide 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
-        .lock-tree-node {
-            animation: lockTreeIn 0.3s ease-out both;
-        }
         .perf-equal-row {
             display: grid;
             gap: 20px;
@@ -143,28 +80,13 @@ const PerfStyles = () => (
             display: flex;
             flex-direction: column;
         }
-        .tree-node-line::before {
-            content: '';
-            position: absolute;
-            left: -12px;
-            top: 50%;
-            width: 12px;
-            height: 1px;
-            background: ${THEME.grid}60;
-        }
-        .tag-btn { transition: all 0.15s; }
-        .tag-btn:hover { transform: scale(1.05); }
-        .filter-chip { transition: all 0.2s; cursor: pointer; }
-        .filter-chip:hover { opacity: 0.85; transform: translateY(-1px); }
-        .wait-segment {
-            transition: opacity 0.2s, transform 0.2s;
-            cursor: pointer;
-        }
-        .wait-segment:hover { opacity: 0.85; transform: scale(1.03); }
-        .jit-row { animation: jitFlash 3s ease-in-out; }
+        .tag-btn:hover { opacity: 0.85; }
+        .filter-chip { cursor: pointer; }
+        .filter-chip:hover { opacity: 0.85; }
+        .wait-segment { cursor: pointer; }
+        .wait-segment:hover { opacity: 0.85; }
         .kill-btn {
             opacity: 0;
-            transition: opacity 0.15s;
         }
         tr:hover .kill-btn { opacity: 1 !important; }
     `}</style>
@@ -194,8 +116,7 @@ const AnimValue = ({ value, decimals = 0, suffix = '', prefix = '' }) => {
 
 const LiveDot = ({ color = THEME.success, size = 8 }) => (
     <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
-        <span style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', border: `1.5px solid ${color}`, animation: 'perfRipple 2s ease-out infinite' }} />
-        <span style={{ width: size * 0.6, height: size * 0.6, borderRadius: '50%', background: color }} />
+        <span style={{ width: size * 0.7, height: size * 0.7, borderRadius: '50%', background: color }} />
     </span>
 );
 
@@ -225,7 +146,7 @@ const SeverityBar = ({ value, max = 100, color = THEME.danger, delay = 0 }) => (
         <div className="perf-bar-animate" style={{
             width: `${Math.min((value / max) * 100, 100)}%`, height: '100%', borderRadius: 2,
             background: `linear-gradient(90deg, ${color}90, ${color})`,
-            boxShadow: `0 0 8px ${color}40`, animationDelay: `${delay}s`
+            animationDelay: `${delay}s`
         }} />
     </div>
 );
@@ -259,7 +180,7 @@ const StatChip = ({ label, value, color = THEME.textMain, icon: Icon, small }) =
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.glassHeavy || THEME.surface, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
             <div style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 2 }}>t = {label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ fontSize: 13, fontWeight: 700, color: p.color || THEME.primary }}>
@@ -391,7 +312,7 @@ const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
                     borderRadius: 8, marginBottom: 4, cursor: node.children?.length ? 'pointer' : 'default',
                     background: isExpensive ? `${THEME.danger}06` : `${THEME.grid}15`,
                     border: `1px solid ${isExpensive ? `${THEME.danger}20` : `${THEME.grid}30`}`,
-                    transition: 'all 0.15s', position: 'relative'
+                    position: 'relative'
                 }}
             >
                 {depth > 0 && (
@@ -420,7 +341,7 @@ const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
                         {parseFloat(node.cost?.split('..')[1]).toFixed(1)}
                     </span>
                     <div style={{ width: 60, height: 3, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ width: `${costPct}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 0.5s ease' }} />
+                        <div style={{ width: `${costPct}%`, height: '100%', background: color, borderRadius: 2 }} />
                     </div>
                     {node.actualTime && (
                         <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: 'monospace' }}>{node.actualTime}ms</span>
@@ -537,7 +458,7 @@ const WaitEventBreakdown = ({ conns }) => {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
                     {waitData.map(d => (
                         <div key={d.name} onMouseEnter={() => setHoveredWait(d.name)} onMouseLeave={() => setHoveredWait(null)}
-                             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, cursor: 'pointer', background: hoveredWait === d.name ? `${d.color}15` : `${THEME.grid}20`, border: `1px solid ${hoveredWait === d.name ? `${d.color}40` : 'transparent'}`, transition: 'all 0.15s' }}>
+                             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, cursor: 'pointer', background: hoveredWait === d.name ? `${d.color}15` : `${THEME.grid}20`, border: `1px solid ${hoveredWait === d.name ? `${d.color}40` : 'transparent'}` }}>
                             <span style={{ width: 7, height: 7, borderRadius: '50%', background: d.color, flexShrink: 0 }} />
                             <span style={{ fontSize: 10, fontWeight: 600, color: hoveredWait === d.name ? d.color : THEME.textDim }}>{d.name}</span>
                             <span style={{ fontSize: 10, fontWeight: 800, color: hoveredWait === d.name ? d.color : THEME.textMain }}>{d.value}</span>
@@ -627,13 +548,13 @@ const SlowQueryTrend24h = ({ slowQueryCount }) => {
                             </div>
                         );
                     }} />
-                    <Bar yAxisId="count" dataKey="slow" name="Slow Queries" radius={[2, 2, 0, 0]} isAnimationActive>
+                    <Bar yAxisId="count" dataKey="slow" name="Slow Queries" radius={[2, 2, 0, 0]}>
                         {data.map((d, i) => (
                             <Cell key={i} fill={d.slow >= maxSlow * 0.8 ? THEME.danger : d.slow >= maxSlow * 0.5 ? THEME.warning : `${THEME.primary}80`} />
                         ))}
                     </Bar>
-                    <Bar yAxisId="count" dataKey="critical" name="Critical" fill={`${THEME.danger}50`} radius={[2, 2, 0, 0]} isAnimationActive />
-                    <Line yAxisId="p99" type="monotone" dataKey="p99" stroke={THEME.primary} strokeWidth={1.5} dot={false} name="P99 ms" isAnimationActive />
+                    <Bar yAxisId="count" dataKey="critical" name="Critical" fill={`${THEME.danger}50`} radius={[2, 2, 0, 0]} />
+                    <Line yAxisId="p99" type="monotone" dataKey="p99" stroke={THEME.primary} strokeWidth={1.5} dot={false} name="P99 ms" />
                 </ComposedChart>
             </ResponsiveContainer>
             <div style={{ display: 'flex', gap: 16, fontSize: 10, color: THEME.textDim, flexWrap: 'wrap' }}>
@@ -706,7 +627,7 @@ const JITCompilationPanel = ({ slowQueries }) => {
                     </thead>
                     <tbody>
                     {jitData.map((q, i) => (
-                        <tr key={i} className={`perf-row-hover${q.hasJit ? ' jit-row' : ''}`} style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
+                        <tr key={i}  className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
                             <td style={{ padding: '8px 12px', maxWidth: 180 }}>
                                 <span style={{ fontSize: 11, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{q.query?.substring(0, 28) || `Query ${i+1}`}…</span>
                             </td>
@@ -799,8 +720,8 @@ const ParallelQueryPanel = ({ stats }) => {
                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[0, maxWorkers + 1]} />
                         <Tooltip content={<ChartTooltip />} />
                         <ReferenceLine y={maxWorkers} stroke={`${THEME.danger}50`} strokeDasharray="4 4" label={{ value: 'max', position: 'right', fontSize: 9, fill: THEME.danger }} />
-                        <Area type="monotone" dataKey="workers" stroke={THEME.primary} fill={`${THEME.primary}15`} strokeWidth={2} name="Active Workers" isAnimationActive />
-                        <Bar dataKey="queries" fill={`${THEME.success}30`} radius={[2, 2, 0, 0]} name="Parallel Queries" isAnimationActive />
+                        <Area type="monotone" dataKey="workers" stroke={THEME.primary} fill={`${THEME.primary}15`} strokeWidth={2} name="Active Workers" />
+                        <Bar dataKey="queries" fill={`${THEME.success}30`} radius={[2, 2, 0, 0]} name="Parallel Queries" />
                     </ComposedChart>
                 </ResponsiveContainer>
             </GlassCard>
@@ -824,7 +745,7 @@ const ParallelQueryPanel = ({ stats }) => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <div style={{ flex: 1, display: 'flex', gap: 3 }}>
                                     {Array.from({ length: maxWorkersPerGather }, (_, j) => (
-                                        <div key={j} style={{ flex: 1, height: 6, borderRadius: 2, background: j < q.workers ? workerColor : `${THEME.grid}40`, transition: 'background 0.3s', boxShadow: j < q.workers ? `0 0 4px ${workerColor}50` : 'none' }} />
+                                        <div key={j} style={{ flex: 1, height: 6, borderRadius: 2, background: j < q.workers ? workerColor : `${THEME.grid}40` }} />
                                     ))}
                                 </div>
                                 <span style={{ fontSize: 10, fontWeight: 700, color: workerColor, fontVariantNumeric: 'tabular-nums', minWidth: 48, textAlign: 'right' }}>
@@ -853,7 +774,7 @@ const LockTreeNode = ({ node, depth = 0, isLast = false }) => {
     const color = colors[node.role] || THEME.textMuted;
 
     return (
-        <div style={{ position: 'relative' }} className="lock-tree-node">
+        <div style={{ position: 'relative' }}>
             {depth > 0 && (
                 <div style={{
                     position: 'absolute', left: -16, top: 0, bottom: isLast ? '50%' : 0,
@@ -871,7 +792,7 @@ const LockTreeNode = ({ node, depth = 0, isLast = false }) => {
                     display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
                     borderRadius: 9, background: `${color}06`,
                     border: `1px solid ${color}20`, cursor: hasBlockees ? 'pointer' : 'default',
-                    transition: 'all 0.15s',
+
                 }} onClick={() => hasBlockees && setExpanded(!expanded)}>
                     <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}12`, border: `1px solid ${color}20` }}>
                         {node.role === 'holder' ? <Lock size={14} color={color} /> : <Timer size={14} color={color} />}
@@ -1018,7 +939,7 @@ const DeadlockHistory = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {deadlocks.map((dl, i) => (
                     <div key={i} onClick={() => setSelectedDeadlock(selectedDeadlock?.id === dl.id ? null : dl)}
-                         style={{ padding: '10px 14px', borderRadius: 9, cursor: 'pointer', background: selectedDeadlock?.id === dl.id ? `${THEME.danger}08` : `${THEME.grid}12`, border: `1px solid ${selectedDeadlock?.id === dl.id ? `${THEME.danger}25` : `${THEME.grid}30`}`, transition: 'all 0.18s' }}>
+                         style={{ padding: '10px 14px', borderRadius: 9, cursor: 'pointer', background: selectedDeadlock?.id === dl.id ? `${THEME.danger}08` : `${THEME.grid}12`, border: `1px solid ${selectedDeadlock?.id === dl.id ? `${THEME.danger}25` : `${THEME.grid}30`}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: selectedDeadlock?.id === dl.id ? 10 : 0 }}>
                             <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.danger}12`, border: `1px solid ${THEME.danger}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <ShieldAlert size={14} color={THEME.danger} />
@@ -1050,7 +971,7 @@ const DeadlockHistory = () => {
 
                         {/* Expanded detail */}
                         {selectedDeadlock?.id === dl.id && (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, paddingTop: 10, borderTop: `1px solid ${THEME.grid}30`, animation: 'perfFadeIn 0.2s ease-out' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, paddingTop: 10, borderTop: `1px solid ${THEME.grid}30` }}>
                                 {[
                                     { label: `PID ${dl.pid1}`, query: dl.query1, isVictim: dl.victim === 'pid1', color: dl.victim === 'pid1' ? THEME.danger : THEME.warning },
                                     { label: `PID ${dl.pid2}`, query: dl.query2, isVictim: dl.victim === 'pid2', color: dl.victim === 'pid2' ? THEME.danger : THEME.warning },
@@ -1141,9 +1062,9 @@ const GenericCustomPlanPanel = ({ slowQueries }) => {
                         <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Area type="monotone" dataKey="generic" stroke={THEME.primary} fill="url(#genGrad)" strokeWidth={1.5} name="Generic Plans" isAnimationActive />
-                        <Area type="monotone" dataKey="custom" stroke={THEME.success} fill="url(#custGrad)" strokeWidth={1.5} name="Custom Plans" isAnimationActive />
-                        <Bar dataKey="replan" fill={`${THEME.warning}50`} radius={[1, 1, 0, 0]} name="Re-plans" isAnimationActive />
+                        <Area type="monotone" dataKey="generic" stroke={THEME.primary} fill="url(#genGrad)" strokeWidth={1.5} name="Generic Plans" />
+                        <Area type="monotone" dataKey="custom" stroke={THEME.success} fill="url(#custGrad)" strokeWidth={1.5} name="Custom Plans" />
+                        <Bar dataKey="replan" fill={`${THEME.warning}50`} radius={[1, 1, 0, 0]} name="Re-plans" />
                     </AreaChart>
                 </ResponsiveContainer>
             </GlassCard>
@@ -1241,8 +1162,8 @@ const TempFileTracker = ({ slowQueries }) => {
                         <YAxis yAxisId="size" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                         <YAxis yAxisId="files" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Area yAxisId="size" type="monotone" dataKey="sizeKB" stroke={THEME.warning} fill={`${THEME.warning}15`} strokeWidth={1.5} name="Size KB" isAnimationActive />
-                        <Bar yAxisId="files" dataKey="files" fill={`${THEME.danger}40`} radius={[2, 2, 0, 0]} name="File Count" isAnimationActive />
+                        <Area yAxisId="size" type="monotone" dataKey="sizeKB" stroke={THEME.warning} fill={`${THEME.warning}15`} strokeWidth={1.5} name="Size KB" />
+                        <Bar yAxisId="files" dataKey="files" fill={`${THEME.danger}40`} radius={[2, 2, 0, 0]} name="File Count" />
                     </ComposedChart>
                 </ResponsiveContainer>
             </GlassCard>
@@ -1330,10 +1251,10 @@ const GanttChart = ({ queries }) => {
                                 {row.query?.substring(0, 24) || `Query ${i + 1}`}…
                             </div>
                             <div style={{ flex: 1, height: 22, background: `${THEME.grid}20`, borderRadius: 4, position: 'relative', overflow: 'hidden' }}>
-                                <div className="gantt-bar" style={{
+                                <div style={{
                                     position: 'absolute', left: `${left}%`, width: `${width}%`, height: '100%',
                                     background: `linear-gradient(90deg, ${color}80, ${color})`,
-                                    borderRadius: 4, minWidth: 4, boxShadow: `0 0 6px ${color}30`,
+                                    borderRadius: 4, minWidth: 4,
                                     animationDelay: `${i * 0.05}s`
                                 }} />
                                 <div style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: THEME.textDim, fontVariantNumeric: 'tabular-nums', pointerEvents: 'none' }}>
@@ -1406,8 +1327,8 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
     const reasons = ['Blocking other queries', 'Consuming excessive resources', 'Runaway query / no end condition', 'User requested termination', 'Maintenance window'];
 
     return (
-        <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, animation: 'perfFadeIn 0.2s ease-out' }}>
-            <div onClick={e => e.stopPropagation()} style={{ width: 480, background: THEME.surface, border: `1px solid ${THEME.danger}30`, borderRadius: 16, overflow: 'hidden', boxShadow: `0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px ${THEME.danger}20`, animation: 'perfModalIn 0.3s ease-out' }}>
+        <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 480, background: THEME.surface, border: `1px solid ${THEME.danger}30`, borderRadius: 16, overflow: 'hidden' }}>
                 <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, background: `linear-gradient(135deg, ${THEME.danger}10, transparent)`, display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 8, background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <XCircle size={18} color={THEME.danger} />
@@ -1426,7 +1347,7 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
                         <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textDim, marginBottom: 8 }}>Reason for termination</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             {reasons.map(r => (
-                                <div key={r} onClick={() => setReason(r)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 7, cursor: 'pointer', background: reason === r ? `${THEME.danger}10` : 'transparent', border: `1px solid ${reason === r ? `${THEME.danger}25` : `${THEME.grid}30`}`, transition: 'all 0.15s' }}>
+                                <div key={r} onClick={() => setReason(r)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 7, cursor: 'pointer', background: reason === r ? `${THEME.danger}10` : 'transparent', border: `1px solid ${reason === r ? `${THEME.danger}25` : `${THEME.grid}30`}` }}>
                                     <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${reason === r ? THEME.danger : THEME.grid}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                         {reason === r && <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.danger }} />}
                                     </div>
@@ -1479,12 +1400,12 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
 
     return (
         <>
-            <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'perfFadeIn 0.2s ease-out' }}>
-                <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: `0 24px 64px rgba(0,0,0,0.6)`, animation: 'perfModalIn 0.35s cubic-bezier(0.22, 1, 0.36, 1)' }}>
+            <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {/* Header */}
                     <div style={{ padding: '16px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(135deg, ${THEME.danger}08, transparent)` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, '--glow-color': THEME.danger, animation: 'perfGlow 3s ease-in-out infinite' }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, '--glow-color': THEME.danger }}>
                                 <AlertTriangle size={18} color={THEME.danger} />
                             </div>
                             <div>
@@ -1512,11 +1433,11 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                             <button className="tag-btn" onClick={() => onTag(queryData.id, currentTag === 'acceptable' ? null : 'acceptable')} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.success}30`, background: currentTag === 'acceptable' ? `${THEME.success}12` : 'transparent', color: currentTag === 'acceptable' ? THEME.success : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <CheckCircle size={11} /> Acceptable
                             </button>
-                            <button onClick={() => setShowKillModal(true)} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.danger}30`, background: 'transparent', color: THEME.danger, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s' }}
+                            <button onClick={() => setShowKillModal(true)} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.danger}30`, background: 'transparent', color: THEME.danger, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
                                     onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}15`; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                             ><XCircle size={11} /> Kill</button>
-                            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${THEME.grid}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+                            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${THEME.grid}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                     onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}20`; e.currentTarget.style.color = THEME.danger; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = THEME.textMuted; }}
                             ><X size={16} /></button>
@@ -1528,14 +1449,14 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                         <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.glassBorder}`, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                 {panels.map(t => (
-                                    <button key={t.id} onClick={() => setActivePanel(t.id)} style={{ flex: 1, padding: '10px 12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11, fontWeight: 600, transition: 'all 0.2s', background: activePanel === t.id ? `${THEME.primary}10` : 'transparent', color: activePanel === t.id ? THEME.primary : THEME.textDim, borderBottom: `2px solid ${activePanel === t.id ? THEME.primary : 'transparent'}` }}>
+                                    <button key={t.id} onClick={() => setActivePanel(t.id)} style={{ flex: 1, padding: '10px 12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11, fontWeight: 600, background: activePanel === t.id ? `${THEME.primary}10` : 'transparent', color: activePanel === t.id ? THEME.primary : THEME.textDim, borderBottom: `2px solid ${activePanel === t.id ? THEME.primary : 'transparent'}` }}>
                                         <t.icon size={12} /> {t.label}
                                     </button>
                                 ))}
                             </div>
                             <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
                                 {activePanel === 'diff' && (
-                                    <div className="perf-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                                                 <span style={{ width: 8, height: 8, borderRadius: 2, background: THEME.danger }} />
@@ -1587,7 +1508,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                                     <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={2} />
                                                     <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                                                     <Tooltip content={<ChartTooltip />} />
-                                                    <Area type="monotone" dataKey="ms" stroke={THEME.danger} fill={`${THEME.danger}10`} strokeWidth={2} isAnimationActive />
+                                                    <Area type="monotone" dataKey="ms" stroke={THEME.danger} fill={`${THEME.danger}10`} strokeWidth={2} />
                                                     <ReferenceLine y={Number(queryData.mean_time_ms)} stroke={`${THEME.warning}60`} strokeDasharray="4 4" label={{ value: 'avg', position: 'right', fontSize: 9, fill: THEME.warning }} />
                                                 </ComposedChart>
                                             </ResponsiveContainer>
@@ -1599,7 +1520,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                                     <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={2} />
                                                     <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                                                     <Tooltip content={<ChartTooltip />} />
-                                                    <Bar dataKey="calls" fill={THEME.primary} opacity={0.7} radius={[2, 2, 0, 0]} isAnimationActive />
+                                                    <Bar dataKey="calls" fill={THEME.primary} opacity={0.7} radius={[2, 2, 0, 0]} />
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </div>
@@ -1647,16 +1568,16 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                             </div>
                             <div style={{ padding: '16px 20px', borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {applied ? (
-                                    <div style={{ padding: 14, borderRadius: 8, background: `${THEME.success}15`, border: `1px solid ${THEME.success}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: THEME.success, fontWeight: 700, fontSize: 13, animation: 'perfFadeIn 0.3s ease-out' }}>
+                                    <div style={{ padding: 14, borderRadius: 8, background: `${THEME.success}15`, border: `1px solid ${THEME.success}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: THEME.success, fontWeight: 700, fontSize: 13 }}>
                                         <CheckCircle size={16} /> Optimization Applied
                                     </div>
                                 ) : (
                                     <>
-                                        <button style={{ padding: 11, borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, background: 'transparent', border: `1px solid ${THEME.glassBorder}`, color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}
+                                        <button style={{ padding: 11, borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, background: 'transparent', border: `1px solid ${THEME.glassBorder}`, color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                                                 onMouseEnter={e => { e.currentTarget.style.borderColor = THEME.primary; e.currentTarget.style.color = THEME.primary; }}
                                                 onMouseLeave={e => { e.currentTarget.style.borderColor = THEME.glassBorder; e.currentTarget.style.color = THEME.textMuted; }}
                                         ><Play size={13} /> Test in Sandbox</button>
-                                        <button onClick={handleApply} disabled={isApplying} style={{ padding: 11, borderRadius: 8, border: 'none', cursor: isApplying ? 'wait' : 'pointer', fontWeight: 700, fontSize: 12, color: '#fff', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`, boxShadow: `0 4px 16px ${THEME.primary}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s', opacity: isApplying ? 0.8 : 1 }}>
+                                        <button onClick={handleApply} disabled={isApplying} style={{ padding: 11, borderRadius: 8, border: 'none', cursor: isApplying ? 'wait' : 'pointer', fontWeight: 700, fontSize: 12, color: '#fff', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isApplying ? 0.8 : 1 }}>
                                             {isApplying ? <RotateCcw size={13} className="perf-spin" /> : <Sparkles size={13} />}
                                             {isApplying ? 'Applying…' : 'Apply Optimization'}
                                         </button>
@@ -1827,7 +1748,7 @@ const PerformanceTab = () => {
         {
             key: 'actions', label: '', align: 'right', maxWidth: 80,
             render: (_, row) => (
-                <button onClick={() => setSelectedQuery(row)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'all 0.15s' }}
+                <button onClick={() => setSelectedQuery(row)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}25`; e.currentTarget.style.borderColor = THEME.primary; }}
                         onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}10`; e.currentTarget.style.borderColor = `${THEME.primary}20`; }}
                 ><Sparkles size={10} /> Analyze</button>
@@ -1852,7 +1773,7 @@ const PerformanceTab = () => {
     const ViewTab = ({ id, label, icon: Icon, badge }) => {
         const active = activeView === id;
         return (
-            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', transition: 'all 0.25s', whiteSpace: 'nowrap', background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})` : THEME.surface, color: active ? '#fff' : THEME.textMuted, boxShadow: active ? `0 4px 16px ${THEME.primary}35` : 'none', border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
+            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', whiteSpace: 'nowrap', background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})` : THEME.surface, color: active ? '#fff' : THEME.textMuted, border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
                 <Icon size={14} style={{ flexShrink: 0 }} /> {label}
                 {badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.warning}15`, color: active ? '#fff' : THEME.warning, border: active ? '1px solid rgba(255,255,255,0.2)' : `1px solid ${THEME.warning}25`, marginLeft: 2 }}>{badge}</span>}
             </button>
@@ -1862,7 +1783,7 @@ const PerformanceTab = () => {
     const SubViewTab = ({ id, label, icon: Icon, stateKey, setState, badge }) => {
         const active = stateKey === id;
         return (
-            <button onClick={() => setState(id)} style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${active ? THEME.primary + '40' : THEME.grid + '40'}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 11, background: active ? `${THEME.primary}12` : 'transparent', color: active ? THEME.primary : THEME.textMuted, transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+            <button onClick={() => setState(id)} style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${active ? THEME.primary + '40' : THEME.grid + '40'}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 11, background: active ? `${THEME.primary}12` : 'transparent', color: active ? THEME.primary : THEME.textMuted, whiteSpace: 'nowrap' }}>
                 <Icon size={12} /> {label}
                 {badge && <span style={{ fontSize: 8, fontWeight: 800, padding: '1px 5px', borderRadius: 8, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>{badge}</span>}
             </button>
@@ -1872,7 +1793,7 @@ const PerformanceTab = () => {
     const SessionMetric = ({ icon: Icon, title, value, color, filterKey }) => {
         const isActive = sessionFilter === filterKey;
         return (
-            <div onClick={() => setSessionFilter(filterKey)} style={{ cursor: 'pointer', padding: '20px 20px', borderRadius: 12, background: isActive ? `${color}12` : THEME.surface, border: `1px solid ${isActive ? `${color}30` : `${THEME.grid}50`}`, transition: 'all 0.2s', display: 'flex', flexDirection: 'column', gap: 14, position: 'relative', overflow: 'hidden', minHeight: 110 }}
+            <div onClick={() => setSessionFilter(filterKey)} style={{ cursor: 'pointer', padding: '20px 20px', borderRadius: 12, background: isActive ? `${color}12` : THEME.surface, border: `1px solid ${isActive ? `${color}30` : `${THEME.grid}50`}`, display: 'flex', flexDirection: 'column', gap: 14, position: 'relative', overflow: 'hidden', minHeight: 110 }}
                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = `${color}25`; e.currentTarget.style.background = `${color}06`; e.currentTarget.style.transform = 'translateY(-2px)'; } }}
                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = `${THEME.grid}50`; e.currentTarget.style.background = THEME.surface; e.currentTarget.style.transform = 'translateY(0)'; } }}
             >
@@ -1921,7 +1842,7 @@ const PerformanceTab = () => {
 
             {/* ════════════════════ ACTIVITY VIEW ════════════════════ */}
             {activeView === 'activity' && (
-                <div className="perf-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {/* Live Sessions */}
                     <GlassCard title={sessionFilter ? `${sessionFilter.charAt(0).toUpperCase() + sessionFilter.slice(1)} Sessions` : "Live Sessions"}
                                rightNode={
@@ -1979,8 +1900,8 @@ const PerformanceTab = () => {
                                     <XAxis dataKey="t" tick={{ fontSize: 10, fill: THEME.textDim }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                                     <YAxis tick={{ fontSize: 10, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
                                     <Tooltip content={<ChartTooltip />} />
-                                    <Area type="monotone" dataKey="idle" stroke={`${THEME.textDim}60`} strokeWidth={1.5} fill="url(#perfIdleGrad)" fillOpacity={1} isAnimationActive />
-                                    <Area type="monotone" dataKey="active" stroke={THEME.primary} strokeWidth={2} fill="url(#perfActiveGrad)" fillOpacity={1} isAnimationActive />
+                                    <Area type="monotone" dataKey="idle" stroke={`${THEME.textDim}60`} strokeWidth={1.5} fill="url(#perfIdleGrad)" fillOpacity={1} />
+                                    <Area type="monotone" dataKey="active" stroke={THEME.primary} strokeWidth={2} fill="url(#perfActiveGrad)" fillOpacity={1} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -2014,10 +1935,10 @@ const PerformanceTab = () => {
                                         <Search size={12} color={THEME.textDim} style={{ position: 'absolute', left: 8, pointerEvents: 'none' }} />
                                         <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search queries…" style={{ paddingLeft: 26, paddingRight: 10, paddingTop: 6, paddingBottom: 6, borderRadius: 6, border: `1px solid ${THEME.grid}50`, background: THEME.bg, color: THEME.textMain, fontSize: 11, width: 160, outline: 'none' }} />
                                     </div>
-                                    <button onClick={() => setQueryGroupMode(!queryGroupMode)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${queryGroupMode ? THEME.primary + '40' : THEME.grid + '40'}`, background: queryGroupMode ? `${THEME.primary}12` : 'transparent', color: queryGroupMode ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s' }}>
+                                    <button onClick={() => setQueryGroupMode(!queryGroupMode)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${queryGroupMode ? THEME.primary + '40' : THEME.grid + '40'}`, background: queryGroupMode ? `${THEME.primary}12` : 'transparent', color: queryGroupMode ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                                         <Merge size={12} /> Group
                                     </button>
-                                    <button onClick={() => setShowFilterPanel(!showFilterPanel)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${showFilterPanel ? THEME.primary + '40' : THEME.grid + '40'}`, background: showFilterPanel ? `${THEME.primary}12` : 'transparent', color: showFilterPanel ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s' }}>
+                                    <button onClick={() => setShowFilterPanel(!showFilterPanel)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${showFilterPanel ? THEME.primary + '40' : THEME.grid + '40'}`, background: showFilterPanel ? `${THEME.primary}12` : 'transparent', color: showFilterPanel ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                                         <Filter size={12} /> Filter {(filterApp || filterUser) && <span style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.warning, flexShrink: 0 }} />}
                                     </button>
                                 </div>
@@ -2133,7 +2054,7 @@ const PerformanceTab = () => {
 
             {/* ════════════════════ DEEP INSIGHTS VIEW  ★ NEW ════════════════════ */}
             {activeView === 'insights' && (
-                <div className="perf-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {/* Sub-view tabs */}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {[
@@ -2206,7 +2127,7 @@ const PerformanceTab = () => {
                         <GlassCard title="Lock Blocking Tree" rightNode={
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 {locks.length > 0 && <LiveDot color={THEME.danger} size={7} />}
-                                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 5, background: locks.length > 0 ? `${THEME.danger}12` : `${THEME.success}10`, color: locks.length > 0 ? THEME.danger : THEME.success, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}`, fontWeight: 700, fontSize: 10 }}>
+                                <span style={{  padding: '3px 10px', borderRadius: 5, background: locks.length > 0 ? `${THEME.danger}12` : `${THEME.success}10`, color: locks.length > 0 ? THEME.danger : THEME.success, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}`, fontWeight: 700, fontSize: 10 }}>
                                     {locks.length > 0 ? `${locks.length} active blocks` : 'No blocks'}
                                 </span>
                             </div>
@@ -2246,7 +2167,7 @@ const PerformanceTab = () => {
 
             {/* ════════════════════ HEALTH VIEW ════════════════════ */}
             {activeView === 'health' && (
-                <div className="perf-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {[
                             { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -2362,7 +2283,7 @@ const PerformanceTab = () => {
                                 </GlassCard>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.glass, overflow: 'hidden', backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}` }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.glass, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
                                 {[
                                     { label: 'Cache Hit', value: `${stats?.cache_hit_ratio || 99.2}%`, color: THEME.success, icon: CheckCircle },
                                     { label: 'Tx/sec', value: stats?.tps || '1.2k', color: THEME.primary, icon: Zap },
@@ -2399,9 +2320,9 @@ const PerformanceTab = () => {
                                         <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[0, 100]} unit="%" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Line type="monotone" dataKey="total" stroke={THEME.primary} strokeWidth={2.5} dot={false} name="Total" isAnimationActive />
+                                        <Line type="monotone" dataKey="total" stroke={THEME.primary} strokeWidth={2.5} dot={false} name="Total" />
                                         {[['core0', THEME.success], ['core1', THEME.warning], ['core2', THEME.danger + '90'], ['core3', THEME.primary + '60']].map(([key, color]) => (
-                                            <Line key={key} type="monotone" dataKey={key} stroke={color} strokeWidth={1} dot={false} strokeDasharray="4 4" name={key} isAnimationActive />
+                                            <Line key={key} type="monotone" dataKey={key} stroke={color} strokeWidth={1} dot={false} strokeDasharray="4 4" name={key} />
                                         ))}
                                     </LineChart>
                                 </ResponsiveContainer>
@@ -2432,9 +2353,9 @@ const PerformanceTab = () => {
                                         <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="%" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Area type="monotone" dataKey="buffers" stroke={THEME.primary} fill="url(#memBuf)" strokeWidth={1.5} name="Buffers %" isAnimationActive />
-                                        <Area type="monotone" dataKey="swap" stroke={THEME.warning} fill="url(#memSwap)" strokeWidth={1.5} name="Swap %" isAnimationActive />
-                                        <Area type="monotone" dataKey="used" stroke={THEME.success} fill="url(#memUsed)" strokeWidth={2} name="RAM %" isAnimationActive />
+                                        <Area type="monotone" dataKey="buffers" stroke={THEME.primary} fill="url(#memBuf)" strokeWidth={1.5} name="Buffers %" />
+                                        <Area type="monotone" dataKey="swap" stroke={THEME.warning} fill="url(#memSwap)" strokeWidth={1.5} name="Swap %" />
+                                        <Area type="monotone" dataKey="used" stroke={THEME.success} fill="url(#memUsed)" strokeWidth={2} name="RAM %" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </GlassCard>
@@ -2457,9 +2378,9 @@ const PerformanceTab = () => {
                                         <YAxis yAxisId="throughput" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
                                         <YAxis yAxisId="latency" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="ms" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Bar yAxisId="throughput" dataKey="read" fill={THEME.primary} opacity={0.6} radius={[2, 2, 0, 0]} name="Read MB/s" isAnimationActive />
-                                        <Bar yAxisId="throughput" dataKey="write" fill={THEME.success} opacity={0.6} radius={[2, 2, 0, 0]} name="Write MB/s" isAnimationActive />
-                                        <Line yAxisId="latency" type="monotone" dataKey="latency" stroke={THEME.warning} strokeWidth={2} dot={false} name="Latency ms" isAnimationActive />
+                                        <Bar yAxisId="throughput" dataKey="read" fill={THEME.primary} opacity={0.6} radius={[2, 2, 0, 0]} name="Read MB/s" />
+                                        <Bar yAxisId="throughput" dataKey="write" fill={THEME.success} opacity={0.6} radius={[2, 2, 0, 0]} name="Write MB/s" />
+                                        <Line yAxisId="latency" type="monotone" dataKey="latency" stroke={THEME.warning} strokeWidth={2} dot={false} name="Latency ms" />
                                     </ComposedChart>
                                 </ResponsiveContainer>
                             </GlassCard>
@@ -2489,8 +2410,8 @@ const PerformanceTab = () => {
                                         <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                                         <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="KB" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Area type="monotone" dataKey="bytesIn" stroke={THEME.primary} fill="url(#netIn)" strokeWidth={2} name="In KB/s" isAnimationActive />
-                                        <Area type="monotone" dataKey="bytesOut" stroke={THEME.success} fill="url(#netOut)" strokeWidth={2} name="Out KB/s" isAnimationActive />
+                                        <Area type="monotone" dataKey="bytesIn" stroke={THEME.primary} fill="url(#netIn)" strokeWidth={2} name="In KB/s" />
+                                        <Area type="monotone" dataKey="bytesOut" stroke={THEME.success} fill="url(#netOut)" strokeWidth={2} name="Out KB/s" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </GlassCard>
@@ -2513,8 +2434,8 @@ const PerformanceTab = () => {
                                         <YAxis yAxisId="ratio" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[94, 100]} unit="%" />
                                         <YAxis yAxisId="dirty" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="%" />
                                         <Tooltip content={<ChartTooltip />} />
-                                        <Area yAxisId="ratio" type="monotone" dataKey="hitRatio" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={2} name="Hit Ratio %" isAnimationActive />
-                                        <Line yAxisId="dirty" type="monotone" dataKey="dirtyPages" stroke={THEME.warning} strokeWidth={1.5} dot={false} name="Dirty %" isAnimationActive />
+                                        <Area yAxisId="ratio" type="monotone" dataKey="hitRatio" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={2} name="Hit Ratio %" />
+                                        <Line yAxisId="dirty" type="monotone" dataKey="dirtyPages" stroke={THEME.warning} strokeWidth={1.5} dot={false} name="Dirty %" />
                                         {bufferData.map((d, i) => d.checkpoints > 0 && (
                                             <ReferenceLine key={i} yAxisId="ratio" x={d.t} stroke={`${THEME.primary}60`} strokeDasharray="3 3" label={{ value: '⟳', position: 'top', fontSize: 10, fill: THEME.primary }} />
                                         ))}
