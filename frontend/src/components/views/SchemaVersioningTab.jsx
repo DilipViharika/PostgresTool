@@ -166,12 +166,12 @@ function ensureSvStyles() {
             width: 2px; background: linear-gradient(180deg, ${THEME.grid}, ${THEME.surface});
         }`,
         '.sv-timeline-node:last-child::before { display: none; }',
-        '.sv-timeline-dot {
+        `.sv-timeline-dot {
             width: 16px; height: 16px; border-radius: 50%;
             position: absolute; left: 0; top: 20px; z-index: 2;
             transition: transform .2s, box-shadow .2s;
             cursor: pointer;
-        }',
+        }`,
         '.sv-timeline-dot:hover { transform: scale(1.3); }',
 
         '/* ── Tab button ── */',
@@ -186,27 +186,27 @@ function ensureSvStyles() {
             transition: all .2s;
             letter-spacing: .3px;
         }`,
-        '.sv-tab.active {
+        `.sv-tab.active {
             background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(139,92,246,.15));
             border-color: rgba(99,102,241,.5);
             color: #a5b4fc;
             box-shadow: 0 0 16px rgba(99,102,241,.2);
-        }',
+        }`,
         `.sv-tab:hover:not(.active) { border-color: ${THEME.glassBorder}; color: ${THEME.textMain}; }`,
 
         '/* ── Badge ── */',
-        '.sv-badge {
+        `.sv-badge {
             display: inline-flex; align-items: center; gap: 4px;
             padding: 3px 9px; border-radius: 6px;
             font-size: 11px; font-weight: 700;
             animation: svCounter .3s ease;
-        }',
+        }`,
 
         '/* ── Severity dots ── */',
-        '.sv-dot {
+        `.sv-dot {
             width: 6px; height: 6px; border-radius: 50%;
             display: inline-block; flex-shrink: 0;
-        }',
+        }`,
         '.sv-dot.critical { background: #ef4444; box-shadow: 0 0 6px #ef4444; animation: svPulse 1.5s ease infinite; }',
         '.sv-dot.high     { background: #f59e0b; }',
         '.sv-dot.ok       { background: #10b981; }',
@@ -245,15 +245,15 @@ function ensureSvStyles() {
         `.sv-progress-track {
             width: 100%; height: 6px; background: ${THEME.grid}; border-radius: 3px; overflow: visible; position: relative;
         }`,
-        '.sv-progress-fill {
+        `.sv-progress-fill {
             height: 100%; border-radius: 3px; animation: svSlide .6s ease both; position: relative;
-        }',
-        '.sv-progress-fill::after {
-            content: \\'\\';
+        }`,
+        `.sv-progress-fill::after {
+            content: '';
             position: absolute; right: -1px; top: -2px;
             width: 10px; height: 10px; border-radius: 50%;
             background: inherit; box-shadow: 0 0 8px currentColor;
-        }',
+        }`,
 
         '/* ── Code block ── */',
         `.sv-code {
@@ -281,32 +281,32 @@ function ensureSvStyles() {
         '.diff-changed { background: rgba(245,158,11,.12); color: #fbbf24; padding: 2px 7px; border-radius: 4px; font-weight: 700; }',
 
         '/* ── Action buttons ── */',
-        '.sv-btn-primary {
+        `.sv-btn-primary {
             background: rgba(99,102,241,.85); color: white; border: none;
             padding: 9px 18px; border-radius: 9px; font-weight: 700; font-size: 13px;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 7px;
             font-family: ${THEME.fontBody};
-        }',
+        }`,
         '.sv-btn-primary:hover { background: rgba(99,102,241,1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,.35); }',
 
-        '.sv-btn-secondary {
+        `.sv-btn-secondary {
             background: transparent; color: ${THEME.textMuted};
             border: 1px solid ${THEME.glassBorder};
             padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 12px;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 6px;
             font-family: ${THEME.fontBody};
-        }',
+        }`,
         '.sv-btn-secondary:hover { border-color: rgba(99,102,241,.45); color: #a5b4fc; background: rgba(99,102,241,.08); }',
 
         '/* ── Modal ── */',
-        '.sv-modal-overlay {
+        `.sv-modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
             z-index: 999; display: flex; align-items: center; justify-content: center;
             animation: svFadeIn .2s ease;
-        }',
+        }`,
         `.sv-modal-content {
             background: linear-gradient(135deg, rgba(20,20,35,.98), rgba(12,12,25,.98));
             border: 1px solid ${THEME.grid};
@@ -330,11 +330,11 @@ function ensureSvStyles() {
         '.sv-expandable.expanded { max-height: 2000px; }',
 
         '/* ── Fav button ── */',
-        '.sv-fav-btn {
+        `.sv-fav-btn {
             background: transparent; border: none; cursor: pointer;
             padding: 4px; border-radius: 6px; transition: all .2s;
             display: inline-flex; align-items: center;
-        }',
+        }`,
         '.sv-fav-btn:hover { transform: scale(1.2); }',
 
         '::-webkit-scrollbar { width: 4px; height: 4px; }',
