@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
+import { THEME as _AT, useAdaptiveTheme } from '../../utils/theme.jsx';
 import {
     ResponsiveContainer, LineChart, Line, RadialBarChart, RadialBar,
     PolarAngleAxis, AreaChart, Area, BarChart, Bar, Cell, Tooltip,
@@ -290,7 +291,7 @@ export function usePrevious(value) {
 //  DECORATIVE PRIMITIVES — Enhanced
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const CornerBrackets = ({ color = THEME.plasma, size = 14, thickness = 1.5, animated = false, glowing = false }) => {
+export const CornerBrackets = ({ color = _AT.primary, size = 14, thickness = 1.5, animated = false, glowing = false }) => {
     const s = { position: 'absolute', width: size, height: size, pointerEvents: 'none' };
     const line = { background: color, boxShadow: glowing ? `0 0 8px ${color}, 0 0 16px ${color}60` : `0 0 4px ${color}80` };
     const anim = animated ? { animation: 'plasmaGlow 2s ease-in-out infinite' } : {};
@@ -325,7 +326,7 @@ export const ScanlineOverlay = ({ opacity = 0.025 }) => (
     </div>
 );
 
-export const HexPattern = ({ color = THEME.plasma, opacity = 0.03, scale = 1 }) => (
+export const HexPattern = ({ color = _AT.primary, opacity = 0.03, scale = 1 }) => (
     <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden',
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${56*scale}' height='${100*scale}'%3E%3Cpath d='M${28*scale} ${66*scale}L0 ${50*scale}V${17*scale}L${28*scale} 0l${28*scale} ${17*scale}v${33*scale}z' fill='none' stroke='${encodeURIComponent(color)}' stroke-opacity='${opacity}' stroke-width='1'/%3E%3Cpath d='M${28*scale} ${100*scale}L0 ${84*scale}V${51*scale}l${28*scale}-${17*scale} ${28*scale} ${17*scale}v${33*scale}z' fill='none' stroke='${encodeURIComponent(color)}' stroke-opacity='${opacity}' stroke-width='1'/%3E%3C/svg%3E")`,
@@ -333,7 +334,7 @@ export const HexPattern = ({ color = THEME.plasma, opacity = 0.03, scale = 1 }) 
     }} />
 );
 
-export const GridPattern = ({ color = THEME.plasma, opacity = 0.04, size = 40 }) => (
+export const GridPattern = ({ color = _AT.primary, opacity = 0.04, size = 40 }) => (
     <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
         backgroundImage: `linear-gradient(${color}${Math.round(opacity*255).toString(16).padStart(2,'0')} 1px, transparent 1px), linear-gradient(90deg, ${color}${Math.round(opacity*255).toString(16).padStart(2,'0')} 1px, transparent 1px)`,
@@ -360,7 +361,7 @@ export const NoiseTexture = ({ opacity = 0.025 }) => (
     }} />
 );
 
-export const CircuitLines = ({ color = THEME.plasma, opacity = 0.06 }) => (
+export const CircuitLines = ({ color = _AT.primary, opacity = 0.06 }) => (
     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }} xmlns="http://www.w3.org/2000/svg">
         <defs>
             <filter id="circuit-glow">
@@ -387,12 +388,12 @@ export const CircuitLines = ({ color = THEME.plasma, opacity = 0.06 }) => (
 // ═══════════════════════════════════════════════════════════════════════════
 //  CHIP BADGE & TREND CHIP
 // ═══════════════════════════════════════════════════════════════════════════
-export const ChipBadge = ({ label, color = THEME.plasma, micro = false, animated = false, dot = false }) => (
+export const ChipBadge = ({ label, color = _AT.primary, micro = false, animated = false, dot = false }) => (
     <span style={{
         fontSize: micro ? 8 : 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: micro ? '0.5px' : '1.2px',
         padding: micro ? '1px 6px' : '2px 9px', borderRadius: 2,
         background: `${color}12`, color, border: `1px solid ${color}28`,
-        fontFamily: THEME.fontDisplay, whiteSpace: 'nowrap',
+        fontFamily: _AT.fontDisplay, whiteSpace: 'nowrap',
         display: 'inline-flex', alignItems: 'center', gap: 4,
         animation: animated ? 'plasmaGlow 2s ease-in-out infinite' : 'none',
         boxShadow: animated ? `0 0 8px ${color}30` : 'none',
@@ -403,18 +404,18 @@ export const ChipBadge = ({ label, color = THEME.plasma, micro = false, animated
 );
 
 export const TrendChip = ({ value, label, size = 'default' }) => {
-    const color = value > 0 ? THEME.aurora : value < 0 ? THEME.danger : THEME.textMuted;
+    const color = value > 0 ? _AT.success : value < 0 ? _AT.danger : _AT.textMuted;
     const sm = size === 'small';
     return (
         <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 2,
-            fontSize: sm ? 9 : 10, fontWeight: 700, color, fontFamily: THEME.fontMono,
+            fontSize: sm ? 9 : 10, fontWeight: 700, color, fontFamily: _AT.fontMono,
             background: `${color}10`, padding: sm ? '1px 5px' : '2px 7px', borderRadius: 2,
             border: `1px solid ${color}20`
         }}>
       {value > 0 ? <ArrowUpRight size={sm ? 9 : 11} /> : value < 0 ? <ArrowDownRight size={sm ? 9 : 11} /> : null}
             {value !== 0 && `${value > 0 ? '+' : ''}${value}%`}
-            {label && <span style={{ color: THEME.textDim, fontWeight: 400 }}> {label}</span>}
+            {label && <span style={{ color: _AT.textDim, fontWeight: 400 }}> {label}</span>}
     </span>
     );
 };
@@ -428,13 +429,14 @@ export const GlassCard = ({
                               showHex = false, showGrid = false, corners = true, tag, glitch = false,
                               draggable = false, onClose, maximizable = false
                           }) => {
+    useAdaptiveTheme();
     injectKeyframes();
     const [collapsed, setCollapsed] = useState(false);
     const [maximized, setMaximized] = useState(false);
     const [hovered, hoverProps] = useHover();
     const [isDragging, setIsDragging] = useState(false);
     const [glitching, setGlitching] = useState(false);
-    const accent = accentColor || THEME.plasma;
+    const accent = accentColor || _AT.primary;
 
     useEffect(() => {
         if (!glitch) return;
@@ -448,10 +450,10 @@ export const GlassCard = ({
     }, [glitch]);
 
     const variants = {
-        default:  { bg: THEME.glass, border: THEME.border },
-        elevated: { bg: 'rgba(8, 18, 44, 0.94)', border: THEME.borderHot },
-        ghost:    { bg: 'rgba(4, 9, 28, 0.35)', border: 'rgba(0,245,255,0.04)' },
-        solid:    { bg: THEME.elevated, border: THEME.border },
+        default:  { bg: _AT.glass,         border: _AT.glassBorder },
+        elevated: { bg: _AT.surfaceRaised,  border: _AT.glassBorderHover },
+        ghost:    { bg: _AT.glass,          border: _AT.glassBorder },
+        solid:    { bg: _AT.surface,        border: _AT.glassBorder },
         aurora:   { bg: 'rgba(0, 255, 136, 0.04)', border: 'rgba(0,255,136,0.12)' },
         danger:   { bg: 'rgba(255, 45, 120, 0.05)', border: 'rgba(255,45,120,0.15)' },
         neon:     { bg: 'rgba(123, 47, 255, 0.06)', border: 'rgba(123,47,255,0.18)' },
@@ -461,10 +463,10 @@ export const GlassCard = ({
     return (
         <div {...hoverProps} style={{
             background: v.bg, backdropFilter: 'blur(24px) saturate(200%)',
-            borderRadius: 4, border: `1px solid ${hovered ? THEME.borderHot : v.border}`,
+            borderRadius: 4, border: `1px solid ${hovered ? _AT.glassBorderHover : v.border}`,
             boxShadow: hovered
-                ? `0 0 0 1px ${accent}18, 0 24px 64px rgba(0,0,0,0.7), 0 0 40px ${accent}10`
-                : `0 8px 48px rgba(0,0,0,0.55), 0 1px 0 rgba(0,245,255,0.07) inset`,
+                ? `0 0 0 1px ${accent}18, 0 24px 64px ${_AT.shadowLg}, 0 0 40px ${accent}10`
+                : _AT.shadowMd,
             display: 'flex', flexDirection: 'column',
             position: maximized ? 'fixed' : 'relative',
             inset: maximized ? 0 : undefined,
@@ -484,7 +486,7 @@ export const GlassCard = ({
             {/* Animated top accent bar */}
             <div style={{
                 height: 2, width: '100%',
-                background: `linear-gradient(90deg, transparent 0%, ${accent} 35%, ${THEME.secondary} 65%, ${THEME.pulse} 85%, transparent 100%)`,
+                background: `linear-gradient(90deg, transparent 0%, ${accent} 35%, ${_AT.secondary} 65%, ${_AT.danger} 85%, transparent 100%)`,
                 backgroundSize: '200% 100%',
                 animation: hovered ? 'borderFlow 2s linear infinite' : 'none',
                 opacity: hovered ? 1 : 0.45, transition: 'opacity 0.3s'
@@ -494,15 +496,15 @@ export const GlassCard = ({
             {(title || rightNode || onClose || maximizable) && (
                 <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '13px 18px', borderBottom: `1px solid ${THEME.border}`,
+                    padding: '13px 18px', borderBottom: `1px solid ${_AT.glassBorder}`,
                     position: 'relative', zIndex: 2,
                     cursor: draggable ? 'grab' : 'default',
-                    background: 'rgba(0,0,0,0.15)'
+                    background: _AT.surfaceHover
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         {collapsible && (
                             <button onClick={() => setCollapsed(!collapsed)} style={{
-                                background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 0,
+                                background: 'none', border: 'none', color: _AT.textMuted, cursor: 'pointer', padding: 0,
                                 display: 'flex', transition: 'transform 0.25s, color 0.2s',
                                 transform: collapsed ? 'rotate(-90deg)' : 'rotate(0)',
                             }}><ChevronDown size={13} /></button>
@@ -510,19 +512,19 @@ export const GlassCard = ({
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <h3 style={{
-                                    fontSize: 10, fontWeight: 700, color: hovered ? THEME.textSub : THEME.textMuted,
-                                    fontFamily: THEME.fontDisplay, textTransform: 'uppercase',
+                                    fontSize: 10, fontWeight: 700, color: hovered ? _AT.textMain : _AT.textMuted,
+                                    fontFamily: _AT.fontDisplay, textTransform: 'uppercase',
                                     letterSpacing: '2.5px', margin: 0, transition: 'color 0.3s'
                                 }}>{title}</h3>
                                 {tag && <ChipBadge label={tag} color={accent} micro />}
                             </div>
-                            {subtitle && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono }}>{subtitle}</div>}
+                            {subtitle && <div style={{ fontSize: 10, color: _AT.textDim, marginTop: 2, fontFamily: _AT.fontMono }}>{subtitle}</div>}
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {onRefresh && <NanoButton onClick={onRefresh} icon={RefreshCw} spinning={refreshing} color={THEME.textMuted} tooltip="Refresh" />}
-                        {maximizable && <NanoButton onClick={() => setMaximized(!maximized)} icon={maximized ? Minimize2 : Maximize2} color={THEME.textMuted} tooltip={maximized ? 'Minimize' : 'Maximize'} />}
-                        {onClose && <NanoButton onClick={onClose} icon={X} color={THEME.textMuted} tooltip="Close" />}
+                        {onRefresh && <NanoButton onClick={onRefresh} icon={RefreshCw} spinning={refreshing} color={_AT.textMuted} tooltip="Refresh" />}
+                        {maximizable && <NanoButton onClick={() => setMaximized(!maximized)} icon={maximized ? Minimize2 : Maximize2} color={_AT.textMuted} tooltip={maximized ? 'Minimize' : 'Maximize'} />}
+                        {onClose && <NanoButton onClick={onClose} icon={X} color={_AT.textMuted} tooltip="Close" />}
                         {rightNode}
                     </div>
                 </div>
@@ -545,10 +547,11 @@ export const GlassCard = ({
 //  2. METRIC CARD v3 — with particle effect
 // ═══════════════════════════════════════════════════════════════════════════
 export const MetricCard = ({
-                               icon: Icon, title, value, unit, subtitle, color = THEME.plasma,
+                               icon: Icon, title, value, unit, subtitle, color = _AT.primary,
                                onClick, active, sparkData, trend, cacheBadge, badge, size = 'default',
                                delta, loading, comparison, target, pulseOnChange = true
                            }) => {
+    useAdaptiveTheme();
     injectKeyframes();
     const [hovered, hoverProps] = useHover();
     const [pulsing, setPulsing] = useState(false);
@@ -568,8 +571,8 @@ export const MetricCard = ({
         <div {...hoverProps} onClick={onClick} style={{
             background: active
                 ? `linear-gradient(145deg, ${color}20 0%, ${color}08 100%)`
-                : `linear-gradient(145deg, rgba(7,15,36,0.75) 0%, rgba(2,6,20,0.95) 100%)`,
-            borderRadius: 4, border: `1px solid ${active || hovered ? color + '55' : THEME.border}`,
+                : _AT.surface,
+            borderRadius: 4, border: `1px solid ${active || hovered ? color + '55' : _AT.glassBorder}`,
             padding: isCompact ? 14 : 20, position: 'relative', overflow: 'hidden',
             display: 'flex', flexDirection: 'column', gap: isCompact ? 8 : 12,
             cursor: onClick ? 'pointer' : 'default',
@@ -615,7 +618,7 @@ export const MetricCard = ({
                     <Icon size={isCompact ? 17 : 21} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                    {cacheBadge && <ChipBadge label={cacheBadge} color={cacheBadge === 'HIT' ? THEME.aurora : THEME.solar} micro dot />}
+                    {cacheBadge && <ChipBadge label={cacheBadge} color={cacheBadge === 'HIT' ? _AT.success : _AT.warning} micro dot />}
                     {badge && <ChipBadge label={badge} color={color} micro />}
                     {active && <ChipBadge label="ACTIVE" color={color} animated />}
                 </div>
@@ -641,24 +644,24 @@ export const MetricCard = ({
 
             <div>
                 <div style={{
-                    fontSize: 9, color: THEME.textMuted, fontWeight: 700, fontFamily: THEME.fontDisplay,
+                    fontSize: 9, color: _AT.textMuted, fontWeight: 700, fontFamily: _AT.fontDisplay,
                     textTransform: 'uppercase', letterSpacing: '1.8px', marginBottom: 5
                 }}>{title}</div>
 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                     {loading ? (
-                        <div style={{ width: 80, height: 28, borderRadius: 3, background: THEME.grid, animation: 'shimmer 1.5s infinite', backgroundSize: '400%' }} />
+                        <div style={{ width: 80, height: 28, borderRadius: 3, background: _AT.grid, animation: 'shimmer 1.5s infinite', backgroundSize: '400%' }} />
                     ) : (
                         <>
               <span style={{
                   fontSize: isCompact ? 24 : 30, fontWeight: 800,
-                  color: THEME.textMain, fontFamily: THEME.fontMono,
+                  color: _AT.textMain, fontFamily: _AT.fontMono,
                   letterSpacing: '-1.5px', lineHeight: 1,
                   animation: 'countUp 0.6s ease backwards',
                   textShadow: active ? `0 0 24px ${color}70` : 'none',
                   transition: 'text-shadow 0.3s'
               }}>{value}</span>
-                            {unit && <span style={{ fontSize: 12, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{unit}</span>}
+                            {unit && <span style={{ fontSize: 12, color: _AT.textMuted, fontFamily: _AT.fontMono }}>{unit}</span>}
                         </>
                     )}
                     {trend !== undefined && trend !== null && (
@@ -673,11 +676,11 @@ export const MetricCard = ({
                 )}
 
                 {comparison && (
-                    <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 5, fontFamily: THEME.fontMono }}>
+                    <div style={{ fontSize: 10, color: _AT.textDim, marginTop: 5, fontFamily: _AT.fontMono }}>
                         {comparison}
                     </div>
                 )}
-                {subtitle && <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 4 }}>{subtitle}</div>}
+                {subtitle && <div style={{ fontSize: 11, color: _AT.textMuted, marginTop: 4 }}>{subtitle}</div>}
             </div>
         </div>
     );
@@ -687,11 +690,12 @@ export const MetricCard = ({
 //  3. RESOURCE GAUGE — Arc reactor v2
 // ═══════════════════════════════════════════════════════════════════════════
 export const ResourceGauge = ({ label, value, color, thresholds, size = 160, subtitle, showHistory = false, historyData }) => {
+    useAdaptiveTheme();
     injectKeyframes();
     const numValue = Number(value) || 0;
     const resolvedColor = thresholds
-        ? numValue >= (thresholds.critical || 90) ? THEME.danger
-            : numValue >= (thresholds.warning || 70) ? THEME.warning : color
+        ? numValue >= (thresholds.critical || 90) ? _AT.danger
+            : numValue >= (thresholds.warning || 70) ? _AT.warning : color
         : color;
 
     const data = [{ value: numValue, fill: resolvedColor }];
@@ -714,7 +718,7 @@ export const ResourceGauge = ({ label, value, color, thresholds, size = 160, sub
                 <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart innerRadius="60%" outerRadius="88%" barSize={10} data={data} startAngle={210} endAngle={-30}>
                         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                        <RadialBar background={{ fill: THEME.grid }} clockWise dataKey="value" cornerRadius={5}>
+                        <RadialBar background={{ fill: _AT.grid }} clockWise dataKey="value" cornerRadius={5}>
                             {data.map((_, i) => <Cell key={i} fill={resolvedColor} />)}
                         </RadialBar>
                     </RadialBarChart>
@@ -723,12 +727,12 @@ export const ResourceGauge = ({ label, value, color, thresholds, size = 160, sub
                 <div style={{ position: 'absolute', textAlign: 'center' }}>
                     <div style={{
                         fontSize: numValue >= 100 ? 18 : 24, fontWeight: 800, color: resolvedColor,
-                        fontFamily: THEME.fontMono, lineHeight: 1,
+                        fontFamily: _AT.fontMono, lineHeight: 1,
                         textShadow: `0 0 20px ${resolvedColor}90`,
                         animation: 'countUp 0.8s ease backwards'
                     }}>{numValue}<span style={{ fontSize: 12 }}>%</span></div>
-                    <div style={{ fontSize: 9, color: THEME.textMuted, textTransform: 'uppercase', marginTop: 3, fontFamily: THEME.fontDisplay, letterSpacing: '1px' }}>{label}</div>
-                    {subtitle && <div style={{ fontSize: 8, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono }}>{subtitle}</div>}
+                    <div style={{ fontSize: 9, color: _AT.textMuted, textTransform: 'uppercase', marginTop: 3, fontFamily: _AT.fontDisplay, letterSpacing: '1px' }}>{label}</div>
+                    {subtitle && <div style={{ fontSize: 8, color: _AT.textDim, marginTop: 2, fontFamily: _AT.fontMono }}>{subtitle}</div>}
                 </div>
             </div>
 
@@ -749,27 +753,27 @@ export const ResourceGauge = ({ label, value, color, thresholds, size = 160, sub
 //  4. NEON PROGRESS BAR — v2
 // ═══════════════════════════════════════════════════════════════════════════
 export const NeonProgressBar = ({
-                                    value, max, color = THEME.plasma, label, showPercent = false, height = 6,
+                                    value, max, color = _AT.primary, label, showPercent = false, height = 6,
                                     thresholds, animate = true, showMilestones = false, milestones = []
                                 }) => {
     const percent = Math.min((value / (max || 1)) * 100, 100);
     const resolvedColor = thresholds
-        ? percent >= (thresholds.critical || 90) ? THEME.danger
-            : percent >= (thresholds.warning || 70) ? THEME.warning : color
+        ? percent >= (thresholds.critical || 90) ? _AT.danger
+            : percent >= (thresholds.warning || 70) ? _AT.warning : color
         : color;
 
     return (
         <div>
             {(label || showPercent) && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>
                     {label && <span style={{ letterSpacing: '0.5px' }}>{label}</span>}
                     {showPercent && <span style={{ color: resolvedColor, fontWeight: 700 }}>{percent.toFixed(1)}%</span>}
                 </div>
             )}
             <div style={{
-                width: '100%', height, background: THEME.grid,
+                width: '100%', height, background: _AT.grid,
                 borderRadius: 3, overflow: 'visible', position: 'relative',
-                border: `1px solid ${THEME.grid}`, boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.3)'
+                border: `1px solid ${_AT.grid}`, boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08)'
             }}>
                 {/* Track glow */}
                 <div style={{
@@ -800,7 +804,7 @@ export const NeonProgressBar = ({
                 {showMilestones && milestones.map((m, i) => (
                     <div key={i} style={{
                         position: 'absolute', left: `${m}%`, top: -4, bottom: -4, width: 1,
-                        background: THEME.textDim, opacity: 0.4
+                        background: _AT.textDim, opacity: 0.4
                     }} />
                 ))}
             </div>
@@ -813,8 +817,8 @@ export const NeonProgressBar = ({
 // ═══════════════════════════════════════════════════════════════════════════
 export const LiveStatusBadge = ({ connected = true, label, count, showLatency, latency, quality, uptime }) => {
     injectKeyframes();
-    const color = connected ? THEME.aurora : THEME.danger;
-    const qualityColors = { excellent: THEME.aurora, good: THEME.plasma, fair: THEME.solar, poor: THEME.danger };
+    const color = connected ? _AT.success : _AT.danger;
+    const qualityColors = { excellent: _AT.success, good: _AT.primary, fair: _AT.warning, poor: _AT.danger };
     const qColor = quality ? qualityColors[quality] || color : color;
 
     return (
@@ -834,20 +838,20 @@ export const LiveStatusBadge = ({ connected = true, label, count, showLatency, l
                     }} />
                 )}
             </div>
-            <span style={{ color: qColor, fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', fontFamily: THEME.fontDisplay }}>
+            <span style={{ color: qColor, fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', fontFamily: _AT.fontDisplay }}>
         {label || (connected ? 'LIVE' : 'OFFLINE')}
       </span>
             {count !== undefined && (
-                <span style={{ fontSize: 10, background: `${qColor}14`, color: qColor, padding: '1px 7px', borderRadius: 2, fontFamily: THEME.fontMono, fontWeight: 700, border: `1px solid ${qColor}20` }}>
+                <span style={{ fontSize: 10, background: `${qColor}14`, color: qColor, padding: '1px 7px', borderRadius: 2, fontFamily: _AT.fontMono, fontWeight: 700, border: `1px solid ${qColor}20` }}>
           {count}
         </span>
             )}
             {showLatency && latency !== undefined && (
-                <span style={{ fontSize: 9, color: latency > 100 ? THEME.warning : THEME.textMuted, fontFamily: THEME.fontMono }}>
+                <span style={{ fontSize: 9, color: latency > 100 ? _AT.warning : _AT.textMuted, fontFamily: _AT.fontMono }}>
           {latency}ms
         </span>
             )}
-            {uptime && <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>{uptime}</span>}
+            {uptime && <span style={{ fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono }}>{uptime}</span>}
         </div>
     );
 };
@@ -859,21 +863,21 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{
-            backgroundColor: 'rgba(1, 5, 16, 0.98)', border: `1px solid ${THEME.borderHot}`,
+            backgroundColor: 'rgba(1, 5, 16, 0.98)', border: `1px solid ${_AT.glassBorderHot}`,
             borderRadius: 4, padding: '12px 16px',
-            boxShadow: `0 4px 32px rgba(0,0,0,0.9), 0 0 24px ${THEME.plasma}12`,
+            boxShadow: `0 4px 32px rgba(0,0,0,0.9), 0 0 24px ${_AT.primary}12`,
             backdropFilter: 'blur(24px)', maxWidth: 260, position: 'relative', overflow: 'hidden'
         }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${THEME.plasma}, transparent)` }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${THEME.neon}50, transparent)` }} />
-            {label && <p style={{ color: THEME.textMuted, fontSize: 9, marginBottom: 10, fontFamily: THEME.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase' }}>{label}</p>}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${_AT.primary}, transparent)` }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${_AT.ai}50, transparent)` }} />
+            {label && <p style={{ color: _AT.textMuted, fontSize: 9, marginBottom: 10, fontFamily: _AT.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase' }}>{label}</p>}
             {payload.map((entry, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < payload.length - 1 ? 5 : 0 }}>
                     <div style={{ width: 3, height: 16, borderRadius: 2, backgroundColor: entry.color, boxShadow: `0 0 8px ${entry.color}` }} />
-                    <span style={{ fontSize: 10, color: THEME.textSub, fontFamily: THEME.fontMono }}>{entry.name}:</span>
-                    <span style={{ fontSize: 13, color: THEME.textMain, fontWeight: 800, fontFamily: THEME.fontMono, marginLeft: 'auto' }}>
+                    <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>{entry.name}:</span>
+                    <span style={{ fontSize: 13, color: _AT.textMain, fontWeight: 800, fontFamily: _AT.fontMono, marginLeft: 'auto' }}>
             {formatter ? formatter(entry.value, entry.name) : (typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value)}
-                        {unit && <span style={{ fontSize: 10, color: THEME.textMuted }}> {unit}</span>}
+                        {unit && <span style={{ fontSize: 10, color: _AT.textMuted }}> {unit}</span>}
           </span>
                 </div>
             ))}
@@ -885,10 +889,10 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
 //  7. ALERT SYSTEM — v2 with toast queue
 // ═══════════════════════════════════════════════════════════════════════════
 const SEVERITY_CONFIG = {
-    critical: { color: THEME.danger,   icon: XCircle,       bg: 'rgba(255,45,120,0.07)',   label: 'CRITICAL' },
-    warning:  { color: THEME.warning,  icon: AlertTriangle,  bg: 'rgba(255,170,0,0.07)',    label: 'WARNING'  },
-    info:     { color: THEME.info,     icon: Info,           bg: 'rgba(77,159,255,0.07)',   label: 'INFO'     },
-    success:  { color: THEME.aurora,   icon: CheckCircle,    bg: 'rgba(0,255,136,0.07)',    label: 'SUCCESS'  },
+    critical: { color: _AT.danger,   icon: XCircle,       bg: 'rgba(255,45,120,0.07)',   label: 'CRITICAL' },
+    warning:  { color: _AT.warning,  icon: AlertTriangle,  bg: 'rgba(255,170,0,0.07)',    label: 'WARNING'  },
+    info:     { color: _AT.info,     icon: Info,           bg: 'rgba(77,159,255,0.07)',   label: 'INFO'     },
+    success:  { color: _AT.success,   icon: CheckCircle,    bg: 'rgba(0,255,136,0.07)',    label: 'SUCCESS'  },
 };
 
 export const SeverityBadge = ({ severity }) => {
@@ -898,7 +902,7 @@ export const SeverityBadge = ({ severity }) => {
             fontSize: 8, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px',
             padding: '2px 9px', borderRadius: 2,
             background: `${config.color}15`, color: config.color,
-            border: `1px solid ${config.color}30`, fontFamily: THEME.fontDisplay
+            border: `1px solid ${config.color}30`, fontFamily: _AT.fontDisplay
         }}>{severity}</span>
     );
 };
@@ -922,12 +926,12 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                 animation: 'alertSlide 0.3s ease backwards'
             }}>
                 <Icon size={13} color={config.color} />
-                <span style={{ color: THEME.textSub, flex: 1, fontSize: 12, fontFamily: THEME.fontBody }}>{alert.message}</span>
-                <span style={{ fontSize: 9, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{new Date(alert.ts).toLocaleTimeString()}</span>
+                <span style={{ color: _AT.textMuted, flex: 1, fontSize: 12, fontFamily: _AT.fontBody }}>{alert.message}</span>
+                <span style={{ fontSize: 9, color: _AT.textMuted, fontFamily: _AT.fontMono }}>{new Date(alert.ts).toLocaleTimeString()}</span>
                 {onAcknowledge && !acknowledged && (
-                    <button onClick={handleAck} style={{ background: `${config.color}12`, border: `1px solid ${config.color}30`, color: config.color, padding: '2px 10px', borderRadius: 3, cursor: 'pointer', fontSize: 9, fontWeight: 700, fontFamily: THEME.fontDisplay, letterSpacing: '1px' }}>ACK</button>
+                    <button onClick={handleAck} style={{ background: `${config.color}12`, border: `1px solid ${config.color}30`, color: config.color, padding: '2px 10px', borderRadius: 3, cursor: 'pointer', fontSize: 9, fontWeight: 700, fontFamily: _AT.fontDisplay, letterSpacing: '1px' }}>ACK</button>
                 )}
-                {acknowledged && <CheckCircle size={12} color={THEME.aurora} />}
+                {acknowledged && <CheckCircle size={12} color={_AT.success} />}
             </div>
         );
     }
@@ -946,12 +950,12 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
             <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <SeverityBadge severity={alert.severity} />
-                    {alert.category && <span style={{ fontSize: 9, color: THEME.textMuted, fontFamily: THEME.fontMono, textTransform: 'uppercase', letterSpacing: '1px' }}>{alert.category}</span>}
-                    <span style={{ fontSize: 9, color: THEME.textDim, marginLeft: 'auto', fontFamily: THEME.fontMono }}>{new Date(alert.ts).toLocaleTimeString()}</span>
+                    {alert.category && <span style={{ fontSize: 9, color: _AT.textMuted, fontFamily: _AT.fontMono, textTransform: 'uppercase', letterSpacing: '1px' }}>{alert.category}</span>}
+                    <span style={{ fontSize: 9, color: _AT.textDim, marginLeft: 'auto', fontFamily: _AT.fontMono }}>{new Date(alert.ts).toLocaleTimeString()}</span>
                 </div>
-                <p style={{ fontSize: 13, color: THEME.textMain, margin: 0, lineHeight: 1.6, fontFamily: THEME.fontBody }}>{alert.message}</p>
+                <p style={{ fontSize: 13, color: _AT.textMain, margin: 0, lineHeight: 1.6, fontFamily: _AT.fontBody }}>{alert.message}</p>
                 {alert.data && Object.keys(alert.data).length > 0 && (
-                    <div style={{ marginTop: 8, fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                    <div style={{ marginTop: 8, fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
                         {Object.entries(alert.data).map(([k, v]) => (
                             <span key={k}>{k}: <span style={{ color: config.color, fontWeight: 700 }}>{String(v)}</span></span>
                         ))}
@@ -960,9 +964,9 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
             </div>
             <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
                 {onAcknowledge && !acknowledged && (
-                    <button onClick={handleAck} style={{ background: `${config.color}12`, border: `1px solid ${config.color}30`, color: config.color, padding: '6px 14px', borderRadius: 3, cursor: 'pointer', fontSize: 9, fontWeight: 700, fontFamily: THEME.fontDisplay, letterSpacing: '1px' }}>ACK</button>
+                    <button onClick={handleAck} style={{ background: `${config.color}12`, border: `1px solid ${config.color}30`, color: config.color, padding: '6px 14px', borderRadius: 3, cursor: 'pointer', fontSize: 9, fontWeight: 700, fontFamily: _AT.fontDisplay, letterSpacing: '1px' }}>ACK</button>
                 )}
-                {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: `1px solid ${THEME.border}`, color: THEME.textMuted, cursor: 'pointer', padding: '6px 8px', borderRadius: 3, display: 'flex', alignItems: 'center' }}><X size={12} /></button>}
+                {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: `1px solid ${_AT.glassBorder}`, color: _AT.textMuted, cursor: 'pointer', padding: '6px 8px', borderRadius: 3, display: 'flex', alignItems: 'center' }}><X size={12} /></button>}
             </div>
         </div>
     );
@@ -992,10 +996,10 @@ export const AlertToast = ({ alerts, onDismiss }) => {
                         <div style={{ marginLeft: 6 }}><Icon size={14} color={config.color} /></div>
                         <div style={{ flex: 1 }}>
                             <SeverityBadge severity={alert.severity} />
-                            <p style={{ fontSize: 11, color: THEME.textSub, margin: '4px 0 0', fontFamily: THEME.fontBody, lineHeight: 1.5 }}>{alert.message}</p>
+                            <p style={{ fontSize: 11, color: _AT.textMuted, margin: '4px 0 0', fontFamily: _AT.fontBody, lineHeight: 1.5 }}>{alert.message}</p>
                         </div>
                         {onDismiss && (
-                            <button onClick={() => onDismiss(alert.id)} style={{ background: 'none', border: 'none', color: THEME.textDim, cursor: 'pointer', padding: 2 }}>
+                            <button onClick={() => onDismiss(alert.id)} style={{ background: 'none', border: 'none', color: _AT.textDim, cursor: 'pointer', padding: 2 }}>
                                 <X size={12} />
                             </button>
                         )}
@@ -1010,7 +1014,7 @@ export const AlertToast = ({ alerts, onDismiss }) => {
 //  8. NANO BUTTON — v2 with variants
 // ═══════════════════════════════════════════════════════════════════════════
 export const NanoButton = ({
-                               icon: Icon, onClick, tooltip, color = THEME.textMuted, active, spinning,
+                               icon: Icon, onClick, tooltip, color = _AT.textMuted, active, spinning,
                                label, outlined, variant = 'default', disabled, size = 'default'
                            }) => {
     const [hovered, hoverProps] = useHover();
@@ -1021,23 +1025,23 @@ export const NanoButton = ({
     const variants_styles = {
         default: {
             bg: active || hovered ? 'rgba(0,245,255,0.08)' : 'rgba(255,255,255,0.02)',
-            border: active || hovered ? THEME.borderHot : THEME.border,
-            color: active || hovered ? THEME.plasma : color,
+            border: active || hovered ? _AT.glassBorderHot : _AT.glassBorder,
+            color: active || hovered ? _AT.primary : color,
         },
         danger: {
             bg: hovered ? 'rgba(255,45,120,0.12)' : 'rgba(255,45,120,0.04)',
             border: hovered ? 'rgba(255,45,120,0.4)' : 'rgba(255,45,120,0.2)',
-            color: THEME.danger,
+            color: _AT.danger,
         },
         success: {
             bg: hovered ? 'rgba(0,255,136,0.12)' : 'rgba(0,255,136,0.04)',
             border: hovered ? 'rgba(0,255,136,0.4)' : 'rgba(0,255,136,0.2)',
-            color: THEME.aurora,
+            color: _AT.success,
         },
         ghost: {
             bg: hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
             border: 'transparent',
-            color: hovered ? THEME.textMain : THEME.textMuted,
+            color: hovered ? _AT.textMain : _AT.textMuted,
         },
     };
     const vs = variants_styles[variant] || variants_styles.default;
@@ -1050,15 +1054,15 @@ export const NanoButton = ({
             title={tooltip}
             style={{
                 background: disabled ? 'rgba(255,255,255,0.02)' : vs.bg,
-                border: `1px solid ${disabled ? THEME.border : vs.border}`,
-                color: disabled ? THEME.textDim : vs.color,
+                border: `1px solid ${disabled ? _AT.glassBorder : vs.border}`,
+                color: disabled ? _AT.textDim : vs.color,
                 borderRadius: 3,
                 padding: sm ? '3px 6px' : lg ? '8px 16px' : (label ? '5px 12px' : '5px 8px'),
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 display: 'inline-flex', alignItems: 'center', gap: sm ? 4 : 5,
                 transition: 'all 0.15s',
                 fontSize: sm ? 9 : lg ? 12 : 10,
-                fontFamily: THEME.fontDisplay, fontWeight: 700, letterSpacing: '0.5px',
+                fontFamily: _AT.fontDisplay, fontWeight: 700, letterSpacing: '0.5px',
                 opacity: disabled ? 0.4 : 1,
                 boxShadow: (active || hovered) && !disabled ? `0 0 12px ${vs.color}20` : 'none',
             }}
@@ -1076,9 +1080,10 @@ export const MiniButton = NanoButton;
 export const DataTable = ({
                               columns, data, sortable = true, searchable = false, pageSize = 20,
                               emptyText = 'NO DATA', onRowClick, rowKey = 'id', compact = false,
-                              accentColor = THEME.plasma, selectable = false, onSelectionChange,
+                              accentColor = _AT.primary, selectable = false, onSelectionChange,
                               rowActions, stickyHeader = false, striped = false
                           }) => {
+    useAdaptiveTheme();
     const [sort, setSort] = useState({ key: null, dir: 'asc' });
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
@@ -1126,26 +1131,26 @@ export const DataTable = ({
     return (
         <div>
             {searchable && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, background: 'rgba(0,245,255,0.02)', borderRadius: 3, padding: '7px 12px', border: `1px solid ${THEME.border}` }}>
-                    <Search size={11} color={THEME.textMuted} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, background: _AT.surfaceHover, borderRadius: 3, padding: '7px 12px', border: `1px solid ${_AT.glassBorder}` }}>
+                    <Search size={11} color={_AT.textMuted} />
                     <input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
-                           placeholder="Search records..." style={{ background: 'none', border: 'none', color: THEME.textMain, fontSize: 11, outline: 'none', flex: 1, fontFamily: THEME.fontMono }}
+                           placeholder="Search records..." style={{ background: 'none', border: 'none', color: _AT.textMain, fontSize: 11, outline: 'none', flex: 1, fontFamily: _AT.fontMono }}
                     />
-                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} /></button>}
-                    <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>{sorted.length} results</span>
+                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: _AT.textMuted, cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} /></button>}
+                    <span style={{ fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono }}>{sorted.length} results</span>
                 </div>
             )}
 
             {selectable && selected.size > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, padding: '6px 12px', background: `${accentColor}08`, borderRadius: 3, border: `1px solid ${accentColor}20` }}>
-                    <span style={{ fontSize: 10, color: accentColor, fontFamily: THEME.fontMono }}>{selected.size} selected</span>
-                    <button onClick={() => setSelected(new Set())} style={{ fontSize: 9, color: THEME.textMuted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: THEME.fontMono }}>Clear</button>
+                    <span style={{ fontSize: 10, color: accentColor, fontFamily: _AT.fontMono }}>{selected.size} selected</span>
+                    <button onClick={() => setSelected(new Set())} style={{ fontSize: 9, color: _AT.textMuted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: _AT.fontMono }}>Clear</button>
                 </div>
             )}
 
             <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead style={{ position: stickyHeader ? 'sticky' : 'static', top: 0, zIndex: 2, background: stickyHeader ? THEME.abyss : 'none' }}>
+                    <thead style={{ position: stickyHeader ? 'sticky' : 'static', top: 0, zIndex: 2, background: stickyHeader ? _AT.surface : 'none' }}>
                     <tr style={{ borderBottom: `1px solid ${accentColor}18` }}>
                         {selectable && (
                             <th style={{ width: 36, padding: compact ? '7px 8px' : '10px 12px', textAlign: 'center' }}>
@@ -1159,10 +1164,10 @@ export const DataTable = ({
                                 style={{
                                     textAlign: col.align || 'left', padding: compact ? '7px 10px' : '10px 14px',
                                     fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px',
-                                    color: sort.key === col.key ? accentColor : THEME.textMuted,
-                                    borderBottom: `1px solid ${THEME.border}`,
+                                    color: sort.key === col.key ? accentColor : _AT.textMuted,
+                                    borderBottom: `1px solid ${_AT.glassBorder}`,
                                     cursor: sortable && col.sortable !== false ? 'pointer' : 'default',
-                                    whiteSpace: 'nowrap', userSelect: 'none', fontFamily: THEME.fontDisplay,
+                                    whiteSpace: 'nowrap', userSelect: 'none', fontFamily: _AT.fontDisplay,
                                     background: sort.key === col.key ? `${accentColor}05` : 'none',
                                     transition: 'color 0.2s'
                                 }}>
@@ -1177,7 +1182,7 @@ export const DataTable = ({
                     </thead>
                     <tbody>
                     {paged.length === 0 ? (
-                        <tr><td colSpan={columns.length + (selectable ? 1 : 0)} style={{ textAlign: 'center', padding: 32, color: THEME.textDim, fontSize: 11, fontFamily: THEME.fontMono }}>{emptyText}</td></tr>
+                        <tr><td colSpan={columns.length + (selectable ? 1 : 0)} style={{ textAlign: 'center', padding: 32, color: _AT.textDim, fontSize: 11, fontFamily: _AT.fontMono }}>{emptyText}</td></tr>
                     ) : paged.map((row, ri) => (
                         <tr key={row[rowKey] ?? ri}
                             onClick={() => onRowClick?.(row)}
@@ -1185,7 +1190,7 @@ export const DataTable = ({
                             onMouseLeave={() => { setHoveredRow(null); setShowActions(null); }}
                             style={{
                                 cursor: onRowClick ? 'pointer' : 'default',
-                                background: selected.has(row[rowKey]) ? `${accentColor}08` : hoveredRow === ri ? 'rgba(0,245,255,0.02)' : striped && ri % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent',
+                                background: selected.has(row[rowKey]) ? `${accentColor}08` : hoveredRow === ri ? `${_AT.primary}08` : striped && ri % 2 === 0 ? _AT.surfaceHover : 'transparent',
                                 transition: 'background 0.1s',
                                 borderLeft: selected.has(row[rowKey]) ? `2px solid ${accentColor}60` : hoveredRow === ri ? `2px solid ${accentColor}30` : '2px solid transparent'
                             }}
@@ -1199,10 +1204,10 @@ export const DataTable = ({
                             {columns.map(col => (
                                 <td key={col.key} style={{
                                     padding: compact ? '7px 10px' : '10px 14px',
-                                    fontSize: compact ? 11 : 12, color: THEME.textSub,
-                                    borderBottom: `1px solid rgba(0,245,255,0.025)`,
+                                    fontSize: compact ? 11 : 12, color: _AT.textMuted,
+                                    borderBottom: `1px solid ${_AT.grid}`,
                                     textAlign: col.align || 'left',
-                                    fontFamily: col.mono ? THEME.fontMono : THEME.fontBody,
+                                    fontFamily: col.mono ? _AT.fontMono : _AT.fontBody,
                                     maxWidth: col.maxWidth || 'none',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                                 }}>
@@ -1225,16 +1230,16 @@ export const DataTable = ({
             </div>
 
             {totalPages > 1 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>
                     <span>{sorted.length} rows · page {page + 1}/{totalPages}</span>
                     <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} style={{ background: 'none', border: `1px solid ${THEME.border}`, color: THEME.textDim, width: 26, height: 26, borderRadius: 3, cursor: page === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: page === 0 ? 0.4 : 1 }}>
+                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} style={{ background: 'none', border: `1px solid ${_AT.glassBorder}`, color: _AT.textDim, width: 26, height: 26, borderRadius: 3, cursor: page === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: page === 0 ? 0.4 : 1 }}>
                             <ChevronLeft size={11} />
                         </button>
                         {Array.from({ length: Math.min(totalPages, 7) }).map((_, i) => (
-                            <button key={i} onClick={() => setPage(i)} style={{ background: page === i ? `${accentColor}20` : 'rgba(255,255,255,0.02)', border: `1px solid ${page === i ? accentColor + '50' : THEME.border}`, color: page === i ? accentColor : THEME.textDim, width: 26, height: 26, borderRadius: 3, cursor: 'pointer', fontSize: 10, fontFamily: THEME.fontMono }}>{i + 1}</button>
+                            <button key={i} onClick={() => setPage(i)} style={{ background: page === i ? `${accentColor}20` : _AT.surfaceHover, border: `1px solid ${page === i ? accentColor + '50' : _AT.glassBorder}`, color: page === i ? accentColor : _AT.textDim, width: 26, height: 26, borderRadius: 3, cursor: 'pointer', fontSize: 10, fontFamily: _AT.fontMono }}>{i + 1}</button>
                         ))}
-                        <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1} style={{ background: 'none', border: `1px solid ${THEME.border}`, color: THEME.textDim, width: 26, height: 26, borderRadius: 3, cursor: page === totalPages - 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: page === totalPages - 1 ? 0.4 : 1 }}>
+                        <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1} style={{ background: 'none', border: `1px solid ${_AT.glassBorder}`, color: _AT.textDim, width: 26, height: 26, borderRadius: 3, cursor: page === totalPages - 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: page === totalPages - 1 ? 0.4 : 1 }}>
                             <ChevronRight size={11} />
                         </button>
                     </div>
@@ -1247,16 +1252,16 @@ export const DataTable = ({
 // ═══════════════════════════════════════════════════════════════════════════
 //  10. EMPTY STATE — Signal lost v2
 // ═══════════════════════════════════════════════════════════════════════════
-export const EmptyState = ({ icon: Icon, title, text, action, onAction, color = THEME.plasma }) => (
+export const EmptyState = ({ icon: Icon, title, text, action, onAction, color = _AT.primary }) => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14, padding: 40, position: 'relative' }}>
         <div style={{ position: 'relative' }}>
-            <div style={{ width: 76, height: 76, borderRadius: 4, background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.border}`, color: THEME.textDim, position: 'relative', overflow: 'hidden' }}>
-                <CornerBrackets color={THEME.textDim} size={8} />
+            <div style={{ width: 76, height: 76, borderRadius: 4, background: _AT.surfaceHover, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${_AT.glassBorder}`, color: _AT.textDim, position: 'relative', overflow: 'hidden' }}>
+                <CornerBrackets color={_AT.textDim} size={8} />
                 <Icon size={30} style={{ animation: 'floatUp 3s ease-in-out infinite' }} />
             </div>
         </div>
-        {title && <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, fontFamily: THEME.fontDisplay, letterSpacing: '2px', textTransform: 'uppercase' }}>{title}</div>}
-        <div style={{ fontSize: 11, textAlign: 'center', maxWidth: 240, color: THEME.textDim, fontFamily: THEME.fontMono, lineHeight: 1.8 }}>{text}</div>
+        {title && <div style={{ fontSize: 12, fontWeight: 700, color: _AT.textMuted, fontFamily: _AT.fontDisplay, letterSpacing: '2px', textTransform: 'uppercase' }}>{title}</div>}
+        <div style={{ fontSize: 11, textAlign: 'center', maxWidth: 240, color: _AT.textDim, fontFamily: _AT.fontMono, lineHeight: 1.8 }}>{text}</div>
         {action && <NanoButton label={action} onClick={onAction} color={color} outlined size="large" />}
     </div>
 );
@@ -1270,7 +1275,7 @@ export const SkeletonLoader = ({ rows = 3, height = 16, gap = 10, style: customS
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, ...customStyle }}>
                 {Array.from({ length: rows }).map((_, i) => (
-                    <div key={i} style={{ height: 120, borderRadius: 4, background: 'rgba(255,255,255,0.03)', border: `1px solid ${THEME.border}`, overflow: 'hidden', position: 'relative' }}>
+                    <div key={i} style={{ height: 120, borderRadius: 4, background: 'rgba(255,255,255,0.03)', border: `1px solid ${_AT.glassBorder}`, overflow: 'hidden', position: 'relative' }}>
                         <div style={{ height: '100%', background: 'linear-gradient(90deg, transparent 0%, rgba(0,245,255,0.06) 50%, transparent 100%)', backgroundSize: '400% 100%', animation: 'shimmer 1.8s ease infinite', animationDelay: `${i*0.1}s` }} />
                     </div>
                 ))}
@@ -1300,13 +1305,13 @@ export const LoadingOverlay = ({ message }) => {
     return (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,2,12,0.8)', zIndex: 20, borderRadius: 4, backdropFilter: 'blur(6px)', gap: 12 }}>
             <div style={{ position: 'relative', width: 40, height: 40 }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', border: `2px solid ${THEME.border}`, borderTop: `2px solid ${THEME.plasma}`, animation: 'spin 0.8s linear infinite', boxShadow: `0 0 14px ${THEME.plasma}40` }} />
-                <div style={{ position: 'absolute', inset: 6, borderRadius: '50%', border: `1px solid ${THEME.border}`, borderBottom: `1px solid ${THEME.secondary}`, animation: 'spinReverse 1.4s linear infinite' }} />
+                <div style={{ width: 40, height: 40, borderRadius: '50%', border: `2px solid ${_AT.glassBorder}`, borderTop: `2px solid ${_AT.primary}`, animation: 'spin 0.8s linear infinite', boxShadow: `0 0 14px ${_AT.primary}40` }} />
+                <div style={{ position: 'absolute', inset: 6, borderRadius: '50%', border: `1px solid ${_AT.glassBorder}`, borderBottom: `1px solid ${_AT.secondary}`, animation: 'spinReverse 1.4s linear infinite' }} />
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.plasma, animation: 'pulse 1s infinite', boxShadow: `0 0 8px ${THEME.plasma}` }} />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: _AT.primary, animation: 'pulse 1s infinite', boxShadow: `0 0 8px ${_AT.primary}` }} />
                 </div>
             </div>
-            {message && <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '1px' }}>{message}</span>}
+            {message && <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono, letterSpacing: '1px' }}>{message}</span>}
         </div>
     );
 };
@@ -1316,7 +1321,7 @@ export const LoadingOverlay = ({ message }) => {
 // ═══════════════════════════════════════════════════════════════════════════
 export const StatusDot = ({ status, size = 8, pulse: doPulse = false }) => {
     injectKeyframes();
-    const color = { active: THEME.aurora, ok: THEME.aurora, idle: THEME.solar, error: THEME.danger, critical: THEME.danger, warning: THEME.warning }[status] || THEME.textMuted;
+    const color = { active: _AT.success, ok: _AT.success, idle: _AT.warning, error: _AT.danger, critical: _AT.danger, warning: _AT.warning }[status] || _AT.textMuted;
     return (
         <div style={{ width: size, height: size, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}80`, animation: doPulse ? 'pulse 2s ease-in-out infinite' : 'none', flexShrink: 0 }} />
     );
@@ -1327,12 +1332,12 @@ export const CopyButton = ({ text, size = 'default', label }) => {
     const sm = size === 'small';
     return (
         <button onClick={() => copy(text)} style={{
-            background: copied ? `${THEME.aurora}10` : 'rgba(255,255,255,0.03)',
-            border: `1px solid ${copied ? THEME.aurora + '40' : THEME.border}`,
-            color: copied ? THEME.aurora : THEME.textMuted,
+            background: copied ? `${_AT.success}10` : 'rgba(255,255,255,0.03)',
+            border: `1px solid ${copied ? _AT.success + '40' : _AT.glassBorder}`,
+            color: copied ? _AT.success : _AT.textMuted,
             padding: sm ? '3px 8px' : '5px 12px', borderRadius: 3, cursor: 'pointer',
             fontSize: sm ? 9 : 10, display: 'inline-flex', alignItems: 'center', gap: 5,
-            transition: 'all 0.2s', fontFamily: THEME.fontMono, fontWeight: 700
+            transition: 'all 0.2s', fontFamily: _AT.fontMono, fontWeight: 700
         }}>
             {copied ? <Check size={sm ? 9 : 11} /> : <Copy size={sm ? 9 : 11} />}
             {label || (copied ? 'COPIED' : 'COPY')}
@@ -1381,55 +1386,55 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
     };
 
     const typeColors = {
-        input:   THEME.textMain,
+        input:   _AT.textMain,
         output:  '#7dd3fc',
-        error:   THEME.danger,
-        success: THEME.aurora,
-        info:    THEME.textMuted,
-        system:  THEME.solar,
+        error:   _AT.danger,
+        success: _AT.success,
+        info:    _AT.textMuted,
+        system:  _AT.warning,
     };
 
     return (
-        <div style={{ background: THEME.bg, borderRadius: 4, border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div style={{ background: '#01060e', borderRadius: 4, border: `1px solid ${_AT.glassBorder}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
             <ScanlineOverlay opacity={0.015} />
             {/* Header */}
-            <div style={{ background: THEME.surfaceHover, padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}`, position: 'relative', zIndex: 2 }}>
+            <div style={{ background: '#010509', padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${_AT.glassBorder}`, position: 'relative', zIndex: 2 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 6px #ef444490' }} />
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 6px #f59e0b90' }} />
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e90' }} />
-                    <span style={{ marginLeft: 8, fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{title}</span>
+                    <span style={{ marginLeft: 8, fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>{title}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                     <CopyButton text={history.map(l => l.content).join('\n')} size="small" />
                 </div>
             </div>
             {/* Output */}
-            <div style={{ padding: '12px 16px', fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.85, overflowY: 'auto', maxHeight, position: 'relative', zIndex: 1 }}>
+            <div style={{ padding: '12px 16px', fontFamily: _AT.fontMono, fontSize: 12, lineHeight: 1.85, overflowY: 'auto', maxHeight, position: 'relative', zIndex: 1 }}>
                 {history.map((line, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, animation: `fadeUp 0.2s ease ${i < 3 ? i * 0.05 : 0}s backwards` }}>
-                        {line.type === 'input' && <span style={{ color: THEME.aurora, flexShrink: 0, userSelect: 'none' }}>{'▶'}</span>}
-                        {line.type === 'error' && <span style={{ color: THEME.danger, flexShrink: 0, userSelect: 'none' }}>{'✕'}</span>}
-                        {line.type === 'success' && <span style={{ color: THEME.aurora, flexShrink: 0, userSelect: 'none' }}>{'✓'}</span>}
-                        {line.type === 'system' && <span style={{ color: THEME.solar, flexShrink: 0, userSelect: 'none' }}>{'⬡'}</span>}
-                        {!['input','error','success','system'].includes(line.type) && <span style={{ color: THEME.textDim, flexShrink: 0, userSelect: 'none' }}>{'·'}</span>}
-                        <span style={{ color: typeColors[line.type] || THEME.textSub, wordBreak: 'break-all' }}>{line.content}</span>
+                        {line.type === 'input' && <span style={{ color: _AT.success, flexShrink: 0, userSelect: 'none' }}>{'▶'}</span>}
+                        {line.type === 'error' && <span style={{ color: _AT.danger, flexShrink: 0, userSelect: 'none' }}>{'✕'}</span>}
+                        {line.type === 'success' && <span style={{ color: _AT.success, flexShrink: 0, userSelect: 'none' }}>{'✓'}</span>}
+                        {line.type === 'system' && <span style={{ color: _AT.warning, flexShrink: 0, userSelect: 'none' }}>{'⬡'}</span>}
+                        {!['input','error','success','system'].includes(line.type) && <span style={{ color: _AT.textDim, flexShrink: 0, userSelect: 'none' }}>{'·'}</span>}
+                        <span style={{ color: typeColors[line.type] || _AT.textMuted, wordBreak: 'break-all' }}>{line.content}</span>
                     </div>
                 ))}
                 <div ref={bottomRef} />
             </div>
             {/* Input */}
             {!readOnly && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderTop: `1px solid ${THEME.border}`, background: '#000812', position: 'relative', zIndex: 2 }}>
-                    <span style={{ color: THEME.aurora, fontFamily: THEME.fontMono, fontSize: 13, userSelect: 'none' }}>$</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderTop: `1px solid ${_AT.glassBorder}`, background: '#000812', position: 'relative', zIndex: 2 }}>
+                    <span style={{ color: _AT.success, fontFamily: _AT.fontMono, fontSize: 13, userSelect: 'none' }}>$</span>
                     <input
                         value={input}
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={handleKey}
                         placeholder="Enter command..."
-                        style={{ flex: 1, background: 'none', border: 'none', color: THEME.textMain, fontFamily: THEME.fontMono, fontSize: 12, outline: 'none' }}
+                        style={{ flex: 1, background: 'none', border: 'none', color: _AT.textMain, fontFamily: _AT.fontMono, fontSize: 12, outline: 'none' }}
                     />
-                    <NanoButton icon={Play} onClick={execute} color={THEME.aurora} size="small" tooltip="Execute (Enter)" />
+                    <NanoButton icon={Play} onClick={execute} color={_AT.success} size="small" tooltip="Execute (Enter)" />
                 </div>
             )}
         </div>
@@ -1439,7 +1444,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
 // ═══════════════════════════════════════════════════════════════════════════
 //  15. FILTER PILLS — v2
 // ═══════════════════════════════════════════════════════════════════════════
-export const FilterPills = ({ options, active, onChange, multi = false, color = THEME.plasma }) => (
+export const FilterPills = ({ options, active, onChange, multi = false, color = _AT.primary }) => (
     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {options.map(opt => {
             const key = typeof opt === 'string' ? opt : opt.value;
@@ -1449,11 +1454,11 @@ export const FilterPills = ({ options, active, onChange, multi = false, color = 
             return (
                 <button key={key} onClick={() => onChange(key)} style={{
                     background: isActive ? `${color}14` : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${isActive ? color + '45' : THEME.border}`,
-                    color: isActive ? color : THEME.textMuted,
+                    border: `1px solid ${isActive ? color + '45' : _AT.glassBorder}`,
+                    color: isActive ? color : _AT.textMuted,
                     padding: '4px 12px', borderRadius: 2, cursor: 'pointer',
                     fontSize: 9, fontWeight: 700, transition: 'all 0.2s',
-                    fontFamily: THEME.fontDisplay, letterSpacing: '1px', textTransform: 'uppercase',
+                    fontFamily: _AT.fontDisplay, letterSpacing: '1px', textTransform: 'uppercase',
                     boxShadow: isActive ? `0 0 12px ${color}18` : 'none',
                     display: 'flex', alignItems: 'center', gap: 5
                 }}>
@@ -1489,17 +1494,17 @@ export const Timeline = ({ events = [], maxHeight = 400 }) => {
                         {/* Content */}
                         <div style={{ flex: 1, paddingBottom: 16, paddingTop: 4 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                                <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMain, fontFamily: THEME.fontBody }}>{event.title}</span>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: _AT.textMain, fontFamily: _AT.fontBody }}>{event.title}</span>
                                 <SeverityBadge severity={event.type} />
-                                <span style={{ fontSize: 9, color: THEME.textDim, marginLeft: 'auto', fontFamily: THEME.fontMono }}>
+                                <span style={{ fontSize: 9, color: _AT.textDim, marginLeft: 'auto', fontFamily: _AT.fontMono }}>
                   {new Date(event.ts).toLocaleTimeString()}
                 </span>
                             </div>
-                            {event.description && <p style={{ fontSize: 11, color: THEME.textMuted, margin: 0, lineHeight: 1.6, fontFamily: THEME.fontBody }}>{event.description}</p>}
+                            {event.description && <p style={{ fontSize: 11, color: _AT.textMuted, margin: 0, lineHeight: 1.6, fontFamily: _AT.fontBody }}>{event.description}</p>}
                             {event.meta && (
                                 <div style={{ display: 'flex', gap: 10, marginTop: 6, flexWrap: 'wrap' }}>
                                     {Object.entries(event.meta).map(([k, v]) => (
-                                        <span key={k} style={{ fontSize: 9, fontFamily: THEME.fontMono, color: THEME.textDim }}>
+                                        <span key={k} style={{ fontSize: 9, fontFamily: _AT.fontMono, color: _AT.textDim }}>
                       {k}: <span style={{ color: config.color }}>{String(v)}</span>
                     </span>
                                     ))}
@@ -1516,7 +1521,7 @@ export const Timeline = ({ events = [], maxHeight = 400 }) => {
 // ═══════════════════════════════════════════════════════════════════════════
 //  17. RADAR CHART — Multi-axis performance viz
 // ═══════════════════════════════════════════════════════════════════════════
-export const RadarMetric = ({ data = [], size = 200, color = THEME.plasma, label }) => {
+export const RadarMetric = ({ data = [], size = 200, color = _AT.primary, label }) => {
     injectKeyframes();
     const n = data.length;
     if (n < 3) return null;
@@ -1572,13 +1577,13 @@ export const RadarMetric = ({ data = [], size = 200, color = THEME.plasma, label
                     const p = toXY(i, 120, r);
                     return (
                         <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-                              style={{ fontSize: 8, fill: THEME.textMuted, fontFamily: THEME.fontDisplay, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                              style={{ fontSize: 8, fill: _AT.textMuted, fontFamily: _AT.fontDisplay, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                             {d.label}
                         </text>
                     );
                 })}
             </svg>
-            {label && <div style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontDisplay, letterSpacing: '2px', textTransform: 'uppercase' }}>{label}</div>}
+            {label && <div style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontDisplay, letterSpacing: '2px', textTransform: 'uppercase' }}>{label}</div>}
         </div>
     );
 };
@@ -1586,13 +1591,13 @@ export const RadarMetric = ({ data = [], size = 200, color = THEME.plasma, label
 // ═══════════════════════════════════════════════════════════════════════════
 //  18. TYPEWRITER TEXT — Animated command output
 // ═══════════════════════════════════════════════════════════════════════════
-export const TypewriterText = ({ text, speed = 30, color = THEME.plasma, mono = true, onDone, prefix = '' }) => {
+export const TypewriterText = ({ text, speed = 30, color = _AT.primary, mono = true, onDone, prefix = '' }) => {
     injectKeyframes();
     const [displayed, done] = useTypewriter(text, speed, true);
     useEffect(() => { if (done) onDone?.(); }, [done]);
     return (
-        <span style={{ fontFamily: mono ? THEME.fontMono : THEME.fontBody, color, fontSize: 'inherit' }}>
-      {prefix && <span style={{ color: THEME.aurora }}>{prefix} </span>}
+        <span style={{ fontFamily: mono ? _AT.fontMono : _AT.fontBody, color, fontSize: 'inherit' }}>
+      {prefix && <span style={{ color: _AT.success }}>{prefix} </span>}
             {displayed}
             {!done && <span style={{ borderRight: `2px solid ${color}`, animation: 'blink 0.8s step-end infinite', marginLeft: 1 }} />}
     </span>
@@ -1602,7 +1607,7 @@ export const TypewriterText = ({ text, speed = 30, color = THEME.plasma, mono = 
 // ═══════════════════════════════════════════════════════════════════════════
 //  19. HEATMAP CALENDAR — Activity grid
 // ═══════════════════════════════════════════════════════════════════════════
-export const HeatmapGrid = ({ data = [], weeks = 26, color = THEME.plasma, label }) => {
+export const HeatmapGrid = ({ data = [], weeks = 26, color = _AT.primary, label }) => {
     injectKeyframes();
     const maxVal = Math.max(...data.map(d => d.value || 0), 1);
     const cells = Array.from({ length: weeks * 7 }, (_, i) => data[i] || { value: 0 });
@@ -1610,11 +1615,11 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = THEME.plasma, label
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {label && <div style={{ fontSize: 9, color: THEME.textMuted, fontFamily: THEME.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 2 }}>{label}</div>}
+            {label && <div style={{ fontSize: 9, color: _AT.textMuted, fontFamily: _AT.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 2 }}>{label}</div>}
             <div style={{ display: 'flex', gap: 4 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 16 }}>
                     {days.map((d, i) => (
-                        <div key={i} style={{ height: 11, fontSize: 8, color: THEME.textDim, fontFamily: THEME.fontMono, display: 'flex', alignItems: 'center' }}>{d}</div>
+                        <div key={i} style={{ height: 11, fontSize: 8, color: _AT.textDim, fontFamily: _AT.fontMono, display: 'flex', alignItems: 'center' }}>{d}</div>
                     ))}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(${weeks}, 11px)`, gridTemplateRows: 'repeat(7, 11px)', gap: 2 }}>
@@ -1634,11 +1639,11 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = THEME.plasma, label
                 </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                <span style={{ fontSize: 8, color: THEME.textDim, fontFamily: THEME.fontMono }}>Less</span>
+                <span style={{ fontSize: 8, color: _AT.textDim, fontFamily: _AT.fontMono }}>Less</span>
                 {[0, 0.25, 0.5, 0.75, 1].map((v, i) => (
                     <div key={i} style={{ width: 11, height: 11, borderRadius: 2, background: v > 0 ? color : 'rgba(255,255,255,0.04)', opacity: v > 0 ? Math.max(0.15, v) : 1 }} />
                 ))}
-                <span style={{ fontSize: 8, color: THEME.textDim, fontFamily: THEME.fontMono }}>More</span>
+                <span style={{ fontSize: 8, color: _AT.textDim, fontFamily: _AT.fontMono }}>More</span>
             </div>
         </div>
     );
@@ -1685,27 +1690,27 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
         }} onClick={onClose}>
             <div style={{
                 width: '100%', maxWidth: 580, background: 'rgba(4,9,28,0.98)',
-                borderRadius: 8, border: `1px solid ${THEME.borderHot}`,
-                boxShadow: `0 0 0 1px ${THEME.plasma}20, 0 32px 80px rgba(0,0,0,0.9)`,
+                borderRadius: 8, border: `1px solid ${_AT.glassBorderHot}`,
+                boxShadow: `0 0 0 1px ${_AT.primary}20, 0 32px 80px rgba(0,0,0,0.9)`,
                 overflow: 'hidden', animation: 'scaleUp 0.2s cubic-bezier(0.16,1,0.3,1)'
             }} onClick={e => e.stopPropagation()}>
-                <CornerBrackets color={THEME.plasma} size={12} glowing />
+                <CornerBrackets color={_AT.primary} size={12} glowing />
                 {/* Search */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: `1px solid ${THEME.border}` }}>
-                    <Search size={14} color={THEME.textMuted} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: `1px solid ${_AT.glassBorder}` }}>
+                    <Search size={14} color={_AT.textMuted} />
                     <input
                         ref={inputRef} value={query} onChange={e => { setQuery(e.target.value); setSelected(0); }}
                         onKeyDown={handleKey} placeholder={placeholder}
-                        style={{ flex: 1, background: 'none', border: 'none', color: THEME.textMain, fontSize: 14, outline: 'none', fontFamily: THEME.fontBody }}
+                        style={{ flex: 1, background: 'none', border: 'none', color: _AT.textMain, fontSize: 14, outline: 'none', fontFamily: _AT.fontBody }}
                     />
-                    {query && <button onClick={() => setQuery('')} style={{ background: 'none', border: 'none', color: THEME.textDim, cursor: 'pointer', padding: 0, display: 'flex' }}><X size={13} /></button>}
-                    <kbd style={{ fontSize: 9, color: THEME.textDim, background: 'rgba(255,255,255,0.04)', border: `1px solid ${THEME.border}`, padding: '2px 7px', borderRadius: 3, fontFamily: THEME.fontMono }}>ESC</kbd>
+                    {query && <button onClick={() => setQuery('')} style={{ background: 'none', border: 'none', color: _AT.textDim, cursor: 'pointer', padding: 0, display: 'flex' }}><X size={13} /></button>}
+                    <kbd style={{ fontSize: 9, color: _AT.textDim, background: 'rgba(255,255,255,0.04)', border: `1px solid ${_AT.glassBorder}`, padding: '2px 7px', borderRadius: 3, fontFamily: _AT.fontMono }}>ESC</kbd>
                 </div>
                 {/* Results */}
                 <div style={{ maxHeight: 380, overflowY: 'auto' }}>
                     {Object.entries(groups).map(([group, items]) => (
                         <div key={group}>
-                            <div style={{ padding: '8px 18px 4px', fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase' }}>{group}</div>
+                            <div style={{ padding: '8px 18px 4px', fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase' }}>{group}</div>
                             {items.map((cmd, ci) => {
                                 const gi = flat.indexOf(cmd);
                                 const isSelected = gi === selected;
@@ -1714,21 +1719,21 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                                     <div key={ci} onClick={() => { cmd.action?.(); onClose?.(); }}
                                          style={{
                                              display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px',
-                                             background: isSelected ? `${THEME.plasma}08` : 'transparent',
-                                             borderLeft: `2px solid ${isSelected ? THEME.plasma : 'transparent'}`,
+                                             background: isSelected ? `${_AT.primary}08` : 'transparent',
+                                             borderLeft: `2px solid ${isSelected ? _AT.primary : 'transparent'}`,
                                              cursor: 'pointer', transition: 'all 0.1s'
                                          }}>
                                         {Icon && (
-                                            <div style={{ width: 30, height: 30, borderRadius: 4, background: `${THEME.plasma}10`, color: THEME.plasma, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.plasma}20`, flexShrink: 0 }}>
+                                            <div style={{ width: 30, height: 30, borderRadius: 4, background: `${_AT.primary}10`, color: _AT.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${_AT.primary}20`, flexShrink: 0 }}>
                                                 <Icon size={13} />
                                             </div>
                                         )}
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: 12, color: isSelected ? THEME.textMain : THEME.textSub, fontFamily: THEME.fontBody, fontWeight: 500 }}>{cmd.label}</div>
-                                            {cmd.description && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>{cmd.description}</div>}
+                                            <div style={{ fontSize: 12, color: isSelected ? _AT.textMain : _AT.textMuted, fontFamily: _AT.fontBody, fontWeight: 500 }}>{cmd.label}</div>
+                                            {cmd.description && <div style={{ fontSize: 10, color: _AT.textDim, marginTop: 1 }}>{cmd.description}</div>}
                                         </div>
                                         {cmd.shortcut && (
-                                            <kbd style={{ fontSize: 9, color: THEME.textDim, background: 'rgba(255,255,255,0.04)', border: `1px solid ${THEME.border}`, padding: '2px 7px', borderRadius: 3, fontFamily: THEME.fontMono }}>{cmd.shortcut}</kbd>
+                                            <kbd style={{ fontSize: 9, color: _AT.textDim, background: 'rgba(255,255,255,0.04)', border: `1px solid ${_AT.glassBorder}`, padding: '2px 7px', borderRadius: 3, fontFamily: _AT.fontMono }}>{cmd.shortcut}</kbd>
                                         )}
                                     </div>
                                 );
@@ -1736,13 +1741,13 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                         </div>
                     ))}
                     {flat.length === 0 && (
-                        <div style={{ padding: 32, textAlign: 'center', fontSize: 12, color: THEME.textDim, fontFamily: THEME.fontMono }}>No commands found</div>
+                        <div style={{ padding: 32, textAlign: 'center', fontSize: 12, color: _AT.textDim, fontFamily: _AT.fontMono }}>No commands found</div>
                     )}
                 </div>
-                <div style={{ padding: '8px 18px', borderTop: `1px solid ${THEME.border}`, display: 'flex', gap: 16, fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>
-                    <span><kbd style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 2, border: `1px solid ${THEME.border}` }}>↑↓</kbd> navigate</span>
-                    <span><kbd style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 2, border: `1px solid ${THEME.border}` }}>↵</kbd> select</span>
-                    <span><kbd style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 2, border: `1px solid ${THEME.border}` }}>esc</kbd> close</span>
+                <div style={{ padding: '8px 18px', borderTop: `1px solid ${_AT.glassBorder}`, display: 'flex', gap: 16, fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono }}>
+                    <span><kbd style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 2, border: `1px solid ${_AT.glassBorder}` }}>↑↓</kbd> navigate</span>
+                    <span><kbd style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 2, border: `1px solid ${_AT.glassBorder}` }}>↵</kbd> select</span>
+                    <span><kbd style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 2, border: `1px solid ${_AT.glassBorder}` }}>esc</kbd> close</span>
                 </div>
             </div>
         </div>
@@ -1757,7 +1762,7 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
     const svgRef = useRef(null);
     const [hoveredNode, setHoveredNode] = useState(null);
 
-    const statusColors = { active: THEME.aurora, warning: THEME.solar, error: THEME.danger, idle: THEME.textMuted };
+    const statusColors = { active: _AT.success, warning: _AT.warning, error: _AT.danger, idle: _AT.textMuted };
 
     return (
         <svg ref={svgRef} width="100%" height={height} style={{ overflow: 'visible' }}>
@@ -1767,7 +1772,7 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
                     <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                 </filter>
                 <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill={THEME.textDim} />
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill={_AT.textDim} />
                 </marker>
             </defs>
             {/* Edges */}
@@ -1775,7 +1780,7 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
                 const from = nodes.find(n => n.id === edge.from);
                 const to = nodes.find(n => n.id === edge.to);
                 if (!from || !to) return null;
-                const color = edge.active ? THEME.plasma : THEME.textDim;
+                const color = edge.active ? _AT.primary : _AT.textDim;
                 return (
                     <g key={i}>
                         <line x1={from.x} y1={from.y} x2={to.x} y2={to.y}
@@ -1785,7 +1790,7 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
                         />
                         {edge.label && (
                             <text x={(from.x + to.x) / 2} y={(from.y + to.y) / 2 - 6}
-                                  textAnchor="middle" style={{ fontSize: 8, fill: THEME.textDim, fontFamily: THEME.fontMono }}>
+                                  textAnchor="middle" style={{ fontSize: 8, fill: _AT.textDim, fontFamily: _AT.fontMono }}>
                                 {edge.label}
                             </text>
                         )}
@@ -1794,7 +1799,7 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
             })}
             {/* Nodes */}
             {nodes.map((node) => {
-                const color = statusColors[node.status] || THEME.plasma;
+                const color = statusColors[node.status] || _AT.primary;
                 const isHovered = hoveredNode === node.id;
                 return (
                     <g key={node.id} transform={`translate(${node.x}, ${node.y})`}
@@ -1811,11 +1816,11 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
                                     style={{ animation: 'ping 1.5s ease-out infinite' }} />
                         )}
                         <text textAnchor="middle" dominantBaseline="middle"
-                              style={{ fontSize: 9, fill: color, fontFamily: THEME.fontDisplay, fontWeight: 700, letterSpacing: '0.5px' }}>
+                              style={{ fontSize: 9, fill: color, fontFamily: _AT.fontDisplay, fontWeight: 700, letterSpacing: '0.5px' }}>
                             {node.label || node.id}
                         </text>
                         <text y={26} textAnchor="middle"
-                              style={{ fontSize: 8, fill: THEME.textDim, fontFamily: THEME.fontMono }}>
+                              style={{ fontSize: 8, fill: _AT.textDim, fontFamily: _AT.fontMono }}>
                             {node.subtitle || ''}
                         </text>
                         {/* Status dot */}
@@ -1830,7 +1835,7 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
 // ═══════════════════════════════════════════════════════════════════════════
 //  22. WAVEFORM DISPLAY — Audio/signal visualizer
 // ═══════════════════════════════════════════════════════════════════════════
-export const WaveformBar = ({ bars = 32, color = THEME.plasma, active = true, heights }) => {
+export const WaveformBar = ({ bars = 32, color = _AT.primary, active = true, heights }) => {
     injectKeyframes();
     const [animatedHeights, setAnimatedHeights] = useState(heights || Array.from({ length: bars }, () => Math.random() * 0.8 + 0.2));
 
@@ -1861,28 +1866,28 @@ export const WaveformBar = ({ bars = 32, color = THEME.plasma, active = true, he
 // ═══════════════════════════════════════════════════════════════════════════
 //  23. STAT COMPARISON CARD — Before/After delta
 // ═══════════════════════════════════════════════════════════════════════════
-export const StatCompare = ({ label, before, after, unit, color = THEME.plasma, inverse = false }) => {
+export const StatCompare = ({ label, before, after, unit, color = _AT.primary, inverse = false }) => {
     injectKeyframes();
     const delta = after - before;
     const pct = before !== 0 ? ((delta / before) * 100).toFixed(1) : 0;
     const improved = inverse ? delta < 0 : delta > 0;
-    const trendColor = improved ? THEME.aurora : delta === 0 ? THEME.textMuted : THEME.danger;
+    const trendColor = improved ? _AT.success : delta === 0 ? _AT.textMuted : _AT.danger;
 
     return (
         <div style={{
             background: 'rgba(4,9,28,0.7)', borderRadius: 4, padding: 16,
-            border: `1px solid ${THEME.border}`, position: 'relative', overflow: 'hidden'
+            border: `1px solid ${_AT.glassBorder}`, position: 'relative', overflow: 'hidden'
         }}>
-            <div style={{ fontSize: 9, color: THEME.textMuted, fontFamily: THEME.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 12 }}>{label}</div>
+            <div style={{ fontSize: 9, color: _AT.textMuted, fontFamily: _AT.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 12 }}>{label}</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16 }}>
                 <div>
-                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 3 }}>BEFORE</div>
-                    <span style={{ fontSize: 22, fontWeight: 700, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{before.toLocaleString()}{unit && <span style={{ fontSize: 11 }}> {unit}</span>}</span>
+                    <div style={{ fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono, marginBottom: 3 }}>BEFORE</div>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: _AT.textMuted, fontFamily: _AT.fontMono }}>{before.toLocaleString()}{unit && <span style={{ fontSize: 11 }}> {unit}</span>}</span>
                 </div>
-                <div style={{ fontSize: 16, color: THEME.textDim, marginBottom: 6 }}>→</div>
+                <div style={{ fontSize: 16, color: _AT.textDim, marginBottom: 6 }}>→</div>
                 <div>
-                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 3 }}>AFTER</div>
-                    <span style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, fontFamily: THEME.fontMono, textShadow: `0 0 20px ${color}60` }}>{after.toLocaleString()}{unit && <span style={{ fontSize: 11, color: THEME.textMuted }}> {unit}</span>}</span>
+                    <div style={{ fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono, marginBottom: 3 }}>AFTER</div>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: _AT.textMain, fontFamily: _AT.fontMono, textShadow: `0 0 20px ${color}60` }}>{after.toLocaleString()}{unit && <span style={{ fontSize: 11, color: _AT.textMuted }}> {unit}</span>}</span>
                 </div>
                 <div style={{ marginBottom: 4, marginLeft: 'auto' }}>
                     <TrendChip value={parseFloat(pct)} />
@@ -1898,7 +1903,7 @@ export const StatCompare = ({ label, before, after, unit, color = THEME.plasma, 
 // ═══════════════════════════════════════════════════════════════════════════
 //  24. PILL INPUT — Tag/token input
 // ═══════════════════════════════════════════════════════════════════════════
-export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', color = THEME.plasma, maxTags = 10 }) => {
+export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', color = _AT.primary, maxTags = 10 }) => {
     const [input, setInput] = useState('');
     const [focused, setFocused] = useState(false);
 
@@ -1915,7 +1920,7 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
         <div style={{
             display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 12px',
             background: 'rgba(0,0,0,0.2)', borderRadius: 4,
-            border: `1px solid ${focused ? THEME.borderHot : THEME.border}`,
+            border: `1px solid ${focused ? _AT.glassBorderHot : _AT.glassBorder}`,
             minHeight: 40, alignItems: 'center', cursor: 'text',
             transition: 'border-color 0.2s'
         }} onClick={() => document.getElementById('pill-input')?.focus()}>
@@ -1924,7 +1929,7 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                     fontSize: 10, padding: '3px 9px', borderRadius: 2,
                     background: `${color}14`, color, border: `1px solid ${color}28`,
-                    fontFamily: THEME.fontMono, animation: 'scaleIn 0.2s ease backwards'
+                    fontFamily: _AT.fontMono, animation: 'scaleIn 0.2s ease backwards'
                 }}>
           {tag}
                     <button onClick={() => remove(tag)} style={{ background: 'none', border: 'none', color, cursor: 'pointer', padding: 0, display: 'flex', opacity: 0.7 }}>
@@ -1940,7 +1945,7 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
                 onBlur={() => setFocused(false)}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } if (e.key === 'Backspace' && !input && value.length) remove(value[value.length - 1]); }}
                 placeholder={value.length === 0 ? placeholder : ''}
-                style={{ background: 'none', border: 'none', color: THEME.textMain, fontSize: 11, outline: 'none', fontFamily: THEME.fontMono, minWidth: 100, flex: 1 }}
+                style={{ background: 'none', border: 'none', color: _AT.textMain, fontSize: 11, outline: 'none', fontFamily: _AT.fontMono, minWidth: 100, flex: 1 }}
             />
         </div>
     );
@@ -1949,15 +1954,15 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
 // ═══════════════════════════════════════════════════════════════════════════
 //  25. SLIDER — Neon range input
 // ═══════════════════════════════════════════════════════════════════════════
-export const NeonSlider = ({ value, min = 0, max = 100, step = 1, onChange, label, color = THEME.plasma, showValue = true }) => {
+export const NeonSlider = ({ value, min = 0, max = 100, step = 1, onChange, label, color = _AT.primary, showValue = true }) => {
     injectKeyframes();
     const pct = ((value - min) / (max - min)) * 100;
 
     return (
         <div>
             {(label || showValue) && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 10, fontFamily: THEME.fontMono }}>
-                    {label && <span style={{ color: THEME.textMuted }}>{label}</span>}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 10, fontFamily: _AT.fontMono }}>
+                    {label && <span style={{ color: _AT.textMuted }}>{label}</span>}
                     {showValue && <span style={{ color, fontWeight: 700 }}>{value}</span>}
                 </div>
             )}
@@ -1982,7 +1987,7 @@ export const NeonSlider = ({ value, min = 0, max = 100, step = 1, onChange, labe
                     border: '2px solid rgba(0,0,0,0.5)'
                 }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 8, color: THEME.textDim, fontFamily: THEME.fontMono }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 8, color: _AT.textDim, fontFamily: _AT.fontMono }}>
                 <span>{min}</span><span>{max}</span>
             </div>
         </div>
@@ -1992,7 +1997,7 @@ export const NeonSlider = ({ value, min = 0, max = 100, step = 1, onChange, labe
 // ═══════════════════════════════════════════════════════════════════════════
 //  26. TOGGLE SWITCH — Neon style
 // ═══════════════════════════════════════════════════════════════════════════
-export const NeonToggle = ({ value, onChange, label, color = THEME.plasma, size = 'default', disabled = false }) => {
+export const NeonToggle = ({ value, onChange, label, color = _AT.primary, size = 'default', disabled = false }) => {
     injectKeyframes();
     const sm = size === 'small';
     const w = sm ? 32 : 42, h = sm ? 18 : 24, th = sm ? 12 : 18;
@@ -2003,19 +2008,19 @@ export const NeonToggle = ({ value, onChange, label, color = THEME.plasma, size 
                 style={{
                     width: w, height: h, borderRadius: h, position: 'relative', cursor: disabled ? 'not-allowed' : 'pointer',
                     background: value ? `${color}30` : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${value ? color + '60' : THEME.border}`,
+                    border: `1px solid ${value ? color + '60' : _AT.glassBorder}`,
                     boxShadow: value ? `0 0 12px ${color}30, inset 0 0 8px ${color}10` : 'none',
                     transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', flexShrink: 0
                 }}>
                 <div style={{
                     position: 'absolute', top: (h - th) / 2, width: th, height: th, borderRadius: '50%',
-                    background: value ? color : THEME.textDim,
+                    background: value ? color : _AT.textDim,
                     left: value ? w - th - (h - th) / 2 : (h - th) / 2,
                     boxShadow: value ? `0 0 8px ${color}, 0 0 16px ${color}60` : 'none',
                     transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)'
                 }} />
             </div>
-            {label && <span style={{ fontSize: sm ? 10 : 11, color: THEME.textSub, fontFamily: THEME.fontBody }}>{label}</span>}
+            {label && <span style={{ fontSize: sm ? 10 : 11, color: _AT.textMuted, fontFamily: _AT.fontBody }}>{label}</span>}
         </div>
     );
 };
@@ -2023,7 +2028,7 @@ export const NeonToggle = ({ value, onChange, label, color = THEME.plasma, size 
 // ═══════════════════════════════════════════════════════════════════════════
 //  27. SELECT DROPDOWN — Neural styled
 // ═══════════════════════════════════════════════════════════════════════════
-export const NeuralSelect = ({ value, options, onChange, label, color = THEME.plasma, disabled = false }) => {
+export const NeuralSelect = ({ value, options, onChange, label, color = _AT.primary, disabled = false }) => {
     const [open, setOpen] = useState(false);
     const [hovered, hoverProps] = useHover();
     const selected = options.find(o => (typeof o === 'string' ? o : o.value) === value);
@@ -2031,7 +2036,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = THEME.pl
 
     return (
         <div style={{ position: 'relative' }}>
-            {label && <div style={{ fontSize: 9, color: THEME.textMuted, fontFamily: THEME.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 6 }}>{label}</div>}
+            {label && <div style={{ fontSize: 9, color: _AT.textMuted, fontFamily: _AT.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 6 }}>{label}</div>}
             <div
                 {...hoverProps}
                 onClick={() => !disabled && setOpen(!open)}
@@ -2039,17 +2044,17 @@ export const NeuralSelect = ({ value, options, onChange, label, color = THEME.pl
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '8px 12px', borderRadius: 3, cursor: disabled ? 'not-allowed' : 'pointer',
                     background: open ? `${color}08` : 'rgba(0,0,0,0.3)',
-                    border: `1px solid ${open || hovered ? color + '40' : THEME.border}`,
+                    border: `1px solid ${open || hovered ? color + '40' : _AT.glassBorder}`,
                     transition: 'all 0.2s', opacity: disabled ? 0.5 : 1
                 }}>
-                <span style={{ fontSize: 12, color: THEME.textMain, fontFamily: THEME.fontBody }}>{selectedLabel}</span>
-                <ChevronDown size={13} color={THEME.textMuted} style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
+                <span style={{ fontSize: 12, color: _AT.textMain, fontFamily: _AT.fontBody }}>{selectedLabel}</span>
+                <ChevronDown size={13} color={_AT.textMuted} style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
             </div>
             {open && (
                 <div style={{
                     position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4, zIndex: 100,
                     background: 'rgba(2,6,20,0.98)', borderRadius: 3,
-                    border: `1px solid ${THEME.borderHot}`,
+                    border: `1px solid ${_AT.glassBorderHot}`,
                     boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${color}10`,
                     backdropFilter: 'blur(20px)', overflow: 'hidden',
                     animation: 'fadeDown 0.15s ease backwards'
@@ -2061,10 +2066,10 @@ export const NeuralSelect = ({ value, options, onChange, label, color = THEME.pl
                         return (
                             <div key={i} onClick={() => { onChange(key); setOpen(false); }} style={{
                                 padding: '9px 14px', cursor: 'pointer', fontSize: 12,
-                                color: isActive ? color : THEME.textSub,
+                                color: isActive ? color : _AT.textMuted,
                                 background: isActive ? `${color}08` : 'transparent',
                                 borderLeft: `2px solid ${isActive ? color : 'transparent'}`,
-                                fontFamily: THEME.fontBody, transition: 'all 0.1s',
+                                fontFamily: _AT.fontBody, transition: 'all 0.1s',
                                 display: 'flex', alignItems: 'center', gap: 8
                             }}>
                                 {isActive && <Check size={11} />}
@@ -2081,7 +2086,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = THEME.pl
 // ═══════════════════════════════════════════════════════════════════════════
 //  28. PULSE RING — Radial indicator
 // ═══════════════════════════════════════════════════════════════════════════
-export const PulseRing = ({ value, max, color = THEME.plasma, size = 80, label }) => {
+export const PulseRing = ({ value, max, color = _AT.primary, size = 80, label }) => {
     injectKeyframes();
     const pct = Math.min((value / (max || 1)) * 100, 100);
     const r = (size / 2) - 8;
@@ -2090,15 +2095,15 @@ export const PulseRing = ({ value, max, color = THEME.plasma, size = 80, label }
     return (
         <div style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width={size} height={size} style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
-                <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={THEME.grid} strokeWidth={5} />
+                <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={_AT.grid} strokeWidth={5} />
                 <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={5} strokeLinecap="round"
                         strokeDasharray={circ} strokeDashoffset={offset}
                         style={{ transition: 'stroke-dashoffset 1s ease', filter: `drop-shadow(0 0 5px ${color})` }}
                 />
             </svg>
             <div style={{ textAlign: 'center', position: 'relative' }}>
-                <div style={{ fontSize: size < 60 ? 11 : 14, fontWeight: 800, color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{value}</div>
-                {label && <div style={{ fontSize: 7, color: THEME.textDim, fontFamily: THEME.fontMono, marginTop: 1, letterSpacing: '0.5px' }}>{label}</div>}
+                <div style={{ fontSize: size < 60 ? 11 : 14, fontWeight: 800, color, fontFamily: _AT.fontMono, lineHeight: 1 }}>{value}</div>
+                {label && <div style={{ fontSize: 7, color: _AT.textDim, fontFamily: _AT.fontMono, marginTop: 1, letterSpacing: '0.5px' }}>{label}</div>}
             </div>
         </div>
     );
@@ -2107,10 +2112,10 @@ export const PulseRing = ({ value, max, color = THEME.plasma, size = 80, label }
 // ═══════════════════════════════════════════════════════════════════════════
 //  29. HEAT CELL + CONNECTION POOL BAR + SETTING ROW (carried over + enhanced)
 // ═══════════════════════════════════════════════════════════════════════════
-export const HeatCell = ({ value, max, color = THEME.plasma, size = 24, label }) => {
+export const HeatCell = ({ value, max, color = _AT.primary, size = 24, label }) => {
     const intensity = Math.min(value / (max || 1), 1);
     const [hovered, hoverProps] = useHover();
-    const rgbMap = { [THEME.plasma]: '0,245,255', [THEME.danger]: '255,45,120', [THEME.aurora]: '0,255,136', [THEME.solar]: '255,170,0' };
+    const rgbMap = { [_AT.primary]: '0,245,255', [_AT.danger]: '255,45,120', [_AT.success]: '0,255,136', [_AT.warning]: '255,170,0' };
     const rgb = rgbMap[color] || '0,245,255';
     return (
         <div {...hoverProps} title={label || String(value)} style={{
@@ -2127,20 +2132,20 @@ export const HeatCell = ({ value, max, color = THEME.plasma, size = 24, label })
 
 export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
     const segments = [
-        { label: 'Active', value: active || (total - idle), color: THEME.plasma },
-        { label: 'Idle', value: idle, color: THEME.aurora },
-        { label: 'Waiting', value: waiting || 0, color: THEME.warning },
+        { label: 'Active', value: active || (total - idle), color: _AT.primary },
+        { label: 'Idle', value: idle, color: _AT.success },
+        { label: 'Waiting', value: waiting || 0, color: _AT.warning },
     ];
     const barMax = max || total || 1;
     return (
         <div>
-            <div style={{ display: 'flex', height: 18, borderRadius: 3, overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: `1px solid ${THEME.border}`, gap: 1 }}>
+            <div style={{ display: 'flex', height: 18, borderRadius: 3, overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: `1px solid ${_AT.glassBorder}`, gap: 1 }}>
                 {segments.map((seg, i) => seg.value > 0 && (
                     <div key={i} style={{
                         width: `${(seg.value / barMax) * 100}%`,
                         background: `linear-gradient(180deg, ${seg.color}80, ${seg.color}50)`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, color: '#fff', fontWeight: 700, fontFamily: THEME.fontMono,
+                        fontSize: 9, color: '#fff', fontWeight: 700, fontFamily: _AT.fontMono,
                         transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)',
                         position: 'relative', overflow: 'hidden', minWidth: 2
                     }}>
@@ -2153,12 +2158,12 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
                 {segments.map((seg, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <div style={{ width: 8, height: 8, borderRadius: 1, background: seg.color, boxShadow: `0 0 6px ${seg.color}70` }} />
-                        <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
-              {seg.label}: <span style={{ color: THEME.textMain, fontWeight: 700 }}>{seg.value}</span>
+                        <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>
+              {seg.label}: <span style={{ color: _AT.textMain, fontWeight: 700 }}>{seg.value}</span>
             </span>
                     </div>
                 ))}
-                {max && <span style={{ fontSize: 10, color: THEME.textDim, marginLeft: 'auto', fontFamily: THEME.fontMono }}>max: {max}</span>}
+                {max && <span style={{ fontSize: 10, color: _AT.textDim, marginLeft: 'auto', fontFamily: _AT.fontMono }}>max: {max}</span>}
             </div>
         </div>
     );
@@ -2169,24 +2174,24 @@ export const SettingRow = ({ name, value, unit, description, category, context, 
     return (
         <div {...hoverProps} style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
-            borderBottom: `1px solid ${THEME.border}`,
+            borderBottom: `1px solid ${_AT.glassBorder}`,
             background: hovered ? 'rgba(0,245,255,0.015)' : 'transparent',
             transition: 'background 0.15s', animation: 'fadeUp 0.3s ease backwards'
         }}>
             <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ fontSize: 12, fontFamily: THEME.fontMono, color: THEME.plasma, fontWeight: 600 }}>{name}</span>
-                    {context && <span style={{ fontSize: 8, background: 'rgba(255,255,255,0.04)', padding: '1px 6px', borderRadius: 2, color: THEME.textDim, fontFamily: THEME.fontMono }}>{context}</span>}
+                    <span style={{ fontSize: 12, fontFamily: _AT.fontMono, color: _AT.primary, fontWeight: 600 }}>{name}</span>
+                    {context && <span style={{ fontSize: 8, background: 'rgba(255,255,255,0.04)', padding: '1px 6px', borderRadius: 2, color: _AT.textDim, fontFamily: _AT.fontMono }}>{context}</span>}
                 </div>
-                {description && <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 2, fontFamily: THEME.fontBody }}>{description}</div>}
+                {description && <div style={{ fontSize: 10, color: _AT.textMuted, marginTop: 2, fontFamily: _AT.fontBody }}>{description}</div>}
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 {type === 'toggle' ? (
                     <NeonToggle value={!!value} onChange={onChange} size="small" />
                 ) : (
                     <>
-                        <span style={{ fontSize: 14, fontFamily: THEME.fontMono, color: THEME.textMain, fontWeight: 700 }}>{value}</span>
-                        {unit && <span style={{ fontSize: 10, color: THEME.textDim, marginLeft: 5, fontFamily: THEME.fontMono }}>{unit}</span>}
+                        <span style={{ fontSize: 14, fontFamily: _AT.fontMono, color: _AT.textMain, fontWeight: 700 }}>{value}</span>
+                        {unit && <span style={{ fontSize: 10, color: _AT.textDim, marginLeft: 5, fontFamily: _AT.fontMono }}>{unit}</span>}
                     </>
                 )}
             </div>
@@ -2198,11 +2203,11 @@ export const SettingRow = ({ name, value, unit, description, category, context, 
 //  30. ROLE & WEBSOCKET STATUS (carried over + enhanced)
 // ═══════════════════════════════════════════════════════════════════════════
 const ROLE_CONFIG = {
-    super_admin: { color: THEME.solar,     icon: ShieldCheck,  label: 'SUPER ADMIN' },
-    dba:         { color: THEME.plasma,    icon: Shield,       label: 'DBA' },
-    developer:   { color: THEME.neon,      icon: Code,         label: 'DEVELOPER' },
-    analyst:     { color: THEME.aurora,    icon: BarChart2,    label: 'ANALYST' },
-    viewer:      { color: THEME.textMuted, icon: Eye,          label: 'VIEWER' },
+    super_admin: { color: _AT.warning,     icon: ShieldCheck,  label: 'SUPER ADMIN' },
+    dba:         { color: _AT.primary,    icon: Shield,       label: 'DBA' },
+    developer:   { color: _AT.ai,      icon: Code,         label: 'DEVELOPER' },
+    analyst:     { color: _AT.success,    icon: BarChart2,    label: 'ANALYST' },
+    viewer:      { color: _AT.textMuted, icon: Eye,          label: 'VIEWER' },
 };
 
 export const RoleBadge = ({ role, showIcon = true, size = 'default' }) => {
@@ -2212,23 +2217,23 @@ export const RoleBadge = ({ role, showIcon = true, size = 'default' }) => {
     return (
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: sm ? 4 : 6, background: `${config.color}10`, padding: sm ? '2px 8px' : '5px 12px', borderRadius: 3, border: `1px solid ${config.color}22` }}>
             {showIcon && <Icon size={sm ? 10 : 13} color={config.color} />}
-            <span style={{ fontSize: sm ? 9 : 10, fontWeight: 800, color: config.color, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: THEME.fontDisplay }}>{config.label}</span>
+            <span style={{ fontSize: sm ? 9 : 10, fontWeight: 800, color: config.color, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: _AT.fontDisplay }}>{config.label}</span>
         </div>
     );
 };
 
 export const WebSocketStatus = ({ connected, clientCount, lastMessage, uptime, quality }) => {
     injectKeyframes();
-    const color = connected ? THEME.aurora : THEME.danger;
-    const qualColors = { high: THEME.aurora, medium: THEME.solar, low: THEME.danger };
+    const color = connected ? _AT.success : _AT.danger;
+    const qualColors = { high: _AT.success, medium: _AT.warning, low: _AT.danger };
     const qColor = quality ? qualColors[quality] || color : color;
     return (
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: `${qColor}05`, padding: '6px 14px', borderRadius: 2, border: `1px solid ${qColor}20`, boxShadow: connected ? `0 0 20px ${qColor}08` : 'none' }}>
             {connected ? <Wifi size={12} color={qColor} /> : <WifiOff size={12} color={qColor} />}
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: qColor, boxShadow: `0 0 8px ${qColor}`, animation: connected ? 'pulse 2s infinite' : 'none' }} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: qColor, fontFamily: THEME.fontDisplay, letterSpacing: '1px' }}>{connected ? 'WS·CONNECTED' : 'WS·OFFLINE'}</span>
-            {clientCount !== undefined && <span style={{ fontSize: 9, fontFamily: THEME.fontMono, color: THEME.textMuted, background: 'rgba(255,255,255,0.04)', padding: '1px 7px', borderRadius: 2 }}>{clientCount}c</span>}
-            {uptime && <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>{uptime}</span>}
+            <span style={{ fontSize: 10, fontWeight: 700, color: qColor, fontFamily: _AT.fontDisplay, letterSpacing: '1px' }}>{connected ? 'WS·CONNECTED' : 'WS·OFFLINE'}</span>
+            {clientCount !== undefined && <span style={{ fontSize: 9, fontFamily: _AT.fontMono, color: _AT.textMuted, background: 'rgba(255,255,255,0.04)', padding: '1px 7px', borderRadius: 2 }}>{clientCount}c</span>}
+            {uptime && <span style={{ fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono }}>{uptime}</span>}
         </div>
     );
 };
@@ -2237,10 +2242,10 @@ export const WebSocketStatus = ({ connected, clientCount, lastMessage, uptime, q
 //  31. NODE LINK (enhanced) + SEQUENCE USAGE + EXTENSION CARD
 // ═══════════════════════════════════════════════════════════════════════════
 export const NodeLink = ({ from, to, type = 'depends', latency, status = 'active', bidirectional = false }) => {
-    const color = { active: THEME.aurora, degraded: THEME.warning, error: THEME.danger, idle: THEME.textMuted }[status] || THEME.aurora;
+    const color = { active: _AT.success, degraded: _AT.warning, error: _AT.danger, idle: _AT.textMuted }[status] || _AT.success;
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0, fontFamily: THEME.fontMono, fontSize: 11 }}>
-            <span style={{ color: THEME.textSub, background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '3px 0 0 3px', border: `1px solid ${THEME.border}` }}>{from}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0, fontFamily: _AT.fontMono, fontSize: 11 }}>
+            <span style={{ color: _AT.textMuted, background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '3px 0 0 3px', border: `1px solid ${_AT.glassBorder}` }}>{from}</span>
             <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', background: `${color}08`, border: `1px solid ${color}20`, borderLeft: 'none', borderRight: 'none', height: 29, gap: 2 }}>
                 {bidirectional && <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderRight: `6px solid ${color}60` }} />}
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}`, animation: status === 'active' ? 'pulse 2s infinite' : 'none' }} />
@@ -2249,7 +2254,7 @@ export const NodeLink = ({ from, to, type = 'depends', latency, status = 'active
                 <div style={{ width: 18, height: 1, background: `linear-gradient(90deg, ${color}50, ${color})` }} />
                 <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: `6px solid ${color}` }} />
             </div>
-            <span style={{ color: THEME.textSub, background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '0 3px 3px 0', border: `1px solid ${THEME.border}`, borderLeft: 'none' }}>{to}</span>
+            <span style={{ color: _AT.textMuted, background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '0 3px 3px 0', border: `1px solid ${_AT.glassBorder}`, borderLeft: 'none' }}>{to}</span>
         </div>
     );
 };
@@ -2257,32 +2262,32 @@ export const NodeLink = ({ from, to, type = 'depends', latency, status = 'active
 export const SequenceUsageBar = ({ name, usagePct, lastValue, maxValue, cycle }) => (
     <div style={{ marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-            <span style={{ fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textSub }}>{name}</span>
+            <span style={{ fontSize: 12, fontFamily: _AT.fontMono, color: _AT.textMuted }}>{name}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {cycle && <ChipBadge label="CYCLE" color={THEME.aurora} micro />}
-                <span style={{ fontSize: 11, fontFamily: THEME.fontMono, fontWeight: 700, color: usagePct > 80 ? THEME.danger : usagePct > 50 ? THEME.warning : THEME.textMuted }}>{usagePct}%</span>
+                {cycle && <ChipBadge label="CYCLE" color={_AT.success} micro />}
+                <span style={{ fontSize: 11, fontFamily: _AT.fontMono, fontWeight: 700, color: usagePct > 80 ? _AT.danger : usagePct > 50 ? _AT.warning : _AT.textMuted }}>{usagePct}%</span>
             </div>
         </div>
-        <NeonProgressBar value={usagePct} max={100} color={usagePct > 80 ? THEME.danger : usagePct > 50 ? THEME.warning : THEME.aurora} height={4} />
+        <NeonProgressBar value={usagePct} max={100} color={usagePct > 80 ? _AT.danger : usagePct > 50 ? _AT.warning : _AT.success} height={4} />
     </div>
 );
 
 export const ExtensionCard = ({ name, version, schema, description, enabled }) => {
     const [hovered, hoverProps] = useHover();
     return (
-        <div {...hoverProps} style={{ background: hovered ? 'rgba(10,20,40,0.8)' : 'rgba(4,9,28,0.6)', borderRadius: 3, border: `1px solid ${hovered ? THEME.borderHot : THEME.border}`, padding: 14, display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.2s' }}>
-            <div style={{ width: 38, height: 38, borderRadius: 4, background: `${THEME.plasma}08`, color: THEME.plasma, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.plasma}20` }}>
+        <div {...hoverProps} style={{ background: hovered ? 'rgba(10,20,40,0.8)' : 'rgba(4,9,28,0.6)', borderRadius: 3, border: `1px solid ${hovered ? _AT.glassBorderHot : _AT.glassBorder}`, padding: 14, display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.2s' }}>
+            <div style={{ width: 38, height: 38, borderRadius: 4, background: `${_AT.primary}08`, color: _AT.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${_AT.primary}20` }}>
                 <Database size={16} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontBody }}>{name}</span>
-                    <span style={{ fontSize: 9, background: THEME.grid, padding: '2px 7px', borderRadius: 2, color: THEME.textMuted, fontFamily: THEME.fontMono }}>v{version}</span>
-                    {enabled !== undefined && <ChipBadge label={enabled ? 'ACTIVE' : 'DISABLED'} color={enabled ? THEME.aurora : THEME.textMuted} micro dot={enabled} />}
+                    <span style={{ fontSize: 13, fontWeight: 700, color: _AT.textMain, fontFamily: _AT.fontBody }}>{name}</span>
+                    <span style={{ fontSize: 9, background: _AT.grid, padding: '2px 7px', borderRadius: 2, color: _AT.textMuted, fontFamily: _AT.fontMono }}>v{version}</span>
+                    {enabled !== undefined && <ChipBadge label={enabled ? 'ACTIVE' : 'DISABLED'} color={enabled ? _AT.success : _AT.textMuted} micro dot={enabled} />}
                 </div>
-                {description && <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{description}</div>}
+                {description && <div style={{ fontSize: 11, color: _AT.textMuted, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{description}</div>}
             </div>
-            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, flexShrink: 0 }}>{schema}</span>
+            <span style={{ fontSize: 10, color: _AT.textDim, fontFamily: _AT.fontMono, flexShrink: 0 }}>{schema}</span>
         </div>
     );
 };
@@ -2300,7 +2305,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
 
     if (!data) return <EmptyState icon={TerminalIcon} title="AWAITING INPUT" text="Select an entity to initiate neural analysis sequence." />;
 
-    const severityColor = { missing: THEME.danger, unused: THEME.warning, duplicate: THEME.solar }[type] || THEME.plasma;
+    const severityColor = { missing: _AT.danger, unused: _AT.warning, duplicate: _AT.warning }[type] || _AT.primary;
     const tabs = ['analysis', 'context', 'actions', 'metrics'];
 
     return (
@@ -2308,73 +2313,73 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
             {/* AI Header */}
             <div style={{
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(123,47,255,0.05) 100%)',
-                border: `1px solid ${THEME.ai}28`, borderRadius: 4, padding: 16, position: 'relative', overflow: 'hidden'
+                border: `1px solid ${_AT.ai}28`, borderRadius: 4, padding: 16, position: 'relative', overflow: 'hidden'
             }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${THEME.ai}, transparent)` }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${_AT.ai}, transparent)` }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 30, height: 30, background: `linear-gradient(135deg, ${THEME.ai}, #5b21b6)`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 18px ${THEME.ai}55`, animation: streaming ? 'plasmaGlow 2s ease-in-out infinite' : 'none' }}>
+                    <div style={{ width: 30, height: 30, background: `linear-gradient(135deg, ${_AT.ai}, #5b21b6)`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 18px ${_AT.ai}55`, animation: streaming ? 'plasmaGlow 2s ease-in-out infinite' : 'none' }}>
                         <Sparkles size={14} color="white" />
                     </div>
                     <div>
-                        <div style={{ fontSize: 9, fontWeight: 700, color: THEME.ai, letterSpacing: '1.5px', fontFamily: THEME.fontDisplay }}>NEURAL ANALYSIS ENGINE v3.0</div>
-                        <div style={{ fontSize: 8, color: THEME.textMuted, fontFamily: THEME.fontMono, marginTop: 1 }}>
-                            {streaming ? <TypewriterText text="Processing..." color={THEME.solar} speed={60} /> : 'confidence: 97.3% · latency: 142ms'}
+                        <div style={{ fontSize: 9, fontWeight: 700, color: _AT.ai, letterSpacing: '1.5px', fontFamily: _AT.fontDisplay }}>NEURAL ANALYSIS ENGINE v3.0</div>
+                        <div style={{ fontSize: 8, color: _AT.textMuted, fontFamily: _AT.fontMono, marginTop: 1 }}>
+                            {streaming ? <TypewriterText text="Processing..." color={_AT.warning} speed={60} /> : 'confidence: 97.3% · latency: 142ms'}
                         </div>
                     </div>
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
-                        {streaming && <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.aurora, animation: 'ping 1s ease-out infinite' }} />}
+                        {streaming && <div style={{ width: 6, height: 6, borderRadius: '50%', background: _AT.success, animation: 'ping 1s ease-out infinite' }} />}
                         <SeverityBadge severity={type === 'unused' ? 'warning' : type === 'missing' ? 'critical' : type === 'duplicate' ? 'warning' : 'info'} />
                     </div>
                 </div>
-                <p style={{ fontSize: 12, lineHeight: 1.8, color: THEME.textSub, margin: 0, fontFamily: THEME.fontBody }}>
+                <p style={{ fontSize: 12, lineHeight: 1.8, color: _AT.textMuted, margin: 0, fontFamily: _AT.fontBody }}>
                     {streaming ? typedText : (type === 'api' ? data.ai_insight : data.recommendation || 'No critical issues detected.')}
-                    {streaming && !done && <span style={{ borderRight: `2px solid ${THEME.ai}`, animation: 'blink 0.8s step-end infinite', marginLeft: 1 }} />}
+                    {streaming && !done && <span style={{ borderRight: `2px solid ${_AT.ai}`, animation: 'blink 0.8s step-end infinite', marginLeft: 1 }} />}
                 </p>
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.02)', padding: 3, borderRadius: 4, border: `1px solid ${THEME.border}` }}>
+            <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.02)', padding: 3, borderRadius: 4, border: `1px solid ${_AT.glassBorder}` }}>
                 {tabs.map(tab => (
                     <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                        flex: 1, background: activeTab === tab ? `${THEME.plasma}14` : 'none',
-                        border: activeTab === tab ? `1px solid ${THEME.plasma}30` : '1px solid transparent',
-                        color: activeTab === tab ? THEME.plasma : THEME.textMuted,
+                        flex: 1, background: activeTab === tab ? `${_AT.primary}14` : 'none',
+                        border: activeTab === tab ? `1px solid ${_AT.primary}30` : '1px solid transparent',
+                        color: activeTab === tab ? _AT.primary : _AT.textMuted,
                         padding: '5px 0', borderRadius: 3, cursor: 'pointer', fontSize: 8,
                         fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px',
-                        fontFamily: THEME.fontDisplay, transition: 'all 0.2s'
+                        fontFamily: _AT.fontDisplay, transition: 'all 0.2s'
                     }}>{tab}</button>
                 ))}
             </div>
 
             {/* Terminal */}
-            <div style={{ flex: 1, background: '#01060e', borderRadius: 4, border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: 160 }}>
+            <div style={{ flex: 1, background: '#01060e', borderRadius: 4, border: `1px solid ${_AT.glassBorder}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: 160 }}>
                 <ScanlineOverlay opacity={0.012} />
-                <div style={{ background: '#010509', padding: '7px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}` }}>
+                <div style={{ background: '#010509', padding: '7px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${_AT.glassBorder}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {['#ef4444','#f59e0b','#22c55e'].map((c, i) => (
                             <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: c, boxShadow: `0 0 5px ${c}80` }} />
                         ))}
-                        <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, marginLeft: 6 }}>neural://analysis.context</span>
+                        <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono, marginLeft: 6 }}>neural://analysis.context</span>
                     </div>
                     <CopyButton size="small" text={data.problem_query || data.recommendation || ''} />
                 </div>
-                <div style={{ padding: 14, fontFamily: THEME.fontMono, fontSize: 11, color: '#7dd3fc', lineHeight: 1.9, flex: 1, overflowY: 'auto' }}>
+                <div style={{ padding: 14, fontFamily: _AT.fontMono, fontSize: 11, color: '#7dd3fc', lineHeight: 1.9, flex: 1, overflowY: 'auto' }}>
                     {type === 'missing' && <>
-                        <div style={{ color: THEME.textDim }}>{`-- ✦ RECOMMENDED ACTION`}</div>
-                        <div style={{ color: THEME.aurora, marginTop: 2 }}>{`CREATE INDEX CONCURRENTLY idx_${data.table}_${data.column}`}</div>
-                        <div style={{ color: THEME.aurora }}>{`ON ${data.table} (${data.column});`}</div>
-                        <div style={{ color: THEME.textDim, marginTop: 8 }}>{`-- ✦ PROJECTED IMPACT`}</div>
-                        <div style={{ color: THEME.plasma }}>{`Est. speedup: ${data.improvement || '~10x'}`}</div>
+                        <div style={{ color: _AT.textDim }}>{`-- ✦ RECOMMENDED ACTION`}</div>
+                        <div style={{ color: _AT.success, marginTop: 2 }}>{`CREATE INDEX CONCURRENTLY idx_${data.table}_${data.column}`}</div>
+                        <div style={{ color: _AT.success }}>{`ON ${data.table} (${data.column});`}</div>
+                        <div style={{ color: _AT.textDim, marginTop: 8 }}>{`-- ✦ PROJECTED IMPACT`}</div>
+                        <div style={{ color: _AT.primary }}>{`Est. speedup: ${data.improvement || '~10x'}`}</div>
                     </>}
                     {type === 'unused' && <>
-                        <div style={{ color: THEME.textDim }}>{`-- ✦ SAFE TO REMOVE`}</div>
-                        <div style={{ color: THEME.danger, marginTop: 2 }}>{`DROP INDEX CONCURRENTLY ${data.indexName};`}</div>
-                        <div style={{ color: THEME.textDim, marginTop: 8 }}>{`-- ✦ RESOURCES FREED`}</div>
-                        <div style={{ color: THEME.solar }}>{`Disk: ${data.size} · Last scan: never`}</div>
+                        <div style={{ color: _AT.textDim }}>{`-- ✦ SAFE TO REMOVE`}</div>
+                        <div style={{ color: _AT.danger, marginTop: 2 }}>{`DROP INDEX CONCURRENTLY ${data.indexName};`}</div>
+                        <div style={{ color: _AT.textDim, marginTop: 8 }}>{`-- ✦ RESOURCES FREED`}</div>
+                        <div style={{ color: _AT.warning }}>{`Disk: ${data.size} · Last scan: never`}</div>
                     </>}
                     {type === 'api' && data.queries?.map((q, i) => (
                         <div key={i} style={{ marginBottom: 12 }}>
-                            <div style={{ color: THEME.textDim, fontSize: 10 }}>{`-- [${i+1}] ${q.calls} calls · ${q.duration}ms avg`}</div>
+                            <div style={{ color: _AT.textDim, fontSize: 10 }}>{`-- [${i+1}] ${q.calls} calls · ${q.duration}ms avg`}</div>
                             <div style={{ color: '#a5b4fc', marginTop: 4 }}>{q.sql}</div>
                         </div>
                     ))}
@@ -2396,30 +2401,30 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
     return (
         <div {...hoverProps} style={{
             background: hovered ? 'rgba(7,15,36,0.9)' : 'rgba(4,9,28,0.7)',
-            borderRadius: 3, border: `1px solid ${hovered ? THEME.borderHot : THEME.border}`,
+            borderRadius: 3, border: `1px solid ${hovered ? _AT.glassBorderHot : _AT.glassBorder}`,
             overflow: 'hidden', transition: 'all 0.2s', animation: 'fadeUp 0.3s ease backwards', position: 'relative'
         }}>
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: entry.success ? THEME.aurora : THEME.danger, opacity: 0.6 }} />
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: entry.success ? _AT.success : _AT.danger, opacity: 0.6 }} />
             <div onClick={() => setExpanded(!expanded)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px 10px 16px', cursor: 'pointer' }}>
-                <span style={{ flex: 1, fontSize: 11, color: THEME.textSub, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.sql}</span>
+                <span style={{ flex: 1, fontSize: 11, color: _AT.textMuted, fontFamily: _AT.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.sql}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    {entry.tag && <ChipBadge label={entry.tag} color={THEME.plasma} micro />}
-                    <span style={{ fontSize: 10, color: entry.durationMs > 1000 ? THEME.warning : THEME.textMuted, fontFamily: THEME.fontMono, fontWeight: 700 }}>{entry.durationMs}ms</span>
-                    <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>{entry.rowCount}r</span>
-                    <button onClick={(e) => { e.stopPropagation(); onFavourite?.(entry.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: entry.favourite ? THEME.solar : THEME.textDim, transition: 'color 0.2s', display: 'flex' }}>
-                        {entry.favourite ? <Star size={12} fill={THEME.solar} /> : <Star size={12} />}
+                    {entry.tag && <ChipBadge label={entry.tag} color={_AT.primary} micro />}
+                    <span style={{ fontSize: 10, color: entry.durationMs > 1000 ? _AT.warning : _AT.textMuted, fontFamily: _AT.fontMono, fontWeight: 700 }}>{entry.durationMs}ms</span>
+                    <span style={{ fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono }}>{entry.rowCount}r</span>
+                    <button onClick={(e) => { e.stopPropagation(); onFavourite?.(entry.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: entry.favourite ? _AT.warning : _AT.textDim, transition: 'color 0.2s', display: 'flex' }}>
+                        {entry.favourite ? <Star size={12} fill={_AT.warning} /> : <Star size={12} />}
                     </button>
-                    <ChevronDown size={11} color={THEME.textDim} style={{ transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'none' }} />
+                    <ChevronDown size={11} color={_AT.textDim} style={{ transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'none' }} />
                 </div>
             </div>
             {expanded && (
-                <div style={{ padding: '0 16px 14px 16px', borderTop: `1px solid ${THEME.border}` }}>
-                    <pre style={{ fontSize: 11, color: '#93c5fd', fontFamily: THEME.fontMono, background: '#01060e', padding: 12, borderRadius: 3, margin: '10px 0', overflowX: 'auto', lineHeight: 1.7, whiteSpace: 'pre-wrap', border: `1px solid ${THEME.border}` }}>{entry.sql}</pre>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                <div style={{ padding: '0 16px 14px 16px', borderTop: `1px solid ${_AT.glassBorder}` }}>
+                    <pre style={{ fontSize: 11, color: '#93c5fd', fontFamily: _AT.fontMono, background: '#01060e', padding: 12, borderRadius: 3, margin: '10px 0', overflowX: 'auto', lineHeight: 1.7, whiteSpace: 'pre-wrap', border: `1px solid ${_AT.glassBorder}` }}>{entry.sql}</pre>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>
                         <div style={{ display: 'flex', gap: 12 }}>
-                            {entry.user && <span>user: <span style={{ color: THEME.textSub }}>{entry.user}</span></span>}
+                            {entry.user && <span>user: <span style={{ color: _AT.textMuted }}>{entry.user}</span></span>}
                             <span>{new Date(entry.ts).toLocaleString()}</span>
-                            {entry.error && <span style={{ color: THEME.danger }}>✕ {entry.error}</span>}
+                            {entry.error && <span style={{ color: _AT.danger }}>✕ {entry.error}</span>}
                         </div>
                         <div style={{ display: 'flex', gap: 5 }}>
                             {onCopy && <NanoButton icon={Copy} onClick={() => onCopy(entry.sql)} tooltip="Copy SQL" size="small" />}
@@ -2439,8 +2444,8 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
 export const CacheStatsRing = ({ size: cacheSize, maxSize, hitRate }) => {
     const usagePct = maxSize ? (cacheSize / maxSize) * 100 : 0;
     const data = [
-        { name: 'Used', value: cacheSize, fill: THEME.plasma },
-        { name: 'Free', value: maxSize - cacheSize, fill: THEME.grid },
+        { name: 'Used', value: cacheSize, fill: _AT.primary },
+        { name: 'Free', value: maxSize - cacheSize, fill: _AT.grid },
     ];
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -2453,16 +2458,16 @@ export const CacheStatsRing = ({ size: cacheSize, maxSize, hitRate }) => {
                     </PieChart>
                 </ResponsiveContainer>
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: THEME.plasma, fontFamily: THEME.fontMono, textShadow: `0 0 10px ${THEME.plasma}80` }}>{usagePct.toFixed(0)}%</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: _AT.primary, fontFamily: _AT.fontMono, textShadow: `0 0 10px ${_AT.primary}80` }}>{usagePct.toFixed(0)}%</span>
                 </div>
             </div>
             <div>
-                <div style={{ fontSize: 9, color: THEME.textMuted, marginBottom: 6, fontFamily: THEME.fontDisplay, letterSpacing: '1px', textTransform: 'uppercase' }}>App Cache</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontMono, lineHeight: 1 }}>
-                    {cacheSize}<span style={{ fontSize: 12, color: THEME.textMuted }}>/{maxSize}</span>
+                <div style={{ fontSize: 9, color: _AT.textMuted, marginBottom: 6, fontFamily: _AT.fontDisplay, letterSpacing: '1px', textTransform: 'uppercase' }}>App Cache</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: _AT.textMain, fontFamily: _AT.fontMono, lineHeight: 1 }}>
+                    {cacheSize}<span style={{ fontSize: 12, color: _AT.textMuted }}>/{maxSize}</span>
                 </div>
                 {hitRate !== undefined && (
-                    <div style={{ fontSize: 11, color: THEME.aurora, marginTop: 6, fontFamily: THEME.fontMono }}>↑ {hitRate}% hit rate</div>
+                    <div style={{ fontSize: 11, color: _AT.success, marginTop: 6, fontFamily: _AT.fontMono }}>↑ {hitRate}% hit rate</div>
                 )}
             </div>
         </div>
@@ -2470,13 +2475,13 @@ export const CacheStatsRing = ({ size: cacheSize, maxSize, hitRate }) => {
 };
 
 export const BloatStatusBadge = ({ status, bloatPct }) => {
-    const config = { critical: { color: THEME.danger, icon: XCircle }, warning: { color: THEME.warning, icon: AlertTriangle }, ok: { color: THEME.aurora, icon: CheckCircle } }[status] || { color: THEME.textMuted, icon: Info };
+    const config = { critical: { color: _AT.danger, icon: XCircle }, warning: { color: _AT.warning, icon: AlertTriangle }, ok: { color: _AT.success, icon: CheckCircle } }[status] || { color: _AT.textMuted, icon: Info };
     const Icon = config.icon;
     return (
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: `${config.color}10`, padding: '3px 10px', borderRadius: 3, border: `1px solid ${config.color}25` }}>
             <Icon size={11} color={config.color} />
-            <span style={{ fontSize: 9, fontWeight: 800, color: config.color, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: THEME.fontDisplay }}>{status}</span>
-            {bloatPct !== undefined && <span style={{ fontSize: 10, fontFamily: THEME.fontMono, color: config.color }}>{bloatPct}%</span>}
+            <span style={{ fontSize: 9, fontWeight: 800, color: config.color, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: _AT.fontDisplay }}>{status}</span>
+            {bloatPct !== undefined && <span style={{ fontSize: 10, fontFamily: _AT.fontMono, color: config.color }}>{bloatPct}%</span>}
         </div>
     );
 };
@@ -2491,7 +2496,7 @@ export const BentoMetric = ({ label, value, unit, icon: Icon, color, trend, dela
         <div {...hoverProps} onClick={onClick} style={{
             background: 'linear-gradient(145deg, rgba(7,15,36,0.82) 0%, rgba(2,6,20,0.97) 100%)',
             borderRadius: 4, padding: 22,
-            border: `1px solid ${hovered ? color + '45' : THEME.border}`,
+            border: `1px solid ${hovered ? color + '45' : _AT.glassBorder}`,
             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
             animation: `fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s backwards`,
             position: 'relative', overflow: 'hidden',
@@ -2514,14 +2519,14 @@ export const BentoMetric = ({ label, value, unit, icon: Icon, color, trend, dela
                 <div style={{ padding: 7, borderRadius: 6, background: `${color}14`, color, border: `1px solid ${color}28` }}>
                     <Icon size={15} />
                 </div>
-                <span style={{ fontSize: 9, color: THEME.textMuted, fontWeight: 700, fontFamily: THEME.fontDisplay, textTransform: 'uppercase', letterSpacing: '1.5px' }}>{label}</span>
+                <span style={{ fontSize: 9, color: _AT.textMuted, fontWeight: 700, fontFamily: _AT.fontDisplay, textTransform: 'uppercase', letterSpacing: '1.5px' }}>{label}</span>
             </div>
             <div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
-                    <span style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1, fontFamily: THEME.fontMono, textShadow: hovered ? `0 0 28px ${color}90` : 'none', transition: 'text-shadow 0.3s' }}>{value}</span>
-                    {unit && <span style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 3, fontFamily: THEME.fontMono }}>{unit}</span>}
+                    <span style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1, fontFamily: _AT.fontMono, textShadow: hovered ? `0 0 28px ${color}90` : 'none', transition: 'text-shadow 0.3s' }}>{value}</span>
+                    {unit && <span style={{ fontSize: 13, color: _AT.textMuted, marginBottom: 3, fontFamily: _AT.fontMono }}>{unit}</span>}
                 </div>
-                {description && <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 4 }}>{description}</div>}
+                {description && <div style={{ fontSize: 11, color: _AT.textMuted, marginTop: 4 }}>{description}</div>}
                 {trend !== undefined && trend !== null && <div style={{ marginTop: 8 }}><TrendChip value={trend} label="vs last hr" /></div>}
             </div>
         </div>
@@ -2531,17 +2536,17 @@ export const BentoMetric = ({ label, value, unit, icon: Icon, color, trend, dela
 // ═══════════════════════════════════════════════════════════════════════════
 //  TERMINAL LINE (kept from v1 + enhanced)
 // ═══════════════════════════════════════════════════════════════════════════
-export const TerminalLine = ({ prompt = '$', command, output, color = THEME.plasma, delay = 0, type = 'default' }) => {
+export const TerminalLine = ({ prompt = '$', command, output, color = _AT.primary, delay = 0, type = 'default' }) => {
     injectKeyframes();
-    const prompts = { default: { sym: '$', color: THEME.aurora }, error: { sym: '✕', color: THEME.danger }, success: { sym: '✓', color: THEME.aurora }, system: { sym: '⬡', color: THEME.solar } };
+    const prompts = { default: { sym: '$', color: _AT.success }, error: { sym: '✕', color: _AT.danger }, success: { sym: '✓', color: _AT.success }, system: { sym: '⬡', color: _AT.warning } };
     const p = prompts[type] || prompts.default;
     return (
-        <div style={{ fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.85, animation: `fadeUp 0.4s ease ${delay}s backwards` }}>
+        <div style={{ fontFamily: _AT.fontMono, fontSize: 12, lineHeight: 1.85, animation: `fadeUp 0.4s ease ${delay}s backwards` }}>
             <div style={{ display: 'flex', gap: 8 }}>
                 <span style={{ color: p.color, userSelect: 'none', flexShrink: 0 }}>{p.sym}</span>
-                <span style={{ color: THEME.textMain }}>{command}</span>
+                <span style={{ color: _AT.textMain }}>{command}</span>
             </div>
-            {output && <div style={{ color: THEME.textMuted, marginLeft: 18 }}>{output}</div>}
+            {output && <div style={{ color: _AT.textMuted, marginLeft: 18 }}>{output}</div>}
         </div>
     );
 };
@@ -2549,7 +2554,7 @@ export const TerminalLine = ({ prompt = '$', command, output, color = THEME.plas
 // ═══════════════════════════════════════════════════════════════════════════
 //  COMMAND PALETTE ITEM (kept + enhanced)
 // ═══════════════════════════════════════════════════════════════════════════
-export const CommandPaletteItem = ({ icon: Icon, label, description, shortcut, color = THEME.plasma, onClick, active }) => {
+export const CommandPaletteItem = ({ icon: Icon, label, description, shortcut, color = _AT.primary, onClick, active }) => {
     const [hovered, hoverProps] = useHover();
     const isHighlighted = active || hovered;
     return (
@@ -2566,11 +2571,11 @@ export const CommandPaletteItem = ({ icon: Icon, label, description, shortcut, c
                 </div>
             )}
             <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, color: isHighlighted ? THEME.textMain : THEME.textSub, fontFamily: THEME.fontBody, fontWeight: 500 }}>{label}</div>
-                {description && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>{description}</div>}
+                <div style={{ fontSize: 12, color: isHighlighted ? _AT.textMain : _AT.textMuted, fontFamily: _AT.fontBody, fontWeight: 500 }}>{label}</div>
+                {description && <div style={{ fontSize: 10, color: _AT.textDim, marginTop: 1 }}>{description}</div>}
             </div>
             {shortcut && (
-                <kbd style={{ fontSize: 9, color: THEME.textDim, background: 'rgba(255,255,255,0.05)', border: `1px solid ${THEME.border}`, padding: '2px 7px', borderRadius: 3, fontFamily: THEME.fontMono }}>{shortcut}</kbd>
+                <kbd style={{ fontSize: 9, color: _AT.textDim, background: 'rgba(255,255,255,0.05)', border: `1px solid ${_AT.glassBorder}`, padding: '2px 7px', borderRadius: 3, fontFamily: _AT.fontMono }}>{shortcut}</kbd>
             )}
         </div>
     );
