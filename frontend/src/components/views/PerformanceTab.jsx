@@ -21,16 +21,29 @@ import {
     Timer, TrendingUp, TrendingDown, Eye, Layers, GitBranch,
     RotateCcw, Terminal, Workflow, CircleDot, Radio,
     Tag, Bookmark, BookmarkCheck, Trash2, Search, Filter,
-    ChevronDown, ChevronRight, MemoryStick, Disc, Wifi,
-    SquareStack, FlaskConical, XCircle, List, Calendar,
-    Hash, User, AppWindow, RefreshCcw, TrendingUp as Trend,
+    ChevronDown, ChevronRight, Wifi,
+    XCircle, List, Calendar,
+    Hash, User, RefreshCcw,
     BarChart2, AlertCircle, Info, MoreHorizontal, SlidersHorizontal,
-    Layers3, Box, Package, Merge, GitMerge, Columns, Rows,
-    PanelLeftOpen, Maximize2, Minimize2, FileText, Flame,
-    Bolt, Split, GitFork, SkipForward, Crosshair, Boxes,
-    BrainCircuit, Waypoints, TrendingDown as Falling,
-    LayoutGrid, Sigma, Braces, FileCog, Hourglass
+    Box, Package, Merge, GitMerge, Columns, Rows,
+    Maximize2, Minimize2, FileText,
+    Disc, GitFork
 } from 'lucide-react';
+
+// Safe aliases for icons not available in lucide-react@0.263.1
+const BrainCircuit = Cpu;
+const Waypoints = GitMerge;
+const Boxes = Package;
+const Hourglass = Clock;
+const Sigma = BarChart2;
+const FileCog = SlidersHorizontal;
+const Braces = FileText;
+const MemoryStick = HardDrive;
+const SquareStack = Layers;
+const Falling = TrendingDown;
+const LayoutGrid = Maximize2;
+// GitFork added in later lucide versions — use GitBranch as fallback if needed
+// Disc is available in 0.263.1 so no alias needed
 import {
     ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip,
     CartesianGrid, BarChart, Bar, LineChart, Line, ReferenceLine,
