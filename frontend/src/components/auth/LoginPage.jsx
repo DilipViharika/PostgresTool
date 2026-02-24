@@ -279,22 +279,22 @@ const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
     return (
         <div style={{ position: 'absolute', left: x, top: y, pointerEvents: 'none', zIndex: 5 }}>
             <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%,-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {IconComp && <IconComp size={isPrimary ? 13 : 9} color="rgba(255,255,255,.95)" strokeWidth={1.8}/>}
+                {IconComp && <IconComp size={isPrimary ? 13 : 9} color={THEME.textMain} strokeWidth={1.8}/>}
             </div>
             <div style={{ position: 'absolute', top: offset, left: 0, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'labelIn .6s cubic-bezier(.34,1.3,.64,1) both', whiteSpace: 'nowrap' }}>
                 <div style={{ width: 1, height: isPrimary ? 16 : 11, background: `linear-gradient(to bottom, transparent, ${color}55)` }}/>
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: isPrimary ? 7 : 5,
-                    background: 'linear-gradient(135deg, rgba(8,10,24,.92), rgba(12,14,32,.88))',
+                    background: THEME.glass,
                     backdropFilter: 'blur(16px)',
                     border: `1px solid ${color}28`,
                     borderRadius: isPrimary ? 10 : 8,
                     padding: isPrimary ? '6px 11px' : '3px 8px',
-                    boxShadow: `0 4px 20px rgba(0,0,0,.5), 0 0 0 1px ${color}10 inset`,
+                    boxShadow: `0 4px 20px rgba(0,0,0,.3), 0 0 0 1px ${color}10 inset`,
                 }}>
                     <div style={{ width: isPrimary ? 7 : 5, height: isPrimary ? 7 : 5, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}CC`, flexShrink: 0 }}/>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 9 : 7.5, fontWeight: 700, color: 'rgba(235,238,252,.95)', letterSpacing: '1px', textTransform: 'uppercase', lineHeight: 1 }}>
+                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 9 : 7.5, fontWeight: 700, color: THEME.textMain, letterSpacing: '1px', textTransform: 'uppercase', lineHeight: 1 }}>
                             {def.label}
                         </span>
                         <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 7.5 : 6.5, color: `${color}99`, letterSpacing: '.5px', lineHeight: 1 }}>
@@ -328,14 +328,15 @@ const FEATURE_STATS = [
 //  LEFT PANEL
 // ─────────────────────────────────────────────────────────────────────────────
 const LeftPanel = () => {
+    useAdaptiveTheme();
     const canvasRef = useRef(null);
     const labelPos  = useNetworkCanvas(canvasRef);
 
     return (
         <div style={{
             flex: '1 1 0', minWidth: 0, height: '100vh', position: 'relative',
-            overflow: 'hidden', background: '#05060E',
-            borderRight: '1px solid rgba(100,112,255,.08)',
+            overflow: 'hidden', background: THEME.bg,
+            borderRight: `1px solid ${THEME.glassBorder}`,
         }}>
             <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}/>
 
@@ -365,7 +366,7 @@ const LeftPanel = () => {
                     <Database size={18} color="#fff" strokeWidth={1.8}/>
                 </div>
                 <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(235,238,252,.95)', fontFamily: THEME.fontBody, letterSpacing: '-.2px', lineHeight: 1 }}>PG MONITOR</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: THEME.textMain, fontFamily: THEME.fontBody, letterSpacing: '-.2px', lineHeight: 1 }}>PG MONITOR</div>
                     <div style={{ fontSize: 8, color: 'rgba(100,112,255,.6)', fontFamily: THEME.fontMono, marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>PostgreSQL Intelligence</div>
                 </div>
             </div>
@@ -373,7 +374,7 @@ const LeftPanel = () => {
             <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, height: '38%',
                 pointerEvents: 'none', zIndex: 3,
-                background: 'linear-gradient(to top, rgba(5,6,14,1) 0%, rgba(5,6,14,.96) 30%, rgba(5,6,14,.55) 60%, transparent 100%)',
+                background: `linear-gradient(to top, ${THEME.bg} 0%, ${THEME.bg}F5 30%, ${THEME.bg}8C 60%, transparent 100%)`,
             }}/>
 
             <div style={{
@@ -391,13 +392,13 @@ const LeftPanel = () => {
                     animation: 'fadeUp .8s ease .1s backwards',
                 }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#6470FF', boxShadow: '0 0 8px #6470FF', display: 'inline-block', animation: 'dotBlink 2.5s ease-in-out infinite' }}/>
-                    <span style={{ fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(130,140,255,.80)' }}>
+                    <span style={{ fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '2.5px', textTransform: 'uppercase', color: THEME.primary }}>
                         Database Observability Platform
                     </span>
                 </div>
 
                 <div style={{ animation: 'fadeUp .85s ease .2s backwards' }}>
-                    <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(20px, 2.2vw, 36px)', fontWeight: 700, color: '#EAECF8', letterSpacing: '-0.5px' }}>
+                    <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(20px, 2.2vw, 36px)', fontWeight: 700, color: THEME.textMain, letterSpacing: '-0.5px' }}>
                         Monitor every query,&nbsp;
                     </span>
                     <span style={{
@@ -412,7 +413,7 @@ const LeftPanel = () => {
                     </span>
                 </div>
 
-                <p style={{ fontSize: 11.5, fontWeight: 300, color: 'rgba(130,145,175,.68)', lineHeight: 1.75, margin: 0, maxWidth: 500, fontFamily: THEME.fontBody, animation: 'fadeUp .85s ease .30s backwards' }}>
+                <p style={{ fontSize: 11.5, fontWeight: 300, color: THEME.textMuted, lineHeight: 1.75, margin: 0, maxWidth: 500, fontFamily: THEME.fontBody, animation: 'fadeUp .85s ease .30s backwards' }}>
                     Real-time intelligence across your PostgreSQL fleet — slow queries, replication lag,
                     vacuum cycles, index health, and table bloat. Six unified modules, zero blind spots.
                 </p>
@@ -422,7 +423,7 @@ const LeftPanel = () => {
                         <React.Fragment key={desc}>
                             <div className="stat-pill" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 13px', background: 'rgba(100,112,255,.06)', border: '1px solid rgba(100,112,255,.13)', borderRadius: 8, cursor: 'default' }}>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: '#8B94FF', letterSpacing: '-.3px' }}>{val}</span>
-                                <span style={{ fontFamily: THEME.fontBody, fontSize: 10, color: 'rgba(130,145,175,.52)' }}>{desc}</span>
+                                <span style={{ fontFamily: THEME.fontBody, fontSize: 10, color: THEME.textDim }}>{desc}</span>
                             </div>
                             {i < FEATURE_STATS.length - 1 && <div style={{ width: 1, height: 14, background: THEME.grid, flexShrink: 0 }}/>}
                         </React.Fragment>
@@ -431,7 +432,7 @@ const LeftPanel = () => {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 22, animation: 'fadeUp .85s ease .46s backwards' }}>
                     {BOTTOM_DOTS.map(({ label, color }) => (
-                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '.5px', color: 'rgba(140,155,185,.48)' }}>
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '.5px', color: THEME.textDim }}>
                             <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}AA`, flexShrink: 0 }}/>
                             {label}
                         </div>
