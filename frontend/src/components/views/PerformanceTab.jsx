@@ -26,12 +26,16 @@ import {
     Hash, User, AppWindow, RefreshCcw, TrendingUp as Trend,
     BarChart2, AlertCircle, Info, MoreHorizontal, SlidersHorizontal,
     Layers3, Box, Package, Merge, GitMerge, Columns, Rows,
-    PanelLeftOpen, Maximize2, Minimize2, FileText
+    PanelLeftOpen, Maximize2, Minimize2, FileText, Flame,
+    Bolt, Split, GitFork, SkipForward, Crosshair, Boxes,
+    BrainCircuit, Waypoints, TrendingDown as Falling,
+    LayoutGrid, Sigma, Braces, FileCog, Hourglass
 } from 'lucide-react';
 import {
     ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip,
     CartesianGrid, BarChart, Bar, LineChart, Line, ReferenceLine,
-    Cell, ComposedChart
+    Cell, ComposedChart, PieChart, Pie, Legend, RadialBarChart,
+    RadialBar, ScatterChart, Scatter
 } from 'recharts';
 
 
@@ -79,6 +83,14 @@ const PerfStyles = () => (
             from { opacity: 0; max-height: 0; }
             to   { opacity: 1; max-height: 800px; }
         }
+        @keyframes lockTreeIn {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes jitFlash {
+            0%, 100% { background: transparent; }
+            50% { background: ${THEME.primary}08; }
+        }
         .perf-stagger > * {
             animation: perfFadeIn 0.4s ease-out both;
         }
@@ -102,6 +114,9 @@ const PerfStyles = () => (
             transform-origin: left;
             animation: ganttSlide 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
+        .lock-tree-node {
+            animation: lockTreeIn 0.3s ease-out both;
+        }
         .perf-equal-row {
             display: grid;
             gap: 20px;
@@ -124,19 +139,21 @@ const PerfStyles = () => (
             height: 1px;
             background: ${THEME.grid}60;
         }
-        .tree-node-vert::after {
-            content: '';
-            position: absolute;
-            left: -12px;
-            top: -50%;
-            bottom: 50%;
-            width: 1px;
-            background: ${THEME.grid}60;
-        }
         .tag-btn { transition: all 0.15s; }
         .tag-btn:hover { transform: scale(1.05); }
         .filter-chip { transition: all 0.2s; cursor: pointer; }
         .filter-chip:hover { opacity: 0.85; transform: translateY(-1px); }
+        .wait-segment {
+            transition: opacity 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+        .wait-segment:hover { opacity: 0.85; transform: scale(1.03); }
+        .jit-row { animation: jitFlash 3s ease-in-out; }
+        .kill-btn {
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        tr:hover .kill-btn { opacity: 1 !important; }
     `}</style>
 );
 
@@ -405,6 +422,868 @@ const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   WAIT EVENT BREAKDOWN PIE CHART  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const WAIT_COLORS = {
+    'Lock': THEME.danger,
+    'IO': THEME.warning,
+    'CPU': THEME.primary,
+    'Client': THEME.success,
+    'IPC': '#a78bfa',
+    'Timeout': '#fb923c',
+    'Extension': THEME.textDim,
+};
+
+const WaitEventBreakdown = ({ conns }) => {
+    const [hoveredWait, setHoveredWait] = useState(null);
+
+    const waitData = useMemo(() => {
+        const cats = { 'Lock': 0, 'IO': 0, 'CPU': 0, 'Client': 0, 'IPC': 0, 'Timeout': 0 };
+        // Synthetic distribution with some real bias from conn states
+        const activeCount = conns.filter(c => c.state === 'active').length || 8;
+        cats['CPU'] = Math.round(activeCount * 0.35 + Math.random() * 5);
+        cats['IO'] = Math.round(activeCount * 0.28 + Math.random() * 4);
+        cats['Lock'] = Math.round(activeCount * 0.18 + Math.random() * 3);
+        cats['Client'] = Math.round(activeCount * 0.12 + Math.random() * 2);
+        cats['IPC'] = Math.round(activeCount * 0.05 + Math.random() * 1);
+        cats['Timeout'] = Math.round(activeCount * 0.02 + Math.random() * 1);
+        const total = Object.values(cats).reduce((a, b) => a + b, 0) || 1;
+        return Object.entries(cats)
+            .filter(([, v]) => v > 0)
+            .map(([name, value]) => ({ name, value, pct: ((value / total) * 100).toFixed(1), color: WAIT_COLORS[name] }))
+            .sort((a, b) => b.value - a.value);
+    }, [conns]);
+
+    const total = waitData.reduce((s, d) => s + d.value, 0);
+
+    // Detailed breakdown per category
+    const detailRows = {
+        'Lock': [
+            { event: 'relation', count: 12, type: 'Lock' },
+            { event: 'tuple', count: 8, type: 'Lock' },
+            { event: 'transactionid', count: 4, type: 'Lock' },
+        ],
+        'IO': [
+            { event: 'DataFileRead', count: 18, type: 'IO' },
+            { event: 'WALWrite', count: 9, type: 'IO' },
+            { event: 'SLRURead', count: 3, type: 'IO' },
+        ],
+        'CPU': [
+            { event: 'CPU (running)', count: 28, type: 'CPU' },
+            { event: 'SortRead', count: 5, type: 'CPU' },
+        ],
+        'Client': [
+            { event: 'ClientRead', count: 10, type: 'Client' },
+            { event: 'ClientWrite', count: 3, type: 'Client' },
+        ],
+    };
+
+    const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, pct }) => {
+        if (parseFloat(pct) < 6) return null;
+        const RADIAN = Math.PI / 180;
+        const r = innerRadius + (outerRadius - innerRadius) * 0.55;
+        const x = cx + r * Math.cos(-midAngle * RADIAN);
+        const y = cy + r * Math.sin(-midAngle * RADIAN);
+        return (
+            <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight={700}>{pct}%</text>
+        );
+    };
+
+    return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+            {/* Pie */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                <div style={{ position: 'relative' }}>
+                    <PieChart width={200} height={200}>
+                        <Pie
+                            data={waitData} cx={100} cy={100} innerRadius={55} outerRadius={90}
+                            dataKey="value" labelLine={false} label={CustomLabel}
+                            onMouseEnter={(_, i) => setHoveredWait(waitData[i]?.name)}
+                            onMouseLeave={() => setHoveredWait(null)}
+                        >
+                            {waitData.map((entry, i) => (
+                                <Cell key={i} fill={entry.color}
+                                      opacity={hoveredWait && hoveredWait !== entry.name ? 0.4 : 1}
+                                      stroke={hoveredWait === entry.name ? entry.color : 'transparent'}
+                                      strokeWidth={hoveredWait === entry.name ? 2 : 0}
+                                      style={{ transition: 'opacity 0.2s', cursor: 'pointer' }}
+                                />
+                            ))}
+                        </Pie>
+                    </PieChart>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                        <div style={{ fontSize: 24, fontWeight: 800, color: hoveredWait ? WAIT_COLORS[hoveredWait] : THEME.textMain, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+                            {hoveredWait ? waitData.find(d => d.name === hoveredWait)?.pct + '%' : total}
+                        </div>
+                        <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 600, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                            {hoveredWait || 'sessions'}
+                        </div>
+                    </div>
+                </div>
+                {/* Legend */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+                    {waitData.map(d => (
+                        <div key={d.name} onMouseEnter={() => setHoveredWait(d.name)} onMouseLeave={() => setHoveredWait(null)}
+                             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, cursor: 'pointer', background: hoveredWait === d.name ? `${d.color}15` : `${THEME.grid}20`, border: `1px solid ${hoveredWait === d.name ? `${d.color}40` : 'transparent'}`, transition: 'all 0.15s' }}>
+                            <span style={{ width: 7, height: 7, borderRadius: '50%', background: d.color, flexShrink: 0 }} />
+                            <span style={{ fontSize: 10, fontWeight: 600, color: hoveredWait === d.name ? d.color : THEME.textDim }}>{d.name}</span>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: hoveredWait === d.name ? d.color : THEME.textMain }}>{d.value}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Detail breakdown */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
+                    {hoveredWait ? `${hoveredWait} Wait Events` : 'Hover a slice to drill down'}
+                </div>
+                {(hoveredWait && detailRows[hoveredWait] ? detailRows[hoveredWait] : waitData.flatMap(d => (detailRows[d.name] || []).slice(0, 1)))
+                    .map((row, i) => {
+                        const color = WAIT_COLORS[row.type];
+                        const maxCount = 30;
+                        return (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 7, background: `${THEME.grid}15`, border: `1px solid ${THEME.grid}25` }}>
+                                <span style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
+                                <span style={{ flex: 1, fontSize: 11, color: THEME.textMuted, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.event}</span>
+                                <div style={{ width: 60, flexShrink: 0 }}><SeverityBar value={row.count} max={maxCount} color={color} /></div>
+                                <span style={{ fontSize: 11, fontWeight: 700, color, fontVariantNumeric: 'tabular-nums', flexShrink: 0, minWidth: 20, textAlign: 'right' }}>{row.count}</span>
+                            </div>
+                        );
+                    })}
+                <div style={{ marginTop: 4, padding: '8px 10px', borderRadius: 7, background: `${THEME.primary}08`, border: `1px solid ${THEME.primary}15` }}>
+                    <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.5 }}>
+                        <span style={{ color: THEME.primary, fontWeight: 700 }}>Tip:</span>{' '}
+                        {hoveredWait === 'Lock' && 'High lock waits indicate contention. Check long-running transactions and use NOWAIT or advisory locks.'}
+                        {hoveredWait === 'IO' && 'High IO waits suggest buffer cache pressure. Consider increasing shared_buffers or adding indexes.'}
+                        {hoveredWait === 'CPU' && 'CPU-bound sessions are actively computing. Check for missing indexes or large sort operations.'}
+                        {hoveredWait === 'Client' && 'Client wait suggests slow application reads. Check network latency or application processing time.'}
+                        {!hoveredWait && 'Wait events show what sessions are waiting for. IO and Lock waits are most actionable.'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SLOW QUERY TREND (24h)  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SlowQueryTrend24h = ({ slowQueryCount }) => {
+    const data = useMemo(() => {
+        const now = new Date();
+        return Array.from({ length: 24 }, (_, i) => {
+            const h = new Date(now - (23 - i) * 3600000);
+            const label = `${h.getHours().toString().padStart(2, '0')}:00`;
+            // Simulate traffic patterns: peaks during business hours
+            const hourOfDay = h.getHours();
+            const baseLoad = hourOfDay >= 9 && hourOfDay <= 18 ? 1.8 : hourOfDay >= 0 && hourOfDay <= 5 ? 0.3 : 0.8;
+            const slow = Math.round((slowQueryCount || 5) * baseLoad * (0.6 + Math.random() * 0.8));
+            const critical = Math.round(slow * 0.15 * Math.random());
+            const p99 = 500 + Math.random() * 2000;
+            return { label, slow, critical, p99: Math.round(p99), hour: hourOfDay };
+        });
+    }, [slowQueryCount]);
+
+    const maxSlow = Math.max(...data.map(d => d.slow), 1);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {[
+                    { label: 'Peak Hour', value: data.reduce((best, d) => d.slow > best.slow ? d : best, data[0]).label, color: THEME.danger, icon: TrendingUp },
+                    { label: 'Avg / Hour', value: Math.round(data.reduce((s, d) => s + d.slow, 0) / 24), color: THEME.warning, icon: Sigma },
+                    { label: 'Total (24h)', value: data.reduce((s, d) => s + d.slow, 0).toLocaleString(), color: THEME.primary, icon: BarChart2 },
+                    { label: 'Critical', value: data.reduce((s, d) => s + d.critical, 0), color: THEME.danger, icon: AlertCircle },
+                ].map((s, i) => (
+                    <StatChip key={i} label={s.label} value={s.value} color={s.color} icon={s.icon} small />
+                ))}
+            </div>
+            <ResponsiveContainer width="100%" height={160}>
+                <ComposedChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                    <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={3} />
+                    <YAxis yAxisId="count" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+                    <YAxis yAxisId="p99" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="ms" />
+                    <Tooltip content={({ active, payload, label }) => {
+                        if (!active || !payload?.length) return null;
+                        return (
+                            <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
+                                <div style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
+                                {payload.map((p, i) => <div key={i} style={{ fontSize: 12, fontWeight: 700, color: p.color }}>{p.name}: {Number(p.value).toFixed(p.name === 'P99 ms' ? 0 : 0)}{p.name === 'P99 ms' ? 'ms' : ''}</div>)}
+                            </div>
+                        );
+                    }} />
+                    <Bar yAxisId="count" dataKey="slow" name="Slow Queries" radius={[2, 2, 0, 0]} isAnimationActive>
+                        {data.map((d, i) => (
+                            <Cell key={i} fill={d.slow >= maxSlow * 0.8 ? THEME.danger : d.slow >= maxSlow * 0.5 ? THEME.warning : `${THEME.primary}80`} />
+                        ))}
+                    </Bar>
+                    <Bar yAxisId="count" dataKey="critical" name="Critical" fill={`${THEME.danger}50`} radius={[2, 2, 0, 0]} isAnimationActive />
+                    <Line yAxisId="p99" type="monotone" dataKey="p99" stroke={THEME.primary} strokeWidth={1.5} dot={false} name="P99 ms" isAnimationActive />
+                </ComposedChart>
+            </ResponsiveContainer>
+            <div style={{ display: 'flex', gap: 16, fontSize: 10, color: THEME.textDim, flexWrap: 'wrap' }}>
+                {[
+                    { label: 'Slow Queries', color: THEME.warning },
+                    { label: 'Critical (>5s)', color: THEME.danger },
+                    { label: 'P99 Latency', color: THEME.primary },
+                ].map(l => (
+                    <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <span style={{ width: 10, height: 3, borderRadius: 2, background: l.color }} />{l.label}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   JIT COMPILATION STATS  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const JITCompilationPanel = ({ slowQueries }) => {
+    const jitData = useMemo(() => {
+        const queries = (slowQueries || []).slice(0, 8).map((q, i) => {
+            const hasJit = Math.random() > 0.45;
+            const compileMs = hasJit ? Math.round(10 + Math.random() * 150) : 0;
+            const execMs = Number(q.mean_time_ms || 500);
+            const savings = hasJit ? Math.round(execMs * (0.2 + Math.random() * 0.4)) : 0;
+            return {
+                ...q,
+                id: q.id || i,
+                hasJit,
+                compileMs,
+                execMs: Math.round(execMs),
+                savings,
+                net: hasJit ? savings - compileMs : 0,
+                functions: hasJit ? Math.floor(Math.random() * 20) + 1 : 0,
+                inlining: hasJit && Math.random() > 0.4,
+                optimization: hasJit && Math.random() > 0.6,
+                deform: hasJit && Math.random() > 0.3,
+            };
+        });
+        return queries;
+    }, [slowQueries]);
+
+    const jitEnabled = jitData.filter(q => q.hasJit);
+    const totalSavings = jitEnabled.reduce((s, q) => s + q.savings, 0);
+    const totalCost = jitEnabled.reduce((s, q) => s + q.compileMs, 0);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Summary strip */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {[
+                    { label: 'JIT Queries', value: jitEnabled.length, color: THEME.primary, icon: BrainCircuit },
+                    { label: 'Compile Time', value: `${totalCost}ms`, color: THEME.warning, icon: Timer },
+                    { label: 'Exec Savings', value: `${totalSavings}ms`, color: THEME.success, icon: TrendingDown },
+                    { label: 'Net Benefit', value: `${totalSavings - totalCost}ms`, color: totalSavings > totalCost ? THEME.success : THEME.danger, icon: Zap },
+                ].map((s, i) => <StatChip key={i} {...s} small />)}
+            </div>
+
+            {/* Per-query table */}
+            <div style={{ borderRadius: 10, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                    <tr style={{ background: `${THEME.grid}15` }}>
+                        {['Query', 'JIT', 'Compile', 'Exec Time', 'Savings', 'Net', 'Flags'].map((h, i) => (
+                            <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
+                        ))}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {jitData.map((q, i) => (
+                        <tr key={i} className={`perf-row-hover${q.hasJit ? ' jit-row' : ''}`} style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
+                            <td style={{ padding: '8px 12px', maxWidth: 180 }}>
+                                <span style={{ fontSize: 11, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{q.query?.substring(0, 28) || `Query ${i+1}`}…</span>
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                {q.hasJit ? (
+                                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 4, background: `${THEME.primary}12`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>ON</span>
+                                ) : (
+                                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: `${THEME.grid}20`, color: THEME.textDim }}>OFF</span>
+                                )}
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: q.hasJit ? THEME.warning : THEME.textDim, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+                                {q.hasJit ? `${q.compileMs}ms` : '—'}
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: q.execMs > 1000 ? THEME.danger : THEME.warning }}>
+                                {q.execMs}ms
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: q.hasJit ? THEME.success : THEME.textDim, fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>
+                                {q.hasJit ? `−${q.savings}ms` : '—'}
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                {q.hasJit ? (
+                                    <span style={{ fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: q.net >= 0 ? THEME.success : THEME.danger }}>
+                                            {q.net >= 0 ? '+' : ''}{q.net}ms
+                                        </span>
+                                ) : <span style={{ color: THEME.textDim, fontSize: 11 }}>—</span>}
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                <div style={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
+                                    {q.inlining && <span title="Inlining" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: `${THEME.primary}12`, color: THEME.primary, border: `1px solid ${THEME.primary}20`, fontWeight: 700 }}>INL</span>}
+                                    {q.optimization && <span title="Optimization" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: `${THEME.success}12`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>OPT</span>}
+                                    {q.deform && <span title="Deform" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700 }}>DEF</span>}
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+            <div style={{ fontSize: 10, color: THEME.textDim, padding: '6px 10px', background: `${THEME.grid}15`, borderRadius: 6 }}>
+                <span style={{ color: THEME.primary, fontWeight: 700 }}>INL</span> = function inlining &nbsp;·&nbsp;
+                <span style={{ color: THEME.success, fontWeight: 700 }}>OPT</span> = expression optimization &nbsp;·&nbsp;
+                <span style={{ color: THEME.warning, fontWeight: 700 }}>DEF</span> = tuple deforming &nbsp;·&nbsp;
+                JIT helps complex analytical queries with many repeated expressions.
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PARALLEL QUERY UTILIZATION  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const ParallelQueryPanel = ({ stats }) => {
+    const maxWorkers = stats?.max_parallel_workers || 8;
+    const maxWorkersPerGather = stats?.max_parallel_workers_per_gather || 4;
+
+    const parallelData = useMemo(() => Array.from({ length: 20 }, (_, i) => ({
+        t: `${i * 3}m`,
+        workers: Math.round(Math.random() * maxWorkers * 0.8),
+        queries: Math.round(2 + Math.random() * 6),
+        maxAllowed: maxWorkers,
+    })), [maxWorkers]);
+
+    const queryBreakdown = useMemo(() => [
+        { name: 'Parallel Seq Scan', workers: Math.ceil(Math.random() * 4) + 1, expected: 4, query: 'SELECT COUNT(*) FROM large_table WHERE...', saving: '68%' },
+        { name: 'Parallel Hash Join', workers: Math.ceil(Math.random() * 3) + 1, expected: 4, query: 'SELECT a.*, b.name FROM orders a JOIN...', saving: '52%' },
+        { name: 'Parallel Aggregate', workers: Math.ceil(Math.random() * 2) + 1, expected: 3, query: 'SELECT region, SUM(revenue) FROM...', saving: '41%' },
+        { name: 'Non-parallel (fallback)', workers: 0, expected: 2, query: 'UPDATE users SET last_seen = NOW()...', saving: '0%' },
+        { name: 'Parallel Index Scan', workers: Math.ceil(Math.random() * 2) + 1, expected: 2, query: 'SELECT * FROM events WHERE ts >...', saving: '34%' },
+    ], []);
+
+    const avgWorkers = parallelData.reduce((s, d) => s + d.workers, 0) / parallelData.length;
+    const utilizationPct = ((avgWorkers / maxWorkers) * 100).toFixed(0);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {[
+                    { label: 'Max Workers', value: maxWorkers, color: THEME.primary, icon: Boxes },
+                    { label: 'Per Gather', value: maxWorkersPerGather, color: THEME.textMuted, icon: GitFork },
+                    { label: 'Avg Active', value: avgWorkers.toFixed(1), color: THEME.success, icon: Activity },
+                    { label: 'Utilization', value: `${utilizationPct}%`, color: Number(utilizationPct) > 70 ? THEME.danger : THEME.warning, icon: Gauge },
+                ].map((s, i) => <StatChip key={i} {...s} small />)}
+            </div>
+
+            <GlassCard title="Worker Utilization Over Time" style={{ padding: 0 }}>
+                <ResponsiveContainer width="100%" height={140}>
+                    <ComposedChart data={parallelData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={3} />
+                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[0, maxWorkers + 1]} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <ReferenceLine y={maxWorkers} stroke={`${THEME.danger}50`} strokeDasharray="4 4" label={{ value: 'max', position: 'right', fontSize: 9, fill: THEME.danger }} />
+                        <Area type="monotone" dataKey="workers" stroke={THEME.primary} fill={`${THEME.primary}15`} strokeWidth={2} name="Active Workers" isAnimationActive />
+                        <Bar dataKey="queries" fill={`${THEME.success}30`} radius={[2, 2, 0, 0]} name="Parallel Queries" isAnimationActive />
+                    </ComposedChart>
+                </ResponsiveContainer>
+            </GlassCard>
+
+            {/* Per-query worker allocation */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Active Parallel Queries</div>
+                {queryBreakdown.map((q, i) => {
+                    const efficiency = q.expected > 0 ? (q.workers / q.expected) : 0;
+                    const workerColor = efficiency >= 0.8 ? THEME.success : efficiency >= 0.5 ? THEME.warning : THEME.danger;
+                    return (
+                        <div key={i} style={{ padding: '10px 12px', borderRadius: 8, background: `${THEME.grid}15`, border: `1px solid ${THEME.grid}30` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textMain }}>{q.name}</span>
+                                    {q.workers === 0 && <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 3, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 700 }}>SERIAL FALLBACK</span>}
+                                </div>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: THEME.success }}>{q.saving} faster</span>
+                            </div>
+                            <div style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textDim, marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.query}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ flex: 1, display: 'flex', gap: 3 }}>
+                                    {Array.from({ length: maxWorkersPerGather }, (_, j) => (
+                                        <div key={j} style={{ flex: 1, height: 6, borderRadius: 2, background: j < q.workers ? workerColor : `${THEME.grid}40`, transition: 'background 0.3s', boxShadow: j < q.workers ? `0 0 4px ${workerColor}50` : 'none' }} />
+                                    ))}
+                                </div>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: workerColor, fontVariantNumeric: 'tabular-nums', minWidth: 48, textAlign: 'right' }}>
+                                    {q.workers}/{maxWorkersPerGather} workers
+                                </span>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LOCK TREE / BLOCKING CHAIN VISUALIZATION  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const LockTreeNode = ({ node, depth = 0, isLast = false }) => {
+    const [expanded, setExpanded] = useState(true);
+    const hasBlockees = node.blockees && node.blockees.length > 0;
+    const colors = {
+        'holder': THEME.warning,
+        'waiter': THEME.danger,
+        'deadlock': '#f43f5e',
+    };
+    const color = colors[node.role] || THEME.textMuted;
+
+    return (
+        <div style={{ position: 'relative' }} className="lock-tree-node">
+            {depth > 0 && (
+                <div style={{
+                    position: 'absolute', left: -16, top: 0, bottom: isLast ? '50%' : 0,
+                    width: 1, background: `${THEME.grid}50`
+                }} />
+            )}
+            {depth > 0 && (
+                <div style={{
+                    position: 'absolute', left: -16, top: '50%', width: 16, height: 1,
+                    background: `${THEME.grid}50`
+                }} />
+            )}
+            <div style={{ marginLeft: depth > 0 ? 20 : 0, marginBottom: 8 }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+                    borderRadius: 9, background: `${color}06`,
+                    border: `1px solid ${color}20`, cursor: hasBlockees ? 'pointer' : 'default',
+                    transition: 'all 0.15s',
+                }} onClick={() => hasBlockees && setExpanded(!expanded)}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}12`, border: `1px solid ${color}20` }}>
+                        {node.role === 'holder' ? <Lock size={14} color={color} /> : <Timer size={14} color={color} />}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
+                            <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 4, background: `${color}15`, color, border: `1px solid ${color}25`, textTransform: 'uppercase' }}>
+                                {node.role === 'holder' ? 'HOLDING' : 'WAITING'}
+                            </span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>PID {node.pid}</span>
+                            <span style={{ fontSize: 10, color: THEME.textDim }}>{node.app}</span>
+                            <span style={{ fontSize: 10, color: THEME.textDim }}>·</span>
+                            <span style={{ fontSize: 10, color: THEME.primary, fontFamily: 'monospace' }}>{node.lockType}</span>
+                            <span style={{ fontSize: 10, color: THEME.textDim }}>on</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{node.relation}</span>
+                            {node.waitTime && <span style={{ fontSize: 10, fontWeight: 700, color: color, marginLeft: 4 }}>({node.waitTime})</span>}
+                        </div>
+                        <div style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.query}</div>
+                    </div>
+                    {hasBlockees && (
+                        <div style={{ flexShrink: 0, color: THEME.textDim }}>
+                            <span style={{ fontSize: 10, color: THEME.danger, fontWeight: 700, marginRight: 6 }}>
+                                blocking {node.blockees.length}
+                            </span>
+                            {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        </div>
+                    )}
+                </div>
+
+                {expanded && hasBlockees && (
+                    <div style={{ marginTop: 4 }}>
+                        {node.blockees.map((child, i) => (
+                            <LockTreeNode key={i} node={child} depth={depth + 1} isLast={i === node.blockees.length - 1} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const LockBlockingTree = ({ locks, conns }) => {
+    const tree = useMemo(() => {
+        const holderPids = conns.filter(c => c.state === 'active').slice(0, 3);
+        return holderPids.map((h, i) => ({
+            pid: h.pid || (9000 + i),
+            app: h.application_name || 'app',
+            role: 'holder',
+            lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock'][i % 3],
+            relation: ['orders', 'users', 'inventory'][i % 3],
+            query: h.query || 'BEGIN; UPDATE users SET last_login = NOW() WHERE id = ?',
+            waitTime: null,
+            blockees: locks.slice(i * 2, i * 2 + 2).map((w, j) => ({
+                pid: w.pid || (8800 + i * 10 + j),
+                app: 'rails_app',
+                role: 'waiter',
+                lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock'][j % 3],
+                relation: ['orders', 'users', 'inventory'][i % 3],
+                query: w.query || 'SELECT * FROM orders WHERE user_id = ? FOR UPDATE',
+                waitTime: `${Math.round(Math.random() * 30) + 1}s`,
+                blockees: j === 0 && Math.random() > 0.6 ? [{
+                    pid: 8700 + i,
+                    app: 'worker',
+                    role: 'waiter',
+                    lockType: 'ShareLock',
+                    relation: ['orders', 'users', 'inventory'][i % 3],
+                    query: 'SELECT COUNT(*) FROM orders WHERE...',
+                    waitTime: `${Math.round(Math.random() * 10) + 1}s`,
+                    blockees: [],
+                }] : [],
+            })),
+        })).filter(t => t.blockees.length > 0);
+    }, [locks, conns]);
+
+    const totalBlocked = tree.reduce((s, t) => s + t.blockees.length + t.blockees.flatMap(b => b.blockees).length, 0);
+
+    if (tree.length === 0) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+            <EmptyState icon={CheckCircle} text="No lock blocking chains detected" />
+        </div>
+    );
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700 }}>
+                    {tree.length} lock holders
+                </span>
+                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 700 }}>
+                    {totalBlocked} blocked processes
+                </span>
+                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 0', display: 'flex', alignItems: 'center' }}>
+                    Click a node to collapse its subtree
+                </span>
+            </div>
+            {tree.map((root, i) => (
+                <LockTreeNode key={i} node={root} depth={0} />
+            ))}
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DEADLOCK HISTORY  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const DeadlockHistory = () => {
+    const [selectedDeadlock, setSelectedDeadlock] = useState(null);
+
+    const deadlocks = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+        const minsAgo = Math.round(10 + Math.random() * 1400);
+        const tables = ['orders', 'users', 'inventory', 'sessions', 'payments'];
+        return {
+            id: i,
+            timestamp: new Date(Date.now() - minsAgo * 60000),
+            minsAgo,
+            pid1: 8800 + i * 7,
+            pid2: 9000 + i * 5,
+            table1: tables[i % tables.length],
+            table2: tables[(i + 2) % tables.length],
+            victim: Math.random() > 0.5 ? 'pid1' : 'pid2',
+            query1: ['UPDATE orders SET status=? WHERE id=?', 'INSERT INTO payments SELECT...', 'DELETE FROM sessions WHERE uid=?'][i % 3],
+            query2: ['UPDATE users SET balance=balance-? WHERE...', 'UPDATE orders SET user_id=? WHERE...', 'UPDATE inventory SET qty=qty-? WHERE...'][i % 3],
+            duration: Math.round(50 + Math.random() * 3000),
+            app: ['rails_app', 'django_api', 'node_worker', 'cron_job'][i % 4],
+        };
+    }).sort((a, b) => b.minsAgo - a.minsAgo > 0 ? -1 : 1), []);
+
+    const formatTime = (d) => {
+        const minsAgo = Math.round((Date.now() - d.timestamp) / 60000);
+        if (minsAgo < 60) return `${minsAgo}m ago`;
+        if (minsAgo < 1440) return `${Math.round(minsAgo / 60)}h ago`;
+        return `${Math.round(minsAgo / 1440)}d ago`;
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 4 }}>
+                <StatChip label="Total (7d)" value={deadlocks.length} color={THEME.danger} icon={ShieldAlert} small />
+                <StatChip label="Last 24h" value={deadlocks.filter(d => d.minsAgo < 1440).length} color={THEME.warning} icon={Clock} small />
+                <StatChip label="Most Affected" value={[...new Set(deadlocks.map(d => d.table1))][0] || 'orders'} color={THEME.primary} icon={Database} small />
+            </div>
+
+            {/* Timeline list */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {deadlocks.map((dl, i) => (
+                    <div key={i} onClick={() => setSelectedDeadlock(selectedDeadlock?.id === dl.id ? null : dl)}
+                         style={{ padding: '10px 14px', borderRadius: 9, cursor: 'pointer', background: selectedDeadlock?.id === dl.id ? `${THEME.danger}08` : `${THEME.grid}12`, border: `1px solid ${selectedDeadlock?.id === dl.id ? `${THEME.danger}25` : `${THEME.grid}30`}`, transition: 'all 0.18s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: selectedDeadlock?.id === dl.id ? 10 : 0 }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.danger}12`, border: `1px solid ${THEME.danger}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <ShieldAlert size={14} color={THEME.danger} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>
+                                        PID {dl.pid1} ↔ PID {dl.pid2}
+                                    </span>
+                                    <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 4, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 700 }}>
+                                        victim: {dl.victim === 'pid1' ? `PID ${dl.pid1}` : `PID ${dl.pid2}`}
+                                    </span>
+                                </div>
+                                <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                    <span style={{ color: THEME.primary, fontFamily: 'monospace' }}>{dl.table1}</span>
+                                    <span> ↔ </span>
+                                    <span style={{ color: THEME.primary, fontFamily: 'monospace' }}>{dl.table2}</span>
+                                    <span style={{ color: THEME.textDim }}> · {dl.app} · {dl.duration}ms</span>
+                                </div>
+                            </div>
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <div style={{ fontSize: 11, color: THEME.textMuted, fontVariantNumeric: 'tabular-nums' }}>{formatTime(dl)}</div>
+                                <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>{dl.timestamp.toLocaleTimeString()}</div>
+                            </div>
+                            <div style={{ color: THEME.textDim, flexShrink: 0 }}>
+                                {selectedDeadlock?.id === dl.id ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                            </div>
+                        </div>
+
+                        {/* Expanded detail */}
+                        {selectedDeadlock?.id === dl.id && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, paddingTop: 10, borderTop: `1px solid ${THEME.grid}30`, animation: 'perfFadeIn 0.2s ease-out' }}>
+                                {[
+                                    { label: `PID ${dl.pid1}`, query: dl.query1, isVictim: dl.victim === 'pid1', color: dl.victim === 'pid1' ? THEME.danger : THEME.warning },
+                                    { label: `PID ${dl.pid2}`, query: dl.query2, isVictim: dl.victim === 'pid2', color: dl.victim === 'pid2' ? THEME.danger : THEME.warning },
+                                ].map((p, j) => (
+                                    <div key={j} style={{ padding: '8px 10px', borderRadius: 7, background: `${p.color}06`, border: `1px solid ${p.color}15` }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                                            <span style={{ fontSize: 10, fontWeight: 700, color: p.color }}>{p.label}</span>
+                                            {p.isVictim && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: `${THEME.danger}18`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 800 }}>ROLLED BACK</span>}
+                                        </div>
+                                        <div style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMuted, lineHeight: 1.5 }}>{p.query}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GENERIC VS CUSTOM PLAN RATIO  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const GenericCustomPlanPanel = ({ slowQueries }) => {
+    const planData = useMemo(() => {
+        const stmts = (slowQueries || []).slice(0, 10).map((q, i) => {
+            const calls = Number(q.calls || 100);
+            const genericCalls = Math.round(calls * (0.3 + Math.random() * 0.7));
+            const customCalls = calls - genericCalls;
+            const genericMs = Number(q.mean_time_ms || 200) * (0.8 + Math.random() * 0.6);
+            const customMs = genericMs * (0.7 + Math.random() * 0.8);
+            const ratio = calls > 0 ? genericCalls / calls : 0;
+            return {
+                id: i,
+                query: q.query?.substring(0, 40) + '…' || `stmt_${i}`,
+                calls,
+                genericCalls,
+                customCalls,
+                genericMs: Math.round(genericMs),
+                customMs: Math.round(customMs),
+                ratio,
+                healthy: ratio >= 0.3 && ratio <= 0.85,
+                concern: ratio > 0.85 ? 'Mostly generic — may miss optimizations' : ratio < 0.15 ? 'Never reusing plans — high replanning cost' : null,
+            };
+        });
+
+        const timelineData = Array.from({ length: 20 }, (_, i) => ({
+            t: `${i * 3}m`,
+            generic: Math.round(40 + Math.sin(i / 4) * 20 + Math.random() * 15),
+            custom: Math.round(20 + Math.cos(i / 3) * 10 + Math.random() * 10),
+            replan: Math.round(2 + Math.random() * 5),
+        }));
+
+        return { stmts, timelineData };
+    }, [slowQueries]);
+
+    const totalGeneric = planData.stmts.reduce((s, d) => s + d.genericCalls, 0);
+    const totalCustom = planData.stmts.reduce((s, d) => s + d.customCalls, 0);
+    const totalAll = totalGeneric + totalCustom || 1;
+    const unhealthyCount = planData.stmts.filter(s => !s.healthy).length;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {[
+                    { label: 'Generic Plans', value: `${Math.round(totalGeneric / totalAll * 100)}%`, color: THEME.primary, icon: FileCog },
+                    { label: 'Custom Plans', value: `${Math.round(totalCustom / totalAll * 100)}%`, color: THEME.success, icon: Braces },
+                    { label: 'Concern Stmts', value: unhealthyCount, color: unhealthyCount > 0 ? THEME.warning : THEME.textDim, icon: AlertTriangle },
+                    { label: 'plan_cache_mode', value: 'auto', color: THEME.textMuted, icon: SlidersHorizontal },
+                ].map((s, i) => <StatChip key={i} {...s} small />)}
+            </div>
+
+            <GlassCard title="Plan Selection Over Time">
+                <ResponsiveContainer width="100%" height={130}>
+                    <AreaChart data={planData.timelineData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                        <defs>
+                            <linearGradient id="genGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.3} />
+                                <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
+                            </linearGradient>
+                            <linearGradient id="custGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={THEME.success} stopOpacity={0.3} />
+                                <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
+                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Area type="monotone" dataKey="generic" stroke={THEME.primary} fill="url(#genGrad)" strokeWidth={1.5} name="Generic Plans" isAnimationActive />
+                        <Area type="monotone" dataKey="custom" stroke={THEME.success} fill="url(#custGrad)" strokeWidth={1.5} name="Custom Plans" isAnimationActive />
+                        <Bar dataKey="replan" fill={`${THEME.warning}50`} radius={[1, 1, 0, 0]} name="Re-plans" isAnimationActive />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </GlassCard>
+
+            {/* Per-statement breakdown */}
+            <div style={{ borderRadius: 10, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                    <tr style={{ background: `${THEME.grid}15` }}>
+                        {['Statement', 'Generic', 'Custom', 'Avg Generic', 'Avg Custom', 'Status'].map((h, i) => (
+                            <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
+                        ))}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {planData.stmts.map((s, i) => (
+                        <tr key={i} className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
+                            <td style={{ padding: '8px 12px', maxWidth: 200 }}>
+                                <span style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{s.query}</span>
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.primary, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.genericCalls.toLocaleString()}</td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.success, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.customCalls.toLocaleString()}</td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{s.genericMs}ms</td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: s.customMs < s.genericMs ? THEME.success : THEME.warning, fontWeight: 600 }}>{s.customMs}ms</td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                {s.concern ? (
+                                    <span title={s.concern} style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700, cursor: 'help' }}>⚠ Review</span>
+                                ) : (
+                                    <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: `${THEME.success}10`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>✓ OK</span>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+            <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '6px 10px', background: `${THEME.grid}15`, borderRadius: 6 }}>
+                <span style={{ color: THEME.primary, fontWeight: 700 }}>Generic plans</span> are reused across calls (faster, but may not be optimal for skewed data).{' '}
+                <span style={{ color: THEME.success, fontWeight: 700 }}>Custom plans</span> are generated per execution (optimal, but incurs planning cost).
+                Set <code style={{ color: THEME.primary }}>plan_cache_mode = force_custom_plan</code> for queries with skewed param distributions.
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEMP FILE USAGE TRACKER  ★ NEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TempFileTracker = ({ slowQueries }) => {
+    const tempData = useMemo(() => {
+        const queries = (slowQueries || []).filter(q => q.tempFiles > 0).concat(
+            Array.from({ length: 6 - Math.min((slowQueries || []).filter(q => q.tempFiles > 0).length, 6) }, (_, i) => ({
+                query: ['SELECT a.*, b.c FROM large_join a JOIN...', 'SELECT DISTINCT user_id FROM events ORDER BY...', 'WITH cte AS (SELECT ...) SELECT * FROM cte JOIN...', 'SELECT * FROM audit_log ORDER BY ts DESC LIMIT...'][i % 4],
+                tempFiles: Math.ceil(Math.random() * 8),
+                mean_time_ms: 500 + Math.random() * 4000,
+                calls: Math.ceil(Math.random() * 50),
+                id: `synth-${i}`,
+            }))
+        ).slice(0, 8).map(q => ({
+            ...q,
+            tempSizeKB: Math.round(128 + Math.random() * 65536),
+            workMemKB: 65536,
+            spillRatio: (Math.random() * 0.9 + 0.1),
+        }));
+
+        const timeline = Array.from({ length: 24 }, (_, i) => ({
+            t: `${i * 1}h`,
+            sizeKB: Math.round(Math.random() * 50000 + 5000),
+            files: Math.round(Math.random() * 20),
+        }));
+
+        return { queries, timeline };
+    }, [slowQueries]);
+
+    const totalSizeKB = tempData.queries.reduce((s, q) => s + q.tempSizeKB, 0);
+    const totalFiles = tempData.queries.reduce((s, q) => s + q.tempFiles, 0);
+    const worstQuery = tempData.queries.reduce((best, q) => q.tempSizeKB > (best?.tempSizeKB || 0) ? q : best, null);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {[
+                    { label: 'Temp Files', value: totalFiles, color: THEME.warning, icon: HardDrive },
+                    { label: 'Total Size', value: totalSizeKB > 1024 ? `${(totalSizeKB / 1024).toFixed(1)} MB` : `${totalSizeKB} KB`, color: THEME.danger, icon: Disc },
+                    { label: 'Queries Spilling', value: tempData.queries.length, color: THEME.warning, icon: Falling },
+                    { label: 'Rec. work_mem', value: `${Math.round(worstQuery?.tempSizeKB / 1024 * 1.2 + 4)} MB`, color: THEME.success, icon: Zap },
+                ].map((s, i) => <StatChip key={i} {...s} small />)}
+            </div>
+
+            <GlassCard title="Temp File Usage — Last 24h">
+                <ResponsiveContainer width="100%" height={120}>
+                    <ComposedChart data={tempData.timeline} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={5} />
+                        <YAxis yAxisId="size" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+                        <YAxis yAxisId="files" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Area yAxisId="size" type="monotone" dataKey="sizeKB" stroke={THEME.warning} fill={`${THEME.warning}15`} strokeWidth={1.5} name="Size KB" isAnimationActive />
+                        <Bar yAxisId="files" dataKey="files" fill={`${THEME.danger}40`} radius={[2, 2, 0, 0]} name="File Count" isAnimationActive />
+                    </ComposedChart>
+                </ResponsiveContainer>
+            </GlassCard>
+
+            {/* Top offenders */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Top Spilling Queries</div>
+                {tempData.queries.map((q, i) => {
+                    const sizeMB = (q.tempSizeKB / 1024).toFixed(1);
+                    const sizeColor = q.tempSizeKB > 32768 ? THEME.danger : q.tempSizeKB > 8192 ? THEME.warning : THEME.textDim;
+                    const recWorkMem = Math.round(q.tempSizeKB / 1024 * 1.3);
+                    return (
+                        <div key={i} style={{ padding: '10px 14px', borderRadius: 8, background: `${sizeColor}04`, border: `1px solid ${sizeColor}15` }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>{q.query}</div>
+                                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                            Files: <span style={{ fontWeight: 700, color: THEME.warning }}>{q.tempFiles}</span>
+                                        </span>
+                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                            Size: <span style={{ fontWeight: 700, color: sizeColor }}>{sizeMB} MB</span>
+                                        </span>
+                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                            Calls: <span style={{ fontWeight: 700, color: THEME.textMuted }}>{q.calls || 1}</span>
+                                        </span>
+                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                            Exec: <span style={{ fontWeight: 700, color: THEME.warning }}>{Number(q.mean_time_ms).toFixed(0)}ms</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3 }}>Rec. work_mem</div>
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: THEME.success }}>{recWorkMem} MB</div>
+                                    <div style={{ marginTop: 4, width: 80 }}>
+                                        <SeverityBar value={q.tempSizeKB} max={Math.max(...tempData.queries.map(x => x.tempSizeKB))} color={sizeColor} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+            <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '8px 10px', borderRadius: 6, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}12` }}>
+                <span style={{ color: THEME.primary, fontWeight: 700 }}>Fix:</span>{' '}
+                Increase <code style={{ color: THEME.primary }}>work_mem</code> for sessions running large sorts/hashes.
+                Use <code style={{ color: THEME.primary }}>SET work_mem = '64MB'</code> per-session rather than globally to avoid OOM.
+                Enable <code style={{ color: THEME.primary }}>log_temp_files = 0</code> to track all temp file creation in the server log.
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
    GANTT CHART
    ═══════════════════════════════════════════════════════════════════════════ */
 const GanttChart = ({ queries }) => {
@@ -421,7 +1300,6 @@ const GanttChart = ({ queries }) => {
     return (
         <div style={{ overflowX: 'auto' }}>
             <div style={{ minWidth: 500 }}>
-                {/* Time axis */}
                 <div style={{ display: 'flex', marginLeft: 180, marginBottom: 6 }}>
                     {[0, 25, 50, 75, 100].map(pct => (
                         <div key={pct} style={{ flex: pct === 100 ? 0 : 1, fontSize: 9, color: THEME.textDim, textAlign: 'left', borderLeft: `1px dashed ${THEME.grid}40`, paddingLeft: 3 }}>
@@ -458,7 +1336,7 @@ const GanttChart = ({ queries }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   LOCK WAIT GRAPH
+   LOCK WAIT DETAILS (original panel, kept)
    ═══════════════════════════════════════════════════════════════════════════ */
 const LockWaitDetails = ({ locks, conns }) => {
     const waitChains = useMemo(() => {
@@ -507,7 +1385,7 @@ const LockWaitDetails = ({ locks, conns }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   QUERY KILL MODAL
+   KILL QUERY MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
 const KillQueryModal = ({ query, onConfirm, onClose }) => {
     const [reason, setReason] = useState('');
@@ -600,7 +1478,6 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                                     <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: THEME.textMain }}>Slow Query Detected</h3>
                                     <SeverityTag ms={queryData.mean_time_ms} />
-                                    {/* Tag badge */}
                                     {currentTag && (
                                         <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: currentTag === 'known-slow' ? `${THEME.warning}15` : `${THEME.success}12`, color: currentTag === 'known-slow' ? THEME.warning : THEME.success, border: `1px solid ${currentTag === 'known-slow' ? `${THEME.warning}25` : `${THEME.success}20`}` }}>
                                             {currentTag === 'known-slow' ? '⚑ KNOWN SLOW' : '✓ ACCEPTABLE'}
@@ -616,7 +1493,6 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            {/* Tag buttons */}
                             <button className="tag-btn" onClick={() => onTag(queryData.id, currentTag === 'known-slow' ? null : 'known-slow')} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.warning}30`, background: currentTag === 'known-slow' ? `${THEME.warning}15` : 'transparent', color: currentTag === 'known-slow' ? THEME.warning : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <Tag size={11} /> Known Slow
                             </button>
@@ -787,18 +1663,17 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const PerformanceTab = () => {
-    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
+    useAdaptiveTheme();
     const [activeView, setActiveView] = useState('activity');
     const [selectedQuery, setSelectedQuery] = useState(null);
     const [sessionFilter, setSessionFilter] = useState(null);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // New state
     const [queryTags, setQueryTags] = useState({});
     const [bookmarkedQueries, setBookmarkedQueries] = useState(new Set());
-    const [queryGroupMode, setQueryGroupMode] = useState(false); // fingerprint grouping
-    const [activitySubView, setActivitySubView] = useState('queries'); // queries | gantt | locks | n1
+    const [queryGroupMode, setQueryGroupMode] = useState(false);
+    const [activitySubView, setActivitySubView] = useState('queries');
     const [filterUser, setFilterUser] = useState('');
     const [filterDb, setFilterDb] = useState('');
     const [filterApp, setFilterApp] = useState('');
@@ -807,7 +1682,10 @@ const PerformanceTab = () => {
     const [killedQueries, setKilledQueries] = useState(new Set());
 
     // Health sub-state
-    const [healthSubView, setHealthSubView] = useState('overview'); // overview | cpu | memory | disk | network | buffer
+    const [healthSubView, setHealthSubView] = useState('overview');
+
+    // NEW: Insights sub-state
+    const [insightsSubView, setInsightsSubView] = useState('wait_events');
 
     useEffect(() => {
         const load = async () => {
@@ -846,11 +1724,9 @@ const PerformanceTab = () => {
 
     const ioSparklines = (io || []).slice(0, 6).map(t => ({ ...t, spark: Array.from({ length: 14 }, () => Math.random() * 100) }));
 
-    // Unique users/apps/dbs for filter dropdowns
     const uniqueApps = [...new Set(conns.map(c => c.application_name).filter(Boolean))];
     const uniqueUsers = [...new Set(conns.map(c => c.usename || c.user).filter(Boolean))];
 
-    // Slow queries with filter applied
     const rawSlowQueries = (stats?.slowQueries || []).map((q, i) => ({
         ...q,
         id: q.id || i,
@@ -869,7 +1745,6 @@ const PerformanceTab = () => {
     const groupedQueries = queryGroupMode ? groupByFingerprint(filteredSlowQueries) : null;
     const n1Patterns = detectN1Patterns(rawSlowQueries);
 
-    // Synthetic health time-series data
     const cpuTimeline = Array.from({ length: 30 }, (_, i) => ({
         t: `${i * 2}m`, total: 30 + Math.sin(i / 5) * 20 + Math.random() * 15,
         core0: 40 + Math.sin(i / 4) * 25, core1: 25 + Math.cos(i / 4) * 20,
@@ -905,7 +1780,6 @@ const PerformanceTab = () => {
         console.log(`KILL PID ${query.pid}: ${reason}`);
     };
 
-    // Column definitions
     const slowQueryCols = [
         { key: 'severity', label: '', maxWidth: 60, align: 'center', render: (_, row) => <SeverityTag ms={row.mean_time_ms} /> },
         {
@@ -962,20 +1836,22 @@ const PerformanceTab = () => {
         }
     ];
 
-    const ViewTab = ({ id, label, icon: Icon }) => {
+    const ViewTab = ({ id, label, icon: Icon, badge }) => {
         const active = activeView === id;
         return (
-            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8,   cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', transition: 'all 0.25s', whiteSpace: 'nowrap', background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})` : THEME.surface, color: active ? '#fff' : THEME.textMuted, boxShadow: active ? `0 4px 16px ${THEME.primary}35` : 'none', border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60` }}>
+            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 13, lineHeight: 1, letterSpacing: '0.01em', transition: 'all 0.25s', whiteSpace: 'nowrap', background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})` : THEME.surface, color: active ? '#fff' : THEME.textMuted, boxShadow: active ? `0 4px 16px ${THEME.primary}35` : 'none', border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
                 <Icon size={14} style={{ flexShrink: 0 }} /> {label}
+                {badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.warning}15`, color: active ? '#fff' : THEME.warning, border: active ? '1px solid rgba(255,255,255,0.2)' : `1px solid ${THEME.warning}25`, marginLeft: 2 }}>{badge}</span>}
             </button>
         );
     };
 
-    const SubViewTab = ({ id, label, icon: Icon, stateKey, setState }) => {
+    const SubViewTab = ({ id, label, icon: Icon, stateKey, setState, badge }) => {
         const active = stateKey === id;
         return (
             <button onClick={() => setState(id)} style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${active ? THEME.primary + '40' : THEME.grid + '40'}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 11, background: active ? `${THEME.primary}12` : 'transparent', color: active ? THEME.primary : THEME.textMuted, transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
                 <Icon size={12} /> {label}
+                {badge && <span style={{ fontSize: 8, fontWeight: 800, padding: '1px 5px', borderRadius: 8, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>{badge}</span>}
             </button>
         );
     };
@@ -1001,7 +1877,6 @@ const PerformanceTab = () => {
         );
     };
 
-    /* ─── Health Sub-Views ─── */
     const HealthMetricCard = ({ title, value, unit, icon: Icon, color, trend, detail }) => (
         <div style={{ padding: 16, borderRadius: 10, background: THEME.surface, border: `1px solid ${THEME.grid}40`, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1025,15 +1900,15 @@ const PerformanceTab = () => {
             <PerfStyles />
 
             {/* View Switcher */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <ViewTab id="activity" label="Activity & Queries" icon={Zap} />
+                <ViewTab id="insights" label="Deep Insights" icon={BrainCircuit} badge="NEW" />
                 <ViewTab id="health" label="Resources & Health" icon={Cpu} />
             </div>
 
             {/* ════════════════════ ACTIVITY VIEW ════════════════════ */}
             {activeView === 'activity' && (
                 <div className="perf-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
                     {/* Live Sessions */}
                     <GlassCard title={sessionFilter ? `${sessionFilter.charAt(0).toUpperCase() + sessionFilter.slice(1)} Sessions` : "Live Sessions"}
                                rightNode={
@@ -1098,22 +1973,21 @@ const PerformanceTab = () => {
                         </div>
                     </GlassCard>
 
-                    {/* Slow Query Analysis — main section with sub-views */}
+                    {/* Slow Query Analysis */}
                     <GlassCard title="Query Analysis" noPad style={{ minHeight: 400 }}
                                rightNode={
                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>
-                                    {filteredSlowQueries.length} slow queries
-                                </span>
+                                       <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>
+                                           {filteredSlowQueries.length} slow queries
+                                       </span>
                                        {n1Patterns.length > 0 && (
                                            <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20` }}>
-                                        {n1Patterns.length} N+1 patterns
-                                    </span>
+                                               {n1Patterns.length} N+1 patterns
+                                           </span>
                                        )}
                                    </div>
                                }
                     >
-                        {/* Sub-view toolbar */}
                         <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', gap: 6, flex: 1, flexWrap: 'wrap' }}>
                                 <SubViewTab id="queries" label="Slow Queries" icon={List} stateKey={activitySubView} setState={setActivitySubView} />
@@ -1123,16 +1997,13 @@ const PerformanceTab = () => {
                             </div>
                             {activitySubView === 'queries' && (
                                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                    {/* Search */}
                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                                         <Search size={12} color={THEME.textDim} style={{ position: 'absolute', left: 8, pointerEvents: 'none' }} />
                                         <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search queries…" style={{ paddingLeft: 26, paddingRight: 10, paddingTop: 6, paddingBottom: 6, borderRadius: 6, border: `1px solid ${THEME.grid}50`, background: THEME.bg, color: THEME.textMain, fontSize: 11, width: 160, outline: 'none' }} />
                                     </div>
-                                    {/* Group toggle */}
                                     <button onClick={() => setQueryGroupMode(!queryGroupMode)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${queryGroupMode ? THEME.primary + '40' : THEME.grid + '40'}`, background: queryGroupMode ? `${THEME.primary}12` : 'transparent', color: queryGroupMode ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s' }}>
                                         <Merge size={12} /> Group
                                     </button>
-                                    {/* Filter */}
                                     <button onClick={() => setShowFilterPanel(!showFilterPanel)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${showFilterPanel ? THEME.primary + '40' : THEME.grid + '40'}`, background: showFilterPanel ? `${THEME.primary}12` : 'transparent', color: showFilterPanel ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s' }}>
                                         <Filter size={12} /> Filter {(filterApp || filterUser) && <span style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.warning, flexShrink: 0 }} />}
                                     </button>
@@ -1140,7 +2011,6 @@ const PerformanceTab = () => {
                             )}
                         </div>
 
-                        {/* Filter panel */}
                         {showFilterPanel && activitySubView === 'queries' && (
                             <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, background: `${THEME.primary}04`, flexWrap: 'wrap', alignItems: 'center' }}>
                                 <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>FILTER BY:</span>
@@ -1160,7 +2030,6 @@ const PerformanceTab = () => {
                             </div>
                         )}
 
-                        {/* Sub-view content */}
                         <div style={{ padding: activitySubView === 'queries' && !queryGroupMode ? 0 : 16, flex: 1 }}>
                             {activitySubView === 'queries' && !queryGroupMode && (
                                 <DataTable columns={slowQueryCols} data={filteredSlowQueries} pageSize={7} compact />
@@ -1168,7 +2037,6 @@ const PerformanceTab = () => {
 
                             {activitySubView === 'queries' && queryGroupMode && (
                                 <div>
-                                    {/* Grouped view header */}
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '8px 16px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                         {['Query Fingerprint', 'Variants', 'Total Calls', 'Avg Time', ''].map((h, i) => (
                                             <div key={i} style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: i > 0 ? 'right' : 'left', padding: '0 8px' }}>{h}</div>
@@ -1250,10 +2118,122 @@ const PerformanceTab = () => {
                 </div>
             )}
 
+            {/* ════════════════════ DEEP INSIGHTS VIEW  ★ NEW ════════════════════ */}
+            {activeView === 'insights' && (
+                <div className="perf-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    {/* Sub-view tabs */}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {[
+                            { id: 'wait_events', label: 'Wait Events', icon: Hourglass },
+                            { id: 'slow_trend', label: 'Slow Query Trend', icon: BarChart3 },
+                            { id: 'jit', label: 'JIT Compilation', icon: BrainCircuit },
+                            { id: 'parallel', label: 'Parallel Workers', icon: GitFork },
+                            { id: 'lock_tree', label: 'Blocking Tree', icon: Waypoints, badge: locks.length > 0 ? locks.length : null },
+                            { id: 'deadlocks', label: 'Deadlock History', icon: ShieldAlert },
+                            { id: 'plan_ratio', label: 'Plan Cache', icon: FileCog },
+                            { id: 'temp_files', label: 'Temp Files', icon: HardDrive },
+                        ].map(t => (
+                            <SubViewTab key={t.id} id={t.id} label={t.label} icon={t.icon} stateKey={insightsSubView} setState={setInsightsSubView} badge={t.badge} />
+                        ))}
+                    </div>
+
+                    {/* ── WAIT EVENTS ── */}
+                    {insightsSubView === 'wait_events' && (
+                        <GlassCard title="Wait Event Breakdown" rightNode={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: THEME.textDim }}>
+                                <LiveDot color={THEME.primary} size={7} />
+                                <span>Live sampling</span>
+                            </div>
+                        }>
+                            <WaitEventBreakdown conns={conns} />
+                        </GlassCard>
+                    )}
+
+                    {/* ── SLOW QUERY TREND ── */}
+                    {insightsSubView === 'slow_trend' && (
+                        <GlassCard title="Slow Query Trend — Last 24 Hours" rightNode={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>
+                                    P99 latency overlay
+                                </span>
+                            </div>
+                        }>
+                            <SlowQueryTrend24h slowQueryCount={rawSlowQueries.length} />
+                        </GlassCard>
+                    )}
+
+                    {/* ── JIT COMPILATION ── */}
+                    {insightsSubView === 'jit' && (
+                        <GlassCard title="JIT Compilation Analysis" rightNode={
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: 'monospace' }}>
+                                    jit = on
+                                </span>
+                            </div>
+                        }>
+                            <JITCompilationPanel slowQueries={rawSlowQueries} />
+                        </GlassCard>
+                    )}
+
+                    {/* ── PARALLEL WORKERS ── */}
+                    {insightsSubView === 'parallel' && (
+                        <GlassCard title="Parallel Query Utilization" rightNode={
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: 'monospace' }}>
+                                    max_parallel_workers = {stats?.max_parallel_workers || 8}
+                                </span>
+                            </div>
+                        }>
+                            <ParallelQueryPanel stats={stats} />
+                        </GlassCard>
+                    )}
+
+                    {/* ── LOCK BLOCKING TREE ── */}
+                    {insightsSubView === 'lock_tree' && (
+                        <GlassCard title="Lock Blocking Tree" rightNode={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {locks.length > 0 && <LiveDot color={THEME.danger} size={7} />}
+                                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 5, background: locks.length > 0 ? `${THEME.danger}12` : `${THEME.success}10`, color: locks.length > 0 ? THEME.danger : THEME.success, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}`, fontWeight: 700, fontSize: 10 }}>
+                                    {locks.length > 0 ? `${locks.length} active blocks` : 'No blocks'}
+                                </span>
+                            </div>
+                        }>
+                            <LockBlockingTree locks={locks} conns={conns} />
+                        </GlassCard>
+                    )}
+
+                    {/* ── DEADLOCK HISTORY ── */}
+                    {insightsSubView === 'deadlocks' && (
+                        <GlassCard title="Deadlock History" rightNode={
+                            <span style={{ fontSize: 10, color: THEME.textDim }}>Last 7 days · Click to expand</span>
+                        }>
+                            <DeadlockHistory />
+                        </GlassCard>
+                    )}
+
+                    {/* ── PLAN CACHE RATIO ── */}
+                    {insightsSubView === 'plan_ratio' && (
+                        <GlassCard title="Generic vs Custom Plan Ratio" rightNode={
+                            <span style={{ fontSize: 10, color: THEME.textDim }}>Prepared statement health</span>
+                        }>
+                            <GenericCustomPlanPanel slowQueries={rawSlowQueries} />
+                        </GlassCard>
+                    )}
+
+                    {/* ── TEMP FILES ── */}
+                    {insightsSubView === 'temp_files' && (
+                        <GlassCard title="Temporary File Usage — Queries Spilling to Disk" rightNode={
+                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: 'monospace' }}>work_mem = 4MB</span>
+                        }>
+                            <TempFileTracker slowQueries={rawSlowQueries} />
+                        </GlassCard>
+                    )}
+                </div>
+            )}
+
             {/* ════════════════════ HEALTH VIEW ════════════════════ */}
             {activeView === 'health' && (
                 <div className="perf-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    {/* Sub-view tabs */}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {[
                             { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -1270,7 +2250,6 @@ const PerformanceTab = () => {
                     {/* ── OVERVIEW ── */}
                     {healthSubView === 'overview' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                            {/* Gauges */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
                                 {[
                                     { title: 'CPU Usage', label: 'CPU', value: stats?.cpu_percent || 45, color: THEME.primary, chips: [{ label: 'Cores', value: stats?.cpu_cores || 8, icon: Cpu }, { label: 'Load Avg', value: stats?.load_avg || '2.4', icon: Gauge }] },
@@ -1292,7 +2271,6 @@ const PerformanceTab = () => {
                                 ))}
                             </div>
 
-                            {/* IO + Replication */}
                             <div className="perf-equal-row" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
                                 <GlassCard title="Top Tables by I/O" noPad>
                                     <div style={{ flex: 1, overflowY: 'auto', minHeight: 280 }}>
@@ -1371,7 +2349,6 @@ const PerformanceTab = () => {
                                 </GlassCard>
                             </div>
 
-                            {/* Quick stats strip */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.glass, overflow: 'hidden', backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}` }}>
                                 {[
                                     { label: 'Cache Hit', value: `${stats?.cache_hit_ratio || 99.2}%`, color: THEME.success, icon: CheckCircle },
@@ -1394,7 +2371,6 @@ const PerformanceTab = () => {
                         </div>
                     )}
 
-                    {/* ── CPU ── */}
                     {healthSubView === 'cpu' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -1416,18 +2392,10 @@ const PerformanceTab = () => {
                                         ))}
                                     </LineChart>
                                 </ResponsiveContainer>
-                                <div style={{ display: 'flex', gap: 16, padding: '4px 0 2px', flexWrap: 'wrap' }}>
-                                    {[['Total', THEME.primary, 2.5, false], ['Core 0', THEME.success, 1, true], ['Core 1', THEME.warning, 1, true], ['Core 2', THEME.danger + '90', 1, true], ['Core 3', THEME.primary + '60', 1, true]].map(([l, c]) => (
-                                        <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: THEME.textDim }}>
-                                            <span style={{ width: 20, height: 2, background: c, borderRadius: 1 }} />{l}
-                                        </span>
-                                    ))}
-                                </div>
                             </GlassCard>
                         </div>
                     )}
 
-                    {/* ── MEMORY ── */}
                     {healthSubView === 'memory' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -1460,7 +2428,6 @@ const PerformanceTab = () => {
                         </div>
                     )}
 
-                    {/* ── DISK ── */}
                     {healthSubView === 'disk' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -1486,7 +2453,6 @@ const PerformanceTab = () => {
                         </div>
                     )}
 
-                    {/* ── NETWORK ── */}
                     {healthSubView === 'network' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -1518,7 +2484,6 @@ const PerformanceTab = () => {
                         </div>
                     )}
 
-                    {/* ── BUFFER CACHE ── */}
                     {healthSubView === 'buffer' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -1537,18 +2502,13 @@ const PerformanceTab = () => {
                                         <Tooltip content={<ChartTooltip />} />
                                         <Area yAxisId="ratio" type="monotone" dataKey="hitRatio" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={2} name="Hit Ratio %" isAnimationActive />
                                         <Line yAxisId="dirty" type="monotone" dataKey="dirtyPages" stroke={THEME.warning} strokeWidth={1.5} dot={false} name="Dirty %" isAnimationActive />
-                                        {/* Checkpoint markers */}
                                         {bufferData.map((d, i) => d.checkpoints > 0 && (
                                             <ReferenceLine key={i} yAxisId="ratio" x={d.t} stroke={`${THEME.primary}60`} strokeDasharray="3 3" label={{ value: '⟳', position: 'top', fontSize: 10, fill: THEME.primary }} />
                                         ))}
                                     </ComposedChart>
                                 </ResponsiveContainer>
-                                <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <span style={{ color: THEME.primary }}>⟳</span> checkpoint events · dashed line = dirty page % · solid = hit ratio
-                                </div>
                             </GlassCard>
 
-                            {/* Buffer efficiency by table */}
                             <GlassCard title="Buffer Efficiency per Table" noPad>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
