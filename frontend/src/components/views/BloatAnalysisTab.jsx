@@ -78,8 +78,8 @@ const Styles = () => (
         .ba-mono { font-family: 'JetBrains Mono', monospace !important; }
 
         .ba-card {
-            background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
-            border: 1px solid rgba(255,255,255,.08);
+            background: ${THEME.glass};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 20px;
             animation: baFadeUp .4s ease both;
@@ -92,13 +92,13 @@ const Styles = () => (
             position: absolute;
             inset: 0;
             border-radius: 14px;
-            background: linear-gradient(135deg, rgba(255,255,255,.015) 0%, transparent 60%);
+            background: ${THEME.glass};
             pointer-events: none;
         }
 
         .ba-metric-card {
-            background: linear-gradient(145deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%);
-            border: 1px solid rgba(255,255,255,.1);
+            background: ${THEME.glass};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 16px;
             padding: 20px 24px;
             display: flex; flex-direction: column; gap: 10px;
@@ -107,7 +107,7 @@ const Styles = () => (
             cursor: default;
             animation: baFadeUp .4s ease both;
         }
-        .ba-metric-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
+        .ba-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorderHover}; }
         .ba-metric-card::after {
             content: '';
             position: absolute;
@@ -121,12 +121,12 @@ const Styles = () => (
             display: grid;
             align-items: center;
             padding: 11px 16px;
-            border-bottom: 1px solid rgba(255,255,255,.04);
+            border-bottom: 1px solid ${THEME.grid}40;
             font-size: 12.5px;
             transition: background .15s;
             position: relative;
         }
-        .ba-row:hover { background: rgba(255,255,255,.03); }
+        .ba-row:hover { background: ${THEME.surfaceHover}; }
         .ba-row:last-child { border-bottom: none; }
 
         .ba-head {
@@ -135,17 +135,17 @@ const Styles = () => (
             padding: 10px 16px;
             font-size: 10px;
             font-weight: 700;
-            color: rgba(255,255,255,.35);
+            color: ${THEME.textDim};
             text-transform: uppercase;
             letter-spacing: 1px;
-            border-bottom: 1px solid rgba(255,255,255,.06);
-            background: rgba(0,0,0,.2);
+            border-bottom: 1px solid ${THEME.grid};
+            background: ${THEME.surfaceHover};
         }
 
         .ba-input {
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.1);
-            color: rgba(255,255,255,.9);
+            background: ${THEME.surfaceHover};
+            border: 1px solid ${THEME.grid};
+            color: ${THEME.textMain};
             border-radius: 10px;
             padding: 9px 12px;
             font-size: 13px;
@@ -153,15 +153,15 @@ const Styles = () => (
             transition: border-color .2s, background .2s;
             font-family: inherit;
         }
-        .ba-input:focus { border-color: rgba(99,102,241,.6); background: rgba(255,255,255,.07); }
-        .ba-input::placeholder { color: rgba(255,255,255,.3); }
+        .ba-input:focus { border-color: ${THEME.primary}99; background: ${THEME.surfaceHover}; }
+        .ba-input::placeholder { color: ${THEME.textDim}; }
 
         .ba-tab {
             padding: 8px 18px;
             border-radius: 9px;
-            border: 1px solid rgba(255,255,255,.1);
+            border: 1px solid ${THEME.grid};
             background: transparent;
-            color: rgba(255,255,255,.5);
+            color: ${THEME.textMuted};
             cursor: pointer;
             font-size: 13px;
             font-weight: 700;
@@ -175,7 +175,7 @@ const Styles = () => (
             color: #a5b4fc;
             box-shadow: 0 0 16px rgba(99,102,241,.2);
         }
-        .ba-tab:hover:not(.active) { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+        .ba-tab:hover:not(.active) { border-color: ${THEME.glassBorderHover}; color: ${THEME.textMain}; }
 
         .ba-badge {
             display: inline-flex; align-items: center; gap: 4px;
@@ -188,7 +188,7 @@ const Styles = () => (
         .ba-progress-track {
             height: 6px;
             border-radius: 3px;
-            background: rgba(255,255,255,.08);
+            background: ${THEME.grid};
             overflow: visible;
             position: relative;
         }
@@ -214,7 +214,7 @@ const Styles = () => (
 
         .ba-sort-btn {
             background: none; border: none; cursor: pointer;
-            color: rgba(255,255,255,.35); padding: 0;
+            color: ${THEME.textDim}; padding: 0;
             display: inline-flex; align-items: center; gap: 2px;
             transition: color .15s; font-size: 10px; font-weight: 700;
             font-family: inherit; letter-spacing: 1px; text-transform: uppercase;
@@ -231,8 +231,8 @@ const Styles = () => (
 
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
+        ::-webkit-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: ${THEME.glassBorderHover}; }
     `}</style>
 );
 
@@ -265,7 +265,7 @@ const HealthGauge = ({ score }) => {
 const SparkBar = ({ value, max, color }) => {
     const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
     return (
-        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
+        <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.grid, overflow: 'hidden' }}>
             <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 2, transition: 'width .4s ease' }} />
         </div>
     );
@@ -313,11 +313,11 @@ const IneffBar = ({ pct }) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: 'rgba(15,15,25,.95)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '10px 14px', fontSize: 12, backdropFilter: 'blur(8px)' }}>
-            <div style={{ color: 'rgba(255,255,255,.5)', marginBottom: 6, fontSize: 11 }}>{label}</div>
+        <div style={{ background: THEME.surface, border: '1px solid ' + THEME.glassBorder, borderRadius: 10, padding: '10px 14px', fontSize: 12, backdropFilter: 'blur(8px)' }}>
+            <div style={{ color: THEME.textDim, marginBottom: 6, fontSize: 11 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color: p.fill || '#a5b4fc', fontWeight: 700, display: 'flex', gap: 8 }}>
-                    <span style={{ color: 'rgba(255,255,255,.4)', fontWeight: 400 }}>{p.name}</span>
+                    <span style={{ color: THEME.textDim, fontWeight: 400 }}>{p.name}</span>
                     <span>{typeof p.value === 'number' && p.value > 10000 ? fmtBytes(p.value) : typeof p.value === 'number' ? `${p.value}${p.name.includes('%') ? '%' : ''}` : p.value}</span>
                 </div>
             ))}
@@ -327,7 +327,7 @@ const ChartTip = ({ active, payload, label }) => {
 
 // ─── Metric Card ───────────────────────────────────────────────────────────
 const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, critical, delay = 0 }) => {
-    const borderColor = critical ? 'rgba(239,68,68,.35)' : warn ? 'rgba(245,158,11,.3)' : 'rgba(255,255,255,.1)';
+    const borderColor = critical ? 'rgba(239,68,68,.35)' : warn ? 'rgba(245,158,11,.3)' : THEME.glassBorder;
     const glowClass = critical ? 'critical-glow' : '';
     return (
         <div
@@ -343,9 +343,9 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, c
                 )}
             </div>
             <div>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
-                {sub && <div style={{ fontSize: 11, color: critical ? '#ef4444' : warn ? '#f59e0b' : 'rgba(255,255,255,.3)', marginTop: 3 }}>{sub}</div>}
+                <div style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                {sub && <div style={{ fontSize: 11, color: critical ? '#ef4444' : warn ? '#f59e0b' : THEME.textDim, marginTop: 3 }}>{sub}</div>}
             </div>
         </div>
     );
@@ -473,7 +473,7 @@ export default function BloatAnalysisTab() {
     const maxIndexBytes = useMemo(() => Math.max(...indexes.map(i => Number(i.index_bytes) || 0)), [indexes]);
 
     if (loading) return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: 'rgba(255,255,255,.4)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: THEME.textMuted }}>
             <Styles />
             <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid rgba(99,102,241,.3)', borderTopColor: '#6366f1', animation: 'baSpin 1s linear infinite' }} />
             <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: .5 }}>Analysing bloat…</span>
@@ -485,14 +485,14 @@ export default function BloatAnalysisTab() {
             <Styles />
 
             {/* ── Toolbar ──────────────────────────────────────────────────── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: 'linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.02))', borderRadius: 14, border: '1px solid rgba(255,255,255,.08)', backdropFilter: 'blur(8px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: THEME.glass, borderRadius: 14, border: '1px solid ' + THEME.glassBorder, backdropFilter: 'blur(8px)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(99,102,241,.3)' }}>
                         <Layers size={18} color="#a5b4fc" />
                     </div>
                     <div>
-                        <div style={{ fontWeight: 800, fontSize: 16, color: '#f1f5f9', letterSpacing: -.2 }}>Bloat Analysis</div>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 1 }}>{fmt(summary?.total_tables)} tables monitored</div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: THEME.textMain, letterSpacing: -.2 }}>Bloat Analysis</div>
+                        <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 1 }}>{fmt(summary?.total_tables)} tables monitored</div>
                     </div>
                     {Number(summary?.critical_bloat_tables) > 0 && (
                         <span className="ba-badge" style={{ background: 'rgba(239,68,68,.12)', color: '#f87171', border: '1px solid rgba(239,68,68,.3)' }}>
@@ -508,7 +508,7 @@ export default function BloatAnalysisTab() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {lastAt && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: THEME.textDim }}>
                             <Clock size={11} />
                             {fmtRel(lastAt)}
                         </div>
@@ -516,7 +516,7 @@ export default function BloatAnalysisTab() {
                     <select
                         value={autoRfsh}
                         onChange={e => setAutoRfsh(+e.target.value)}
-                        style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.7)', borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                        style={{ background: THEME.surfaceHover, border: '1px solid ' + THEME.grid, color: THEME.textMain, borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                         <option value={30}>30s</option>
                         <option value={60}>1m</option>
@@ -552,7 +552,7 @@ export default function BloatAnalysisTab() {
                 <div className="ba-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 20, minWidth: 200 }}>
                     <HealthGauge score={score} />
                     <div>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.4)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 8 }}>Severity</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: .8, marginBottom: 8 }}>Severity</div>
                         {[
                             { label: 'Critical', color: '#ef4444', count: tables.filter(t => Number(t.dead_pct) > 20).length },
                             { label: 'High', color: '#f59e0b', count: tables.filter(t => Number(t.dead_pct) > 10 && Number(t.dead_pct) <= 20).length },
@@ -560,7 +560,7 @@ export default function BloatAnalysisTab() {
                         ].map(({ label, color, count }) => (
                             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
                                 <span style={{ width: 7, height: 7, borderRadius: 2, background: color, flexShrink: 0 }} />
-                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', flex: 1 }}>{label}</span>
+                                <span style={{ fontSize: 11, color: THEME.textMuted, flex: 1 }}>{label}</span>
                                 <span className="ba-mono" style={{ fontSize: 11, fontWeight: 700, color }}>{count}</span>
                             </div>
                         ))}
@@ -576,7 +576,7 @@ export default function BloatAnalysisTab() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <Activity size={14} color="#f59e0b" />
-                                <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>Top 10 — Dead Tuple %</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>Top 10 — Dead Tuple %</span>
                             </div>
                             <span className="ba-badge" style={{ background: 'rgba(245,158,11,.1)', color: '#fbbf24', border: '1px solid rgba(245,158,11,.2)', fontSize: 10 }}>
                                 live
@@ -603,7 +603,7 @@ export default function BloatAnalysisTab() {
                     <div className="ba-card">
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                             <HardDrive size={14} color="#6366f1" />
-                            <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>Top 10 — Total Size</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>Top 10 — Total Size</span>
                         </div>
                         <ResponsiveContainer width="100%" height={260}>
                             <BarChart data={chartSizeData} layout="vertical" margin={{ top: 0, right: 72, left: 0, bottom: 0 }} barSize={12}>
@@ -641,7 +641,7 @@ export default function BloatAnalysisTab() {
                         </span>
                     </button>
                 ))}
-                <div style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
+                <div style={{ marginLeft: 'auto', fontSize: 11, color: THEME.textDim }}>
                     {activeTab === 'tables' ? `${filteredTables.length} tables` : `${filteredIndexes.length} indexes`}
                 </div>
             </div>
@@ -650,14 +650,14 @@ export default function BloatAnalysisTab() {
             {activeTab === 'tables' && (
                 <div className="ba-card" style={{ padding: 0 }}>
                     {/* Toolbar */}
-                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid ' + THEME.grid }}>
                         <div style={{ position: 'relative', flex: 1, maxWidth: 280 }}>
-                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)' }} />
+                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
                             <input className="ba-input" placeholder="Search tables…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }} />
                         </div>
                         <button
                             onClick={() => setFilterHigh(f => !f)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 13px', borderRadius: 9, border: `1px solid ${filterHigh ? 'rgba(245,158,11,.5)' : 'rgba(255,255,255,.1)'}`, background: filterHigh ? 'rgba(245,158,11,.12)' : 'transparent', color: filterHigh ? '#fbbf24' : 'rgba(255,255,255,.4)', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 13px', borderRadius: 9, border: `1px solid ${filterHigh ? 'rgba(245,158,11,.5)' : THEME.grid}`, background: filterHigh ? 'rgba(245,158,11,.12)' : 'transparent', color: filterHigh ? '#fbbf24' : THEME.textMuted, cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
                         >
                             <Filter size={12} /> High Bloat Only
                         </button>
@@ -676,7 +676,7 @@ export default function BloatAnalysisTab() {
                     {/* Rows */}
                     <div style={{ maxHeight: 500, overflowY: 'auto' }}>
                         {filteredTables.length === 0
-                            ? <div style={{ padding: 50, textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: 13 }}>No tables match your filters.</div>
+                            ? <div style={{ padding: 50, textAlign: 'center', color: THEME.textDim, fontSize: 13 }}>No tables match your filters.</div>
                             : filteredTables.map((t, i) => {
                                 const dead = Number(t.dead_pct) || 0;
                                 const isCritical = dead > 20;
@@ -691,16 +691,16 @@ export default function BloatAnalysisTab() {
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                                 <span className={`severity-dot ${isCritical ? 'critical' : isHigh ? 'high' : 'ok'}`} />
-                                                <span style={{ fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13 }}>{t.tablename}</span>
+                                                <span style={{ fontWeight: 700, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13 }}>{t.tablename}</span>
                                             </div>
-                                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2, marginLeft: 14 }}>{t.schemaname}</div>
+                                            <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, marginLeft: 14 }}>{t.schemaname}</div>
                                         </div>
                                         <div>
-                                            <span className="ba-mono" style={{ fontSize: 12, color: '#e2e8f0' }}>{t.total_size}</span>
+                                            <span className="ba-mono" style={{ fontSize: 12, color: THEME.textMain }}>{t.total_size}</span>
                                             <SparkBar value={Number(t.total_bytes)} max={maxDeadBytes} color="#6366f160" />
                                         </div>
-                                        <span className="ba-mono" style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{fmt(t.n_live_tup)}</span>
-                                        <span className="ba-mono" style={{ fontSize: 12, color: Number(t.n_dead_tup) > 0 ? '#f59e0b' : 'rgba(255,255,255,.3)' }}>{fmt(t.n_dead_tup)}</span>
+                                        <span className="ba-mono" style={{ fontSize: 12, color: THEME.textMuted }}>{fmt(t.n_live_tup)}</span>
+                                        <span className="ba-mono" style={{ fontSize: 12, color: Number(t.n_dead_tup) > 0 ? '#f59e0b' : THEME.textDim }}>{fmt(t.n_dead_tup)}</span>
                                         <DeadBar pct={t.dead_pct} />
                                         <span className="ba-mono" style={{ fontSize: 11, color: '#f87171' }}>{t.estimated_bloat_size || '—'}</span>
                                     </div>
@@ -709,11 +709,11 @@ export default function BloatAnalysisTab() {
                         }
                     </div>
 
-                    <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>
+                    <div style={{ padding: '10px 16px', borderTop: '1px solid ' + THEME.grid, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: THEME.textDim }}>
                             {filteredTables.length} of {tables.length} tables
                         </span>
-                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>
+                        <span style={{ fontSize: 11, color: THEME.textDim }}>
                             Click row to inspect · Left border = severity
                         </span>
                     </div>
@@ -723,9 +723,9 @@ export default function BloatAnalysisTab() {
             {/* ── Index Bloat ──────────────────────────────────────────────── */}
             {activeTab === 'indexes' && (
                 <div className="ba-card" style={{ padding: 0 }}>
-                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid ' + THEME.grid }}>
                         <div style={{ position: 'relative', flex: 1, maxWidth: 280 }}>
-                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.3)' }} />
+                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
                             <input className="ba-input" placeholder="Search indexes…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }} />
                         </div>
                     </div>
@@ -740,7 +740,7 @@ export default function BloatAnalysisTab() {
 
                     <div style={{ maxHeight: 500, overflowY: 'auto' }}>
                         {filteredIndexes.length === 0
-                            ? <div style={{ padding: 50, textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: 13 }}>No indexes found.</div>
+                            ? <div style={{ padding: 50, textAlign: 'center', color: THEME.textDim, fontSize: 13 }}>No indexes found.</div>
                             : filteredIndexes.map((ix, i) => {
                                 const ineff = Number(ix.inefficiency_pct) || 0;
                                 const isCritical = ineff > 50;
@@ -751,13 +751,13 @@ export default function BloatAnalysisTab() {
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                                 <span className={`severity-dot ${isCritical ? 'critical' : isHigh ? 'high' : 'ok'}`} />
-                                                <span style={{ fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5 }}>{ix.indexname}</span>
+                                                <span style={{ fontWeight: 700, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5 }}>{ix.indexname}</span>
                                             </div>
-                                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2, marginLeft: 14 }}>{ix.schemaname}</div>
+                                            <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, marginLeft: 14 }}>{ix.schemaname}</div>
                                         </div>
-                                        <span style={{ color: 'rgba(255,255,255,.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>{ix.tablename}</span>
+                                        <span style={{ color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>{ix.tablename}</span>
                                         <div>
-                                            <span className="ba-mono" style={{ fontSize: 12, color: '#e2e8f0' }}>{ix.index_size}</span>
+                                            <span className="ba-mono" style={{ fontSize: 12, color: THEME.textMain }}>{ix.index_size}</span>
                                             <SparkBar value={Number(ix.index_bytes)} max={maxIndexBytes} color="#6366f160" />
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -766,7 +766,7 @@ export default function BloatAnalysisTab() {
                                                     UNUSED
                                                 </span>
                                             )}
-                                            <span className="ba-mono" style={{ fontSize: 12, color: neverUsed ? '#f87171' : 'rgba(255,255,255,.45)' }}>{fmt(ix.idx_scan)}</span>
+                                            <span className="ba-mono" style={{ fontSize: 12, color: neverUsed ? '#f87171' : THEME.textMuted }}>{fmt(ix.idx_scan)}</span>
                                         </div>
                                         <IneffBar pct={ix.inefficiency_pct} />
                                     </div>
@@ -775,9 +775,9 @@ export default function BloatAnalysisTab() {
                         }
                     </div>
 
-                    <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)' }}>{filteredIndexes.length} indexes</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
+                    <div style={{ padding: '12px 16px', borderTop: '1px solid ' + THEME.grid, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: THEME.textDim }}>{filteredIndexes.length} indexes</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: THEME.textDim }}>
                             <Eye size={11} />
                             Inefficiency = % of index reads not hitting live rows
                         </div>
