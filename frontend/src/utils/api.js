@@ -41,13 +41,15 @@ export function connectWS(onMessage) {
     const token = localStorage.getItem('vigil_token');
     if (!token) return () => {};
 
-    // Convert http(s) to ws(s)
+    // Convert http(s) to ws(s) — token is sent as first message (NOT in URL)
     const wsBase = API_BASE.replace(/^http/, 'ws');
-    const wsUrl = `${wsBase}/ws?token=${encodeURIComponent(token)}`;
+    const wsUrl = `${wsBase}/ws`;
 
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
+        // Authenticate via first message — keeps token out of server logs
+        ws.send(JSON.stringify({ type: 'auth', token }));
         console.log('WS Connected');
         if (onMessage) onMessage({ type: 'snapshot' }); // Signal connection
     };

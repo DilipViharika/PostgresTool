@@ -27,6 +27,39 @@ function log(level, message, meta = {}) {
     fn(JSON.stringify(entry));
 }
 
+// ── Per-route rate limiter (used on password-reset) ─────────────────────────
+const _pwResetBuckets = new Map();
+function pwResetLimiter(req, res, next) {
+    const key = `${req.ip || 'unknown'}:${req.params.id || ''}`;
+    const now = Date.now();
+    const WINDOW = 15 * 60_000; // 15 minutes
+    const MAX    = 5;            // 5 attempts per IP per user per window
+    let b = _pwResetBuckets.get(key);
+    if (!b || now - b.windowStart > WINDOW) {
+        b = { windowStart: now, count: 0 };
+        _pwResetBuckets.set(key, b);
+    }
+    if (++b.count > MAX) {
+        return res.status(429).json({ error: 'Too many password reset attempts. Try again later.' });
+    }
+    next();
+}
+
+/**
+ * Validates password strength.
+ * Returns an error string if invalid, or null if OK.
+ */
+function validatePasswordStrength(password) {
+    if (!password || typeof password !== 'string') return 'Password is required';
+    if (password.length < 10) return 'Password must be at least 10 characters';
+    if (password.length > 256) return 'Password must not exceed 256 characters';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+    if (!/[^A-Za-z0-9]/.test(password)) return 'Password must contain at least one special character';
+    return null;
+}
+
 /**
  * @param {import('pg').Pool} pool
  * @param {Function} authenticate  - middleware
@@ -71,9 +104,8 @@ export default function userRoutes(pool, authenticate, requireScreen) {
             if (!username || !password || !name || !email || !role) {
                 return res.status(400).json({ error: 'username, password, name, email and role are required' });
             }
-            if (password.length < 8) {
-                return res.status(400).json({ error: 'Password must be at least 8 characters' });
-            }
+            const pwError = validatePasswordStrength(password);
+            if (pwError) return res.status(400).json({ error: pwError });
             const VALID_ROLES = ['super_admin', 'admin', 'developer', 'analyst', 'viewer'];
             if (!VALID_ROLES.includes(role)) {
                 return res.status(400).json({ error: `Role must be one of: ${VALID_ROLES.join(', ')}` });
@@ -202,14 +234,13 @@ export default function userRoutes(pool, authenticate, requireScreen) {
     });
 
     /* ── POST /api/users/:id/reset-password ────────────────────────────────*/
-    router.post('/users/:id/reset-password', ...guard, async (req, res) => {
+    router.post('/users/:id/reset-password', ...guard, pwResetLimiter, async (req, res) => {
         try {
             const id = parseInt(req.params.id);
             const { newPassword } = req.body;
 
-            if (!newPassword || newPassword.length < 8) {
-                return res.status(400).json({ error: 'newPassword must be at least 8 characters' });
-            }
+            const pwError = validatePasswordStrength(newPassword);
+            if (pwError) return res.status(400).json({ error: pwError });
 
             const ok = await resetUserPassword(pool, id, newPassword);
             if (!ok) return res.status(404).json({ error: 'User not found' });

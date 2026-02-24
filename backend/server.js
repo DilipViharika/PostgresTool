@@ -17,7 +17,7 @@ import repoRoutes               from './routes/repoRoutes.js';
 import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
 
-import { buildAuthenticate, requireScreen } from './middleware/authenticate.js';
+import { buildAuthenticate, requireScreen, requireRole } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
 import sessionRoutes                        from './routes/sessionRoutes.js';
 import auditRoutes                          from './routes/auditRoutes.js';
@@ -31,13 +31,15 @@ const __dirname  = dirname(__filename);
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
+const IS_PROD = process.env.NODE_ENV === 'production';
+
 const CONFIG = Object.freeze({
     PORT:           Number(process.env.PORT) || 5000,
     JWT_SECRET:     process.env.JWT_SECRET  || 'vigil-change-me-in-production',
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
     CORS_ORIGINS: [
-        'http://localhost:5173',
-        'http://localhost:3000',
+        // Localhost origins only allowed in development
+        ...(IS_PROD ? [] : ['http://localhost:5173', 'http://localhost:3000']),
         'https://postgres-tool.vercel.app',
         process.env.CORS_ORIGIN,
     ].filter(Boolean),
@@ -103,10 +105,26 @@ const CONFIG = Object.freeze({
         }));
         process.exit(1);
     }
-    if (process.env.JWT_SECRET === 'vigil-change-me-in-production' || !process.env.JWT_SECRET) {
+    const jwtSecret = process.env.JWT_SECRET;
+    const weakSecret = !jwtSecret || jwtSecret === 'vigil-change-me-in-production';
+    if (weakSecret) {
+        if (IS_PROD) {
+            // Hard-fail in production — never start with an insecure secret
+            console.error(JSON.stringify({
+                ts: new Date().toISOString(), level: 'ERROR',
+                msg: 'JWT_SECRET is missing or uses the default value. Refusing to start in production.',
+            }));
+            process.exit(1);
+        } else {
+            console.warn(JSON.stringify({
+                ts: new Date().toISOString(), level: 'WARN',
+                msg: 'JWT_SECRET is using the default insecure value. Set a strong secret before deploying.',
+            }));
+        }
+    } else if (jwtSecret.length < 32) {
         console.warn(JSON.stringify({
             ts: new Date().toISOString(), level: 'WARN',
-            msg: 'JWT_SECRET is using the default insecure value. Set a strong secret in production.',
+            msg: 'JWT_SECRET is shorter than 32 characters. Use a longer, random secret for better security.',
         }));
     }
 })();
@@ -184,6 +202,88 @@ function rateLimiter(req, res, next) {
     next();
 }
 
+// ── Stricter per-endpoint rate limiter ──────────────────────────────────────
+// Used on auth and sensitive mutation endpoints (10 req/min per IP)
+const strictBuckets = new Map();
+function strictRateLimiter(windowMs = 60_000, maxReqs = 10) {
+    return (req, res, next) => {
+        const key = `${req.ip || 'unknown'}:${req.path}`;
+        const now = Date.now();
+        let b = strictBuckets.get(key);
+        if (!b || now - b.windowStart > windowMs) {
+            b = { windowStart: now, count: 0 };
+            strictBuckets.set(key, b);
+        }
+        if (++b.count > maxReqs) {
+            return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+        }
+        next();
+    };
+}
+
+// ── Security Headers middleware (helmet-lite, no extra dep) ─────────────────
+function securityHeaders(_req, res, next) {
+    // Prevent clickjacking
+    res.setHeader('X-Frame-Options', 'DENY');
+    // Block MIME sniffing
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    // XSS protection legacy header
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    // Remove fingerprint header
+    res.removeHeader('X-Powered-By');
+    // Referrer policy — don't leak URL to third parties
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    // Content Security Policy for API responses
+    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    // HSTS — enforce HTTPS in production
+    if (IS_PROD) {
+        res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+    }
+    // Permissions policy
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    next();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SQL INJECTION GUARD — validates user-supplied SQL before EXPLAIN/query
+// ─────────────────────────────────────────────────────────────────────────────
+const DANGEROUS_SQL = /\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|CREATE|ALTER|GRANT|REVOKE|COPY|EXECUTE|DO\b|CALL|NOTIFY|LISTEN|LOAD|LOCK\s+TABLE|CHECKPOINT|SECURITY\s+LABEL|SET\s+ROLE|RESET\s+ALL)\b/i;
+
+/**
+ * Validates that a SQL string is safe to wrap in EXPLAIN.
+ * Returns an error string if invalid, or null if OK.
+ */
+function validateExplainQuery(sql) {
+    if (!sql || typeof sql !== 'string') return 'Query must be a non-empty string';
+    if (sql.length > 8_000) return 'Query too long (max 8,000 characters)';
+    // Strip single-line and multi-line comments before scanning
+    const stripped = sql
+        .replace(/--[^\n]*/g, ' ')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .trim();
+    if (!stripped) return 'Query is empty';
+    if (DANGEROUS_SQL.test(stripped)) return 'Query contains disallowed SQL operations (only SELECT is allowed here)';
+    // Block multiple statements via semicolons
+    if (/;/.test(stripped.replace(/;$/, ''))) return 'Multiple SQL statements are not allowed';
+    return null;
+}
+
+/**
+ * Sanitises a free-form SQL string for the console.
+ * Blocks the most dangerous DDL and system-level commands.
+ * Returns an error string if blocked, or null if OK.
+ */
+const CONSOLE_BLOCKED = /\b(DROP\s+(DATABASE|SCHEMA|ROLE|TABLESPACE)|CREATE\s+(DATABASE|ROLE|USER)|ALTER\s+(SYSTEM|ROLE\s+\S+\s+SUPERUSER)|COPY\s+\S+\s+(FROM|TO)\s+(STDIN|STDOUT|'|E')|LOAD\s+'|pg_read_file|pg_write_file|pg_read_binary_file)\b/i;
+
+function validateConsoleQuery(sql, role) {
+    if (!sql || typeof sql !== 'string') return 'Query must be a non-empty string';
+    if (sql.length > 50_000) return 'Query too long (max 50,000 characters)';
+    // super_admin can run anything within the size limit
+    if (role === 'super_admin') return null;
+    if (CONSOLE_BLOCKED.test(sql)) return 'This statement is blocked for your role. Contact a super_admin.';
+    return null;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // LOGIN LOCKOUT (in-memory, resets on restart)
 // Max 5 failed attempts per 15 minutes per username
@@ -249,8 +349,20 @@ let CONNECTIONS = [
 const app    = express();
 const server = http.createServer(app);
 
-app.use(cors({ origin: CONFIG.CORS_ORIGINS, credentials: true }));
-app.use(express.json({ limit: '2mb' }));
+app.use(cors({
+    origin: (origin, cb) => {
+        // Allow requests with no origin (server-to-server, curl, etc.)
+        if (!origin) return cb(null, true);
+        if (CONFIG.CORS_ORIGINS.includes(origin)) return cb(null, true);
+        cb(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+    exposedHeaders: ['X-Cache', 'X-Request-Id'],
+}));
+app.use(securityHeaders);
+app.use(express.json({ limit: '1mb' }));   // tightened from 2 mb
 app.use(rateLimiter);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -273,10 +385,17 @@ app.get('/health', (_req, res) => res.json({
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTH — POST /api/auth/login
 // ─────────────────────────────────────────────────────────────────────────────
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ error: 'username and password are required' });
+    }
+    // Basic type/length guards to avoid bcrypt DoS via huge password strings
+    if (typeof username !== 'string' || username.length > 128) {
+        return res.status(400).json({ error: 'Invalid username' });
+    }
+    if (typeof password !== 'string' || password.length > 256) {
+        return res.status(400).json({ error: 'Invalid password' });
     }
 
     // Lockout check — prevent brute force
@@ -447,6 +566,8 @@ app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
     try {
         const { query } = req.body;
         if (!query) return res.status(400).json({ error: 'Query is required' });
+        const validationError = validateExplainQuery(query);
+        if (validationError) return res.status(400).json({ error: validationError });
         const result = await pool.query(`EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) ${query}`);
         res.json(result.rows[0]);
     } catch (e) { res.status(400).json({ error: e.message }); }
@@ -485,11 +606,29 @@ app.post('/api/alerts/bulk-acknowledge', authenticate, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/alerts/manual', authenticate, async (req, res) => {
+app.post('/api/alerts/manual', authenticate, requireRole('admin', 'super_admin'), async (req, res) => {
     try {
         const { severity, category, message, data } = req.body;
         if (!severity || !category || !message) return res.status(400).json({ error: 'Missing required fields' });
-        const alert = await alerts.fire(severity, category, message, { ...data, manual: true, createdBy: req.user.username });
+
+        const VALID_SEVERITIES = ['critical', 'high', 'medium', 'low', 'info'];
+        const VALID_CATEGORIES = ['performance', 'security', 'availability', 'replication', 'storage', 'connection', 'query', 'system', 'custom'];
+        if (!VALID_SEVERITIES.includes(String(severity).toLowerCase())) {
+            return res.status(400).json({ error: `severity must be one of: ${VALID_SEVERITIES.join(', ')}` });
+        }
+        if (!VALID_CATEGORIES.includes(String(category).toLowerCase())) {
+            return res.status(400).json({ error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
+        }
+        if (typeof message !== 'string' || message.trim().length === 0 || message.length > 500) {
+            return res.status(400).json({ error: 'message must be a non-empty string (max 500 chars)' });
+        }
+
+        const alert = await alerts.fire(
+            String(severity).toLowerCase(),
+            String(category).toLowerCase(),
+            message.trim(),
+            { ...data, manual: true, createdBy: req.user.username },
+        );
         res.json(alert);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -544,15 +683,29 @@ app.post('/api/admin/cache/clear', authenticate, (req, res) => { cache.clear(); 
 // ─────────────────────────────────────────────────────────────────────────────
 // SQL CONSOLE
 // ─────────────────────────────────────────────────────────────────────────────
-app.post('/api/query', authenticate, async (req, res) => {
+app.post('/api/query', authenticate, requireRole('admin', 'super_admin'), async (req, res) => {
+    const rawSql = req.body?.sql;
+    const validationError = validateConsoleQuery(rawSql, req.user.role);
+    if (validationError) return res.status(400).json({ error: validationError });
+
+    const safeSql = String(rawSql).slice(0, 50_000); // already validated length, belt-and-suspenders
     try {
         const client = await pool.connect();
-        const r = await client.query(req.body.sql);
+        const r = await client.query(safeSql);
         client.release();
-        queryHistory.add({ sql: req.body.sql, success: true });
+        queryHistory.add({ sql: safeSql, success: true, by: req.user.username });
+        await writeAudit(pool, {
+            actorId:      req.user.id,
+            actorUsername: req.user.username,
+            action:       'SQL_CONSOLE_EXEC',
+            resourceType: 'sql_console',
+            level:        'warn',
+            detail:       `Executed SQL (${safeSql.length} chars): ${safeSql.slice(0, 200)}${safeSql.length > 200 ? '…' : ''}`,
+            ip:           req.ip,
+        });
         res.json({ rows: r.rows, rowCount: r.rowCount, fields: r.fields.map(f => ({ name: f.name })) });
     } catch (e) {
-        queryHistory.add({ sql: req.body.sql, success: false, error: e.message });
+        queryHistory.add({ sql: safeSql, success: false, error: e.message, by: req.user.username });
         res.status(400).json({ error: e.message });
     }
 });
@@ -961,11 +1114,14 @@ app.post('/api/regression/capture', authenticate, async (req, res) => {
     try {
         const { query, label } = req.body;
         if (!query) return res.status(400).json({ error: 'query required' });
+        const validationError = validateExplainQuery(query);
+        if (validationError) return res.status(400).json({ error: validationError });
         const result = await pool.query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
         const plan = result.rows[0]['QUERY PLAN'][0];
         const cost = plan['Plan']['Total Cost'];
         const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
-        planBaselines.set(fingerprint, { plan, cost, ts: new Date().toISOString(), query, label: label || query.slice(0, 60) });
+        const safeLabel = typeof label === 'string' ? label.slice(0, 120) : query.slice(0, 60);
+        planBaselines.set(fingerprint, { plan, cost, ts: new Date().toISOString(), query, label: safeLabel });
         res.json({ fingerprint, cost, plan, message: 'Baseline captured' });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -974,6 +1130,8 @@ app.post('/api/regression/compare', authenticate, async (req, res) => {
     try {
         const { query } = req.body;
         if (!query) return res.status(400).json({ error: 'query required' });
+        const validationError = validateExplainQuery(query);
+        if (validationError) return res.status(400).json({ error: validationError });
         const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
         const baseline = planBaselines.get(fingerprint);
 
@@ -1576,28 +1734,50 @@ app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async 
 // WEBSOCKET
 // ─────────────────────────────────────────────────────────────────────────────
 const wss = new WebSocketServer({ server, path: '/ws' });
-wss.on('connection', (ws, req) => {
-    // ── JWT Authentication — require ?token=<jwt> in the upgrade URL ──────
-    try {
-        const url    = new URL(req.url, `http://${req.headers.host}`);
-        const token  = url.searchParams.get('token');
-        if (!token) throw new Error('Missing token');
-        jwt.verify(token, CONFIG.JWT_SECRET); // throws if invalid/expired
-    } catch (err) {
-        log('WARN', 'WebSocket auth failed — closing connection', { error: err.message });
-        ws.close(1008, 'Unauthorized'); // 1008 = Policy Violation
-        return;
-    }
+wss.on('connection', (ws) => {
+    // ── JWT Authentication via first-message handshake ───────────────────
+    // The client MUST send { type: 'auth', token: '<jwt>' } as its first
+    // message within AUTH_TIMEOUT_MS. This keeps the token out of server
+    // access logs and browser history (URL query params are logged).
+    const AUTH_TIMEOUT_MS = 8_000;
+    let authenticated = false;
 
-    log('INFO', 'WebSocket connection established');
-    alerts.addSubscriber(ws);
-    alerts.getRecent(10, false).then(recent => {
-        if (ws.readyState === 1) {
-            ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
+    const authTimeout = setTimeout(() => {
+        if (!authenticated) {
+            log('WARN', 'WebSocket auth timeout — closing connection');
+            ws.close(1008, 'Auth timeout');
         }
-    }).catch(() => {});
-    ws.on('close', () => { log('INFO', 'WebSocket closed'); alerts.removeSubscriber(ws); });
-    ws.on('error', (e) => log('ERROR', 'WebSocket error', { error: e.message }));
+    }, AUTH_TIMEOUT_MS);
+
+    ws.once('message', (raw) => {
+        clearTimeout(authTimeout);
+        try {
+            const msg = JSON.parse(raw.toString());
+            if (msg?.type !== 'auth' || !msg.token) throw new Error('Expected {type:"auth",token:"..."}');
+            jwt.verify(msg.token, CONFIG.JWT_SECRET); // throws if invalid/expired
+            authenticated = true;
+        } catch (err) {
+            log('WARN', 'WebSocket auth failed — closing connection', { error: err.message });
+            ws.close(1008, 'Unauthorized');
+            return;
+        }
+
+        log('INFO', 'WebSocket connection established');
+        alerts.addSubscriber(ws);
+        alerts.getRecent(10, false).then(recent => {
+            if (ws.readyState === 1) {
+                ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
+            }
+        }).catch(() => {});
+
+        ws.on('close', () => { log('INFO', 'WebSocket closed'); alerts.removeSubscriber(ws); });
+        ws.on('error', (e) => log('ERROR', 'WebSocket error', { error: e.message }));
+    });
+
+    ws.on('error', (e) => {
+        clearTimeout(authTimeout);
+        log('ERROR', 'WebSocket pre-auth error', { error: e.message });
+    });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -157,11 +157,11 @@ export const AuthProvider = ({ children }) => {
     const getToken = useCallback(() =>
         localStorage.getItem(STORAGE_KEYS.TOKEN), []);
 
+    // Returns the base WS URL (no token in URL — client sends auth as first message)
     const getWSUrl = useCallback(() => {
-        const token = getToken();
-        if (!token) return null;
+        if (!getToken()) return null;
         const wsBase = API_BASE.replace(/^http/, 'ws');
-        return `${wsBase}/ws?token=${encodeURIComponent(token)}`;
+        return `${wsBase}/ws`;
     }, [getToken]);
 
     // ── Session info ───────────────────────────────────────────────────────

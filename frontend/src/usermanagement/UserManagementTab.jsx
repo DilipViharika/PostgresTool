@@ -333,9 +333,11 @@ const UserManagementTab = ({ initialUsers = [] }) => {
                 const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const wsUrl = new URL(API_BASE);
                 const wsBase = `${wsProtocol}//${wsUrl.host}`;
-                wsRef.current = new WebSocket(`${wsBase}/ws?token=${token}`);
+                // Token is sent as first message (not in URL) to avoid log exposure
+                wsRef.current = new WebSocket(`${wsBase}/ws`);
 
                 wsRef.current.onopen = () => {
+                    wsRef.current.send(JSON.stringify({ type: 'auth', token }));
                     setIsLive(true);
                     if (pollingRef.current) clearInterval(pollingRef.current);
                 };
