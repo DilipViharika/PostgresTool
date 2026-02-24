@@ -7,7 +7,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
-const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:5000';
+// ✅ FIX: Use env variable in production, fallback to deployed Vercel backend
+const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 
 const NODE_DEFS = {
     primary: { label: 'Database',       sub: 'pg_monitor',  color: '#6470FF', icon: 'Database',  r: 14 },
@@ -337,25 +338,21 @@ const LeftPanel = () => {
         }}>
             <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}/>
 
-            {/* Labels */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
                 {labelPos.map(n => <NodeLabel key={n.key} x={n.x} y={n.y} nodeKey={n.key} ci={n.ci} r={n.r} role={n.role}/>)}
             </div>
 
-            {/* Aurora layers */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }}>
                 <div style={{ position: 'absolute', top: '-10%', left: '10%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(100,112,255,.09) 0%, transparent 70%)', filter: 'blur(60px)', animation: 'aurora 12s ease-in-out infinite' }}/>
                 <div style={{ position: 'absolute', top: '20%', right: '-5%', width: '45%', height: '50%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(56,189,248,.06) 0%, transparent 70%)', filter: 'blur(55px)', animation: 'aurora 16s ease-in-out infinite reverse' }}/>
                 <div style={{ position: 'absolute', bottom: '25%', left: '5%', width: '40%', height: '40%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(167,139,250,.05) 0%, transparent 70%)', filter: 'blur(50px)', animation: 'aurora 10s ease-in-out infinite 3s' }}/>
             </div>
 
-            {/* Grain */}
             <div style={{
                 position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2, opacity: .022,
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E")`,
             }}/>
 
-            {/* Wordmark */}
             <div style={{ position: 'absolute', top: 28, left: 36, zIndex: 8, display: 'flex', alignItems: 'center', gap: 12, animation: 'fadeUp .8s ease .05s backwards' }}>
                 <div style={{
                     width: 40, height: 40, borderRadius: 13,
@@ -372,28 +369,18 @@ const LeftPanel = () => {
                 </div>
             </div>
 
-            {/* Scrim — only covers bottom 36% */}
             <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, height: '38%',
                 pointerEvents: 'none', zIndex: 3,
                 background: 'linear-gradient(to top, rgba(5,6,14,1) 0%, rgba(5,6,14,.96) 30%, rgba(5,6,14,.55) 60%, transparent 100%)',
             }}/>
 
-            {/* ── HERO BLOCK ── fixed 36% height, fully centred */}
             <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0,
-                height: '36%',
-                zIndex: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                gap: 11,
-                padding: '0 52px',
+                height: '36%', zIndex: 8,
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', textAlign: 'center', gap: 11, padding: '0 52px',
             }}>
-
-                {/* Eyebrow badge */}
                 <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
                     padding: '4px 14px 4px 10px',
@@ -408,71 +395,42 @@ const LeftPanel = () => {
                     </span>
                 </div>
 
-                {/* Headline with shimmer on italic part */}
                 <div style={{ animation: 'fadeUp .85s ease .2s backwards' }}>
-                    <span style={{
-                        fontFamily: "'Playfair Display',serif",
-                        fontSize: 'clamp(20px, 2.2vw, 36px)',
-                        fontWeight: 700, color: '#EAECF8', letterSpacing: '-0.5px',
-                    }}>
+                    <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(20px, 2.2vw, 36px)', fontWeight: 700, color: '#EAECF8', letterSpacing: '-0.5px' }}>
                         Monitor every query,&nbsp;
                     </span>
                     <span style={{
-                        fontFamily: "'Playfair Display',serif",
-                        fontSize: 'clamp(20px, 2.2vw, 36px)',
+                        fontFamily: "'Playfair Display',serif", fontSize: 'clamp(20px, 2.2vw, 36px)',
                         fontWeight: 400, fontStyle: 'italic',
                         background: 'linear-gradient(90deg, #818AFF, #C4AAFF, #818AFF)',
                         backgroundSize: '200% auto',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
                         animation: 'shimmer 4s linear infinite',
                     }}>
                         beautifully.
                     </span>
                 </div>
 
-                {/* Sub-copy */}
-                <p style={{
-                    fontSize: 11.5, fontWeight: 300, color: 'rgba(130,145,175,.68)',
-                    lineHeight: 1.75, margin: 0, maxWidth: 500,
-                    fontFamily: THEME.fontBody,
-                    animation: 'fadeUp .85s ease .30s backwards',
-                }}>
+                <p style={{ fontSize: 11.5, fontWeight: 300, color: 'rgba(130,145,175,.68)', lineHeight: 1.75, margin: 0, maxWidth: 500, fontFamily: THEME.fontBody, animation: 'fadeUp .85s ease .30s backwards' }}>
                     Real-time intelligence across your PostgreSQL fleet — slow queries, replication lag,
                     vacuum cycles, index health, and table bloat. Six unified modules, zero blind spots.
                 </p>
 
-                {/* Stats inline row */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, animation: 'fadeUp .85s ease .38s backwards' }}>
                     {FEATURE_STATS.map(({ val, desc }, i) => (
                         <React.Fragment key={desc}>
-                            <div className="stat-pill" style={{
-                                display: 'flex', alignItems: 'center', gap: 7,
-                                padding: '5px 13px',
-                                background: 'rgba(100,112,255,.06)',
-                                border: '1px solid rgba(100,112,255,.13)',
-                                borderRadius: 8,
-                                cursor: 'default',
-                            }}>
+                            <div className="stat-pill" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 13px', background: 'rgba(100,112,255,.06)', border: '1px solid rgba(100,112,255,.13)', borderRadius: 8, cursor: 'default' }}>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: '#8B94FF', letterSpacing: '-.3px' }}>{val}</span>
                                 <span style={{ fontFamily: THEME.fontBody, fontSize: 10, color: 'rgba(130,145,175,.52)' }}>{desc}</span>
                             </div>
-                            {i < FEATURE_STATS.length - 1 && (
-                                <div style={{ width: 1, height: 14, background: THEME.grid, flexShrink: 0 }}/>
-                            )}
+                            {i < FEATURE_STATS.length - 1 && <div style={{ width: 1, height: 14, background: THEME.grid, flexShrink: 0 }}/>}
                         </React.Fragment>
                     ))}
                 </div>
 
-                {/* Status dots */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 22, animation: 'fadeUp .85s ease .46s backwards' }}>
                     {BOTTOM_DOTS.map(({ label, color }) => (
-                        <div key={label} style={{
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            fontFamily: THEME.fontMono, fontSize: 8.5,
-                            letterSpacing: '.5px', color: 'rgba(140,155,185,.48)',
-                        }}>
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '.5px', color: 'rgba(140,155,185,.48)' }}>
                             <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}AA`, flexShrink: 0 }}/>
                             {label}
                         </div>
@@ -511,15 +469,10 @@ const LogoEmblem = ({ success }) => {
                     width: 48, height: 48, borderRadius: 14,
                     background: success ? 'linear-gradient(135deg,#22c55e,#14b8a6)' : 'linear-gradient(135deg,#3D47D8,#7B3ACF)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: success
-                        ? '0 6px 30px rgba(34,197,94,.55), 0 0 0 1px rgba(255,255,255,.10) inset'
-                        : '0 6px 30px rgba(74,84,232,.55), 0 0 0 1px rgba(255,255,255,.10) inset',
+                    boxShadow: success ? '0 6px 30px rgba(34,197,94,.55), 0 0 0 1px rgba(255,255,255,.10) inset' : '0 6px 30px rgba(74,84,232,.55), 0 0 0 1px rgba(255,255,255,.10) inset',
                     transition: 'all .9s cubic-bezier(.34,1.56,.64,1)',
                 }}>
-                    {success
-                        ? <CheckCircle size={23} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/>
-                        : <Database size={23} color="#fff" strokeWidth={1.8}/>
-                    }
+                    {success ? <CheckCircle size={23} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/> : <Database size={23} color="#fff" strokeWidth={1.8}/>}
                 </div>
             </div>
         </div>
@@ -536,12 +489,7 @@ const ServerStatus = ({ status }) => {
     const color = on ? '#22c55e' : off ? '#ef4444' : '#f59e0b';
     const label = on ? 'ONLINE' : off ? 'OFFLINE' : chk ? 'CHECKING' : 'DEGRADED';
     return (
-        <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 7,
-            padding: '5px 14px 5px 10px', borderRadius: 100,
-            background: `${color}0D`, border: `1px solid ${color}28`,
-            fontFamily: THEME.fontMono, fontSize: 9.5,
-        }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 14px 5px 10px', borderRadius: 100, background: `${color}0D`, border: `1px solid ${color}28`, fontFamily: THEME.fontMono, fontSize: 9.5 }}>
             {chk
                 ? <><Loader size={9} color="#334155" style={{ animation: 'spin 1s linear infinite' }}/><span style={{ color: '#334155', letterSpacing: '.05em' }}>CHECKING…</span></>
                 : <>
@@ -550,11 +498,7 @@ const ServerStatus = ({ status }) => {
                         {on && <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${color}70`, animation: 'ringOut 2.2s ease-out infinite' }}/>}
                     </div>
                     <span style={{ color, fontWeight: 700, letterSpacing: '.08em' }}>{label}</span>
-                    {status.latency != null && (
-                        <span style={{ color: THEME.textMuted, fontSize: 8.5, padding: '1px 6px', borderRadius: 4, background: THEME.surfaceHover, border: `1px solid ${THEME.grid}` }}>
-                            {status.latency}ms
-                        </span>
-                    )}
+                    {status.latency != null && <span style={{ color: THEME.textMuted, fontSize: 8.5, padding: '1px 6px', borderRadius: 4, background: THEME.surfaceHover, border: `1px solid ${THEME.grid}` }}>{status.latency}ms</span>}
                 </>
             }
         </div>
@@ -571,30 +515,10 @@ const InputField = React.forwardRef(function InputField(
     const hasVal = value.length > 0;
     return (
         <div>
-            <label style={{
-                display: 'block', marginBottom: 7, fontSize: 9, fontWeight: 600,
-                color: focused ? '#818AFF' : THEME.textMuted,
-                textTransform: 'uppercase', letterSpacing: '1.6px',
-                fontFamily: THEME.fontMono, transition: 'color .2s',
-            }}>{label}</label>
-            <div style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                background: focused ? 'rgba(100,112,255,.06)' : THEME.surface,
-                border: `1px solid ${focused ? 'rgba(100,112,255,.50)' : THEME.grid}`,
-                borderRadius: 12, padding: '0 14px',
-                transition: 'all .25s',
-                boxShadow: focused
-                    ? '0 0 0 4px rgba(100,112,255,.09)'
-                    : 'none',
-            }}>
+            <label style={{ display: 'block', marginBottom: 7, fontSize: 9, fontWeight: 600, color: focused ? '#818AFF' : THEME.textMuted, textTransform: 'uppercase', letterSpacing: '1.6px', fontFamily: THEME.fontMono, transition: 'color .2s' }}>{label}</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: focused ? 'rgba(100,112,255,.06)' : THEME.surface, border: `1px solid ${focused ? 'rgba(100,112,255,.50)' : THEME.grid}`, borderRadius: 12, padding: '0 14px', transition: 'all .25s', boxShadow: focused ? '0 0 0 4px rgba(100,112,255,.09)' : 'none' }}>
                 <Icon size={14} color={focused ? '#818AFF' : hasVal ? THEME.textMuted : THEME.textDim} style={{ flexShrink: 0, transition: 'color .2s' }}/>
-                <input
-                    ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)}
-                    placeholder={placeholder} autoComplete={autoComplete} disabled={disabled}
-                    onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-                    className="vi-input"
-                    style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}
-                />
+                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input" style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}/>
                 {rightEl}
             </div>
         </div>
@@ -634,6 +558,7 @@ const LoginPage = () => {
     const userRef = useRef(null);
     const pwdRef  = useRef(null);
 
+    // ✅ FIX: health check uses correct API_BASE
     useEffect(() => {
         let cancelled = false;
         const check = async () => {
@@ -671,13 +596,9 @@ const LoginPage = () => {
     }, [username, password, rememberMe, login]);
 
     const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading && !loginSuccess;
-    const btnGrad   = loginSuccess ? '#22c55e'
-        : canSubmit  ? 'linear-gradient(135deg, #3D47D8 0%, #5B63F0 50%, #818AFF 100%)'
-            : 'rgba(100,112,255,.07)';
+    const btnGrad   = loginSuccess ? '#22c55e' : canSubmit ? 'linear-gradient(135deg, #3D47D8 0%, #5B63F0 50%, #818AFF 100%)' : 'rgba(100,112,255,.07)';
     const btnShadow = canSubmit && !authLoading && !loginSuccess
-        ? btnHover
-            ? '0 14px 42px rgba(100,112,255,.62), 0 0 0 1px rgba(130,138,255,.38) inset, 0 1px 0 rgba(255,255,255,.16) inset'
-            : '0 8px 28px rgba(100,112,255,.38), 0 0 0 1px rgba(100,112,255,.24) inset'
+        ? btnHover ? '0 14px 42px rgba(100,112,255,.62), 0 0 0 1px rgba(130,138,255,.38) inset, 0 1px 0 rgba(255,255,255,.16) inset' : '0 8px 28px rgba(100,112,255,.38), 0 0 0 1px rgba(100,112,255,.24) inset'
         : 'none';
 
     return (
@@ -685,38 +606,24 @@ const LoginPage = () => {
             <GlobalStyles/>
             <LeftPanel/>
 
-            {/* ── RIGHT PANEL ── */}
-            <div style={{
-                width: 500, flexShrink: 0, position: 'relative',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '36px 46px',
-                background: THEME.surfaceHover,
-            }}>
-                {/* Ambient glows */}
+            <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '36px 46px', background: THEME.surfaceHover }}>
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', top: '-5%', right: '-25%', width: 420, height: 420, background: 'radial-gradient(circle, rgba(100,112,255,.065) 0%, transparent 65%)', filter: 'blur(52px)', animation: 'aurora 14s ease-in-out infinite' }}/>
                     <div style={{ position: 'absolute', bottom: '-5%', left: '-20%', width: 320, height: 320, background: 'radial-gradient(circle, rgba(167,139,250,.052) 0%, transparent 65%)', filter: 'blur(42px)', animation: 'aurora 10s ease-in-out infinite reverse' }}/>
                     <div style={{ position: 'absolute', inset: 0, opacity: .008, backgroundImage: 'linear-gradient(rgba(100,112,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(100,112,255,1) 1px,transparent 1px)', backgroundSize: '48px 48px' }}/>
                 </div>
 
-                {/* Top bar */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(100,112,255,.45) 25%, rgba(167,139,250,.90) 50%, rgba(100,112,255,.45) 75%, transparent)', opacity: .85, animation: 'edgePulse 4s ease-in-out infinite' }}/>
-                {/* Left border */}
                 <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(100,112,255,.08) 30%, rgba(100,112,255,.13) 50%, rgba(100,112,255,.08) 70%, transparent)' }}/>
 
                 <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
                     <div style={{ marginBottom: 22, animation: 'fadeUp .7s ease .1s backwards' }}>
                         <LogoEmblem success={loginSuccess}/>
                     </div>
 
                     <div style={{ textAlign: 'center', marginBottom: 4, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
-                        <h1 style={{ fontSize: 30, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>
-                            Welcome back
-                        </h1>
-                        <p style={{ color: THEME.textMuted, margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: THEME.fontBody, fontWeight: 300 }}>
-                            Sign in to your monitoring dashboard
-                        </p>
+                        <h1 style={{ fontSize: 30, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>Welcome back</h1>
+                        <p style={{ color: THEME.textMuted, margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: THEME.fontBody, fontWeight: 300 }}>Sign in to your monitoring dashboard</p>
                     </div>
 
                     <div style={{ margin: '18px 0 20px', display: 'flex', alignItems: 'center', gap: 12, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
@@ -725,26 +632,8 @@ const LoginPage = () => {
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${THEME.grid})` }}/>
                     </div>
 
-                    {/* Card */}
-                    <div style={{
-                        width: '100%', padding: '28px 26px 24px', borderRadius: 22,
-                        background: THEME.surface,
-                        backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                        border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.28)' : error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`,
-                        boxShadow: loginSuccess
-                            ? `0 0 60px rgba(34,197,94,.10), ${THEME.shadowMd}`
-                            : THEME.shadowMd,
-                        transition: 'border-color .6s, box-shadow .6s',
-                        animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards',
-                        position: 'relative', overflow: 'hidden',
-                    }}>
-                        <div style={{
-                            position: 'absolute', top: 0, left: '6%', right: '6%', height: 1,
-                            background: loginSuccess
-                                ? 'linear-gradient(90deg, transparent, rgba(34,197,94,.55), transparent)'
-                                : 'linear-gradient(90deg, transparent, rgba(130,138,255,.42), transparent)',
-                            transition: 'background .6s', animation: 'edgePulse 3.5s ease-in-out infinite',
-                        }}/>
+                    <div style={{ width: '100%', padding: '28px 26px 24px', borderRadius: 22, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.28)' : error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: loginSuccess ? `0 0 60px rgba(34,197,94,.10), ${THEME.shadowMd}` : THEME.shadowMd, transition: 'border-color .6s, box-shadow .6s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, left: '6%', right: '6%', height: 1, background: loginSuccess ? 'linear-gradient(90deg, transparent, rgba(34,197,94,.55), transparent)' : 'linear-gradient(90deg, transparent, rgba(130,138,255,.42), transparent)', transition: 'background .6s', animation: 'edgePulse 3.5s ease-in-out infinite' }}/>
                         <Corners color={loginSuccess ? 'rgba(34,197,94,.20)' : 'rgba(100,112,255,.16)'}/>
 
                         {loginSuccess && (

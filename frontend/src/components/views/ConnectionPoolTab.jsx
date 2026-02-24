@@ -159,7 +159,6 @@ const defaultFormData = (dbType = 'postgresql') => {
 const FONT_UI   = `'DM Sans', system-ui, sans-serif`;
 const FONT_MONO = `'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace`;
 
-// ─── Styles — getter-based so colors always reflect the current THEME ─────────
 const S = {
     get root() { return {
         fontFamily: FONT_UI,
@@ -221,11 +220,11 @@ const DBTypeSelector = ({ value, onChange }) => {
                     width: '100%', justifyContent: 'space-between', padding: '10px 14px', fontSize: 14,
                 }}
             >
-        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 20 }}>{current.icon}</span>
-          <span style={{ fontWeight: 600 }}>{current.label}</span>
-          <span style={S.badge(current.accent)}>:{current.defaultPort || 'N/A'}</span>
-        </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 20 }}>{current.icon}</span>
+                    <span style={{ fontWeight: 600 }}>{current.label}</span>
+                    <span style={S.badge(current.accent)}>:{current.defaultPort || 'N/A'}</span>
+                </span>
                 <ChevronDown size={16} style={{ color: THEME.textMuted, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
             {open && (
@@ -314,7 +313,6 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
             continue;
         }
 
-        // Pair host+port side by side
         if (f === 'host' && fields[i + 1] === 'port') {
             rows.push(
                 <div key="host-port" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
@@ -342,7 +340,6 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
             continue;
         }
 
-        // Password field with toggle
         if (meta.type === 'password') {
             rows.push(
                 <div key={f}>
@@ -375,7 +372,6 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
             continue;
         }
 
-        // Default text/number field
         rows.push(
             <div key={f}>
                 <label style={S.label}>{meta.label} {!meta.optional ? '*' : <span style={{ color: '#4b5563', textTransform: 'none', fontSize: 10 }}>(optional)</span>}</label>
@@ -455,7 +451,6 @@ const ConnectionsTab = () => {
         return Object.keys(errors).length === 0;
     };
 
-    // ✅ FIX: Proper error parsing + display instead of bare alert
     const saveConnection = async () => {
         if (!validateForm()) return;
         setErrorMsg('');
@@ -485,14 +480,28 @@ const ConnectionsTab = () => {
         }
     };
 
+    // ✅ FIX 1: Allow deleting default connections — auto-promote next connection
     const deleteConnection = async (id) => {
         if (!confirm('Delete this connection?')) return;
         try {
+            const wasDefault = connections.find(c => c.id === id)?.isDefault;
+            const remaining = connections.filter(c => c.id !== id);
+
             const res = await fetch(`${API_BASE}/api/connections/${id}`, {
-                method: 'DELETE', headers: { Authorization: `Bearer ${getAuthToken()}` },
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
-            if (res.ok) fetchConnections();
-            else {
+
+            if (res.ok) {
+                // If deleted connection was default and others exist, promote first remaining
+                if (wasDefault && remaining.length > 0) {
+                    await fetch(`${API_BASE}/api/connections/${remaining[0].id}/default`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${getAuthToken()}` },
+                    });
+                }
+                fetchConnections();
+            } else {
                 const text = await res.text();
                 let msg = 'Failed to delete';
                 try { msg = JSON.parse(text).error || msg; } catch {}
@@ -503,7 +512,6 @@ const ConnectionsTab = () => {
         }
     };
 
-    // ✅ FIX: Better test connection error reporting
     const testConnection = async (conn) => {
         setTestingConnection(conn.id);
         try {
@@ -666,18 +674,21 @@ const ConnectionsTab = () => {
                                         ? <CheckCircle size={13} color="#4ade80" />
                                         : <AlertCircle size={13} color="#ef4444" />}
                                     <span style={{ fontSize: 11, color: conn.status === 'success' ? '#4ade80' : '#ef4444', fontWeight: 600 }}>
-                    {conn.status === 'success' ? 'Last test passed' : 'Last test failed'}
-                  </span>
+                                        {conn.status === 'success' ? 'Last test passed' : 'Last test failed'}
+                                    </span>
                                 </div>
                             )}
 
+                            {/* ✅ FIX 2 & 3: All 3 action buttons always enabled and clearly colored */}
                             <div style={{ display: 'flex', gap: 8 }}>
+                                {/* Test button */}
                                 <button
                                     onClick={() => testConnection(conn)}
                                     disabled={testingConnection === conn.id}
                                     style={{
                                         ...S.btn('rgba(99,102,241,0.12)', 'rgba(99,102,241,0.25)', '#818cf8'),
-                                        flex: 1, justifyContent: 'center', opacity: testingConnection === conn.id ? 0.5 : 1,
+                                        flex: 1, justifyContent: 'center',
+                                        opacity: testingConnection === conn.id ? 0.5 : 1,
                                     }}
                                     onMouseEnter={e => testingConnection !== conn.id && (e.currentTarget.style.background = 'rgba(99,102,241,0.22)')}
                                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.12)'}
@@ -687,6 +698,7 @@ const ConnectionsTab = () => {
                                         : <><LinkIcon size={12} /> Test</>}
                                 </button>
 
+                                {/* Set Default button — only shown when not already default */}
                                 {!conn.isDefault && (
                                     <button
                                         onClick={() => setDefaultConnection(conn.id)}
@@ -699,30 +711,27 @@ const ConnectionsTab = () => {
                                     </button>
                                 )}
 
+                                {/* ✅ FIX 2: Edit button — amber/yellow so it's clearly visible */}
                                 <button
                                     onClick={() => openEdit(conn)}
-                                    style={S.btn(THEME.surface, THEME.glassBorder, THEME.textMuted)}
-                                    onMouseEnter={e => e.currentTarget.style.background = THEME.surfaceHover}
-                                    onMouseLeave={e => e.currentTarget.style.background = THEME.surface}
-                                    title="Edit"
+                                    style={S.btn('rgba(251,191,36,0.1)', 'rgba(251,191,36,0.3)', '#fbbf24')}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(251,191,36,0.22)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(251,191,36,0.1)'}
+                                    title="Edit connection"
                                 >
                                     <Edit size={12} />
                                 </button>
 
+                                {/* ✅ FIX 1: Delete button — always enabled, no disabled state */}
                                 <button
                                     onClick={() => deleteConnection(conn.id)}
-                                    disabled={conn.isDefault}
                                     style={{
-                                        ...S.btn(
-                                            conn.isDefault ? 'rgba(107,114,128,0.06)' : 'rgba(239,68,68,0.1)',
-                                            conn.isDefault ? 'rgba(107,114,128,0.15)' : 'rgba(239,68,68,0.25)',
-                                            conn.isDefault ? '#374151' : '#ef4444'
-                                        ),
-                                        cursor: conn.isDefault ? 'not-allowed' : 'pointer',
+                                        ...S.btn('rgba(239,68,68,0.1)', 'rgba(239,68,68,0.25)', '#ef4444'),
+                                        cursor: 'pointer',
                                     }}
-                                    onMouseEnter={e => !conn.isDefault && (e.currentTarget.style.background = 'rgba(239,68,68,0.2)')}
-                                    onMouseLeave={e => !conn.isDefault && (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
-                                    title={conn.isDefault ? "Can't delete default" : 'Delete'}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.22)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                                    title="Delete connection"
                                 >
                                     <Trash2 size={12} />
                                 </button>
@@ -828,7 +837,6 @@ const ConnectionsTab = () => {
                                 </div>
                             )}
 
-                            {/* ✅ FIX: Inline error banner instead of browser alert */}
                             {errorMsg && (
                                 <div style={{
                                     display: 'flex', alignItems: 'flex-start', gap: 10,
@@ -873,12 +881,12 @@ const ConnectionsTab = () => {
             )}
 
             <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-      `}</style>
+                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                * { box-sizing: border-box; }
+                ::-webkit-scrollbar { width: 6px; }
+                ::-webkit-scrollbar-track { background: transparent; }
+                ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+            `}</style>
         </div>
     );
 };
