@@ -14,9 +14,8 @@ import {
     Table2, ArrowUp, ArrowDown, Gauge, Network, ChevronLeft,
     Timer, Radio, ShieldAlert, Settings, PieChart as PieIcon,
     MemoryStick, X, Wifi, WifiOff, Snowflake, Archive,
-    Package, Scan, TriangleAlert, Flame, FlaskConical,
-    CalendarDays, Ban, Plus, Edit3, Save, Trash, RotateCcw,
-    PackageOpen, Shield, EyeOff, AlertCircle, FileX, Layers3,
+    Package, Plus, Save, Trash,
+    Calendar, Ban, Archive, Shield, Eye, AlertCircle,
 } from 'lucide-react';
 import {
     ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -599,7 +598,7 @@ const TableGrowthRateChart = ({ growthRateData, refreshing }) => {
 const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
     const maxIO = Math.max(...tablespaceData.map(t => t.readsMB + t.writesMB));
     return (
-        <Panel title="Tablespace I/O Breakdown" icon={Layers3} refreshing={refreshing}
+        <Panel title="Tablespace I/O Breakdown" icon={Layers} refreshing={refreshing}
                rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>{tablespaceData.length} tablespaces</span>}
         >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -778,7 +777,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
     return (
         <Panel
             title="Dead Code Detector"
-            icon={EyeOff}
+            icon={Eye}
             refreshing={refreshing}
             rightNode={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -803,7 +802,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                         return (
                             <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 8, padding: '9px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
-                                    <FileX size={11} color={rc} style={{ flexShrink: 0 }} />
+                                    <Trash2 size={11} color={rc} style={{ flexShrink: 0 }} />
                                     <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</span>
                                 </div>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtSize(t.size_gb)}</div>
@@ -814,7 +813,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                         );
                     })}
                     <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: THEME.textDim }}>
-                        <EyeOff size={11} color={THEME.warning} />
+                        <Eye size={11} color={THEME.warning} />
                         Tables with 0 reads in 90+ days. Consider archival or DROP after verification.
                     </div>
                 </div>
@@ -882,7 +881,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
     return (
         <Panel
             title="Data Retention Policies"
-            icon={CalendarDays}
+            icon={Calendar}
             refreshing={refreshing}
             rightNode={
                 <button onClick={() => setShowNew(v => !v)} style={{
@@ -955,7 +954,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                                     <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
                                 </div>
                                 <div style={{ fontSize: 10.5, color: THEME.textDim, display: 'flex', gap: 14 }}>
-                                    <span><CalendarDays size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
+                                    <span><Calendar size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
                                     {p.partition_col && <span style={{ fontFamily: 'monospace' }}>on {p.partition_col}</span>}
                                     <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />Last: {p.last_run}</span>
                                     <span>Runs: {p.runs}</span>
@@ -1246,7 +1245,7 @@ const ResourcesTab = () => {
         { label: 'Total Storage',   value: `${totalSize.toFixed(1)} GB`, sub: `of ${totalStorageGB.toFixed(0)} GB capacity`,                color: THEME.primary,   icon: HardDrive },
         { label: 'Total Rows',      value: fmtNum(totalRows),             sub: `${growth.length} tables tracked`,                             color: THEME.secondary, icon: Table2 },
         { label: 'Avg Bloat',       value: `${avgBloat.toFixed(1)}%`,    sub: highBloat > 0 ? `${highBloat} need attention` : 'all healthy', color: avgBloat > 20 ? THEME.danger : THEME.success, icon: Trash2 },
-        { label: 'Dead Code',       value: deadCount,                      sub: `${deadCode.tables.reduce((s, t) => s + t.size_gb, 0).toFixed(1)} GB reclaimable`, color: THEME.warning, icon: EyeOff },
+        { label: 'Dead Code',       value: deadCount,                      sub: `${deadCode.tables.reduce((s, t) => s + t.size_gb, 0).toFixed(1)} GB reclaimable`, color: THEME.warning, icon: Eye },
     ];
 
     /* ═══════════════════════════════════════════════════════════════
@@ -1275,8 +1274,8 @@ const ResourcesTab = () => {
                     <TabBtn id="inventory" label="Table Inventory" icon={Database}     count={growth.length} />
                     <TabBtn id="analytics" label="Analytics"       icon={BarChart3} />
                     <TabBtn id="storage"   label="Storage & I/O"   icon={HardDrive} />
-                    <TabBtn id="deadcode"  label="Dead Code"        icon={EyeOff}       badge={deadCount > 0 ? deadCount : undefined} />
-                    <TabBtn id="retention" label="Retention"        icon={CalendarDays} count={DEFAULT_POLICIES.filter(p => p.enabled).length} />
+                    <TabBtn id="deadcode"  label="Dead Code"        icon={Eye}       badge={deadCount > 0 ? deadCount : undefined} />
+                    <TabBtn id="retention" label="Retention"        icon={Calendar} count={DEFAULT_POLICIES.filter(p => p.enabled).length} />
                     <TabBtn id="logs"      label="Maintenance"      icon={History}      count={logs.length} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
@@ -1759,8 +1758,8 @@ const ResourcesTab = () => {
                     {/* Summary banner */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
                         {[
-                            { label: 'Unused Tables',     value: deadCode.tables.length, sub: 'zero reads in 90+ days', color: THEME.danger,   icon: FileX },
-                            { label: 'Unused Columns',    value: deadCode.columns.length, sub: 'potential dead fields',  color: THEME.warning,  icon: EyeOff },
+                            { label: 'Unused Tables',     value: deadCode.tables.length, sub: 'zero reads in 90+ days', color: THEME.danger,   icon: Trash2 },
+                            { label: 'Unused Columns',    value: deadCode.columns.length, sub: 'potential dead fields',  color: THEME.warning,  icon: Eye },
                             { label: 'Space Reclaimable', value: fmtSize(deadCode.tables.reduce((s, t) => s + t.size_gb, 0)), sub: 'if all unused tables dropped', color: THEME.success, icon: HardDrive },
                         ].map((m, i) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '15px 18px', borderRadius: 14, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}` }}>
@@ -1798,7 +1797,7 @@ const ResourcesTab = () => {
                     <RetentionPolicyManager refreshing={refreshingPanels.has('logs')} />
 
                     {/* Partition detach candidates */}
-                    <Panel title="Partition Detach Candidates" icon={PackageOpen} refreshing={refreshingPanels.has('inventory')}
+                    <Panel title="Partition Detach Candidates" icon={Package} refreshing={refreshingPanels.has('inventory')}
                            rightNode={<StatusBadge label={`${partitions.flatMap(p => p.children).filter(c => c.status === 'detach_ready').length} ready to archive`} color={THEME.warning} />}
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
