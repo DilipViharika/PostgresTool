@@ -409,8 +409,7 @@ const ConnectionsTab = () => {
     const [formErrors, setFormErrors] = useState({});
     const [errorMsg, setErrorMsg] = useState('');
 
-    // ✅ FIX: Use relative URLs so it works on any host (Vercel, local, etc.)
-    const API_BASE = '';
+    const API_BASE = 'https://postgrestoolbackend.vercel.app';
     const getAuthToken = () => localStorage.getItem('authToken');
 
     useEffect(() => { fetchConnections(); }, []);
