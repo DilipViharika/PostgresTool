@@ -49,8 +49,6 @@ const useSqlCtx = () => useContext(SqlContext);
    ═══════════════════════════════════════════════════════════════════════════ */
 const SqlStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
-
         @keyframes sqlFadeIn { from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);} }
         @keyframes sqlFadeUp { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
         @keyframes sqlPulse { 0%,100%{opacity:1;}50%{opacity:0.3;} }
@@ -70,8 +68,8 @@ const SqlStyles = () => (
         @keyframes sqlProgressBar { from{width:0;}to{width:100%;} }
         @keyframes sqlCountUp { from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);} }
 
-        .sql-font { font-family:'IBM Plex Sans',system-ui,sans-serif; }
-        .sql-mono { font-family:'JetBrains Mono','Fira Code',monospace; }
+        .sql-font { font-family:${THEME.fontBody}; }
+        .sql-mono { font-family:${THEME.fontMono}; }
         .sql-row-hover { transition:background 0.08s; }
         .sql-row-hover:hover { background:${THEME.primary}08 !important; cursor:default; }
         .sql-row-hover:hover td { color:${THEME.textMain} !important; }
@@ -83,7 +81,7 @@ const SqlStyles = () => (
         .sql-scrollbar::-webkit-scrollbar-thumb:hover { background:${THEME.textDim}; }
         .sql-editor-area {
             width:100%; background:transparent; border:none; color:${THEME.textMain};
-            font-family:'JetBrains Mono','Fira Code','Consolas',monospace;
+            font-family:${THEME.fontMono};
             padding:0; outline:none; resize:none;
             font-size:13px; line-height:1.75; tab-size:2;
             caret-color:${THEME.primary};
@@ -107,7 +105,7 @@ const SqlStyles = () => (
             content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
             padding:4px 8px; border-radius:5px; background:rgba(0,0,0,0.9); color:#fff;
             font-size:10px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity 0.15s;
-            z-index:9999; font-family:'IBM Plex Sans',sans-serif;
+            z-index:9999; font-family:${THEME.fontBody};
         }
         .sql-tooltip:hover::after { opacity:1; }
         .sql-param { background:${THEME.warning}12; color:${THEME.warning}; padding:1px 5px; border-radius:3px; font-weight:600; font-family:monospace; font-size:10px; }
@@ -1608,7 +1606,7 @@ const SqlConsoleTab = () => {
                                                         {copiedId==='err'?'Copied':'Copy'}
                                                     </button>
                                                 </div>
-                                                <pre style={{ fontSize:12, color:THEME.textMuted, fontFamily:"'JetBrains Mono',monospace", whiteSpace:'pre-wrap', wordBreak:'break-word', margin:0, lineHeight:1.65, padding:'12px 14px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.grid}25` }}>{result.error}</pre>
+                                                <pre style={{ fontSize:12, color:THEME.textMuted, fontFamily:THEME.fontMono, whiteSpace:'pre-wrap', wordBreak:'break-word', margin:0, lineHeight:1.65, padding:'12px 14px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.grid}25` }}>{result.error}</pre>
                                             </div>
                                         </div>
                                     </div>
@@ -1808,7 +1806,7 @@ const SqlConsoleTab = () => {
                                         <ExplainNode node={explainPlan} depth={0} maxTime={explainMaxTime}/>
                                         <details style={{ marginTop:14 }}>
                                             <summary style={{ fontSize:10, color:THEME.textDim, cursor:'pointer', userSelect:'none', padding:'4px 0' }}>Raw JSON output</summary>
-                                            <pre style={{ fontSize:10.5, color:THEME.textDim, fontFamily:"'JetBrains Mono',monospace", lineHeight:1.6, margin:'8px 0 0', whiteSpace:'pre-wrap', padding:12, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.grid}22`, maxHeight:300, overflow:'auto' }}>
+                                            <pre style={{ fontSize:10.5, color:THEME.textDim, fontFamily:THEME.fontMono, lineHeight:1.6, margin:'8px 0 0', whiteSpace:'pre-wrap', padding:12, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.grid}22`, maxHeight:300, overflow:'auto' }}>
                                                 {JSON.stringify(currentTab.explainResult?.rows, null, 2)}
                                             </pre>
                                         </details>

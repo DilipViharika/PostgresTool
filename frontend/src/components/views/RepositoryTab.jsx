@@ -148,7 +148,6 @@ Return EXACTLY this JSON structure (no extra keys, no markdown):
    ═══════════════════════════════════════════════════════════════════════════ */
 const RepoStyles = () => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
         @keyframes rFadeUp    { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
         @keyframes rPulse     { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
         @keyframes rSpin      { to { transform:rotate(360deg); } }
@@ -439,7 +438,7 @@ const CodeView = ({ activeRepo }) => {
                     {fileLoading && <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}><Loader size={24} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/></div>}
 
                     {selNode && !fileLoading && fileContent && (
-                        <div className="r8-scroll" style={{ flex:1, overflowY:'auto', padding:'16px 0', fontFamily:'JetBrains Mono, monospace', fontSize:13, lineHeight:1.6 }}>
+                        <div className="r8-scroll" style={{ flex:1, overflowY:'auto', padding:'16px 0', fontFamily:THEME.fontMono, fontSize:13, lineHeight:1.6 }}>
                             {lines.map((line, i) => {
                                 const issue = aiResult?.issues?.find(iss => iss.line === (i + 1));
                                 const isIssue = !!issue;
@@ -767,7 +766,7 @@ const LocalRepoForm = ({ onConnect, onClose }) => {
 
             <div>
                 <label style={{ fontSize:10.5, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.08em', display:'block', marginBottom:8 }}>Absolute Path</label>
-                <input value={path} onChange={e=>setPath(e.target.value)} placeholder="/path/to/project or C:\Projects\app" className="r8-input r8-input-local" style={{ width:'100%', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'12px', color:THEME.textMain, fontFamily:'JetBrains Mono,monospace', fontSize:12.5, boxSizing:'border-box', outline:'none' }}/>
+                <input value={path} onChange={e=>setPath(e.target.value)} placeholder="/path/to/project or C:\Projects\app" className="r8-input r8-input-local" style={{ width:'100%', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'12px', color:THEME.textMain, fontFamily:THEME.fontMono, fontSize:12.5, boxSizing:'border-box', outline:'none' }}/>
             </div>
 
             <div style={{ padding:'10px 14px', borderRadius:8, background:`${THEME.info}08`, border:`1px solid ${THEME.info}20`, fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>
