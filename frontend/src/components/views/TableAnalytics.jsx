@@ -1,332 +1,275 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import React, { useState, useEffect, useCallback, createContext, useContext, useMemo } from 'react';
 import { fetchData } from '../../utils/api';
 import {
-    BarChart, Bar as ReBar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    Cell, CartesianGrid, PieChart, Pie, AreaChart, Area
-} from 'recharts';
-import {
-    Layers, RefreshCw, AlertTriangle, Database, Activity, Search,
-    AlertCircle, Filter, TrendingUp, Zap, Shield, ChevronUp, ChevronDown,
-    Eye, ArrowRight, Clock, HardDrive, BarChart2, Cpu, Table2, GitBranch,
-    Thermometer, FileText, Pen, ListChecks, Ruler
+    Layers, Database, Activity, Search, AlertCircle, Filter,
+    TrendingUp, GitBranch, Thermometer, FileText, Pen, ListChecks,
+    Ruler, BarChart2, ChevronRight
 } from 'lucide-react';
 
-// ── Filter Context ───────────────────────────────────────────────────────────
-const FilterContext = createContext({ db: "", schema: "", table: "" });
-
-// ── Safe array coercion ─────────────────────────────────────────────────────
-const toArr = v => {
-    if (Array.isArray(v))       return v;
-    if (Array.isArray(v?.rows)) return v.rows;
-    if (Array.isArray(v?.data)) return v.data;
-    return [];
+// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
+const T = {
+    bg:          '#04080f',
+    surface:     '#080e1a',
+    panel:       '#0b1322',
+    card:        '#0d1628',
+    cardHover:   '#101c30',
+    border:      '#1a2a42',
+    borderBright:'#243a58',
+    green:   '#00ff88',
+    cyan:    '#00d4ff',
+    amber:   '#ffaa00',
+    red:     '#ff3c5a',
+    purple:  '#a855f7',
+    blue:    '#3b82f6',
+    textMain: '#e8f4ff',
+    textSub:  '#7a9abb',
+    textDim:  '#3d5c7a',
+    fontMono: "'IBM Plex Mono', 'Courier New', monospace",
+    fontBody: "'DM Sans', system-ui, sans-serif",
+    fontHead: "'Syne', system-ui, sans-serif",
 };
 
-// ── Data Hook ────────────────────────────────────────────────────────────────
+const GLOBAL_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: ${T.surface}; }
+::-webkit-scrollbar-thumb { background: ${T.green}44; border-radius: 2px; }
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+.ud-fade { animation: fadeUp .35s cubic-bezier(.22,1,.36,1) both; }
+.ud-card:hover  { background: ${T.cardHover} !important; border-color: ${T.borderBright} !important; }
+.ud-nav:hover   { background: ${T.green}10 !important; border-color: ${T.green}40 !important; color: ${T.green} !important; }
+.ud-nav:hover .ud-sub { color: ${T.green}70 !important; }
+.ud-row:hover   { background: #ffffff06 !important; }
+.ud-clr:hover   { background: ${T.red}15 !important; border-color: ${T.red}50 !important; color: ${T.red} !important; }
+button { outline: none; }
+select:focus { box-shadow: 0 0 0 2px ${T.green}30; }
+.ud-root::after {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.012) 2px, rgba(0,255,136,0.012) 4px);
+}
+`;
+
+// ─── CONTEXT ─────────────────────────────────────────────────────────────────
+const FilterContext = createContext({ db:'', schema:'', table:'' });
+
+// ─── UTILITIES ───────────────────────────────────────────────────────────────
+const toArr = v => Array.isArray(v) ? v : Array.isArray(v?.rows) ? v.rows : Array.isArray(v?.data) ? v.data : [];
+
 function useTableData(endpoint, fallback = []) {
-    const [data, setData]       = useState(fallback);
-    const [loading, setLoading] = useState(true);
-    const [error, setError]     = useState(null);
-
+    const [data, setData]    = useState(fallback);
+    const [loading, setLoad] = useState(true);
+    const [error, setError]  = useState(null);
     const load = useCallback(async () => {
-        setLoading(true);
-        try {
-            const json = await fetchData(endpoint);
-            setData(Array.isArray(fallback) ? toArr(json) : (json ?? fallback));
-            setError(null);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    }, [endpoint]); // eslint-disable-line react-hooks/exhaustive-deps
-
+        setLoad(true);
+        try { const j = await fetchData(endpoint); setData(Array.isArray(fallback) ? toArr(j) : (j ?? fallback)); setError(null); }
+        catch (e) { setError(e.message); }
+        finally { setLoad(false); }
+    }, [endpoint]);
     useEffect(() => { load(); }, [load]);
     return { data, loading, error, reload: load };
 }
 
-// ── Shared Primitives ────────────────────────────────────────────────────────
-
-// FIX 1: MiniBar was defined but used as <Bar> throughout — unified to MiniBar everywhere
-const MiniBar = ({ v, max, color, h = 5 }) => (
-    <div style={{ width: "100%", height: h, borderRadius: h, background: THEME.grid, overflow: "hidden" }}>
-        <div style={{
-            width: `${Math.min(100, max > 0 ? (v / max) * 100 : 0)}%`,
-            height: "100%",
-            background: color,
-            borderRadius: h,
-            transition: "width .5s ease"
-        }} />
-    </div>
-);
-
-const Pip = ({ children, color }) => (
-    <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: color + "1a", color, border: `1px solid ${color}35`, whiteSpace: "nowrap" }}>{children}</span>
-);
-const Tag = ({ children, color }) => (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 9px", borderRadius: 5, fontSize: 10, fontWeight: 700, background: color + "20", color, border: `1px solid ${color}38` }}>{children}</span>
-);
-const Card = ({ children, style = {} }) => (
-    <div style={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 13, overflow: "hidden", ...style }}>{children}</div>
-);
-const GridHead = ({ cols, labels }) => (
-    <div style={{ display: "grid", gridTemplateColumns: cols, padding: "9px 16px", borderBottom: `1px solid ${THEME.grid}`, fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: "uppercase", letterSpacing: 0.8, gap: 8 }}>
-        {labels.map(l => <span key={l}>{l}</span>)}
-    </div>
-);
-const SectionHead = ({ icon, title, sub, right, accent }) => {
-    const ac = accent || THEME.primary;
-    const iconEl = typeof icon === 'string'
-        ? <span style={{ fontSize: 18 }}>{icon}</span>
-        : React.isValidElement(icon)
-            ? icon
-            : (icon ? React.createElement(icon, { size: 18, color: ac }) : null);
-    return (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: ac + '18', border: `1px solid ${ac}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {iconEl}
-                </div>
-                <div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, letterSpacing: -0.2 }}>{title}</div>
-                    <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 2 }}>{sub}</div>
-                </div>
-            </div>
-            {right}
-        </div>
-    );
-};
-const Ring = ({ score, size = 46 }) => {
-    const c = score > 70 ? THEME.success : score > 40 ? THEME.warning : THEME.danger;
-    const r = size / 2 - 5;
-    const circ = 2 * Math.PI * r;
-    const dash = (score / 100) * circ;
-    return (
-        <svg width={size} height={size} style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
-            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={THEME.grid} strokeWidth={4} />
-            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c} strokeWidth={4} strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
-            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill={c} fontSize={size * 0.24} fontWeight="800" fontFamily={THEME.fontMono} style={{ transform: "rotate(90deg)", transformOrigin: "50% 50%" }}>{score}</text>
-        </svg>
-    );
-};
-const LoaderUI = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 160, gap: 14, color: THEME.textMuted }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: `2px solid ${THEME.primary}33`, borderTopColor: THEME.primary, animation: 'taSpin 1s linear infinite' }} />
-        <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0.5, fontFamily: THEME.fontBody }}>Fetching live data…</span>
-    </div>
-);
-const ErrorUI = ({ msg }) => (
-    <div style={{ padding: 16, color: THEME.danger + 'CC', fontSize: 13, background: THEME.danger + '1A', borderRadius: 10, border: `1px solid ${THEME.danger}4D`, display: 'flex', alignItems: 'center', gap: 9 }}>
-        <AlertCircle size={16} color={THEME.danger} /> {msg}
-    </div>
-);
-const EmptyState = ({ label }) => (
-    <div style={{ padding: 32, textAlign: "center", color: THEME.textDim, fontSize: 13 }}>
-        <div style={{ fontSize: 28, marginBottom: 10 }}>🔍</div>
-        <div>{label || "No data matches the current filter."}</div>
-    </div>
-);
-
-// Color helpers
-const hc = s => s > 70 ? THEME.success : s > 40 ? THEME.warning : THEME.danger;
-const dc = p => p > 20 ? THEME.danger : p > 10 ? THEME.warning : THEME.success;
-
-// FIX 2: matchFilter was using hardcoded key names that didn't match actual data shapes.
-// Now accepts flexible key overrides and also tolerates missing fields gracefully.
-const matchFilter = (row, filter, {
-    nameKey   = "name",
-    schemaKey = "schema",
-    dbKey     = "db"
-} = {}) => {
+const matchFilter = (row, filter, { nameKey='name', schemaKey='schema', dbKey='db' } = {}) => {
     if (filter.db     && row[dbKey]     && row[dbKey]     !== filter.db)     return false;
     if (filter.schema && row[schemaKey] && row[schemaKey] !== filter.schema) return false;
     if (filter.table  && row[nameKey]   && row[nameKey]   !== filter.table)  return false;
     return true;
 };
 
-// ── Filter Dropdown ──────────────────────────────────────────────────────────
-const FilterSelect = ({ label, value, onChange, options, placeholder, disabled }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5, flex: 1, minWidth: 160 }}>
-        <label style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: "uppercase", letterSpacing: 0.9 }}>{label}</label>
-        <div style={{ position: "relative" }}>
-            <select
-                value={value}
-                onChange={e => onChange(e.target.value)}
-                disabled={disabled || options.length === 0}
-                style={{
-                    width: "100%",
-                    padding: "9px 32px 9px 12px",
-                    borderRadius: 9,
-                    border: `1px solid ${value ? THEME.primary + "55" : THEME.glassBorder}`,
-                    background: value ? `${THEME.primary}12` : THEME.glass,
-                    color: value ? THEME.textMain : THEME.textMuted,
-                    fontFamily: THEME.fontBody,
-                    fontSize: 13,
-                    fontWeight: value ? 700 : 400,
-                    cursor: disabled ? "not-allowed" : "pointer",
-                    appearance: "none",
-                    outline: "none",
-                    transition: "all .2s",
-                    opacity: disabled ? 0.4 : 1,
-                }}
-            >
-                <option value="">{placeholder}</option>
-                {options.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-            <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: THEME.textMuted, pointerEvents: "none", fontSize: 10 }}>▾</span>
+const fmtBytes = b => b >= 1073741824 ? `${(b/1073741824).toFixed(2)}GB`
+    : b >= 1048576    ? `${(b/1048576).toFixed(1)}MB`
+        : b >= 1024       ? `${(b/1024).toFixed(0)}KB`
+            : `${b}B`;
+
+const hColor = s => s > 70 ? T.green : s > 40 ? T.amber : T.red;
+const dColor = p => p > 20 ? T.red   : p > 10 ? T.amber : T.green;
+
+// ─── PRIMITIVES ──────────────────────────────────────────────────────────────
+const MiniBar = ({ v, max, color = T.green, h = 4 }) => {
+    const pct = max > 0 ? Math.min(100, (v / max) * 100) : 0;
+    return (
+        <div style={{ width:'100%', height:h, borderRadius:h, background:'#ffffff08', overflow:'hidden' }}>
+            <div style={{ width:`${pct}%`, height:'100%', borderRadius:h, background:`linear-gradient(90deg, ${color}88, ${color})`, boxShadow:`0 0 6px ${color}50`, transition:'width .6s cubic-bezier(.22,1,.36,1)' }} />
         </div>
+    );
+};
+
+const StackBar = ({ segments, h = 8 }) => (
+    <div style={{ width:'100%', height:h, borderRadius:h, overflow:'hidden', display:'flex', background:'#ffffff08' }}>
+        {segments.map((s, i) => <div key={i} style={{ width:`${s.pct}%`, background:s.color, flexShrink:0, transition:'width .6s' }} />)}
     </div>
 );
 
-// ── Filter Bar ───────────────────────────────────────────────────────────────
-// FIX 3: FilterBar now falls back gracefully when /api/databases returns nothing,
-// and builds db list from tables data if needed. Also: table dropdown is enabled
-// when schema is selected OR when no schema filter is active.
-function FilterBar({ filter, setFilter }) {
-    const { data: tables } = useTableData("/api/tables/stats");
-    const { data: dbListRaw } = useTableData("/api/databases");
+const Ring = ({ score, size = 52 }) => {
+    const c = hColor(score), r = size/2-6, circ = 2*Math.PI*r, dash = (score/100)*circ;
+    return (
+        <svg width={size} height={size} style={{ transform:'rotate(-90deg)', flexShrink:0 }}>
+            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ffffff0a" strokeWidth={5} />
+            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={c} strokeWidth={5} strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{ filter:`drop-shadow(0 0 4px ${c}80)` }} />
+            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill={c} fontSize={size*.22} fontWeight="700" fontFamily={T.fontMono} style={{ transform:'rotate(90deg)', transformOrigin:'50% 50%' }}>{score}</text>
+        </svg>
+    );
+};
 
-    // Build DB list: prefer /api/databases, fallback to distinct db fields in tables
+const Badge = ({ children, color = T.green }) => (
+    <span style={{ display:'inline-flex', alignItems:'center', padding:'2px 8px', borderRadius:3, fontSize:10, fontWeight:700, fontFamily:T.fontMono, letterSpacing:.5, background:`${color}15`, color, border:`1px solid ${color}35`, whiteSpace:'nowrap' }}>{children}</span>
+);
+
+const Pill = ({ children, color = T.cyan }) => (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, padding:'3px 9px', borderRadius:2, fontSize:10, fontWeight:500, fontFamily:T.fontMono, background:`${color}12`, color, border:`1px solid ${color}28` }}>
+        <span style={{ width:4, height:4, borderRadius:'50%', background:color, flexShrink:0, boxShadow:`0 0 4px ${color}` }} />{children}
+    </span>
+);
+
+const Card = ({ children, style = {} }) => (
+    <div className="ud-card" style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:8, overflow:'hidden', transition:'background .2s, border-color .2s', ...style }}>{children}</div>
+);
+
+const GridHead = ({ cols, labels }) => (
+    <div style={{ display:'grid', gridTemplateColumns:cols, padding:'8px 16px', gap:8, borderBottom:`1px solid ${T.border}`, fontSize:9, fontWeight:700, color:T.textDim, textTransform:'uppercase', letterSpacing:1.2, fontFamily:T.fontMono, background:`${T.green}05` }}>
+        {labels.map(l => <span key={l}>{l}</span>)}
+    </div>
+);
+
+const GridRow = ({ cols, children, i = 0 }) => (
+    <div className="ud-row" style={{ display:'grid', gridTemplateColumns:cols, padding:'12px 16px', gap:8, borderBottom:`1px solid ${T.border}50`, alignItems:'center', background: i%2===0 ? 'transparent' : '#ffffff03', transition:'background .15s' }}>
+        {children}
+    </div>
+);
+
+const SectionHead = ({ icon: Icon, title, sub, accent = T.green, right }) => (
+    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+            <div style={{ width:36, height:36, borderRadius:6, background:`${accent}12`, border:`1px solid ${accent}30`, display:'flex', alignItems:'center', justifyContent:'center', boxShadow:`inset 0 0 12px ${accent}08` }}>
+                {Icon && <Icon size={16} color={accent} />}
+            </div>
+            <div>
+                <div style={{ fontSize:13, fontWeight:700, color:T.textMain, fontFamily:T.fontHead, letterSpacing:-.2 }}>{title}</div>
+                <div style={{ fontSize:11, color:T.textDim, marginTop:2, fontFamily:T.fontBody }}>{sub}</div>
+            </div>
+        </div>
+        {right}
+    </div>
+);
+
+const Loader = () => (
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:160, gap:12 }}>
+        <div style={{ width:32, height:32, borderRadius:'50%', border:`2px solid ${T.green}20`, borderTopColor:T.green, animation:'spin 1s linear infinite', boxShadow:`0 0 10px ${T.green}30` }} />
+        <span style={{ fontSize:11, color:T.textDim, fontFamily:T.fontMono, letterSpacing:.5 }}>FETCHING DATA<span style={{ animation:'blink 1s infinite' }}>_</span></span>
+    </div>
+);
+
+const Err = ({ msg }) => (
+    <div style={{ padding:'14px 16px', borderRadius:6, fontSize:12, background:`${T.red}0f`, border:`1px solid ${T.red}30`, color:T.red, display:'flex', alignItems:'center', gap:10, fontFamily:T.fontMono }}>
+        <AlertCircle size={14} color={T.red} /> ERROR: {msg}
+    </div>
+);
+
+const Empty = ({ label = 'No data matches the current filter.' }) => (
+    <div style={{ padding:40, textAlign:'center', color:T.textDim, fontFamily:T.fontMono, fontSize:12 }}>
+        <div style={{ fontSize:24, marginBottom:12, opacity:.4 }}>⬡</div>{label}
+    </div>
+);
+
+// ─── FILTER BAR ──────────────────────────────────────────────────────────────
+function FilterBar({ filter, setFilter }) {
+    const { data: tables }    = useTableData('/api/tables/stats');
+    const { data: dbListRaw } = useTableData('/api/databases');
+
     const dbList = useMemo(() => {
-        const fromApi = toArr(dbListRaw).map(d => d.name || d).filter(Boolean);
-        if (fromApi.length) return [...new Set(fromApi)].sort();
-        const fromTables = [...new Set(toArr(tables).map(t => t.db).filter(Boolean))].sort();
-        return fromTables;
+        const a = toArr(dbListRaw).map(d => d.name||d).filter(Boolean);
+        return a.length ? [...new Set(a)].sort() : [...new Set(toArr(tables).map(t=>t.db).filter(Boolean))].sort();
     }, [dbListRaw, tables]);
 
-    const schemas = useMemo(() => [...new Set(
-        toArr(tables)
-            .filter(t => !filter.db || t.db === filter.db)
-            .map(t => t.schema)
-            .filter(Boolean)
-    )].sort(), [tables, filter.db]);
+    const schemas   = useMemo(() => [...new Set(toArr(tables).filter(t => !filter.db||t.db===filter.db).map(t=>t.schema).filter(Boolean))].sort(), [tables, filter.db]);
+    const tableList = useMemo(() => [...new Set(toArr(tables).filter(t=>!filter.db||t.db===filter.db).filter(t=>!filter.schema||t.schema===filter.schema).map(t=>t.name).filter(Boolean))].sort(), [tables, filter.db, filter.schema]);
 
-    const filteredTables = useMemo(() => [...new Set(
-        toArr(tables)
-            .filter(t => !filter.db     || t.db     === filter.db)
-            .filter(t => !filter.schema || t.schema === filter.schema)
-            .map(t => t.name)
-            .filter(Boolean)
-    )].sort(), [tables, filter.db, filter.schema]);
-
-    const update = (key, val) => {
-        if (key === "db")     setFilter({ db: val, schema: "", table: "" });
-        else if (key === "schema") setFilter(f => ({ ...f, schema: val, table: "" }));
-        else                  setFilter(f => ({ ...f, table: val }));
+    const upd = (k, v) => {
+        if (k==='db')     setFilter({ db:v, schema:'', table:'' });
+        else if (k==='schema') setFilter(f => ({ ...f, schema:v, table:'' }));
+        else              setFilter(f => ({ ...f, table:v }));
     };
-
     const hasFilter = filter.db || filter.schema || filter.table;
 
-    return (
-        <div style={{
-            background: THEME.surface,
-            border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: 14,
-            padding: "16px 20px",
-            marginBottom: 24,
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 12,
-            flexWrap: "wrap",
-        }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 2, marginRight: 4 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.cyan}15`, border: `1px solid ${THEME.cyan}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Filter size={15} color={THEME.cyan} />
-                </div>
-                <div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: THEME.textMain }}>Scope</div>
-                    <div style={{ fontSize: 10, color: THEME.textDim }}>Filter data</div>
-                </div>
+    const selStyle = active => ({
+        width:'100%', padding:'8px 28px 8px 10px', borderRadius:5,
+        border:`1px solid ${active ? T.green+'55' : T.border}`,
+        background: active ? `${T.green}08` : T.surface,
+        color: active ? T.green : T.textSub,
+        fontFamily:T.fontMono, fontSize:11, fontWeight: active ? 700 : 400,
+        cursor:'pointer', appearance:'none', outline:'none', transition:'all .2s',
+    });
+
+    const Sel = ({ label, k, value, opts, ph, disabled }) => (
+        <div style={{ display:'flex', flexDirection:'column', gap:5, flex:1, minWidth:140 }}>
+            <label style={{ fontSize:9, fontWeight:700, color:T.textDim, textTransform:'uppercase', letterSpacing:1.2, fontFamily:T.fontMono }}>{label}</label>
+            <div style={{ position:'relative' }}>
+                <select value={value} onChange={e=>upd(k,e.target.value)} disabled={disabled||opts.length===0} style={selStyle(!!value)}>
+                    <option value="">{ph}</option>
+                    {opts.map(o=><option key={o} value={o}>{o}</option>)}
+                </select>
+                <span style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:T.textDim, pointerEvents:'none', fontSize:9 }}>▾</span>
             </div>
+        </div>
+    );
 
-            {/* Only show DB dropdown when data exists */}
-            {dbList.length > 0 && (
-                <FilterSelect
-                    label="Database"
-                    value={filter.db}
-                    onChange={v => update("db", v)}
-                    options={dbList}
-                    placeholder="All databases"
-                />
-            )}
-            <FilterSelect
-                label="Schema"
-                value={filter.schema}
-                onChange={v => update("schema", v)}
-                options={schemas}
-                placeholder="All schemas"
-            />
-            <FilterSelect
-                label="Table"
-                value={filter.table}
-                onChange={v => update("table", v)}
-                options={filteredTables}
-                placeholder="All tables"
-                // FIX: was disabled unless schema selected — now only disabled when no options at all
-                disabled={filteredTables.length === 0}
-            />
-
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 8, paddingBottom: 2 }}>
+    return (
+        <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:8, padding:'14px 18px', marginBottom:20, display:'flex', alignItems:'flex-end', gap:12, flexWrap:'wrap' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, paddingBottom:1 }}>
+                <Filter size={13} color={T.cyan} />
+                <span style={{ fontSize:9, fontWeight:700, color:T.cyan, fontFamily:T.fontMono, textTransform:'uppercase', letterSpacing:1.2 }}>SCOPE</span>
+            </div>
+            {dbList.length > 0 && <Sel label="Database" k="db"     value={filter.db}     opts={dbList}    ph="ALL DATABASES" disabled={false} />}
+            <Sel label="Schema"   k="schema" value={filter.schema} opts={schemas}   ph="ALL SCHEMAS"   disabled={false} />
+            <Sel label="Table"    k="table"  value={filter.table}  opts={tableList} ph="ALL TABLES"    disabled={tableList.length===0} />
+            <div style={{ display:'flex', alignItems:'flex-end', gap:8, paddingBottom:1 }}>
                 {hasFilter ? (
                     <>
-                        <div style={{ padding: "6px 10px", borderRadius: 7, background: `${THEME.primary}12`, border: `1px solid ${THEME.primary}30`, fontSize: 11, color: THEME.primary, fontWeight: 600, fontFamily: THEME.fontMono, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {[filter.db, filter.schema, filter.table].filter(Boolean).join(" › ")}
+                        <div style={{ padding:'7px 12px', borderRadius:4, background:`${T.green}10`, border:`1px solid ${T.green}30`, fontSize:11, color:T.green, fontFamily:T.fontMono, fontWeight:600, maxWidth:220, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                            {[filter.db,filter.schema,filter.table].filter(Boolean).join(' › ')}
                         </div>
-                        <button
-                            onClick={() => setFilter({ db: "", schema: "", table: "" })}
-                            style={{ padding: "6px 12px", borderRadius: 7, border: `1px solid ${THEME.glassBorder}`, background: THEME.glass, color: THEME.textMuted, cursor: "pointer", fontFamily: THEME.fontBody, fontSize: 11, fontWeight: 700, transition: "all .15s" }}
-                        >✕ Clear</button>
+                        <button className="ud-clr" onClick={()=>setFilter({db:'',schema:'',table:''})} style={{ padding:'7px 12px', borderRadius:4, border:`1px solid ${T.border}`, background:'transparent', color:T.textDim, cursor:'pointer', fontFamily:T.fontMono, fontSize:10, fontWeight:700, transition:'all .15s', letterSpacing:.5 }}>✕ CLEAR</button>
                     </>
-                ) : (
-                    <div style={{ fontSize: 11, color: THEME.textDim, fontStyle: "italic" }}>Showing all data</div>
-                )}
+                ) : <span style={{ fontSize:10, color:T.textDim, fontFamily:T.fontMono }}>ALL DATA</span>}
             </div>
         </div>
     );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SECTION COMPONENTS — FIX 4: All <Bar> → <MiniBar> throughout
-// ══════════════════════════════════════════════════════════════════════════════
-
+// ─── SECTIONS ────────────────────────────────────────────────────────────────
 function S1_HealthScorecard() {
     const filter = useContext(FilterContext);
-    const { data: tables, loading, error } = useTableData("/api/tables/stats");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    const rows = tables.filter(t => matchFilter(t, filter));
-    if (!rows.length) return <EmptyState />;
-
+    const { data, loading, error } = useTableData('/api/tables/stats');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = data.filter(t => matchFilter(t, filter));
+    if (!rows.length) return <Empty />;
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={Activity} accent={THEME.success} title="Table Health Scorecard" sub="Per-table health score · VACUUM recommendations" right={<Tag color={THEME.primary}>{rows.length} table{rows.length !== 1 ? "s" : ""}</Tag>} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={Activity} accent={T.green} title="Table Health Scorecard" sub="Per-table health score · VACUUM recommendations" right={<Badge color={T.cyan}>{rows.length} TABLE{rows.length!==1?'S':''}</Badge>} />
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(230px,1fr))', gap:10 }}>
                 {rows.map((t, i) => {
-                    const deadPct = Number(t.deadPct);
-                    const health = Math.max(0, Math.round(100 - deadPct * 2));
-                    const c = hc(health);
-                    const rec = deadPct > 20 ? "VACUUM urgently" : deadPct > 10 ? "VACUUM recommended" : "Healthy";
+                    const dead = Number(t.deadPct), health = Math.max(0, Math.round(100 - dead*2)), c = hColor(health);
+                    const rec = dead > 20 ? 'VACUUM URGENTLY' : dead > 10 ? 'VACUUM RECOMMENDED' : 'HEALTHY';
+                    const rc  = dead > 20 ? T.red : dead > 10 ? T.amber : T.green;
                     return (
-                        <Card key={i} style={{ padding: "14px 16px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                        <Card key={i} style={{ padding:'14px' }}>
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
                                 <div>
-                                    <div style={{ fontWeight: 700, fontSize: 13, color: THEME.textMain }}>{t.name}</div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim }}>{t.schema}</div>
+                                    <div style={{ fontWeight:700, fontSize:13, color:T.textMain, fontFamily:T.fontMono }}>{t.name}</div>
+                                    <div style={{ fontSize:10, color:T.textDim, marginTop:2 }}>{t.schema}</div>
                                 </div>
                                 <Ring score={health} />
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: THEME.textMuted }}>
-                                    <span>Dead %</span>
-                                    <span style={{ fontFamily: THEME.fontMono, color: dc(deadPct), fontWeight: 700 }}>{deadPct}%</span>
-                                </div>
-                                {/* FIX: was <Bar> → now <MiniBar> */}
-                                <MiniBar v={deadPct} max={50} color={dc(deadPct)} />
+                            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:T.textDim, marginBottom:5, fontFamily:T.fontMono }}>
+                                <span>DEAD TUPLES</span><span style={{ color:dColor(dead), fontWeight:700 }}>{dead}%</span>
                             </div>
-                            <div style={{ marginTop: 10, padding: "5px 10px", borderRadius: 6, background: `${c}15`, fontSize: 10, fontWeight: 700, color: c }}>→ {rec}</div>
+                            <MiniBar v={dead} max={50} color={dColor(dead)} h={3} />
+                            <div style={{ marginTop:10, padding:'5px 9px', borderRadius:3, background:`${rc}10`, border:`1px solid ${rc}25`, fontSize:9, fontWeight:700, color:rc, fontFamily:T.fontMono, letterSpacing:.5 }}>→ {rec}</div>
                         </Card>
                     );
                 })}
@@ -337,44 +280,38 @@ function S1_HealthScorecard() {
 
 function S2_ColumnStats() {
     const filter = useContext(FilterContext);
-    const { data: columns, loading, error } = useTableData("/api/tables/columns");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    // FIX 5: S2 used inconsistent field checks. Normalised to handle both
-    // "schema.table" combined field and separate schema/tablename fields.
-    const rows = columns.filter(col => {
-        const colSchema = col.schema || (col.tablename?.includes(".") ? col.tablename.split(".")[0] : null);
-        const colTable  = col.tablename?.includes(".") ? col.tablename.split(".")[1] : col.tablename;
-        if (filter.schema && colSchema && colSchema !== filter.schema) return false;
-        if (filter.table  && colTable  && colTable  !== filter.table)  return false;
+    const { data, loading, error } = useTableData('/api/tables/columns');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = data.filter(col => {
+        const cs = col.schema || (col.tablename?.includes('.')?col.tablename.split('.')[0]:null);
+        const ct = col.tablename?.includes('.')?col.tablename.split('.')[1]:col.tablename;
+        if (filter.schema && cs && cs !== filter.schema) return false;
+        if (filter.table  && ct && ct !== filter.table)  return false;
         return true;
     });
-
-    if (!rows.length) return <EmptyState />;
-
+    if (!rows.length) return <Empty />;
+    const COLS = '1.2fr 1.4fr 1fr 1fr 2fr';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={Search} accent={THEME.purple} title="Column Stats Explorer" sub="Null % · distinct values · most common values" right={<Tag color={THEME.purple}>{rows.length} columns</Tag>} />
-            <Card style={{ overflowX: "auto", maxHeight: 500, overflowY: "auto" }}>
-                <div style={{ minWidth: 600 }}>
-                    <GridHead cols="1fr 1.5fr 1fr 1fr 2fr" labels={["Table", "Column", "Null %", "Distinct", "Top Values"]} />
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={Search} accent={T.purple} title="Column Stats Explorer" sub="Null % · distinct values · most common values" right={<Badge color={T.purple}>{rows.length} COLS</Badge>} />
+            <Card style={{ overflowX:'auto', maxHeight:480, overflowY:'auto' }}>
+                <div style={{ minWidth:600 }}>
+                    <GridHead cols={COLS} labels={['TABLE','COLUMN','NULL %','DISTINCT','TOP VALUES']} />
                     {rows.map((col, i) => {
-                        const nullPct = Number(col.nullPct).toFixed(1);
-                        const nc = nullPct > 20 ? THEME.danger : nullPct > 5 ? THEME.warning : THEME.success;
+                        const np = Number(col.nullPct).toFixed(1);
+                        const nc = Number(np)>20?T.red:Number(np)>5?T.amber:T.green;
                         return (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr 1fr 1fr 2fr", padding: "11px 16px", gap: 8, alignItems: "center", borderBottom: `1px solid ${THEME.grid}33` }}>
-                                <span style={{ fontSize: 11, color: THEME.textMuted }}>{col.tablename}</span>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{col.name}</span>
+                            <GridRow key={i} cols={COLS} i={i}>
+                                <span style={{ fontSize:10, color:T.textDim, fontFamily:T.fontMono }}>{col.tablename}</span>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, fontWeight:700, color:T.cyan }}>{col.name}</span>
                                 <div>
-                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: nc, fontWeight: 700, marginBottom: 3 }}>{nullPct}%</div>
-                                    {/* FIX: was <Bar> → now <MiniBar> */}
-                                    <MiniBar v={nullPct} max={100} color={nc} h={3} />
+                                    <div style={{ fontFamily:T.fontMono, fontSize:10, color:nc, fontWeight:700, marginBottom:4 }}>{np}%</div>
+                                    <MiniBar v={np} max={100} color={nc} h={2} />
                                 </div>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted }}>{Number(col.distinct).toLocaleString()}</span>
-                                <span style={{ fontSize: 10, color: THEME.textDim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={col.topValues || "—"}>{col.topValues || "—"}</span>
-                            </div>
+                                <span style={{ fontFamily:T.fontMono, fontSize:10, color:T.textSub }}>{Number(col.distinct).toLocaleString()}</span>
+                                <span style={{ fontSize:10, color:T.textDim, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }} title={col.topValues||'—'}>{col.topValues||'—'}</span>
+                            </GridRow>
                         );
                     })}
                 </div>
@@ -385,47 +322,43 @@ function S2_ColumnStats() {
 
 function S3_ActivityHeatmap() {
     const filter = useContext(FilterContext);
-    const { data: tables, loading, error } = useTableData("/api/tables/stats");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    const rows = tables.filter(t => matchFilter(t, filter));
-    if (!rows.length) return <EmptyState />;
-
-    const maxSeq = Math.max(...rows.map(t => Number(t.seqScans)), 1);
-    const maxIdx = Math.max(...rows.map(t => Number(t.idxScans)), 1);
-    const maxIns = Math.max(...rows.map(t => Number(t.inserts)), 1);
+    const { data, loading, error } = useTableData('/api/tables/stats');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = data.filter(t => matchFilter(t, filter));
+    if (!rows.length) return <Empty />;
+    const maxSeq = Math.max(...rows.map(t=>Number(t.seqScans)),1);
+    const maxIdx = Math.max(...rows.map(t=>Number(t.idxScans)),1);
+    const maxIns = Math.max(...rows.map(t=>Number(t.inserts)),1);
     const metrics = [
-        { key: "seqScans", label: "Seq Scans", max: maxSeq, color: THEME.danger },
-        { key: "idxScans", label: "Idx Scans", max: maxIdx, color: THEME.success },
-        { key: "inserts",  label: "Inserts",   max: maxIns, color: THEME.primary },
+        { key:'seqScans', label:'SEQ SCANS', max:maxSeq, color:T.red },
+        { key:'idxScans', label:'IDX SCANS', max:maxIdx, color:T.green },
+        { key:'inserts',  label:'INSERTS',   max:maxIns, color:T.cyan },
     ];
-
+    const COLS = '160px repeat(3,1fr)';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={BarChart2} accent={THEME.warning} title="Table Activity Heatmap" sub="Sequential vs index scans · DML rates" />
-            <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 500 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "150px repeat(3,1fr)", padding: "9px 16px", borderBottom: `1px solid ${THEME.grid}`, gap: 8 }}>
-                        <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700, textTransform: "uppercase" }}>Table</span>
-                        {metrics.map(m => <span key={m.key} style={{ fontSize: 10, fontWeight: 700, color: m.color, textTransform: "uppercase" }}>{m.label}</span>)}
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={BarChart2} accent={T.amber} title="Table Activity Heatmap" sub="Sequential vs index scans · DML rates" />
+            <Card style={{ overflowX:'auto' }}>
+                <div style={{ minWidth:540 }}>
+                    <div style={{ display:'grid', gridTemplateColumns:COLS, padding:'8px 16px', borderBottom:`1px solid ${T.border}`, gap:8, background:`${T.amber}05` }}>
+                        <span style={{ fontSize:9, color:T.textDim, fontWeight:700, fontFamily:T.fontMono, textTransform:'uppercase', letterSpacing:1.2 }}>TABLE</span>
+                        {metrics.map(m=><span key={m.key} style={{ fontSize:9, fontWeight:700, color:m.color, fontFamily:T.fontMono, textTransform:'uppercase', letterSpacing:1.2 }}>{m.label}</span>)}
                     </div>
-                    {rows.map((t, i) => (
-                        <div key={i} style={{ display: "grid", gridTemplateColumns: "150px repeat(3,1fr)", padding: "13px 16px", gap: 8, alignItems: "center", borderBottom: `1px solid ${THEME.grid}33` }}>
+                    {rows.map((t,i)=>(
+                        <div key={i} className="ud-row" style={{ display:'grid', gridTemplateColumns:COLS, padding:'12px 16px', gap:8, alignItems:'center', borderBottom:`1px solid ${T.border}50`, background:i%2===0?'transparent':'#ffffff03', transition:'background .15s' }}>
                             <div>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{t.name}</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>{t.schema}</div>
+                                <div style={{ fontSize:12, fontWeight:700, color:T.textMain, fontFamily:T.fontMono }}>{t.name}</div>
+                                <div style={{ fontSize:9, color:T.textDim, marginTop:2 }}>{t.schema}</div>
                             </div>
-                            {metrics.map(m => {
-                                const val = Number(t[m.key]);
-                                const pct = Math.min(100, (val / m.max) * 100);
-                                const hex = Math.min(255, Math.round(pct * 2.2)).toString(16).padStart(2, "0");
+                            {metrics.map(m=>{
+                                const val=Number(t[m.key]), pct=Math.min(100,(val/m.max)*100);
+                                const alpha=Math.max(8,Math.round(pct*.4)).toString(16).padStart(2,'0');
                                 return (
                                     <div key={m.key}>
-                                        <div style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textMuted, marginBottom: 3 }}>{val.toLocaleString()}</div>
-                                        <div style={{ height: 26, borderRadius: 5, background: `${m.color}${hex}`, border: `1px solid ${m.color}30` }}>
-                                            <div style={{ width: `${pct}%`, height: 3, borderRadius: 2, background: m.color + "99" }} />
+                                        <div style={{ fontFamily:T.fontMono, fontSize:10, color:T.textDim, marginBottom:5 }}>{val.toLocaleString()}</div>
+                                        <div style={{ height:20, borderRadius:3, background:`${m.color}${alpha}`, border:`1px solid ${m.color}25`, position:'relative', overflow:'hidden' }}>
+                                            <div style={{ position:'absolute', left:0, top:0, bottom:0, width:`${pct}%`, background:`linear-gradient(90deg,${m.color}20,${m.color}50)`, borderRight:`1px solid ${m.color}80` }} />
                                         </div>
                                     </div>
                                 );
@@ -440,33 +373,27 @@ function S3_ActivityHeatmap() {
 
 function SB_DependencyMap() {
     const filter = useContext(FilterContext);
-    const { data: tablesDep, loading, error } = useTableData("/api/tables/dependencies");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    // FIX: use matchFilter instead of manual name comparison for consistency
-    const rows = filter.table
-        ? tablesDep.filter(t => t.name === filter.table || t.refsTo?.includes(filter.table) || t.refsBy?.includes(filter.table))
-        : tablesDep.filter(t => matchFilter(t, filter));
-
-    if (!rows.length) return <EmptyState />;
-
+    const { data, loading, error } = useTableData('/api/tables/dependencies');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = filter.table ? data.filter(t=>t.name===filter.table||t.refsTo?.includes(filter.table)||t.refsBy?.includes(filter.table)) : data.filter(t=>matchFilter(t,filter));
+    if (!rows.length) return <Empty />;
+    const COLS = '1fr 1.5fr 1.5fr';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={GitBranch} accent={THEME.cyan} title="Table Dependency Map" sub="Foreign keys · cascade chains · drop-impact analysis" />
-            <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 500 }}>
-                    <GridHead cols="1fr 1.5fr 1.5fr" labels={["Table", "Depends On (FK)", "Referenced By"]} />
-                    {rows.map((t, i) => (
-                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr 1.5fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={GitBranch} accent={T.cyan} title="Table Dependency Map" sub="Foreign keys · cascade chains · drop-impact analysis" />
+            <Card style={{ overflowX:'auto' }}>
+                <div style={{ minWidth:500 }}>
+                    <GridHead cols={COLS} labels={['TABLE','DEPENDS ON (FK)','REFERENCED BY']} />
+                    {rows.map((t,i)=>(
+                        <GridRow key={i} cols={COLS} i={i}>
                             <div>
-                                <div style={{ fontWeight: 700, color: THEME.primary, fontSize: 13 }}>{t.name}</div>
-                                {t.refsBy?.length > 2 && <div style={{ marginTop: 4 }}><Tag color={THEME.danger}>Critical</Tag></div>}
+                                <div style={{ fontWeight:700, color:T.cyan, fontSize:12, fontFamily:T.fontMono }}>{t.name}</div>
+                                {t.refsBy?.length>2 && <div style={{ marginTop:4 }}><Badge color={T.red}>CRITICAL</Badge></div>}
                             </div>
-                            <div style={{ fontSize: 11, color: THEME.textDim }}>{t.refsTo?.length ? t.refsTo.join(", ") : "None"}</div>
-                            <div style={{ fontSize: 11, color: THEME.textDim }}>{t.refsBy?.length ? t.refsBy.join(", ") : "None"}</div>
-                        </div>
+                            <div style={{ fontSize:10, color:T.textDim, fontFamily:T.fontMono }}>{t.refsTo?.length?t.refsTo.join(', '):'—'}</div>
+                            <div style={{ fontSize:10, color:t.refsBy?.length?T.textSub:T.textDim, fontFamily:T.fontMono }}>{t.refsBy?.length?t.refsBy.join(', '):'—'}</div>
+                        </GridRow>
                     ))}
                 </div>
             </Card>
@@ -476,40 +403,33 @@ function SB_DependencyMap() {
 
 function SC_WriteAmplification() {
     const filter = useContext(FilterContext);
-    const { data: tables, loading, error } = useTableData("/api/tables/stats");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    const rows = tables
-        .filter(t => matchFilter(t, filter))
-        .filter(t => Number(t.updates) > 0 || Number(t.inserts) > 0)
-        .slice(0, 10);
-
-    if (!rows.length) return <EmptyState label="No write activity for the selected table." />;
-
+    const { data, loading, error } = useTableData('/api/tables/stats');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = data.filter(t=>matchFilter(t,filter)).filter(t=>Number(t.updates)>0||Number(t.inserts)>0).slice(0,10);
+    if (!rows.length) return <Empty label="No write activity for the selected table." />;
+    const COLS = '1.5fr 1fr 1fr 1.2fr';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={Pen} accent={THEME.orange} title="Write Amplification" sub="HOT update % · tuple updates vs inserts" />
-            <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 500 }}>
-                    <GridHead cols="1.5fr 1fr 1fr 1fr" labels={["Table", "Updates / hr", "Inserts / hr", "HOT Updates %"]} />
-                    {rows.map((w, i) => {
-                        const hotPct = Number(w.hotPct);
-                        const c = hotPct > 80 ? THEME.success : hotPct > 30 ? THEME.warning : THEME.danger;
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={Pen} accent={T.amber} title="Write Amplification" sub="HOT update % · tuple updates vs inserts" />
+            <Card style={{ overflowX:'auto' }}>
+                <div style={{ minWidth:500 }}>
+                    <GridHead cols={COLS} labels={['TABLE','UPDATES/HR','INSERTS/HR','HOT UPD %']} />
+                    {rows.map((w,i)=>{
+                        const hot=Number(w.hotPct), c=hot>80?T.green:hot>30?T.amber:T.red;
                         return (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
+                            <GridRow key={i} cols={COLS} i={i}>
                                 <div>
-                                    <span style={{ fontWeight: 700, fontSize: 13, color: THEME.textMain }}>{w.name}</span>
-                                    <div style={{ fontSize: 10, color: THEME.textDim }}>{w.schema}</div>
+                                    <div style={{ fontWeight:700, fontSize:12, color:T.textMain, fontFamily:T.fontMono }}>{w.name}</div>
+                                    <div style={{ fontSize:9, color:T.textDim }}>{w.schema}</div>
                                 </div>
-                                <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.textMuted }}>{Number(w.updates).toLocaleString()}</div>
-                                <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.textMuted }}>{Number(w.inserts).toLocaleString()}</div>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textSub }}>{Number(w.updates).toLocaleString()}</span>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textSub }}>{Number(w.inserts).toLocaleString()}</span>
                                 <div>
-                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: c, fontWeight: 700 }}>{hotPct}%</div>
-                                    {hotPct < 30 && Number(w.updates) > 100 && <div style={{ fontSize: 9, color: THEME.danger, marginTop: 4 }}>Consider lower fillfactor</div>}
+                                    <div style={{ fontFamily:T.fontMono, fontSize:11, color:c, fontWeight:700 }}>{hot}%</div>
+                                    {hot<30&&Number(w.updates)>100&&<div style={{ fontSize:9, color:T.red, marginTop:3, fontFamily:T.fontMono }}>↓ lower fillfactor</div>}
                                 </div>
-                            </div>
+                            </GridRow>
                         );
                     })}
                 </div>
@@ -520,40 +440,32 @@ function SC_WriteAmplification() {
 
 function SE_ToastBloat() {
     const filter = useContext(FilterContext);
-    const { data: toast, loading, error } = useTableData("/api/tables/toast");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    // FIX: toast rows use "table" not "name" — pass correct nameKey
-    const rows = filter.table
-        ? toast.filter(t => t.table === filter.table)
-        : toast.filter(t => matchFilter(t, filter, { nameKey: "table" }));
-
-    if (!rows.length) return <EmptyState label="No TOAST data for the selected table." />;
-
+    const { data, loading, error } = useTableData('/api/tables/toast');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = filter.table ? data.filter(t=>t.table===filter.table) : data.filter(t=>matchFilter(t,filter,{nameKey:'table'}));
+    if (!rows.length) return <Empty label="No TOAST data for the selected table." />;
+    const COLS = '1.5fr 1.2fr 1.5fr';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={Layers} accent={THEME.warning} title="Toast Table Bloat" sub="Oversized column TOAST storage · dead chunks" />
-            <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 500 }}>
-                    <GridHead cols="1.5fr 1.5fr 1.5fr" labels={["Main Table", "TOAST Size", "Dead Chunk %"]} />
-                    {rows.map((t, i) => {
-                        const deadPct = Number(t.deadPct);
-                        const c = deadPct > 20 ? THEME.danger : deadPct > 5 ? THEME.warning : THEME.success;
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={Layers} accent={T.amber} title="TOAST Table Bloat" sub="Oversized column TOAST storage · dead chunks" />
+            <Card style={{ overflowX:'auto' }}>
+                <div style={{ minWidth:500 }}>
+                    <GridHead cols={COLS} labels={['MAIN TABLE','TOAST SIZE','DEAD CHUNK %']} />
+                    {rows.map((t,i)=>{
+                        const dead=Number(t.deadPct), c=dead>20?T.red:dead>5?T.amber:T.green;
                         return (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 1.5fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
+                            <GridRow key={i} cols={COLS} i={i}>
                                 <div>
-                                    <div style={{ fontWeight: 700, fontSize: 13 }}>{t.table}</div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{t.toastTable}</div>
+                                    <div style={{ fontWeight:700, fontSize:12, fontFamily:T.fontMono, color:T.textMain }}>{t.table}</div>
+                                    <div style={{ fontSize:9, color:T.textDim, marginTop:2, fontFamily:T.fontMono }}>{t.toastTable}</div>
                                 </div>
-                                <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.primary, fontWeight: 700 }}>{t.toastSize}</div>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.cyan, fontWeight:700 }}>{t.toastSize}</span>
                                 <div>
-                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: c, marginBottom: 3 }}>{deadPct}%</div>
-                                    {/* FIX: was <Bar> → now <MiniBar> */}
-                                    <MiniBar v={deadPct} max={40} color={c} h={4} />
+                                    <div style={{ fontFamily:T.fontMono, fontSize:10, color:c, marginBottom:4 }}>{dead}%</div>
+                                    <MiniBar v={dead} max={40} color={c} h={3} />
                                 </div>
-                            </div>
+                            </GridRow>
                         );
                     })}
                 </div>
@@ -563,30 +475,30 @@ function SE_ToastBloat() {
 }
 
 function SF_TempTables() {
-    const { data: tempTables, loading, error } = useTableData("/api/tables/temp");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
+    const { data, loading, error } = useTableData('/api/tables/temp');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const COLS = '1fr 1fr 1fr 1fr';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={Thermometer} accent={THEME.teal} title="Temp Table Usage" sub="Temp table size per session · session age" />
-            <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 500 }}>
-                    <GridHead cols="1fr 1fr 1fr 1fr" labels={["App / User", "PID", "Temp Size", "Session Age (sec)"]} />
-                    {tempTables.length === 0 ? (
-                        <div style={{ padding: 20, textAlign: "center", color: THEME.textMuted, fontSize: 12 }}>No temp tables currently active in pg_temp.</div>
-                    ) : tempTables.map((t, i) => (
-                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
-                            <div>
-                                <div style={{ fontSize: 12, fontWeight: 600 }}>{t.app || "Unknown"}</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>{t.user}</div>
-                            </div>
-                            <span style={{ fontFamily: THEME.fontMono, fontSize: 11, fontWeight: 700, color: THEME.textMain }}>{t.pid}</span>
-                            <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.warning }}>{t.size}</span>
-                            <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textDim }}>{t.age_sec}s</span>
-                        </div>
-                    ))}
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={Thermometer} accent={T.cyan} title="Temp Table Usage" sub="Temp table size per session · session age" />
+            <Card style={{ overflowX:'auto' }}>
+                <div style={{ minWidth:500 }}>
+                    <GridHead cols={COLS} labels={['APP / USER','PID','TEMP SIZE','SESSION AGE']} />
+                    {data.length===0
+                        ? <div style={{ padding:24, textAlign:'center', color:T.textDim, fontFamily:T.fontMono, fontSize:11 }}>NO TEMP TABLES ACTIVE</div>
+                        : data.map((t,i)=>(
+                            <GridRow key={i} cols={COLS} i={i}>
+                                <div>
+                                    <div style={{ fontSize:12, fontWeight:600, color:T.textMain }}>{t.app||'UNKNOWN'}</div>
+                                    <div style={{ fontSize:9, color:T.textDim, fontFamily:T.fontMono }}>{t.user}</div>
+                                </div>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textSub }}>{t.pid}</span>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.amber, fontWeight:700 }}>{t.size}</span>
+                                <span style={{ fontFamily:T.fontMono, fontSize:10, color:T.textDim }}>{t.age_sec}s</span>
+                            </GridRow>
+                        ))
+                    }
                 </div>
             </Card>
         </div>
@@ -595,39 +507,34 @@ function SF_TempTables() {
 
 function SA_SchemaHistory() {
     const filter = useContext(FilterContext);
-    const MOCK_DDL = [
-        { ts: new Date().toISOString().split("T")[0], type: "ALTER TABLE", object: "users",  schema: "public", detail: "ADD COLUMN last_login timestamptz",       risk: "medium" },
-        { ts: new Date().toISOString().split("T")[0], type: "CREATE INDEX", object: "idx_orders_status", schema: "public", detail: "CONCURRENTLY ON orders(status)", risk: "low" },
-        { ts: new Date().toISOString().split("T")[0], type: "DROP COLUMN", object: "orders", schema: "public", detail: "removed deprecated field: legacy_ref",    risk: "high" },
+    const MOCK = [
+        { ts:new Date().toISOString().split('T')[0], type:'ALTER TABLE',  object:'users',             schema:'public', detail:'ADD COLUMN last_login timestamptz',     risk:'medium' },
+        { ts:new Date().toISOString().split('T')[0], type:'CREATE INDEX', object:'idx_orders_status', schema:'public', detail:'CONCURRENTLY ON orders(status)',        risk:'low' },
+        { ts:new Date().toISOString().split('T')[0], type:'DROP COLUMN',  object:'orders',            schema:'public', detail:'removed deprecated field: legacy_ref', risk:'high' },
     ];
-
-    const rows = MOCK_DDL.filter(e =>
-        (!filter.schema || e.schema === filter.schema) &&
-        (!filter.table  || e.object === filter.table)
-    );
-
+    const rows = MOCK.filter(e=>(!filter.schema||e.schema===filter.schema)&&(!filter.table||e.object===filter.table));
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={FileText} accent={THEME.indigo} title="Schema Change History" sub="DDL audit log (Requires pgAudit extension for live tracking)" />
-            {rows.length === 0 ? <EmptyState label="No DDL events found for the selected table." /> : (
-                <Card style={{ padding: 16 }}>
-                    <div style={{ position: "relative", paddingLeft: 20 }}>
-                        <div style={{ position: "absolute", left: 6, top: 0, bottom: 0, width: 2, background: THEME.grid, borderRadius: 1 }} />
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                            {rows.map((e, i) => {
-                                const tc = e.risk === "high" ? THEME.danger : e.risk === "medium" ? THEME.warning : THEME.success;
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={FileText} accent={T.purple} title="Schema Change History" sub="DDL audit log — requires pgAudit for live tracking" />
+            {!rows.length ? <Empty label="No DDL events for the selected table." /> : (
+                <Card style={{ padding:18 }}>
+                    <div style={{ position:'relative', paddingLeft:22 }}>
+                        <div style={{ position:'absolute', left:7, top:4, bottom:4, width:1, background:`linear-gradient(to bottom, ${T.purple}80, transparent)` }} />
+                        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                            {rows.map((e,i)=>{
+                                const tc=e.risk==='high'?T.red:e.risk==='medium'?T.amber:T.green;
                                 return (
-                                    <div key={i} style={{ position: "relative" }}>
-                                        <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: "50%", background: tc, border: `2px solid ${THEME.surface}` }} />
-                                        <div style={{ marginLeft: 12, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: "10px 14px" }}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                    <Pip color={tc}>{e.type}</Pip>
-                                                    <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.textMain, wordBreak: "break-all" }}>{e.schema}.{e.object}</span>
+                                    <div key={i} style={{ position:'relative' }}>
+                                        <div style={{ position:'absolute', left:-18, top:10, width:8, height:8, borderRadius:'50%', background:tc, boxShadow:`0 0 6px ${tc}`, border:`2px solid ${T.panel}` }} />
+                                        <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:6, padding:'10px 14px' }}>
+                                            <div style={{ display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:8, alignItems:'center', marginBottom:6 }}>
+                                                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                                    <Pill color={tc}>{e.type}</Pill>
+                                                    <span style={{ fontFamily:T.fontMono, fontSize:11, fontWeight:700, color:T.textMain }}>{e.schema}.{e.object}</span>
                                                 </div>
-                                                <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{e.ts}</span>
+                                                <span style={{ fontSize:9, color:T.textDim, fontFamily:T.fontMono }}>{e.ts}</span>
                                             </div>
-                                            <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 5 }}>{e.detail}</div>
+                                            <div style={{ fontSize:11, color:T.textSub, fontFamily:T.fontMono }}>{e.detail}</div>
                                         </div>
                                     </div>
                                 );
@@ -642,32 +549,31 @@ function SA_SchemaHistory() {
 
 function SD_Forecast() {
     const filter = useContext(FilterContext);
-    const { data: tables, loading } = useTableData("/api/tables/stats");
-    if (loading) return <LoaderUI />;
-
-    const rows = tables.filter(t => matchFilter(t, filter)).slice(0, filter.table ? 1 : 4);
-    if (!rows.length) return <EmptyState />;
-
+    const { data, loading } = useTableData('/api/tables/stats');
+    if (loading) return <Loader />;
+    const rows = data.filter(t=>matchFilter(t,filter)).slice(0,filter.table?1:4);
+    if (!rows.length) return <Empty />;
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={TrendingUp} accent={THEME.danger} title="Dead Tuple Forecast" sub="Predicts autovacuum threshold hits (Uses current deadPct)" />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 10 }}>
-                {rows.map((f, i) => {
-                    const deadPct = Number(f.deadPct);
-                    const risk = deadPct > 20 ? "critical" : deadPct > 10 ? "high" : "low";
-                    const c = risk === "critical" ? THEME.danger : risk === "high" ? THEME.warning : THEME.success;
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={TrendingUp} accent={T.red} title="Dead Tuple Forecast" sub="Predicts autovacuum threshold hits based on current deadPct" />
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:10 }}>
+                {rows.map((f,i)=>{
+                    const dead=Number(f.deadPct), risk=dead>20?'CRITICAL':dead>10?'HIGH':'NOMINAL';
+                    const c=risk==='CRITICAL'?T.red:risk==='HIGH'?T.amber:T.green;
                     return (
-                        <Card key={i} style={{ padding: "14px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                                <span style={{ fontWeight: 700, fontSize: 13, color: THEME.textMain }}>{f.name}</span>
-                                <Pip color={c}>{risk}</Pip>
+                        <Card key={i} style={{ padding:'14px' }}>
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                                <span style={{ fontWeight:700, fontSize:12, color:T.textMain, fontFamily:T.fontMono }}>{f.name}</span>
+                                <Pill color={c}>{risk}</Pill>
                             </div>
-                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4 }}>
-                                <span style={{ color: THEME.textDim }}>Now: <span style={{ fontFamily: THEME.fontMono, color: c, fontWeight: 700 }}>{deadPct}%</span></span>
-                                <span style={{ color: THEME.textDim }}>Target: 20%</span>
+                            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, marginBottom:6, fontFamily:T.fontMono }}>
+                                <span style={{ color:T.textDim }}>NOW <span style={{ color:c, fontWeight:700 }}>{dead}%</span></span>
+                                <span style={{ color:T.textDim }}>TARGET 20%</span>
                             </div>
-                            {/* FIX: was <Bar> → now <MiniBar> */}
-                            <MiniBar v={deadPct} max={50} color={c} h={6} />
+                            <MiniBar v={dead} max={50} color={c} h={5} />
+                            <div style={{ display:'flex', justifyContent:'space-between', marginTop:4 }}>
+                                {[0,10,20,30,40,50].map(n=><span key={n} style={{ fontSize:8, color:T.textDim, fontFamily:T.fontMono }}>{n}</span>)}
+                            </div>
                         </Card>
                     );
                 })}
@@ -678,140 +584,93 @@ function SD_Forecast() {
 
 function S_IndexAnalysis() {
     const filter = useContext(FilterContext);
-    const { data: indexes, loading, error } = useTableData("/api/tables/indexes");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    const rows = indexes.filter(ix =>
-        (!filter.schema || ix.schema    === filter.schema) &&
-        (!filter.table  || ix.tableName === filter.table)
-    );
-
-    if (!rows.length) return <EmptyState label="No indexes found for the selected table." />;
-
+    const { data, loading, error } = useTableData('/api/tables/indexes');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = data.filter(ix=>(!filter.schema||ix.schema===filter.schema)&&(!filter.table||ix.tableName===filter.table));
+    if (!rows.length) return <Empty label="No indexes found for the selected table." />;
+    const unused = rows.filter(ix=>Number(ix.scans??0)===0);
+    const COLS = '2fr 1fr 1fr 1fr 1fr 1.2fr';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead
-                icon={ListChecks}
-                accent={THEME.indigo}
-                title="Index Analysis"
-                sub="Index usage · size · scan counts · unused index detection"
-                right={
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <Tag color={THEME.indigo}>{rows.length} index{rows.length !== 1 ? "es" : ""}</Tag>
-                        {rows.filter(ix => Number(ix.scans ?? 0) === 0).length > 0 && (
-                            <Tag color={THEME.danger}>{rows.filter(ix => Number(ix.scans ?? 0) === 0).length} unused</Tag>
-                        )}
-                    </div>
-                }
-            />
-            <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 780 }}>
-                    <GridHead cols="2fr 1fr 1fr 1fr 1fr 1fr" labels={["Index Name", "Table", "Type", "Size", "Scans", "Status"]} />
-                    {rows.map((ix, i) => {
-                        const scans = Number(ix.scans ?? 0);
-                        const isUnused = scans === 0;
-                        const sizeMb = ix.sizeBytes ? (ix.sizeBytes / 1024 / 1024).toFixed(1) : "—";
-                        const statusColor = isUnused ? THEME.danger : scans < 10 ? THEME.warning : THEME.success;
-                        const statusLabel = isUnused ? "Unused" : scans < 10 ? "Rarely used" : "Active";
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={ListChecks} accent={T.purple} title="Index Analysis" sub="Usage · size · scan counts · unused detection"
+                         right={<div style={{ display:'flex', gap:8 }}><Badge color={T.purple}>{rows.length} IDX</Badge>{unused.length>0&&<Badge color={T.red}>{unused.length} UNUSED</Badge>}</div>} />
+            <Card style={{ overflowX:'auto' }}>
+                <div style={{ minWidth:780 }}>
+                    <GridHead cols={COLS} labels={['INDEX NAME','TABLE','TYPE','SIZE','SCANS','STATUS']} />
+                    {rows.map((ix,i)=>{
+                        const scans=Number(ix.scans??0), isU=scans===0;
+                        const sizeMb=ix.sizeBytes?`${(ix.sizeBytes/1048576).toFixed(1)}MB`:'—';
+                        const sc=isU?T.red:scans<10?T.amber:T.green, sl=isU?'UNUSED':scans<10?'RARE':'ACTIVE';
                         return (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
+                            <GridRow key={i} cols={COLS} i={i}>
                                 <div>
-                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{ix.name}</div>
-                                    {ix.definition && (
-                                        <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }} title={ix.definition}>
-                                            {ix.definition}
-                                        </div>
-                                    )}
-                                    <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
-                                        {ix.isPrimary && <Pip color={THEME.purple}>PK</Pip>}
-                                        {ix.isUnique  && <Pip color={THEME.cyan}>UQ</Pip>}
+                                    <div style={{ fontFamily:T.fontMono, fontSize:11, fontWeight:700, color:T.textMain }}>{ix.name}</div>
+                                    {ix.definition&&<div style={{ fontSize:9, color:T.textDim, marginTop:2, fontFamily:T.fontMono, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:240 }} title={ix.definition}>{ix.definition}</div>}
+                                    <div style={{ display:'flex', gap:4, marginTop:4 }}>
+                                        {ix.isPrimary&&<Badge color={T.purple}>PK</Badge>}
+                                        {ix.isUnique &&<Badge color={T.cyan}>UQ</Badge>}
                                     </div>
                                 </div>
-                                <span style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{ix.tableName}</span>
-                                <Pip color={THEME.indigo}>{(ix.type || "btree").toUpperCase()}</Pip>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.textMuted }}>{ix.size || (sizeMb !== "—" ? `${sizeMb} MB` : "—")}</span>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: isUnused ? THEME.danger : THEME.success, fontWeight: 700 }}>{scans.toLocaleString()}</span>
+                                <span style={{ fontSize:10, color:T.textDim, fontFamily:T.fontMono }}>{ix.tableName}</span>
+                                <Pill color={T.purple}>{(ix.type||'btree').toUpperCase()}</Pill>
+                                <span style={{ fontFamily:T.fontMono, fontSize:10, color:T.textSub }}>{ix.size||sizeMb}</span>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, color:isU?T.red:T.green, fontWeight:700 }}>{scans.toLocaleString()}</span>
                                 <div>
-                                    <Pip color={statusColor}>{statusLabel}</Pip>
-                                    {isUnused && <div style={{ fontSize: 9, color: THEME.danger, marginTop: 4 }}>Consider dropping</div>}
+                                    <Pill color={sc}>{sl}</Pill>
+                                    {isU&&<div style={{ fontSize:9, color:T.red, marginTop:4, fontFamily:T.fontMono }}>→ CONSIDER DROP</div>}
                                 </div>
-                            </div>
+                            </GridRow>
                         );
                     })}
                 </div>
             </Card>
-            {rows.some(ix => Number(ix.scans ?? 0) === 0) && (
-                <div style={{ padding: "10px 14px", borderRadius: 9, background: `${THEME.danger}12`, border: `1px solid ${THEME.danger}30`, fontSize: 12, color: THEME.danger }}>
-                    ⚠️ <strong>Unused indexes detected.</strong> These consume write overhead with no read benefit. Review before dropping.
-                </div>
-            )}
+            {unused.length>0&&<div style={{ padding:'10px 14px', borderRadius:5, background:`${T.red}0f`, border:`1px solid ${T.red}30`, fontSize:11, color:T.red, fontFamily:T.fontMono }}>⚠ {unused.length} UNUSED INDEX{unused.length>1?'ES':''} — write overhead with no read benefit.</div>}
         </div>
     );
 }
 
 function S_TableSizes() {
     const filter = useContext(FilterContext);
-    const { data: sizes, loading, error } = useTableData("/api/tables/sizes");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    const rows = sizes.filter(s =>
-        (!filter.schema || s.schema === filter.schema) &&
-        (!filter.table  || s.name   === filter.table)
-    );
-
-    if (!rows.length) return <EmptyState label="No size data for the selected table." />;
-
+    const { data, loading, error } = useTableData('/api/tables/sizes');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = data.filter(s=>(!filter.schema||s.schema===filter.schema)&&(!filter.table||s.name===filter.table));
+    if (!rows.length) return <Empty label="No size data for the selected table." />;
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={Ruler} accent={THEME.teal} title="Table Size Breakdown" sub="Heap · index · TOAST storage split · bloat ratio" />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
-                {rows.map((s, i) => {
-                    const heap  = Number(s.heapBytes  ?? 0);
-                    const idx   = Number(s.indexBytes  ?? 0);
-                    const toast = Number(s.toastBytes  ?? 0);
-                    const total = heap + idx + toast || 1;
-                    const fmt = b => b >= 1073741824 ? `${(b/1073741824).toFixed(2)} GB` : b >= 1048576 ? `${(b/1048576).toFixed(1)} MB` : b >= 1024 ? `${(b/1024).toFixed(0)} KB` : `${b} B`;
-                    const bloatPct = Number(s.bloatPct ?? 0);
-                    const bc = bloatPct > 30 ? THEME.danger : bloatPct > 15 ? THEME.warning : THEME.success;
-
-                    const segments = [
-                        { label: "Heap",    bytes: heap,  color: THEME.primary },
-                        { label: "Indexes", bytes: idx,   color: THEME.purple },
-                        { label: "TOAST",   bytes: toast, color: THEME.teal },
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={Ruler} accent={T.cyan} title="Table Size Breakdown" sub="Heap · index · TOAST storage split · bloat ratio" />
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:12 }}>
+                {rows.map((s,i)=>{
+                    const heap=Number(s.heapBytes??0), idx=Number(s.indexBytes??0), toast=Number(s.toastBytes??0), total=heap+idx+toast||1;
+                    const bloat=Number(s.bloatPct??0), bc=bloat>30?T.red:bloat>15?T.amber:T.green;
+                    const segs=[
+                        { label:'HEAP',    bytes:heap,  color:T.cyan,   pct:(heap/total)*100 },
+                        { label:'INDEXES', bytes:idx,   color:T.purple, pct:(idx/total)*100 },
+                        { label:'TOAST',   bytes:toast, color:T.amber,  pct:(toast/total)*100 },
                     ];
-
                     return (
-                        <Card key={i} style={{ padding: "16px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                        <Card key={i} style={{ padding:'16px' }}>
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
                                 <div>
-                                    <div style={{ fontWeight: 700, fontSize: 14, color: THEME.textMain }}>{s.name}</div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim }}>{s.schema} · {fmt(total)} total</div>
+                                    <div style={{ fontWeight:700, fontSize:13, color:T.textMain, fontFamily:T.fontMono }}>{s.name}</div>
+                                    <div style={{ fontSize:9, color:T.textDim, marginTop:3, fontFamily:T.fontMono }}>{s.schema} · {fmtBytes(total)} TOTAL</div>
                                 </div>
-                                <Pip color={bc}>Bloat {bloatPct}%</Pip>
+                                <Pill color={bc}>BLOAT {bloat}%</Pill>
                             </div>
-                            <div style={{ height: 10, borderRadius: 5, overflow: "hidden", display: "flex", marginBottom: 12 }}>
-                                {segments.map(seg => (
-                                    <div key={seg.label} style={{ width: `${(seg.bytes / total) * 100}%`, background: seg.color, transition: "width .5s" }} />
-                                ))}
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {segments.map(seg => (
-                                    <div key={seg.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                                            <div style={{ width: 8, height: 8, borderRadius: 2, background: seg.color }} />
-                                            <span style={{ fontSize: 11, color: THEME.textMuted }}>{seg.label}</span>
+                            <StackBar segments={segs} h={8} />
+                            <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:12 }}>
+                                {segs.map(seg=>(
+                                    <div key={seg.label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                                        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                            <div style={{ width:6, height:6, borderRadius:1, background:seg.color, boxShadow:`0 0 4px ${seg.color}80` }} />
+                                            <span style={{ fontSize:10, color:T.textSub, fontFamily:T.fontMono }}>{seg.label}</span>
                                         </div>
-                                        <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMain }}>{fmt(seg.bytes)}</span>
+                                        <span style={{ fontFamily:T.fontMono, fontSize:10, color:T.textMain }}>{fmtBytes(seg.bytes)}</span>
                                     </div>
                                 ))}
                             </div>
-                            {bloatPct > 30 && (
-                                <div style={{ marginTop: 10, padding: "6px 10px", borderRadius: 6, background: `${THEME.danger}15`, fontSize: 10, fontWeight: 700, color: THEME.danger }}>→ Consider VACUUM FULL or pg_repack</div>
-                            )}
+                            {bloat>30&&<div style={{ marginTop:10, padding:'6px 10px', borderRadius:3, background:`${T.red}10`, border:`1px solid ${T.red}25`, fontSize:9, fontWeight:700, color:T.red, fontFamily:T.fontMono }}>→ VACUUM FULL or pg_repack recommended</div>}
                         </Card>
                     );
                 })}
@@ -822,41 +681,36 @@ function S_TableSizes() {
 
 function S_RowCounts() {
     const filter = useContext(FilterContext);
-    const { data: tables, loading, error } = useTableData("/api/tables/stats");
-
-    if (loading) return <LoaderUI />;
-    if (error) return <ErrorUI msg={error} />;
-
-    const rows = tables.filter(t => matchFilter(t, filter));
-    if (!rows.length) return <EmptyState />;
-
-    const maxLive = Math.max(...rows.map(t => Number(t.liveRows ?? t.rows ?? 0)), 1);
-
+    const { data, loading, error } = useTableData('/api/tables/stats');
+    if (loading) return <Loader />;
+    if (error)   return <Err msg={error} />;
+    const rows = data.filter(t=>matchFilter(t,filter));
+    if (!rows.length) return <Empty />;
+    const maxLive = Math.max(...rows.map(t=>Number(t.liveRows??t.rows??0)),1);
+    const COLS = '1.5fr 1.5fr 1fr 1fr';
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <SectionHead icon={Database} accent={THEME.primary} title="Row Count Snapshot" sub="Live vs dead tuples · estimated row counts from pg_stat_user_tables" />
-            <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 500 }}>
-                    <GridHead cols="1.5fr 1.5fr 1fr 1fr" labels={["Table", "Live Rows", "Dead Rows", "Dead Ratio"]} />
-                    {rows.map((t, i) => {
-                        const live  = Number(t.liveRows ?? t.rows ?? 0);
-                        const dead  = Number(t.deadRows ?? 0);
-                        const ratio = live + dead > 0 ? ((dead / (live + dead)) * 100).toFixed(1) : "0.0";
-                        const rc = Number(ratio) > 20 ? THEME.danger : Number(ratio) > 10 ? THEME.warning : THEME.success;
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <SectionHead icon={Database} accent={T.blue} title="Row Count Snapshot" sub="Live vs dead tuples · from pg_stat_user_tables" />
+            <Card style={{ overflowX:'auto' }}>
+                <div style={{ minWidth:500 }}>
+                    <GridHead cols={COLS} labels={['TABLE','LIVE ROWS','DEAD ROWS','DEAD RATIO']} />
+                    {rows.map((t,i)=>{
+                        const live=Number(t.liveRows??t.rows??0), dead=Number(t.deadRows??0);
+                        const ratio=live+dead>0?((dead/(live+dead))*100).toFixed(1):'0.0';
+                        const rc=dColor(Number(ratio));
                         return (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
+                            <GridRow key={i} cols={COLS} i={i}>
                                 <div>
-                                    <div style={{ fontWeight: 700, fontSize: 13, color: THEME.textMain }}>{t.name}</div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim }}>{t.schema}</div>
+                                    <div style={{ fontWeight:700, fontSize:12, color:T.textMain, fontFamily:T.fontMono }}>{t.name}</div>
+                                    <div style={{ fontSize:9, color:T.textDim, marginTop:2 }}>{t.schema}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.success, marginBottom: 3 }}>{live.toLocaleString()}</div>
-                                    {/* FIX: was <Bar> → now <MiniBar> */}
-                                    <MiniBar v={live} max={maxLive} color={THEME.success} h={4} />
+                                    <div style={{ fontFamily:T.fontMono, fontSize:11, color:T.green, marginBottom:4 }}>{live.toLocaleString()}</div>
+                                    <MiniBar v={live} max={maxLive} color={T.green} h={3} />
                                 </div>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.danger }}>{dead.toLocaleString()}</span>
-                                <Pip color={rc}>{ratio}%</Pip>
-                            </div>
+                                <span style={{ fontFamily:T.fontMono, fontSize:11, color:dead>0?T.red:T.textDim }}>{dead.toLocaleString()}</span>
+                                <Pill color={rc}>{ratio}%</Pill>
+                            </GridRow>
                         );
                     })}
                 </div>
@@ -865,153 +719,137 @@ function S_RowCounts() {
     );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SECTIONS REGISTRY
-// FIX 6: tableOnly was defined on entries but the shell filter only checked
-// hideWhenTable. Now the shell correctly hides tableOnly sections when no
-// table is selected AND shows them when one is.
-// ══════════════════════════════════════════════════════════════════════════════
+// ─── REGISTRY ─────────────────────────────────────────────────────────────────
 const ALL_SECTIONS = [
-    { group: "Health & Growth", label: "🏥 Health Scorecard",  sub: "Health ring & VACUUM tips",      component: S1_HealthScorecard },
-    { group: "Health & Growth", label: "🔥 Activity Heatmap",  sub: "Seq vs idx scans & DML",          component: S3_ActivityHeatmap },
-    { group: "Health & Growth", label: "🔮 Forecast",          sub: "Dead tuple predictions",           component: SD_Forecast },
-    { group: "Health & Growth", label: "🔢 Row Counts",        sub: "Live vs dead tuple ratio",         component: S_RowCounts },
-    { group: "Diagnostics",     label: "🔬 Column Stats",      sub: "Null % & distinct values",         component: S2_ColumnStats },
-    { group: "Diagnostics",     label: "🍞 TOAST Bloat",       sub: "Oversized column chunks",          component: SE_ToastBloat },
-    { group: "Diagnostics",     label: "🌡 Temp Tables",       sub: "Session temp sizes & leaks",       component: SF_TempTables, hideWhenTable: true },
-    { group: "Architecture",    label: "📝 Schema History",    sub: "DDL timeline & risk",              component: SA_SchemaHistory },
-    { group: "Architecture",    label: "🕸 Dependency Map",    sub: "FK chains & cascades",             component: SB_DependencyMap },
-    { group: "Architecture",    label: "✍️ Write Amp",         sub: "WAL & tuple churn",               component: SC_WriteAmplification },
-    // Table-specific — only shown when a table is selected
-    { group: "Table Details",   label: "📑 Index Analysis",    sub: "Index usage & unused detection",  component: S_IndexAnalysis,  tableOnly: true },
-    { group: "Table Details",   label: "📐 Size Breakdown",    sub: "Heap / index / TOAST split",      component: S_TableSizes,     tableOnly: true },
+    { group:'Health & Growth', label:'Health Scorecard', icon:'⬡', sub:'Health ring & VACUUM tips',      component:S1_HealthScorecard },
+    { group:'Health & Growth', label:'Activity Heatmap', icon:'◈', sub:'Seq vs idx scans & DML',          component:S3_ActivityHeatmap },
+    { group:'Health & Growth', label:'Forecast',         icon:'◬', sub:'Dead tuple predictions',           component:SD_Forecast },
+    { group:'Health & Growth', label:'Row Counts',       icon:'▦', sub:'Live vs dead tuple ratio',         component:S_RowCounts },
+    { group:'Diagnostics',     label:'Column Stats',     icon:'≡', sub:'Null % & distinct values',         component:S2_ColumnStats },
+    { group:'Diagnostics',     label:'TOAST Bloat',      icon:'▣', sub:'Oversized column chunks',          component:SE_ToastBloat },
+    { group:'Diagnostics',     label:'Temp Tables',      icon:'◎', sub:'Session temp sizes & leaks',       component:SF_TempTables, hideWhenTable:true },
+    { group:'Architecture',    label:'Schema History',   icon:'⊞', sub:'DDL timeline & risk',              component:SA_SchemaHistory },
+    { group:'Architecture',    label:'Dependency Map',   icon:'◇', sub:'FK chains & cascades',             component:SB_DependencyMap },
+    { group:'Architecture',    label:'Write Amp',        icon:'⟳', sub:'WAL & tuple churn',               component:SC_WriteAmplification },
+    { group:'Table Details',   label:'Index Analysis',   icon:'⊟', sub:'Index usage & unused detection',  component:S_IndexAnalysis, tableOnly:true },
+    { group:'Table Details',   label:'Size Breakdown',   icon:'⊡', sub:'Heap / index / TOAST split',      component:S_TableSizes,    tableOnly:true },
 ];
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MAIN SHELL
-// ══════════════════════════════════════════════════════════════════════════════
+const GROUP_COLORS = { 'Health & Growth':T.green, 'Diagnostics':T.amber, 'Architecture':T.cyan, 'Table Details':T.purple };
+
+// ─── SHELL ───────────────────────────────────────────────────────────────────
 export default function UnifiedDashboard() {
-    useAdaptiveTheme();
-    const [filter, setFilter] = useState({ db: "", schema: "", table: "" });
+    const [filter, setFilter] = useState({ db:'', schema:'', table:'' });
     const [active, setActive] = useState(0);
+    const [tick, setTick]     = useState(new Date());
 
-    // FIX 6 (cont): correctly apply both hideWhenTable AND tableOnly visibility rules
-    const SECTIONS = ALL_SECTIONS.filter(s => {
-        if (s.tableOnly)     return !!filter.table;   // only when table is selected
-        if (s.hideWhenTable) return !filter.table;    // only when NO table selected
-        return true;                                   // always visible
-    });
+    useEffect(() => { const id = setInterval(()=>setTick(new Date()),1000); return ()=>clearInterval(id); }, []);
 
-    const safeActive = Math.min(active, SECTIONS.length - 1);
-    const Preview = SECTIONS[safeActive]?.component;
-    const groups = [...new Set(SECTIONS.map(s => s.group))];
+    const SECTIONS   = ALL_SECTIONS.filter(s => s.tableOnly ? !!filter.table : s.hideWhenTable ? !filter.table : true);
+    const safeActive = Math.min(active, SECTIONS.length-1);
+    const Preview    = SECTIONS[safeActive]?.component;
+    const groups     = [...new Set(SECTIONS.map(s=>s.group))];
 
-    const handleSetFilter = useCallback((v) => {
-        setFilter(prev => typeof v === "function" ? v(prev) : v);
-        setActive(0);
-    }, []);
+    const handleFilter = useCallback(v => { setFilter(p => typeof v==='function'?v(p):v); setActive(0); }, []);
 
     return (
         <FilterContext.Provider value={filter}>
-            <div style={{ background: THEME.bg, minHeight: "100vh", padding: "32px 24px", fontFamily: THEME.fontBody, color: THEME.textMain }}>
-                <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          ::-webkit-scrollbar { width: 4px; height: 4px; }
-          ::-webkit-scrollbar-track { background: transparent; }
-          ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
-          @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-          @keyframes taSpin { to { transform: rotate(360deg); } }
-          @keyframes taFadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-          .pv { animation: fadeUp .3s ease both; }
-          button { outline: none; }
-          select:focus { box-shadow: 0 0 0 2px rgba(79,142,247,.3); }
-        `}</style>
+            <style>{GLOBAL_CSS}</style>
+            <div className="ud-root" style={{ background:T.bg, minHeight:'100vh', padding:'28px 24px', fontFamily:T.fontBody, color:T.textMain, position:'relative' }}>
 
-                <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+                {/* Grid bg */}
+                <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0, backgroundImage:`linear-gradient(${T.green}06 1px,transparent 1px),linear-gradient(90deg,${T.green}06 1px,transparent 1px)`, backgroundSize:'40px 40px' }} />
 
-                    {/* Brand Header */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 12, background: `${THEME.primary}20`, border: `1px solid ${THEME.primary}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🐘</div>
+                <div style={{ maxWidth:1280, margin:'0 auto', position:'relative', zIndex:1 }}>
+
+                    {/* ── HEADER ── */}
+                    <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:24, paddingBottom:20, borderBottom:`1px solid ${T.border}` }}>
+                        <div style={{ width:44, height:44, borderRadius:8, background:`${T.green}0f`, border:`1px solid ${T.green}30`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, boxShadow:`0 0 20px ${T.green}15` }}>🐘</div>
                         <div>
-                            <div style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, letterSpacing: -0.5 }}>Table Analytics</div>
-                            <div style={{ fontSize: 12, color: THEME.textDim, marginTop: 2 }}>Unified Dashboard</div>
+                            <div style={{ fontSize:20, fontWeight:800, color:T.textMain, fontFamily:T.fontHead, letterSpacing:-.5 }}>TABLE ANALYTICS</div>
+                            <div style={{ fontSize:10, color:T.textDim, fontFamily:T.fontMono, letterSpacing:1, marginTop:2 }}>UNIFIED DASHBOARD</div>
                         </div>
-                        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                            <Tag color={THEME.success}>Live Data Connected</Tag>
-                            {filter.table && <Tag color={THEME.cyan}>🎯 Scoped to: {filter.table}</Tag>}
+                        <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:12 }}>
+                            <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textDim, letterSpacing:.5 }}>{tick.toTimeString().slice(0,8)}</span>
+                            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 10px', borderRadius:4, background:`${T.green}0f`, border:`1px solid ${T.green}25` }}>
+                                <div style={{ width:6, height:6, borderRadius:'50%', background:T.green, boxShadow:`0 0 6px ${T.green}`, animation:'pulse 2s infinite' }} />
+                                <span style={{ fontSize:10, color:T.green, fontFamily:T.fontMono, fontWeight:700, letterSpacing:.5 }}>LIVE</span>
+                            </div>
+                            {filter.table && <div style={{ padding:'5px 10px', borderRadius:4, background:`${T.cyan}0f`, border:`1px solid ${T.cyan}25`, fontSize:10, color:T.cyan, fontFamily:T.fontMono, fontWeight:700 }}>⊕ {filter.table}</div>}
                         </div>
                     </div>
 
-                    {/* Filter Bar */}
-                    <FilterBar filter={filter} setFilter={handleSetFilter} />
+                    {/* ── FILTER BAR ── */}
+                    <FilterBar filter={filter} setFilter={handleFilter} />
 
-                    {/* Context banner when table is selected */}
+                    {/* Scope banner */}
                     {filter.table && (
-                        <div style={{ marginBottom: 20, padding: "10px 16px", borderRadius: 10, background: `${THEME.cyan}0a`, border: `1px solid ${THEME.cyan}25`, display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
-                            <span style={{ fontSize: 16 }}>💡</span>
-                            <span style={{ color: THEME.textMuted }}>
-                                Showing data scoped to{" "}
-                                <span style={{ color: THEME.cyan, fontFamily: THEME.fontMono, fontWeight: 700 }}>{filter.schema}.{filter.table}</span>.
-                                Session-level sections (Temp Tables) are hidden.
+                        <div style={{ marginBottom:18, padding:'9px 14px', borderRadius:5, background:`${T.cyan}08`, border:`1px solid ${T.cyan}20`, display:'flex', alignItems:'center', gap:10 }}>
+                            <span style={{ color:T.cyan, fontFamily:T.fontMono, fontSize:11 }}>▸</span>
+                            <span style={{ color:T.textDim, fontFamily:T.fontMono, fontSize:10 }}>
+                                SCOPED TO <span style={{ color:T.cyan, fontWeight:700 }}>{filter.schema}.{filter.table}</span> · session-level sections hidden
                             </span>
                         </div>
                     )}
 
-                    {/* Section Navigation */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 32 }}>
-                        {groups.map(g => (
-                            <div key={g}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: "uppercase", letterSpacing: 1.2 }}>{g}</div>
-                                    {g === "Table Details" && <Tag color={THEME.cyan}>Table selected</Tag>}
+                    {/* ── NAV ── */}
+                    <div style={{ display:'flex', flexDirection:'column', gap:20, marginBottom:28 }}>
+                        {groups.map(g => {
+                            const ac = GROUP_COLORS[g] || T.green;
+                            return (
+                                <div key={g}>
+                                    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                                        <div style={{ width:3, height:14, borderRadius:2, background:ac, boxShadow:`0 0 6px ${ac}` }} />
+                                        <span style={{ fontSize:9, fontWeight:700, color:ac, fontFamily:T.fontMono, textTransform:'uppercase', letterSpacing:1.5 }}>{g}</span>
+                                        {g==='Table Details' && <span style={{ padding:'2px 7px', borderRadius:2, fontSize:8, fontFamily:T.fontMono, fontWeight:700, background:`${T.purple}15`, color:T.purple, border:`1px solid ${T.purple}30`, letterSpacing:.5 }}>TABLE SELECTED</span>}
+                                    </div>
+                                    <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                                        {SECTIONS.map((s,i) => {
+                                            if (s.group!==g) return null;
+                                            const isA = safeActive===i, sac = GROUP_COLORS[s.group]||T.green;
+                                            return (
+                                                <button key={i} onClick={()=>setActive(i)} className={isA?'':' ud-nav'}
+                                                        style={{ padding:'10px 14px', borderRadius:6, cursor:'pointer', border:`1px solid ${isA?sac+'60':T.border}`, background:isA?`${sac}12`:T.surface, color:isA?sac:T.textSub, fontFamily:T.fontMono, fontWeight:700, fontSize:11, transition:'all .2s', textAlign:'left', minWidth:160, boxShadow:isA?`0 0 12px ${sac}15,inset 0 0 20px ${sac}05`:'none' }}>
+                                                    <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
+                                                        <span style={{ fontSize:14, lineHeight:1 }}>{s.icon}</span><span>{s.label}</span>
+                                                    </div>
+                                                    <div className="ud-sub" style={{ fontSize:9, fontWeight:400, color:isA?`${sac}80`:T.textDim, letterSpacing:.3 }}>{s.sub}</div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    {SECTIONS.map((s, i) => {
-                                        if (s.group !== g) return null;
-                                        const isA = safeActive === i;
-                                        return (
-                                            <button key={i} onClick={() => setActive(i)}
-                                                    style={{
-                                                        padding: "10px 16px", borderRadius: 10,
-                                                        border: `1px solid ${isA ? THEME.primary + "55" : THEME.glassBorder}`,
-                                                        background: isA ? `${THEME.primary}16` : THEME.glass,
-                                                        color: isA ? THEME.primary : THEME.textMuted,
-                                                        cursor: "pointer", fontFamily: "inherit", fontWeight: 700, fontSize: 13,
-                                                        transition: "all .2s", textAlign: "left", minWidth: 180,
-                                                    }}>
-                                                <div>{s.label}</div>
-                                                <div style={{ fontSize: 11, fontWeight: 400, color: isA ? THEME.primary + "88" : THEME.textDim, marginTop: 4 }}>{s.sub}</div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* ── PANEL HEADER ── */}
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18, paddingBottom:14, borderBottom:`1px solid ${T.border}` }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                            <ChevronRight size={14} color={T.green} />
+                            <div>
+                                <div style={{ fontSize:16, fontWeight:800, color:T.textMain, fontFamily:T.fontHead, letterSpacing:-.3 }}>{SECTIONS[safeActive]?.label?.toUpperCase()}</div>
+                                <div style={{ fontSize:10, color:T.textDim, fontFamily:T.fontMono, marginTop:2 }}>{SECTIONS[safeActive]?.sub}</div>
                             </div>
-                        ))}
-                    </div>
-
-                    {/* Active Panel Header */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, paddingBottom: 16, borderBottom: `1px solid ${THEME.grid}` }}>
-                        <div>
-                            <div style={{ fontSize: 20, fontWeight: 800, color: THEME.textMain, letterSpacing: -0.5 }}>{SECTIONS[safeActive]?.label}</div>
-                            <div style={{ fontSize: 13, color: THEME.textMuted, marginTop: 4 }}>{SECTIONS[safeActive]?.sub}</div>
                         </div>
-                        <div style={{ display: "flex", gap: 8 }}>
-                            {filter.db     && <Tag color={THEME.cyan}>db: {filter.db}</Tag>}
-                            {filter.schema && <Tag color={THEME.purple}>schema: {filter.schema}</Tag>}
-                            {filter.table  && <Tag color={THEME.teal}>table: {filter.table}</Tag>}
+                        <div style={{ display:'flex', gap:8 }}>
+                            {filter.db     && <Badge color={T.cyan}>DB: {filter.db}</Badge>}
+                            {filter.schema && <Badge color={T.purple}>SCHEMA: {filter.schema}</Badge>}
+                            {filter.table  && <Badge color={T.green}>TABLE: {filter.table}</Badge>}
                         </div>
                     </div>
 
-                    {/* Active Panel */}
-                    <div
-                        key={`${safeActive}-${filter.db}-${filter.schema}-${filter.table}`}
-                        className="pv"
-                        style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, padding: 24 }}
-                    >
+                    {/* ── ACTIVE PANEL ── */}
+                    <div key={`${safeActive}-${filter.db}-${filter.schema}-${filter.table}`} className="ud-fade"
+                         style={{ background:T.panel, border:`1px solid ${T.border}`, borderRadius:8, padding:24 }}>
                         {Preview && <Preview />}
                     </div>
 
+                    {/* Footer */}
+                    <div style={{ marginTop:24, paddingTop:16, borderTop:`1px solid ${T.border}`, display:'flex', justifyContent:'space-between' }}>
+                        <span style={{ fontSize:9, color:T.textDim, fontFamily:T.fontMono, letterSpacing:.5 }}>TABLE ANALYTICS · UNIFIED DASHBOARD</span>
+                        <span style={{ fontSize:9, color:T.textDim, fontFamily:T.fontMono }}>{SECTIONS.length} SECTIONS · {filter.table?`SCOPED: ${filter.table}`:'GLOBAL VIEW'}</span>
+                    </div>
                 </div>
             </div>
         </FilterContext.Provider>
