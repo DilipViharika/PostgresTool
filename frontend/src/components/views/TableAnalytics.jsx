@@ -47,7 +47,7 @@ function useTableData(endpoint, fallback = []) {
 }
 
 // ── Shared Primitives ────────────────────────────────────────────────────────
-const ProgressBar = ({ v, max, color, h = 5 }) => (
+const Bar = ({ v, max, color, h = 5 }) => (
     <div style={{ width: "100%", height: h, borderRadius: h, background: THEME.grid, overflow: "hidden" }}>
         <div style={{ width: `${Math.min(100, max > 0 ? (v / max) * 100 : 0)}%`, height: "100%", background: color, borderRadius: h, transition: "width .5s ease" }} />
     </div>
@@ -289,7 +289,7 @@ function S1_HealthScorecard() {
                                     <span>Dead %</span>
                                     <span style={{ fontFamily: THEME.fontMono, color: dc(deadPct), fontWeight: 700 }}>{deadPct}%</span>
                                 </div>
-                                <ProgressBar v={deadPct} max={50} color={dc(deadPct)} />
+                                <Bar v={deadPct} max={50} color={dc(deadPct)} />
                             </div>
                             <div style={{ marginTop: 10, padding: "5px 10px", borderRadius: 6, background: `${c}15`, fontSize: 10, fontWeight: 700, color: c }}>→ {rec}</div>
                         </Card>
@@ -329,7 +329,7 @@ function S2_ColumnStats() {
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{col.name}</span>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: nc, fontWeight: 700, marginBottom: 3 }}>{nullPct}%</div>
-                                    <ProgressBar v={nullPct} max={100} color={nc} h={3} />
+                                    <Bar v={nullPct} max={100} color={nc} h={3} />
                                 </div>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted }}>{Number(col.distinct).toLocaleString()}</span>
                                 <span style={{ fontSize: 10, color: THEME.textDim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={col.topValues || "—"}>{col.topValues || "—"}</span>
@@ -508,7 +508,7 @@ function SE_ToastBloat() {
                                 <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.primary, fontWeight: 700 }}>{t.toastSize}</div>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: c, marginBottom: 3 }}>{deadPct}%</div>
-                                    <ProgressBar v={deadPct} max={40} color={c} h={4} />
+                                    <Bar v={deadPct} max={40} color={c} h={4} />
                                 </div>
                             </div>
                         );
@@ -626,7 +626,7 @@ function SD_Forecast() {
                                 <span style={{ color: THEME.textDim }}>Now: <span style={{ fontFamily: THEME.fontMono, color: c, fontWeight: 700 }}>{deadPct}%</span></span>
                                 <span style={{ color: THEME.textDim }}>Target: 20%</span>
                             </div>
-                            <ProgressBar v={deadPct} max={50} color={c} h={6} />
+                            <Bar v={deadPct} max={50} color={c} h={6} />
                         </Card>
                     );
                 })}
@@ -645,7 +645,7 @@ function S_IndexAnalysis() {
 
     const rows = indexes.filter(ix =>
         (!filter.schema || ix.schema === filter.schema) &&
-        (!filter.table || ix.table === filter.table)
+        (!filter.table  || ix.tableName === filter.table)
     );
 
     if (!rows.length) return <EmptyState label="No indexes found for the selected table." />;
@@ -657,11 +657,18 @@ function S_IndexAnalysis() {
                 accent={THEME.indigo}
                 title="Index Analysis"
                 sub="Index usage · size · scan counts · unused index detection"
-                right={<Tag color={THEME.indigo}>{rows.length} index{rows.length !== 1 ? "es" : ""}</Tag>}
+                right={
+                    <div style={{ display: "flex", gap: 8 }}>
+                        <Tag color={THEME.indigo}>{rows.length} index{rows.length !== 1 ? "es" : ""}</Tag>
+                        {rows.filter(ix => Number(ix.scans ?? 0) === 0).length > 0 && (
+                            <Tag color={THEME.danger}>{rows.filter(ix => Number(ix.scans ?? 0) === 0).length} unused</Tag>
+                        )}
+                    </div>
+                }
             />
             <Card style={{ overflowX: "auto" }}>
-                <div style={{ minWidth: 640 }}>
-                    <GridHead cols="2fr 1fr 1fr 1fr 1fr" labels={["Index Name", "Type", "Size", "Scans", "Status"]} />
+                <div style={{ minWidth: 780 }}>
+                    <GridHead cols="2fr 1fr 1fr 1fr 1fr 1fr" labels={["Index Name", "Table", "Type", "Size", "Scans", "Status"]} />
                     {rows.map((ix, i) => {
                         const scans = Number(ix.scans ?? 0);
                         const isUnused = scans === 0;
@@ -669,14 +676,23 @@ function S_IndexAnalysis() {
                         const statusColor = isUnused ? THEME.danger : scans < 10 ? THEME.warning : THEME.success;
                         const statusLabel = isUnused ? "Unused" : scans < 10 ? "Rarely used" : "Active";
                         return (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
+                            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: `1px solid ${THEME.grid}33`, alignItems: "center", gap: 8 }}>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{ix.name}</div>
-                                    {ix.columns && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>({ix.columns})</div>}
+                                    {ix.definition && (
+                                        <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }} title={ix.definition}>
+                                            {ix.definition}
+                                        </div>
+                                    )}
+                                    <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
+                                        {ix.isPrimary && <Pip color={THEME.purple}>PK</Pip>}
+                                        {ix.isUnique  && <Pip color={THEME.cyan}>UQ</Pip>}
+                                    </div>
                                 </div>
-                                <Pip color={THEME.indigo}>{ix.type || "btree"}</Pip>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.textMuted }}>{sizeMb !== "—" ? `${sizeMb} MB` : "—"}</span>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.textMuted }}>{scans.toLocaleString()}</span>
+                                <span style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{ix.tableName}</span>
+                                <Pip color={THEME.indigo}>{(ix.type || "btree").toUpperCase()}</Pip>
+                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.textMuted }}>{ix.size || (sizeMb !== "—" ? `${sizeMb} MB` : "—")}</span>
+                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: isUnused ? THEME.danger : THEME.success, fontWeight: 700 }}>{scans.toLocaleString()}</span>
                                 <div>
                                     <Pip color={statusColor}>{statusLabel}</Pip>
                                     {isUnused && <div style={{ fontSize: 9, color: THEME.danger, marginTop: 4 }}>Consider dropping</div>}
@@ -802,7 +818,7 @@ function S_RowCounts() {
                                 </div>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.success, marginBottom: 3 }}>{live.toLocaleString()}</div>
-                                    <ProgressBar v={live} max={maxLive} color={THEME.success} h={4} />
+                                    <Bar v={live} max={maxLive} color={THEME.success} h={4} />
                                 </div>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.danger }}>{dead.toLocaleString()}</span>
                                 <Pip color={rc}>{ratio}%</Pip>
@@ -833,8 +849,8 @@ const ALL_SECTIONS = [
     { group: "Architecture", label: "🕸 Dependency Map", sub: "FK chains & cascades", component: SB_DependencyMap },
     { group: "Architecture", label: "✍️ Write Amp", sub: "WAL & tuple churn", component: SC_WriteAmplification },
     // Table-specific sections (only appear when a table is selected)
-    { group: "Table Details", label: "📑 Index Analysis", sub: "Index usage & unused detection", component: S_IndexAnalysis, tableOnly: true },
-    { group: "Table Details", label: "📐 Size Breakdown", sub: "Heap / index / TOAST split", component: S_TableSizes, tableOnly: true },
+    { group: "Table Details", label: "📑 Index Analysis", sub: "Index usage & unused detection", component: S_IndexAnalysis },
+    { group: "Table Details", label: "📐 Size Breakdown", sub: "Heap / index / TOAST split", component: S_TableSizes },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -901,8 +917,8 @@ export default function UnifiedDashboard() {
                         <div style={{ marginBottom: 20, padding: "10px 16px", borderRadius: 10, background: `${THEME.cyan}0a`, border: `1px solid ${THEME.cyan}25`, display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
                             <span style={{ fontSize: 16 }}>💡</span>
                             <span style={{ color: THEME.textMuted }}>
-                                Showing table-specific views for <span style={{ color: THEME.cyan, fontFamily: THEME.fontMono, fontWeight: 700 }}>{filter.schema}.{filter.table}</span>.
-                                Session-level sections (Temp Tables) are hidden. Index Analysis and Size Breakdown are now available.
+                                Showing data scoped to <span style={{ color: THEME.cyan, fontFamily: THEME.fontMono, fontWeight: 700 }}>{filter.schema}.{filter.table}</span>.
+                                Session-level sections (Temp Tables) are hidden.
                             </span>
                         </div>
                     )}
