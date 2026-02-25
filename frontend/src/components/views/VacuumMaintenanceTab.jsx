@@ -337,29 +337,6 @@ export default function VacuumMaintenanceTab() {
         }
     }, []);
 
-    useEffect(() => { load(true); }, [load]);
-    useEffect(() => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        if (autoRfsh > 0) intervalRef.current = setInterval(() => load(false), autoRfsh * 1000);
-        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    }, [autoRfsh, load]);
-    useEffect(() => { fetchDeadTupleRate(); }, [fetchDeadTupleRate]);
-
-    const runVacuum = async (schema, relname) => {
-        const key = `${schema}.${relname}`;
-        setVacuuming(v => ({ ...v, [key]: true }));
-        setVacMsg(m => ({ ...m, [key]: null }));
-        try {
-            const r = await postData('/api/maintenance/vacuum', { schema, table: relname, analyze: true });
-            setVacMsg(m => ({ ...m, [key]: r.success ? '✓ Done' : 'Error' }));
-            setTimeout(() => load(false), 2000);
-        } catch (e) {
-            setVacMsg(m => ({ ...m, [key]: `✗ ${e.message?.slice(0, 40) || 'Error'}` }));
-        } finally {
-            setVacuuming(v => ({ ...v, [key]: false }));
-        }
-    };
-
     const fetchDeadTupleRate = React.useCallback(async () => {
         setDeadTupleLoading(true);
         try {
@@ -385,6 +362,29 @@ export default function VacuumMaintenanceTab() {
             setDeadTupleLoading(false);
         }
     }, []);
+
+    useEffect(() => { load(true); }, [load]);
+    useEffect(() => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        if (autoRfsh > 0) intervalRef.current = setInterval(() => load(false), autoRfsh * 1000);
+        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    }, [autoRfsh, load]);
+    useEffect(() => { fetchDeadTupleRate(); }, [fetchDeadTupleRate]);
+
+    const runVacuum = async (schema, relname) => {
+        const key = `${schema}.${relname}`;
+        setVacuuming(v => ({ ...v, [key]: true }));
+        setVacMsg(m => ({ ...m, [key]: null }));
+        try {
+            const r = await postData('/api/maintenance/vacuum', { schema, table: relname, analyze: true });
+            setVacMsg(m => ({ ...m, [key]: r.success ? '✓ Done' : 'Error' }));
+            setTimeout(() => load(false), 2000);
+        } catch (e) {
+            setVacMsg(m => ({ ...m, [key]: `✗ ${e.message?.slice(0, 40) || 'Error'}` }));
+        } finally {
+            setVacuuming(v => ({ ...v, [key]: false }));
+        }
+    };
 
     /* ── Derived ── */
     const tables   = data?.tables   || [];
@@ -778,8 +778,8 @@ export default function VacuumMaintenanceTab() {
                                 </div>
                             </div>
                             <button onClick={fetchDeadTupleRate} disabled={deadTupleLoading}
-                                style={{ padding:'6px 14px', borderRadius:8, border:`1px solid ${THEME.border}`,
-                                    background:'transparent', color: THEME.textDim, cursor:'pointer', fontSize:12 }}>
+                                    style={{ padding:'6px 14px', borderRadius:8, border:`1px solid ${THEME.border}`,
+                                        background:'transparent', color: THEME.textDim, cursor:'pointer', fontSize:12 }}>
                                 {deadTupleLoading ? '⟳ Loading…' : '↻ Refresh'}
                             </button>
                         </div>
