@@ -376,29 +376,20 @@ export default function VacuumMaintenanceTab() {
         setVacuuming(v => ({ ...v, [key]: true }));
         setVacMsg(m => ({ ...m, [key]: null }));
         try {
-            // Quote schema/table names containing hyphens or special chars
-            // so the backend safely handles them as SQL identifiers
-            const safeSchema = /[^a-zA-Z0-9_]/.test(schema) ? `"${schema}"` : schema;
-            const safeTable  = /[^a-zA-Z0-9_]/.test(relname) ? `"${relname}"` : relname;
-            const r = await postData(`/api/maintenance/vacuum`, {
-                schema: safeSchema,
-                table: safeTable,
-                analyze: true,
-            });
+            const r = await postData('/api/maintenance/vacuum', { schema, table: relname, analyze: true });
             if (r.success) {
                 setVacMsg(m => ({ ...m, [key]: '✓ Done' }));
                 setTimeout(() => load(false), 2000);
             } else {
-                const errMsg = r.message || r.error || `Vacuum failed`;
+                const errMsg = r.message || r.error || 'Vacuum failed';
                 setVacMsg(m => ({ ...m, [key]: `✗ ${errMsg.slice(0, 40)}` }));
             }
         } catch (e) {
-            setVacMsg(m => ({ ...m, [key]: `✗ ${e.message?.slice(0, 40) || `Error`}` }));
+            setVacMsg(m => ({ ...m, [key]: `✗ ${e.message?.slice(0, 40) || 'Error'}` }));
         } finally {
             setVacuuming(v => ({ ...v, [key]: false }));
         }
     };
-
     /* ── Derived ── */
     const tables   = data?.tables   || [];
     const workers  = data?.workers  || [];
