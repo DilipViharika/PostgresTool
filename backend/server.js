@@ -1904,6 +1904,17 @@ async function startup() {
             log('WARN', 'Alert system could not initialize', { error: e.message });
         }
 
+        // Handle port-in-use and other listen errors cleanly
+        server.on('error', async (err) => {
+            if (err.code === 'EADDRINUSE') {
+                log('ERROR', `Port ${CONFIG.PORT} is already in use. Is another instance running?`, { error: err.message });
+            } else {
+                log('ERROR', 'Server listen error', { error: err.message });
+            }
+            await closeAllTunnels().catch(() => {});
+            process.exit(1);
+        });
+
         server.listen(CONFIG.PORT, '0.0.0.0', () => {
             console.log(`🚀 VIGIL v3.0.0 running on port ${CONFIG.PORT}`);
         });
