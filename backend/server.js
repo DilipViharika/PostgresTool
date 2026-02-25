@@ -1900,6 +1900,85 @@ app.get('/api/tables/temp', authenticate, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 6. Index Analysis — GET /api/tables/indexes
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CACHE_TTL.INDEXES), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT
+                ui.schemaname                                           AS schema,
+                ui.relname                                              AS "tableName",
+                ui.indexrelname                                         AS name,
+                ui.idx_scan                                             AS scans,
+                ui.idx_tup_read                                         AS "tupRead",
+                ui.idx_tup_fetch                                        AS "tupFetch",
+                pg_relation_size(ui.indexrelid)                         AS "sizeBytes",
+                pg_size_pretty(pg_relation_size(ui.indexrelid))         AS size,
+                am.amname                                               AS type,
+                ix.indexdef                                             AS definition,
+                i.indisunique                                           AS "isUnique",
+                i.indisprimary                                          AS "isPrimary",
+                CASE
+                    WHEN ui.idx_scan     = 0 THEN 100
+                    WHEN ui.idx_tup_read = 0 THEN 0
+                    ELSE round(
+                        (1.0 - ui.idx_tup_fetch::numeric / NULLIF(ui.idx_tup_read, 0)) * 100,
+                        1
+                    )
+                END                                                     AS "inefficiencyPct"
+            FROM pg_stat_user_indexes ui
+            JOIN pg_indexes ix
+              ON  ix.schemaname = ui.schemaname
+              AND ix.tablename  = ui.relname
+              AND ix.indexname  = ui.indexrelname
+            JOIN pg_class c  ON c.oid  = ui.indexrelid
+            JOIN pg_am    am ON am.oid = c.relam
+            JOIN pg_index  i ON i.indexrelid = ui.indexrelid
+            ORDER BY ui.schemaname, ui.relname, ui.idx_scan DESC
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. Table Size Breakdown — GET /api/tables/sizes
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT
+                n.nspname                                                   AS schema,
+                c.relname                                                   AS name,
+                pg_table_size(c.oid)                                        AS "heapBytes",
+                pg_indexes_size(c.oid)                                      AS "indexBytes",
+                COALESCE(pg_relation_size(ct.oid), 0)                       AS "toastBytes",
+                pg_total_relation_size(c.oid)                               AS "totalBytes",
+                pg_size_pretty(pg_table_size(c.oid))                        AS "heapSize",
+                pg_size_pretty(pg_indexes_size(c.oid))                      AS "indexSize",
+                pg_size_pretty(COALESCE(pg_relation_size(ct.oid), 0))       AS "toastSize",
+                pg_size_pretty(pg_total_relation_size(c.oid))               AS "totalSize",
+                CASE
+                    WHEN (s.n_live_tup + s.n_dead_tup) > 0
+                    THEN ROUND(
+                        (s.n_dead_tup::numeric / (s.n_live_tup + s.n_dead_tup)) * 100,
+                        1
+                    )
+                    ELSE 0
+                END                                                         AS "bloatPct"
+            FROM pg_class c
+            JOIN pg_namespace n   ON n.oid = c.relnamespace
+            LEFT JOIN pg_class ct  ON ct.oid = c.reltoastrelid
+            LEFT JOIN pg_stat_user_tables s
+              ON s.schemaname = n.nspname AND s.relname = c.relname
+            WHERE c.relkind = 'r'
+              AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+            ORDER BY pg_total_relation_size(c.oid) DESC
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // VACUUM & MAINTENANCE
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CONFIG.CACHE_TTL.VACUUM), async (req, res) => {
