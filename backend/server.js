@@ -1806,12 +1806,12 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
 
 app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async (req, res) => {
     const { table, schema = 'public', analyze = true } = req.body;
-    if (!table  || !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(table))  return res.status(400).json({ error: 'Invalid table name'  });
-    if (!schema || !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(schema)) return res.status(400).json({ error: 'Invalid schema name' });
+    if (!table  || !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(table))    return res.status(400).json({ error: 'Invalid table name'  });
+    if (!schema || !/^[a-zA-Z_][a-zA-Z0-9_$-]*$/.test(schema))  return res.status(400).json({ error: 'Invalid schema name' });
     try {
         const cmd = `VACUUM${analyze ? ' ANALYZE' : ''} "${schema}"."${table}"`;
         await pool.query(cmd);
-        cache.clear(); // invalidate caches so next read reflects the fresh state
+        cache.clear();
         log('INFO', 'Manual VACUUM executed', { schema, table, analyze });
         res.json({ success: true, command: cmd });
     } catch (e) { res.status(500).json({ error: e.message }); }
