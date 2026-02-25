@@ -124,9 +124,10 @@ const hc = s => s > 70 ? THEME.success : s > 40 ? THEME.warning : THEME.danger;
 const dc = p => p > 20 ? THEME.danger : p > 10 ? THEME.warning : THEME.success;
 
 // Filter helper – returns true if row matches the active filter
-const matchFilter = (row, filter, { nameKey = "name", schemaKey = "schema" } = {}) => {
+const matchFilter = (row, filter, { nameKey = "name", schemaKey = "schema", dbKey = "db" } = {}) => {
+    if (filter.db     && row[dbKey]     !== filter.db)     return false;
     if (filter.schema && row[schemaKey] !== filter.schema) return false;
-    if (filter.table && row[nameKey] !== filter.table) return false;
+    if (filter.table  && row[nameKey]   !== filter.table)  return false;
     return true;
 };
 
@@ -170,16 +171,20 @@ function FilterBar({ filter, setFilter }) {
     const { data: dbList } = useTableData("/api/databases");
 
     // Build cascading options
-    const dbs = (dbList && dbList.length ? dbList.map(d => d.name || d) : ["postgres"]);
-    const schemas = [...new Set(tables.map(t => t.schema).filter(Boolean))].sort();
-    const filteredTables = [
-        ...new Set(
-            tables
-                .filter(t => !filter.schema || t.schema === filter.schema)
-                .map(t => t.name)
-                .filter(Boolean)
-        )
-    ].sort();
+    const dbs = [...new Set(dbList && dbList.length ? dbList.map(d => d.name || d) : ["postgres"])];
+    const schemas = [...new Set(
+        tables
+            .filter(t => !filter.db || t.db === filter.db)
+            .map(t => t.schema)
+            .filter(Boolean)
+    )].sort();
+    const filteredTables = [...new Set(
+        tables
+            .filter(t => !filter.db     || t.db     === filter.db)
+            .filter(t => !filter.schema || t.schema === filter.schema)
+            .map(t => t.name)
+            .filter(Boolean)
+    )].sort();
 
     const update = (key, val) => {
         if (key === "db") setFilter({ db: val, schema: "", table: "" });
