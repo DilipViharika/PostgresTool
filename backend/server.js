@@ -454,7 +454,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             // Phase 2
             'replication', 'bloat', 'regression', 'cloudwatch',
             // Phase 3
-            'tasks', 'log-patterns', 'alert-correlation',
+            'tasks', 'log-patterns', 'alert-correlation','Table',
         ];
         const baseScreens    = user.allowed_screens ?? [];
         const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
