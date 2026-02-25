@@ -172,11 +172,14 @@ function FilterBar({ filter, setFilter }) {
     // Build cascading options
     const dbs = (dbList && dbList.length ? dbList.map(d => d.name || d) : ["postgres"]);
     const schemas = [...new Set(tables.map(t => t.schema).filter(Boolean))].sort();
-    const filteredTables = tables
-        .filter(t => !filter.schema || t.schema === filter.schema)
-        .map(t => t.name)
-        .filter(Boolean)
-        .sort();
+    const filteredTables = [
+        ...new Set(
+            tables
+                .filter(t => !filter.schema || t.schema === filter.schema)
+                .map(t => t.name)
+                .filter(Boolean)
+        )
+    ].sort();
 
     const update = (key, val) => {
         if (key === "db") setFilter({ db: val, schema: "", table: "" });
