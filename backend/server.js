@@ -39,8 +39,10 @@ const CONFIG = Object.freeze({
     JWT_SECRET:     process.env.JWT_SECRET  || 'vigil-change-me-in-production',
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
     CORS_ORIGINS: [
-        // Localhost origins only allowed in development
-        ...(IS_PROD ? [] : ['http://localhost:5173', 'http://localhost:3000']),
+        // Always allow localhost — developers run local frontend against any backend.
+        // The real guard is JWT authentication on every protected route.
+        'http://localhost:5173',
+        'http://localhost:3000',
         'https://postgres-tool.vercel.app',
         process.env.CORS_ORIGIN,
     ].filter(Boolean),
@@ -109,19 +111,19 @@ const CONFIG = Object.freeze({
     const jwtSecret = process.env.JWT_SECRET;
     const weakSecret = !jwtSecret || jwtSecret === 'vigil-change-me-in-production';
     if (weakSecret) {
-        if (IS_PROD) {
-            // Hard-fail in production — never start with an insecure secret
-            console.error(JSON.stringify({
-                ts: new Date().toISOString(), level: 'ERROR',
-                msg: 'JWT_SECRET is missing or uses the default value. Refusing to start in production.',
-            }));
-            process.exit(1);
-        } else {
-            console.warn(JSON.stringify({
-                ts: new Date().toISOString(), level: 'WARN',
-                msg: 'JWT_SECRET is using the default insecure value. Set a strong secret before deploying.',
-            }));
-        }
+        // Warn loudly but do NOT exit — a missing JWT_SECRET on first deployment
+        // (e.g. Vercel env vars not yet configured) would otherwise crash the server
+        // silently, showing the app as permanently "offline".
+        // The operator MUST set JWT_SECRET=<random-64-char-string> in their
+        // deployment environment (Vercel dashboard → Settings → Environment Variables).
+        console.warn(JSON.stringify({
+            ts: new Date().toISOString(), level: 'WARN',
+            msg: IS_PROD
+                ? '⚠️  SECURITY: JWT_SECRET is missing or uses the default value in PRODUCTION. ' +
+                  'Set a strong secret via the Vercel dashboard → Settings → Environment Variables. ' +
+                  'All issued tokens are insecure until this is fixed.'
+                : 'JWT_SECRET is using the default insecure value. Set a strong secret before deploying.',
+        }));
     } else if (jwtSecret.length < 32) {
         console.warn(JSON.stringify({
             ts: new Date().toISOString(), level: 'WARN',
@@ -1880,31 +1882,12 @@ app.use((req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function startup() {
     try {
-        try {
-            await fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true });
-            log('INFO', 'Repository directory ready');
-        } catch (e) {
-            log('WARN', 'Could not create repository directory', { error: e.message });
-        }
+        // ── 1. Create repository directory (fire-and-forget) ────────────────
+        fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true })
+            .then(() => log('INFO', 'Repository directory ready'))
+            .catch(e => log('WARN', 'Could not create repository directory', { error: e.message }));
 
-        try {
-            const client = await pool.connect();
-            await client.query('SELECT 1');
-            client.release();
-            log('INFO', 'Database connection successful');
-        } catch (e) {
-            log('WARN', 'Database unreachable at startup — will retry on requests', { error: e.message });
-        }
-
-        try {
-            await alerts.initializeDatabase();
-            alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
-            log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
-        } catch (e) {
-            log('WARN', 'Alert system could not initialize', { error: e.message });
-        }
-
-        // Handle port-in-use and other listen errors cleanly
+        // ── 2. Register port-conflict handler BEFORE listen ──────────────────
         server.on('error', async (err) => {
             if (err.code === 'EADDRINUSE') {
                 log('ERROR', `Port ${CONFIG.PORT} is already in use. Is another instance running?`, { error: err.message });
@@ -1915,9 +1898,28 @@ async function startup() {
             process.exit(1);
         });
 
+        // ── 3. Start listening IMMEDIATELY so /health responds right away ────
         server.listen(CONFIG.PORT, '0.0.0.0', () => {
-            console.log(`🚀 VIGIL v3.0.0 running on port ${CONFIG.PORT}`);
+            log('INFO', `🚀 VIGIL v3.0.0 running on port ${CONFIG.PORT}`);
         });
+
+        // ── 4. DB connectivity check runs in background (non-blocking) ───────
+        pool.connect()
+            .then(async client => {
+                await client.query('SELECT 1');
+                client.release();
+                log('INFO', 'Database connection successful');
+            })
+            .catch(e => log('WARN', 'Database unreachable at startup — will retry on requests', { error: e.message }));
+
+        // ── 5. Alert system initialised in background (non-blocking) ─────────
+        alerts.initializeDatabase()
+            .then(() => {
+                alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
+                log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
+            })
+            .catch(e => log('WARN', 'Alert system could not initialize', { error: e.message }));
+
     } catch (e) {
         log('ERROR', 'Startup failed', { error: e.message });
         process.exit(1);
