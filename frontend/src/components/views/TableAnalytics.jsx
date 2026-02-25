@@ -47,7 +47,7 @@ function useTableData(endpoint, fallback = []) {
 }
 
 // ── Shared Primitives ────────────────────────────────────────────────────────
-const Bar = ({ v, max, color, h = 5 }) => (
+const MiniBar = ({ v, max, color, h = 5 }) => (
     <div style={{ width: "100%", height: h, borderRadius: h, background: THEME.grid, overflow: "hidden" }}>
         <div style={{ width: `${Math.min(100, max > 0 ? (v / max) * 100 : 0)}%`, height: "100%", background: color, borderRadius: h, transition: "width .5s ease" }} />
     </div>
