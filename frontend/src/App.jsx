@@ -32,6 +32,7 @@ const CloudWatchTab        = lazy(() => import('./components/views/CloudWatchTab
 const DBATaskSchedulerTab  = lazy(() => import('./components/views/DBATaskSchedulerTab.jsx'));
 const LogPatternAnalysisTab= lazy(() => import('./components/views/LogPatternAnalysisTab.jsx'));
 const AlertCorrelationTab  = lazy(() => import('./components/views/AlertCorrelationTab.jsx'));
+const TableAnalytics = lazy(() => import('./components/views/TableAnalytics.jsx'));
 
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
@@ -137,6 +138,7 @@ const TAB_CONFIG = [
     { id: 'indexes',           icon: Layers,        label: 'Indexes',               component: IndexesTab,              badge: null },
     { id: 'regression',        icon: TrendingUp,    label: 'Plan Regression',       component: QueryPlanRegressionTab,  badge: null },
     { id: 'bloat',             icon: Layers,        label: 'Bloat Analysis',        component: BloatAnalysisTab,        badge: null },
+    { id: 'Table',             icon: Layers,        label: 'Table Analysis',        component: TableAnalytics,        badge: null },
 
     { section: 'Infrastructure', accent: DS.emerald },
     { id: 'pool',              icon: Network,       label: 'Connection Pool',       component: ConnectionPoolTab,       badge: null },
@@ -926,7 +928,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
 
         try {
             await postData('/api/feedback', payload);
-            
+
             /* ✓ Success */
             try { localStorage.setItem('vigil_last_feedback', Date.now().toString()); } catch {}
             setSent(true);

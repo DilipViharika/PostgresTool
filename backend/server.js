@@ -1761,6 +1761,144 @@ app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TABLE ANALYTICS (UNIFIED DASHBOARD)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 1. Table Health, Activity, Write Amplification & Forecast (S1, S3, SC, SD)
+app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT 
+                schemaname AS schema, 
+                relname AS name,
+                pg_size_pretty(pg_total_relation_size(relid)) AS size,
+                pg_total_relation_size(relid) AS total_bytes,
+                seq_scan AS "seqScans", 
+                idx_scan AS "idxScans",
+                n_tup_ins AS inserts, 
+                n_tup_upd AS updates, 
+                n_tup_del AS deletes,
+                n_tup_hot_upd AS "hotUpdates",
+                n_live_tup AS "liveTuples", 
+                n_dead_tup AS "deadTuples",
+                CASE WHEN (n_live_tup + n_dead_tup) > 0 
+                     THEN round((n_dead_tup::numeric / (n_live_tup + n_dead_tup)) * 100, 1) 
+                     ELSE 0 END AS "deadPct",
+                CASE WHEN n_tup_upd > 0 
+                     THEN round((n_tup_hot_upd::numeric / n_tup_upd) * 100, 1) 
+                     ELSE 0 END AS "hotPct",
+                COALESCE(to_char(last_vacuum, 'YYYY-MM-DD HH24:MI'), 'Never') AS "lastVacuum",
+                COALESCE(to_char(last_analyze, 'YYYY-MM-DD HH24:MI'), 'Never') AS "lastAnalyze"
+            FROM pg_stat_user_tables
+            ORDER BY total_bytes DESC NULLS LAST
+            LIMIT 100
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 2. Column Stats Explorer (S2)
+app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT 
+                schemaname, 
+                tablename, 
+                attname AS name, 
+                null_frac * 100 AS "nullPct",
+                n_distinct AS distinct,
+                array_to_string(most_common_vals::text[], ', ') AS "topValues"
+            FROM pg_stats
+            WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+            ORDER BY schemaname, tablename, attname
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 3. Table Dependency Map / Foreign Keys (SB)
+app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT
+                cl1.relname AS table_name,
+                array_agg(DISTINCT cl2.relname) FILTER (WHERE cl2.relname IS NOT NULL) AS refs_to
+            FROM pg_class cl1
+            LEFT JOIN pg_constraint c ON c.conrelid = cl1.oid AND c.contype = 'f'
+            LEFT JOIN pg_class cl2 ON c.confrelid = cl2.oid
+            WHERE cl1.relnamespace::regnamespace::text NOT IN ('pg_catalog', 'information_schema')
+              AND cl1.relkind = 'r'
+            GROUP BY cl1.relname
+        `);
+
+        // Post-process to calculate `refsBy` for the frontend
+        const tables = r.rows.map(row => ({
+            name: row.table_name,
+            refsTo: row.refs_to || [],
+            refsBy: [],
+        }));
+
+        tables.forEach(t => {
+            t.refsTo.forEach(targetName => {
+                const target = tables.find(x => x.name === targetName);
+                if (target) target.refsBy.push(t.name);
+            });
+        });
+
+        res.json(tables);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 4. TOAST Table Bloat (SE)
+app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT 
+                n.nspname AS schema,
+                c.relname AS table,
+                c.reltoastrelid::regclass::text AS "toastTable",
+                pg_size_pretty(pg_relation_size(c.reltoastrelid)) AS "toastSize",
+                pg_relation_size(c.reltoastrelid) AS "toastBytes",
+                t_stat.n_dead_tup AS "deadChunks",
+                CASE WHEN (t_stat.n_live_tup + t_stat.n_dead_tup) > 0 
+                     THEN round((t_stat.n_dead_tup::numeric / (t_stat.n_live_tup + t_stat.n_dead_tup)) * 100, 1) 
+                     ELSE 0 END AS "deadPct"
+            FROM pg_class c
+            JOIN pg_namespace n ON c.relnamespace = n.oid
+            LEFT JOIN pg_stat_user_tables t_stat ON c.reltoastrelid = t_stat.relid
+            WHERE c.relkind = 'r' AND c.reltoastrelid != 0
+              AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+            ORDER BY "toastBytes" DESC
+            LIMIT 50
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 5. Temp Tables Usage (SF)
+app.get('/api/tables/temp', authenticate, async (req, res) => {
+    try {
+        const r = await pool.query(`
+            SELECT 
+                n.nspname AS schema_name,
+                c.relname AS table_name,
+                pg_size_pretty(pg_total_relation_size(c.oid)) AS size,
+                pg_total_relation_size(c.oid) AS size_bytes,
+                a.pid,
+                a.usename AS user,
+                a.application_name AS app,
+                extract(epoch from (now() - a.backend_start))::int as age_sec
+            FROM pg_class c
+            JOIN pg_namespace n ON c.relnamespace = n.oid
+            LEFT JOIN pg_stat_activity a ON strpos(n.nspname, a.pid::text) > 0
+            WHERE c.relpersistence = 't'
+        `);
+        res.json(r.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // VACUUM & MAINTENANCE
 // ─────────────────────────────────────────────────────────────────────────────
