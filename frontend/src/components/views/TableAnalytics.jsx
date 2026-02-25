@@ -47,7 +47,7 @@ function useTableData(endpoint, fallback = []) {
 }
 
 // ── Shared Primitives ────────────────────────────────────────────────────────
-const Bar = ({ v, max, color, h = 5 }) => (
+const ProgressBar = ({ v, max, color, h = 5 }) => (
     <div style={{ width: "100%", height: h, borderRadius: h, background: THEME.grid, overflow: "hidden" }}>
         <div style={{ width: `${Math.min(100, max > 0 ? (v / max) * 100 : 0)}%`, height: "100%", background: color, borderRadius: h, transition: "width .5s ease" }} />
     </div>
@@ -289,7 +289,7 @@ function S1_HealthScorecard() {
                                     <span>Dead %</span>
                                     <span style={{ fontFamily: THEME.fontMono, color: dc(deadPct), fontWeight: 700 }}>{deadPct}%</span>
                                 </div>
-                                <Bar v={deadPct} max={50} color={dc(deadPct)} />
+                                <ProgressBar v={deadPct} max={50} color={dc(deadPct)} />
                             </div>
                             <div style={{ marginTop: 10, padding: "5px 10px", borderRadius: 6, background: `${c}15`, fontSize: 10, fontWeight: 700, color: c }}>→ {rec}</div>
                         </Card>
@@ -329,7 +329,7 @@ function S2_ColumnStats() {
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{col.name}</span>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: nc, fontWeight: 700, marginBottom: 3 }}>{nullPct}%</div>
-                                    <Bar v={nullPct} max={100} color={nc} h={3} />
+                                    <ProgressBar v={nullPct} max={100} color={nc} h={3} />
                                 </div>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted }}>{Number(col.distinct).toLocaleString()}</span>
                                 <span style={{ fontSize: 10, color: THEME.textDim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={col.topValues || "—"}>{col.topValues || "—"}</span>
@@ -508,7 +508,7 @@ function SE_ToastBloat() {
                                 <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.primary, fontWeight: 700 }}>{t.toastSize}</div>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: c, marginBottom: 3 }}>{deadPct}%</div>
-                                    <Bar v={deadPct} max={40} color={c} h={4} />
+                                    <ProgressBar v={deadPct} max={40} color={c} h={4} />
                                 </div>
                             </div>
                         );
@@ -626,7 +626,7 @@ function SD_Forecast() {
                                 <span style={{ color: THEME.textDim }}>Now: <span style={{ fontFamily: THEME.fontMono, color: c, fontWeight: 700 }}>{deadPct}%</span></span>
                                 <span style={{ color: THEME.textDim }}>Target: 20%</span>
                             </div>
-                            <Bar v={deadPct} max={50} color={c} h={6} />
+                            <ProgressBar v={deadPct} max={50} color={c} h={6} />
                         </Card>
                     );
                 })}
@@ -802,7 +802,7 @@ function S_RowCounts() {
                                 </div>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.success, marginBottom: 3 }}>{live.toLocaleString()}</div>
-                                    <Bar v={live} max={maxLive} color={THEME.success} h={4} />
+                                    <ProgressBar v={live} max={maxLive} color={THEME.success} h={4} />
                                 </div>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.danger }}>{dead.toLocaleString()}</span>
                                 <Pip color={rc}>{ratio}%</Pip>
