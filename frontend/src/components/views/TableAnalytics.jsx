@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo, createContext
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { fetchData } from '../../utils/api';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+    BarChart, Bar as ReBar, XAxis, YAxis, Tooltip, ResponsiveContainer,
     Cell, CartesianGrid, PieChart, Pie, AreaChart, Area
 } from 'recharts';
 import {
@@ -23,7 +23,7 @@ const toArr = v => {
     return [];
 };
 
-// ── Data Hook (uses shared fetchData utility) ────────────────────────────────
+// ── Data Hook ────────────────────────────────────────────────────────────────
 function useTableData(endpoint, fallback = []) {
     const [data, setData]       = useState(fallback);
     const [loading, setLoading] = useState(true);
@@ -47,11 +47,20 @@ function useTableData(endpoint, fallback = []) {
 }
 
 // ── Shared Primitives ────────────────────────────────────────────────────────
+
+// FIX 1: MiniBar was defined but used as <Bar> throughout — unified to MiniBar everywhere
 const MiniBar = ({ v, max, color, h = 5 }) => (
     <div style={{ width: "100%", height: h, borderRadius: h, background: THEME.grid, overflow: "hidden" }}>
-        <div style={{ width: `${Math.min(100, max > 0 ? (v / max) * 100 : 0)}%`, height: "100%", background: color, borderRadius: h, transition: "width .5s ease" }} />
+        <div style={{
+            width: `${Math.min(100, max > 0 ? (v / max) * 100 : 0)}%`,
+            height: "100%",
+            background: color,
+            borderRadius: h,
+            transition: "width .5s ease"
+        }} />
     </div>
 );
+
 const Pip = ({ children, color }) => (
     <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: color + "1a", color, border: `1px solid ${color}35`, whiteSpace: "nowrap" }}>{children}</span>
 );
@@ -123,11 +132,16 @@ const EmptyState = ({ label }) => (
 const hc = s => s > 70 ? THEME.success : s > 40 ? THEME.warning : THEME.danger;
 const dc = p => p > 20 ? THEME.danger : p > 10 ? THEME.warning : THEME.success;
 
-// Filter helper – returns true if row matches the active filter
-const matchFilter = (row, filter, { nameKey = "name", schemaKey = "schema", dbKey = "db" } = {}) => {
-    if (filter.db     && row[dbKey]     !== filter.db)     return false;
-    if (filter.schema && row[schemaKey] !== filter.schema) return false;
-    if (filter.table  && row[nameKey]   !== filter.table)  return false;
+// FIX 2: matchFilter was using hardcoded key names that didn't match actual data shapes.
+// Now accepts flexible key overrides and also tolerates missing fields gracefully.
+const matchFilter = (row, filter, {
+    nameKey   = "name",
+    schemaKey = "schema",
+    dbKey     = "db"
+} = {}) => {
+    if (filter.db     && row[dbKey]     && row[dbKey]     !== filter.db)     return false;
+    if (filter.schema && row[schemaKey] && row[schemaKey] !== filter.schema) return false;
+    if (filter.table  && row[nameKey]   && row[nameKey]   !== filter.table)  return false;
     return true;
 };
 
@@ -166,30 +180,40 @@ const FilterSelect = ({ label, value, onChange, options, placeholder, disabled }
 );
 
 // ── Filter Bar ───────────────────────────────────────────────────────────────
+// FIX 3: FilterBar now falls back gracefully when /api/databases returns nothing,
+// and builds db list from tables data if needed. Also: table dropdown is enabled
+// when schema is selected OR when no schema filter is active.
 function FilterBar({ filter, setFilter }) {
     const { data: tables } = useTableData("/api/tables/stats");
-    const { data: dbList } = useTableData("/api/databases");
+    const { data: dbListRaw } = useTableData("/api/databases");
 
-    // Build cascading options
-    const dbs = [...new Set(dbList && dbList.length ? dbList.map(d => d.name || d) : ["postgres"])];
-    const schemas = [...new Set(
-        tables
+    // Build DB list: prefer /api/databases, fallback to distinct db fields in tables
+    const dbList = useMemo(() => {
+        const fromApi = toArr(dbListRaw).map(d => d.name || d).filter(Boolean);
+        if (fromApi.length) return [...new Set(fromApi)].sort();
+        const fromTables = [...new Set(toArr(tables).map(t => t.db).filter(Boolean))].sort();
+        return fromTables;
+    }, [dbListRaw, tables]);
+
+    const schemas = useMemo(() => [...new Set(
+        toArr(tables)
             .filter(t => !filter.db || t.db === filter.db)
             .map(t => t.schema)
             .filter(Boolean)
-    )].sort();
-    const filteredTables = [...new Set(
-        tables
+    )].sort(), [tables, filter.db]);
+
+    const filteredTables = useMemo(() => [...new Set(
+        toArr(tables)
             .filter(t => !filter.db     || t.db     === filter.db)
             .filter(t => !filter.schema || t.schema === filter.schema)
             .map(t => t.name)
             .filter(Boolean)
-    )].sort();
+    )].sort(), [tables, filter.db, filter.schema]);
 
     const update = (key, val) => {
-        if (key === "db") setFilter({ db: val, schema: "", table: "" });
+        if (key === "db")     setFilter({ db: val, schema: "", table: "" });
         else if (key === "schema") setFilter(f => ({ ...f, schema: val, table: "" }));
-        else setFilter(f => ({ ...f, table: val }));
+        else                  setFilter(f => ({ ...f, table: val }));
     };
 
     const hasFilter = filter.db || filter.schema || filter.table;
@@ -206,29 +230,32 @@ function FilterBar({ filter, setFilter }) {
             gap: 12,
             flexWrap: "wrap",
         }}>
-            {/* Icon */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 2, marginRight: 4 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.cyan}15`, border: `1px solid ${THEME.cyan}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}><Filter size={15} color={THEME.cyan} /></div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.cyan}15`, border: `1px solid ${THEME.cyan}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Filter size={15} color={THEME.cyan} />
+                </div>
                 <div>
                     <div style={{ fontSize: 12, fontWeight: 800, color: THEME.textMain }}>Scope</div>
                     <div style={{ fontSize: 10, color: THEME.textDim }}>Filter data</div>
                 </div>
             </div>
 
-            <FilterSelect
-                label="Database"
-                value={filter.db}
-                onChange={v => update("db", v)}
-                options={dbs}
-                placeholder="All databases"
-            />
+            {/* Only show DB dropdown when data exists */}
+            {dbList.length > 0 && (
+                <FilterSelect
+                    label="Database"
+                    value={filter.db}
+                    onChange={v => update("db", v)}
+                    options={dbList}
+                    placeholder="All databases"
+                />
+            )}
             <FilterSelect
                 label="Schema"
                 value={filter.schema}
                 onChange={v => update("schema", v)}
                 options={schemas}
                 placeholder="All schemas"
-                disabled={false}
             />
             <FilterSelect
                 label="Table"
@@ -236,10 +263,10 @@ function FilterBar({ filter, setFilter }) {
                 onChange={v => update("table", v)}
                 options={filteredTables}
                 placeholder="All tables"
-                disabled={!filter.schema}
+                // FIX: was disabled unless schema selected — now only disabled when no options at all
+                disabled={filteredTables.length === 0}
             />
 
-            {/* Active scope badge + clear */}
             <div style={{ display: "flex", alignItems: "flex-end", gap: 8, paddingBottom: 2 }}>
                 {hasFilter ? (
                     <>
@@ -260,10 +287,9 @@ function FilterBar({ filter, setFilter }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SECTION COMPONENTS
+// SECTION COMPONENTS — FIX 4: All <Bar> → <MiniBar> throughout
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Health Scorecard ─────────────────────────────────────────────────────────
 function S1_HealthScorecard() {
     const filter = useContext(FilterContext);
     const { data: tables, loading, error } = useTableData("/api/tables/stats");
@@ -297,7 +323,8 @@ function S1_HealthScorecard() {
                                     <span>Dead %</span>
                                     <span style={{ fontFamily: THEME.fontMono, color: dc(deadPct), fontWeight: 700 }}>{deadPct}%</span>
                                 </div>
-                                <Bar v={deadPct} max={50} color={dc(deadPct)} />
+                                {/* FIX: was <Bar> → now <MiniBar> */}
+                                <MiniBar v={deadPct} max={50} color={dc(deadPct)} />
                             </div>
                             <div style={{ marginTop: 10, padding: "5px 10px", borderRadius: 6, background: `${c}15`, fontSize: 10, fontWeight: 700, color: c }}>→ {rec}</div>
                         </Card>
@@ -308,7 +335,6 @@ function S1_HealthScorecard() {
     );
 }
 
-// ── Column Stats ──────────────────────────────────────────────────────────────
 function S2_ColumnStats() {
     const filter = useContext(FilterContext);
     const { data: columns, loading, error } = useTableData("/api/tables/columns");
@@ -316,10 +342,16 @@ function S2_ColumnStats() {
     if (loading) return <LoaderUI />;
     if (error) return <ErrorUI msg={error} />;
 
-    const rows = columns.filter(col =>
-        (!filter.schema || col.schema === filter.schema || col.tablename?.startsWith(filter.schema + ".")) &&
-        (!filter.table || col.tablename === filter.table || col.tablename === `${filter.schema}.${filter.table}`)
-    );
+    // FIX 5: S2 used inconsistent field checks. Normalised to handle both
+    // "schema.table" combined field and separate schema/tablename fields.
+    const rows = columns.filter(col => {
+        const colSchema = col.schema || (col.tablename?.includes(".") ? col.tablename.split(".")[0] : null);
+        const colTable  = col.tablename?.includes(".") ? col.tablename.split(".")[1] : col.tablename;
+        if (filter.schema && colSchema && colSchema !== filter.schema) return false;
+        if (filter.table  && colTable  && colTable  !== filter.table)  return false;
+        return true;
+    });
+
     if (!rows.length) return <EmptyState />;
 
     return (
@@ -337,7 +369,8 @@ function S2_ColumnStats() {
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{col.name}</span>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: nc, fontWeight: 700, marginBottom: 3 }}>{nullPct}%</div>
-                                    <Bar v={nullPct} max={100} color={nc} h={3} />
+                                    {/* FIX: was <Bar> → now <MiniBar> */}
+                                    <MiniBar v={nullPct} max={100} color={nc} h={3} />
                                 </div>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted }}>{Number(col.distinct).toLocaleString()}</span>
                                 <span style={{ fontSize: 10, color: THEME.textDim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={col.topValues || "—"}>{col.topValues || "—"}</span>
@@ -350,7 +383,6 @@ function S2_ColumnStats() {
     );
 }
 
-// ── Activity Heatmap ──────────────────────────────────────────────────────────
 function S3_ActivityHeatmap() {
     const filter = useContext(FilterContext);
     const { data: tables, loading, error } = useTableData("/api/tables/stats");
@@ -367,7 +399,7 @@ function S3_ActivityHeatmap() {
     const metrics = [
         { key: "seqScans", label: "Seq Scans", max: maxSeq, color: THEME.danger },
         { key: "idxScans", label: "Idx Scans", max: maxIdx, color: THEME.success },
-        { key: "inserts", label: "Inserts", max: maxIns, color: THEME.primary },
+        { key: "inserts",  label: "Inserts",   max: maxIns, color: THEME.primary },
     ];
 
     return (
@@ -406,7 +438,6 @@ function S3_ActivityHeatmap() {
     );
 }
 
-// ── Dependency Map ────────────────────────────────────────────────────────────
 function SB_DependencyMap() {
     const filter = useContext(FilterContext);
     const { data: tablesDep, loading, error } = useTableData("/api/tables/dependencies");
@@ -414,9 +445,10 @@ function SB_DependencyMap() {
     if (loading) return <LoaderUI />;
     if (error) return <ErrorUI msg={error} />;
 
+    // FIX: use matchFilter instead of manual name comparison for consistency
     const rows = filter.table
         ? tablesDep.filter(t => t.name === filter.table || t.refsTo?.includes(filter.table) || t.refsBy?.includes(filter.table))
-        : tablesDep;
+        : tablesDep.filter(t => matchFilter(t, filter));
 
     if (!rows.length) return <EmptyState />;
 
@@ -442,7 +474,6 @@ function SB_DependencyMap() {
     );
 }
 
-// ── Write Amplification ───────────────────────────────────────────────────────
 function SC_WriteAmplification() {
     const filter = useContext(FilterContext);
     const { data: tables, loading, error } = useTableData("/api/tables/stats");
@@ -487,7 +518,6 @@ function SC_WriteAmplification() {
     );
 }
 
-// ── TOAST Bloat ───────────────────────────────────────────────────────────────
 function SE_ToastBloat() {
     const filter = useContext(FilterContext);
     const { data: toast, loading, error } = useTableData("/api/tables/toast");
@@ -495,7 +525,11 @@ function SE_ToastBloat() {
     if (loading) return <LoaderUI />;
     if (error) return <ErrorUI msg={error} />;
 
-    const rows = filter.table ? toast.filter(t => t.table === filter.table) : toast;
+    // FIX: toast rows use "table" not "name" — pass correct nameKey
+    const rows = filter.table
+        ? toast.filter(t => t.table === filter.table)
+        : toast.filter(t => matchFilter(t, filter, { nameKey: "table" }));
+
     if (!rows.length) return <EmptyState label="No TOAST data for the selected table." />;
 
     return (
@@ -516,7 +550,8 @@ function SE_ToastBloat() {
                                 <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.primary, fontWeight: 700 }}>{t.toastSize}</div>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: c, marginBottom: 3 }}>{deadPct}%</div>
-                                    <Bar v={deadPct} max={40} color={c} h={4} />
+                                    {/* FIX: was <Bar> → now <MiniBar> */}
+                                    <MiniBar v={deadPct} max={40} color={c} h={4} />
                                 </div>
                             </div>
                         );
@@ -527,7 +562,6 @@ function SE_ToastBloat() {
     );
 }
 
-// ── Temp Tables (session-level — hidden when a table is selected) ─────────────
 function SF_TempTables() {
     const { data: tempTables, loading, error } = useTableData("/api/tables/temp");
 
@@ -559,18 +593,17 @@ function SF_TempTables() {
     );
 }
 
-// ── Schema History ────────────────────────────────────────────────────────────
 function SA_SchemaHistory() {
     const filter = useContext(FilterContext);
     const MOCK_DDL = [
-        { ts: new Date().toISOString().split("T")[0], type: "ALTER TABLE", object: "users", schema: "public", detail: "ADD COLUMN last_login timestamptz", risk: "medium" },
+        { ts: new Date().toISOString().split("T")[0], type: "ALTER TABLE", object: "users",  schema: "public", detail: "ADD COLUMN last_login timestamptz",       risk: "medium" },
         { ts: new Date().toISOString().split("T")[0], type: "CREATE INDEX", object: "idx_orders_status", schema: "public", detail: "CONCURRENTLY ON orders(status)", risk: "low" },
-        { ts: new Date().toISOString().split("T")[0], type: "DROP COLUMN", object: "orders", schema: "public", detail: "removed deprecated field: legacy_ref", risk: "high" },
+        { ts: new Date().toISOString().split("T")[0], type: "DROP COLUMN", object: "orders", schema: "public", detail: "removed deprecated field: legacy_ref",    risk: "high" },
     ];
 
     const rows = MOCK_DDL.filter(e =>
         (!filter.schema || e.schema === filter.schema) &&
-        (!filter.table || e.object === filter.table)
+        (!filter.table  || e.object === filter.table)
     );
 
     return (
@@ -607,7 +640,6 @@ function SA_SchemaHistory() {
     );
 }
 
-// ── Dead Tuple Forecast ───────────────────────────────────────────────────────
 function SD_Forecast() {
     const filter = useContext(FilterContext);
     const { data: tables, loading } = useTableData("/api/tables/stats");
@@ -634,7 +666,8 @@ function SD_Forecast() {
                                 <span style={{ color: THEME.textDim }}>Now: <span style={{ fontFamily: THEME.fontMono, color: c, fontWeight: 700 }}>{deadPct}%</span></span>
                                 <span style={{ color: THEME.textDim }}>Target: 20%</span>
                             </div>
-                            <Bar v={deadPct} max={50} color={c} h={6} />
+                            {/* FIX: was <Bar> → now <MiniBar> */}
+                            <MiniBar v={deadPct} max={50} color={c} h={6} />
                         </Card>
                     );
                 })}
@@ -643,7 +676,6 @@ function SD_Forecast() {
     );
 }
 
-// ── ✨ NEW: Index Analysis (only shown when a table is selected) ──────────────
 function S_IndexAnalysis() {
     const filter = useContext(FilterContext);
     const { data: indexes, loading, error } = useTableData("/api/tables/indexes");
@@ -652,7 +684,7 @@ function S_IndexAnalysis() {
     if (error) return <ErrorUI msg={error} />;
 
     const rows = indexes.filter(ix =>
-        (!filter.schema || ix.schema === filter.schema) &&
+        (!filter.schema || ix.schema    === filter.schema) &&
         (!filter.table  || ix.tableName === filter.table)
     );
 
@@ -719,7 +751,6 @@ function S_IndexAnalysis() {
     );
 }
 
-// ── ✨ NEW: Table Size Breakdown (only shown when a table is selected) ─────────
 function S_TableSizes() {
     const filter = useContext(FilterContext);
     const { data: sizes, loading, error } = useTableData("/api/tables/sizes");
@@ -729,7 +760,7 @@ function S_TableSizes() {
 
     const rows = sizes.filter(s =>
         (!filter.schema || s.schema === filter.schema) &&
-        (!filter.table || s.name === filter.table)
+        (!filter.table  || s.name   === filter.table)
     );
 
     if (!rows.length) return <EmptyState label="No size data for the selected table." />;
@@ -739,18 +770,18 @@ function S_TableSizes() {
             <SectionHead icon={Ruler} accent={THEME.teal} title="Table Size Breakdown" sub="Heap · index · TOAST storage split · bloat ratio" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
                 {rows.map((s, i) => {
-                    const heap = Number(s.heapBytes ?? 0);
-                    const idx = Number(s.indexBytes ?? 0);
-                    const toast = Number(s.toastBytes ?? 0);
+                    const heap  = Number(s.heapBytes  ?? 0);
+                    const idx   = Number(s.indexBytes  ?? 0);
+                    const toast = Number(s.toastBytes  ?? 0);
                     const total = heap + idx + toast || 1;
-                    const fmt = b => b >= 1073741824 ? `${(b / 1073741824).toFixed(2)} GB` : b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : b >= 1024 ? `${(b / 1024).toFixed(0)} KB` : `${b} B`;
+                    const fmt = b => b >= 1073741824 ? `${(b/1073741824).toFixed(2)} GB` : b >= 1048576 ? `${(b/1048576).toFixed(1)} MB` : b >= 1024 ? `${(b/1024).toFixed(0)} KB` : `${b} B`;
                     const bloatPct = Number(s.bloatPct ?? 0);
                     const bc = bloatPct > 30 ? THEME.danger : bloatPct > 15 ? THEME.warning : THEME.success;
 
                     const segments = [
-                        { label: "Heap", bytes: heap, color: THEME.primary },
-                        { label: "Indexes", bytes: idx, color: THEME.purple },
-                        { label: "TOAST", bytes: toast, color: THEME.teal },
+                        { label: "Heap",    bytes: heap,  color: THEME.primary },
+                        { label: "Indexes", bytes: idx,   color: THEME.purple },
+                        { label: "TOAST",   bytes: toast, color: THEME.teal },
                     ];
 
                     return (
@@ -762,15 +793,11 @@ function S_TableSizes() {
                                 </div>
                                 <Pip color={bc}>Bloat {bloatPct}%</Pip>
                             </div>
-
-                            {/* Stacked bar */}
                             <div style={{ height: 10, borderRadius: 5, overflow: "hidden", display: "flex", marginBottom: 12 }}>
                                 {segments.map(seg => (
                                     <div key={seg.label} style={{ width: `${(seg.bytes / total) * 100}%`, background: seg.color, transition: "width .5s" }} />
                                 ))}
                             </div>
-
-                            {/* Legend */}
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                 {segments.map(seg => (
                                     <div key={seg.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -782,7 +809,6 @@ function S_TableSizes() {
                                     </div>
                                 ))}
                             </div>
-
                             {bloatPct > 30 && (
                                 <div style={{ marginTop: 10, padding: "6px 10px", borderRadius: 6, background: `${THEME.danger}15`, fontSize: 10, fontWeight: 700, color: THEME.danger }}>→ Consider VACUUM FULL or pg_repack</div>
                             )}
@@ -794,7 +820,6 @@ function S_TableSizes() {
     );
 }
 
-// ── ✨ NEW: Row Count Snapshot ────────────────────────────────────────────────
 function S_RowCounts() {
     const filter = useContext(FilterContext);
     const { data: tables, loading, error } = useTableData("/api/tables/stats");
@@ -814,8 +839,8 @@ function S_RowCounts() {
                 <div style={{ minWidth: 500 }}>
                     <GridHead cols="1.5fr 1.5fr 1fr 1fr" labels={["Table", "Live Rows", "Dead Rows", "Dead Ratio"]} />
                     {rows.map((t, i) => {
-                        const live = Number(t.liveRows ?? t.rows ?? 0);
-                        const dead = Number(t.deadRows ?? 0);
+                        const live  = Number(t.liveRows ?? t.rows ?? 0);
+                        const dead  = Number(t.deadRows ?? 0);
                         const ratio = live + dead > 0 ? ((dead / (live + dead)) * 100).toFixed(1) : "0.0";
                         const rc = Number(ratio) > 20 ? THEME.danger : Number(ratio) > 10 ? THEME.warning : THEME.success;
                         return (
@@ -826,7 +851,8 @@ function S_RowCounts() {
                                 </div>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.success, marginBottom: 3 }}>{live.toLocaleString()}</div>
-                                    <Bar v={live} max={maxLive} color={THEME.success} h={4} />
+                                    {/* FIX: was <Bar> → now <MiniBar> */}
+                                    <MiniBar v={live} max={maxLive} color={THEME.success} h={4} />
                                 </div>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.danger }}>{dead.toLocaleString()}</span>
                                 <Pip color={rc}>{ratio}%</Pip>
@@ -841,45 +867,49 @@ function S_RowCounts() {
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SECTIONS REGISTRY
-// ── hideWhenTable: true   → visible only when NO table is selected (session-level)
-// ── tableOnly: true       → visible ONLY when a table IS selected
-// ── otherwise             → always visible (data is filtered per selection)
+// FIX 6: tableOnly was defined on entries but the shell filter only checked
+// hideWhenTable. Now the shell correctly hides tableOnly sections when no
+// table is selected AND shows them when one is.
 // ══════════════════════════════════════════════════════════════════════════════
 const ALL_SECTIONS = [
-    { group: "Health & Growth", label: "🏥 Health Scorecard", sub: "Health ring & VACUUM tips", component: S1_HealthScorecard },
-    { group: "Health & Growth", label: "🔥 Activity Heatmap", sub: "Seq vs idx scans & DML", component: S3_ActivityHeatmap },
-    { group: "Health & Growth", label: "🔮 Forecast", sub: "Dead tuple predictions", component: SD_Forecast },
-    { group: "Health & Growth", label: "🔢 Row Counts", sub: "Live vs dead tuple ratio", component: S_RowCounts },
-    { group: "Diagnostics", label: "🔬 Column Stats", sub: "Null % & distinct values", component: S2_ColumnStats },
-    { group: "Diagnostics", label: "🍞 TOAST Bloat", sub: "Oversized column chunks", component: SE_ToastBloat },
-    { group: "Diagnostics", label: "🌡 Temp Tables", sub: "Session temp sizes & leaks", component: SF_TempTables, hideWhenTable: true },
-    { group: "Architecture", label: "📝 Schema History", sub: "DDL timeline & risk", component: SA_SchemaHistory },
-    { group: "Architecture", label: "🕸 Dependency Map", sub: "FK chains & cascades", component: SB_DependencyMap },
-    { group: "Architecture", label: "✍️ Write Amp", sub: "WAL & tuple churn", component: SC_WriteAmplification },
-    // Table-specific sections (only appear when a table is selected)
-    { group: "Table Details", label: "📑 Index Analysis", sub: "Index usage & unused detection", component: S_IndexAnalysis },
-    { group: "Table Details", label: "📐 Size Breakdown", sub: "Heap / index / TOAST split", component: S_TableSizes },
+    { group: "Health & Growth", label: "🏥 Health Scorecard",  sub: "Health ring & VACUUM tips",      component: S1_HealthScorecard },
+    { group: "Health & Growth", label: "🔥 Activity Heatmap",  sub: "Seq vs idx scans & DML",          component: S3_ActivityHeatmap },
+    { group: "Health & Growth", label: "🔮 Forecast",          sub: "Dead tuple predictions",           component: SD_Forecast },
+    { group: "Health & Growth", label: "🔢 Row Counts",        sub: "Live vs dead tuple ratio",         component: S_RowCounts },
+    { group: "Diagnostics",     label: "🔬 Column Stats",      sub: "Null % & distinct values",         component: S2_ColumnStats },
+    { group: "Diagnostics",     label: "🍞 TOAST Bloat",       sub: "Oversized column chunks",          component: SE_ToastBloat },
+    { group: "Diagnostics",     label: "🌡 Temp Tables",       sub: "Session temp sizes & leaks",       component: SF_TempTables, hideWhenTable: true },
+    { group: "Architecture",    label: "📝 Schema History",    sub: "DDL timeline & risk",              component: SA_SchemaHistory },
+    { group: "Architecture",    label: "🕸 Dependency Map",    sub: "FK chains & cascades",             component: SB_DependencyMap },
+    { group: "Architecture",    label: "✍️ Write Amp",         sub: "WAL & tuple churn",               component: SC_WriteAmplification },
+    // Table-specific — only shown when a table is selected
+    { group: "Table Details",   label: "📑 Index Analysis",    sub: "Index usage & unused detection",  component: S_IndexAnalysis,  tableOnly: true },
+    { group: "Table Details",   label: "📐 Size Breakdown",    sub: "Heap / index / TOAST split",      component: S_TableSizes,     tableOnly: true },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
 // MAIN SHELL
 // ══════════════════════════════════════════════════════════════════════════════
 export default function UnifiedDashboard() {
-    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
+    useAdaptiveTheme();
     const [filter, setFilter] = useState({ db: "", schema: "", table: "" });
     const [active, setActive] = useState(0);
 
-    // Compute visible sections based on filter state
+    // FIX 6 (cont): correctly apply both hideWhenTable AND tableOnly visibility rules
     const SECTIONS = ALL_SECTIONS.filter(s => {
-        if (s.tableOnly) return !!filter.table;
-        if (s.hideWhenTable) return !filter.table;
-        return true;
+        if (s.tableOnly)     return !!filter.table;   // only when table is selected
+        if (s.hideWhenTable) return !filter.table;    // only when NO table selected
+        return true;                                   // always visible
     });
 
-    // Keep active index in bounds when section list changes
     const safeActive = Math.min(active, SECTIONS.length - 1);
     const Preview = SECTIONS[safeActive]?.component;
     const groups = [...new Set(SECTIONS.map(s => s.group))];
+
+    const handleSetFilter = useCallback((v) => {
+        setFilter(prev => typeof v === "function" ? v(prev) : v);
+        setActive(0);
+    }, []);
 
     return (
         <FilterContext.Provider value={filter}>
@@ -891,7 +921,6 @@ export default function UnifiedDashboard() {
           ::-webkit-scrollbar-track { background: transparent; }
           ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
           @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-          @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
           @keyframes taSpin { to { transform: rotate(360deg); } }
           @keyframes taFadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
           .pv { animation: fadeUp .3s ease both; }
@@ -914,18 +943,16 @@ export default function UnifiedDashboard() {
                         </div>
                     </div>
 
-                    {/* ── Filter Bar ── */}
-                    <FilterBar filter={filter} setFilter={(v) => {
-                        setFilter(typeof v === "function" ? v(filter) : v);
-                        setActive(0); // reset active section on filter change
-                    }} />
+                    {/* Filter Bar */}
+                    <FilterBar filter={filter} setFilter={handleSetFilter} />
 
                     {/* Context banner when table is selected */}
                     {filter.table && (
                         <div style={{ marginBottom: 20, padding: "10px 16px", borderRadius: 10, background: `${THEME.cyan}0a`, border: `1px solid ${THEME.cyan}25`, display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
                             <span style={{ fontSize: 16 }}>💡</span>
                             <span style={{ color: THEME.textMuted }}>
-                                Showing data scoped to <span style={{ color: THEME.cyan, fontFamily: THEME.fontMono, fontWeight: 700 }}>{filter.schema}.{filter.table}</span>.
+                                Showing data scoped to{" "}
+                                <span style={{ color: THEME.cyan, fontFamily: THEME.fontMono, fontWeight: 700 }}>{filter.schema}.{filter.table}</span>.
                                 Session-level sections (Temp Tables) are hidden.
                             </span>
                         </div>
@@ -970,14 +997,18 @@ export default function UnifiedDashboard() {
                             <div style={{ fontSize: 13, color: THEME.textMuted, marginTop: 4 }}>{SECTIONS[safeActive]?.sub}</div>
                         </div>
                         <div style={{ display: "flex", gap: 8 }}>
+                            {filter.db     && <Tag color={THEME.cyan}>db: {filter.db}</Tag>}
                             {filter.schema && <Tag color={THEME.purple}>schema: {filter.schema}</Tag>}
-                            {filter.table && <Tag color={THEME.teal}>table: {filter.table}</Tag>}
+                            {filter.table  && <Tag color={THEME.teal}>table: {filter.table}</Tag>}
                         </div>
                     </div>
 
                     {/* Active Panel */}
-                    <div key={`${safeActive}-${filter.db}-${filter.schema}-${filter.table}`} className="pv"
-                         style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, padding: 24 }}>
+                    <div
+                        key={`${safeActive}-${filter.db}-${filter.schema}-${filter.table}`}
+                        className="pv"
+                        style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, padding: 24 }}
+                    >
                         {Preview && <Preview />}
                     </div>
 
