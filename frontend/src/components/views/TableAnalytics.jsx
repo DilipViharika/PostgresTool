@@ -236,7 +236,7 @@ function FilterBar({ filter, setFilter }) {
                 onChange={v => update("table", v)}
                 options={filteredTables}
                 placeholder="All tables"
-                disabled={!filter.schema && schemas.length > 1}
+                disabled={!filter.schema}
             />
 
             {/* Active scope badge + clear */}
