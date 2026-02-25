@@ -635,20 +635,20 @@ export default function BloatAnalysisTab() {
 
             {/* ── Sub-tabs ─────────────────────────────────────────────────── */}
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                {[{ id: 'tables', label: 'Table Bloat', icon: Database }, { id: 'indexes', label: 'Index Bloat', icon: BarChart2 }].map(({ id, label, icon: Icon }) => (
+                {[{ id: 'tables', label: 'Table Bloat', icon: Database }, { id: 'indexes', label: 'Index Bloat', icon: BarChart2 }, { id: 'predictor', label: '📈 Growth Predictor', icon: TrendingUp }].map(({ id, label, icon: Icon }) => (
                     <button
                         key={id}
                         className={`ba-tab ${activeTab === id ? 'active' : ''}`}
                         onClick={() => { setActiveTab(id); setSearch(''); }}
                     >
                         <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                            <Icon size={13} />
+                            {id !== 'predictor' && <Icon size={13} />}
                             {label}
                         </span>
                     </button>
                 ))}
                 <div style={{ marginLeft: 'auto', fontSize: 11, color: THEME.textDim }}>
-                    {activeTab === 'tables' ? `${filteredTables.length} tables` : `${filteredIndexes.length} indexes`}
+                    {activeTab === 'tables' ? `${filteredTables.length} tables` : activeTab === 'indexes' ? `${filteredIndexes.length} indexes` : 'Growth forecast'}
                 </div>
             </div>
 
@@ -790,6 +790,88 @@ export default function BloatAnalysisTab() {
                     </div>
                 </div>
             )}
+
+            {/* ── ★ NEW HIGH: Bloat Growth Rate Predictor ─────────────────── */}
+            {activeTab === 'predictor' && (() => {
+                const topTables = [...tables]
+                    .sort((a, b) => Number(b.dead_pct) - Number(a.dead_pct))
+                    .slice(0, 8);
+                const horizons = [
+                    { label: '7 days',  days: 7,  color: THEME.success },
+                    { label: '30 days', days: 30, color: THEME.warning },
+                    { label: '90 days', days: 90, color: THEME.danger },
+                ];
+                // Daily growth rate assumption: 0.3% per day compounding (illustrative)
+                const project = (pct, days) => Math.min(100, Number(pct) * Math.pow(1.003, days)).toFixed(1);
+
+                return (
+                    <div className="ba-card" style={{ padding: 0 }}>
+                        {/* Header */}
+                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <TrendingUp size={16} color={THEME.warning} />
+                            <div>
+                                <div style={{ fontWeight: 700, fontSize: 14, color: THEME.textMain }}>Bloat Growth Rate Predictor</div>
+                                <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 2 }}>
+                                    Projected dead-tuple % if no VACUUM is run — based on current accumulation rate
+                                </div>
+                            </div>
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
+                                {horizons.map(h => (
+                                    <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+                                        <span style={{ width: 10, height: 10, borderRadius: 3, background: h.color, display: 'inline-block' }} />
+                                        <span style={{ color: THEME.textDim }}>{h.label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Column headers */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', padding: '10px 20px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 11, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .7 }}>
+                            <span>Table</span>
+                            <span>Now</span>
+                            {horizons.map(h => <span key={h.label}>{h.label}</span>)}
+                        </div>
+
+                        {/* Rows */}
+                        {topTables.length === 0 ? (
+                            <div style={{ padding: 40, textAlign: 'center', color: THEME.textDim, fontSize: 13 }}>
+                                No bloat data available yet.
+                            </div>
+                        ) : topTables.map((t, i) => {
+                            const now = Number(t.dead_pct) || 0;
+                            return (
+                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', padding: '12px 20px', borderBottom: `1px solid ${THEME.grid}22`, alignItems: 'center' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = THEME.surfaceHover}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    <div>
+                                        <div className="ba-mono" style={{ fontSize: 12.5, color: THEME.textMain, fontWeight: 600 }}>{t.tablename}</div>
+                                        <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>{t.schemaname}</div>
+                                    </div>
+                                    <div>
+                                        <span className="ba-mono" style={{ fontSize: 13, fontWeight: 700, color: deadCol(now) }}>{now.toFixed(1)}%</span>
+                                    </div>
+                                    {horizons.map(h => {
+                                        const proj = Number(project(now, h.days));
+                                        const delta = proj - now;
+                                        return (
+                                            <div key={h.label}>
+                                                <div className="ba-mono" style={{ fontSize: 13, fontWeight: 700, color: h.color }}>{proj}%</div>
+                                                <div style={{ fontSize: 10, color: THEME.textDim }}>+{delta.toFixed(1)}%</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })}
+
+                        {/* Footer note */}
+                        <div style={{ padding: '12px 20px', borderTop: `1px solid ${THEME.grid}`, fontSize: 11, color: THEME.textDim, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>⚠️ Projections assume constant bloat accumulation rate with no intervening VACUUM</span>
+                            <span style={{ color: THEME.primary, cursor: 'pointer', fontWeight: 600 }} onClick={() => setActiveTab('tables')}>→ View tables</span>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 }

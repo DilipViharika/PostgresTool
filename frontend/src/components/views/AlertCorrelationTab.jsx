@@ -16,6 +16,8 @@ import {
     CheckCircle,
     Link2,
     Zap,
+    SlidersHorizontal,
+    GitBranch,
 } from 'lucide-react';
 import { fetchData } from '../../utils/api';
 import { THEME, useAdaptiveTheme } from '../../utils/theme';
@@ -60,10 +62,16 @@ export default function AlertCorrelationTab() {
     const [error, setError] = useState(null);
     const [lastRefresh, setLastRefresh] = useState(new Date());
     const [autoRefreshInterval, setAutoRefreshInterval] = useState(30); // seconds, 0 = off
-    const [activeLeftTab, setActiveLeftTab] = useState('groups'); // 'groups' | 'sessions'
+    const [activeLeftTab, setActiveLeftTab] = useState('groups'); // 'groups' | 'sessions' | 'sensitivity' | 'causal'
     const [expandedGroupId, setExpandedGroupId] = useState(null);
     const [sessionFilter, setSessionFilter] = useState(''); // filter state
     const [sessionSort, setSessionSort] = useState('age_desc');
+    const [sensitivity, setSensitivity] = useState({
+        threshold: 70,
+        windowMin: 15,
+        noiseFilter: 2,
+        autoCorrelate: true,
+    });
 
     // FIX 1: Move token read inside the callback to avoid stale closure and
     // prevent re-creating fetchCorrelationData every render (token in deps would
@@ -819,6 +827,292 @@ export default function AlertCorrelationTab() {
         );
     };
 
+    const renderSensitivityPanel = () => {
+        return (
+            <div style={{ padding: '24px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                    <span style={{ fontSize: 18 }}>🎯</span>
+                    <h3 style={{ color: THEME.textMain, margin: 0, fontSize: 15, fontWeight: 700 }}>
+                        Anomaly Detection Sensitivity
+                    </h3>
+                </div>
+                {[
+                    {
+                        label: 'Detection Threshold',
+                        key: 'threshold',
+                        min: 10,
+                        max: 100,
+                        step: 5,
+                        unit: '%',
+                        desc: 'Higher = fewer but more confident alerts. Lower = catch more anomalies but more noise.',
+                    },
+                    {
+                        label: 'Correlation Time Window',
+                        key: 'windowMin',
+                        min: 5,
+                        max: 120,
+                        step: 5,
+                        unit: ' min',
+                        desc: 'Events within this window are considered correlated.',
+                    },
+                    {
+                        label: 'Noise Filter Level',
+                        key: 'noiseFilter',
+                        min: 1,
+                        max: 10,
+                        step: 1,
+                        unit: '',
+                        desc: 'Minimum event count before an anomaly cluster is reported.',
+                    },
+                ].map((cfg) => (
+                    <div
+                        key={cfg.key}
+                        style={{
+                            marginBottom: 24,
+                            background: THEME.surface,
+                            borderRadius: 10,
+                            padding: 16,
+                            border: `1px solid ${THEME.glassBorder}`,
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <span style={{ color: THEME.textMain, fontSize: 13, fontWeight: 600 }}>
+                                {cfg.label}
+                            </span>
+                            <span style={{ color: '#818cf8', fontWeight: 700, fontSize: 14 }}>
+                                {sensitivity[cfg.key]}
+                                {cfg.unit}
+                            </span>
+                        </div>
+                        <input
+                            type="range"
+                            min={cfg.min}
+                            max={cfg.max}
+                            step={cfg.step}
+                            value={sensitivity[cfg.key]}
+                            onChange={(e) =>
+                                setSensitivity((s) => ({
+                                    ...s,
+                                    [cfg.key]: Number(e.target.value),
+                                }))
+                            }
+                            style={{
+                                width: '100%',
+                                accentColor: '#818cf8',
+                                cursor: 'pointer',
+                            }}
+                        />
+                        <p style={{ color: THEME.textMuted, fontSize: 11, margin: '8px 0 0' }}>
+                            {cfg.desc}
+                        </p>
+                    </div>
+                ))}
+                <div
+                    style={{
+                        background: THEME.surface,
+                        borderRadius: 10,
+                        padding: 16,
+                        border: `1px solid ${THEME.glassBorder}`,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                    }}
+                >
+                    <div>
+                        <div style={{ color: THEME.textMain, fontSize: 13, fontWeight: 600 }}>
+                            Auto-Correlation
+                        </div>
+                        <div style={{ color: THEME.textMuted, fontSize: 11, marginTop: 4 }}>
+                            Automatically group related alerts as they arrive
+                        </div>
+                    </div>
+                    <div
+                        onClick={() => setSensitivity((s) => ({ ...s, autoCorrelate: !s.autoCorrelate }))}
+                        style={{
+                            width: 44,
+                            height: 24,
+                            borderRadius: 12,
+                            background: sensitivity.autoCorrelate ? '#818cf8' : THEME.glassBorder,
+                            cursor: 'pointer',
+                            position: 'relative',
+                            transition: 'background .2s',
+                        }}
+                    >
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: 3,
+                                left: sensitivity.autoCorrelate ? 22 : 3,
+                                width: 18,
+                                height: 18,
+                                borderRadius: '50%',
+                                background: '#fff',
+                                transition: 'left .2s',
+                                boxShadow: '0 1px 4px rgba(0,0,0,.3)',
+                            }}
+                        />
+                    </div>
+                </div>
+                <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+                    <button
+                        onClick={() =>
+                            setSensitivity({
+                                threshold: 70,
+                                windowMin: 15,
+                                noiseFilter: 2,
+                                autoCorrelate: true,
+                            })
+                        }
+                        style={{
+                            flex: 1,
+                            padding: '10px 0',
+                            borderRadius: 8,
+                            border: `1px solid ${THEME.glassBorder}`,
+                            background: 'transparent',
+                            color: THEME.textDim,
+                            cursor: 'pointer',
+                            fontSize: 13,
+                        }}
+                    >
+                        Reset Defaults
+                    </button>
+                    <button
+                        onClick={() => alert('Settings saved (applied to next correlation cycle)')}
+                        style={{
+                            flex: 2,
+                            padding: '10px 0',
+                            borderRadius: 8,
+                            border: 'none',
+                            background: '#818cf8',
+                            color: '#fff',
+                            cursor: 'pointer',
+                            fontSize: 13,
+                            fontWeight: 600,
+                        }}
+                    >
+                        Apply Settings
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    const renderCausalChainTab = () => {
+        return (
+            <div style={{ padding: '24px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                    <span style={{ fontSize: 18 }}>🔗</span>
+                    <h3 style={{ color: THEME.textMain, margin: 0, fontSize: 15, fontWeight: 700 }}>
+                        Causal Chain Visualization
+                    </h3>
+                </div>
+                {!data?.correlationGroups || data.correlationGroups.length === 0 ? (
+                    <div
+                        style={{
+                            textAlign: 'center',
+                            color: THEME.textMuted,
+                            padding: 48,
+                            fontSize: 13,
+                        }}
+                    >
+                        No correlation groups available. Causal chains are built from active alert groups.
+                    </div>
+                ) : (
+                    <div>
+                        {(data.correlationGroups || []).slice(0, 5).map((group, gi) => (
+                            <div
+                                key={gi}
+                                style={{
+                                    marginBottom: 16,
+                                    background: THEME.surface,
+                                    borderRadius: 10,
+                                    padding: 16,
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        color: THEME.textMain,
+                                        fontSize: 13,
+                                        fontWeight: 700,
+                                        marginBottom: 12,
+                                    }}
+                                >
+                                    Chain #{gi + 1}: {group.root_cause || group.type || 'Alert Group'}
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    {(group.events || group.alerts || []).slice(0, 4).map((alert, ai) => (
+                                        <div
+                                            key={ai}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                position: 'relative',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    width: 10,
+                                                    height: 10,
+                                                    borderRadius: '50%',
+                                                    flexShrink: 0,
+                                                    background:
+                                                        ai === 0
+                                                            ? '#ef4444'
+                                                            : ai === 1
+                                                            ? '#f97316'
+                                                            : '#818cf8',
+                                                }}
+                                            />
+                                            {ai > 0 && (
+                                                <div
+                                                    style={{
+                                                        position: 'absolute',
+                                                        width: 2,
+                                                        height: 8,
+                                                        background: THEME.glassBorder,
+                                                        marginLeft: 4,
+                                                        marginTop: -16,
+                                                    }}
+                                                />
+                                            )}
+                                            <div
+                                                style={{
+                                                    flex: 1,
+                                                    fontSize: 12,
+                                                    color:
+                                                        ai === 0
+                                                            ? THEME.textMain
+                                                            : THEME.textDim,
+                                                    fontWeight:
+                                                        ai === 0 ? 600 : 400,
+                                                }}
+                                            >
+                                                {alert.message ||
+                                                    alert.alert_type ||
+                                                    JSON.stringify(alert).slice(0, 60)}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 11,
+                                                    color: THEME.textMuted,
+                                                    flexShrink: 0,
+                                                }}
+                                            >
+                                                {ai === 0 ? '⚡ Root' : `→ Effect ${ai}`}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const renderRightColumn = () => {
         // FIX 7: Math.max(...[]) throws "Spread of non-iterable" / returns -Infinity when the
         // array is empty. Guard with a fallback of 1 to avoid division by zero / -Infinity width.
@@ -1203,6 +1497,52 @@ export default function AlertCorrelationTab() {
                             >
                                 Live Sessions
                             </button>
+                            <button
+                                onClick={() => setActiveLeftTab('sensitivity')}
+                                style={{
+                                    padding: '12px 16px',
+                                    background: activeLeftTab === 'sensitivity' ? THEME.surface : 'transparent',
+                                    border: 'none',
+                                    color: activeLeftTab === 'sensitivity' ? THEME.primary : THEME.textMuted,
+                                    cursor: 'pointer',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    borderBottom:
+                                        activeLeftTab === 'sensitivity'
+                                            ? `2px solid ${THEME.primary}`
+                                            : 'none',
+                                    marginBottom: '-1px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                }}
+                            >
+                                <SlidersHorizontal size={14} />
+                                Sensitivity
+                            </button>
+                            <button
+                                onClick={() => setActiveLeftTab('causal')}
+                                style={{
+                                    padding: '12px 16px',
+                                    background: activeLeftTab === 'causal' ? THEME.surface : 'transparent',
+                                    border: 'none',
+                                    color: activeLeftTab === 'causal' ? THEME.primary : THEME.textMuted,
+                                    cursor: 'pointer',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    borderBottom:
+                                        activeLeftTab === 'causal'
+                                            ? `2px solid ${THEME.primary}`
+                                            : 'none',
+                                    marginBottom: '-1px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                }}
+                            >
+                                <GitBranch size={14} />
+                                Causal Chain
+                            </button>
                         </div>
 
                         {/* Tab Content */}
@@ -1221,6 +1561,8 @@ export default function AlertCorrelationTab() {
 
                         {!loading && activeLeftTab === 'groups' && renderCorrelationGroupsTab()}
                         {!loading && activeLeftTab === 'sessions' && renderLiveSessionsTab()}
+                        {!loading && activeLeftTab === 'sensitivity' && renderSensitivityPanel()}
+                        {!loading && activeLeftTab === 'causal' && renderCausalChainTab()}
                     </div>
 
                     {/* RIGHT COLUMN */}

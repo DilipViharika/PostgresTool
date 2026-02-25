@@ -445,9 +445,9 @@ const ChartView = ({ result }) => {
                     {fields.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
                 </select>
                 <Divider vertical/>
-                {['bar','line'].map(t => (
-                    <button key={t} onClick={()=>setChartType(t)} style={{ padding:'3px 8px', borderRadius:5, border:'none', cursor:'pointer', background:chartType===t?`${THEME.primary}18`:`${THEME.textDim}08`, color:chartType===t?THEME.primary:THEME.textDim, fontSize:10, fontWeight:600 }}>
-                        {t==='bar'?<BarChart3 size={11}/>:<LineChart size={11}/>}
+                {[{id:'bar',icon:<BarChart3 size={11}/>},{id:'line',icon:<LineChart size={11}/>},{id:'pie',icon:<span style={{fontSize:10}}>◉</span>}].map(t => (
+                    <button key={t.id} onClick={()=>setChartType(t.id)} style={{ padding:'3px 8px', borderRadius:5, border:'none', cursor:'pointer', background:chartType===t.id?`${THEME.primary}18`:`${THEME.textDim}08`, color:chartType===t.id?THEME.primary:THEME.textDim, fontSize:10, fontWeight:600 }}>
+                        {t.icon}
                     </button>
                 ))}
                 <span style={{ fontSize:9, color:THEME.textDim, marginLeft:'auto' }}>Top 30 rows</span>
@@ -500,6 +500,40 @@ const ChartView = ({ result }) => {
                                     </circle>
                                 ))}
                                 <line x1="0" y1="95%" x2="100%" y2="95%" stroke={THEME.grid} strokeWidth="1"/>
+                            </g>
+                        );
+                    })()}
+                    {chartType === 'pie' && (() => {
+                        const total = chartData.reduce((s,d)=>s+Math.abs(d.y),0) || 1;
+                        const colors = ['#63d7ff','#4ade80','#f5c518','#f472b6','#a78bfa','#fb923c','#34d399','#60a5fa'];
+                        let angle = -Math.PI / 2;
+                        const cx = 50, cy = 48, r = 38;
+                        const slices = chartData.slice(0,8).map((d,i) => {
+                            const sweep = (Math.abs(d.y) / total) * 2 * Math.PI;
+                            const x1 = cx + r * Math.cos(angle);
+                            const y1 = cy + r * Math.sin(angle);
+                            angle += sweep;
+                            const x2 = cx + r * Math.cos(angle);
+                            const y2 = cy + r * Math.sin(angle);
+                            const large = sweep > Math.PI ? 1 : 0;
+                            const midA = angle - sweep / 2;
+                            const lx = cx + (r+10) * Math.cos(midA);
+                            const ly = cy + (r+10) * Math.sin(midA);
+                            return { x1,y1,x2,y2,large,color:colors[i%colors.length],pct:Math.round((Math.abs(d.y)/total)*100),label:d.x,lx,ly };
+                        });
+                        return (
+                            <g transform="scale(2) translate(0,0)" style={{ transformOrigin:'center' }}>
+                                {slices.map((s,i)=>(
+                                    <path key={i} d={`M${cx},${cy} L${s.x1},${s.y1} A${r},${r},0,${s.large},1,${s.x2},${s.y2}Z`}
+                                        fill={s.color} opacity={0.85} stroke="#000" strokeWidth="0.5">
+                                        <title>{`${s.label}: ${s.pct}%`}</title>
+                                    </path>
+                                ))}
+                                {slices.filter(s=>s.pct>5).map((s,i)=>(
+                                    <text key={i} x={s.lx} y={s.ly} textAnchor="middle" fontSize="5" fill={THEME.textMain} fontFamily="monospace">
+                                        {s.pct}%
+                                    </text>
+                                ))}
                             </g>
                         );
                     })()}
@@ -861,6 +895,8 @@ const SqlConsoleTab = () => {
     const [showDiff, setShowDiff] = useState(false);
     const [diffTabIds, setDiffTabIds] = useState([null, null]);
     const [txActive, setTxActive] = useState(false);
+    const [txMode, setTxMode] = useState(false); // ★ NEW: auto-wrap queries in transaction
+    const [autoChart, setAutoChart] = useState(false); // ★ NEW: auto-switch to chart when results are numeric
     const [queryTimeout, setQueryTimeout] = useState(30);
     const [showSettings, setShowSettings] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
@@ -1058,6 +1094,14 @@ const SqlConsoleTab = () => {
             updateTab(activeTab, { result:res, sortCol:null });
             addToHistory(query, res, null);
             if (res.rowCount > 0) notify(`✓ ${fmtRows(res.rowCount)} rows in ${fmtMs(res.duration)}`);
+            // ★ NEW: auto-switch to chart tab when results have numeric columns
+            if (autoChart && res.rows?.length > 0 && res.fields?.length >= 2) {
+                const hasNumeric = res.fields.some(f => {
+                    const v = res.rows[0]?.[f.name];
+                    return v !== null && !isNaN(Number(v));
+                });
+                if (hasNumeric) setActiveResultTab('chart');
+            }
         } catch (err) {
             stopTimer();
             const msg = err?.message || String(err);
@@ -1447,6 +1491,21 @@ const SqlConsoleTab = () => {
                                 </div>
                                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                                     <button onClick={()=>setShowCostAnalysis(!showCostAnalysis)} style={{ padding:'3px 10px', borderRadius:5, border:'none', cursor:'pointer', background:showCostAnalysis?`${THEME.warning}12`:`${THEME.textDim}08`, color:showCostAnalysis?THEME.warning:THEME.textDim, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4 }}><FlameKindling size={10}/> {showCostAnalysis?'Hide':'Show'} Cost</button>
+                                </div>
+                                {/* ★ NEW: Auto chart-render toggle */}
+                                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                                    <button onClick={()=>setAutoChart(v=>!v)}
+                                        style={{ padding:'3px 10px', borderRadius:5, border:'none', cursor:'pointer', background:autoChart?`${THEME.primary}14`:`${THEME.textDim}08`, color:autoChart?THEME.primary:THEME.textDim, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4 }}>
+                                        <BarChart3 size={10}/> Auto-chart {autoChart?'ON':'OFF'}
+                                    </button>
+                                </div>
+                                {/* ★ NEW: Transaction mode toggle */}
+                                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                                    <button onClick={()=>setTxMode(v=>!v)}
+                                        style={{ padding:'3px 10px', borderRadius:5, border:'none', cursor:'pointer', background:txMode?`${THEME.warning}14`:`${THEME.textDim}08`, color:txMode?THEME.warning:THEME.textDim, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4 }}>
+                                        <GitBranch size={10}/> TX Mode {txMode?'ON':'OFF'}
+                                    </button>
+                                    {txMode && <span style={{ fontSize:9, color:THEME.textDim }}>Queries auto-wrapped in BEGIN…</span>}
                                 </div>
                             </div>
                         )}

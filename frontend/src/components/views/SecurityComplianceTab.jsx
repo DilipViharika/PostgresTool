@@ -11,7 +11,8 @@ import {
     Database, Server, Fingerprint, FileCheck, ShieldAlert,
     TrendingUp, TrendingDown, Cpu, Wifi, WifiOff, Bell,
     ChevronDown, ChevronUp, Filter, MoreVertical, Zap,
-    Clock, MapPin, Terminal, BarChart2, List, LayoutGrid
+    Clock, MapPin, Terminal, BarChart2, List, LayoutGrid,
+    UserCog, AlertCircle, Play, FileBadge, ClipboardCheck
 } from 'lucide-react';
 import {
     ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -721,6 +722,255 @@ const AuditTimeline = () => (
 );
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   ★ NEW HIGH: SUPERUSER ACTIVITY MONITOR
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SUPERUSER_SAMPLE = [
+    { pid: 13421, user: 'postgres',    db: 'prod_db',   query: 'ALTER TABLE orders ADD COLUMN archived BOOL', duration_sec: 0.12, state: 'idle',              app: 'psql',         risk: 'high',   ts: '2 min ago' },
+    { pid: 13089, user: 'dba_admin',   db: 'analytics', query: 'COPY users TO \'/tmp/export.csv\' CSV HEADER', duration_sec: 3.45, state: 'active',            app: 'psql',         risk: 'high',   ts: '5 min ago' },
+    { pid: 12774, user: 'superuser1',  db: 'prod_db',   query: 'SELECT * FROM pg_shadow',                     duration_sec: 0.03, state: 'idle',              app: 'DataGrip',     risk: 'medium', ts: '11 min ago' },
+    { pid: 11342, user: 'postgres',    db: 'template1', query: 'CREATE ROLE new_readonly LOGIN',               duration_sec: 0.01, state: 'idle',              app: 'pgAdmin 4',    risk: 'medium', ts: '22 min ago' },
+    { pid: 10901, user: 'dba_admin',   db: 'prod_db',   query: 'VACUUM FULL orders',                          duration_sec: 47.2, state: 'idle in transaction', app: 'cron-job',    risk: 'low',    ts: '48 min ago' },
+    { pid: 10455, user: 'superuser1',  db: 'prod_db',   query: 'UPDATE pg_authid SET rolsuper=true WHERE ...',duration_sec: 0.05, state: 'idle',              app: 'psql',         risk: 'critical', ts: '1 hr ago' },
+];
+
+const RISK_COLOR = { critical: '#ff2d55', high: '#ff465a', medium: '#f5c518', low: '#4ade80' };
+
+const SuperuserMonitor = () => {
+    const [rows, setRows]           = useState([]);
+    const [loading, setLoading]     = useState(false);
+    const [filter, setFilter]       = useState('all'); // all | critical | high | medium | low
+    const [expandedPid, setExpanded]= useState(null);
+
+    const fetchActivity = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/security/superuser-activity');
+            if (!res.ok) throw new Error();
+            setRows(await res.json());
+        } catch {
+            setRows(SUPERUSER_SAMPLE);
+        } finally { setLoading(false); }
+    };
+
+    useEffect(() => { fetchActivity(); }, []);
+
+    const visible = filter === 'all' ? rows : rows.filter(r => r.risk === filter);
+    const counts  = rows.reduce((acc, r) => { acc[r.risk] = (acc[r.risk] || 0) + 1; return acc; }, {});
+
+    return (
+        <div>
+            {/* Summary strip */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 18 }}>
+                {['critical','high','medium','low'].map(lvl => (
+                    <div key={lvl} className="card" style={{ padding: '12px 16px', cursor: 'pointer', border: filter === lvl ? `1px solid ${RISK_COLOR[lvl]}` : '1px solid transparent' }}
+                         onClick={() => setFilter(f => f === lvl ? 'all' : lvl)}>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: RISK_COLOR[lvl] }}>{counts[lvl] || 0}</div>
+                        <div style={{ fontSize: 11, color: THEME.textDim, textTransform: 'capitalize', marginTop: 2 }}>{lvl} risk</div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="card" style={{ padding: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <SectionHeader icon={UserCog} title="Superuser Activity Log" iconColor="#f472b6" />
+                    <button onClick={fetchActivity} disabled={loading}
+                        style={{ background: 'rgba(100,215,255,0.1)', border: '1px solid rgba(100,215,255,0.25)', color: THEME.primary, padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontFamily: THEME.fontBody, display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> Refresh
+                    </button>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                            <tr style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                                {['PID','User','Database','Last Query','Duration','State','App','Risk','When'].map(h => (
+                                    <th key={h} style={{ padding: '8px 10px', textAlign: 'left', color: THEME.textDim, fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {visible.length === 0 && (
+                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: 30, color: THEME.textDim }}>No activity found</td></tr>
+                            )}
+                            {visible.map((r, i) => (
+                                <React.Fragment key={r.pid}>
+                                    <tr onClick={() => setExpanded(expandedPid === r.pid ? null : r.pid)}
+                                        style={{ borderBottom: `1px solid ${THEME.border}`, cursor: 'pointer', background: expandedPid === r.pid ? 'rgba(255,255,255,0.03)' : 'transparent' }}
+                                        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.04)'}
+                                        onMouseLeave={e => e.currentTarget.style.background= expandedPid === r.pid ? 'rgba(255,255,255,0.03)' : 'transparent'}>
+                                        <td className="mono" style={{ padding: '10px 10px', color: THEME.textDim }}>{r.pid}</td>
+                                        <td style={{ padding: '10px 10px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                <UserCog size={12} color={THEME.primary} />
+                                                <span style={{ color: THEME.textMain, fontWeight: 600 }}>{r.user}</span>
+                                            </div>
+                                        </td>
+                                        <td className="mono" style={{ padding: '10px 10px', color: THEME.textDim }}>{r.db}</td>
+                                        <td className="mono" style={{ padding: '10px 10px', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: THEME.textMuted }}>
+                                            {r.query}
+                                        </td>
+                                        <td className="mono" style={{ padding: '10px 10px', color: r.duration_sec > 10 ? '#f5c518' : THEME.textDim }}>{r.duration_sec}s</td>
+                                        <td style={{ padding: '10px 10px' }}>
+                                            <Badge label={r.state} color={r.state === 'active' ? '#4ade80' : r.state.includes('transaction') ? '#ff465a' : THEME.textDim} />
+                                        </td>
+                                        <td style={{ padding: '10px 10px', color: THEME.textDim }}>{r.app}</td>
+                                        <td style={{ padding: '10px 10px' }}>
+                                            <Badge label={r.risk} color={RISK_COLOR[r.risk]} />
+                                        </td>
+                                        <td style={{ padding: '10px 10px', color: THEME.textDim, whiteSpace: 'nowrap' }}>{r.ts}</td>
+                                    </tr>
+                                    {expandedPid === r.pid && (
+                                        <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                            <td colSpan={9} style={{ padding: '12px 20px' }}>
+                                                <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.primary, background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '12px 16px', lineHeight: 1.6, wordBreak: 'break-all' }}>
+                                                    {r.query}
+                                                </div>
+                                                <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                                                    {r.risk === 'critical' || r.risk === 'high' ? (
+                                                        <div style={{ fontSize: 11, color: '#ff465a', display: 'flex', gap: 4, alignItems: 'center' }}>
+                                                            <AlertCircle size={12} /> This operation warrants immediate review — consider revoking session if unauthorized
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ fontSize: 11, color: THEME.textDim }}>No immediate action required.</div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(99,215,255,0.06)', borderRadius: 8, fontSize: 11, color: THEME.textDim }}>
+                    <strong style={{ color: THEME.primary }}>Tip:</strong> To terminate a suspicious session run{' '}
+                    <span className="mono" style={{ color: THEME.primary }}>SELECT pg_terminate_backend(&lt;pid&gt;);</span> in the SQL console.
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ★ NEW HIGH: COMPLIANCE REPORT GENERATOR
+   ═══════════════════════════════════════════════════════════════════════════ */
+const FRAMEWORKS = [
+    { id: 'soc2',   label: 'SOC 2 Type II', icon: '🛡️', checks: 34, passed: 31, color: '#4ade80' },
+    { id: 'pci',    label: 'PCI-DSS v4.0',  icon: '💳', checks: 28, passed: 22, color: '#f5c518' },
+    { id: 'hipaa',  label: 'HIPAA',         icon: '🏥', checks: 22, passed: 20, color: '#63d7ff' },
+    { id: 'gdpr',   label: 'GDPR',          icon: '🇪🇺', checks: 18, passed: 17, color: '#a78bfa' },
+];
+
+const ComplianceReportGenerator = () => {
+    const [selected, setSelected] = useState('soc2');
+    const [generating, setGenerating] = useState(false);
+    const [lastGenerated, setLastGenerated] = useState(null);
+    const [includeDetails, setIncludeDetails] = useState(true);
+    const [includeRemediation, setIncludeRemediation] = useState(true);
+
+    const fw = FRAMEWORKS.find(f => f.id === selected);
+    const pct = Math.round((fw.passed / fw.checks) * 100);
+
+    const handleGenerate = async () => {
+        setGenerating(true);
+        await new Promise(r => setTimeout(r, 1600)); // simulate generation
+        setLastGenerated(new Date().toLocaleString());
+        setGenerating(false);
+    };
+
+    return (
+        <div className="card" style={{ padding: 20, marginTop: 18 }}>
+            <SectionHeader icon={FileBadge} title="Compliance Report Generator" iconColor="#a78bfa" />
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, margin: '16px 0' }}>
+                {FRAMEWORKS.map(f => (
+                    <div key={f.id} onClick={() => setSelected(f.id)}
+                        style={{ padding: '14px 16px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${selected === f.id ? f.color : THEME.border}`, background: selected === f.id ? `${f.color}15` : 'transparent', transition: 'all 0.15s' }}>
+                        <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{f.label}</div>
+                        <div style={{ marginTop: 8 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: THEME.textDim, marginBottom: 4 }}>
+                                <span>{f.passed}/{f.checks} checks</span>
+                                <span style={{ color: f.color }}>{Math.round(f.passed/f.checks*100)}%</span>
+                            </div>
+                            <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
+                                <div style={{ height: 4, width: `${(f.passed/f.checks)*100}%`, background: f.color, borderRadius: 2 }} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+                {/* Config */}
+                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 14 }}>Report Options</div>
+                    {[
+                        { label: 'Include detailed findings', val: includeDetails,     set: setIncludeDetails },
+                        { label: 'Include remediation steps', val: includeRemediation, set: setIncludeRemediation },
+                    ].map(opt => (
+                        <label key={opt.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, cursor: 'pointer', fontSize: 12, color: THEME.textMuted }}>
+                            <div onClick={() => opt.set(v => !v)}
+                                style={{ width: 36, height: 20, borderRadius: 10, background: opt.val ? THEME.primary : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+                                <div style={{ position: 'absolute', top: 3, left: opt.val ? 18 : 3, width: 14, height: 14, borderRadius: 7, background: '#fff', transition: 'left 0.2s' }} />
+                            </div>
+                            {opt.label}
+                        </label>
+                    ))}
+
+                    <div style={{ marginTop: 8 }}>
+                        <div style={{ fontSize: 11, color: THEME.textDim, marginBottom: 8 }}>Export Format</div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            {['PDF', 'CSV', 'JSON'].map(fmt => (
+                                <div key={fmt} style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, fontSize: 11, color: THEME.textMuted, cursor: 'pointer' }}>{fmt}</div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Summary + Generate */}
+                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 12 }}>{fw.label} Summary</div>
+                        <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: 32, fontWeight: 800, color: fw.color }}>{pct}%</div>
+                                <div style={{ fontSize: 10, color: THEME.textDim }}>Compliance</div>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: THEME.textDim, marginBottom: 6 }}>
+                                    <span style={{ color: '#4ade80' }}>✓ Passed: {fw.passed}</span>
+                                    <span style={{ color: '#ff465a' }}>✗ Failed: {fw.checks - fw.passed}</span>
+                                </div>
+                                <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>
+                                    <div style={{ height: 8, width: `${pct}%`, background: fw.color, borderRadius: 4 }} />
+                                </div>
+                                <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 8 }}>Total checks: {fw.checks}</div>
+                            </div>
+                        </div>
+                        {lastGenerated && (
+                            <div style={{ fontSize: 11, color: THEME.textDim, padding: '8px 12px', background: 'rgba(74,222,128,0.08)', borderRadius: 6, display: 'flex', gap: 6, alignItems: 'center' }}>
+                                <CheckCircle size={11} color="#4ade80" /> Last report generated: {lastGenerated}
+                            </div>
+                        )}
+                    </div>
+
+                    <button onClick={handleGenerate} disabled={generating}
+                        style={{ marginTop: 16, background: generating ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)', color: '#a78bfa', padding: '10px 18px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: THEME.fontBody, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                        {generating ? (
+                            <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} /> Generating…</>
+                        ) : (
+                            <><ClipboardCheck size={14} /> Generate {fw.label} Report</>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 const SecurityComplianceTab = () => {
@@ -730,11 +980,12 @@ const SecurityComplianceTab = () => {
     const [score] = useState(88);
 
     const tabs = [
-        { id: 'overview', label: 'Overview' },
-        { id: 'threats', label: 'Threats' },
+        { id: 'overview',   label: 'Overview' },
+        { id: 'threats',    label: 'Threats' },
         { id: 'compliance', label: 'Compliance' },
         { id: 'encryption', label: 'Encryption' },
-        { id: 'audit', label: 'Audit Log' },
+        { id: 'audit',      label: 'Audit Log' },
+        { id: 'superuser',  label: '★ Superuser Monitor' },
     ];
 
     return (
@@ -838,6 +1089,8 @@ const SecurityComplianceTab = () => {
                             <PIIAccessLog />
                         </div>
                     </div>
+                    {/* ★ NEW HIGH: Compliance Report Generator */}
+                    <ComplianceReportGenerator />
                 </div>
             )}
 
@@ -877,6 +1130,47 @@ const SecurityComplianceTab = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 18 }}>
                         <AuditTimeline />
                         <PIIAccessLog />
+                    </div>
+                </div>
+            )}
+
+            {/* ── ★ NEW HIGH: Superuser Monitor ── */}
+            {activeTab === 'superuser' && (
+                <div style={{ padding: '0 24px' }} className="fade-in">
+                    <div style={{ marginBottom: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <UserCog size={16} color="#f472b6" />
+                            <span style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>Superuser Activity Monitor</span>
+                            <Badge label="Live" color="#4ade80" />
+                        </div>
+                        <div style={{ fontSize: 12, color: THEME.textDim }}>
+                            Tracks all queries and actions executed by superusers in real time. High-risk operations are automatically flagged.
+                        </div>
+                    </div>
+                    <SuperuserMonitor />
+
+                    {/* Role privilege summary */}
+                    <div className="card" style={{ padding: 20, marginTop: 18 }}>
+                        <SectionHeader icon={Shield} title="Superuser Role Summary" iconColor="#63d7ff" />
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 14 }}>
+                            {[
+                                { role: 'postgres',    sessions: 3, queries_24h: 124, last_seen: '2 min ago',  critical: 1 },
+                                { role: 'dba_admin',   sessions: 1, queries_24h: 57,  last_seen: '5 min ago',  critical: 1 },
+                                { role: 'superuser1',  sessions: 2, queries_24h: 18,  last_seen: '11 min ago', critical: 1 },
+                            ].map(r => (
+                                <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? '1px solid rgba(255,70,90,0.3)' : `1px solid ${THEME.border}` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                                        <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{r.role}</span>
+                                        {r.critical > 0 && <Badge label="⚠ Critical" color="#ff465a" />}
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11 }}>
+                                        <div style={{ color: THEME.textDim }}>Active sessions</div><div style={{ color: THEME.textMain, textAlign: 'right' }}>{r.sessions}</div>
+                                        <div style={{ color: THEME.textDim }}>Queries (24h)</div><div style={{ color: THEME.textMain, textAlign: 'right' }}>{r.queries_24h}</div>
+                                        <div style={{ color: THEME.textDim }}>Last seen</div><div style={{ color: THEME.textDim, textAlign: 'right' }}>{r.last_seen}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}

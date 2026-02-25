@@ -980,6 +980,7 @@ const SchemaVersioningTab = () => {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [view, setView] = useState('timeline');
     const [envDiff, setEnvDiff] = useState({ source: 'staging', target: 'production' });
+    const [diffSqlMode, setDiffSqlMode] = useState(false); // ★ NEW: SQL/DDL diff view mode
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTags, setFilterTags] = useState([]);
     const [expandedMigrations, setExpandedMigrations] = useState([]);
@@ -1332,6 +1333,10 @@ const SchemaVersioningTab = () => {
                             </React.Fragment>
                         ))}
                         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                            {/* ★ NEW: SQL/Table view toggle */}
+                            <button className={diffSqlMode ? 'sv-btn-primary' : 'sv-btn-secondary'} onClick={() => setDiffSqlMode(v => !v)}>
+                                <Code size={13} /> {diffSqlMode ? 'SQL View' : 'SQL View'}
+                            </button>
                             <button className="sv-btn-secondary"><RefreshCw size={13} /> Refresh</button>
                             <button className="sv-btn-primary"><Code size={13} /> Generate Sync Script</button>
                         </div>
@@ -1352,6 +1357,39 @@ const SchemaVersioningTab = () => {
                                 </div>
                             ))}
                         </div>
+
+                        {/* ★ NEW: SQL / DDL diff mode */}
+                        {diffSqlMode && (
+                            <div style={{ marginBottom: 28, background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
+                                <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>DDL Diff — {envDiff.source} → {envDiff.target}</span>
+                                    <span style={{ fontSize: 11, color: THEME.textDim }}>git-style unified diff</span>
+                                </div>
+                                <pre style={{ margin: 0, padding: '16px', overflowX: 'auto', fontSize: 11.5, lineHeight: 1.7, fontFamily: THEME.fontMono, color: THEME.textMuted }}>
+                                    {SCHEMA_DIFF.flatMap(item => {
+                                        const lines = [];
+                                        lines.push(`--- ${envDiff.source}/${item.schema}.${item.table}`);
+                                        lines.push(`+++ ${envDiff.target}/${item.schema}.${item.table}`);
+                                        (item.changes || []).forEach(c => {
+                                            if (c.status === 'added')   lines.push(`+ ADD COLUMN ${c.field} ${c.type}${c.nullable?' NULL':' NOT NULL'}${c.default?` DEFAULT ${c.default}`:''};`);
+                                            if (c.status === 'removed') lines.push(`- DROP COLUMN ${c.field}; -- was ${c.type}`);
+                                            if (c.status === 'changed') lines.push(`~ ALTER COLUMN ${c.field} TYPE ${c.to}; -- was ${c.from}`);
+                                        });
+                                        (item.indexes || []).forEach(idx => {
+                                            if (idx.status === 'added') lines.push(`+ CREATE${idx.unique?' UNIQUE':''} INDEX ${idx.name} ON ${item.schema}.${item.table} (${idx.columns.join(', ')});`);
+                                        });
+                                        return lines;
+                                    }).map((line, i) => (
+                                        <span key={i} style={{
+                                            display: 'block',
+                                            background: line.startsWith('+') ? 'rgba(16,185,129,0.08)' : line.startsWith('-') ? 'rgba(239,68,68,0.08)' : line.startsWith('~') ? 'rgba(245,158,11,0.07)' : 'transparent',
+                                            color: line.startsWith('+') ? '#34d399' : line.startsWith('-') ? '#f87171' : line.startsWith('~') ? '#fbbf24' : line.startsWith('---') || line.startsWith('+++') ? '#a5b4fc' : THEME.textMuted,
+                                            paddingLeft: 8,
+                                        }}>{line}</span>
+                                    ))}
+                                </pre>
+                            </div>
+                        )}
 
                         {/* Diff items */}
                         {SCHEMA_DIFF.map((item, i) => (

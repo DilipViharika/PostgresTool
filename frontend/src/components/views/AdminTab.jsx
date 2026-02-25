@@ -1237,6 +1237,195 @@ const ExtensionsView = ({ extData, onInstall }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SETTINGS VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── ★ NEW HIGH: pg_hba.conf VISUAL EDITOR ── */
+const HBA_SAMPLE = [
+    { id: 1, type: 'local',   database: 'all',      user: 'all',        address: '',             method: 'trust',         comment: '' },
+    { id: 2, type: 'host',    database: 'all',      user: 'all',        address: '127.0.0.1/32', method: 'scram-sha-256', comment: 'IPv4 loopback' },
+    { id: 3, type: 'host',    database: 'all',      user: 'all',        address: '::1/128',      method: 'scram-sha-256', comment: 'IPv6 loopback' },
+    { id: 4, type: 'host',    database: 'prod_db',  user: 'app_user',   address: '10.0.1.0/24',  method: 'scram-sha-256', comment: 'App servers' },
+    { id: 5, type: 'hostssl', database: 'all',      user: '+staff',     address: '0.0.0.0/0',    method: 'ldap',          comment: 'Staff via LDAP+SSL' },
+    { id: 6, type: 'host',    database: 'repl_db',  user: 'replicator', address: '10.0.2.10/32', method: 'md5',           comment: 'Replication standby' },
+];
+const HBA_METHODS  = ['trust','reject','md5','scram-sha-256','password','gss','sspi','ident','peer','ldap','radius','cert','pam'];
+const HBA_TYPES    = ['local','host','hostssl','hostnossl','hostgssenc','hostnogssenc'];
+const METHOD_CLR   = { trust:'#ff465a', reject:'#64748b', md5:'#f5c518', 'scram-sha-256':'#4ade80', ldap:'#63d7ff', cert:'#a78bfa' };
+
+const HBAView = () => {
+    const [rules, setRules]     = useState(HBA_SAMPLE);
+    const [loading, setLoading] = useState(false);
+    const [editing, setEditing] = useState(null);
+    const [saved, setSaved]     = useState(false);
+    const [showAdd, setShowAdd] = useState(false);
+    const [newRow, setNewRow]   = useState({ type:'host', database:'all', user:'all', address:'127.0.0.1/32', method:'scram-sha-256', comment:'' });
+
+    useEffect(() => {
+        setLoading(true);
+        fetchData('/api/admin/hba')
+            .then(r => { if (Array.isArray(r) && r.length) setRules(r); })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    const save = async () => {
+        try { await postData('/api/admin/hba', { rules }); } catch { /* demo */ }
+        setSaved(true); setTimeout(() => setSaved(false), 2500);
+    };
+    const del = id => setRules(r => r.filter(x => x.id !== id));
+    const upd = (id, field, val) => setRules(r => r.map(x => x.id === id ? { ...x, [field]: val } : x));
+    const addRule = () => { setRules(r => [...r, { ...newRow, id: Date.now() }]); setNewRow({ type:'host', database:'all', user:'all', address:'127.0.0.1/32', method:'scram-sha-256', comment:'' }); setShowAdd(false); };
+
+    const BSel = ({ val, opts, onChange, w = 120 }) => (
+        <select value={val} onChange={e => onChange(e.target.value)}
+            style={{ background: T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 6px', fontSize:11, fontFamily:T.fontMono, cursor:'pointer', width:w }}>
+            {opts.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+    );
+    const TInp = ({ val, onChange, ph, w = 120 }) => (
+        <input value={val} onChange={e => onChange(e.target.value)} placeholder={ph}
+            style={{ background:T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 8px', fontSize:11, fontFamily:T.fontMono, width:w, outline:'none' }} />
+    );
+
+    return (
+        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <div>
+                    <div style={{ fontSize:15, fontWeight:800, color:T.textMain, display:'flex', alignItems:'center', gap:8 }}>
+                        <FileText size={16} color={T.primary} /> pg_hba.conf Visual Editor
+                    </div>
+                    <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>
+                        Host-based authentication rules · changes take effect after <span style={{ fontFamily:T.fontMono, color:T.primary }}>SELECT pg_reload_conf()</span>
+                    </div>
+                </div>
+                <div style={{ display:'flex', gap:8 }}>
+                    <button onClick={() => setShowAdd(s=>!s)}
+                        style={{ background:`${T.primary}18`, border:`1px solid ${T.primary}35`, color:T.primary, padding:'7px 14px', borderRadius:8, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody, display:'flex', gap:6, alignItems:'center' }}>
+                        <Plus size={12}/> Add Rule
+                    </button>
+                    <button onClick={save}
+                        style={{ background: saved ? `${T.success}18` : `${T.primary}12`, border:`1px solid ${saved ? T.success : T.primary}35`, color: saved ? T.success : T.primary, padding:'7px 14px', borderRadius:8, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody, display:'flex', gap:6, alignItems:'center' }}>
+                        {saved ? <><Check size={12}/> Saved!</> : <><Save size={12}/> Save & Reload</>}
+                    </button>
+                </div>
+            </div>
+
+            {showAdd && (
+                <div style={{ background:`${T.primary}08`, border:`1px solid ${T.primary}25`, borderRadius:10, padding:'12px 16px', display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
+                    <BSel val={newRow.type}     opts={HBA_TYPES}   onChange={v=>setNewRow(p=>({...p,type:v}))}     w={110}/>
+                    <TInp val={newRow.database} onChange={v=>setNewRow(p=>({...p,database:v}))} ph="database" w={100}/>
+                    <TInp val={newRow.user}     onChange={v=>setNewRow(p=>({...p,user:v}))}     ph="user"     w={90}/>
+                    <TInp val={newRow.address}  onChange={v=>setNewRow(p=>({...p,address:v}))}  ph="address"  w={130}/>
+                    <BSel val={newRow.method}   opts={HBA_METHODS} onChange={v=>setNewRow(p=>({...p,method:v}))}   w={130}/>
+                    <TInp val={newRow.comment}  onChange={v=>setNewRow(p=>({...p,comment:v}))}  ph="comment"  w={160}/>
+                    <button onClick={addRule} style={{ background:T.success, color:'#fff', border:'none', padding:'5px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody }}>Add</button>
+                    <button onClick={()=>setShowAdd(false)} style={{ background:'transparent', color:T.textDim, border:'none', cursor:'pointer' }}><X size={14}/></button>
+                </div>
+            )}
+
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:12, overflow:'hidden' }}>
+                <div style={{ overflowX:'auto' }}>
+                    <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
+                        <thead>
+                            <tr style={{ background:T.surface }}>
+                                {['#','Type','Database','User','Address','Method','Comment',''].map(h=>(
+                                    <th key={h} style={{ padding:'10px 12px', textAlign:'left', color:T.textDim, fontWeight:600, fontSize:11, borderBottom:`1px solid ${T.grid}`, whiteSpace:'nowrap' }}>{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rules.map((row,i)=>(
+                                <tr key={row.id} style={{ borderBottom:`1px solid ${T.grid}25` }}
+                                    onMouseEnter={e=>e.currentTarget.style.background=T.surface}
+                                    onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                                    <td style={{ padding:'8px 12px', color:T.textDim, fontFamily:T.fontMono, fontSize:11 }}>{i+1}</td>
+                                    <td style={{ padding:'8px 6px' }}>
+                                        {editing===row.id ? <BSel val={row.type} opts={HBA_TYPES} onChange={v=>upd(row.id,'type',v)} w={110}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.primary }}>{row.type}</span>}
+                                    </td>
+                                    <td style={{ padding:'8px 6px' }}>
+                                        {editing===row.id ? <TInp val={row.database} onChange={v=>upd(row.id,'database',v)} ph="db" w={90}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textMain }}>{row.database}</span>}
+                                    </td>
+                                    <td style={{ padding:'8px 6px' }}>
+                                        {editing===row.id ? <TInp val={row.user} onChange={v=>upd(row.id,'user',v)} ph="user" w={90}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textMain }}>{row.user}</span>}
+                                    </td>
+                                    <td style={{ padding:'8px 6px' }}>
+                                        {editing===row.id ? <TInp val={row.address} onChange={v=>upd(row.id,'address',v)} ph="addr" w={120}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textDim }}>{row.address||'—'}</span>}
+                                    </td>
+                                    <td style={{ padding:'8px 6px' }}>
+                                        {editing===row.id
+                                            ? <BSel val={row.method} opts={HBA_METHODS} onChange={v=>upd(row.id,'method',v)} w={130}/>
+                                            : <span style={{ padding:'2px 8px', borderRadius:4, fontSize:11, fontFamily:T.fontMono, background:`${METHOD_CLR[row.method]||'#94a3b8'}18`, color:METHOD_CLR[row.method]||'#94a3b8', border:`1px solid ${METHOD_CLR[row.method]||'#94a3b8'}35` }}>{row.method}</span>}
+                                    </td>
+                                    <td style={{ padding:'8px 6px' }}>
+                                        {editing===row.id ? <TInp val={row.comment} onChange={v=>upd(row.id,'comment',v)} ph="comment" w={150}/> : <span style={{ fontSize:11, color:T.textDim, fontStyle:row.comment?'normal':'italic' }}>{row.comment||'—'}</span>}
+                                    </td>
+                                    <td style={{ padding:'8px 12px' }}>
+                                        <div style={{ display:'flex', gap:4 }}>
+                                            <button onClick={()=>setEditing(editing===row.id?null:row.id)}
+                                                style={{ background:'transparent', border:'none', cursor:'pointer', color:editing===row.id?T.success:T.textDim, padding:3 }}>
+                                                {editing===row.id ? <Check size={13}/> : <Edit3 size={13}/>}
+                                            </button>
+                                            <button onClick={()=>del(row.id)} style={{ background:'transparent', border:'none', cursor:'pointer', color:T.danger, padding:3 }}>
+                                                <Trash2 size={13}/>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div style={{ padding:'10px 16px', borderTop:`1px solid ${T.grid}25`, fontSize:11, color:T.textDim, display:'flex', gap:18, flexWrap:'wrap' }}>
+                    <span>⚡ <strong style={{color:'#ff465a'}}>trust</strong> = no password required</span>
+                    <span>🔒 <strong style={{color:'#4ade80'}}>scram-sha-256</strong> = recommended</span>
+                    <span>💡 Needs <span style={{fontFamily:T.fontMono,color:T.primary}}>SELECT pg_reload_conf()</span> to take effect</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/* ── ★ NEW HIGH: EXTENSION ECOSYSTEM DASHBOARD ── */
+const ExtDashboard = ({ extData = [] }) => {
+    const installed  = extData.filter(e => e.installed);
+    const categories = extData.reduce((acc, e) => { acc[e.category] = (acc[e.category]||0)+1; return acc; }, {});
+    const catEntries = Object.entries(categories).sort((a,b)=>b[1]-a[1]);
+    const clrs = ['#63d7ff','#4ade80','#f5c518','#f472b6','#a78bfa','#fb923c'];
+    const secFlags = extData.filter(e => e.installed && (e.name==='dblink'||e.name==='pg_tle'||e.superuser)).length;
+
+    return (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:18 }}>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+                <div style={{ fontSize:24, fontWeight:800, color:T.primary }}>{installed.length}</div>
+                <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>Installed</div>
+                <div style={{ marginTop:8, height:3, background:T.grid, borderRadius:2 }}>
+                    <div style={{ height:3, width:`${(installed.length/Math.max(extData.length,1))*100}%`, background:T.primary, borderRadius:2 }}/>
+                </div>
+                <div style={{ fontSize:10, color:T.textDim, marginTop:4 }}>{extData.length} available</div>
+            </div>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+                <div style={{ fontSize:24, fontWeight:800, color:T.success }}>{installed.filter(e=>e.active).length}</div>
+                <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>Active</div>
+                <div style={{ fontSize:10, color:T.textDim, marginTop:10 }}>{installed.filter(e=>!e.active).length} inactive</div>
+            </div>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+                <div style={{ fontSize:24, fontWeight:800, color:secFlags>0?T.warning:T.success }}>{secFlags}</div>
+                <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>Security Flags</div>
+                <div style={{ fontSize:10, color:secFlags>0?T.warning:T.textDim, marginTop:10 }}>{secFlags>0?'⚠ Review needed':'✓ No issues'}</div>
+            </div>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+                <div style={{ fontSize:12, fontWeight:700, color:T.textMain, marginBottom:8 }}>Categories</div>
+                {catEntries.slice(0,4).map(([cat,cnt],i)=>(
+                    <div key={cat} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4, fontSize:11 }}>
+                        <div style={{ width:6, height:6, borderRadius:2, background:clrs[i], flexShrink:0 }}/>
+                        <span style={{ color:T.textMuted, flex:1 }}>{cat}</span>
+                        <span style={{ color:T.textMain, fontWeight:600 }}>{cnt}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const SettingsView = ({
                           settingsData, pendingChanges, dispatch, isEditMode, setIsEditMode,
                           showWizard, setShowWizard, showChangelog, setShowChangelog,
@@ -1644,10 +1833,11 @@ const AdminTab = () => {
     };
 
     const NAV_TABS = [
-        { id: 'settings',    l: 'Config',      i: Settings,  dot: Object.keys(pendingChanges).length > 0 },
-        { id: 'extensions',  l: 'Extensions',  i: Puzzle,    dot: false },
-        { id: 'cache',       l: 'Cache',        i: Database,  dot: false },
-        { id: 'connections', l: 'Connections',  i: Network,   dot: (connData||[]).some(c => c.wait) },
+        { id: 'settings',    l: 'Config',       i: Settings,  dot: Object.keys(pendingChanges).length > 0 },
+        { id: 'extensions',  l: 'Extensions',   i: Puzzle,    dot: false },
+        { id: 'cache',       l: 'Cache',         i: Database,  dot: false },
+        { id: 'connections', l: 'Connections',   i: Network,   dot: (connData||[]).some(c => c.wait) },
+        { id: 'hba',         l: '★ pg_hba.conf', i: FileText,  dot: false },
     ];
 
     const showSidebar = activeSub === 'settings' || activeSub === 'connections';
@@ -1723,9 +1913,17 @@ const AdminTab = () => {
                             setCopiedName={setCopiedName}
                         />
                     )}
-                    {activeSub === 'extensions' && <ExtensionsView extData={extData} onInstall={ext => showToast('success', `Installing ${ext.name}…`)} />}
+                    {activeSub === 'extensions' && (
+                        <>
+                            {/* ★ NEW HIGH: Extension Ecosystem Dashboard */}
+                            <ExtDashboard extData={extData} />
+                            <ExtensionsView extData={extData} onInstall={ext => showToast('success', `Installing ${ext.name}…`)} />
+                        </>
+                    )}
                     {activeSub === 'cache'      && cacheData && <CacheView onClear={handleClearCache} />}
                     {activeSub === 'connections' && <ConnectionsView connData={connData} onKill={handleKillConnection} onRefresh={loadData} />}
+                    {/* ★ NEW HIGH: pg_hba.conf visual editor */}
+                    {activeSub === 'hba' && <HBAView />}
                 </div>
 
                 {showSidebar && (

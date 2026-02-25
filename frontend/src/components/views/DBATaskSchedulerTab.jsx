@@ -24,6 +24,9 @@ const DBATaskSchedulerTab = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [expandedNotes, setExpandedNotes] = useState(null);
+  const [pendingApprovals, setPendingApprovals] = useState([]);
+  const [execHistory, setExecHistory] = useState([]);
+  const [activeMainTab, setActiveMainTab] = useState('tasks'); // 'tasks' | 'approvals' | 'history'
 
   const [formData, setFormData] = useState({
     title: '',
@@ -160,6 +163,54 @@ const DBATaskSchedulerTab = () => {
     });
   };
 
+  const requiresApproval = (priority) => {
+    return priority === 'critical' || priority === 'high';
+  };
+
+  const handleTaskExecution = (taskId, taskTitle) => {
+    const now = new Date();
+    const historyEntry = {
+      id: `${taskId}-${Date.now()}`,
+      taskId,
+      taskTitle,
+      startTime: now.toLocaleString(),
+      timestamp: now.getTime(),
+      duration: '0s',
+      status: 'Running',
+    };
+    setExecHistory([historyEntry, ...execHistory]);
+  };
+
+  const updateHistoryStatus = (taskId, status) => {
+    setExecHistory(prev =>
+      prev.map(entry => {
+        if (entry.taskId === taskId && entry.status === 'Running') {
+          const duration = Math.round((Date.now() - entry.timestamp) / 1000);
+          return { ...entry, status, duration: duration > 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s` };
+        }
+        return entry;
+      })
+    );
+  };
+
+  const handleApproveTask = (taskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      handleTaskExecution(taskId, task.title);
+      setPendingApprovals(pending => pending.filter(p => p !== taskId));
+    }
+  };
+
+  const handleRejectTask = (taskId) => {
+    setPendingApprovals(pending => pending.filter(p => p !== taskId));
+  };
+
+  const handleTaskRequestApproval = (taskId) => {
+    if (!pendingApprovals.includes(taskId)) {
+      setPendingApprovals([...pendingApprovals, taskId]);
+    }
+  };
+
   const getFilteredTasks = () => {
     let filtered = tasks;
 
@@ -244,6 +295,40 @@ const DBATaskSchedulerTab = () => {
           </div>
         </div>
 
+        {/* Main Tab Buttons */}
+        <div style={styles.mainTabsContainer}>
+          <button
+            onClick={() => setActiveMainTab('tasks')}
+            style={{
+              ...styles.mainTabButton,
+              ...(activeMainTab === 'tasks' ? styles.mainTabButtonActive : {}),
+            }}
+          >
+            Tasks
+          </button>
+          <button
+            onClick={() => setActiveMainTab('approvals')}
+            style={{
+              ...styles.mainTabButton,
+              ...(activeMainTab === 'approvals' ? styles.mainTabButtonActive : {}),
+            }}
+          >
+            Pending Approval
+            {pendingApprovals.length > 0 && (
+              <span style={styles.badgeCount}>{pendingApprovals.length}</span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveMainTab('history')}
+            style={{
+              ...styles.mainTabButton,
+              ...(activeMainTab === 'history' ? styles.mainTabButtonActive : {}),
+            }}
+          >
+            Execution Log
+          </button>
+        </div>
+
         {/* Stats Row */}
         <div style={styles.statsRow}>
           <StatCard
@@ -319,6 +404,9 @@ const DBATaskSchedulerTab = () => {
         </button>
       </div>
 
+      {/* Content based on active tab */}
+      {activeMainTab === 'tasks' && (
+        <>
       {/* Add Task Form */}
       {showAddForm && (
         <div style={styles.formContainer}>
@@ -450,10 +538,122 @@ const DBATaskSchedulerTab = () => {
                     getPriorityColor={getPriorityColor}
                     expandedNotes={expandedNotes}
                     setExpandedNotes={setExpandedNotes}
+                    requiresApproval={requiresApproval(task.priority)}
+                    onRequestApproval={() => handleTaskRequestApproval(task.id)}
                   />
                 ))}
               </div>
             ) : null
+          )}
+        </div>
+      )}
+        </>
+      )}
+
+      {/* Pending Approvals Tab */}
+      {activeMainTab === 'approvals' && (
+        <div style={styles.panelContainer}>
+          <h2 style={styles.panelTitle}>Tasks Pending Approval</h2>
+          {pendingApprovals.length === 0 ? (
+            <div style={styles.emptyPanelState}>
+              <div style={styles.checkmarkIcon}>✅</div>
+              <div>No tasks pending approval</div>
+            </div>
+          ) : (
+            <div style={styles.approvalsList}>
+              {tasks
+                .filter(task => pendingApprovals.includes(task.id) && requiresApproval(task.priority))
+                .map(task => (
+                  <div key={task.id} style={styles.approvalCard}>
+                    <div style={styles.approvalRiskBanner}>
+                      <span>⚠️ This is a high-risk task. Review before approving.</span>
+                    </div>
+                    <div style={styles.approvalContent}>
+                      <div style={styles.approvalHeader}>
+                        <div>
+                          <div style={styles.approvalTaskTitle}>{task.title}</div>
+                          <div style={styles.approvalTaskMeta}>
+                            <span style={styles.approvalCategory}>{task.category}</span>
+                            <span
+                              style={{
+                                ...styles.approvalPriorityBadge,
+                                backgroundColor: task.priority === 'critical' ? THEME.danger : THEME.danger,
+                                color: THEME.bg,
+                              }}
+                            >
+                              {task.priority.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={styles.approvalActions}>
+                        <button
+                          onClick={() => handleApproveTask(task.id)}
+                          style={styles.approveButton}
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectTask(task.id)}
+                          style={styles.rejectButton}
+                        >
+                          ✕ Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Execution Log Tab */}
+      {activeMainTab === 'history' && (
+        <div style={styles.panelContainer}>
+          <h2 style={styles.panelTitle}>Task Execution History</h2>
+          {execHistory.length === 0 ? (
+            <div style={styles.emptyPanelState}>
+              <div style={styles.historyIcon}>📋</div>
+              <div>No execution history yet. Run a task to see history here.</div>
+            </div>
+          ) : (
+            <div style={styles.historyTable}>
+              <div style={styles.historyHeader}>
+                <div style={styles.historyCol1}>Task Name</div>
+                <div style={styles.historyCol2}>Start Time</div>
+                <div style={styles.historyCol3}>Duration</div>
+                <div style={styles.historyCol4}>Status</div>
+              </div>
+              {execHistory.map(entry => (
+                <div key={entry.id} style={styles.historyRow}>
+                  <div style={styles.historyCol1}>{entry.taskTitle}</div>
+                  <div style={styles.historyCol2}>{entry.startTime}</div>
+                  <div style={styles.historyCol3}>{entry.duration}</div>
+                  <div style={styles.historyCol4}>
+                    <span
+                      style={{
+                        ...styles.statusBadge,
+                        backgroundColor:
+                          entry.status === 'Success'
+                            ? `${THEME.success}30`
+                            : entry.status === 'Failed'
+                            ? `${THEME.danger}30`
+                            : `${THEME.warning}30`,
+                        color:
+                          entry.status === 'Success'
+                            ? THEME.success
+                            : entry.status === 'Failed'
+                            ? THEME.danger
+                            : THEME.warning,
+                      }}
+                    >
+                      {entry.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -489,6 +689,8 @@ const TaskRow = ({
   getPriorityColor,
   expandedNotes,
   setExpandedNotes,
+  requiresApproval,
+  onRequestApproval,
 }) => {
   const [editForm, setEditForm] = useState(task);
 
@@ -566,14 +768,19 @@ const TaskRow = ({
         />
 
         <div style={styles.taskContent}>
-          <div
-            style={{
-              ...styles.taskTitle,
-              textDecoration: task.done ? 'line-through' : 'none',
-              opacity: task.done ? 0.6 : 1,
-            }}
-          >
-            {task.title}
+          <div style={styles.taskTitleRow}>
+            <div
+              style={{
+                ...styles.taskTitle,
+                textDecoration: task.done ? 'line-through' : 'none',
+                opacity: task.done ? 0.6 : 1,
+              }}
+            >
+              {task.title}
+            </div>
+            {requiresApproval && (
+              <span style={styles.approvalRequiredBadge}>⚠️ Requires Approval</span>
+            )}
           </div>
           <div style={styles.taskMeta}>
             {task.recurrence && (
@@ -1152,6 +1359,261 @@ const styles = {
     fontWeight: 600,
     transition: 'all 0.2s ease',
     fontFamily: THEME.fontBody,
+  },
+
+  mainTabsContainer: {
+    display: 'flex',
+    gap: 12,
+    marginTop: 16,
+    borderBottom: `1px solid ${THEME.glassBorder}`,
+    paddingBottom: 12,
+  },
+
+  mainTabButton: {
+    padding: '8px 16px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: THEME.textMuted,
+    borderRadius: 0,
+    borderBottom: `2px solid transparent`,
+    cursor: 'pointer',
+    fontSize: 14,
+    fontWeight: 500,
+    transition: 'all 0.2s ease',
+    fontFamily: THEME.fontBody,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    position: 'relative',
+  },
+
+  mainTabButtonActive: {
+    color: THEME.primary,
+    borderBottomColor: THEME.primary,
+  },
+
+  badgeCount: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 20,
+    height: 20,
+    backgroundColor: THEME.danger,
+    color: THEME.bg,
+    borderRadius: '50%',
+    fontSize: 11,
+    fontWeight: 700,
+    marginLeft: 4,
+  },
+
+  panelContainer: {
+    marginTop: 24,
+  },
+
+  panelTitle: {
+    fontSize: 18,
+    fontWeight: 600,
+    color: THEME.textMain,
+    margin: '0 0 20px 0',
+    fontFamily: THEME.fontDisplay,
+  },
+
+  emptyPanelState: {
+    textAlign: 'center',
+    padding: 60,
+    color: THEME.textMuted,
+    fontSize: 14,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  checkmarkIcon: {
+    fontSize: 40,
+    marginBottom: 8,
+  },
+
+  historyIcon: {
+    fontSize: 40,
+    marginBottom: 8,
+  },
+
+  approvalsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+
+  approvalCard: {
+    backgroundColor: THEME.surface,
+    border: `1px solid ${THEME.glassBorder}`,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+
+  approvalRiskBanner: {
+    padding: '12px 16px',
+    backgroundColor: `${THEME.danger}15`,
+    borderBottom: `1px solid ${THEME.danger}30`,
+    color: THEME.danger,
+    fontSize: 13,
+    fontWeight: 500,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  approvalContent: {
+    padding: '16px',
+  },
+
+  approvalHeader: {
+    marginBottom: 16,
+  },
+
+  approvalTaskTitle: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: THEME.textMain,
+    marginBottom: 8,
+  },
+
+  approvalTaskMeta: {
+    display: 'flex',
+    gap: 8,
+    alignItems: 'center',
+  },
+
+  approvalCategory: {
+    fontSize: 12,
+    backgroundColor: `${THEME.primary}20`,
+    color: THEME.primary,
+    padding: '2px 8px',
+    borderRadius: 3,
+    fontWeight: 500,
+  },
+
+  approvalPriorityBadge: {
+    fontSize: 11,
+    padding: '4px 10px',
+    borderRadius: 3,
+    fontWeight: 600,
+    textTransform: 'uppercase',
+  },
+
+  approvalActions: {
+    display: 'flex',
+    gap: 10,
+  },
+
+  approveButton: {
+    flex: 1,
+    padding: '8px 16px',
+    backgroundColor: THEME.success,
+    border: 'none',
+    color: THEME.bg,
+    borderRadius: 6,
+    cursor: 'pointer',
+    fontSize: 13,
+    fontWeight: 600,
+    transition: 'all 0.2s ease',
+    fontFamily: THEME.fontBody,
+  },
+
+  rejectButton: {
+    flex: 1,
+    padding: '8px 16px',
+    backgroundColor: THEME.danger,
+    border: 'none',
+    color: THEME.bg,
+    borderRadius: 6,
+    cursor: 'pointer',
+    fontSize: 13,
+    fontWeight: 600,
+    transition: 'all 0.2s ease',
+    fontFamily: THEME.fontBody,
+  },
+
+  historyTable: {
+    backgroundColor: THEME.surface,
+    border: `1px solid ${THEME.glassBorder}`,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+
+  historyHeader: {
+    display: 'grid',
+    gridTemplateColumns: '2fr 1.5fr 1fr 1fr',
+    gap: 0,
+    padding: '12px 16px',
+    backgroundColor: THEME.surfaceHover,
+    borderBottom: `1px solid ${THEME.glassBorder}`,
+    fontWeight: 600,
+    fontSize: 13,
+    color: THEME.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+
+  historyRow: {
+    display: 'grid',
+    gridTemplateColumns: '2fr 1.5fr 1fr 1fr',
+    gap: 0,
+    padding: '12px 16px',
+    borderBottom: `1px solid ${THEME.glassBorder}`,
+    alignItems: 'center',
+    fontSize: 13,
+    color: THEME.textMain,
+  },
+
+  historyCol1: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+
+  historyCol2: {
+    fontSize: 12,
+    color: THEME.textMuted,
+  },
+
+  historyCol3: {
+    fontSize: 12,
+    color: THEME.textMuted,
+    fontFamily: THEME.fontMono,
+  },
+
+  historyCol4: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+
+  statusBadge: {
+    display: 'inline-block',
+    padding: '4px 10px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 600,
+    textTransform: 'uppercase',
+  },
+
+  taskTitleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+
+  approvalRequiredBadge: {
+    display: 'inline-block',
+    fontSize: 11,
+    backgroundColor: `${THEME.danger}20`,
+    color: THEME.danger,
+    padding: '2px 8px',
+    borderRadius: 3,
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
   },
 };
 
