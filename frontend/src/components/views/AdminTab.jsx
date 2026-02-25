@@ -1251,6 +1251,18 @@ const HBA_METHODS  = ['trust','reject','md5','scram-sha-256','password','gss','s
 const HBA_TYPES    = ['local','host','hostssl','hostnossl','hostgssenc','hostnogssenc'];
 const METHOD_CLR   = { trust:'#ff465a', reject:'#64748b', md5:'#f5c518', 'scram-sha-256':'#4ade80', ldap:'#63d7ff', cert:'#a78bfa' };
 
+/* ── Shared mini form controls — defined OUTSIDE HBAView so React doesn't remount on each render ── */
+const HBASelect = ({ val, opts, onChange, w = 120 }) => (
+    <select value={val} onChange={e => onChange(e.target.value)}
+        style={{ background: T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 6px', fontSize:11, fontFamily:T.fontMono, cursor:'pointer', width:w }}>
+        {opts.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+);
+const HBAInput = ({ val, onChange, ph, w = 120 }) => (
+    <input value={val} onChange={e => onChange(e.target.value)} placeholder={ph}
+        style={{ background:T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 8px', fontSize:11, fontFamily:T.fontMono, width:w, outline:'none' }} />
+);
+
 const HBAView = () => {
     const [rules, setRules]     = useState(HBA_SAMPLE);
     const [loading, setLoading] = useState(false);
@@ -1274,17 +1286,6 @@ const HBAView = () => {
     const del = id => setRules(r => r.filter(x => x.id !== id));
     const upd = (id, field, val) => setRules(r => r.map(x => x.id === id ? { ...x, [field]: val } : x));
     const addRule = () => { setRules(r => [...r, { ...newRow, id: Date.now() }]); setNewRow({ type:'host', database:'all', user:'all', address:'127.0.0.1/32', method:'scram-sha-256', comment:'' }); setShowAdd(false); };
-
-    const BSel = ({ val, opts, onChange, w = 120 }) => (
-        <select value={val} onChange={e => onChange(e.target.value)}
-            style={{ background: T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 6px', fontSize:11, fontFamily:T.fontMono, cursor:'pointer', width:w }}>
-            {opts.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-    );
-    const TInp = ({ val, onChange, ph, w = 120 }) => (
-        <input value={val} onChange={e => onChange(e.target.value)} placeholder={ph}
-            style={{ background:T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 8px', fontSize:11, fontFamily:T.fontMono, width:w, outline:'none' }} />
-    );
 
     return (
         <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
@@ -1311,12 +1312,12 @@ const HBAView = () => {
 
             {showAdd && (
                 <div style={{ background:`${T.primary}08`, border:`1px solid ${T.primary}25`, borderRadius:10, padding:'12px 16px', display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
-                    <BSel val={newRow.type}     opts={HBA_TYPES}   onChange={v=>setNewRow(p=>({...p,type:v}))}     w={110}/>
-                    <TInp val={newRow.database} onChange={v=>setNewRow(p=>({...p,database:v}))} ph="database" w={100}/>
-                    <TInp val={newRow.user}     onChange={v=>setNewRow(p=>({...p,user:v}))}     ph="user"     w={90}/>
-                    <TInp val={newRow.address}  onChange={v=>setNewRow(p=>({...p,address:v}))}  ph="address"  w={130}/>
-                    <BSel val={newRow.method}   opts={HBA_METHODS} onChange={v=>setNewRow(p=>({...p,method:v}))}   w={130}/>
-                    <TInp val={newRow.comment}  onChange={v=>setNewRow(p=>({...p,comment:v}))}  ph="comment"  w={160}/>
+                    <HBASelect val={newRow.type}     opts={HBA_TYPES}   onChange={v=>setNewRow(p=>({...p,type:v}))}     w={110}/>
+                    <HBAInput val={newRow.database} onChange={v=>setNewRow(p=>({...p,database:v}))} ph="database" w={100}/>
+                    <HBAInput val={newRow.user}     onChange={v=>setNewRow(p=>({...p,user:v}))}     ph="user"     w={90}/>
+                    <HBAInput val={newRow.address}  onChange={v=>setNewRow(p=>({...p,address:v}))}  ph="address"  w={130}/>
+                    <HBASelect val={newRow.method}   opts={HBA_METHODS} onChange={v=>setNewRow(p=>({...p,method:v}))}   w={130}/>
+                    <HBAInput val={newRow.comment}  onChange={v=>setNewRow(p=>({...p,comment:v}))}  ph="comment"  w={160}/>
                     <button onClick={addRule} style={{ background:T.success, color:'#fff', border:'none', padding:'5px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody }}>Add</button>
                     <button onClick={()=>setShowAdd(false)} style={{ background:'transparent', color:T.textDim, border:'none', cursor:'pointer' }}><X size={14}/></button>
                 </div>
@@ -1339,24 +1340,24 @@ const HBAView = () => {
                                     onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                                     <td style={{ padding:'8px 12px', color:T.textDim, fontFamily:T.fontMono, fontSize:11 }}>{i+1}</td>
                                     <td style={{ padding:'8px 6px' }}>
-                                        {editing===row.id ? <BSel val={row.type} opts={HBA_TYPES} onChange={v=>upd(row.id,'type',v)} w={110}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.primary }}>{row.type}</span>}
+                                        {editing===row.id ? <HBASelect val={row.type} opts={HBA_TYPES} onChange={v=>upd(row.id,'type',v)} w={110}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.primary }}>{row.type}</span>}
                                     </td>
                                     <td style={{ padding:'8px 6px' }}>
-                                        {editing===row.id ? <TInp val={row.database} onChange={v=>upd(row.id,'database',v)} ph="db" w={90}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textMain }}>{row.database}</span>}
+                                        {editing===row.id ? <HBAInput val={row.database} onChange={v=>upd(row.id,'database',v)} ph="db" w={90}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textMain }}>{row.database}</span>}
                                     </td>
                                     <td style={{ padding:'8px 6px' }}>
-                                        {editing===row.id ? <TInp val={row.user} onChange={v=>upd(row.id,'user',v)} ph="user" w={90}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textMain }}>{row.user}</span>}
+                                        {editing===row.id ? <HBAInput val={row.user} onChange={v=>upd(row.id,'user',v)} ph="user" w={90}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textMain }}>{row.user}</span>}
                                     </td>
                                     <td style={{ padding:'8px 6px' }}>
-                                        {editing===row.id ? <TInp val={row.address} onChange={v=>upd(row.id,'address',v)} ph="addr" w={120}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textDim }}>{row.address||'—'}</span>}
+                                        {editing===row.id ? <HBAInput val={row.address} onChange={v=>upd(row.id,'address',v)} ph="addr" w={120}/> : <span style={{ fontFamily:T.fontMono, fontSize:11, color:T.textDim }}>{row.address||'—'}</span>}
                                     </td>
                                     <td style={{ padding:'8px 6px' }}>
                                         {editing===row.id
-                                            ? <BSel val={row.method} opts={HBA_METHODS} onChange={v=>upd(row.id,'method',v)} w={130}/>
+                                            ? <HBASelect val={row.method} opts={HBA_METHODS} onChange={v=>upd(row.id,'method',v)} w={130}/>
                                             : <span style={{ padding:'2px 8px', borderRadius:4, fontSize:11, fontFamily:T.fontMono, background:`${METHOD_CLR[row.method]||'#94a3b8'}18`, color:METHOD_CLR[row.method]||'#94a3b8', border:`1px solid ${METHOD_CLR[row.method]||'#94a3b8'}35` }}>{row.method}</span>}
                                     </td>
                                     <td style={{ padding:'8px 6px' }}>
-                                        {editing===row.id ? <TInp val={row.comment} onChange={v=>upd(row.id,'comment',v)} ph="comment" w={150}/> : <span style={{ fontSize:11, color:T.textDim, fontStyle:row.comment?'normal':'italic' }}>{row.comment||'—'}</span>}
+                                        {editing===row.id ? <HBAInput val={row.comment} onChange={v=>upd(row.id,'comment',v)} ph="comment" w={150}/> : <span style={{ fontSize:11, color:T.textDim, fontStyle:row.comment?'normal':'italic' }}>{row.comment||'—'}</span>}
                                     </td>
                                     <td style={{ padding:'8px 12px' }}>
                                         <div style={{ display:'flex', gap:4 }}>

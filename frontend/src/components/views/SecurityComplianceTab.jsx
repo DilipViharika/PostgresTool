@@ -12,7 +12,7 @@ import {
     TrendingUp, TrendingDown, Cpu, Wifi, WifiOff, Bell,
     ChevronDown, ChevronUp, Filter, MoreVertical, Zap,
     Clock, MapPin, Terminal, BarChart2, List, LayoutGrid,
-    UserCog, AlertCircle, Play, FileBadge, ClipboardCheck
+    UserCog, AlertCircle, ClipboardList
 } from 'lucide-react';
 import {
     ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -881,7 +881,7 @@ const ComplianceReportGenerator = () => {
 
     return (
         <div className="card" style={{ padding: 20, marginTop: 18 }}>
-            <SectionHeader icon={FileBadge} title="Compliance Report Generator" iconColor="#a78bfa" />
+            <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#a78bfa" />
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, margin: '16px 0' }}>
                 {FRAMEWORKS.map(f => (
@@ -961,7 +961,7 @@ const ComplianceReportGenerator = () => {
                         {generating ? (
                             <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} /> Generating…</>
                         ) : (
-                            <><ClipboardCheck size={14} /> Generate {fw.label} Report</>
+                            <><ClipboardList size={14} /> Generate {fw.label} Report</>
                         )}
                     </button>
                 </div>
