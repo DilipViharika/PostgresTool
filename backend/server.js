@@ -842,9 +842,12 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
     const id = parseInt(req.params.id);
     const c  = CONNECTIONS.find(c => c.id === id);
     if (!c) return res.status(404).json({ error: 'Connection not found' });
-    if (c.isDefault) return res.status(403).json({ error: 'Cannot delete the default connection' });
     await closeTunnel(id);
     CONNECTIONS = CONNECTIONS.filter(c => c.id !== id);
+    // If the deleted connection was the default, auto-promote the first remaining one
+    if (c.isDefault && CONNECTIONS.length > 0) {
+        CONNECTIONS[0].isDefault = true;
+    }
     res.json({ success: true });
 });
 
