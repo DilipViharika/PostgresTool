@@ -16,6 +16,7 @@ import { dirname }              from 'path';
 import repoRoutes               from './routes/repoRoutes.js';
 import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
+import { openTunnel, closeTunnel, getTunnelPort, closeAll as closeAllTunnels } from './services/sshTunnel.js';
 
 import { buildAuthenticate, requireScreen, requireRole } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
@@ -337,6 +338,16 @@ let CONNECTIONS = [
         username: process.env.PGUSER     || 'postgres',
         password: process.env.PGPASSWORD || '',
         ssl:      process.env.PGSSL === 'true',
+        // ── SSH Tunnel ──────────────────────────────────────────────────────
+        sshEnabled:    false,
+        sshHost:       '',
+        sshPort:       22,
+        sshUser:       '',
+        sshAuthType:   'key',      // 'key' | 'password'
+        sshPrivateKey: '',         // PEM content
+        sshPassphrase: '',         // key passphrase (if key is encrypted)
+        sshPassword:   '',         // SSH password (when sshAuthType === 'password')
+        // ────────────────────────────────────────────────────────────────────
         isDefault: true, status: 'success',
         lastTested: new Date().toISOString(),
         createdAt:  new Date().toISOString(),
@@ -715,14 +726,70 @@ app.use('/api/repo', authenticate, requireScreen('repository'), repoRoutes);
 // ─────────────────────────────────────────────────────────────────────────────
 // CONNECTIONS
 // ─────────────────────────────────────────────────────────────────────────────
+// ── SSH fields accepted on create/edit ───────────────────────────────────────
+const SSH_FIELDS = ['sshEnabled','sshHost','sshPort','sshUser','sshAuthType','sshPrivateKey','sshPassphrase','sshPassword'];
+
+function pickSSH(body) {
+    return {
+        sshEnabled:    body.sshEnabled    ?? false,
+        sshHost:       body.sshHost       || '',
+        sshPort:       parseInt(body.sshPort) || 22,
+        sshUser:       body.sshUser       || '',
+        sshAuthType:   body.sshAuthType   || 'key',
+        sshPrivateKey: body.sshPrivateKey || '',
+        sshPassphrase: body.sshPassphrase || '',
+        sshPassword:   body.sshPassword   || '',
+    };
+}
+
+/** Redact secrets before sending to client. */
+function sanitizeConn(c) {
+    const { password, sshPrivateKey, sshPassphrase, sshPassword, ...safe } = c;
+    return safe;
+}
+
+/** Build a pg Pool host/port, opening an SSH tunnel if needed. */
+async function resolvePoolConfig(c) {
+    let host = c.host;
+    let port = c.port;
+
+    if (c.sshEnabled && c.sshHost) {
+        // Re-use existing tunnel if already open
+        let localPort = getTunnelPort(c.id);
+        if (!localPort) {
+            localPort = await openTunnel(c.id, {
+                sshHost:       c.sshHost,
+                sshPort:       c.sshPort || 22,
+                sshUser:       c.sshUser,
+                sshAuthType:   c.sshAuthType || 'key',
+                sshPrivateKey: c.sshPrivateKey,
+                sshPassphrase: c.sshPassphrase,
+                sshPassword:   c.sshPassword,
+                dbHost:        c.host,
+                dbPort:        c.port,
+            });
+        }
+        host = '127.0.0.1';
+        port = localPort;
+    }
+
+    return {
+        host, port,
+        database: c.database,
+        user:     c.username,
+        password: c.password,
+        ssl: c.ssl ? { rejectUnauthorized: false } : undefined,
+    };
+}
+
 app.get('/api/connections', authenticate, (req, res) => {
-    res.json(CONNECTIONS.map(c => ({ ...c, password: undefined })));
+    res.json(CONNECTIONS.map(sanitizeConn));
 });
 
 app.get('/api/connections/:id', authenticate, (req, res) => {
     const c = CONNECTIONS.find(c => c.id === parseInt(req.params.id));
     if (!c) return res.status(404).json({ error: 'Connection not found' });
-    res.json({ ...c, password: undefined });
+    res.json(sanitizeConn(c));
 });
 
 app.post('/api/connections', authenticate, (req, res) => {
@@ -736,18 +803,24 @@ app.post('/api/connections', authenticate, (req, res) => {
         id: Math.max(...CONNECTIONS.map(c => c.id), 0) + 1,
         name, host, port: parseInt(port), database, username, password,
         ssl: ssl || false, isDefault: isDefault || false,
+        ...pickSSH(req.body),
         status: null, lastTested: null, createdAt: new Date().toISOString(),
     };
     CONNECTIONS.push(newConn);
-    res.status(201).json({ ...newConn, password: undefined });
+    res.status(201).json(sanitizeConn(newConn));
 });
 
-app.put('/api/connections/:id', authenticate, (req, res) => {
+app.put('/api/connections/:id', authenticate, async (req, res) => {
     const id    = parseInt(req.params.id);
     const index = CONNECTIONS.findIndex(c => c.id === id);
     if (index === -1) return res.status(404).json({ error: 'Connection not found' });
     const { name, host, port, database, username, password, ssl } = req.body;
     if (CONNECTIONS.find(c => c.name === name && c.id !== id)) return res.status(409).json({ error: 'Connection name already exists' });
+
+    // Close existing tunnel if SSH config changed
+    const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== CONNECTIONS[index][f]);
+    if (sshChanged) await closeTunnel(id);
+
     CONNECTIONS[index] = {
         ...CONNECTIONS[index],
         name:     name     || CONNECTIONS[index].name,
@@ -757,16 +830,18 @@ app.put('/api/connections/:id', authenticate, (req, res) => {
         username: username || CONNECTIONS[index].username,
         password: password || CONNECTIONS[index].password,
         ssl:      ssl !== undefined ? ssl : CONNECTIONS[index].ssl,
+        ...pickSSH({ ...CONNECTIONS[index], ...req.body }), // merge, existing values as fallback
         status: null, lastTested: null,
     };
-    res.json({ ...CONNECTIONS[index], password: undefined });
+    res.json(sanitizeConn(CONNECTIONS[index]));
 });
 
-app.delete('/api/connections/:id', authenticate, (req, res) => {
+app.delete('/api/connections/:id', authenticate, async (req, res) => {
     const id = parseInt(req.params.id);
     const c  = CONNECTIONS.find(c => c.id === id);
     if (!c) return res.status(404).json({ error: 'Connection not found' });
     if (c.isDefault) return res.status(403).json({ error: 'Cannot delete the default connection' });
+    await closeTunnel(id);
     CONNECTIONS = CONNECTIONS.filter(c => c.id !== id);
     res.json({ success: true });
 });
@@ -782,19 +857,26 @@ app.post('/api/connections/:id/default', authenticate, (req, res) => {
 app.post('/api/connections/:id/test', authenticate, async (req, res) => {
     const c = CONNECTIONS.find(c => c.id === parseInt(req.params.id));
     if (!c) return res.status(404).json({ error: 'Connection not found' });
-    const testPool = new Pool({
-        host: c.host, port: c.port, database: c.database,
-        user: c.username, password: c.password,
-        ssl: c.ssl ? { rejectUnauthorized: false } : undefined,
-        connectionTimeoutMillis: 5000,
-    });
+
+    let poolCfg;
+    try {
+        poolCfg = await resolvePoolConfig(c);
+    } catch (tunnelErr) {
+        c.status = 'failed'; c.lastTested = new Date().toISOString();
+        return res.json({ success: false, error: `SSH tunnel error: ${tunnelErr.message}` });
+    }
+
+    const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 8000 });
     try {
         const client = await testPool.connect();
         await client.query('SELECT 1');
         client.release();
         await testPool.end();
         c.status = 'success'; c.lastTested = new Date().toISOString();
-        res.json({ success: true, message: 'Connection successful' });
+        res.json({
+            success: true,
+            message: c.sshEnabled ? 'Connection successful via SSH tunnel' : 'Connection successful',
+        });
     } catch (e) {
         c.status = 'failed'; c.lastTested = new Date().toISOString();
         await testPool.end().catch(() => {});
@@ -1837,6 +1919,7 @@ async function startup() {
 async function shutdown(signal) {
     log('INFO', `${signal} — shutting down`);
     alerts.stopMonitoring();
+    await closeAllTunnels().catch(() => {});
     server.close(() => pool.end(() => process.exit(0)));
 }
 process.on('SIGTERM', () => shutdown('SIGTERM'));

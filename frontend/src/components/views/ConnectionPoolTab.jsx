@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { API_BASE } from '../../utils/api.js';
 import {
     Database, Plus, Edit, Trash2, Eye, EyeOff, Check, X,
     Server, Key, User, AlertCircle, CheckCircle, Link as LinkIcon,
-    RefreshCw, ChevronDown
+    RefreshCw, ChevronDown, Terminal, Lock, ChevronRight,
 } from 'lucide-react';
 
 // ─── Database type definitions ───────────────────────────────────────────────
@@ -153,6 +154,15 @@ const defaultFormData = (dbType = 'postgresql') => {
         warehouse: '',
         schema: '',
         role: '',
+        // ── SSH Tunnel ───────────────────────────────────────────────
+        sshEnabled:    false,
+        sshHost:       '',
+        sshPort:       '22',
+        sshUser:       '',
+        sshAuthType:   'key',       // 'key' | 'password'
+        sshPrivateKey: '',          // PEM content
+        sshPassphrase: '',          // optional key passphrase
+        sshPassword:   '',          // SSH password (when sshAuthType==='password')
     };
 };
 
@@ -393,6 +403,213 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
     return <>{rows}</>;
 };
 
+// ─── SSH Tunnel Section ───────────────────────────────────────────────────────
+const SSHTunnelSection = ({ formData, setFormData }) => {
+    const [open, setOpen] = useState(!!formData.sshEnabled);
+    const [showSshPass, setShowSshPass] = useState(false);
+    const [showPassphrase, setShowPassphrase] = useState(false);
+
+    const toggle = (enabled) => {
+        setFormData(p => ({ ...p, sshEnabled: enabled }));
+        setOpen(enabled);
+    };
+
+    const rowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 };
+
+    return (
+        <div style={{
+            border: `1px solid ${formData.sshEnabled ? '#6366f1AA' : THEME.glassBorder}`,
+            borderRadius: 10,
+            overflow: 'hidden',
+            transition: 'border-color 0.2s',
+        }}>
+            {/* Header toggle */}
+            <button
+                type="button"
+                onClick={() => toggle(!formData.sshEnabled)}
+                style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '12px 16px', background: formData.sshEnabled ? '#6366f108' : THEME.surfaceHover,
+                    border: 'none', cursor: 'pointer', textAlign: 'left',
+                    borderBottom: open ? `1px solid ${THEME.glassBorder}` : 'none',
+                    transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = formData.sshEnabled ? '#6366f114' : THEME.surface}
+                onMouseLeave={e => e.currentTarget.style.background = formData.sshEnabled ? '#6366f108' : THEME.surfaceHover}
+            >
+                <Terminal size={15} color={formData.sshEnabled ? '#818cf8' : THEME.textMuted} />
+                <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: formData.sshEnabled ? '#818cf8' : THEME.textMain }}>
+                        SSH Tunnel
+                    </div>
+                    <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 1 }}>
+                        {formData.sshEnabled
+                            ? `Via ${formData.sshHost || 'bastion host'} · ${formData.sshAuthType === 'key' ? 'Private key' : 'Password'} auth`
+                            : 'For databases in private subnets without public IP'}
+                    </div>
+                </div>
+                {/* Toggle pill */}
+                <div
+                    style={{
+                        width: 36, height: 20, borderRadius: 10, position: 'relative',
+                        background: formData.sshEnabled ? '#6366f1' : THEME.glassBorder,
+                        transition: 'background 0.2s', flexShrink: 0,
+                    }}
+                >
+                    <div style={{
+                        position: 'absolute', top: 3, left: formData.sshEnabled ? 19 : 3,
+                        width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                        transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                    }} />
+                </div>
+                <ChevronRight size={14} color={THEME.textMuted}
+                    style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s', marginLeft: 2 }} />
+            </button>
+
+            {/* Expanded fields */}
+            {open && (
+                <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14, background: THEME.surface }}>
+
+                    {/* Info banner */}
+                    <div style={{
+                        display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 7,
+                        background: '#6366f108', border: '1px solid #6366f130',
+                        fontSize: 12, color: THEME.textMuted, lineHeight: 1.5,
+                    }}>
+                        <Lock size={13} color="#818cf8" style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span>
+                            Traffic is routed through your bastion/jump host via local port forwarding.
+                            The DB host below should be the <strong style={{ color: THEME.textDim }}>private</strong> address
+                            reachable from the bastion (e.g. <code style={{ fontFamily: 'monospace', color: '#818cf8' }}>db.internal</code> or <code style={{ fontFamily: 'monospace', color: '#818cf8' }}>10.0.1.5</code>).
+                        </span>
+                    </div>
+
+                    {/* Bastion host + port */}
+                    <div style={rowStyle}>
+                        <div>
+                            <label style={S.label}>Bastion Host *</label>
+                            <input type="text"
+                                value={formData.sshHost}
+                                onChange={e => setFormData(p => ({ ...p, sshHost: e.target.value }))}
+                                placeholder="bastion.example.com"
+                                style={S.input(!formData.sshHost && formData.sshEnabled)}
+                                onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                            />
+                        </div>
+                        <div>
+                            <label style={S.label}>SSH Port</label>
+                            <input type="number"
+                                value={formData.sshPort}
+                                onChange={e => setFormData(p => ({ ...p, sshPort: e.target.value }))}
+                                placeholder="22"
+                                style={S.input(false)}
+                                onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                            />
+                        </div>
+                    </div>
+
+                    {/* SSH user */}
+                    <div>
+                        <label style={S.label}>SSH Username *</label>
+                        <input type="text"
+                            value={formData.sshUser}
+                            onChange={e => setFormData(p => ({ ...p, sshUser: e.target.value }))}
+                            placeholder="ec2-user"
+                            style={S.input(!formData.sshUser && formData.sshEnabled)}
+                            onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                            onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                        />
+                    </div>
+
+                    {/* Auth type tabs */}
+                    <div>
+                        <label style={S.label}>Authentication Method</label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            {[['key', '🔑 Private Key'], ['password', '🔒 Password']].map(([val, label]) => (
+                                <button key={val} type="button"
+                                    onClick={() => setFormData(p => ({ ...p, sshAuthType: val }))}
+                                    style={{
+                                        flex: 1, padding: '8px 12px', borderRadius: 7, fontSize: 12, fontWeight: 600,
+                                        cursor: 'pointer', transition: 'all 0.15s',
+                                        background: formData.sshAuthType === val ? '#6366f122' : THEME.surfaceHover,
+                                        border: `1px solid ${formData.sshAuthType === val ? '#6366f166' : THEME.glassBorder}`,
+                                        color: formData.sshAuthType === val ? '#818cf8' : THEME.textMuted,
+                                    }}
+                                >{label}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Private Key fields */}
+                    {formData.sshAuthType === 'key' && (<>
+                        <div>
+                            <label style={S.label}>Private Key (PEM) *</label>
+                            <textarea
+                                value={formData.sshPrivateKey}
+                                onChange={e => setFormData(p => ({ ...p, sshPrivateKey: e.target.value }))}
+                                placeholder={'-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----'}
+                                rows={5}
+                                style={{
+                                    ...S.input(!formData.sshPrivateKey && formData.sshEnabled),
+                                    resize: 'vertical', lineHeight: 1.4,
+                                    fontFamily: 'JetBrains Mono, Fira Code, monospace', fontSize: 11,
+                                }}
+                                onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                            />
+                            <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4 }}>
+                                Paste the contents of your <code style={{ fontFamily: 'monospace' }}>~/.ssh/id_rsa</code> or <code style={{ fontFamily: 'monospace' }}>id_ed25519</code> file
+                            </div>
+                        </div>
+                        <div>
+                            <label style={S.label}>Key Passphrase <span style={{ color: THEME.textMuted, fontSize: 10, textTransform: 'none' }}>(optional)</span></label>
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showPassphrase ? 'text' : 'password'}
+                                    value={formData.sshPassphrase}
+                                    onChange={e => setFormData(p => ({ ...p, sshPassphrase: e.target.value }))}
+                                    placeholder="Leave blank if key has no passphrase"
+                                    style={{ ...S.input(false), paddingRight: 42 }}
+                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                    onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                                />
+                                <button type="button" onClick={() => setShowPassphrase(p => !p)}
+                                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4 }}>
+                                    {showPassphrase ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                </button>
+                            </div>
+                        </div>
+                    </>)}
+
+                    {/* Password auth field */}
+                    {formData.sshAuthType === 'password' && (
+                        <div>
+                            <label style={S.label}>SSH Password *</label>
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showSshPass ? 'text' : 'password'}
+                                    value={formData.sshPassword}
+                                    onChange={e => setFormData(p => ({ ...p, sshPassword: e.target.value }))}
+                                    placeholder="••••••••"
+                                    style={{ ...S.input(!formData.sshPassword && formData.sshEnabled), paddingRight: 42 }}
+                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                    onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                                />
+                                <button type="button" onClick={() => setShowSshPass(p => !p)}
+                                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4 }}>
+                                    {showSshPass ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 const ConnectionsTab = () => {
     useAdaptiveTheme();
@@ -405,8 +622,7 @@ const ConnectionsTab = () => {
     const [formErrors, setFormErrors] = useState({});
     const [errorMsg, setErrorMsg] = useState('');
 
-    const API_BASE = 'https://postgrestoolbackend.vercel.app';
-    const getAuthToken = () => localStorage.getItem('authToken');
+    const getAuthToken = () => localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
 
     useEffect(() => { fetchConnections(); }, []);
 
@@ -611,9 +827,14 @@ const ConnectionsTab = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <span style={{ fontSize: 24 }}>{dbMeta.icon}</span>
                                     <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                                             <span style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain }}>{conn.name}</span>
                                             {conn.isDefault && <span style={S.badge('#4ade80')}>DEFAULT</span>}
+                                            {conn.sshEnabled && (
+                                                <span style={{ ...S.badge('#818cf8'), display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                                    <Terminal size={10} /> SSH
+                                                </span>
+                                            )}
                                         </div>
                                         <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 2 }}>
                                             <span style={{ color: dbMeta.accent }}>{dbMeta.label}</span>
@@ -661,6 +882,14 @@ const ConnectionsTab = () => {
                                     <span style={{ color: THEME.textMuted }}>ssl</span>
                                     <span style={{ color: conn.ssl ? '#4ade80' : '#374151' }}>{conn.ssl ? 'on' : 'off'}</span>
                                 </div>
+                                {conn.sshEnabled && conn.sshHost && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                                        <span style={{ color: THEME.textMuted }}>tunnel via</span>
+                                        <span style={{ color: '#818cf8', fontSize: 11 }}>
+                                            {conn.sshUser ? `${conn.sshUser}@` : ''}{conn.sshHost}:{conn.sshPort || 22}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {conn.lastTested && (
@@ -821,6 +1050,9 @@ const ConnectionsTab = () => {
                                 showPassword={showPassword}
                                 togglePasswordVisibility={() => setShowPassword(p => !p)}
                             />
+
+                            {/* ── SSH Tunnel ── */}
+                            <SSHTunnelSection formData={formData} setFormData={setFormData} />
 
                             {!editingConnection && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
