@@ -23,7 +23,7 @@
  */
 
 import { spawn }            from 'child_process';
-import { createServer }     from 'net';
+import { createServer, Socket } from 'net';
 import { writeFile, unlink } from 'fs/promises';
 import { existsSync }        from 'fs';
 import { randomBytes }       from 'crypto';
@@ -55,7 +55,7 @@ function waitForPort(port, timeoutMs = 15_000) {
     return new Promise((resolve, reject) => {
         const deadline = Date.now() + timeoutMs;
         const tryConnect = () => {
-            const sock = new (require('net').Socket)();
+            const sock = new Socket();
             sock.setTimeout(800);
             sock.connect(port, '127.0.0.1', () => { sock.destroy(); resolve(); });
             sock.on('error', () => {
