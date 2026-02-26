@@ -346,7 +346,7 @@ export default function CloudWatchTab() {
                 METRIC_DEFS.map(async (def) => {
                     const res = await fetch(
                         `${import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app'}/api/cloudwatch/metrics?metric=${def.key}&period=${timeRange}`,
-                        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                        { headers: { Authorization: `Bearer ${localStorage.getItem('vigil_token')}` } }
                     );
                     const d = res.ok ? await res.json() : {};
                     return [def.key, d.datapoints || []];
