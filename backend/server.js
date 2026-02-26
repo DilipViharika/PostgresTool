@@ -36,6 +36,7 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 
 const CONFIG = Object.freeze({
     PORT:           Number(process.env.PORT) || 5000,
+    FRONTEND_URL:   process.env.FRONTEND_URL || 'http://localhost:5173', // <-- ADDED FOR SSO
     JWT_SECRET:     process.env.JWT_SECRET  || 'vigil-change-me-in-production',
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
     CORS_ORIGINS: [
@@ -120,8 +121,8 @@ const CONFIG = Object.freeze({
             ts: new Date().toISOString(), level: 'WARN',
             msg: IS_PROD
                 ? '⚠️  SECURITY: JWT_SECRET is missing or uses the default value in PRODUCTION. ' +
-                  'Set a strong secret via the Vercel dashboard → Settings → Environment Variables. ' +
-                  'All issued tokens are insecure until this is fixed.'
+                'Set a strong secret via the Vercel dashboard → Settings → Environment Variables. ' +
+                'All issued tokens are insecure until this is fixed.'
                 : 'JWT_SECRET is using the default insecure value. Set a strong secret before deploying.',
         }));
     } else if (jwtSecret.length < 32) {
@@ -491,13 +492,104 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
         res.json({ token, user: payload });
 
     } catch (err) {
-        // ← FIXED: was malformed/duplicated. Now correctly logs and responds.
         log('ERROR', 'Login error', {
             error: err.message,
             stack: err.stack,
             code:  err.code,
         });
         res.status(500).json({ error: 'Login failed', detail: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SSO AUTH — GET /api/auth/sso/:provider
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/auth/sso/:provider', (req, res) => {
+    const { provider } = req.params;
+
+    // MOCK IMPLEMENTATION (For testing the UI flow immediately)
+    // Instantly redirects to our own callback to simulate a successful 3rd-party login
+    log('INFO', `Initiating Mock SSO for provider: ${provider}`);
+    const mockCode = 'mock-auth-code-123';
+    const callbackUrl = `${req.protocol}://${req.get('host')}/api/auth/sso/${provider}/callback?code=${mockCode}`;
+    res.redirect(callbackUrl);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SSO CALLBACK — GET /api/auth/sso/:provider/callback
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/auth/sso/:provider/callback', async (req, res) => {
+    const { provider } = req.params;
+    const { code, error } = req.query;
+
+    if (error) {
+        log('WARN', `SSO Provider Error (${provider})`, { error });
+        return res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=${encodeURIComponent(error)}`);
+    }
+
+    try {
+        // MOCK USER PROFILE (Simulating a response from an Identity Provider)
+        const ssoProfile = {
+            email: 'admin@company.com', // Assume this exists in your DB
+            name: 'Enterprise Admin'
+        };
+
+        // Find User in DB (Mapping SSO email to our username/email)
+        const user = await getUserByUsername(pool, ssoProfile.email)
+            || await getUserByUsername(pool, 'admin'); // Fallback for local testing
+
+        if (!user || user.status !== 'active') {
+            return res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Account not found or inactive`);
+        }
+
+        // Generate App Session & Token (Re-using standard login logic)
+        const sessionId = await createSession(pool, {
+            userId:      user.id,
+            ip:          req.ip,
+            userAgent:   req.headers['user-agent'],
+            deviceLabel: req.headers['user-agent']?.slice(0, 255) ?? 'SSO Login',
+            location:    null,
+        });
+
+        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes'];
+        const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
+
+        const payload = {
+            id:             user.id,
+            username:       user.username,
+            name:           user.name,
+            email:          user.email,
+            role:           user.role,
+            accessLevel:    user.access_level,
+            allowedScreens,
+            sid:            sessionId,
+        };
+
+        const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
+
+        Promise.all([
+            touchLastLogin(pool, user.id),
+            recordLogin(pool, user.id),
+            writeAudit(pool, {
+                actorId:       user.id,
+                actorUsername: user.username,
+                action:        'SSO_LOGIN_SUCCESS',
+                level:         'info',
+                detail:        `Logged in via ${provider}`,
+                ip:            req.ip,
+            }),
+        ]).catch(err => log('WARN', 'Post-SSO login side effects failed', { error: err.message }));
+
+        // Securely redirect back to the React app with the payload
+        const redirectUri = new URL(`${CONFIG.FRONTEND_URL}/auth/callback`);
+        redirectUri.searchParams.append('token', token);
+        redirectUri.searchParams.append('user', encodeURIComponent(JSON.stringify(payload)));
+
+        res.redirect(redirectUri.toString());
+
+    } catch (err) {
+        log('ERROR', 'SSO Callback processing failed', { error: err.message });
+        res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Internal server error during SSO`);
     }
 });
 
@@ -1084,10 +1176,6 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
 // ─────────────────────────────────────────────────────────────────────────────
 // BLOAT ANALYSIS
 // ─────────────────────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────────────────────
-// BLOAT ANALYSIS  — drop-in replacement for the three bloat routes in server.js
-// ─────────────────────────────────────────────────────────────────────────────
-
 app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
     try {
         const r = await pool.query(`
@@ -1194,6 +1282,7 @@ app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE
         res.json(r.rows[0]);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
 // ─────────────────────────────────────────────────────────────────────────────
 // QUERY PLAN REGRESSION (in-memory baseline store — survives until restart)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1270,11 +1359,11 @@ app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE
                    round(max_exec_time::numeric,  2)  AS max_ms,
                    round(total_exec_time::numeric, 2) AS total_ms,
                    round((shared_blks_hit::numeric / NULLIF(shared_blks_hit + shared_blks_read, 0))*100, 1) AS cache_hit_pct,
-                   rows
+                rows
             FROM pg_stat_statements
             WHERE mean_exec_time > $1
             ORDER BY mean_exec_time DESC
-            LIMIT 50
+                LIMIT 50
         `, [threshold]);
         res.json(r.rows);
     } catch (e) {
@@ -1288,15 +1377,15 @@ app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), a
         const r = await pool.query(`
             SELECT pid, usename, datname, application_name,
                    state, wait_event_type, wait_event,
-                   left(query, 200) AS query_preview,
-                   query_start::text,
-                   round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 1) AS duration_sec
+                left(query, 200) AS query_preview,
+                query_start::text,
+                round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 1) AS duration_sec
             FROM pg_stat_activity
             WHERE state != 'idle'
               AND query NOT LIKE '%pg_stat_activity%'
               AND query_start IS NOT NULL
             ORDER BY query_start ASC
-            LIMIT 40
+                LIMIT 40
         `);
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1476,9 +1565,9 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                     left(blocking.query, 120) AS blocking_query,
                     round(EXTRACT(EPOCH FROM (now() - blocked.query_start))::numeric, 1) AS wait_sec
                 FROM pg_stat_activity blocked
-                JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
+                    JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
                 WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0
-                LIMIT 20
+                    LIMIT 20
             `),
             // Slow query patterns (from pg_stat_statements if available)
             pool.query(`
@@ -1493,7 +1582,7 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 FROM pg_stat_statements
                 WHERE mean_exec_time > 100
                 ORDER BY total_exec_time DESC
-                LIMIT 15
+                    LIMIT 15
             `).catch(() => ({ rows: [] })),
             // Error / unusual states
             pool.query(`
@@ -1520,7 +1609,7 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 FROM pg_stat_database
                 WHERE datname IS NOT NULL
                 ORDER BY numbackends DESC
-                LIMIT 10
+                    LIMIT 10
             `),
             // Top queries by calls
             pool.query(`
@@ -1555,7 +1644,7 @@ async function captureAlertSnapshot() {
     try {
         const [conns, locks, waits, repl, bgwriter] = await Promise.all([
             pool.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER(WHERE state='active') AS active,
-                               COUNT(*) FILTER(WHERE wait_event IS NOT NULL) AS waiting
+                            COUNT(*) FILTER(WHERE wait_event IS NOT NULL) AS waiting
                         FROM pg_stat_activity`),
             pool.query(`SELECT COUNT(*) AS lock_count FROM pg_locks WHERE NOT granted`),
             pool.query(`SELECT wait_event_type, COUNT(*) AS cnt FROM pg_stat_activity
@@ -1607,7 +1696,7 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
             pool.query(`SELECT locktype, mode, granted, COUNT(*) AS cnt FROM pg_locks GROUP BY locktype,mode,granted ORDER BY cnt DESC LIMIT 20`),
             pool.query(`
                 SELECT pid, usename, datname, state, wait_event_type, wait_event,
-                       left(query,120) AS query, round(EXTRACT(EPOCH FROM (now()-query_start))::numeric,1) AS age_sec
+                    left(query,120) AS query, round(EXTRACT(EPOCH FROM (now()-query_start))::numeric,1) AS age_sec
                 FROM pg_stat_activity
                 WHERE state != 'idle' AND query NOT LIKE '%pg_stat_activity%'
                 ORDER BY age_sec DESC NULLS LAST LIMIT 25
@@ -1625,8 +1714,8 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
                 SELECT pid, usename, datname,
                        age(backend_xid)  AS xid_age,
                        age(backend_xmin) AS xmin_age,
-                       left(query,120) AS query,
-                       round(EXTRACT(EPOCH FROM (now()-xact_start))::numeric,1) AS xact_age_sec
+                    left(query,120) AS query,
+                    round(EXTRACT(EPOCH FROM (now()-xact_start))::numeric,1) AS xact_age_sec
                 FROM pg_stat_activity
                 WHERE xact_start IS NOT NULL
                   AND state != 'idle'
@@ -1709,7 +1798,7 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
             `),
             pool.query(`
                 SELECT pg_current_wal_lsn()::text AS current_lsn,
-                       pg_walfile_name(pg_current_wal_lsn()) AS current_wal_file,
+                    pg_walfile_name(pg_current_wal_lsn()) AS current_wal_file,
                        (SELECT setting::int FROM pg_settings WHERE name = 'checkpoint_completion_target') AS completion_target,
                        (SELECT setting::int FROM pg_settings WHERE name = 'max_wal_size') AS max_wal_mb,
                        (SELECT setting::int FROM pg_settings WHERE name = 'min_wal_size') AS min_wal_mb,
@@ -1719,10 +1808,10 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
                 SELECT name, setting, unit, short_desc
                 FROM pg_settings
                 WHERE name IN (
-                    'checkpoint_completion_target','checkpoint_timeout',
-                    'max_wal_size','min_wal_size','wal_buffers',
-                    'bgwriter_delay','bgwriter_lru_maxpages','bgwriter_lru_multiplier'
-                )
+                               'checkpoint_completion_target','checkpoint_timeout',
+                               'max_wal_size','min_wal_size','wal_buffers',
+                               'bgwriter_delay','bgwriter_lru_maxpages','bgwriter_lru_multiplier'
+                    )
                 ORDER BY name
             `)
         ]);
@@ -1772,7 +1861,7 @@ app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (
 app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT 
+            SELECT
                 schemaname AS schema, 
                 relname AS name,
                 pg_size_pretty(pg_total_relation_size(relid)) AS size,
@@ -1805,10 +1894,10 @@ app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async
 app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT 
-                schemaname, 
-                tablename, 
-                attname AS name, 
+            SELECT
+                schemaname,
+                tablename,
+                attname AS name,
                 null_frac * 100 AS "nullPct",
                 n_distinct AS distinct,
                 array_to_string(most_common_vals::text[], ', ') AS "topValues"
@@ -1828,8 +1917,8 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
                 cl1.relname AS table_name,
                 array_agg(DISTINCT cl2.relname) FILTER (WHERE cl2.relname IS NOT NULL) AS refs_to
             FROM pg_class cl1
-            LEFT JOIN pg_constraint c ON c.conrelid = cl1.oid AND c.contype = 'f'
-            LEFT JOIN pg_class cl2 ON c.confrelid = cl2.oid
+                     LEFT JOIN pg_constraint c ON c.conrelid = cl1.oid AND c.contype = 'f'
+                     LEFT JOIN pg_class cl2 ON c.confrelid = cl2.oid
             WHERE cl1.relnamespace::regnamespace::text NOT IN ('pg_catalog', 'information_schema')
               AND cl1.relkind = 'r'
             GROUP BY cl1.relname
@@ -1857,7 +1946,7 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
 app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT 
+            SELECT
                 n.nspname AS schema,
                 c.relname AS table,
                 c.reltoastrelid::regclass::text AS "toastTable",
@@ -1883,7 +1972,7 @@ app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async
 app.get('/api/tables/temp', authenticate, async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT 
+            SELECT
                 n.nspname AS schema_name,
                 c.relname AS table_name,
                 pg_size_pretty(pg_total_relation_size(c.oid)) AS size,
@@ -1893,8 +1982,8 @@ app.get('/api/tables/temp', authenticate, async (req, res) => {
                 a.application_name AS app,
                 extract(epoch from (now() - a.backend_start))::int as age_sec
             FROM pg_class c
-            JOIN pg_namespace n ON c.relnamespace = n.oid
-            LEFT JOIN pg_stat_activity a ON strpos(n.nspname, a.pid::text) > 0
+                JOIN pg_namespace n ON c.relnamespace = n.oid
+                LEFT JOIN pg_stat_activity a ON strpos(n.nspname, a.pid::text) > 0
             WHERE c.relpersistence = 't'
         `);
         res.json(r.rows);
@@ -1927,7 +2016,7 @@ app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CAC
                         (1.0 - ui.idx_tup_fetch::numeric / NULLIF(ui.idx_tup_read, 0)) * 100,
                         1
                     )
-                END                                                     AS "inefficiencyPct"
+            END                                                     AS "inefficiencyPct"
             FROM pg_stat_user_indexes ui
             JOIN pg_indexes ix
               ON  ix.schemaname = ui.schemaname
@@ -1966,7 +2055,7 @@ app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_T
                         1
                     )
                     ELSE 0
-                END                                                         AS "bloatPct"
+            END                                                         AS "bloatPct"
             FROM pg_class c
             JOIN pg_namespace n   ON n.oid = c.relnamespace
             LEFT JOIN pg_class ct  ON ct.oid = c.reltoastrelid
@@ -1990,7 +2079,7 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
                 SELECT schemaname, relname,
                        n_dead_tup, n_live_tup,
                        CASE WHEN n_live_tup > 0
-                            THEN round((n_dead_tup::numeric / NULLIF(n_live_tup,0)) * 100, 1)
+                                THEN round((n_dead_tup::numeric / NULLIF(n_live_tup,0)) * 100, 1)
                             ELSE 0 END AS dead_pct,
                        last_vacuum, last_autovacuum,
                        last_analyze, last_autoanalyze,
@@ -2000,7 +2089,7 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
                        pg_size_pretty(pg_total_relation_size(quote_ident(schemaname)||'.'||quote_ident(relname))) AS total_size
                 FROM pg_stat_user_tables
                 ORDER BY n_dead_tup DESC
-                LIMIT 50
+                    LIMIT 50
             `),
             pool.query(`
                 SELECT pid, datname,
