@@ -1212,7 +1212,7 @@ export default function UnifiedDashboard() {
     return (
         <FilterCtx.Provider value={filter}>
             <style>{CSS}</style>
-            <div style={{ display: 'flex', height: '100vh', background: THEME.bg, fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif", color: THEME.textMain, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', height: '100%',width:'100%', background: THEME.bg, fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif", color: THEME.textMain, overflow: 'hidden' }}>
 
                 {/* ── SIDEBAR ─────────────────────────────────── */}
                 <aside style={{ width: 244, flexShrink: 0, background: THEME.surface, borderRight: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

@@ -1965,7 +1965,7 @@ const Dashboard = () => {
     }, [handleToggleCollapse]);
 
     return (
-        <div style={{ display: 'flex', height: '100vh', background: DS.bg, color: DS.textPrimary, overflow: 'hidden', fontFamily: DS.fontUI, position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', height: '100vh', width: '100%', background: DS.bg, color: DS.textPrimary, overflow: 'hidden', fontFamily: DS.fontUI, position: 'relative', zIndex: 1 }}>
             <AppStyles />
             <ChartDefs />
             <AmbientOrbs />
@@ -1982,7 +1982,7 @@ const Dashboard = () => {
                 allowedTabIds={allowedTabIds}
             />
 
-            <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+            <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
                 {/* ── TOP HEADER ── */}
                 <header style={{
                     height: 62, flexShrink: 0,
