@@ -1930,7 +1930,7 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
             GROUP BY cl1.relname
         `);
 
-        console.log('Sample row from DB:', JSON.stringify(r.rows[0])); // debug line
+        
 
         const tables = r.rows.map(row => ({
             name:   row.table_name,
