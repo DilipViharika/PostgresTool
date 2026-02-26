@@ -49,7 +49,7 @@ const toArr = v => Array.isArray(v) ? v : Array.isArray(v?.rows) ? v.rows : Arra
 
 // Safe coercions — prevents crashes from unexpected Postgres types (anyarray, numeric, etc.)
 const safeStr = v => {
-    if (v == null) return '';
+    if (v === null) return '';
     if (Array.isArray(v)) return v.join(', ');
     const s = String(v);
     // Unwrap Postgres {a,b,c} arrays
@@ -599,7 +599,7 @@ function S_RowCounts() {
 // Converts any PostgreSQL array representation to a readable string.
 // Handles: actual JS arrays, "{a,b,c}" strings, anyarray objects, null, etc.
 function pgArrayToString(val) {
-    if (val == null) return '—';
+    if (val === null) return '—';
     if (Array.isArray(val)) return val.join(', ') || '—';
     const s = String(val);
     // Strip PostgreSQL curly-brace array syntax: {val1,val2,...}
@@ -640,7 +640,7 @@ function S_Columns() {
         tablename: col.tablename || col.table_name || col.table || '',
         schema:    col.schema    || col.table_schema || '',
         name:      col.name      || col.column_name  || col.attname || '',
-        nullPct:   safeNum(col.nullPct ?? col.null_pct ?? col.null_frac != null ? (safeNum(col.null_frac) * 100) : 0),
+        nullPct:   safeNum(col.nullPct ?? col.null_pct ?? col.null_frac !== null ? (safeNum(col.null_frac) * 100) : 0),
         distinct:  safeNum(col.distinct ?? col.n_distinct ?? col.distinct_count),
         topValues: pgArrayToString(col.topValues ?? col.top_values ?? col.most_common_vals),
         dataType:  col.dataType  || col.data_type || col.typname || '',
