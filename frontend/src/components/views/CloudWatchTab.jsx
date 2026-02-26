@@ -324,7 +324,7 @@ export default function CloudWatchTab() {
         try {
             if (isInit) setInitialLoading(true);
             setError(null);
-            const res = await fetch('/api/cloudwatch/status', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app'}/api/cloudwatch/status`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('vigil_token')}` },
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -345,7 +345,7 @@ export default function CloudWatchTab() {
             const results = await Promise.allSettled(
                 METRIC_DEFS.map(async (def) => {
                     const res = await fetch(
-                        `/api/cloudwatch/metrics?metric=${def.key}&period=${timeRange}`,
+                        `${import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app'}/api/cloudwatch/metrics?metric=${def.key}&period=${timeRange}`,
                         { headers: { Authorization: `Bearer ${localStorage.getItem('vigil_token')}` } }
                     );
                     const d = res.ok ? await res.json() : {};
