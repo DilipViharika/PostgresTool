@@ -1897,10 +1897,13 @@ app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), a
             SELECT
                 schemaname,
                 tablename,
-                attname AS name,
-                null_frac * 100 AS "nullPct",
-                n_distinct AS distinct,
-                array_to_string(most_common_vals::text[], ', ') AS "topValues"
+                attname                              AS name,
+                null_frac * 100                      AS "nullPct",
+                n_distinct                           AS distinct,
+                CASE
+                    WHEN most_common_vals IS NULL THEN ''
+                    ELSE trim(both '{}' FROM most_common_vals::text)
+                END                                  AS "topValues"
             FROM pg_stats
             WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
             ORDER BY schemaname, tablename, attname

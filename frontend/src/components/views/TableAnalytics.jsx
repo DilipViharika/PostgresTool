@@ -829,18 +829,39 @@ function S_Schema() {
         </div>
     );
 }
-
 /* ─────────────────────────────────────────────────────────────────
-   SECTION: DEPENDENCIES
+  SECTION: DEPENDENCIES
 ───────────────────────────────────────────────────────────────── */
+// Safely converts any value to a plain JS array.
+// Handles: actual arrays, "{a,b,c}" PG strings, comma strings, null/undefined.
+function toSafeArr(v) {
+    if (!v) return [];
+    if (Array.isArray(v)) return v.filter(Boolean);
+    const s = String(v).trim();
+    if (s.startsWith('{') && s.endsWith('}'))
+        return s.slice(1, -1).split(',').map(x => x.trim().replace(/"/g, '')).filter(Boolean);
+    if (s.includes(','))
+        return s.split(',').map(x => x.trim()).filter(Boolean);
+    return s ? [s] : [];
+}
+
 function S_Deps() {
     const f = useContext(FilterCtx);
     const { data, loading, error } = useTableData('/api/tables/dependencies');
     if (loading) return <Loader />;
     if (error)   return <ErrUI msg={error} />;
+
+    // Normalize refsTo and refsBy to guaranteed arrays before any use
+    const normalized = data.map(t => ({
+        ...t,
+        refsTo: toSafeArr(t.refsTo),
+        refsBy: toSafeArr(t.refsBy),
+    }));
+
     const rows = f.table
-        ? data.filter(t => t.name === f.table || t.refsTo?.includes(f.table) || t.refsBy?.includes(f.table))
-        : data.filter(t => matchFilter(t, f));
+        ? normalized.filter(t => t.name === f.table || t.refsTo.includes(f.table) || t.refsBy.includes(f.table))
+        : normalized.filter(t => matchFilter(t, f));
+
     if (!rows.length) return <EmptyUI />;
 
     return (
@@ -853,17 +874,20 @@ function S_Deps() {
                     <TRow key={i} cols="1fr 1.5fr 1.5fr" i={i}>
                         <div>
                             <div style={{ fontWeight: 600, fontSize: 13, color: THEME.cyan }}>{t.name}</div>
-                            {t.refsBy?.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
+                            {t.refsBy.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
                         </div>
-                        <span style={{ fontSize: 12, color: THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsTo?.join(', ') || '—'}</span>
-                        <span style={{ fontSize: 12, color: t.refsBy?.length ? THEME.textMuted : THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsBy?.join(', ') || '—'}</span>
+                        <span style={{ fontSize: 12, color: THEME.textDim, fontFamily: THEME.fontMono }}>
+                            {t.refsTo.length ? t.refsTo.join(', ') : '—'}
+                        </span>
+                        <span style={{ fontSize: 12, color: t.refsBy.length ? THEME.textMuted : THEME.textDim, fontFamily: THEME.fontMono }}>
+                            {t.refsBy.length ? t.refsBy.join(', ') : '—'}
+                        </span>
                     </TRow>
                 ))}
             </Card>
         </div>
     );
 }
-
 /* ─────────────────────────────────────────────────────────────────
    SECTION: WRITE AMPLIFICATION
 ───────────────────────────────────────────────────────────────── */
