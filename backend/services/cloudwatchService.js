@@ -24,7 +24,6 @@ function getSigningKey(secret, date, region, service) {
 function sha256hex(str) {
     return crypto.createHash('sha256').update(str).digest('hex');
 }
-
 async function cloudwatchRequest(params) {
     const service  = 'monitoring';
     const host     = `monitoring.${REGION}.amazonaws.com`;
@@ -34,29 +33,52 @@ async function cloudwatchRequest(params) {
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '').slice(0, 15) + 'Z';
     const dateStr = amzDate.slice(0, 8);
 
+    // 1. Grab the session token if it exists in the environment
+    const sessionToken = process.env.AWS_SESSION_TOKEN;
+
     // Build query string (sorted)
     const query = Object.entries({ Action: 'GetMetricStatistics', Version: '2010-08-01', ...params })
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
         .join('&');
 
-    const payloadHash   = sha256hex('');
-    const canonicalReq  = `GET\n/\n${query}\nhost:${host}\nx-amz-date:${amzDate}\n\nhost;x-amz-date\n${payloadHash}`;
+    const payloadHash = sha256hex('');
+
+    // 2. Build canonical and signed headers dynamically
+    // AWS requires headers to be lowercase and sorted alphabetically.
+    // 'host', 'x-amz-date', 'x-amz-security-token' are naturally in alphabetical order!
+    let canonicalHeaders = `host:${host}\nx-amz-date:${amzDate}\n`;
+    let signedHeaders    = 'host;x-amz-date';
+
+    if (sessionToken) {
+        canonicalHeaders += `x-amz-security-token:${sessionToken}\n`;
+        signedHeaders    += ';x-amz-security-token';
+    }
+
+    const canonicalReq  = `GET\n/\n${query}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
     const credScope     = `${dateStr}/${REGION}/${service}/aws4_request`;
     const stringToSign  = `AWS4-HMAC-SHA256\n${amzDate}\n${credScope}\n${sha256hex(canonicalReq)}`;
     const signingKey    = getSigningKey(SECRET_KEY, dateStr, REGION, service);
     const signature     = sign(signingKey, stringToSign).toString('hex');
-    const authHeader    = `AWS4-HMAC-SHA256 Credential=${ACCESS_KEY}/${credScope}, SignedHeaders=host;x-amz-date, Signature=${signature}`;
 
-    const res = await fetch(`${endpoint}?${query}`, {
-        headers: { 'x-amz-date': amzDate, Authorization: authHeader },
-    });
+    // Note: Use the dynamic `signedHeaders` variable here
+    const authHeader    = `AWS4-HMAC-SHA256 Credential=${ACCESS_KEY}/${credScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+    // 3. Attach the token to the actual outgoing request
+    const headers = {
+        'x-amz-date': amzDate,
+        Authorization: authHeader
+    };
+    if (sessionToken) {
+        headers['x-amz-security-token'] = sessionToken;
+    }
+
+    const res = await fetch(`${endpoint}?${query}`, { headers });
 
     const text = await res.text();
     if (!res.ok) throw new Error(`CloudWatch error ${res.status}: ${text.slice(0, 300)}`);
     return text; // XML
 }
-
 /* ── Parse CloudWatch XML datapoints ── */
 function parseDatapoints(xml) {
     const points = [];
