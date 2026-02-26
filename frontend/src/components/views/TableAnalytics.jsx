@@ -308,7 +308,7 @@ const FilterBar = React.memo(function FilterBar({ filter, setFilter, allTables, 
             )}
         </div>
     );
-},or)
+});
 
 /* ─────────────────────────────────────────────────────────────────
    SECTION: HEALTH SCORECARD
