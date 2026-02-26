@@ -13,6 +13,7 @@ import path                     from 'path';
 import { fileURLToPath }        from 'url';
 import { dirname }              from 'path';
 
+import { getStatus, getMetric } from './services/cloudwatchService.js';
 import repoRoutes               from './routes/repoRoutes.js';
 import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
@@ -2133,7 +2134,32 @@ app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async 
         res.json({ success: true, command: cmd });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+// ─────────────────────────────────────────────────────────────────────────────
+// CLOUDWATCH ROUTES
+// Add this import near the top of server.js (with the other imports):
+//   import { getStatus, getMetric } from './services/cloudwatchService.js';
+// ─────────────────────────────────────────────────────────────────────────────
 
+app.get('/api/cloudwatch/status', authenticate, (req, res) => {
+    try {
+        res.json(getStatus());
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
+    const { metric, period } = req.query;
+    if (!metric) return res.status(400).json({ error: 'metric query param required' });
+    const periodSec = Number(period) || 3600;
+    try {
+        const datapoints = await getMetric(metric, periodSec);
+        res.json({ metric, datapoints });
+    } catch (e) {
+        log('ERROR', 'CloudWatch metric fetch failed', { metric, error: e.message });
+        res.status(500).json({ error: e.message });
+    }
+});
 // ─────────────────────────────────────────────────────────────────────────────
 // WEBSOCKET
 // ─────────────────────────────────────────────────────────────────────────────
