@@ -235,7 +235,7 @@ function ensureVmStyles() {
 const Styles = () => { useAdaptiveTheme(); ensureVmStyles(); return null; };
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
-const fmt = (n) => n == null ? '—' : Number(n).toLocaleString();
+const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
 
 const fmtDate = (d) => {
     if (!d) return <span style={{ color: THEME.textDim, fontStyle: 'italic', fontSize: 11 }}>Never</span>;

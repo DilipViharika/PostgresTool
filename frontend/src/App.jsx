@@ -2061,7 +2061,7 @@ const Dashboard = () => {
                         </div>
                     )}
 
-                    <div style={{ padding: '28px 32px', maxWidth: 1640, margin: '0 auto', minHeight: '100%' }}>
+                    <div style={{ padding: '28px 32px', width: '100%', minHeight: '100%' }}>
                         <ErrorBoundary key={activeTab}>
                             <Suspense fallback={
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, gap: 12, color: DS.textMuted, fontFamily: DS.fontUI }}>
