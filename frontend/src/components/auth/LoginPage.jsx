@@ -599,7 +599,11 @@ const LoginPage = () => {
     }, [username, password, rememberMe, login]);
 
     const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading && !loginSuccess;
-    const btnGrad   = loginSuccess ? '#22c55e' : canSubmit ? 'linear-gradient(135deg, #3D47D8 0%, #5B63F0 50%, #818AFF 100%)' : 'rgba(100,112,255,.07)';
+
+    // UPDATED CONTRAST LOGIC
+    const btnGrad      = loginSuccess ? '#22c55e' : canSubmit ? 'linear-gradient(135deg, #3D47D8 0%, #5B63F0 50%, #818AFF 100%)' : THEME.surfaceHover;
+    const btnTextColor = canSubmit || loginSuccess ? 'white' : THEME.textMuted;
+
     const btnShadow = canSubmit && !authLoading && !loginSuccess
         ? btnHover ? '0 14px 42px rgba(100,112,255,.62), 0 0 0 1px rgba(130,138,255,.38) inset, 0 1px 0 rgba(255,255,255,.16) inset' : '0 8px 28px rgba(100,112,255,.38), 0 0 0 1px rgba(100,112,255,.24) inset'
         : 'none';
@@ -678,7 +682,7 @@ const LoginPage = () => {
                             </div>
 
                             <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
-                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : 'rgba(100,112,255,.32)'}` : `1px solid ${THEME.grid}`, padding: '14px 20px', borderRadius: 13, color: 'white', fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
+                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : 'rgba(100,112,255,.32)'}` : `1px solid ${THEME.grid}`, padding: '14px 20px', borderRadius: 13, color: btnTextColor, fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
                                 {canSubmit && !authLoading && !loginSuccess && (
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%)', backgroundSize: '200% auto', animation: btnHover ? 'shimmer 1.2s ease forwards' : 'none', borderRadius: 13 }}/>
                                 )}
@@ -691,19 +695,41 @@ const LoginPage = () => {
                                     }
                                 </span>
                             </button>
+
+                            {/* UPDATED: SSO INTEGRATION */}
+                            <div style={{ display: 'flex', alignItems: 'center', margin: '6px 0' }}>
+                                <div style={{ flex: 1, height: 1, background: THEME.grid }} />
+                                <span style={{ padding: '0 10px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, textTransform: 'uppercase' }}>or</span>
+                                <div style={{ flex: 1, height: 1, background: THEME.grid }} />
+                            </div>
+
+                            <button type="button"
+                                    style={{
+                                        width: '100%', padding: '12px 20px', borderRadius: 13,
+                                        background: THEME.surface, border: `1px solid ${THEME.grid}`,
+                                        color: THEME.textMain, fontWeight: 600, fontSize: 13, fontFamily: THEME.fontBody,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                        cursor: 'pointer', transition: 'all .2s'
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = THEME.surfaceHover; e.currentTarget.style.borderColor = 'rgba(100,112,255,.3)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = THEME.surface; e.currentTarget.style.borderColor = THEME.grid; }}
+                            >
+                                <Shield size={16} color="#6470FF"/> Continue with SSO
+                            </button>
                         </form>
 
                         {!loginSuccess && (
                             <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
+                                {/* UPDATED: PROVISIONING TEXT */}
                                 <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.06em' }}>
-                                    Admin access only · Contact your DBA for credentials
+                                    Enterprise SSO enabled · Contact IT for access provisioning
                                 </span>
                             </div>
                         )}
                     </div>
 
                     <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
-                        <Shield size={8} color={THEME.textDim}/>
+                        <Lock size={8} color={THEME.textDim}/>
                         <span style={{ fontSize: 8.5, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
                     </div>
                 </div>

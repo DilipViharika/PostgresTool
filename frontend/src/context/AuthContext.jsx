@@ -3,6 +3,7 @@
 // ==========================================================================
 //  Server endpoints used:
 //    • POST /api/auth/login → { user, token }
+//    • GET /api/auth/sso/:provider → Initiates SSO redirect
 //    • No /auth/me or /auth/refresh exist — session validated client-side
 // ==========================================================================
 
@@ -97,7 +98,7 @@ export const AuthProvider = ({ children }) => {
         return () => clearInterval(interval);
     }, [currentUser]);
 
-    // ── Login ──────────────────────────────────────────────────────────────
+    // ── Standard Login ─────────────────────────────────────────────────────
     const login = useCallback(async (username, password) => {
         setAuthLoading(true);
         setError(null);
@@ -130,6 +131,20 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setAuthLoading(false);
         }
+    }, []);
+
+    // ── SSO Login Initiation ───────────────────────────────────────────────
+    const loginWithSSO = useCallback((provider = 'okta') => {
+        // Redirects the browser to the backend endpoint that initiates the OAuth/SAML flow
+        window.location.href = `${API_BASE}/api/auth/sso/${provider}`;
+    }, []);
+
+    // ── SSO Callback Handler ───────────────────────────────────────────────
+    const handleSSOCallback = useCallback((token, user) => {
+        // Used by your callback route after a successful SSO redirect from the backend
+        localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        setCurrentUser(user);
     }, []);
 
     // ── Logout ─────────────────────────────────────────────────────────────
@@ -184,6 +199,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!currentUser,
         sessionInfo,
         login,
+        loginWithSSO,
+        handleSSOCallback,
         logout,
         clearError: () => setError(null),
         hasRole,
@@ -194,7 +211,7 @@ export const AuthProvider = ({ children }) => {
         getWSUrl,
     }), [
         currentUser, loading, authLoading, error, sessionInfo,
-        login, logout, hasRole, hasScreen, canWrite, isAdmin,
+        login, loginWithSSO, handleSSOCallback, logout, hasRole, hasScreen, canWrite, isAdmin,
         getToken, getWSUrl,
     ]);
 
