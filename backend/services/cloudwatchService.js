@@ -129,7 +129,11 @@ export async function getMetric(metricName, periodSeconds = 3600) {
         EndTime:                    endTime.toISOString(),
         Period:                     String(cwPeriod),
     });
-
+    if (metricName === 'CPUUtilization') {
+        console.log(`\n--- RAW XML FOR ${metricName} ---`);
+        console.log(xml);
+        console.log(`---------------------------------\n`);
+    }
     return parseDatapoints(xml);
 }
 
