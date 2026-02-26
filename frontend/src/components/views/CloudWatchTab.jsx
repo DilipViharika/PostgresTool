@@ -41,17 +41,17 @@ const buildTheme = (isDark) => ({
 /* ── Helpers ── */
 const fmt = {
     bytes: (b) => {
-        if (b == null) return '—';
+        if (b === null) return '—';
         const gb = b / 1073741824;
         if (gb >= 1) return `${gb.toFixed(1)} GB`;
         return `${(b / 1048576).toFixed(0)} MB`;
     },
-    pct:   (v) => v == null ? '—' : `${v.toFixed(1)}%`,
-    count: (v) => v == null ? '—' : Math.round(v).toLocaleString(),
-    ms:    (v) => v == null ? '—' : `${(v * 1000).toFixed(2)} ms`,
-    iops:  (v) => v == null ? '—' : `${v.toFixed(0)} IOPS`,
-    mbps:  (v) => v == null ? '—' : `${(v / 1048576).toFixed(2)} MB/s`,
-    load:  (v) => v == null ? '—' : v.toFixed(2),
+    pct:   (v) => v === null ? '—' : `${v.toFixed(1)}%`,
+    count: (v) => v === null ? '—' : Math.round(v).toLocaleString(),
+    ms:    (v) => v === null ? '—' : `${(v * 1000).toFixed(2)} ms`,
+    iops:  (v) => v === null ? '—' : `${v.toFixed(0)} IOPS`,
+    mbps:  (v) => v === null ? '—' : `${(v / 1048576).toFixed(2)} MB/s`,
+    load:  (v) => v === null ? '—' : v.toFixed(2),
     time:  (ts) => {
         const d = new Date(ts);
         return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
@@ -223,7 +223,7 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
     const color     = T[def.colorKey] ?? T.primary;
 
     const valueColor = (() => {
-        if (!def.thresholds || current == null || def.invertColor) return color;
+        if (!def.thresholds || current === null || def.invertColor) return color;
         if (current >= def.thresholds.danger) return T.danger;
         if (current >= def.thresholds.warn)   return T.warning;
         return T.success;
@@ -267,7 +267,7 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                     color: valueColor, marginBottom: 14, lineHeight: 1,
                     textShadow: `0 0 20px ${valueColor}40`,
                 }}>
-                    {current != null
+                    {current !== null
                         ? def.format(current)
                         : <span style={{ color: T.textDim, fontSize: 16, fontWeight: 400 }}>No data</span>
                     }
