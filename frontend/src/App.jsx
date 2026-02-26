@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
 import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
+
 import LoginPage from './components/auth/LoginPage.jsx';
+const SSOCallback = lazy(() => import('./components/auth/SSOCallback.jsx'));
 
 /* ── Lazy-loaded tab components for faster initial load ── */
 const OverviewTab          = lazy(() => import('./components/views/OverviewTab.jsx'));
@@ -1252,8 +1255,8 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                         color: DS.textSub, cursor: 'pointer', width: 32, height: 32, borderRadius: 8,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,113,133,0.12)'; e.currentTarget.style.color = DS.rose; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = DS.textSub; }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,113,133,0.12)'; e.currentTarget.style.color = DS.rose; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = DS.textSub; }}
                     ><X size={15} strokeWidth={2} /></button>
                 </div>
 
@@ -2119,8 +2122,42 @@ const LoadingScreen = () => (
    ───────────────────────────────────────────────────────────────── */
 const AuthConsumer = () => {
     const { currentUser, loading } = useAuth();
+
     if (loading) return <LoadingScreen />;
-    return currentUser ? <ErrorBoundary><Dashboard /></ErrorBoundary> : <LoginPage />;
+
+    return (
+        <Router>
+            <Suspense fallback={<LoadingScreen />}>
+                <Routes>
+                    {/* 1. Login Route: Redirects to dashboard if already logged in */}
+                    <Route
+                        path="/login"
+                        element={!currentUser ? <LoginPage /> : <Navigate to="/" replace />}
+                    />
+
+                    {/* 2. SSO Callback Route: Handles the token payload from Okta/Google */}
+                    <Route
+                        path="/auth/callback"
+                        element={<SSOCallback />}
+                    />
+
+                    {/* 3. Protected Dashboard Route: Catches everything else */}
+                    <Route
+                        path="/*"
+                        element={
+                            currentUser ? (
+                                <ErrorBoundary>
+                                    <Dashboard />
+                                </ErrorBoundary>
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )
+                        }
+                    />
+                </Routes>
+            </Suspense>
+        </Router>
+    );
 };
 
 export default function App() {

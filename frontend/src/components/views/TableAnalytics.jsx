@@ -47,6 +47,17 @@ select,option{font-family:inherit}
 ───────────────────────────────────────────────────────────────── */
 const toArr = v => Array.isArray(v) ? v : Array.isArray(v?.rows) ? v.rows : Array.isArray(v?.data) ? v.data : [];
 
+// Safe coercions — prevents crashes from unexpected Postgres types (anyarray, numeric, etc.)
+const safeStr = v => {
+    if (v == null) return '';
+    if (Array.isArray(v)) return v.join(', ');
+    const s = String(v);
+    // Unwrap Postgres {a,b,c} arrays
+    if (s.startsWith('{') && s.endsWith('}')) return s.slice(1,-1).replace(/"/g,'').replace(/,/g,', ');
+    return s;
+};
+const safeNum = (v, fb = 0) => { const n = Number(v); return isNaN(n) ? fb : n; };
+
 function useTableData(endpoint, fallback = []) {
     const [data, setData]   = useState(fallback);
     const [loading, setLd]  = useState(true);
@@ -203,47 +214,31 @@ const EmptyUI = ({ msg = 'No data matches the current filters.' }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────────
-   FILTER BAR
+   FILTER SELECT — defined at module scope so React never treats it
+   as a new component type on re-render. If defined inside FilterBar,
+   every render creates a new function reference → React unmounts the
+   <select> mid-click → dropdown disappears instantly.
 ───────────────────────────────────────────────────────────────── */
-function FilterBar({ filter, setFilter }) {
-    const { data: tables }  = useTableData('/api/tables/stats');
-    const { data: dbRaw }   = useTableData('/api/databases');
-
-    const dbs = useMemo(() => {
-        const a = toArr(dbRaw).map(d => d.name || d).filter(Boolean);
-        return a.length ? [...new Set(a)].sort() : [...new Set(toArr(tables).map(t => t.db).filter(Boolean))].sort();
-    }, [dbRaw, tables]);
-
-    const schemas = useMemo(() =>
-            [...new Set(toArr(tables).filter(t => !filter.db || t.db === filter.db).map(t => t.schema).filter(Boolean))].sort(),
-        [tables, filter.db]);
-
-    const tableList = useMemo(() =>
-            [...new Set(toArr(tables).filter(t => !filter.db || t.db === filter.db).filter(t => !filter.schema || t.schema === filter.schema).map(t => t.name).filter(Boolean))].sort(),
-        [tables, filter.db, filter.schema]);
-
-    const upd = (k, v) => {
-        if (k === 'db')          setFilter({ db: v, schema: '', table: '' });
-        else if (k === 'schema') setFilter(f => ({ ...f, schema: v, table: '' }));
-        else                     setFilter(f => ({ ...f, table: v }));
-    };
-
-    const hasFilter = filter.db || filter.schema || filter.table;
-
-    const selStyle = active => ({
-        width: '100%', padding: '9px 32px 9px 12px', borderRadius: 8,
-        border: `1px solid ${active ? THEME.primary + '55' : THEME.glassBorder}`,
-        background: active ? `${THEME.primary}0c` : THEME.glass,
-        color: active ? THEME.textMain : THEME.textMuted,
-        fontSize: 13, fontWeight: active ? 600 : 400,
-        appearance: 'none', cursor: 'pointer', outline: 'none', transition: 'all .2s',
-    });
-
-    const Sel = ({ label, k, val, opts, ph }) => (
+const FilterSelect = React.memo(function FilterSelect({ label, filterKey, val, opts, ph, onUpd }) {
+    const active = !!val;
+    return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1, minWidth: 150 }}>
             <label style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono }}>{label}</label>
             <div style={{ position: 'relative' }}>
-                <select value={val} onChange={e => upd(k, e.target.value)} disabled={opts.length === 0} style={selStyle(!!val)}>
+                <select
+                    value={val}
+                    onChange={e => onUpd(filterKey, e.target.value)}
+                    disabled={opts.length === 0}
+                    style={{
+                        width: '100%', padding: '9px 32px 9px 12px', borderRadius: 8,
+                        border: `1px solid ${active ? THEME.primary + '55' : THEME.glassBorder}`,
+                        background: active ? `${THEME.primary}0c` : THEME.glass,
+                        color: active ? THEME.textMain : THEME.textMuted,
+                        fontSize: 13, fontWeight: active ? 600 : 400,
+                        appearance: 'none', cursor: opts.length === 0 ? 'not-allowed' : 'pointer',
+                        outline: 'none', transition: 'border-color .2s, background .2s',
+                    }}
+                >
                     <option value="">{ph}</option>
                     {opts.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
@@ -251,6 +246,36 @@ function FilterBar({ filter, setFilter }) {
             </div>
         </div>
     );
+});
+
+/* ─────────────────────────────────────────────────────────────────
+   FILTER BAR
+───────────────────────────────────────────────────────────────── */
+// FilterBar is purely presentational — no data fetching, no hooks that
+// change during interaction. All options come from the shell as stable props.
+const FilterBar = React.memo(function FilterBar({ filter, setFilter, allTables, dbRaw }) {
+    const tables = allTables || [];
+
+    const dbs = useMemo(() => {
+        const a = toArr(dbRaw).map(d => d.name || d).filter(Boolean);
+        return a.length ? [...new Set(a)].sort() : [...new Set(tables.map(t => t.db).filter(Boolean))].sort();
+    }, [dbRaw, tables]);
+
+    const schemas = useMemo(() =>
+            [...new Set(tables.filter(t => !filter.db || t.db === filter.db).map(t => t.schema).filter(Boolean))].sort(),
+        [tables, filter.db]);
+
+    const tableList = useMemo(() =>
+            [...new Set(tables.filter(t => !filter.db || t.db === filter.db).filter(t => !filter.schema || t.schema === filter.schema).map(t => t.name).filter(Boolean))].sort(),
+        [tables, filter.db, filter.schema]);
+
+    const upd = useCallback((k, v) => {
+        if (k === 'db')          setFilter({ db: v, schema: '', table: '' });
+        else if (k === 'schema') setFilter(f => ({ ...f, schema: v, table: '' }));
+        else                     setFilter(f => ({ ...f, table: v }));
+    }, [setFilter]);
+
+    const hasFilter = filter.db || filter.schema || filter.table;
 
     return (
         <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, padding: '16px 20px', display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
@@ -265,9 +290,9 @@ function FilterBar({ filter, setFilter }) {
             </div>
 
             <div style={{ display: 'flex', gap: 12, flex: 1, flexWrap: 'wrap' }}>
-                {dbs.length > 0 && <Sel label="Database" k="db"     val={filter.db}     opts={dbs}       ph="All databases" />}
-                <Sel label="Schema"   k="schema" val={filter.schema} opts={schemas}   ph="All schemas" />
-                <Sel label="Table"    k="table"  val={filter.table}  opts={tableList} ph="All tables" />
+                {dbs.length > 0 && <FilterSelect label="Database" filterKey="db"     val={filter.db}     opts={dbs}       ph="All databases" onUpd={upd} />}
+                <FilterSelect label="Schema"     filterKey="schema" val={filter.schema} opts={schemas}   ph="All schemas"   onUpd={upd} />
+                <FilterSelect label="Table"      filterKey="table"  val={filter.table}  opts={tableList} ph="All tables"    onUpd={upd} />
             </div>
 
             {hasFilter && (
@@ -283,7 +308,7 @@ function FilterBar({ filter, setFilter }) {
             )}
         </div>
     );
-}
+},or)
 
 /* ─────────────────────────────────────────────────────────────────
    SECTION: HEALTH SCORECARD
@@ -571,14 +596,60 @@ function S_RowCounts() {
 /* ─────────────────────────────────────────────────────────────────
    SECTION: COLUMN STATS
 ───────────────────────────────────────────────────────────────── */
+// Converts any PostgreSQL array representation to a readable string.
+// Handles: actual JS arrays, "{a,b,c}" strings, anyarray objects, null, etc.
+function pgArrayToString(val) {
+    if (val == null) return '—';
+    if (Array.isArray(val)) return val.join(', ') || '—';
+    const s = String(val);
+    // Strip PostgreSQL curly-brace array syntax: {val1,val2,...}
+    if (s.startsWith('{') && s.endsWith('}')) {
+        return s.slice(1, -1).replace(/"/g, '').replace(/,/g, ', ') || '—';
+    }
+    return s || '—';
+}
+
+
 function S_Columns() {
     const f = useContext(FilterCtx);
     const { data, loading, error } = useTableData('/api/tables/columns');
     if (loading) return <Loader />;
-    if (error)   return <ErrUI msg={error} />;
-    const rows = data.filter(col => {
-        const cs = col.schema || (col.tablename?.includes('.') ? col.tablename.split('.')[0] : null);
-        const ct = col.tablename?.includes('.') ? col.tablename.split('.')[1] : col.tablename;
+
+    // Show a helpful message for the anyarray cast error specifically
+    if (error) {
+        const isArrayErr = error.toLowerCase().includes('anyarray') || error.toLowerCase().includes('cast');
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <ErrUI msg={error} />
+                {isArrayErr && (
+                    <div style={{ padding: '12px 16px', borderRadius: 10, background: `${THEME.warning}0d`, border: `1px solid ${THEME.warning}25`, fontSize: 12, color: THEME.warning, fontFamily: THEME.fontMono, lineHeight: 1.7 }}>
+                        <div style={{ fontWeight: 700, marginBottom: 6 }}>💡 Fix: cast most_common_vals in your SQL</div>
+                        <div style={{ color: THEME.textMuted }}>Change your query to:</div>
+                        <div style={{ marginTop: 6, padding: '6px 10px', borderRadius: 6, background: `${THEME.glassBorder}60`, fontSize: 11 }}>
+                            {'most_common_vals::text AS "topValues"'}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // Normalize each row — defensively coerce all fields
+    const normalized = data.map(col => ({
+        ...col,
+        tablename: col.tablename || col.table_name || col.table || '',
+        schema:    col.schema    || col.table_schema || '',
+        name:      col.name      || col.column_name  || col.attname || '',
+        nullPct:   safeNum(col.nullPct ?? col.null_pct ?? col.null_frac != null ? (safeNum(col.null_frac) * 100) : 0),
+        distinct:  safeNum(col.distinct ?? col.n_distinct ?? col.distinct_count),
+        topValues: pgArrayToString(col.topValues ?? col.top_values ?? col.most_common_vals),
+        dataType:  col.dataType  || col.data_type || col.typname || '',
+    }));
+
+    const rows = normalized.filter(col => {
+        const tn = col.tablename || '';
+        const cs = col.schema || (tn.includes('.') ? tn.split('.')[0] : null);
+        const ct = tn.includes('.') ? tn.split('.')[1] : tn;
         if (f.schema && cs && cs !== f.schema) return false;
         if (f.table  && ct && ct !== f.table)  return false;
         return true;
@@ -586,10 +657,10 @@ function S_Columns() {
     if (!rows.length) return <EmptyUI />;
 
     const nullDist = [
-        { name: '0%',    value: rows.filter(c => Number(c.nullPct) === 0).length },
-        { name: '1–5%',  value: rows.filter(c => Number(c.nullPct) > 0 && Number(c.nullPct) <= 5).length },
-        { name: '5–20%', value: rows.filter(c => Number(c.nullPct) > 5 && Number(c.nullPct) <= 20).length },
-        { name: '>20%',  value: rows.filter(c => Number(c.nullPct) > 20).length },
+        { name: '0%',    value: rows.filter(c => c.nullPct === 0).length },
+        { name: '1–5%',  value: rows.filter(c => c.nullPct > 0 && c.nullPct <= 5).length },
+        { name: '5–20%', value: rows.filter(c => c.nullPct > 5 && c.nullPct <= 20).length },
+        { name: '>20%',  value: rows.filter(c => c.nullPct > 20).length },
     ];
     const PIE_COLORS = [THEME.success, THEME.primary, THEME.warning, THEME.danger];
 
@@ -599,7 +670,6 @@ function S_Columns() {
                      sub="Null percentage, distinct counts, and most common values"
                      right={<Chip color={THEME.purple}>{rows.length} columns</Chip>} />
 
-            {/* Null distribution pie + legend */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
                 <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Null Distribution</div>
@@ -623,18 +693,18 @@ function S_Columns() {
                     <div style={{ minWidth: 580 }}>
                         <THead cols="1.2fr 1.4fr 1fr 1fr 2fr" labels={['Table', 'Column', 'Null %', 'Distinct', 'Top Values']} />
                         {rows.map((col, i) => {
-                            const np = Number(col.nullPct).toFixed(1);
-                            const nc = Number(np) > 20 ? THEME.danger : Number(np) > 5 ? THEME.warning : THEME.success;
+                            const np = col.nullPct.toFixed(1);
+                            const nc = col.nullPct > 20 ? THEME.danger : col.nullPct > 5 ? THEME.warning : THEME.success;
                             return (
                                 <TRow key={i} cols="1.2fr 1.4fr 1fr 1fr 2fr" i={i}>
                                     <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{col.tablename}</span>
                                     <span style={{ fontFamily: THEME.fontMono, fontSize: 11, fontWeight: 600, color: THEME.primary }}>{col.name}</span>
                                     <div>
                                         <div style={{ fontFamily: THEME.fontMono, fontSize: 10, color: nc, fontWeight: 600, marginBottom: 4 }}>{np}%</div>
-                                        <Bar2 v={np} max={100} color={nc} h={3} />
+                                        <Bar2 v={col.nullPct} max={100} color={nc} h={3} />
                                     </div>
-                                    <span style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textMuted }}>{Number(col.distinct).toLocaleString()}</span>
-                                    <span style={{ fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={col.topValues || '—'}>{col.topValues || '—'}</span>
+                                    <span style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textMuted }}>{col.distinct.toLocaleString()}</span>
+                                    <span style={{ fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={col.topValues}>{col.topValues}</span>
                                 </TRow>
                             );
                         })}
@@ -1063,6 +1133,23 @@ const GROUPS = [
 ];
 
 /* ─────────────────────────────────────────────────────────────────
+   LIVE CLOCK — isolated component so its 1s tick NEVER causes the
+   parent shell to re-render (which would make selects lose focus).
+───────────────────────────────────────────────────────────────── */
+const LiveClock = React.memo(function LiveClock() {
+    const [tick, setTick] = useState(() => new Date());
+    useEffect(() => {
+        const id = setInterval(() => setTick(new Date()), 1000);
+        return () => clearInterval(id);
+    }, []);
+    return (
+        <span style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textDim }}>
+            {tick.toTimeString().slice(0, 8)}
+        </span>
+    );
+});
+
+/* ─────────────────────────────────────────────────────────────────
    MAIN SHELL
 ───────────────────────────────────────────────────────────────── */
 export default function UnifiedDashboard() {
@@ -1070,9 +1157,11 @@ export default function UnifiedDashboard() {
     const [filter, setFilter]       = useState({ db: '', schema: '', table: '' });
     const [activeId, setActiveId]   = useState('scorecard');
     const [collapsed, setCollapsed] = useState({});
-    const [tick, setTick]           = useState(new Date());
 
-    useEffect(() => { const id = setInterval(() => setTick(new Date()), 1000); return () => clearInterval(id); }, []);
+    // Fetch filter option data here (not inside FilterBar) so FilterBar
+    // never triggers a data-fetch re-render while a select is open
+    const { data: allTables } = useTableData('/api/tables/stats');
+    const { data: dbRaw }     = useTableData('/api/databases');
 
     const handleFilter = useCallback(v => {
         setFilter(p => typeof v === 'function' ? v(p) : v);
@@ -1121,7 +1210,7 @@ export default function UnifiedDashboard() {
                             <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, boxShadow: `0 0 5px ${THEME.success}`, animation: 'ud-pulse 2s infinite' }} />
                             <span style={{ fontSize: 11, color: THEME.textMuted }}>Live data</span>
                         </div>
-                        <span style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textDim }}>{tick.toTimeString().slice(0, 8)}</span>
+                        <LiveClock />
                     </div>
 
                     {/* Active scope pill */}
@@ -1218,7 +1307,7 @@ export default function UnifiedDashboard() {
                     <div style={{ flex: 1, overflowY: 'auto', padding: '22px 26px', display: 'flex', flexDirection: 'column', gap: 18 }}>
 
                         {/* Filters */}
-                        <FilterBar filter={filter} setFilter={handleFilter} />
+                        <FilterBar filter={filter} setFilter={handleFilter} allTables={allTables} dbRaw={dbRaw} />
 
                         {/* Active section */}
                         <div key={`${activeItem?.id}-${filter.db}-${filter.schema}-${filter.table}`} className="ud-rise"

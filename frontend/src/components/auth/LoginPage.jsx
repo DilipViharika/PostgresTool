@@ -549,7 +549,7 @@ const Corners = ({ color = 'rgba(100,112,255,.18)' }) => (
 const LoginPage = () => {
     useAdaptiveTheme();
     const { isDark, toggleTheme } = useTheme();
-    const { login, authLoading, error, clearError } = useAuth();
+    const { login, loginWithSSO, authLoading, error, clearError } = useAuth();
     const [username,     setUsername]     = useState('');
     const [password,     setPassword]     = useState('');
     const [showPwd,      setShowPwd]      = useState(false);
@@ -704,6 +704,7 @@ const LoginPage = () => {
                             </div>
 
                             <button type="button"
+                                    onClick={() => loginWithSSO('okta')}
                                     style={{
                                         width: '100%', padding: '12px 20px', borderRadius: 13,
                                         background: THEME.surface, border: `1px solid ${THEME.grid}`,
