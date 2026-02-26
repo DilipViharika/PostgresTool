@@ -1917,10 +1917,10 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
     try {
         const r = await pool.query(`
             SELECT
-                cl1.relname AS table_name,
+                cl1.relname::text AS table_name,
                 COALESCE(
-                    array_agg(DISTINCT cl2.relname) FILTER (WHERE cl2.relname IS NOT NULL),
-                    '{}'::text[]
+                    array_agg(DISTINCT cl2.relname::text) FILTER (WHERE cl2.relname IS NOT NULL),
+                    ARRAY[]::text[]
                 ) AS refs_to
             FROM pg_class cl1
                 LEFT JOIN pg_constraint c ON c.conrelid = cl1.oid AND c.contype = 'f'
@@ -1930,15 +1930,14 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
             GROUP BY cl1.relname
         `);
 
-        // node-postgres parses pg arrays → JS arrays automatically,
-        // but guard defensively in case of nulls
+        console.log('Sample row from DB:', JSON.stringify(r.rows[0])); // debug line
+
         const tables = r.rows.map(row => ({
             name:   row.table_name,
             refsTo: Array.isArray(row.refs_to) ? row.refs_to.filter(Boolean) : [],
             refsBy: [],
         }));
 
-        // Build reverse references
         tables.forEach(t => {
             t.refsTo.forEach(targetName => {
                 const target = tables.find(x => x.name === targetName);
@@ -1947,7 +1946,10 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
         });
 
         res.json(tables);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        console.error('Dependencies error:', e);
+        res.status(500).json({ error: e.message });
+    }
 });
 // 4. TOAST Table Bloat (SE)
 app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async (req, res) => {
