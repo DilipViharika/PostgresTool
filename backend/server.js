@@ -37,12 +37,10 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 
 const CONFIG = Object.freeze({
     PORT:           Number(process.env.PORT) || 5000,
-    FRONTEND_URL:   process.env.FRONTEND_URL || 'http://localhost:5173', // <-- ADDED FOR SSO
+    FRONTEND_URL:   process.env.FRONTEND_URL || 'http://localhost:5173',
     JWT_SECRET:     process.env.JWT_SECRET  || 'vigil-change-me-in-production',
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
     CORS_ORIGINS: [
-        // Always allow localhost — developers run local frontend against any backend.
-        // The real guard is JWT authentication on every protected route.
         'http://localhost:5173',
         'http://localhost:3000',
         'https://postgres-tool.vercel.app',
@@ -113,11 +111,6 @@ const CONFIG = Object.freeze({
     const jwtSecret = process.env.JWT_SECRET;
     const weakSecret = !jwtSecret || jwtSecret === 'vigil-change-me-in-production';
     if (weakSecret) {
-        // Warn loudly but do NOT exit — a missing JWT_SECRET on first deployment
-        // (e.g. Vercel env vars not yet configured) would otherwise crash the server
-        // silently, showing the app as permanently "offline".
-        // The operator MUST set JWT_SECRET=<random-64-char-string> in their
-        // deployment environment (Vercel dashboard → Settings → Environment Variables).
         console.warn(JSON.stringify({
             ts: new Date().toISOString(), level: 'WARN',
             msg: IS_PROD
@@ -207,8 +200,6 @@ function rateLimiter(req, res, next) {
     next();
 }
 
-// ── Stricter per-endpoint rate limiter ──────────────────────────────────────
-// Used on auth and sensitive mutation endpoints (10 req/min per IP)
 const strictBuckets = new Map();
 function strictRateLimiter(windowMs = 60_000, maxReqs = 10) {
     return (req, res, next) => {
@@ -226,76 +217,54 @@ function strictRateLimiter(windowMs = 60_000, maxReqs = 10) {
     };
 }
 
-// ── Security Headers middleware (helmet-lite, no extra dep) ─────────────────
 function securityHeaders(_req, res, next) {
-    // Prevent clickjacking
     res.setHeader('X-Frame-Options', 'DENY');
-    // Block MIME sniffing
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    // XSS protection legacy header
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    // Remove fingerprint header
     res.removeHeader('X-Powered-By');
-    // Referrer policy — don't leak URL to third parties
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    // Content Security Policy for API responses
     res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
-    // HSTS — enforce HTTPS in production
     if (IS_PROD) {
         res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
     }
-    // Permissions policy
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
     next();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SQL INJECTION GUARD — validates user-supplied SQL before EXPLAIN/query
+// SQL INJECTION GUARD
 // ─────────────────────────────────────────────────────────────────────────────
 const DANGEROUS_SQL = /\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|CREATE|ALTER|GRANT|REVOKE|COPY|EXECUTE|DO\b|CALL|NOTIFY|LISTEN|LOAD|LOCK\s+TABLE|CHECKPOINT|SECURITY\s+LABEL|SET\s+ROLE|RESET\s+ALL)\b/i;
 
-/**
- * Validates that a SQL string is safe to wrap in EXPLAIN.
- * Returns an error string if invalid, or null if OK.
- */
 function validateExplainQuery(sql) {
     if (!sql || typeof sql !== 'string') return 'Query must be a non-empty string';
     if (sql.length > 8_000) return 'Query too long (max 8,000 characters)';
-    // Strip single-line and multi-line comments before scanning
     const stripped = sql
         .replace(/--[^\n]*/g, ' ')
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .trim();
     if (!stripped) return 'Query is empty';
-    // Block multiple statements first (catches injections even without dangerous keywords)
     if (/;/.test(stripped.replace(/;$/, ''))) return 'Multiple SQL statements are not allowed';
     if (DANGEROUS_SQL.test(stripped)) return 'Query contains disallowed SQL operations (only SELECT is allowed here)';
     return null;
 }
 
-/**
- * Sanitises a free-form SQL string for the console.
- * Blocks the most dangerous DDL and system-level commands.
- * Returns an error string if blocked, or null if OK.
- */
 const CONSOLE_BLOCKED = /\b(DROP\s+(DATABASE|SCHEMA|ROLE|TABLESPACE)|CREATE\s+(DATABASE|ROLE|USER)|ALTER\s+(SYSTEM|ROLE\s+\S+\s+SUPERUSER)|COPY\s+\S+\s+(FROM|TO)\s+(STDIN|STDOUT|'|E')|LOAD\s+'|pg_read_file|pg_write_file|pg_read_binary_file)\b/i;
 
 function validateConsoleQuery(sql, role) {
     if (!sql || typeof sql !== 'string') return 'Query must be a non-empty string';
     if (sql.length > 50_000) return 'Query too long (max 50,000 characters)';
-    // super_admin can run anything within the size limit
     if (role === 'super_admin') return null;
     if (CONSOLE_BLOCKED.test(sql)) return 'This statement is blocked for your role. Contact a super_admin.';
     return null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LOGIN LOCKOUT (in-memory, resets on restart)
-// Max 5 failed attempts per 15 minutes per username
+// LOGIN LOCKOUT
 // ─────────────────────────────────────────────────────────────────────────────
 const loginAttempts = new Map();
 const LOGIN_MAX_ATTEMPTS  = 5;
-const LOGIN_WINDOW_MS     = 15 * 60 * 1000; // 15 minutes
+const LOGIN_WINDOW_MS     = 15 * 60 * 1000;
 
 function recordLoginAttempt(username, success) {
     const now    = Date.now();
@@ -342,16 +311,14 @@ let CONNECTIONS = [
         username: process.env.PGUSER     || 'postgres',
         password: process.env.PGPASSWORD || '',
         ssl:      process.env.PGSSL === 'true',
-        // ── SSH Tunnel ──────────────────────────────────────────────────────
         sshEnabled:    false,
         sshHost:       '',
         sshPort:       22,
         sshUser:       '',
-        sshAuthType:   'key',      // 'key' | 'password'
-        sshPrivateKey: '',         // PEM content
-        sshPassphrase: '',         // key passphrase (if key is encrypted)
-        sshPassword:   '',         // SSH password (when sshAuthType === 'password')
-        // ────────────────────────────────────────────────────────────────────
+        sshAuthType:   'key',
+        sshPrivateKey: '',
+        sshPassphrase: '',
+        sshPassword:   '',
         isDefault: true, status: 'success',
         lastTested: new Date().toISOString(),
         createdAt:  new Date().toISOString(),
@@ -366,7 +333,6 @@ const server = http.createServer(app);
 
 app.use(cors({
     origin: (origin, cb) => {
-        // Allow requests with no origin (server-to-server, curl, etc.)
         if (!origin) return cb(null, true);
         if (CONFIG.CORS_ORIGINS.includes(origin)) return cb(null, true);
         cb(new Error(`CORS: origin '${origin}' not allowed`));
@@ -377,7 +343,7 @@ app.use(cors({
     exposedHeaders: ['X-Cache', 'X-Request-Id'],
 }));
 app.use(securityHeaders);
-app.use(express.json({ limit: '1mb' }));   // tightened from 2 mb
+app.use(express.json({ limit: '1mb' }));
 app.use(rateLimiter);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -405,7 +371,6 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
     if (!username || !password) {
         return res.status(400).json({ error: 'username and password are required' });
     }
-    // Basic type/length guards to avoid bcrypt DoS via huge password strings
     if (typeof username !== 'string' || username.length > 128) {
         return res.status(400).json({ error: 'Invalid username' });
     }
@@ -413,7 +378,6 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
         return res.status(400).json({ error: 'Invalid password' });
     }
 
-    // Lockout check — prevent brute force
     if (isLoginLocked(username)) {
         return res.status(429).json({ error: 'Too many failed login attempts. Try again in 15 minutes.' });
     }
@@ -449,15 +413,10 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             location:    null,
         });
 
-        // Phase 1 & 2 screens are read-only monitoring screens — grant to all active users.
-        const NEW_SCREENS    = [
-            // Phase 1
+        const NEW_SCREENS = [
             'backup', 'checkpoint', 'maintenance',
-            // Phase 2
             'replication', 'bloat', 'regression', 'cloudwatch',
-            // Phase 3
-            'tasks', 'log-patterns', 'alert-correlation','Table',
-            // phase 4  sub sections
+            'tasks', 'log-patterns', 'alert-correlation', 'Table',
             'table-indexes', 'table-sizes',
         ];
         const baseScreens    = user.allowed_screens ?? [];
@@ -475,7 +434,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
         };
 
         const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
-        recordLoginAttempt(username, true); // clear failed attempts on success
+        recordLoginAttempt(username, true);
 
         Promise.all([
             touchLastLogin(pool, user.id),
@@ -493,11 +452,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
         res.json({ token, user: payload });
 
     } catch (err) {
-        log('ERROR', 'Login error', {
-            error: err.message,
-            stack: err.stack,
-            code:  err.code,
-        });
+        log('ERROR', 'Login error', { error: err.message, stack: err.stack, code: err.code });
         res.status(500).json({ error: 'Login failed', detail: err.message });
     }
 });
@@ -507,9 +462,6 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/auth/sso/:provider', (req, res) => {
     const { provider } = req.params;
-
-    // MOCK IMPLEMENTATION (For testing the UI flow immediately)
-    // Instantly redirects to our own callback to simulate a successful 3rd-party login
     log('INFO', `Initiating Mock SSO for provider: ${provider}`);
     const mockCode = 'mock-auth-code-123';
     const callbackUrl = `${req.protocol}://${req.get('host')}/api/auth/sso/${provider}/callback?code=${mockCode}`;
@@ -529,21 +481,15 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
     }
 
     try {
-        // MOCK USER PROFILE (Simulating a response from an Identity Provider)
-        const ssoProfile = {
-            email: 'admin@company.com', // Assume this exists in your DB
-            name: 'Enterprise Admin'
-        };
+        const ssoProfile = { email: 'admin@company.com', name: 'Enterprise Admin' };
 
-        // Find User in DB (Mapping SSO email to our username/email)
         const user = await getUserByUsername(pool, ssoProfile.email)
-            || await getUserByUsername(pool, 'admin'); // Fallback for local testing
+            || await getUserByUsername(pool, 'admin');
 
         if (!user || user.status !== 'active') {
             return res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Account not found or inactive`);
         }
 
-        // Generate App Session & Token (Re-using standard login logic)
         const sessionId = await createSession(pool, {
             userId:      user.id,
             ip:          req.ip,
@@ -581,11 +527,9 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             }),
         ]).catch(err => log('WARN', 'Post-SSO login side effects failed', { error: err.message }));
 
-        // Securely redirect back to the React app with the payload
         const redirectUri = new URL(`${CONFIG.FRONTEND_URL}/auth/callback`);
         redirectUri.searchParams.append('token', token);
         redirectUri.searchParams.append('user', encodeURIComponent(JSON.stringify(payload)));
-
         res.redirect(redirectUri.toString());
 
     } catch (err) {
@@ -796,7 +740,7 @@ app.post('/api/query', authenticate, requireRole('admin', 'super_admin'), async 
     const validationError = validateConsoleQuery(rawSql, req.user.role);
     if (validationError) return res.status(400).json({ error: validationError });
 
-    const safeSql = String(rawSql).slice(0, 50_000); // already validated length, belt-and-suspenders
+    const safeSql = String(rawSql).slice(0, 50_000);
     try {
         const client = await pool.connect();
         const r = await client.query(safeSql);
@@ -823,7 +767,6 @@ app.use('/api/repo', authenticate, requireScreen('repository'), repoRoutes);
 // ─────────────────────────────────────────────────────────────────────────────
 // CONNECTIONS
 // ─────────────────────────────────────────────────────────────────────────────
-// ── SSH fields accepted on create/edit ───────────────────────────────────────
 const SSH_FIELDS = ['sshEnabled','sshHost','sshPort','sshUser','sshAuthType','sshPrivateKey','sshPassphrase','sshPassword'];
 
 function pickSSH(body) {
@@ -839,19 +782,16 @@ function pickSSH(body) {
     };
 }
 
-/** Redact secrets before sending to client. */
 function sanitizeConn(c) {
     const { password, sshPrivateKey, sshPassphrase, sshPassword, ...safe } = c;
     return safe;
 }
 
-/** Build a pg Pool host/port, opening an SSH tunnel if needed. */
 async function resolvePoolConfig(c) {
     let host = c.host;
     let port = c.port;
 
     if (c.sshEnabled && c.sshHost) {
-        // Re-use existing tunnel if already open
         let localPort = getTunnelPort(c.id);
         if (!localPort) {
             localPort = await openTunnel(c.id, {
@@ -914,7 +854,6 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
     const { name, host, port, database, username, password, ssl } = req.body;
     if (CONNECTIONS.find(c => c.name === name && c.id !== id)) return res.status(409).json({ error: 'Connection name already exists' });
 
-    // Close existing tunnel if SSH config changed
     const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== CONNECTIONS[index][f]);
     if (sshChanged) await closeTunnel(id);
 
@@ -927,7 +866,7 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
         username: username || CONNECTIONS[index].username,
         password: password || CONNECTIONS[index].password,
         ssl:      ssl !== undefined ? ssl : CONNECTIONS[index].ssl,
-        ...pickSSH({ ...CONNECTIONS[index], ...req.body }), // merge, existing values as fallback
+        ...pickSSH({ ...CONNECTIONS[index], ...req.body }),
         status: null, lastTested: null,
     };
     res.json(sanitizeConn(CONNECTIONS[index]));
@@ -939,7 +878,6 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
     if (!c) return res.status(404).json({ error: 'Connection not found' });
     await closeTunnel(id);
     CONNECTIONS = CONNECTIONS.filter(c => c.id !== id);
-    // If the deleted connection was the default, auto-promote the first remaining one
     if (c.isDefault && CONNECTIONS.length > 0) {
         CONNECTIONS[0].isDefault = true;
     }
@@ -1285,9 +1223,9 @@ app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// QUERY PLAN REGRESSION (in-memory baseline store — survives until restart)
+// QUERY PLAN REGRESSION
 // ─────────────────────────────────────────────────────────────────────────────
-const planBaselines = new Map(); // fingerprint → { plan, cost, ts, query }
+const planBaselines = new Map();
 
 app.post('/api/regression/capture', authenticate, async (req, res) => {
     try {
@@ -1323,7 +1261,7 @@ app.post('/api/regression/compare', authenticate, async (req, res) => {
         }
 
         const costChange = ((currentCost - baseline.cost) / Math.max(baseline.cost, 0.001)) * 100;
-        const regression = costChange > 20; // >20% cost increase = regression
+        const regression = costChange > 20;
         res.json({
             status:      regression ? 'regression' : 'ok',
             fingerprint, costChange: Math.round(costChange * 10) / 10,
@@ -1368,7 +1306,6 @@ app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE
         `, [threshold]);
         res.json(r.rows);
     } catch (e) {
-        // pg_stat_statements might not be enabled
         res.json([]);
     }
 });
@@ -1393,82 +1330,33 @@ app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), a
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CLOUDWATCH INTEGRATION
+// CLOUDWATCH ROUTES — powered by cloudwatchService.js (no AWS SDK required)
 // ─────────────────────────────────────────────────────────────────────────────
-const CW_CONFIGURED = !!(
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY &&
-    process.env.AWS_REGION &&
-    process.env.CLOUDWATCH_DB_IDENTIFIER
-);
-
-app.get('/api/cloudwatch/status', authenticate, async (req, res) => {
-    if (!CW_CONFIGURED) {
-        return res.json({ configured: false });
+app.get('/api/cloudwatch/status', authenticate, (req, res) => {
+    try {
+        res.json(getStatus());
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
-    res.json({
-        configured: true,
-        region: process.env.AWS_REGION,
-        dbIdentifier: process.env.CLOUDWATCH_DB_IDENTIFIER,
-    });
 });
 
 app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
-    if (!CW_CONFIGURED) return res.json({ configured: false, datapoints: [] });
-
-    const { metric = 'CPUUtilization', period = 3600 } = req.query;
-    const periodSec = Number(period);
-
+    const { metric, period } = req.query;
+    if (!metric) return res.status(400).json({ error: 'metric query param required' });
+    const periodSec = Number(period) || 3600;
     try {
-        // Dynamically import AWS SDK (optional dep — graceful fallback if missing)
-        let CloudWatchClient, GetMetricStatisticsCommand;
-        try {
-            const mod = await import('@aws-sdk/client-cloudwatch');
-            CloudWatchClient          = mod.CloudWatchClient;
-            GetMetricStatisticsCommand = mod.GetMetricStatisticsCommand;
-        } catch {
-            return res.json({ configured: true, datapoints: [], error: 'AWS SDK not installed. Run: npm install @aws-sdk/client-cloudwatch' });
-        }
-
-        const client = new CloudWatchClient({
-            region: process.env.AWS_REGION,
-            credentials: {
-                accessKeyId:     process.env.AWS_ACCESS_KEY_ID,
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-            },
-        });
-
-        const endTime   = new Date();
-        const startTime = new Date(endTime.getTime() - periodSec * 1000);
-        // Choose granularity based on range
-        const stat      = periodSec <= 3600 ? 60 : periodSec <= 86400 ? 300 : 3600;
-
-        const cmd = new GetMetricStatisticsCommand({
-            Namespace:  'AWS/RDS',
-            MetricName: metric,
-            Dimensions: [{ Name: 'DBInstanceIdentifier', Value: process.env.CLOUDWATCH_DB_IDENTIFIER }],
-            StartTime:  startTime,
-            EndTime:    endTime,
-            Period:     stat,
-            Statistics: ['Average'],
-        });
-
-        const data = await client.send(cmd);
-        const datapoints = (data.Datapoints || [])
-            .sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp))
-            .map(d => ({ timestamp: d.Timestamp, value: d.Average, unit: d.Unit }));
-
-        res.json({ configured: true, metric, datapoints });
+        const datapoints = await getMetric(metric, periodSec);
+        res.json({ metric, datapoints });
     } catch (e) {
-        res.status(500).json({ configured: true, datapoints: [], error: e.message });
+        log('ERROR', 'CloudWatch metric fetch failed', { metric, error: e.message });
+        res.status(500).json({ error: e.message });
     }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DBA TASK SCHEDULER
 // ─────────────────────────────────────────────────────────────────────────────
-// In-memory task store (persists for server lifetime; swap for DB later)
-const dbaTaskStore = new Map(); // id → task
+const dbaTaskStore = new Map();
 let taskIdCounter = 1;
 
 const defaultTasks = [
@@ -1487,7 +1375,6 @@ const defaultTasks = [
     { category: 'Monthly', priority: 'low',    title: 'Test backup restoration procedure',                   recurrence: 'monthly' },
 ];
 
-// Seed default tasks on startup
 defaultTasks.forEach(t => {
     const id = String(taskIdCounter++);
     dbaTaskStore.set(id, {
@@ -1547,7 +1434,6 @@ app.post('/api/tasks/reset', authenticate, requireScreen('admin'), (req, res) =>
 app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000), async (req, res) => {
     try {
         const [waitEvents, lockWaits, slowQueries, errorStates, dbActivity, topQueries] = await Promise.all([
-            // Wait event breakdown
             pool.query(`
                 SELECT wait_event_type, wait_event, COUNT(*) AS count
                 FROM pg_stat_activity
@@ -1555,7 +1441,6 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 GROUP BY wait_event_type, wait_event
                 ORDER BY count DESC LIMIT 20
             `),
-            // Lock waits
             pool.query(`
                 SELECT
                     blocked.pid AS blocked_pid,
@@ -1570,7 +1455,6 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0
                     LIMIT 20
             `),
-            // Slow query patterns (from pg_stat_statements if available)
             pool.query(`
                 SELECT
                     left(query, 100) AS query_preview,
@@ -1585,7 +1469,6 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 ORDER BY total_exec_time DESC
                     LIMIT 15
             `).catch(() => ({ rows: [] })),
-            // Error / unusual states
             pool.query(`
                 SELECT state, wait_event_type, COUNT(*) AS count,
                        AVG(EXTRACT(EPOCH FROM (now() - query_start)))::int AS avg_age_sec
@@ -1594,7 +1477,6 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 GROUP BY state, wait_event_type
                 ORDER BY count DESC
             `),
-            // Overall DB activity
             pool.query(`
                 SELECT datname,
                        numbackends,
@@ -1612,7 +1494,6 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 ORDER BY numbackends DESC
                     LIMIT 10
             `),
-            // Top queries by calls
             pool.query(`
                 SELECT left(query, 100) AS query_preview, calls, round(mean_exec_time::numeric,2) AS mean_ms, rows
                 FROM pg_stat_statements
@@ -1636,11 +1517,9 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
 // ─────────────────────────────────────────────────────────────────────────────
 // ALERT CORRELATION
 // ─────────────────────────────────────────────────────────────────────────────
-// In-memory alert event store for correlation analysis
 const alertEventStore = [];
 const MAX_ALERT_EVENTS = 500;
 
-// Push a synthetic snapshot of current DB health metrics as alert events
 async function captureAlertSnapshot() {
     try {
         const [conns, locks, waits, repl, bgwriter] = await Promise.all([
@@ -1657,7 +1536,6 @@ async function captureAlertSnapshot() {
         const c    = conns.rows[0];
         const locks_waiting = Number(locks.rows[0]?.lock_count || 0);
         const waitMap       = Object.fromEntries(waits.rows.map(r => [r.wait_event_type, Number(r.cnt)]));
-        const chk           = bgwriter.rows[0] || {};
 
         const now = new Date().toISOString();
         const events = [];
@@ -1678,15 +1556,13 @@ async function captureAlertSnapshot() {
             if (alertEventStore.length > MAX_ALERT_EVENTS)
                 alertEventStore.splice(0, alertEventStore.length - MAX_ALERT_EVENTS);
         }
-    } catch (_) { /* silent — correlation is best-effort */ }
+    } catch (_) { /* silent */ }
 }
 
-// Run alert capture every 30 seconds
 setInterval(captureAlertSnapshot, 30_000);
 
 app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), async (req, res) => {
     try {
-        // Also grab a fresh snapshot for this request
         const [conns, locks, waits, tables, txAge] = await Promise.all([
             pool.query(`
                 SELECT state, wait_event_type, wait_event, COUNT(*) AS cnt,
@@ -1724,8 +1600,7 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
             `),
         ]);
 
-        // Build correlation groups from stored events
-        const WINDOW_MS = 5 * 60 * 1000; // 5-minute correlation window
+        const WINDOW_MS = 5 * 60 * 1000;
         const groups = [];
         const remaining = [...alertEventStore];
 
@@ -1754,7 +1629,7 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
         }
 
         res.json({
-            correlationGroups: groups.slice(-20), // last 20 groups
+            correlationGroups: groups.slice(-20),
             recentEvents: alertEventStore.slice(-50),
             liveSessions: waits.rows,
             lockSummary:  locks.rows,
@@ -1779,8 +1654,6 @@ function guessRootCause(events) {
     if (hasIO)              return 'IO saturation — consider increasing shared_buffers or adding indexes';
     return 'Multiple concurrent anomalies detected — review pg_stat_activity';
 }
-
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CHECKPOINT MONITOR
@@ -1853,12 +1726,9 @@ app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-
 // ─────────────────────────────────────────────────────────────────────────────
-// TABLE ANALYTICS (UNIFIED DASHBOARD)
+// TABLE ANALYTICS
 // ─────────────────────────────────────────────────────────────────────────────
-
-// 1. Table Health, Activity, Write Amplification & Forecast (S1, S3, SC, SD)
 app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async (req, res) => {
     try {
         const r = await pool.query(`
@@ -1891,7 +1761,6 @@ app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 2. Column Stats Explorer (S2)
 app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
@@ -1913,7 +1782,6 @@ app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), a
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 3. Table Dependency Map / Foreign Keys (SB)
 app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
@@ -1930,8 +1798,6 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
               AND cl1.relkind = 'r'
             GROUP BY cl1.relname
         `);
-
-
 
         const tables = r.rows.map(row => ({
             name:   row.table_name,
@@ -1952,7 +1818,7 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
         res.status(500).json({ error: e.message });
     }
 });
-// 4. TOAST Table Bloat (SE)
+
 app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
@@ -1978,7 +1844,6 @@ app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 5. Temp Tables Usage (SF)
 app.get('/api/tables/temp', authenticate, async (req, res) => {
     try {
         const r = await pool.query(`
@@ -2000,9 +1865,6 @@ app.get('/api/tables/temp', authenticate, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 6. Index Analysis — GET /api/tables/indexes
-// ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CACHE_TTL.INDEXES), async (req, res) => {
     try {
         const r = await pool.query(`
@@ -2041,9 +1903,6 @@ app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CAC
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 7. Table Size Breakdown — GET /api/tables/sizes
-// ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
     try {
         const r = await pool.query(`
@@ -2134,41 +1993,12 @@ app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async 
         res.json({ success: true, command: cmd });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-// ─────────────────────────────────────────────────────────────────────────────
-// CLOUDWATCH ROUTES
-// Add this import near the top of server.js (with the other imports):
-//   import { getStatus, getMetric } from './services/cloudwatchService.js';
-// ─────────────────────────────────────────────────────────────────────────────
 
-app.get('/api/cloudwatch/status', authenticate, (req, res) => {
-    try {
-        res.json(getStatus());
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
-    const { metric, period } = req.query;
-    if (!metric) return res.status(400).json({ error: 'metric query param required' });
-    const periodSec = Number(period) || 3600;
-    try {
-        const datapoints = await getMetric(metric, periodSec);
-        res.json({ metric, datapoints });
-    } catch (e) {
-        log('ERROR', 'CloudWatch metric fetch failed', { metric, error: e.message });
-        res.status(500).json({ error: e.message });
-    }
-});
 // ─────────────────────────────────────────────────────────────────────────────
 // WEBSOCKET
 // ─────────────────────────────────────────────────────────────────────────────
 const wss = new WebSocketServer({ server, path: '/ws' });
 wss.on('connection', (ws) => {
-    // ── JWT Authentication via first-message handshake ───────────────────
-    // The client MUST send { type: 'auth', token: '<jwt>' } as its first
-    // message within AUTH_TIMEOUT_MS. This keeps the token out of server
-    // access logs and browser history (URL query params are logged).
     const AUTH_TIMEOUT_MS = 8_000;
     let authenticated = false;
 
@@ -2184,7 +2014,7 @@ wss.on('connection', (ws) => {
         try {
             const msg = JSON.parse(raw.toString());
             if (msg?.type !== 'auth' || !msg.token) throw new Error('Expected {type:"auth",token:"..."}');
-            jwt.verify(msg.token, CONFIG.JWT_SECRET); // throws if invalid/expired
+            jwt.verify(msg.token, CONFIG.JWT_SECRET);
             authenticated = true;
         } catch (err) {
             log('WARN', 'WebSocket auth failed — closing connection', { error: err.message });
@@ -2228,12 +2058,10 @@ app.use((req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function startup() {
     try {
-        // ── 1. Create repository directory (fire-and-forget) ────────────────
         fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true })
             .then(() => log('INFO', 'Repository directory ready'))
             .catch(e => log('WARN', 'Could not create repository directory', { error: e.message }));
 
-        // ── 2. Register port-conflict handler BEFORE listen ──────────────────
         server.on('error', async (err) => {
             if (err.code === 'EADDRINUSE') {
                 log('ERROR', `Port ${CONFIG.PORT} is already in use. Is another instance running?`, { error: err.message });
@@ -2244,12 +2072,10 @@ async function startup() {
             process.exit(1);
         });
 
-        // ── 3. Start listening IMMEDIATELY so /health responds right away ────
         server.listen(CONFIG.PORT, '0.0.0.0', () => {
             log('INFO', `🚀 VIGIL v3.0.0 running on port ${CONFIG.PORT}`);
         });
 
-        // ── 4. DB connectivity check runs in background (non-blocking) ───────
         pool.connect()
             .then(async client => {
                 await client.query('SELECT 1');
@@ -2258,7 +2084,6 @@ async function startup() {
             })
             .catch(e => log('WARN', 'Database unreachable at startup — will retry on requests', { error: e.message }));
 
-        // ── 5. Alert system initialised in background (non-blocking) ─────────
         alerts.initializeDatabase()
             .then(() => {
                 alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
