@@ -45,8 +45,6 @@ async function cloudwatchRequest(params) {
     const payloadHash = sha256hex('');
 
     // 2. Build canonical and signed headers dynamically
-    // AWS requires headers to be lowercase and sorted alphabetically.
-    // 'host', 'x-amz-date', 'x-amz-security-token' are naturally in alphabetical order!
     let canonicalHeaders = `host:${host}\nx-amz-date:${amzDate}\n`;
     let signedHeaders    = 'host;x-amz-date';
 
@@ -61,7 +59,6 @@ async function cloudwatchRequest(params) {
     const signingKey    = getSigningKey(SECRET_KEY, dateStr, REGION, service);
     const signature     = sign(signingKey, stringToSign).toString('hex');
 
-    // Note: Use the dynamic `signedHeaders` variable here
     const authHeader    = `AWS4-HMAC-SHA256 Credential=${ACCESS_KEY}/${credScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
     // 3. Attach the token to the actual outgoing request
@@ -120,14 +117,14 @@ export async function getMetric(metricName, periodSeconds = 3600) {
     const cwPeriod   = Math.max(60, Math.round(periodSeconds / 60) * 60 / Math.min(60, Math.round(periodSeconds / 60)));
 
     const xml = await cloudwatchRequest({
-        MetricName:                 metricName,
-        Namespace:                  'AWS/RDS',
-        Statistics_member_1:        stat,
+        MetricName:                  metricName,
+        Namespace:                   'AWS/RDS',
+        'Statistics.member.1':       stat,        // ← fixed: was Statistics_member_1
         'Dimensions.member.1.Name':  'DBInstanceIdentifier',
         'Dimensions.member.1.Value': DB_ID,
-        StartTime:                  startTime.toISOString(),
-        EndTime:                    endTime.toISOString(),
-        Period:                     String(cwPeriod),
+        StartTime:                   startTime.toISOString(),
+        EndTime:                     endTime.toISOString(),
+        Period:                      String(cwPeriod),
     });
 
     return parseDatapoints(xml);
@@ -142,7 +139,6 @@ export function getStatus() {
         hasKey:       !!ACCESS_KEY,
         hasSecret:    !!SECRET_KEY,
         hasToken:     !!token,
-        // Shows the first 5 characters so we can see if it has quotes!
         tokenStart:   token ? token.substring(0, 5) : 'none'
     };
 }
