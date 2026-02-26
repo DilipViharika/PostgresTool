@@ -134,11 +134,15 @@ export async function getMetric(metricName, periodSeconds = 3600) {
 }
 
 export function getStatus() {
+    const token = process.env.AWS_SESSION_TOKEN;
     return {
         configured:   isConfigured(),
         region:       REGION        || null,
         dbIdentifier: DB_ID         || null,
         hasKey:       !!ACCESS_KEY,
         hasSecret:    !!SECRET_KEY,
+        hasToken:     !!token,
+        // Shows the first 5 characters so we can see if it has quotes!
+        tokenStart:   token ? token.substring(0, 5) : 'none'
     };
 }
