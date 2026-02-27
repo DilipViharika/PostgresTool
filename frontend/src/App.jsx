@@ -2140,23 +2140,20 @@ const LoadingScreen = () => (
        and triggers the route change to /login.
    ───────────────────────────────────────────────────────────────── */
 
-const LOGIN_REDIRECT_DELAY = 1200; // ms — must be ≥ login success animation duration
-
 const AuthConsumer = () => {
     const { currentUser, loading, logout } = useAuth();
 
-    // ── Login-redirect gate ──────────────────────────────────────
-    // After login, hold off routing to Dashboard until the success
-    // animation (LoginPage) has finished playing.
+    // readyToEnter is true immediately when logged in — no delay needed
+    // (the login-success overlay has been removed; we go straight to the dashboard)
     const [readyToEnter, setReadyToEnter] = useState(!!currentUser);
     const prevUser = useRef(currentUser);
 
     useEffect(() => {
-        // User just logged in (was null, now truthy)
+        // User just logged in (was null, now truthy) → enter immediately
         if (!prevUser.current && currentUser) {
-            const t = setTimeout(() => setReadyToEnter(true), LOGIN_REDIRECT_DELAY);
+            setReadyToEnter(true);
             prevUser.current = currentUser;
-            return () => clearTimeout(t);
+            return;
         }
         // User logged out → reset gate for next login
         if (prevUser.current && !currentUser) {
@@ -2183,16 +2180,10 @@ const AuthConsumer = () => {
         <Router>
             <Suspense fallback={<LoadingScreen />}>
                 <Routes>
-                    {/* 1. Login Route: show success animation, then navigate to dashboard */}
+                    {/* 1. Login Route: redirect immediately to dashboard if already logged in */}
                     <Route
                         path="/login"
-                        element={
-                            !currentUser
-                                ? <LoginPage />
-                                : readyToEnter
-                                    ? <Navigate to="/" replace />
-                                    : <LoginPage /> /* keep mounted while animation plays */
-                        }
+                        element={!currentUser ? <LoginPage /> : <Navigate to="/" replace />}
                     />
 
                     {/* 2. SSO Callback Route */}

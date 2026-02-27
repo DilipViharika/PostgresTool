@@ -555,7 +555,6 @@ const LoginPage = () => {
     const [showPwd,      setShowPwd]      = useState(false);
     const [rememberMe,   setRememberMe]   = useState(false);
     const [serverStatus, setServerStatus] = useState({ status: 'checking' });
-    const [loginSuccess, setLoginSuccess] = useState(false);
     const [shake,        setShake]        = useState(false);
     const [btnHover,     setBtnHover]     = useState(false);
     const userRef = useRef(null);
@@ -596,17 +595,15 @@ const LoginPage = () => {
         else            localStorage.removeItem('vigil_remembered_user');
         // Always reset the active tab so every login session starts on Overview
         try { localStorage.removeItem('pg_monitor_active_tab'); } catch {}
-        setLoginSuccess(false);
-        try { await login(username, password); setLoginSuccess(true); } catch {}
+        await login(username, password);
     }, [username, password, rememberMe, login]);
 
-    const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading && !loginSuccess;
+    const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading;
 
-    // UPDATED CONTRAST LOGIC
-    const btnGrad      = loginSuccess ? '#22c55e' : canSubmit ? 'linear-gradient(135deg, #3D47D8 0%, #5B63F0 50%, #818AFF 100%)' : THEME.surfaceHover;
-    const btnTextColor = canSubmit || loginSuccess ? 'white' : THEME.textMuted;
+    const btnGrad      = canSubmit ? 'linear-gradient(135deg, #3D47D8 0%, #5B63F0 50%, #818AFF 100%)' : THEME.surfaceHover;
+    const btnTextColor = canSubmit ? 'white' : THEME.textMuted;
 
-    const btnShadow = canSubmit && !authLoading && !loginSuccess
+    const btnShadow = canSubmit && !authLoading
         ? btnHover ? '0 14px 42px rgba(100,112,255,.62), 0 0 0 1px rgba(130,138,255,.38) inset, 0 1px 0 rgba(255,255,255,.16) inset' : '0 8px 28px rgba(100,112,255,.38), 0 0 0 1px rgba(100,112,255,.24) inset'
         : 'none';
 
@@ -627,7 +624,7 @@ const LoginPage = () => {
 
                 <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div style={{ marginBottom: 22, animation: 'fadeUp .7s ease .1s backwards' }}>
-                        <LogoEmblem success={loginSuccess}/>
+                        <LogoEmblem success={false}/>
                     </div>
 
                     <div style={{ textAlign: 'center', marginBottom: 4, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
@@ -641,18 +638,9 @@ const LoginPage = () => {
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${THEME.grid})` }}/>
                     </div>
 
-                    <div style={{ width: '100%', padding: '28px 26px 24px', borderRadius: 22, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${loginSuccess ? 'rgba(34,197,94,.28)' : error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: loginSuccess ? `0 0 60px rgba(34,197,94,.10), ${THEME.shadowMd}` : THEME.shadowMd, transition: 'border-color .6s, box-shadow .6s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, left: '6%', right: '6%', height: 1, background: loginSuccess ? 'linear-gradient(90deg, transparent, rgba(34,197,94,.55), transparent)' : 'linear-gradient(90deg, transparent, rgba(130,138,255,.42), transparent)', transition: 'background .6s', animation: 'edgePulse 3.5s ease-in-out infinite' }}/>
-                        <Corners color={loginSuccess ? 'rgba(34,197,94,.20)' : 'rgba(100,112,255,.16)'}/>
-
-                        {loginSuccess && (
-                            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center,rgba(34,197,94,.09) 0%,transparent 70%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20, borderRadius: 22, animation: 'fadeIn .35s ease' }}>
-                                <div style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', border: '2px solid rgba(34,197,94,.28)', animation: 'ripple 1.1s ease-out forwards' }}/>
-                                <CheckCircle size={44} color="#22c55e" style={{ animation: 'successPop .5s cubic-bezier(.34,1.56,.64,1) backwards', marginBottom: 14 }}/>
-                                <div style={{ color: '#22c55e', fontSize: 16, fontWeight: 700, fontFamily: "'Playfair Display',serif", animation: 'fadeUp .4s ease .2s backwards' }}>Authenticated</div>
-                                <div style={{ color: THEME.textMuted, fontSize: 10, marginTop: 6, fontFamily: THEME.fontMono, letterSpacing: '.06em', animation: 'fadeUp .4s ease .35s backwards' }}>Opening Overview…</div>
-                            </div>
-                        )}
+                    <div style={{ width: '100%', padding: '28px 26px 24px', borderRadius: 22, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: THEME.shadowMd, transition: 'border-color .3s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, left: '6%', right: '6%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(130,138,255,.42), transparent)', animation: 'edgePulse 3.5s ease-in-out infinite' }}/>
+                        <Corners color='rgba(100,112,255,.16)'/>
 
                         {error && (
                             <div style={{ marginBottom: 18, padding: '10px 14px', borderRadius: 11, background: 'rgba(239,68,68,.07)', border: '1px solid rgba(239,68,68,.20)', display: 'flex', alignItems: 'center', gap: 10, animation: 'slideDown .3s ease backwards' }}>
@@ -662,8 +650,8 @@ const LoginPage = () => {
                         )}
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-                            <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading || loginSuccess}/>
-                            <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading || loginSuccess}
+                            <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading}/>
+                            <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading}
                                         rightEl={
                                             <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 4, display: 'flex', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#818AFF'} onMouseLeave={e => e.currentTarget.style.color = THEME.textDim}>
                                                 {showPwd ? <EyeOff size={14}/> : <Eye size={14}/>}
@@ -684,16 +672,14 @@ const LoginPage = () => {
                             </div>
 
                             <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
-                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? `1px solid ${loginSuccess ? 'rgba(34,197,94,.35)' : 'rgba(100,112,255,.32)'}` : `1px solid ${THEME.grid}`, padding: '14px 20px', borderRadius: 13, color: btnTextColor, fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
-                                {canSubmit && !authLoading && !loginSuccess && (
+                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? '1px solid rgba(100,112,255,.32)' : `1px solid ${THEME.grid}`, padding: '14px 20px', borderRadius: 13, color: btnTextColor, fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
+                                {canSubmit && !authLoading && (
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%)', backgroundSize: '200% auto', animation: btnHover ? 'shimmer 1.2s ease forwards' : 'none', borderRadius: 13 }}/>
                                 )}
                                 <span style={{ position: 'relative' }}>
                                     {authLoading
                                         ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite', verticalAlign: 'middle', marginRight: 8 }}/>Authenticating…</>
-                                        : loginSuccess
-                                            ? <><CheckCircle size={15} style={{ verticalAlign: 'middle', marginRight: 8 }}/>Access Granted</>
-                                            : <>Sign In&nbsp;<ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle', transition: 'transform .25s', transform: btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>
+                                        : <>Sign In&nbsp;<ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle', transition: 'transform .25s', transform: btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>
                                     }
                                 </span>
                             </button>
@@ -721,14 +707,11 @@ const LoginPage = () => {
                             </button>
                         </form>
 
-                        {!loginSuccess && (
-                            <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
-                                {/* UPDATED: PROVISIONING TEXT */}
-                                <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.06em' }}>
-                                    Enterprise SSO enabled · Contact IT for access provisioning
-                                </span>
-                            </div>
-                        )}
+                        <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
+                            <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.06em' }}>
+                                Enterprise SSO enabled · Contact IT for access provisioning
+                            </span>
+                        </div>
                     </div>
 
                     <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
