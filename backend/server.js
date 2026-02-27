@@ -362,10 +362,13 @@ const queryHistory = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONNECTIONS
+// CONNECTIONS — persisted to disk so they survive server restarts
 // ─────────────────────────────────────────────────────────────────────────────
-let CONNECTIONS = [
-    {
+const CONNECTIONS_FILE = path.join(__dirname, 'data', 'connections.json');
+
+/** The default connection seeded from env vars */
+function defaultConnection() {
+    return {
         id: 1, name: 'Default Connection',
         host:     process.env.PGHOST     || '',
         port:     parseInt(process.env.PGPORT) || 5432,
@@ -384,8 +387,55 @@ let CONNECTIONS = [
         isDefault: true, status: 'success',
         lastTested: new Date().toISOString(),
         createdAt:  new Date().toISOString(),
-    },
-];
+    };
+}
+
+/** Load connections from disk; fall back to the default env-var connection */
+async function loadConnections() {
+    try {
+        await fs.mkdir(path.dirname(CONNECTIONS_FILE), { recursive: true });
+        const raw = await fs.readFile(CONNECTIONS_FILE, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+        }
+    } catch (e) {
+        if (e.code !== 'ENOENT') {
+            log('WARN', 'Could not read connections file, using default', { error: e.message });
+        }
+    }
+    return [defaultConnection()];
+}
+
+/** Save connections to disk (non-blocking, swallows errors on read-only filesystems like Vercel) */
+async function saveConnections() {
+    try {
+        await fs.mkdir(path.dirname(CONNECTIONS_FILE), { recursive: true });
+        await fs.writeFile(CONNECTIONS_FILE, JSON.stringify(CONNECTIONS, null, 2), 'utf8');
+    } catch (e) {
+        log('WARN', 'Could not persist connections to disk', { error: e.message });
+    }
+}
+
+// Populated in startup() — default fallback so the app works before startup completes
+let CONNECTIONS = [defaultConnection()];
+let connectionsLoaded = false;
+
+/** Ensure connections are loaded once (needed for Vercel serverless where startup() is skipped) */
+async function ensureConnectionsLoaded() {
+    if (connectionsLoaded) return;
+    connectionsLoaded = true;
+    const saved = await loadConnections();
+    CONNECTIONS = saved;
+    const defaultConn = CONNECTIONS.find(c => c.isDefault);
+    if (defaultConn && !activeConnectionId) activeConnectionId = defaultConn.id;
+}
+
+// Middleware that lazily loads connections on the first /api/connections request
+// so Vercel cold-starts also benefit from persisted data.
+const ensureConnections = (req, res, next) => {
+    ensureConnectionsLoaded().then(next).catch(next);
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EXPRESS APP
@@ -882,7 +932,7 @@ async function resolvePoolConfig(c) {
     };
 }
 
-app.get('/api/connections', authenticate, (req, res) => {
+app.get('/api/connections', authenticate, ensureConnections, (req, res) => {
     res.json(CONNECTIONS.map(sanitizeConn));
 });
 
@@ -907,6 +957,7 @@ app.post('/api/connections', authenticate, (req, res) => {
         status: null, lastTested: null, createdAt: new Date().toISOString(),
     };
     CONNECTIONS.push(newConn);
+    saveConnections();
     res.status(201).json(sanitizeConn(newConn));
 });
 
@@ -935,6 +986,7 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
         ...pickSSH({ ...CONNECTIONS[index], ...req.body }),
         status: null, lastTested: null,
     };
+    saveConnections();
     res.json(sanitizeConn(CONNECTIONS[index]));
 });
 
@@ -949,6 +1001,7 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
     if (c.isDefault && CONNECTIONS.length > 0) {
         CONNECTIONS[0].isDefault = true;
     }
+    saveConnections();
     res.json({ success: true });
 });
 
@@ -957,6 +1010,7 @@ app.post('/api/connections/:id/default', authenticate, (req, res) => {
     if (!c) return res.status(404).json({ error: 'Connection not found' });
     CONNECTIONS.forEach(c => c.isDefault = false);
     c.isDefault = true;
+    saveConnections();
     res.json({ success: true });
 });
 
@@ -979,12 +1033,14 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
         client.release();
         await testPool.end();
         c.status = 'success'; c.lastTested = new Date().toISOString();
+        saveConnections();
         res.json({
             success: true,
             message: c.sshEnabled ? 'Connection successful via SSH tunnel' : 'Connection successful',
         });
     } catch (e) {
         c.status = 'failed'; c.lastTested = new Date().toISOString();
+        saveConnections();
         await testPool.end().catch(() => {});
         res.json({ success: false, error: e.message });
     }
@@ -1010,6 +1066,7 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
     c.isDefault = true;
     activeConnectionId = id;
     cache.clear(); // invalidate all cached responses — they belong to the old connection
+    saveConnections();
     log('INFO', `Active connection switched to ${id} (${c.name})`);
     res.json({ success: true, message: `Switched to "${c.name}"`, connectionId: id });
 });
@@ -2519,6 +2576,15 @@ app.use((req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function startup() {
     try {
+        // Load persisted connections from disk (must happen before any request is served)
+        const saved = await loadConnections();
+        CONNECTIONS = saved;
+        connectionsLoaded = true;
+        // Restore activeConnectionId from the persisted isDefault flag
+        const defaultConn = CONNECTIONS.find(c => c.isDefault);
+        if (defaultConn) activeConnectionId = defaultConn.id;
+        log('INFO', `Loaded ${CONNECTIONS.length} connection(s) from disk`);
+
         fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true })
             .then(() => log('INFO', 'Repository directory ready'))
             .catch(e => log('WARN', 'Could not create repository directory', { error: e.message }));
