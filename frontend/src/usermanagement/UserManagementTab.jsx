@@ -325,78 +325,15 @@ const UserManagementTab = ({ initialUsers = [] }) => {
         return `${Math.floor(seconds / 3600)}h`;
     }, []);
 
-    // WebSocket connection attempt
+    // Polling-based live sync (replaces WebSocket — not supported on Vercel)
     useEffect(() => {
-        const connectWebSocket = () => {
-            try {
-                const token = localStorage.getItem('vigil_token');
-                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = new URL(API_BASE);
-                const wsBase = `${wsProtocol}//${wsUrl.host}`;
-                // Token is sent as first message (not in URL) to avoid log exposure
-                wsRef.current = new WebSocket(`${wsBase}/ws`);
-
-                wsRef.current.onopen = () => {
-                    wsRef.current.send(JSON.stringify({ type: 'auth', token }));
-                    setIsLive(true);
-                    if (pollingRef.current) clearInterval(pollingRef.current);
-                };
-
-                wsRef.current.onmessage = (event) => {
-                    try {
-                        const msg = JSON.parse(event.data);
-                        if (msg.type === 'USER_UPDATED') {
-                            fetchUsers();
-                            setLastSynced(Date.now());
-                        }
-                    } catch (e) {
-                        console.error('WS message parse error:', e);
-                    }
-                };
-
-                wsRef.current.onerror = () => {
-                    setIsLive(false);
-                };
-
-                wsRef.current.onclose = () => {
-                    setIsLive(false);
-                    // Fallback to polling
-                    if (!pollingRef.current) {
-                        pollingRef.current = setInterval(() => {
-                            fetchUsers();
-                            setLastSynced(Date.now());
-                        }, 30000);
-                    }
-                };
-            } catch (err) {
-                console.error('WebSocket connection failed:', err);
-                setIsLive(false);
-                // Fallback to polling
-                if (!pollingRef.current) {
-                    pollingRef.current = setInterval(() => {
-                        fetchUsers();
-                        setLastSynced(Date.now());
-                    }, 30000);
-                }
-            }
-        };
-
-        // Try to connect to WebSocket
-        connectWebSocket();
-
-        // Set up polling as fallback
-        if (!isLive) {
-            pollingRef.current = setInterval(() => {
-                fetchUsers();
-                setLastSynced(Date.now());
-            }, 30000);
-        }
+        setIsLive(true);
+        pollingRef.current = setInterval(() => {
+            fetchUsers();
+            setLastSynced(Date.now());
+        }, 30000);
 
         return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
-                wsRef.current = null;
-            }
             if (pollingRef.current) {
                 clearInterval(pollingRef.current);
                 pollingRef.current = null;

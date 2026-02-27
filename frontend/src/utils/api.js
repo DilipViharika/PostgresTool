@@ -36,38 +36,56 @@ async function request(path, options = {}) {
     return res.json();
 }
 
-// --- NEW FUNCTION ADDED HERE ---
-export function connectWS(onMessage) {
+// --- POLLING REPLACEMENT FOR WEBSOCKET ---
+// WebSockets are not supported on Vercel (serverless). This polls /api/alerts/recent instead.
+export function connectWS(onMessage, intervalMs = 10000) {
     const token = localStorage.getItem('vigil_token');
     if (!token) return () => {};
 
-    // Convert http(s) to ws(s) — token is sent as first message (NOT in URL)
-    const wsBase = API_BASE.replace(/^http/, 'ws');
-    const wsUrl = `${wsBase}/ws`;
+    let lastAlertId = null;
+    let stopped = false;
 
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-        // Authenticate via first message — keeps token out of server logs
-        ws.send(JSON.stringify({ type: 'auth', token }));
-        console.log('WS Connected');
-        if (onMessage) onMessage({ type: 'snapshot' }); // Signal connection
-    };
-
-    ws.onmessage = (event) => {
+    const poll = async () => {
+        if (stopped) return;
         try {
-            const data = JSON.parse(event.data);
-            if (onMessage) onMessage(data);
+            const res = await fetch(`${API_BASE}/api/alerts/recent?limit=10`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            // Signal "connected" on first successful poll
+            if (lastAlertId === null) {
+                if (onMessage) onMessage({ type: 'snapshot' });
+            }
+
+            // Only fire if there are new alerts since last poll
+            if (data.alerts && data.alerts.length > 0) {
+                const newestId = data.alerts[0].id;
+                if (newestId !== lastAlertId) {
+                    if (lastAlertId !== null) {
+                        // Find and emit only truly new alerts
+                        const newAlerts = data.alerts.filter(a => a.id !== lastAlertId);
+                        newAlerts.forEach(alert => {
+                            if (onMessage) onMessage({ type: 'alert', payload: alert });
+                        });
+                    }
+                    lastAlertId = newestId;
+                }
+            }
         } catch (e) {
-            console.error('WS Parse error', e);
+            console.error('Alert poll error', e);
         }
     };
 
-    ws.onerror = (err) => console.error('WS Error', err);
+    // Immediate first poll
+    poll();
+    const timer = setInterval(poll, intervalMs);
 
-    // Return a cleanup function to close the connection
+    // Return cleanup function (mirrors old WS cleanup interface)
     return () => {
-        if (ws.readyState === 1) ws.close();
+        stopped = true;
+        clearInterval(timer);
     };
 }
 

@@ -1870,23 +1870,20 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
    ───────────────────────────────────────────────────────────────── */
 const useWebSocket = (onMessage) => {
     const [connected, setConnected] = useState(false);
-    const [reconnecting, setReconnecting] = useState(false);
-    const disconnectRef = useRef(null);
-    const timerRef = useRef(null);
+    const [reconnecting] = useState(false); // polling never shows "reconnecting"
+    const stopRef = useRef(null);
 
-    const connect = useCallback(() => {
-        setReconnecting(true);
-        try {
-            disconnectRef.current = connectWS(msg => {
-                setConnected(true); setReconnecting(false); onMessage(msg);
-            });
-        } catch {
-            setConnected(false); setReconnecting(false);
-            timerRef.current = setTimeout(connect, WS_RECONNECT_INTERVAL);
-        }
+    useEffect(() => {
+        // connectWS now uses HTTP polling — no WebSocket, works on Vercel
+        stopRef.current = connectWS(msg => {
+            setConnected(true);
+            onMessage(msg);
+        });
+        return () => {
+            if (stopRef.current) stopRef.current();
+        };
     }, [onMessage]);
 
-    useEffect(() => { connect(); return () => { if (disconnectRef.current) disconnectRef.current(); clearTimeout(timerRef.current); }; }, [connect]);
     return { connected, reconnecting };
 };
 

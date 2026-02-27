@@ -1066,16 +1066,16 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
         const [replicas, slots, walReceiver, walSender, walSettings] = await Promise.all([
             pool.query(`
                 SELECT pid, usename, application_name, client_addr::text,
-                       state, sync_state,
+                    state, sync_state,
                        sent_lsn::text, write_lsn::text, flush_lsn::text, replay_lsn::text,
-                       pg_wal_lsn_diff(sent_lsn,  write_lsn)  AS write_lag_bytes,
+                    pg_wal_lsn_diff(sent_lsn,  write_lsn)  AS write_lag_bytes,
                        pg_wal_lsn_diff(write_lsn, flush_lsn)  AS flush_lag_bytes,
                        pg_wal_lsn_diff(flush_lsn, replay_lsn) AS replay_lag_bytes,
                        pg_wal_lsn_diff(sent_lsn,  replay_lsn) AS total_lag_bytes,
                        EXTRACT(EPOCH FROM write_lag)::int       AS write_lag_sec,
-                       EXTRACT(EPOCH FROM flush_lag)::int       AS flush_lag_sec,
-                       EXTRACT(EPOCH FROM replay_lag)::int      AS replay_lag_sec,
-                       reply_time::text
+                    EXTRACT(EPOCH FROM flush_lag)::int       AS flush_lag_sec,
+                    EXTRACT(EPOCH FROM replay_lag)::int      AS replay_lag_sec,
+                    reply_time::text
                 FROM pg_stat_replication
                 ORDER BY total_lag_bytes DESC NULLS LAST
             `),
@@ -1090,13 +1090,13 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
             pool.query(`
                 SELECT status, receive_start_lsn::text, received_tli,
                        last_msg_send_time::text, last_msg_receipt_time::text,
-                       latest_end_lsn::text, latest_end_time::text,
-                       sender_host, sender_port, slot_name, conninfo
+                    latest_end_lsn::text, latest_end_time::text,
+                    sender_host, sender_port, slot_name, conninfo
                 FROM pg_stat_wal_receiver
             `).catch(() => ({ rows: [] })),
             pool.query(`
                 SELECT pg_current_wal_lsn()::text                    AS current_lsn,
-                       pg_walfile_name(pg_current_wal_lsn())          AS current_wal,
+                    pg_walfile_name(pg_current_wal_lsn())          AS current_wal,
                        pg_wal_lsn_diff(pg_current_wal_lsn(), '0/0')  AS total_bytes_generated,
                        (SELECT count(*) FROM pg_stat_replication)      AS replica_count,
                        pg_is_in_recovery()                            AS in_recovery
@@ -1127,14 +1127,14 @@ app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_T
         const r = await pool.query(`
             WITH stats AS (
                 SELECT schemaname, relname AS tablename,
-                    pg_total_relation_size(relid) AS total_bytes,
-                    pg_relation_size(relid)       AS table_bytes,
-                    pg_indexes_size(relid)        AS index_bytes,
-                    n_dead_tup, n_live_tup,
-                    CASE WHEN (n_live_tup + n_dead_tup) > 0
-                         THEN round(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
-                         ELSE 0 END AS dead_pct,
-                    last_vacuum, last_autovacuum, n_mod_since_analyze
+                       pg_total_relation_size(relid) AS total_bytes,
+                       pg_relation_size(relid)       AS table_bytes,
+                       pg_indexes_size(relid)        AS index_bytes,
+                       n_dead_tup, n_live_tup,
+                       CASE WHEN (n_live_tup + n_dead_tup) > 0
+                                THEN round(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
+                            ELSE 0 END AS dead_pct,
+                       last_vacuum, last_autovacuum, n_mod_since_analyze
                 FROM pg_stat_user_tables
             )
             SELECT *, pg_size_pretty(total_bytes) AS total_size,
@@ -1158,10 +1158,10 @@ app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE
                    CASE WHEN s.idx_scan = 0 THEN 100
                         WHEN s.idx_tup_read = 0 THEN 0
                         ELSE round((1.0 - s.idx_tup_fetch::numeric / s.idx_tup_read) * 100, 1)
-                   END AS inefficiency_pct,
+                       END AS inefficiency_pct,
                    pg_get_indexdef(s.indexrelid) AS index_def
             FROM pg_stat_user_indexes s
-            JOIN pg_index i ON i.indexrelid = s.indexrelid
+                     JOIN pg_index i ON i.indexrelid = s.indexrelid
             WHERE NOT i.indisprimary
             ORDER BY pg_relation_size(s.indexrelid) DESC LIMIT 80
         `);
@@ -1174,8 +1174,8 @@ app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE
         const r = await pool.query(`
             SELECT count(*) AS total_tables,
                    count(*) FILTER (WHERE (n_live_tup+n_dead_tup)>0 AND (100.0*n_dead_tup/(n_live_tup+n_dead_tup))>10) AS high_bloat_tables,
-                   count(*) FILTER (WHERE (n_live_tup+n_dead_tup)>0 AND (100.0*n_dead_tup/(n_live_tup+n_dead_tup))>20) AS critical_bloat_tables,
-                   pg_size_pretty(sum(pg_total_relation_size(relid))) AS total_db_size,
+                count(*) FILTER (WHERE (n_live_tup+n_dead_tup)>0 AND (100.0*n_dead_tup/(n_live_tup+n_dead_tup))>20) AS critical_bloat_tables,
+                pg_size_pretty(sum(pg_total_relation_size(relid))) AS total_db_size,
                    sum(pg_total_relation_size(relid)) AS total_bytes,
                    round(avg(CASE WHEN (n_live_tup+n_dead_tup)>0 THEN 100.0*n_dead_tup/(n_live_tup+n_dead_tup) ELSE 0 END),2) AS avg_dead_pct,
                    sum(n_dead_tup) AS total_dead_tuples,
@@ -1261,7 +1261,7 @@ app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE
                    round(max_exec_time::numeric,  2)  AS max_ms,
                    round(total_exec_time::numeric, 2) AS total_ms,
                    round((shared_blks_hit::numeric / NULLIF(shared_blks_hit + shared_blks_read, 0))*100, 1) AS cache_hit_pct,
-                   rows
+                rows
             FROM pg_stat_statements
             WHERE mean_exec_time > $1
             ORDER BY mean_exec_time DESC LIMIT 50
@@ -1275,9 +1275,9 @@ app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), a
         const r = await pool.query(`
             SELECT pid, usename, datname, application_name,
                    state, wait_event_type, wait_event,
-                   left(query, 200) AS query_preview,
-                   query_start::text,
-                   round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 1) AS duration_sec
+                left(query, 200) AS query_preview,
+                query_start::text,
+                round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 1) AS duration_sec
             FROM pg_stat_activity
             WHERE state != 'idle'
               AND query NOT LIKE '%pg_stat_activity%'
@@ -1382,19 +1382,19 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
             pool.query(`SELECT wait_event_type, wait_event, COUNT(*) AS count FROM pg_stat_activity WHERE wait_event IS NOT NULL AND state != 'idle' GROUP BY wait_event_type, wait_event ORDER BY count DESC LIMIT 20`),
             pool.query(`
                 SELECT blocked.pid AS blocked_pid, blocked.usename AS blocked_user,
-                       left(blocked.query,120) AS blocked_query,
-                       blocking.pid AS blocking_pid, blocking.usename AS blocking_user,
-                       left(blocking.query,120) AS blocking_query,
-                       round(EXTRACT(EPOCH FROM (now()-blocked.query_start))::numeric,1) AS wait_sec
+                    left(blocked.query,120) AS blocked_query,
+                    blocking.pid AS blocking_pid, blocking.usename AS blocking_user,
+                    left(blocking.query,120) AS blocking_query,
+                    round(EXTRACT(EPOCH FROM (now()-blocked.query_start))::numeric,1) AS wait_sec
                 FROM pg_stat_activity blocked
-                JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
+                    JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
                 WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0 LIMIT 20
             `),
             pool.query(`
                 SELECT left(query,100) AS query_preview, calls,
-                       round(mean_exec_time::numeric,2) AS mean_ms, round(max_exec_time::numeric,2) AS max_ms,
-                       round(stddev_exec_time::numeric,2) AS stddev_ms, round(total_exec_time::numeric,2) AS total_ms,
-                       round((100*total_exec_time/NULLIF(SUM(total_exec_time) OVER (),0))::numeric,2) AS pct_total
+                    round(mean_exec_time::numeric,2) AS mean_ms, round(max_exec_time::numeric,2) AS max_ms,
+                    round(stddev_exec_time::numeric,2) AS stddev_ms, round(total_exec_time::numeric,2) AS total_ms,
+                    round((100*total_exec_time/NULLIF(SUM(total_exec_time) OVER (),0))::numeric,2) AS pct_total
                 FROM pg_stat_statements WHERE mean_exec_time > 100
                 ORDER BY total_exec_time DESC LIMIT 15
             `).catch(() => ({ rows: [] })),
@@ -1549,10 +1549,10 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
     try {
         const r = await pool.query(`
             SELECT cl1.relname::text AS table_name,
-                   COALESCE(array_agg(DISTINCT cl2.relname::text) FILTER (WHERE cl2.relname IS NOT NULL), ARRAY[]::text[]) AS refs_to
+                COALESCE(array_agg(DISTINCT cl2.relname::text) FILTER (WHERE cl2.relname IS NOT NULL), ARRAY[]::text[]) AS refs_to
             FROM pg_class cl1
-            LEFT JOIN pg_constraint c ON c.conrelid=cl1.oid AND c.contype='f'
-            LEFT JOIN pg_class cl2 ON c.confrelid=cl2.oid
+                     LEFT JOIN pg_constraint c ON c.conrelid=cl1.oid AND c.contype='f'
+                     LEFT JOIN pg_class cl2 ON c.confrelid=cl2.oid
             WHERE cl1.relnamespace::regnamespace::text NOT IN ('pg_catalog','information_schema')
               AND cl1.relkind='r'
             GROUP BY cl1.relname
@@ -1590,7 +1590,7 @@ app.get('/api/tables/temp', authenticate, async (req, res) => {
                    a.pid, a.usename AS user, a.application_name AS app,
                    extract(epoch from (now()-a.backend_start))::int as age_sec
             FROM pg_class c JOIN pg_namespace n ON c.relnamespace=n.oid
-            LEFT JOIN pg_stat_activity a ON strpos(n.nspname, a.pid::text) > 0
+                LEFT JOIN pg_stat_activity a ON strpos(n.nspname, a.pid::text) > 0
             WHERE c.relpersistence='t'
         `);
         res.json(r.rows);
@@ -1677,7 +1677,20 @@ app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// WEBSOCKET
+// ALERT POLLING ENDPOINT (replaces WebSocket for Vercel compatibility)
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/alerts/recent', authenticate, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+        const recent = await alerts.getRecent(limit, false);
+        res.json({ count: recent.length, alerts: recent });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WEBSOCKET (disabled on Vercel — kept as no-op to avoid import errors)
 // ─────────────────────────────────────────────────────────────────────────────
 const wss = new WebSocketServer({ server, path: '/ws' });
 wss.on('connection', (ws) => {
