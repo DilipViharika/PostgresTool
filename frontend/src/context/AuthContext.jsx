@@ -151,6 +151,8 @@ export const AuthProvider = ({ children }) => {
     const logout = useCallback(() => {
         localStorage.removeItem(STORAGE_KEYS.TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER);
+        // Clear persisted active tab so the next login always opens Overview
+        localStorage.removeItem('pg_monitor_active_tab');
         setCurrentUser(null);
         setError(null);
     }, []);

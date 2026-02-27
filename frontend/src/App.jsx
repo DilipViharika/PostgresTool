@@ -1890,15 +1890,24 @@ const useWebSocket = (onMessage) => {
 /* ─────────────────────────────────────────────────────────────────
    DASHBOARD
    ───────────────────────────────────────────────────────────────── */
-const Dashboard = () => {
-    const { logout, currentUser } = useAuth();
+const Dashboard = ({ onLogout }) => {
+    const { logout: authLogout, currentUser } = useAuth();
+    // Use the parent-provided onLogout (which plays the fade-out) if available,
+    // falling back to the raw logout for any edge-cases.
+    const logout = onLogout || authLogout;
     const { isDark } = useTheme();
     useAdaptiveTheme(); // also keeps module-level THEME in sync for ChartDefs + GlobalStyles
 
     /* Keep module-level DS in sync with ThemeContext on every render */
     DS = isDark ? DS_DARK : DS_LIGHT;
 
-    const [activeTab, setActiveTab] = useState(() => { try { return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || 'overview'; } catch { return 'overview'; } });
+    // Default to 'overview' always. The ACTIVE_TAB key is cleared by AuthContext
+    // on logout, so every fresh login session starts at the Overview page.
+    // Within a session, tab navigation is persisted as before.
+    const [activeTab, setActiveTab] = useState(() => {
+        try { return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || 'overview'; }
+        catch { return 'overview'; }
+    });
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true'; } catch { return false; } });
     const [notifications, setNotifications] = useState([]);
     const [latestAlert, setLatestAlert] = useState(null);
@@ -2116,9 +2125,57 @@ const LoadingScreen = () => (
 
 /* ─────────────────────────────────────────────────────────────────
    AUTH CONSUMER + APP ENTRY
+   ─────────────────────────────────────────────────────────────────
+   Handles the login→dashboard and logout→login transitions.
+
+   Login flow:
+     - LoginPage fires login() → AuthContext sets currentUser
+     - We hold the route switch for LOGIN_REDIRECT_DELAY ms so the
+       "Authenticated / Redirecting…" success animation has time to
+       complete before we unmount the login page.
+
+   Logout flow:
+     - Dashboard calls handleLogout() → starts a 400 ms fade-out
+       overlay, then calls AuthContext logout() which clears the user
+       and triggers the route change to /login.
    ───────────────────────────────────────────────────────────────── */
+
+const LOGIN_REDIRECT_DELAY = 1200; // ms — must be ≥ login success animation duration
+
 const AuthConsumer = () => {
-    const { currentUser, loading } = useAuth();
+    const { currentUser, loading, logout } = useAuth();
+
+    // ── Login-redirect gate ──────────────────────────────────────
+    // After login, hold off routing to Dashboard until the success
+    // animation (LoginPage) has finished playing.
+    const [readyToEnter, setReadyToEnter] = useState(!!currentUser);
+    const prevUser = useRef(currentUser);
+
+    useEffect(() => {
+        // User just logged in (was null, now truthy)
+        if (!prevUser.current && currentUser) {
+            const t = setTimeout(() => setReadyToEnter(true), LOGIN_REDIRECT_DELAY);
+            prevUser.current = currentUser;
+            return () => clearTimeout(t);
+        }
+        // User logged out → reset gate for next login
+        if (prevUser.current && !currentUser) {
+            setReadyToEnter(false);
+        }
+        prevUser.current = currentUser;
+    }, [currentUser]);
+
+    // ── Logout fade-out ──────────────────────────────────────────
+    const [loggingOut, setLoggingOut] = useState(false);
+
+    const handleLogout = useCallback(() => {
+        setLoggingOut(true);
+        // Wait for fade-out animation, then clear auth state
+        setTimeout(() => {
+            logout();
+            setLoggingOut(false);
+        }, 400);
+    }, [logout]);
 
     if (loading) return <LoadingScreen />;
 
@@ -2126,25 +2183,51 @@ const AuthConsumer = () => {
         <Router>
             <Suspense fallback={<LoadingScreen />}>
                 <Routes>
-                    {/* 1. Login Route: Redirects to dashboard if already logged in */}
+                    {/* 1. Login Route: show success animation, then navigate to dashboard */}
                     <Route
                         path="/login"
-                        element={!currentUser ? <LoginPage /> : <Navigate to="/" replace />}
+                        element={
+                            !currentUser
+                                ? <LoginPage />
+                                : readyToEnter
+                                    ? <Navigate to="/" replace />
+                                    : <LoginPage /> /* keep mounted while animation plays */
+                        }
                     />
 
-                    {/* 2. SSO Callback Route: Handles the token payload from Okta/Google */}
+                    {/* 2. SSO Callback Route */}
                     <Route
                         path="/auth/callback"
                         element={<SSOCallback />}
                     />
 
-                    {/* 3. Protected Dashboard Route: Catches everything else */}
+                    {/* 3. Protected Dashboard Route */}
                     <Route
                         path="/*"
                         element={
-                            currentUser ? (
+                            currentUser && readyToEnter ? (
                                 <ErrorBoundary>
-                                    <Dashboard />
+                                    {/* Full-screen fade overlay shown during logout */}
+                                    {loggingOut && (
+                                        <div style={{
+                                            position: 'fixed', inset: 0, zIndex: 9999,
+                                            background: DS.bg,
+                                            animation: 'fadeIn 0.4s ease-out both',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            flexDirection: 'column', gap: 16,
+                                        }}>
+                                            <div style={{
+                                                width: 44, height: 44, borderRadius: '50%',
+                                                border: `2px solid ${DS.border}`,
+                                                borderTopColor: DS.cyan,
+                                                animation: 'rotate 0.9s linear infinite',
+                                            }} />
+                                            <span style={{ fontSize: 12, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.08em' }}>
+                                                SIGNING OUT…
+                                            </span>
+                                        </div>
+                                    )}
+                                    <Dashboard onLogout={handleLogout} />
                                 </ErrorBoundary>
                             ) : (
                                 <Navigate to="/login" replace />

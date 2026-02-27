@@ -594,6 +594,8 @@ const LoginPage = () => {
         if (!username.trim() || !password.trim()) return;
         if (rememberMe) localStorage.setItem('vigil_remembered_user', username.trim());
         else            localStorage.removeItem('vigil_remembered_user');
+        // Always reset the active tab so every login session starts on Overview
+        try { localStorage.removeItem('pg_monitor_active_tab'); } catch {}
         setLoginSuccess(false);
         try { await login(username, password); setLoginSuccess(true); } catch {}
     }, [username, password, rememberMe, login]);
@@ -648,7 +650,7 @@ const LoginPage = () => {
                                 <div style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', border: '2px solid rgba(34,197,94,.28)', animation: 'ripple 1.1s ease-out forwards' }}/>
                                 <CheckCircle size={44} color="#22c55e" style={{ animation: 'successPop .5s cubic-bezier(.34,1.56,.64,1) backwards', marginBottom: 14 }}/>
                                 <div style={{ color: '#22c55e', fontSize: 16, fontWeight: 700, fontFamily: "'Playfair Display',serif", animation: 'fadeUp .4s ease .2s backwards' }}>Authenticated</div>
-                                <div style={{ color: THEME.textMuted, fontSize: 10, marginTop: 6, fontFamily: THEME.fontMono, letterSpacing: '.06em', animation: 'fadeUp .4s ease .35s backwards' }}>Redirecting to dashboard…</div>
+                                <div style={{ color: THEME.textMuted, fontSize: 10, marginTop: 6, fontFamily: THEME.fontMono, letterSpacing: '.06em', animation: 'fadeUp .4s ease .35s backwards' }}>Opening Overview…</div>
                             </div>
                         )}
 
