@@ -27,6 +27,21 @@ import { getUserByUsername, touchLastLogin } from './services/userService.js';
 import { createSession, recordLogin, recordFailedLogin } from './services/sessionService.js';
 import { writeAudit }                       from './services/auditService.js';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW: Live overview route modules (place files in routes/overview/)
+// ─────────────────────────────────────────────────────────────────────────────
+import overviewStatsRouter       from './routes/overview/stats.js';
+import overviewTrafficRouter     from './routes/overview/traffic.js';
+import overviewReplicationRouter from './routes/overview/replication.js';
+import overviewTablesRouter      from './routes/overview/top-tables.js';
+import overviewWalRouter         from './routes/overview/wal.js';
+import overviewVacuumRouter      from './routes/overview/vacuum.js';
+import overviewLongTxnsRouter    from './routes/overview/long-transactions.js';
+import overviewBackupRouter      from './routes/overview/backup.js';
+import overviewAlertsRouter      from './routes/overview/alerts.js';
+import overviewTimeseriesRouter  from './routes/overview/timeseries.js';
+import { startCollector }        from './routes/overview/collector.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
@@ -546,33 +561,25 @@ app.use('/api', sessionRoutes(pool, authenticate, requireScreen));
 app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 
 // ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW ROUTES — replaced inline handlers with live route modules
+// Inject shared pool into req so overview routers can reuse it
+// ─────────────────────────────────────────────────────────────────────────────
+app.use((req, _res, next) => { req.pool = pool; next(); });
+
+app.use('/api/overview/stats',             authenticate, overviewStatsRouter);
+app.use('/api/overview/traffic',           authenticate, overviewTrafficRouter);
+app.use('/api/overview/replication',       authenticate, overviewReplicationRouter);
+app.use('/api/overview/top-tables',        authenticate, overviewTablesRouter);
+app.use('/api/overview/wal',               authenticate, overviewWalRouter);
+app.use('/api/overview/vacuum',            authenticate, overviewVacuumRouter);
+app.use('/api/overview/long-transactions', authenticate, overviewLongTxnsRouter);
+app.use('/api/overview/backup',            authenticate, overviewBackupRouter);
+app.use('/api/overview/alerts',            authenticate, overviewAlertsRouter);
+app.use('/api/overview/timeseries',        authenticate, overviewTimeseriesRouter);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // POSTGRES MONITORING ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
-app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
-    const { rows: [d] } = await pool.query(`
-        SELECT
-                (SELECT count(*) FROM pg_stat_activity WHERE state='active')                             AS active,
-                (SELECT count(*) FROM pg_stat_activity)                                                  AS total_conn,
-                (SELECT setting::int FROM pg_settings WHERE name='max_connections')                      AS max_conn,
-                (SELECT pg_database_size(current_database()))                                            AS db_size_bytes,
-                (SELECT date_part('epoch', now() - pg_postmaster_start_time()))                          AS uptime_seconds,
-                (SELECT sum(heap_blks_hit)/NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100
-                 FROM pg_statio_user_tables)                                                             AS hit_ratio
-    `);
-    res.json({
-        activeConnections: Number(d.active),
-        maxConnections:    Number(d.max_conn),
-        uptimeSeconds:     Number(d.uptime_seconds),
-        diskUsedGB:        parseFloat((d.db_size_bytes / 1024 ** 3).toFixed(2)),
-        indexHitRatio:     parseFloat(d.hit_ratio || 0).toFixed(1),
-    });
-});
-
-app.get('/api/overview/traffic', authenticate, cached('ov:traffic', CONFIG.CACHE_TTL.TRAFFIC), async (req, res) => {
-    const r = await pool.query("SELECT tup_fetched, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database WHERE datname=current_database()");
-    res.json(r.rows[0]);
-});
-
 app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
     try {
         const ext = await pool.query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace=n.oid WHERE e.extname='pg_stat_statements'");
@@ -1119,43 +1126,23 @@ app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_T
     try {
         const r = await pool.query(`
             WITH stats AS (
-                SELECT
-                    schemaname,
-                    relname                                                                              AS tablename,
-                    pg_total_relation_size(relid)                                                       AS total_bytes,
-                    pg_relation_size(relid)                                                             AS table_bytes,
-                    pg_indexes_size(relid)                                                              AS index_bytes,
-                    n_dead_tup,
-                    n_live_tup,
+                SELECT schemaname, relname AS tablename,
+                    pg_total_relation_size(relid) AS total_bytes,
+                    pg_relation_size(relid)       AS table_bytes,
+                    pg_indexes_size(relid)        AS index_bytes,
+                    n_dead_tup, n_live_tup,
                     CASE WHEN (n_live_tup + n_dead_tup) > 0
-                             THEN round(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
-                         ELSE 0
-                        END                                                                                 AS dead_pct,
-                    last_vacuum,
-                    last_autovacuum,
-                    n_mod_since_analyze
+                         THEN round(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
+                         ELSE 0 END AS dead_pct,
+                    last_vacuum, last_autovacuum, n_mod_since_analyze
                 FROM pg_stat_user_tables
             )
-            SELECT
-                schemaname,
-                tablename,
-                total_bytes,
-                table_bytes,
-                index_bytes,
-                n_dead_tup,
-                n_live_tup,
-                dead_pct,
-                last_vacuum,
-                last_autovacuum,
-                n_mod_since_analyze,
-                pg_size_pretty(total_bytes)                                                             AS total_size,
-                pg_size_pretty(table_bytes)                                                             AS table_size,
-                pg_size_pretty(index_bytes)                                                             AS index_size,
-                pg_size_pretty((dead_pct / 100.0 * table_bytes)::bigint)                               AS estimated_bloat_size
-            FROM stats
-            WHERE total_bytes > 8192
-            ORDER BY dead_pct DESC, total_bytes DESC
-                LIMIT 100
+            SELECT *, pg_size_pretty(total_bytes) AS total_size,
+                   pg_size_pretty(table_bytes) AS table_size,
+                   pg_size_pretty(index_bytes) AS index_size,
+                   pg_size_pretty((dead_pct / 100.0 * table_bytes)::bigint) AS estimated_bloat_size
+            FROM stats WHERE total_bytes > 8192
+            ORDER BY dead_pct DESC, total_bytes DESC LIMIT 100
         `);
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1164,26 +1151,19 @@ app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_T
 app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                s.schemaname,
-                s.relname                                                                               AS tablename,
-                s.indexrelname                                                                          AS indexname,
-                pg_size_pretty(pg_relation_size(s.indexrelid))                                         AS index_size,
-                pg_relation_size(s.indexrelid)                                                         AS index_bytes,
-                s.idx_scan,
-                s.idx_tup_read,
-                s.idx_tup_fetch,
-                CASE
-                    WHEN s.idx_scan    = 0 THEN 100
-                    WHEN s.idx_tup_read = 0 THEN 0
-                    ELSE round((1.0 - s.idx_tup_fetch::numeric / s.idx_tup_read) * 100, 1)
-                    END                                                                                     AS inefficiency_pct,
-                pg_get_indexdef(s.indexrelid)                                                           AS index_def
+            SELECT s.schemaname, s.relname AS tablename, s.indexrelname AS indexname,
+                   pg_size_pretty(pg_relation_size(s.indexrelid)) AS index_size,
+                   pg_relation_size(s.indexrelid) AS index_bytes,
+                   s.idx_scan, s.idx_tup_read, s.idx_tup_fetch,
+                   CASE WHEN s.idx_scan = 0 THEN 100
+                        WHEN s.idx_tup_read = 0 THEN 0
+                        ELSE round((1.0 - s.idx_tup_fetch::numeric / s.idx_tup_read) * 100, 1)
+                   END AS inefficiency_pct,
+                   pg_get_indexdef(s.indexrelid) AS index_def
             FROM pg_stat_user_indexes s
-                     JOIN pg_index i ON i.indexrelid = s.indexrelid
+            JOIN pg_index i ON i.indexrelid = s.indexrelid
             WHERE NOT i.indisprimary
-            ORDER BY pg_relation_size(s.indexrelid) DESC
-                LIMIT 80
+            ORDER BY pg_relation_size(s.indexrelid) DESC LIMIT 80
         `);
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1192,30 +1172,14 @@ app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE
 app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                count(*)                                                                                AS total_tables,
-                count(*) FILTER (WHERE
-                    (n_live_tup + n_dead_tup) > 0
-                    AND (100.0 * n_dead_tup / (n_live_tup + n_dead_tup)) > 10
-                )                                                                                       AS high_bloat_tables,
-                count(*) FILTER (WHERE
-                    (n_live_tup + n_dead_tup) > 0
-                    AND (100.0 * n_dead_tup / (n_live_tup + n_dead_tup)) > 20
-                )                                                                                       AS critical_bloat_tables,
-                pg_size_pretty(
-                        sum(pg_total_relation_size(relid))
-                )                                                                                       AS total_db_size,
-                sum(pg_total_relation_size(relid))                                                      AS total_bytes,
-                round(
-                        avg(
-                                CASE WHEN (n_live_tup + n_dead_tup) > 0
-                                         THEN 100.0 * n_dead_tup / (n_live_tup + n_dead_tup)
-                                     ELSE 0
-                                    END
-                        ), 2
-                )                                                                                       AS avg_dead_pct,
-                sum(n_dead_tup)                                                                         AS total_dead_tuples,
-                sum(n_live_tup)                                                                         AS total_live_tuples
+            SELECT count(*) AS total_tables,
+                   count(*) FILTER (WHERE (n_live_tup+n_dead_tup)>0 AND (100.0*n_dead_tup/(n_live_tup+n_dead_tup))>10) AS high_bloat_tables,
+                   count(*) FILTER (WHERE (n_live_tup+n_dead_tup)>0 AND (100.0*n_dead_tup/(n_live_tup+n_dead_tup))>20) AS critical_bloat_tables,
+                   pg_size_pretty(sum(pg_total_relation_size(relid))) AS total_db_size,
+                   sum(pg_total_relation_size(relid)) AS total_bytes,
+                   round(avg(CASE WHEN (n_live_tup+n_dead_tup)>0 THEN 100.0*n_dead_tup/(n_live_tup+n_dead_tup) ELSE 0 END),2) AS avg_dead_pct,
+                   sum(n_dead_tup) AS total_dead_tuples,
+                   sum(n_live_tup) AS total_live_tuples
             FROM pg_stat_user_tables
         `);
         res.json(r.rows[0]);
@@ -1292,22 +1256,18 @@ app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE
     try {
         const threshold = parseInt(req.query.min_ms) || 1000;
         const r = await pool.query(`
-            SELECT query,
-                   calls,
+            SELECT query, calls,
                    round(mean_exec_time::numeric, 2)  AS mean_ms,
                    round(max_exec_time::numeric,  2)  AS max_ms,
                    round(total_exec_time::numeric, 2) AS total_ms,
                    round((shared_blks_hit::numeric / NULLIF(shared_blks_hit + shared_blks_read, 0))*100, 1) AS cache_hit_pct,
-                rows
+                   rows
             FROM pg_stat_statements
             WHERE mean_exec_time > $1
-            ORDER BY mean_exec_time DESC
-                LIMIT 50
+            ORDER BY mean_exec_time DESC LIMIT 50
         `, [threshold]);
         res.json(r.rows);
-    } catch (e) {
-        res.json([]);
-    }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), async (req, res) => {
@@ -1315,29 +1275,25 @@ app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), a
         const r = await pool.query(`
             SELECT pid, usename, datname, application_name,
                    state, wait_event_type, wait_event,
-                left(query, 200) AS query_preview,
-                query_start::text,
-                round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 1) AS duration_sec
+                   left(query, 200) AS query_preview,
+                   query_start::text,
+                   round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 1) AS duration_sec
             FROM pg_stat_activity
             WHERE state != 'idle'
               AND query NOT LIKE '%pg_stat_activity%'
               AND query_start IS NOT NULL
-            ORDER BY query_start ASC
-                LIMIT 40
+            ORDER BY query_start ASC LIMIT 40
         `);
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CLOUDWATCH ROUTES — powered by cloudwatchService.js (no AWS SDK required)
+// CLOUDWATCH ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/cloudwatch/status', authenticate, (req, res) => {
-    try {
-        res.json(getStatus());
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+    try { res.json(getStatus()); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
@@ -1377,20 +1333,10 @@ const defaultTasks = [
 
 defaultTasks.forEach(t => {
     const id = String(taskIdCounter++);
-    dbaTaskStore.set(id, {
-        id, ...t,
-        done: false,
-        notes: '',
-        dueDate: null,
-        assignee: '',
-        createdAt: new Date().toISOString(),
-        completedAt: null,
-    });
+    dbaTaskStore.set(id, { id, ...t, done: false, notes: '', dueDate: null, assignee: '', createdAt: new Date().toISOString(), completedAt: null });
 });
 
-app.get('/api/tasks', authenticate, (req, res) => {
-    res.json(Array.from(dbaTaskStore.values()));
-});
+app.get('/api/tasks', authenticate, (req, res) => res.json(Array.from(dbaTaskStore.values())));
 
 app.post('/api/tasks', authenticate, (req, res) => {
     const { title, category = 'Daily', priority = 'medium', recurrence = 'daily', notes = '', dueDate = null, assignee = '' } = req.body;
@@ -1419,8 +1365,7 @@ app.delete('/api/tasks/:id', authenticate, requireScreen('admin'), (req, res) =>
 });
 
 app.post('/api/tasks/reset', authenticate, requireScreen('admin'), (req, res) => {
-    dbaTaskStore.clear();
-    taskIdCounter = 1;
+    dbaTaskStore.clear(); taskIdCounter = 1;
     defaultTasks.forEach(t => {
         const id = String(taskIdCounter++);
         dbaTaskStore.set(id, { id, ...t, done: false, notes: '', dueDate: null, assignee: '', createdAt: new Date().toISOString(), completedAt: null });
@@ -1434,84 +1379,38 @@ app.post('/api/tasks/reset', authenticate, requireScreen('admin'), (req, res) =>
 app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000), async (req, res) => {
     try {
         const [waitEvents, lockWaits, slowQueries, errorStates, dbActivity, topQueries] = await Promise.all([
+            pool.query(`SELECT wait_event_type, wait_event, COUNT(*) AS count FROM pg_stat_activity WHERE wait_event IS NOT NULL AND state != 'idle' GROUP BY wait_event_type, wait_event ORDER BY count DESC LIMIT 20`),
             pool.query(`
-                SELECT wait_event_type, wait_event, COUNT(*) AS count
-                FROM pg_stat_activity
-                WHERE wait_event IS NOT NULL AND state != 'idle'
-                GROUP BY wait_event_type, wait_event
-                ORDER BY count DESC LIMIT 20
-            `),
-            pool.query(`
-                SELECT
-                    blocked.pid AS blocked_pid,
-                    blocked.usename AS blocked_user,
-                    left(blocked.query, 120) AS blocked_query,
-                    blocking.pid AS blocking_pid,
-                    blocking.usename AS blocking_user,
-                    left(blocking.query, 120) AS blocking_query,
-                    round(EXTRACT(EPOCH FROM (now() - blocked.query_start))::numeric, 1) AS wait_sec
+                SELECT blocked.pid AS blocked_pid, blocked.usename AS blocked_user,
+                       left(blocked.query,120) AS blocked_query,
+                       blocking.pid AS blocking_pid, blocking.usename AS blocking_user,
+                       left(blocking.query,120) AS blocking_query,
+                       round(EXTRACT(EPOCH FROM (now()-blocked.query_start))::numeric,1) AS wait_sec
                 FROM pg_stat_activity blocked
-                    JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
-                WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0
-                    LIMIT 20
+                JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
+                WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0 LIMIT 20
             `),
             pool.query(`
-                SELECT
-                    left(query, 100) AS query_preview,
-                    calls,
-                    round(mean_exec_time::numeric, 2) AS mean_ms,
-                    round(max_exec_time::numeric, 2) AS max_ms,
-                    round(stddev_exec_time::numeric, 2) AS stddev_ms,
-                    round(total_exec_time::numeric, 2) AS total_ms,
-                    round((100 * total_exec_time / NULLIF(SUM(total_exec_time) OVER (), 0))::numeric, 2) AS pct_total
-                FROM pg_stat_statements
-                WHERE mean_exec_time > 100
-                ORDER BY total_exec_time DESC
-                    LIMIT 15
+                SELECT left(query,100) AS query_preview, calls,
+                       round(mean_exec_time::numeric,2) AS mean_ms, round(max_exec_time::numeric,2) AS max_ms,
+                       round(stddev_exec_time::numeric,2) AS stddev_ms, round(total_exec_time::numeric,2) AS total_ms,
+                       round((100*total_exec_time/NULLIF(SUM(total_exec_time) OVER (),0))::numeric,2) AS pct_total
+                FROM pg_stat_statements WHERE mean_exec_time > 100
+                ORDER BY total_exec_time DESC LIMIT 15
             `).catch(() => ({ rows: [] })),
+            pool.query(`SELECT state, wait_event_type, COUNT(*) AS count, AVG(EXTRACT(EPOCH FROM (now()-query_start)))::int AS avg_age_sec FROM pg_stat_activity WHERE state IS NOT NULL GROUP BY state, wait_event_type ORDER BY count DESC`),
             pool.query(`
-                SELECT state, wait_event_type, COUNT(*) AS count,
-                       AVG(EXTRACT(EPOCH FROM (now() - query_start)))::int AS avg_age_sec
-                FROM pg_stat_activity
-                WHERE state IS NOT NULL
-                GROUP BY state, wait_event_type
-                ORDER BY count DESC
+                SELECT datname, numbackends, xact_commit, xact_rollback,
+                       round((100.0*xact_rollback/NULLIF(xact_commit+xact_rollback,0))::numeric,2) AS rollback_pct,
+                       blks_read, blks_hit,
+                       round((100.0*blks_hit/NULLIF(blks_read+blks_hit,0))::numeric,2) AS cache_hit_pct,
+                       deadlocks, temp_files, temp_bytes
+                FROM pg_stat_database WHERE datname IS NOT NULL ORDER BY numbackends DESC LIMIT 10
             `),
-            pool.query(`
-                SELECT datname,
-                       numbackends,
-                       xact_commit,
-                       xact_rollback,
-                       round((100.0 * xact_rollback / NULLIF(xact_commit + xact_rollback, 0))::numeric, 2) AS rollback_pct,
-                       blks_read,
-                       blks_hit,
-                       round((100.0 * blks_hit / NULLIF(blks_read + blks_hit, 0))::numeric, 2) AS cache_hit_pct,
-                       deadlocks,
-                       temp_files,
-                       temp_bytes
-                FROM pg_stat_database
-                WHERE datname IS NOT NULL
-                ORDER BY numbackends DESC
-                    LIMIT 10
-            `),
-            pool.query(`
-                SELECT left(query, 100) AS query_preview, calls, round(mean_exec_time::numeric,2) AS mean_ms, rows
-                FROM pg_stat_statements
-                ORDER BY calls DESC LIMIT 10
-            `).catch(() => ({ rows: [] })),
+            pool.query(`SELECT left(query,100) AS query_preview, calls, round(mean_exec_time::numeric,2) AS mean_ms, rows FROM pg_stat_statements ORDER BY calls DESC LIMIT 10`).catch(() => ({ rows: [] })),
         ]);
-
-        res.json({
-            waitEvents:  waitEvents.rows,
-            lockWaits:   lockWaits.rows,
-            slowQueries: slowQueries.rows,
-            errorStates: errorStates.rows,
-            dbActivity:  dbActivity.rows,
-            topQueries:  topQueries.rows,
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+        res.json({ waitEvents: waitEvents.rows, lockWaits: lockWaits.rows, slowQueries: slowQueries.rows, errorStates: errorStates.rows, dbActivity: dbActivity.rows, topQueries: topQueries.rows });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1522,39 +1421,24 @@ const MAX_ALERT_EVENTS = 500;
 
 async function captureAlertSnapshot() {
     try {
-        const [conns, locks, waits, repl, bgwriter] = await Promise.all([
-            pool.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER(WHERE state='active') AS active,
-                            COUNT(*) FILTER(WHERE wait_event IS NOT NULL) AS waiting
-                        FROM pg_stat_activity`),
+        const [conns, locks, waits] = await Promise.all([
+            pool.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER(WHERE state='active') AS active, COUNT(*) FILTER(WHERE wait_event IS NOT NULL) AS waiting FROM pg_stat_activity`),
             pool.query(`SELECT COUNT(*) AS lock_count FROM pg_locks WHERE NOT granted`),
-            pool.query(`SELECT wait_event_type, COUNT(*) AS cnt FROM pg_stat_activity
-                        WHERE wait_event IS NOT NULL AND state!='idle' GROUP BY wait_event_type`),
-            pool.query(`SELECT COUNT(*) AS replica_count FROM pg_stat_replication`).catch(() => ({rows:[{replica_count:0}]})),
-            pool.query(`SELECT checkpoints_req, checkpoints_timed FROM pg_stat_bgwriter`),
+            pool.query(`SELECT wait_event_type, COUNT(*) AS cnt FROM pg_stat_activity WHERE wait_event IS NOT NULL AND state!='idle' GROUP BY wait_event_type`),
         ]);
-
-        const c    = conns.rows[0];
+        const c             = conns.rows[0];
         const locks_waiting = Number(locks.rows[0]?.lock_count || 0);
         const waitMap       = Object.fromEntries(waits.rows.map(r => [r.wait_event_type, Number(r.cnt)]));
-
         const now = new Date().toISOString();
         const events = [];
-
-        if (Number(c.waiting) > 5)
-            events.push({ ts: now, type: 'connection', severity: Number(c.waiting) > 15 ? 'critical' : 'warning', message: `${c.waiting} sessions waiting`, metric: 'waiting_sessions', value: Number(c.waiting) });
-        if (locks_waiting > 0)
-            events.push({ ts: now, type: 'lock', severity: locks_waiting > 3 ? 'critical' : 'warning', message: `${locks_waiting} ungranted lock(s)`, metric: 'lock_waits', value: locks_waiting });
-        if (Number(c.total) > 80)
-            events.push({ ts: now, type: 'connection', severity: 'warning', message: `High connection count: ${c.total}`, metric: 'total_connections', value: Number(c.total) });
-        if (waitMap['Lock'] > 0)
-            events.push({ ts: now, type: 'lock', severity: 'warning', message: `${waitMap['Lock']} lock-wait sessions`, metric: 'lock_wait_sessions', value: waitMap['Lock'] });
-        if (waitMap['IO'] > 3)
-            events.push({ ts: now, type: 'io', severity: 'warning', message: `${waitMap['IO']} IO-wait sessions`, metric: 'io_wait_sessions', value: waitMap['IO'] });
-
+        if (Number(c.waiting) > 5)  events.push({ ts: now, type: 'connection', severity: Number(c.waiting)>15?'critical':'warning', message: `${c.waiting} sessions waiting`,      metric: 'waiting_sessions',  value: Number(c.waiting) });
+        if (locks_waiting > 0)      events.push({ ts: now, type: 'lock',       severity: locks_waiting>3?'critical':'warning',       message: `${locks_waiting} ungranted lock(s)`, metric: 'lock_waits',        value: locks_waiting });
+        if (Number(c.total) > 80)   events.push({ ts: now, type: 'connection', severity: 'warning',                                  message: `High connection count: ${c.total}`, metric: 'total_connections', value: Number(c.total) });
+        if (waitMap['Lock'] > 0)    events.push({ ts: now, type: 'lock',       severity: 'warning',                                  message: `${waitMap['Lock']} lock-wait sessions`, metric: 'lock_wait_sessions', value: waitMap['Lock'] });
+        if (waitMap['IO'] > 3)      events.push({ ts: now, type: 'io',         severity: 'warning',                                  message: `${waitMap['IO']} IO-wait sessions`,     metric: 'io_wait_sessions',   value: waitMap['IO'] });
         if (events.length > 0) {
             alertEventStore.push(...events);
-            if (alertEventStore.length > MAX_ALERT_EVENTS)
-                alertEventStore.splice(0, alertEventStore.length - MAX_ALERT_EVENTS);
+            if (alertEventStore.length > MAX_ALERT_EVENTS) alertEventStore.splice(0, alertEventStore.length - MAX_ALERT_EVENTS);
         }
     } catch (_) { /* silent */ }
 }
@@ -1564,89 +1448,33 @@ setInterval(captureAlertSnapshot, 30_000);
 app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), async (req, res) => {
     try {
         const [conns, locks, waits, tables, txAge] = await Promise.all([
-            pool.query(`
-                SELECT state, wait_event_type, wait_event, COUNT(*) AS cnt,
-                       MAX(EXTRACT(EPOCH FROM (now()-query_start)))::int AS max_age_sec
-                FROM pg_stat_activity WHERE state IS NOT NULL
-                GROUP BY state, wait_event_type, wait_event ORDER BY cnt DESC
-            `),
+            pool.query(`SELECT state, wait_event_type, wait_event, COUNT(*) AS cnt, MAX(EXTRACT(EPOCH FROM (now()-query_start)))::int AS max_age_sec FROM pg_stat_activity WHERE state IS NOT NULL GROUP BY state, wait_event_type, wait_event ORDER BY cnt DESC`),
             pool.query(`SELECT locktype, mode, granted, COUNT(*) AS cnt FROM pg_locks GROUP BY locktype,mode,granted ORDER BY cnt DESC LIMIT 20`),
-            pool.query(`
-                SELECT pid, usename, datname, state, wait_event_type, wait_event,
-                    left(query,120) AS query, round(EXTRACT(EPOCH FROM (now()-query_start))::numeric,1) AS age_sec
-                FROM pg_stat_activity
-                WHERE state != 'idle' AND query NOT LIKE '%pg_stat_activity%'
-                ORDER BY age_sec DESC NULLS LAST LIMIT 25
-            `),
-            pool.query(`
-                SELECT relname AS table_name,
-                       n_dead_tup, n_live_tup,
-                       round((n_dead_tup::numeric/NULLIF(n_live_tup+n_dead_tup,0)*100),1) AS dead_pct,
-                       last_autovacuum, last_autoanalyze
-                FROM pg_stat_user_tables
-                WHERE n_dead_tup > 1000
-                ORDER BY dead_pct DESC NULLS LAST LIMIT 10
-            `),
-            pool.query(`
-                SELECT pid, usename, datname,
-                       age(backend_xid)  AS xid_age,
-                       age(backend_xmin) AS xmin_age,
-                    left(query,120) AS query,
-                    round(EXTRACT(EPOCH FROM (now()-xact_start))::numeric,1) AS xact_age_sec
-                FROM pg_stat_activity
-                WHERE xact_start IS NOT NULL
-                  AND state != 'idle'
-                ORDER BY xact_age_sec DESC NULLS LAST LIMIT 10
-            `),
+            pool.query(`SELECT pid,usename,datname,state,wait_event_type,wait_event,left(query,120) AS query, round(EXTRACT(EPOCH FROM (now()-query_start))::numeric,1) AS age_sec FROM pg_stat_activity WHERE state!='idle' AND query NOT LIKE '%pg_stat_activity%' ORDER BY age_sec DESC NULLS LAST LIMIT 25`),
+            pool.query(`SELECT relname AS table_name, n_dead_tup, n_live_tup, round((n_dead_tup::numeric/NULLIF(n_live_tup+n_dead_tup,0)*100),1) AS dead_pct, last_autovacuum, last_autoanalyze FROM pg_stat_user_tables WHERE n_dead_tup>1000 ORDER BY dead_pct DESC NULLS LAST LIMIT 10`),
+            pool.query(`SELECT pid,usename,datname,age(backend_xid) AS xid_age,age(backend_xmin) AS xmin_age,left(query,120) AS query,round(EXTRACT(EPOCH FROM (now()-xact_start))::numeric,1) AS xact_age_sec FROM pg_stat_activity WHERE xact_start IS NOT NULL AND state!='idle' ORDER BY xact_age_sec DESC NULLS LAST LIMIT 10`),
         ]);
-
         const WINDOW_MS = 5 * 60 * 1000;
         const groups = [];
         const remaining = [...alertEventStore];
-
         while (remaining.length > 0) {
-            const anchor = remaining.shift();
+            const anchor   = remaining.shift();
             const anchorTs = new Date(anchor.ts).getTime();
-            const cluster = [anchor];
+            const cluster  = [anchor];
             const survivors = [];
             for (const ev of remaining) {
-                if (Math.abs(new Date(ev.ts).getTime() - anchorTs) <= WINDOW_MS) {
-                    cluster.push(ev);
-                } else {
-                    survivors.push(ev);
-                }
+                Math.abs(new Date(ev.ts).getTime() - anchorTs) <= WINDOW_MS ? cluster.push(ev) : survivors.push(ev);
             }
             remaining.splice(0, remaining.length, ...survivors);
-            groups.push({
-                id: `grp-${anchorTs}`,
-                startTs: anchor.ts,
-                endTs: cluster[cluster.length-1].ts,
-                events: cluster,
-                types: [...new Set(cluster.map(e => e.type))],
-                severity: cluster.some(e=>e.severity==='critical') ? 'critical' : 'warning',
-                rootCause: guessRootCause(cluster),
-            });
+            groups.push({ id: `grp-${anchorTs}`, startTs: anchor.ts, endTs: cluster[cluster.length-1].ts, events: cluster, types: [...new Set(cluster.map(e=>e.type))], severity: cluster.some(e=>e.severity==='critical')?'critical':'warning', rootCause: guessRootCause(cluster) });
         }
-
-        res.json({
-            correlationGroups: groups.slice(-20),
-            recentEvents: alertEventStore.slice(-50),
-            liveSessions: waits.rows,
-            lockSummary:  locks.rows,
-            sessionStates: conns.rows,
-            bloatedTables: tables.rows,
-            longTransactions: txAge.rows,
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+        res.json({ correlationGroups: groups.slice(-20), recentEvents: alertEventStore.slice(-50), liveSessions: waits.rows, lockSummary: locks.rows, sessionStates: conns.rows, bloatedTables: tables.rows, longTransactions: txAge.rows });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 function guessRootCause(events) {
     const types = events.map(e => e.type);
-    const hasLock  = types.includes('lock');
-    const hasConn  = types.includes('connection');
-    const hasIO    = types.includes('io');
+    const hasLock = types.includes('lock'), hasConn = types.includes('connection'), hasIO = types.includes('io');
     if (hasLock && hasConn) return 'Lock contention causing connection pile-up — identify and terminate blocking query';
     if (hasLock)            return 'Lock contention — a long-running transaction may be blocking others';
     if (hasConn && hasIO)   return 'High IO causing slow queries, leading to connection accumulation';
@@ -1661,33 +1489,9 @@ function guessRootCause(events) {
 app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
     try {
         const [bgwriter, walLsn, walSettings] = await Promise.all([
-            pool.query(`
-                SELECT checkpoints_timed, checkpoints_req,
-                       round(checkpoint_write_time::numeric, 0) AS checkpoint_write_ms,
-                       round(checkpoint_sync_time::numeric, 0)  AS checkpoint_sync_ms,
-                       buffers_checkpoint, buffers_clean, maxwritten_clean,
-                       buffers_backend, buffers_backend_fsync, buffers_alloc,
-                       stats_reset
-                FROM pg_stat_bgwriter
-            `),
-            pool.query(`
-                SELECT pg_current_wal_lsn()::text AS current_lsn,
-                    pg_walfile_name(pg_current_wal_lsn()) AS current_wal_file,
-                       (SELECT setting::int FROM pg_settings WHERE name = 'checkpoint_completion_target') AS completion_target,
-                       (SELECT setting::int FROM pg_settings WHERE name = 'max_wal_size') AS max_wal_mb,
-                       (SELECT setting::int FROM pg_settings WHERE name = 'min_wal_size') AS min_wal_mb,
-                       (SELECT setting::int FROM pg_settings WHERE name = 'checkpoint_timeout') AS checkpoint_timeout_sec
-            `),
-            pool.query(`
-                SELECT name, setting, unit, short_desc
-                FROM pg_settings
-                WHERE name IN (
-                               'checkpoint_completion_target','checkpoint_timeout',
-                               'max_wal_size','min_wal_size','wal_buffers',
-                               'bgwriter_delay','bgwriter_lru_maxpages','bgwriter_lru_multiplier'
-                    )
-                ORDER BY name
-            `)
+            pool.query(`SELECT checkpoints_timed, checkpoints_req, round(checkpoint_write_time::numeric,0) AS checkpoint_write_ms, round(checkpoint_sync_time::numeric,0) AS checkpoint_sync_ms, buffers_checkpoint, buffers_clean, maxwritten_clean, buffers_backend, buffers_backend_fsync, buffers_alloc, stats_reset FROM pg_stat_bgwriter`),
+            pool.query(`SELECT pg_current_wal_lsn()::text AS current_lsn, pg_walfile_name(pg_current_wal_lsn()) AS current_wal_file, (SELECT setting::int FROM pg_settings WHERE name='checkpoint_completion_target') AS completion_target, (SELECT setting::int FROM pg_settings WHERE name='max_wal_size') AS max_wal_mb, (SELECT setting::int FROM pg_settings WHERE name='min_wal_size') AS min_wal_mb, (SELECT setting::int FROM pg_settings WHERE name='checkpoint_timeout') AS checkpoint_timeout_sec`),
+            pool.query(`SELECT name, setting, unit, short_desc FROM pg_settings WHERE name IN ('checkpoint_completion_target','checkpoint_timeout','max_wal_size','min_wal_size','wal_buffers','bgwriter_delay','bgwriter_lru_maxpages','bgwriter_lru_multiplier') ORDER BY name`)
         ]);
         res.json({ bgwriter: bgwriter.rows[0], wal: walLsn.rows[0], settings: walSettings.rows });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1699,30 +1503,11 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
 app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (req, res) => {
     try {
         const [archiver, walInfo, recoveryInfo] = await Promise.all([
-            pool.query(`
-                SELECT archived_count, last_archived_wal, last_archived_time,
-                       failed_count, last_failed_wal, last_failed_time, stats_reset
-                FROM pg_stat_archiver
-            `),
-            pool.query(`
-                SELECT pg_current_wal_lsn()::text        AS current_lsn,
-                       pg_walfile_name(pg_current_wal_lsn()) AS current_wal,
-                       pg_is_in_recovery()               AS in_recovery,
-                       pg_postmaster_start_time()::text  AS started_at
-            `),
-            pool.query(`
-                SELECT name, setting
-                FROM pg_settings
-                WHERE name IN ('wal_level','archive_mode','archive_command','restore_command',
-                               'recovery_target_timeline','max_wal_senders','wal_keep_size')
-                ORDER BY name
-            `)
+            pool.query(`SELECT archived_count, last_archived_wal, last_archived_time, failed_count, last_failed_wal, last_failed_time, stats_reset FROM pg_stat_archiver`),
+            pool.query(`SELECT pg_current_wal_lsn()::text AS current_lsn, pg_walfile_name(pg_current_wal_lsn()) AS current_wal, pg_is_in_recovery() AS in_recovery, pg_postmaster_start_time()::text AS started_at`),
+            pool.query(`SELECT name, setting FROM pg_settings WHERE name IN ('wal_level','archive_mode','archive_command','restore_command','recovery_target_timeline','max_wal_senders','wal_keep_size') ORDER BY name`)
         ]);
-        res.json({
-            archiver:  archiver.rows[0],
-            wal:       walInfo.rows[0],
-            settings:  recoveryInfo.rows
-        });
+        res.json({ archiver: archiver.rows[0], wal: walInfo.rows[0], settings: recoveryInfo.rows });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1732,30 +1517,17 @@ app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (
 app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                schemaname AS schema, 
-                relname AS name,
-                pg_size_pretty(pg_total_relation_size(relid)) AS size,
-                pg_total_relation_size(relid) AS total_bytes,
-                seq_scan AS "seqScans", 
-                idx_scan AS "idxScans",
-                n_tup_ins AS inserts, 
-                n_tup_upd AS updates, 
-                n_tup_del AS deletes,
-                n_tup_hot_upd AS "hotUpdates",
-                n_live_tup AS "liveTuples", 
-                n_dead_tup AS "deadTuples",
-                CASE WHEN (n_live_tup + n_dead_tup) > 0 
-                     THEN round((n_dead_tup::numeric / (n_live_tup + n_dead_tup)) * 100, 1) 
-                     ELSE 0 END AS "deadPct",
-                CASE WHEN n_tup_upd > 0 
-                     THEN round((n_tup_hot_upd::numeric / n_tup_upd) * 100, 1) 
-                     ELSE 0 END AS "hotPct",
-                COALESCE(to_char(last_vacuum, 'YYYY-MM-DD HH24:MI'), 'Never') AS "lastVacuum",
-                COALESCE(to_char(last_analyze, 'YYYY-MM-DD HH24:MI'), 'Never') AS "lastAnalyze"
-            FROM pg_stat_user_tables
-            ORDER BY total_bytes DESC NULLS LAST
-            LIMIT 100
+            SELECT schemaname AS schema, relname AS name,
+                   pg_size_pretty(pg_total_relation_size(relid)) AS size,
+                   pg_total_relation_size(relid) AS total_bytes,
+                   seq_scan AS "seqScans", idx_scan AS "idxScans",
+                   n_tup_ins AS inserts, n_tup_upd AS updates, n_tup_del AS deletes,
+                   n_tup_hot_upd AS "hotUpdates", n_live_tup AS "liveTuples", n_dead_tup AS "deadTuples",
+                   CASE WHEN (n_live_tup+n_dead_tup)>0 THEN round((n_dead_tup::numeric/(n_live_tup+n_dead_tup))*100,1) ELSE 0 END AS "deadPct",
+                   CASE WHEN n_tup_upd>0 THEN round((n_tup_hot_upd::numeric/n_tup_upd)*100,1) ELSE 0 END AS "hotPct",
+                   COALESCE(to_char(last_vacuum,'YYYY-MM-DD HH24:MI'),'Never') AS "lastVacuum",
+                   COALESCE(to_char(last_analyze,'YYYY-MM-DD HH24:MI'),'Never') AS "lastAnalyze"
+            FROM pg_stat_user_tables ORDER BY total_bytes DESC NULLS LAST LIMIT 100
         `);
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1764,18 +1536,9 @@ app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async
 app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                schemaname,
-                tablename,
-                attname                              AS name,
-                null_frac * 100                      AS "nullPct",
-                n_distinct                           AS distinct,
-                CASE
-                    WHEN most_common_vals IS NULL THEN ''
-                    ELSE trim(both '{}' FROM most_common_vals::text)
-                END                                  AS "topValues"
-            FROM pg_stats
-            WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+            SELECT schemaname, tablename, attname AS name, null_frac*100 AS "nullPct", n_distinct AS distinct,
+                   CASE WHEN most_common_vals IS NULL THEN '' ELSE trim(both '{}' FROM most_common_vals::text) END AS "topValues"
+            FROM pg_stats WHERE schemaname NOT IN ('pg_catalog','information_schema')
             ORDER BY schemaname, tablename, attname
         `);
         res.json(r.rows);
@@ -1785,60 +1548,34 @@ app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), a
 app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                cl1.relname::text AS table_name,
-                COALESCE(
-                    array_agg(DISTINCT cl2.relname::text) FILTER (WHERE cl2.relname IS NOT NULL),
-                    ARRAY[]::text[]
-                ) AS refs_to
+            SELECT cl1.relname::text AS table_name,
+                   COALESCE(array_agg(DISTINCT cl2.relname::text) FILTER (WHERE cl2.relname IS NOT NULL), ARRAY[]::text[]) AS refs_to
             FROM pg_class cl1
-                LEFT JOIN pg_constraint c ON c.conrelid = cl1.oid AND c.contype = 'f'
-                LEFT JOIN pg_class cl2 ON c.confrelid = cl2.oid
-            WHERE cl1.relnamespace::regnamespace::text NOT IN ('pg_catalog', 'information_schema')
-              AND cl1.relkind = 'r'
+            LEFT JOIN pg_constraint c ON c.conrelid=cl1.oid AND c.contype='f'
+            LEFT JOIN pg_class cl2 ON c.confrelid=cl2.oid
+            WHERE cl1.relnamespace::regnamespace::text NOT IN ('pg_catalog','information_schema')
+              AND cl1.relkind='r'
             GROUP BY cl1.relname
         `);
-
-        const tables = r.rows.map(row => ({
-            name:   row.table_name,
-            refsTo: Array.isArray(row.refs_to) ? row.refs_to.filter(Boolean) : [],
-            refsBy: [],
-        }));
-
-        tables.forEach(t => {
-            t.refsTo.forEach(targetName => {
-                const target = tables.find(x => x.name === targetName);
-                if (target) target.refsBy.push(t.name);
-            });
-        });
-
+        const tables = r.rows.map(row => ({ name: row.table_name, refsTo: Array.isArray(row.refs_to) ? row.refs_to.filter(Boolean) : [], refsBy: [] }));
+        tables.forEach(t => { t.refsTo.forEach(targetName => { const target = tables.find(x => x.name === targetName); if (target) target.refsBy.push(t.name); }); });
         res.json(tables);
-    } catch (e) {
-        console.error('Dependencies error:', e);
-        res.status(500).json({ error: e.message });
-    }
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                n.nspname AS schema,
-                c.relname AS table,
-                c.reltoastrelid::regclass::text AS "toastTable",
-                pg_size_pretty(pg_relation_size(c.reltoastrelid)) AS "toastSize",
-                pg_relation_size(c.reltoastrelid) AS "toastBytes",
-                t_stat.n_dead_tup AS "deadChunks",
-                CASE WHEN (t_stat.n_live_tup + t_stat.n_dead_tup) > 0 
-                     THEN round((t_stat.n_dead_tup::numeric / (t_stat.n_live_tup + t_stat.n_dead_tup)) * 100, 1) 
-                     ELSE 0 END AS "deadPct"
-            FROM pg_class c
-            JOIN pg_namespace n ON c.relnamespace = n.oid
-            LEFT JOIN pg_stat_user_tables t_stat ON c.reltoastrelid = t_stat.relid
-            WHERE c.relkind = 'r' AND c.reltoastrelid != 0
-              AND n.nspname NOT IN ('pg_catalog', 'information_schema')
-            ORDER BY "toastBytes" DESC
-            LIMIT 50
+            SELECT n.nspname AS schema, c.relname AS table,
+                   c.reltoastrelid::regclass::text AS "toastTable",
+                   pg_size_pretty(pg_relation_size(c.reltoastrelid)) AS "toastSize",
+                   pg_relation_size(c.reltoastrelid) AS "toastBytes",
+                   t_stat.n_dead_tup AS "deadChunks",
+                   CASE WHEN (t_stat.n_live_tup+t_stat.n_dead_tup)>0 THEN round((t_stat.n_dead_tup::numeric/(t_stat.n_live_tup+t_stat.n_dead_tup))*100,1) ELSE 0 END AS "deadPct"
+            FROM pg_class c JOIN pg_namespace n ON c.relnamespace=n.oid
+            LEFT JOIN pg_stat_user_tables t_stat ON c.reltoastrelid=t_stat.relid
+            WHERE c.relkind='r' AND c.reltoastrelid!=0 AND n.nspname NOT IN ('pg_catalog','information_schema')
+            ORDER BY "toastBytes" DESC LIMIT 50
         `);
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1847,19 +1584,14 @@ app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async
 app.get('/api/tables/temp', authenticate, async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                n.nspname AS schema_name,
-                c.relname AS table_name,
-                pg_size_pretty(pg_total_relation_size(c.oid)) AS size,
-                pg_total_relation_size(c.oid) AS size_bytes,
-                a.pid,
-                a.usename AS user,
-                a.application_name AS app,
-                extract(epoch from (now() - a.backend_start))::int as age_sec
-            FROM pg_class c
-                JOIN pg_namespace n ON c.relnamespace = n.oid
-                LEFT JOIN pg_stat_activity a ON strpos(n.nspname, a.pid::text) > 0
-            WHERE c.relpersistence = 't'
+            SELECT n.nspname AS schema_name, c.relname AS table_name,
+                   pg_size_pretty(pg_total_relation_size(c.oid)) AS size,
+                   pg_total_relation_size(c.oid) AS size_bytes,
+                   a.pid, a.usename AS user, a.application_name AS app,
+                   extract(epoch from (now()-a.backend_start))::int as age_sec
+            FROM pg_class c JOIN pg_namespace n ON c.relnamespace=n.oid
+            LEFT JOIN pg_stat_activity a ON strpos(n.nspname, a.pid::text) > 0
+            WHERE c.relpersistence='t'
         `);
         res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1868,35 +1600,19 @@ app.get('/api/tables/temp', authenticate, async (req, res) => {
 app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CACHE_TTL.INDEXES), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                ui.schemaname                                           AS schema,
-                ui.relname                                              AS "tableName",
-                ui.indexrelname                                         AS name,
-                ui.idx_scan                                             AS scans,
-                ui.idx_tup_read                                         AS "tupRead",
-                ui.idx_tup_fetch                                        AS "tupFetch",
-                pg_relation_size(ui.indexrelid)                         AS "sizeBytes",
-                pg_size_pretty(pg_relation_size(ui.indexrelid))         AS size,
-                am.amname                                               AS type,
-                ix.indexdef                                             AS definition,
-                i.indisunique                                           AS "isUnique",
-                i.indisprimary                                          AS "isPrimary",
-                CASE
-                    WHEN ui.idx_scan     = 0 THEN 100
-                    WHEN ui.idx_tup_read = 0 THEN 0
-                    ELSE round(
-                        (1.0 - ui.idx_tup_fetch::numeric / NULLIF(ui.idx_tup_read, 0)) * 100,
-                        1
-                    )
-            END                                                     AS "inefficiencyPct"
+            SELECT ui.schemaname AS schema, ui.relname AS "tableName", ui.indexrelname AS name,
+                   ui.idx_scan AS scans, ui.idx_tup_read AS "tupRead", ui.idx_tup_fetch AS "tupFetch",
+                   pg_relation_size(ui.indexrelid) AS "sizeBytes",
+                   pg_size_pretty(pg_relation_size(ui.indexrelid)) AS size,
+                   am.amname AS type, ix.indexdef AS definition,
+                   i.indisunique AS "isUnique", i.indisprimary AS "isPrimary",
+                   CASE WHEN ui.idx_scan=0 THEN 100 WHEN ui.idx_tup_read=0 THEN 0
+                        ELSE round((1.0-ui.idx_tup_fetch::numeric/NULLIF(ui.idx_tup_read,0))*100,1) END AS "inefficiencyPct"
             FROM pg_stat_user_indexes ui
-            JOIN pg_indexes ix
-              ON  ix.schemaname = ui.schemaname
-              AND ix.tablename  = ui.relname
-              AND ix.indexname  = ui.indexrelname
-            JOIN pg_class c  ON c.oid  = ui.indexrelid
-            JOIN pg_am    am ON am.oid = c.relam
-            JOIN pg_index  i ON i.indexrelid = ui.indexrelid
+            JOIN pg_indexes ix ON ix.schemaname=ui.schemaname AND ix.tablename=ui.relname AND ix.indexname=ui.indexrelname
+            JOIN pg_class c ON c.oid=ui.indexrelid
+            JOIN pg_am am ON am.oid=c.relam
+            JOIN pg_index i ON i.indexrelid=ui.indexrelid
             ORDER BY ui.schemaname, ui.relname, ui.idx_scan DESC
         `);
         res.json(r.rows);
@@ -1906,32 +1622,19 @@ app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CAC
 app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
     try {
         const r = await pool.query(`
-            SELECT
-                n.nspname                                                   AS schema,
-                c.relname                                                   AS name,
-                pg_table_size(c.oid)                                        AS "heapBytes",
-                pg_indexes_size(c.oid)                                      AS "indexBytes",
-                COALESCE(pg_relation_size(ct.oid), 0)                       AS "toastBytes",
-                pg_total_relation_size(c.oid)                               AS "totalBytes",
-                pg_size_pretty(pg_table_size(c.oid))                        AS "heapSize",
-                pg_size_pretty(pg_indexes_size(c.oid))                      AS "indexSize",
-                pg_size_pretty(COALESCE(pg_relation_size(ct.oid), 0))       AS "toastSize",
-                pg_size_pretty(pg_total_relation_size(c.oid))               AS "totalSize",
-                CASE
-                    WHEN (s.n_live_tup + s.n_dead_tup) > 0
-                    THEN ROUND(
-                        (s.n_dead_tup::numeric / (s.n_live_tup + s.n_dead_tup)) * 100,
-                        1
-                    )
-                    ELSE 0
-            END                                                         AS "bloatPct"
-            FROM pg_class c
-            JOIN pg_namespace n   ON n.oid = c.relnamespace
-            LEFT JOIN pg_class ct  ON ct.oid = c.reltoastrelid
-            LEFT JOIN pg_stat_user_tables s
-              ON s.schemaname = n.nspname AND s.relname = c.relname
-            WHERE c.relkind = 'r'
-              AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+            SELECT n.nspname AS schema, c.relname AS name,
+                   pg_table_size(c.oid) AS "heapBytes", pg_indexes_size(c.oid) AS "indexBytes",
+                   COALESCE(pg_relation_size(ct.oid),0) AS "toastBytes",
+                   pg_total_relation_size(c.oid) AS "totalBytes",
+                   pg_size_pretty(pg_table_size(c.oid)) AS "heapSize",
+                   pg_size_pretty(pg_indexes_size(c.oid)) AS "indexSize",
+                   pg_size_pretty(COALESCE(pg_relation_size(ct.oid),0)) AS "toastSize",
+                   pg_size_pretty(pg_total_relation_size(c.oid)) AS "totalSize",
+                   CASE WHEN (s.n_live_tup+s.n_dead_tup)>0 THEN ROUND((s.n_dead_tup::numeric/(s.n_live_tup+s.n_dead_tup))*100,1) ELSE 0 END AS "bloatPct"
+            FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+            LEFT JOIN pg_class ct ON ct.oid=c.reltoastrelid
+            LEFT JOIN pg_stat_user_tables s ON s.schemaname=n.nspname AND s.relname=c.relname
+            WHERE c.relkind='r' AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
             ORDER BY pg_total_relation_size(c.oid) DESC
         `);
         res.json(r.rows);
@@ -1945,37 +1648,16 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
     try {
         const [tables, workers, settings] = await Promise.all([
             pool.query(`
-                SELECT schemaname, relname,
-                       n_dead_tup, n_live_tup,
-                       CASE WHEN n_live_tup > 0
-                                THEN round((n_dead_tup::numeric / NULLIF(n_live_tup,0)) * 100, 1)
-                            ELSE 0 END AS dead_pct,
-                       last_vacuum, last_autovacuum,
-                       last_analyze, last_autoanalyze,
-                       vacuum_count, autovacuum_count,
-                       analyze_count, autoanalyze_count,
+                SELECT schemaname, relname, n_dead_tup, n_live_tup,
+                       CASE WHEN n_live_tup>0 THEN round((n_dead_tup::numeric/NULLIF(n_live_tup,0))*100,1) ELSE 0 END AS dead_pct,
+                       last_vacuum, last_autovacuum, last_analyze, last_autoanalyze,
+                       vacuum_count, autovacuum_count, analyze_count, autoanalyze_count,
                        n_mod_since_analyze,
                        pg_size_pretty(pg_total_relation_size(quote_ident(schemaname)||'.'||quote_ident(relname))) AS total_size
-                FROM pg_stat_user_tables
-                ORDER BY n_dead_tup DESC
-                    LIMIT 50
+                FROM pg_stat_user_tables ORDER BY n_dead_tup DESC LIMIT 50
             `),
-            pool.query(`
-                SELECT pid, datname,
-                       regexp_replace(query, '^autovacuum: ', '') AS table_name,
-                       state,
-                       round(EXTRACT(EPOCH FROM (now() - query_start))::numeric, 0) AS duration_sec,
-                       query_start::text AS started_at
-                FROM pg_stat_activity
-                WHERE query LIKE 'autovacuum:%'
-                ORDER BY query_start ASC
-            `),
-            pool.query(`
-                SELECT name, setting, unit, short_desc
-                FROM pg_settings
-                WHERE name LIKE 'autovacuum%'
-                ORDER BY name
-            `)
+            pool.query(`SELECT pid, datname, regexp_replace(query,'^autovacuum: ','') AS table_name, state, round(EXTRACT(EPOCH FROM (now()-query_start))::numeric,0) AS duration_sec, query_start::text AS started_at FROM pg_stat_activity WHERE query LIKE 'autovacuum:%' ORDER BY query_start ASC`),
+            pool.query(`SELECT name, setting, unit, short_desc FROM pg_settings WHERE name LIKE 'autovacuum%' ORDER BY name`)
         ]);
         res.json({ tables: tables.rows, workers: workers.rows, settings: settings.rows });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1983,8 +1665,8 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
 
 app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async (req, res) => {
     const { table, schema = 'public', analyze = true } = req.body;
-    if (!table  || !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(table))    return res.status(400).json({ error: 'Invalid table name'  });
-    if (!schema || !/^[a-zA-Z_][a-zA-Z0-9_$-]*$/.test(schema))  return res.status(400).json({ error: 'Invalid schema name' });
+    if (!table  || !/^[a-zA-Z_][a-zA-Z0-9_$]*$/.test(table))   return res.status(400).json({ error: 'Invalid table name'  });
+    if (!schema || !/^[a-zA-Z_][a-zA-Z0-9_$-]*$/.test(schema)) return res.status(400).json({ error: 'Invalid schema name' });
     try {
         const cmd = `VACUUM${analyze ? ' ANALYZE' : ''} "${schema}"."${table}"`;
         await pool.query(cmd);
@@ -2003,10 +1685,7 @@ wss.on('connection', (ws) => {
     let authenticated = false;
 
     const authTimeout = setTimeout(() => {
-        if (!authenticated) {
-            log('WARN', 'WebSocket auth timeout — closing connection');
-            ws.close(1008, 'Auth timeout');
-        }
+        if (!authenticated) { log('WARN', 'WebSocket auth timeout — closing connection'); ws.close(1008, 'Auth timeout'); }
     }, AUTH_TIMEOUT_MS);
 
     ws.once('message', (raw) => {
@@ -2021,23 +1700,16 @@ wss.on('connection', (ws) => {
             ws.close(1008, 'Unauthorized');
             return;
         }
-
         log('INFO', 'WebSocket connection established');
         alerts.addSubscriber(ws);
         alerts.getRecent(10, false).then(recent => {
-            if (ws.readyState === 1) {
-                ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
-            }
+            if (ws.readyState === 1) ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
         }).catch(() => {});
-
         ws.on('close', () => { log('INFO', 'WebSocket closed'); alerts.removeSubscriber(ws); });
         ws.on('error', (e) => log('ERROR', 'WebSocket error', { error: e.message }));
     });
 
-    ws.on('error', (e) => {
-        clearTimeout(authTimeout);
-        log('ERROR', 'WebSocket pre-auth error', { error: e.message });
-    });
+    ws.on('error', (e) => { clearTimeout(authTimeout); log('ERROR', 'WebSocket pre-auth error', { error: e.message }); });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2077,11 +1749,7 @@ async function startup() {
         });
 
         pool.connect()
-            .then(async client => {
-                await client.query('SELECT 1');
-                client.release();
-                log('INFO', 'Database connection successful');
-            })
+            .then(async client => { await client.query('SELECT 1'); client.release(); log('INFO', 'Database connection successful'); })
             .catch(e => log('WARN', 'Database unreachable at startup — will retry on requests', { error: e.message }));
 
         alerts.initializeDatabase()
@@ -2090,6 +1758,10 @@ async function startup() {
                 log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
             })
             .catch(e => log('WARN', 'Alert system could not initialize', { error: e.message }));
+
+        // Start overview metrics collector (writes timeseries snapshots every 30s)
+        startCollector(pool);
+        log('INFO', 'Overview metrics collector started');
 
     } catch (e) {
         log('ERROR', 'Startup failed', { error: e.message });
