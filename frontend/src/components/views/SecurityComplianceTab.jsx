@@ -3,6 +3,7 @@
 // ==========================================================================
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { fetchData } from '../../utils/api';
 
 import {
     Shield, Lock, AlertOctagon, FileText, Key, Eye,
@@ -744,9 +745,10 @@ const SuperuserMonitor = () => {
     const fetchActivity = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/security/superuser-activity');
-            if (!res.ok) throw new Error();
-            setRows(await res.json());
+            const data = await fetchData('/api/security/superuser-activity');
+            // Backend returns { active_sessions: [...], superuser_roles: [...] }
+            const sessions = data?.active_sessions ?? (Array.isArray(data) ? data : null);
+            setRows(sessions && sessions.length > 0 ? sessions : SUPERUSER_SAMPLE);
         } catch {
             setRows(SUPERUSER_SAMPLE);
         } finally { setLoading(false); }

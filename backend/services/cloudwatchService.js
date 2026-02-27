@@ -2,12 +2,24 @@
 // Fetches RDS metrics from AWS CloudWatch using the REST API (no SDK needed)
 import crypto from 'crypto';
 
-const REGION     = process.env.AWS_REGION            || 'ap-southeast-1';
-const ACCESS_KEY = process.env.AWS_ACCESS_KEY_ID;
-const SECRET_KEY = process.env.AWS_SECRET_ACCESS_KEY;
-const DB_ID      = process.env.CLOUDWATCH_DB_IDENTIFIER;
+// Module-level defaults from env (used when no per-request credentials supplied)
+const ENV_REGION     = process.env.AWS_REGION            || 'ap-southeast-1';
+const ENV_ACCESS_KEY = process.env.AWS_ACCESS_KEY_ID;
+const ENV_SECRET_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+const ENV_DB_ID      = process.env.CLOUDWATCH_DB_IDENTIFIER;
 
-export function isConfigured() {
+// Resolve credentials: per-request overrides take priority over env vars
+function resolveCredentials(overrides = {}) {
+    return {
+        REGION:     overrides.region     || ENV_REGION,
+        ACCESS_KEY: overrides.accessKey  || ENV_ACCESS_KEY,
+        SECRET_KEY: overrides.secretKey  || ENV_SECRET_KEY,
+        DB_ID:      overrides.dbId       || ENV_DB_ID,
+    };
+}
+
+export function isConfigured(overrides = {}) {
+    const { REGION, ACCESS_KEY, SECRET_KEY, DB_ID } = resolveCredentials(overrides);
     return !!(ACCESS_KEY && SECRET_KEY && REGION && DB_ID);
 }
 
@@ -24,7 +36,8 @@ function getSigningKey(secret, date, region, service) {
 function sha256hex(str) {
     return crypto.createHash('sha256').update(str).digest('hex');
 }
-async function cloudwatchRequest(params) {
+async function cloudwatchRequest(params, creds = {}) {
+    const { REGION, ACCESS_KEY, SECRET_KEY } = { ...resolveCredentials(creds) };
     const service  = 'monitoring';
     const host     = `monitoring.${REGION}.amazonaws.com`;
     const endpoint = `https://${host}/`;
@@ -107,8 +120,9 @@ const STAT_MAP = {
     DBLoad:                    'Average',
 };
 
-export async function getMetric(metricName, periodSeconds = 3600) {
-    if (!isConfigured()) throw new Error('CloudWatch not configured');
+export async function getMetric(metricName, periodSeconds = 3600, overrides = {}) {
+    const creds = resolveCredentials(overrides);
+    if (!isConfigured(overrides)) throw new Error('CloudWatch not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, and CLOUDWATCH_DB_IDENTIFIER.');
 
     const stat       = STAT_MAP[metricName] || 'Average';
     const endTime    = new Date();
@@ -119,25 +133,26 @@ export async function getMetric(metricName, periodSeconds = 3600) {
     const xml = await cloudwatchRequest({
         MetricName:                  metricName,
         Namespace:                   'AWS/RDS',
-        'Statistics.member.1':       stat,        // ← fixed: was Statistics_member_1
+        'Statistics.member.1':       stat,
         'Dimensions.member.1.Name':  'DBInstanceIdentifier',
-        'Dimensions.member.1.Value': DB_ID,
+        'Dimensions.member.1.Value': creds.DB_ID,
         StartTime:                   startTime.toISOString(),
         EndTime:                     endTime.toISOString(),
         Period:                      String(cwPeriod),
-    });
+    }, creds);
 
     return parseDatapoints(xml);
 }
 
-export function getStatus() {
+export function getStatus(overrides = {}) {
+    const creds = resolveCredentials(overrides);
     const token = process.env.AWS_SESSION_TOKEN;
     return {
-        configured:   isConfigured(),
-        region:       REGION        || null,
-        dbIdentifier: DB_ID         || null,
-        hasKey:       !!ACCESS_KEY,
-        hasSecret:    !!SECRET_KEY,
+        configured:   isConfigured(overrides),
+        region:       creds.REGION        || null,
+        dbIdentifier: creds.DB_ID         || null,
+        hasKey:       !!creds.ACCESS_KEY,
+        hasSecret:    !!creds.SECRET_KEY,
         hasToken:     !!token,
         tokenStart:   token ? token.substring(0, 5) : 'none'
     };

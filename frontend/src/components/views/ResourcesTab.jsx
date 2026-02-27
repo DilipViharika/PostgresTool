@@ -1016,8 +1016,8 @@ const ResourcesTab = () => {
     useAdaptiveTheme();
     const [growth, setGrowth]               = useState([]);
     const [vacuum, setVacuum]               = useState([]);
-    const [growthTrend, setGrowthTrend]     = useState(() => genGrowthTrend());
-    const [diskIO, setDiskIO]               = useState(() => genDiskIO());
+    const [growthTrend, setGrowthTrend]     = useState([]);
+    const [diskIO, setDiskIO]               = useState([]);
     const [tablespaceIO, setTablespaceIO]   = useState(() => genTablespaceIO());
     const [partitions]                       = useState(() => genPartitions());
     const [deadCode]                         = useState(() => genDeadCode());
@@ -1059,12 +1059,12 @@ const ResourcesTab = () => {
             const enriched = (growthData || []).map(t => ({
                 ...t,
                 spark: t.spark || genSparkline(),
-                row_count: t.row_count || Math.round(Math.random() * 5e6 + 10000),
-                index_size_gb: t.index_size_gb || (Number(t.total_size_gb || 0) * (0.2 + Math.random() * 0.3)),
-                toast_size_gb: t.toast_size_gb || (Number(t.total_size_gb || 0) * Math.random() * 0.08),
-                growth_rate: t.growth_rate || (Math.random() * 12 - 2).toFixed(1),
-                seq_scan: t.seq_scan || Math.round(Math.random() * 100000),
-                idx_scan: t.idx_scan || Math.round(Math.random() * 500000),
+                row_count: parseInt(t.row_count || 0),
+                index_size_gb: t.index_size_gb || '0.000',
+                toast_size_gb: t.toast_size_gb || '0.000',
+                growth_rate: t.growth_rate || '0.0',
+                seq_scan: parseInt(t.seq_scan || 0),
+                idx_scan: parseInt(t.idx_scan || 0),
             }));
             setGrowth(enriched);
             // Build growth rate chart data from enriched tables
@@ -1079,11 +1079,11 @@ const ResourcesTab = () => {
             setRefreshingPanels(p => { const n = new Set(p); n.delete('bloat'); return n; });
 
             const ioData = await fetchData('/api/resources/disk-io').catch(() => null);
-            setDiskIO(ioData && ioData.length > 0 ? ioData : genDiskIO());
+            setDiskIO(ioData || []);
             setRefreshingPanels(p => { const n = new Set(p); n.delete('io'); return n; });
 
             const trendData = await fetchData('/api/resources/growth-trend').catch(() => null);
-            setGrowthTrend(trendData && trendData.length > 0 ? trendData : genGrowthTrend());
+            setGrowthTrend(trendData || []);
             setRefreshingPanels(p => { const n = new Set(p); n.delete('resources'); return n; });
 
             const logsData = await fetchData('/api/resources/maintenance-logs').catch(() => null);

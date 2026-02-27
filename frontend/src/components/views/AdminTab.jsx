@@ -1767,7 +1767,8 @@ const AdminTab = () => {
                 const r = await fetchData('/api/admin/cache/stats');
                 setCacheData(r?.size != null ? r : MOCK_CACHE);
             } else if (activeSub === 'connections') {
-                setConnData(MOCK_CONNECTIONS);
+                const r = await fetchData('/api/admin/connections');
+                setConnData(Array.isArray(r) && r.length ? r : MOCK_CONNECTIONS);
             }
         } catch {
             if (activeSub === 'settings')    setSettingsData(MOCK_SETTINGS);

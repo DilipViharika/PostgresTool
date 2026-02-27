@@ -3,6 +3,7 @@
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { postData } from '../../utils/api';
 import {
     GitBranch, FolderOpen, File, FileCode, FileJson, FileText,
     Plus, Trash2, Search, X, Copy, Check, ChevronRight, ChevronDown,
@@ -14,12 +15,8 @@ import {
     GitPullRequest, Database, Workflow, Flame, Gauge, Wrench,
 } from 'lucide-react';
 
-// ⚠️ IMPORTANT: In production, route these calls through your backend.
-// Do not expose your raw API key in the client frontend.
-const AI_API_KEY = "sk-ant-api03-...";
-
 /* ═══════════════════════════════════════════════════════════════════════════
-   REAL AI ANALYSIS ENGINE  (FIXED)
+   REAL AI ANALYSIS ENGINE  (routes through backend /api/ai/chat proxy)
    ═══════════════════════════════════════════════════════════════════════════ */
 const useAIAnalysis = () => {
     const [loading, setLoading] = useState(false);
@@ -28,45 +25,16 @@ const useAIAnalysis = () => {
     const [mode, setMode] = useState(null); // 'file' | 'repo'
 
     const callClaude = async (system, prompt) => {
-        // Validate key before attempting fetch
-        if (!AI_API_KEY || AI_API_KEY === "YOUR_ANTHROPIC_API_KEY") {
-            throw new Error(
-                "No API key configured. Set VITE_ANTHROPIC_API_KEY in your .env file, " +
-                "or replace the AI_API_KEY constant in RepositoryTab.jsx with your key."
-            );
-        }
-
-        const resp = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': AI_API_KEY,
-                'anthropic-version': '2023-06-01',
-                // ✅ FIXED: Correct header name (was 'anthropic-dangerously-allow-browser')
-                'anthropic-dangerous-direct-browser-access': 'true',
-            },
-            body: JSON.stringify({
-                // ✅ UPDATED: Use a current supported model
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 3000,
-                system: system,
-                messages: [{ role: 'user', content: prompt }]
-            }),
+        const data = await postData('/api/ai/chat', {
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 3000,
+            system,
+            messages: [{ role: 'user', content: prompt }],
         });
 
-        if (!resp.ok) {
-            let errMsg = `HTTP ${resp.status}`;
-            try {
-                const err = await resp.json();
-                errMsg = err.error?.message || errMsg;
-            } catch (_) {}
-            throw new Error(errMsg);
-        }
-
-        const data = await resp.json();
         const raw = data.content?.map(b => b.text || '').join('') || '';
 
-        // ✅ FIXED: More robust JSON extraction — handles markdown fences and leading text
+        // More robust JSON extraction — handles markdown fences and leading text
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error("AI returned a non-JSON response. Try again.");
         return JSON.parse(jsonMatch[0]);
@@ -485,9 +453,9 @@ const CodeView = ({ activeRepo }) => {
                                         <AlertTriangle size={13}/> Analysis Error
                                     </div>
                                     {aiEngine.error}
-                                    {aiEngine.error.includes('API key') && (
+                                    {aiEngine.error.includes('not configured') && (
                                         <div style={{ marginTop:10, padding:10, background:`${THEME.surface}`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
-                                            <b style={{ color:THEME.warning }}>Fix:</b> Open <code>RepositoryTab.jsx</code> and set <code>AI_API_KEY</code> to your real Anthropic key, or add <code>VITE_ANTHROPIC_API_KEY=sk-ant-...</code> to your <code>.env</code> file.
+                                            <b style={{ color:THEME.warning }}>Fix:</b> Add <code>ANTHROPIC_API_KEY=sk-ant-...</code> to your backend <code>.env</code> file and redeploy.
                                         </div>
                                     )}
                                 </div>
@@ -656,9 +624,9 @@ const InsightsView = ({ activeRepo }) => {
                             <AlertTriangle size={13}/> Analysis Error
                         </div>
                         {ai.error}
-                        {ai.error.includes('API key') && (
+                        {ai.error.includes('not configured') && (
                             <div style={{ marginTop:10, padding:10, background:`rgba(0,0,0,.2)`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
-                                <b style={{ color:THEME.warning }}>Fix:</b> Set <code>VITE_ANTHROPIC_API_KEY=sk-ant-...</code> in your <code>.env</code> file and restart the dev server.
+                                <b style={{ color:THEME.warning }}>Fix:</b> Add <code>ANTHROPIC_API_KEY=sk-ant-...</code> to your backend <code>.env</code> file and redeploy.
                             </div>
                         )}
                     </div>

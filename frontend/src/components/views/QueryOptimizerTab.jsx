@@ -803,17 +803,11 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
 }`;
 
         try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 1000,
-                    messages: [{ role: 'user', content: prompt }]
-                })
+            const data = await postData('/api/ai/chat', {
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1000,
+                messages: [{ role: 'user', content: prompt }]
             });
-
-            const data = await response.json();
             const text = data.content?.map(c => c.text || '').join('') || '';
 
             // Simulate streaming effect
