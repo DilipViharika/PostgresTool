@@ -1,18 +1,3 @@
-// ==========================================================================
-//  VIGIL — Background Metrics Collector  (collector.js)
-//
-//  Runs alongside the API server, polling PostgreSQL every 30 seconds
-//  and writing snapshots to vigil_metric_snapshots.
-//
-//  Also auto-generates and persists alerts to vigil_alerts.
-//
-//  Usage:
-//    import { startCollector } from './collector.js';
-//    startCollector();         // call this from server.js
-//
-//  Or run standalone:
-//    node collector.js
-// ==========================================================================
 
 import { query } from '../../db.js';
 import { recordSnapshot } from './timeseries.js';
