@@ -542,7 +542,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
 // MODULAR ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.use('/api', userRoutes(pool, authenticate, requireScreen));
-app.use('/api', sessionRoutes(pool, authenticate, requireScreen));
+app.use('/api', sessionRoutes(pool, authenticate, requireScreen, requireRole));
 app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2109,5 +2109,17 @@ async function shutdown(signal) {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
 
-startup();
+// ─────────────────────────────────────────────────────────────────────────────
+// VERCEL SERVERLESS EXPORT
+// When deployed to Vercel (serverless), the module is imported rather than run
+// as a script, so startup() is never called.  We export the Express `app` as
+// the default export so Vercel's @vercel/node runtime can invoke it as a
+// serverless function handler.  In local / traditional server mode the
+// startup() call below starts the HTTP server as normal.
+// ─────────────────────────────────────────────────────────────────────────────
 export default app;
+
+// Start the server only when running directly (not imported by Vercel runtime)
+if (process.env.VERCEL !== '1') {
+    startup();
+}

@@ -25,9 +25,12 @@ function log(level, message, meta = {}) {
     fn(JSON.stringify({ ts: new Date().toISOString(), level, msg: message, ...meta }));
 }
 
-export default function sessionRoutes(pool, authenticate, requireScreen) {
+export default function sessionRoutes(pool, authenticate, requireScreen, requireRole) {
     const router  = Router();
-    const isAdmin = [authenticate, requireScreen('admin')];
+    // Guard: must be authenticated AND have the 'admin' or 'super_admin' role.
+    // requireScreen('UserManagement') is intentionally NOT used here because
+    // session management is a role-level privilege, not a screen-visibility one.
+    const isAdmin = [authenticate, requireRole('admin', 'super_admin')];
 
     /* ── GET /api/sessions ─────────────────────────────────────────────────
        Admin: list all active sessions across all users.                      */
@@ -143,7 +146,7 @@ export default function sessionRoutes(pool, authenticate, requireScreen) {
         try {
             const userId = parseInt(req.params.userId);
             // Users can fetch their own; admins can fetch any
-            if (req.user.id !== userId && !req.user.allowedScreens?.includes('admin')) {
+            if (req.user.id !== userId && !['admin', 'super_admin'].includes(req.user.role)) {
                 return res.status(403).json({ error: 'Access denied' });
             }
             const data = await getLoginHeatmap(pool, userId);
