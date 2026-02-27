@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspens
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
+import { ConnectionProvider, useConnection } from './context/ConnectionContext.jsx';
 import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
 
@@ -1888,9 +1889,132 @@ const useWebSocket = (onMessage) => {
 };
 
 /* ─────────────────────────────────────────────────────────────────
+   CONNECTION SELECTOR — dropdown in the header to switch databases
+   ───────────────────────────────────────────────────────────────── */
+const ConnectionSelector = () => {
+    const { connections, activeConnectionId, activeConnection, switchConnection, loading } = useConnection();
+    const [open, setOpen] = useState(false);
+    const [switching, setSwitching] = useState(false);
+    const ref = useRef(null);
+
+    // Close on outside click
+    useEffect(() => {
+        const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const handleSwitch = async (id) => {
+        if (id === activeConnectionId) { setOpen(false); return; }
+        setSwitching(true);
+        try {
+            await switchConnection(id);
+        } catch (err) {
+            console.error('Switch failed:', err);
+        } finally {
+            setSwitching(false);
+            setOpen(false);
+        }
+    };
+
+    if (loading || connections.length === 0) return null;
+
+    const displayName = activeConnection?.name || 'Select DB';
+    const statusColor = activeConnection?.status === 'success' ? DS.emerald : DS.amber;
+
+    return (
+        <div ref={ref} style={{ position: 'relative' }}>
+            <button
+                onClick={() => setOpen(p => !p)}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: 7,
+                    padding: '5px 10px 5px 8px',
+                    background: open ? DS.surfaceHover : DS.surface,
+                    border: `1px solid ${open ? DS.borderAccent : DS.border}`,
+                    borderRadius: 8, cursor: 'pointer',
+                    color: DS.textPrimary, fontSize: 12, fontFamily: DS.fontMono,
+                    fontWeight: 500, letterSpacing: '0.02em',
+                    transition: 'all 0.15s ease',
+                }}
+                title="Switch database connection"
+            >
+                {switching ? (
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', border: `1.5px solid ${DS.border}`, borderTopColor: DS.cyan, animation: 'rotate 0.7s linear infinite' }} />
+                ) : (
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, flexShrink: 0, animation: 'dotBlink 2.5s ease-in-out infinite' }} />
+                )}
+                <Database size={12} style={{ color: DS.cyan, flexShrink: 0 }} />
+                <span style={{ maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</span>
+                <ChevronDown size={12} style={{ color: DS.textMuted, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+            </button>
+
+            {open && (
+                <div style={{
+                    position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+                    background: DS.surface, border: `1px solid ${DS.border}`,
+                    borderRadius: 10, boxShadow: DS.shadowDeep,
+                    minWidth: 240, zIndex: 300, overflow: 'hidden',
+                    animation: 'slideDown 0.15s ease-out both',
+                }}>
+                    <div style={{ padding: '10px 14px 6px', fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.08em', borderBottom: `1px solid ${DS.border}` }}>
+                        DATABASE CONNECTIONS
+                    </div>
+                    <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+                        {connections.map(c => {
+                            const isActive = c.id === activeConnectionId;
+                            return (
+                                <button
+                                    key={c.id}
+                                    onClick={() => handleSwitch(c.id)}
+                                    style={{
+                                        width: '100%', textAlign: 'left',
+                                        display: 'flex', alignItems: 'center', gap: 10,
+                                        padding: '9px 14px',
+                                        background: isActive ? `${DS.cyan}12` : 'transparent',
+                                        border: 'none', borderBottom: `1px solid ${DS.border}`,
+                                        cursor: 'pointer', color: isActive ? DS.cyan : DS.textPrimary,
+                                        fontSize: 13, transition: 'background 0.12s',
+                                    }}
+                                    className="nav-item"
+                                >
+                                    <span style={{
+                                        width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                                        background: c.status === 'success' ? DS.emerald : c.status === 'failed' ? DS.rose : DS.amber,
+                                    }} />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {c.name}
+                                        </div>
+                                        <div style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
+                                            {c.host}:{c.port}/{c.database}
+                                        </div>
+                                    </div>
+                                    {isActive && <CheckCircle size={14} style={{ color: DS.cyan, flexShrink: 0 }} />}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div style={{ padding: '8px 14px', borderTop: `1px solid ${DS.border}` }}>
+                        <span style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono }}>
+                            Manage in Connection Pool tab
+                        </span>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/* ─────────────────────────────────────────────────────────────────
    DASHBOARD
    ───────────────────────────────────────────────────────────────── */
-const Dashboard = ({ onLogout }) => {
+const Dashboard = ({ onLogout }) => (
+    <ConnectionProvider>
+        <DashboardInner onLogout={onLogout} />
+    </ConnectionProvider>
+);
+
+const DashboardInner = ({ onLogout }) => {
     const { logout: authLogout, currentUser } = useAuth();
     // Use the parent-provided onLogout (which plays the fade-out) if available,
     // falling back to the raw logout for any edge-cases.
@@ -2044,6 +2168,8 @@ const Dashboard = ({ onLogout }) => {
                             <MiniSparkline color={DS.emerald} />
                             <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>CPU</span>
                         </div>
+                        <div style={{ width: 1, height: 24, background: DS.border }} />
+                        <ConnectionSelector />
                         <div style={{ width: 1, height: 24, background: DS.border }} />
                         <ThemeToggle />
                         <StatusPill connected={connected} />

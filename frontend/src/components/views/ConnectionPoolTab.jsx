@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { API_BASE } from '../../utils/api.js';
+import { useConnection } from '../../context/ConnectionContext.jsx';
 import {
     Database, Plus, Edit, Trash2, Eye, EyeOff, Check, X,
     Server, Key, User, AlertCircle, CheckCircle, Link as LinkIcon,
@@ -750,6 +751,10 @@ const ConnectionsTab = () => {
     const [formData, setFormData] = useState(defaultFormData());
     const [formErrors, setFormErrors] = useState({});
     const [errorMsg, setErrorMsg] = useState('');
+    const [switchingId, setSwitchingId] = useState(null);
+
+    // Connection context — keeps the header dropdown in sync
+    const { refreshConnections: refreshCtxConnections, activeConnectionId, switchConnection } = useConnection();
 
     const getAuthToken = () => localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
 
@@ -810,6 +815,7 @@ const ConnectionsTab = () => {
             });
             if (res.ok) {
                 await fetchConnections();
+                refreshCtxConnections(); // keep header dropdown in sync
                 closeModal();
             } else {
                 const text = await res.text();
@@ -846,6 +852,7 @@ const ConnectionsTab = () => {
                     });
                 }
                 fetchConnections();
+                refreshCtxConnections(); // keep header dropdown in sync
             } else {
                 const text = await res.text();
                 let msg = 'Failed to delete';
@@ -1068,6 +1075,37 @@ const ConnectionsTab = () => {
                                         <Check size={12} />
                                     </button>
                                 )}
+
+                                {/* Switch Active — connect all dashboards to this DB */}
+                                <button
+                                    onClick={async () => {
+                                        if (conn.id === activeConnectionId) return;
+                                        setSwitchingId(conn.id);
+                                        try {
+                                            await switchConnection(conn.id);
+                                            await fetchConnections();
+                                        } catch (e) {
+                                            alert('Switch failed: ' + e.message);
+                                        } finally { setSwitchingId(null); }
+                                    }}
+                                    disabled={conn.id === activeConnectionId || switchingId === conn.id}
+                                    style={{
+                                        ...S.btn(
+                                            conn.id === activeConnectionId ? 'rgba(56,189,248,0.15)' : 'rgba(56,189,248,0.08)',
+                                            'rgba(56,189,248,0.3)', '#38bdf8'
+                                        ),
+                                        opacity: conn.id === activeConnectionId ? 0.6 : 1,
+                                        cursor: conn.id === activeConnectionId ? 'default' : 'pointer',
+                                    }}
+                                    title={conn.id === activeConnectionId ? 'Currently active' : 'Switch dashboards to this DB'}
+                                >
+                                    {switchingId === conn.id
+                                        ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                                        : conn.id === activeConnectionId
+                                            ? <CheckCircle size={12} />
+                                            : <LinkIcon size={12} />
+                                    }
+                                </button>
 
                                 {/* ✅ FIX 2: Edit button — amber/yellow so it's clearly visible */}
                                 <button

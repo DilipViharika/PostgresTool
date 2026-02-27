@@ -137,7 +137,7 @@ function log(level, message, meta = {}) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATABASE POOL
+// DATABASE POOL — default pool (env-based) + per-connection pool map
 // ─────────────────────────────────────────────────────────────────────────────
 const pool = new Pool({
     user:     process.env.PGUSER     || 'postgres',
@@ -153,6 +153,65 @@ const pool = new Pool({
     options: '--search_path=pgmonitoringtool,public',
 });
 pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
+
+// Map<connectionId, pg.Pool> — pools created on demand for dynamic connections
+const connectionPools = new Map();
+
+// ID of the currently active dynamic connection (null = use default pool)
+let activeConnectionId = null;
+
+/**
+ * Return the pool for a given connectionId.
+ * - If connectionId is null/undefined → use the default env-based pool.
+ * - Otherwise look up (or create) a pool for that CONNECTIONS entry.
+ */
+async function getPool(connectionId) {
+    if (!connectionId) {
+        // Use default env-based pool; fall back to active if one is set
+        if (activeConnectionId) return getPool(activeConnectionId);
+        return pool;
+    }
+    const id = parseInt(connectionId, 10);
+    if (connectionPools.has(id)) return connectionPools.get(id);
+
+    // Find connection config
+    const conn = CONNECTIONS.find(c => c.id === id);
+    if (!conn) throw new Error(`Connection ${id} not found`);
+
+    const cfg = await resolvePoolConfig(conn);
+    const newPool = new Pool({
+        ...cfg,
+        max:                     8,
+        idleTimeoutMillis:       10_000,
+        connectionTimeoutMillis: 15_000,
+        statement_timeout:       30_000,
+    });
+    newPool.on('error', (err) => log('ERROR', `Pool [conn:${id}] background error`, { err: err.message }));
+    connectionPools.set(id, newPool);
+    log('INFO', `Created pool for connection ${id} (${conn.name})`);
+    return newPool;
+}
+
+/**
+ * Destroy the cached pool for a connection (called on delete/update).
+ */
+async function destroyPool(connectionId) {
+    const id = parseInt(connectionId, 10);
+    const p = connectionPools.get(id);
+    if (p) {
+        connectionPools.delete(id);
+        await p.end().catch(() => {});
+        log('INFO', `Destroyed pool for connection ${id}`);
+    }
+}
+
+/**
+ * Shorthand: get the right pool for an Express request.
+ * Reads connectionId from query param, falls back to activeConnectionId, then default pool.
+ */
+async function reqPool(req) {
+    return getPool(req.query.connectionId || null);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CACHE & RATE LIMITER
@@ -175,12 +234,15 @@ class LRUCache {
 const cache = new LRUCache(256);
 
 function cached(key, ttl) {
-    return (_req, res, next) => {
-        const hit = cache.get(key);
+    return (req, res, next) => {
+        // Scope cache key to the active connection so different DBs don't share entries
+        const connScope = req.query.connectionId || activeConnectionId || 'default';
+        const scopedKey = `${key}:${connScope}`;
+        const hit = cache.get(scopedKey);
         if (hit) { res.setHeader('X-Cache', 'HIT'); return res.json(hit); }
         res.setHeader('X-Cache', 'MISS');
         const origJson = res.json.bind(res);
-        res.json = (body) => { cache.set(key, body, ttl); return origJson(body); };
+        res.json = (body) => { cache.set(scopedKey, body, ttl); return origJson(body); };
         next();
     };
 }
@@ -549,7 +611,7 @@ app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 // POSTGRES MONITORING ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
-    const { rows: [d] } = await pool.query(`
+    const { rows: [d] } = await (await reqPool(req)).query(`
         SELECT
                 (SELECT count(*) FROM pg_stat_activity WHERE state='active')                             AS active,
                 (SELECT count(*) FROM pg_stat_activity)                                                  AS total_conn,
@@ -569,27 +631,27 @@ app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL
 });
 
 app.get('/api/overview/traffic', authenticate, cached('ov:traffic', CONFIG.CACHE_TTL.TRAFFIC), async (req, res) => {
-    const r = await pool.query("SELECT tup_fetched, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database WHERE datname=current_database()");
+    const r = await (await reqPool(req)).query("SELECT tup_fetched, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database WHERE datname=current_database()");
     res.json(r.rows[0]);
 });
 
 app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
     try {
-        const ext = await pool.query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace=n.oid WHERE e.extname='pg_stat_statements'");
+        const ext = await (await reqPool(req)).query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace=n.oid WHERE e.extname='pg_stat_statements'");
         if (ext.rowCount === 0) return res.json({ available: false, slowQueries: [] });
         const schema = ext.rows[0].nspname;
-        const q = await pool.query(`SELECT query, calls, mean_exec_time AS mean_time_ms, round((shared_blks_hit::numeric/NULLIF(shared_blks_hit+shared_blks_read,0))*100,1) AS cache_hit_pct FROM "${schema}".pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10`);
+        const q = await (await reqPool(req)).query(`SELECT query, calls, mean_exec_time AS mean_time_ms, round((shared_blks_hit::numeric/NULLIF(shared_blks_hit+shared_blks_read,0))*100,1) AS cache_hit_pct FROM "${schema}".pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10`);
         res.json({ available: true, slowQueries: q.rows });
     } catch (e) { res.json({ available: false, error: e.message, slowQueries: [] }); }
 });
 
 app.get('/api/performance/table-io', authenticate, cached('perf:io', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
-    const r = await pool.query("SELECT relname AS table_name, seq_scan, idx_scan FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 20");
+    const r = await (await reqPool(req)).query("SELECT relname AS table_name, seq_scan, idx_scan FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 20");
     res.json(r.rows);
 });
 
 app.get('/api/reliability/active-connections', authenticate, async (req, res) => {
-    const r = await pool.query(`
+    const r = await (await reqPool(req)).query(`
         SELECT pid, usename, state, query,
                extract(epoch FROM (now()-query_start))::int AS duration_sec,
             (now()-query_start > interval '5 minutes') AS is_slow
@@ -599,7 +661,7 @@ app.get('/api/reliability/active-connections', authenticate, async (req, res) =>
 });
 
 app.get('/api/reliability/locks', authenticate, async (req, res) => {
-    const r = await pool.query(`
+    const r = await (await reqPool(req)).query(`
         SELECT bl.pid AS blocked_pid, kl.pid AS blocking_pid, ka.query AS blocking_query
         FROM   pg_locks bl
                    JOIN   pg_locks kl ON kl.locktype=bl.locktype AND kl.pid<>bl.pid
@@ -610,7 +672,7 @@ app.get('/api/reliability/locks', authenticate, async (req, res) => {
 });
 
 app.get('/api/reliability/replication', authenticate, async (req, res) => {
-    const r = await pool.query("SELECT application_name, state, pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replication_lag_bytes FROM pg_stat_replication");
+    const r = await (await reqPool(req)).query("SELECT application_name, state, pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replication_lag_bytes FROM pg_stat_replication");
     res.json(r.rows);
 });
 
@@ -620,7 +682,7 @@ app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
         if (!query) return res.status(400).json({ error: 'Query is required' });
         const validationError = validateExplainQuery(query);
         if (validationError) return res.status(400).json({ error: validationError });
-        const result = await pool.query(`EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) ${query}`);
+        const result = await (await reqPool(req)).query(`EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) ${query}`);
         res.json(result.rows[0]);
     } catch (e) { res.status(400).json({ error: e.message }); }
 });
@@ -720,12 +782,12 @@ app.post('/api/alerts/email/digest', authenticate, requireScreen('admin'), async
 // ADMIN / CACHE ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/admin/settings', authenticate, cached('admin:settings', CONFIG.CACHE_TTL.SETTINGS), async (req, res) => {
-    const r = await pool.query("SELECT name, setting, unit, context FROM pg_settings WHERE name IN ('max_connections','shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_level','checkpoint_completion_target') ORDER BY name");
+    const r = await (await reqPool(req)).query("SELECT name, setting, unit, context FROM pg_settings WHERE name IN ('max_connections','shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_level','checkpoint_completion_target') ORDER BY name");
     res.json(r.rows);
 });
 
 app.get('/api/admin/extensions', authenticate, cached('admin:ext', CONFIG.CACHE_TTL.EXTENSIONS), async (req, res) => {
-    const r = await pool.query("SELECT extname AS name, extversion AS version FROM pg_extension");
+    const r = await (await reqPool(req)).query("SELECT extname AS name, extversion AS version FROM pg_extension");
     res.json(r.rows);
 });
 
@@ -742,7 +804,8 @@ app.post('/api/query', authenticate, requireRole('admin', 'super_admin'), async 
 
     const safeSql = String(rawSql).slice(0, 50_000);
     try {
-        const client = await pool.connect();
+        const dynPool = await reqPool(req);
+        const client = await dynPool.connect();
         const r = await client.query(safeSql);
         client.release();
         queryHistory.add({ sql: safeSql, success: true, by: req.user.username });
@@ -856,6 +919,9 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
 
     const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== CONNECTIONS[index][f]);
     if (sshChanged) await closeTunnel(id);
+    // Destroy cached pool so it's recreated with new config on next use
+    await destroyPool(id);
+    if (activeConnectionId === id) cache.clear();
 
     CONNECTIONS[index] = {
         ...CONNECTIONS[index],
@@ -877,6 +943,8 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
     const c  = CONNECTIONS.find(c => c.id === id);
     if (!c) return res.status(404).json({ error: 'Connection not found' });
     await closeTunnel(id);
+    await destroyPool(id);
+    if (activeConnectionId === id) { activeConnectionId = null; cache.clear(); }
     CONNECTIONS = CONNECTIONS.filter(c => c.id !== id);
     if (c.isDefault && CONNECTIONS.length > 0) {
         CONNECTIONS[0].isDefault = true;
@@ -922,12 +990,33 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
     }
 });
 
-app.post('/api/connections/:id/switch', authenticate, (req, res) => {
-    const c = CONNECTIONS.find(c => c.id === parseInt(req.params.id));
+app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const c = CONNECTIONS.find(c => c.id === id);
     if (!c) return res.status(404).json({ error: 'Connection not found' });
+
+    try {
+        // Eagerly create / warm-up the pool so we fail fast on bad config
+        const p = await getPool(id);
+        const client = await p.connect();
+        await client.query('SELECT 1');
+        client.release();
+    } catch (err) {
+        return res.status(400).json({ success: false, error: `Cannot switch: ${err.message}` });
+    }
+
+    // Mark as active
     CONNECTIONS.forEach(c => c.isDefault = false);
     c.isDefault = true;
-    res.json({ success: true, message: 'Connection switched. Please restart to apply.' });
+    activeConnectionId = id;
+    cache.clear(); // invalidate all cached responses — they belong to the old connection
+    log('INFO', `Active connection switched to ${id} (${c.name})`);
+    res.json({ success: true, message: `Switched to "${c.name}"`, connectionId: id });
+});
+
+app.get('/api/connections/active', authenticate, (req, res) => {
+    const active = CONNECTIONS.find(c => c.id === activeConnectionId) || CONNECTIONS.find(c => c.isDefault) || CONNECTIONS[0];
+    res.json({ connectionId: activeConnectionId, connection: active ? sanitizeConn(active) : null });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -976,7 +1065,7 @@ app.post('/api/feedback', authenticate, async (req, res) => {
         const parsed = parseFeedbackBody(req.body);
         if (!parsed.valid) return res.status(400).json({ error: parsed.error });
         const { type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, user_metadata } = parsed.fields;
-        const result = await pool.query(
+        const result = await (await reqPool(req)).query(
             `INSERT INTO pgmonitoringtool.user_feedback
              (username, feedback_type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, status, user_metadata)
              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'new',$10) RETURNING id, created_at`,
@@ -1056,8 +1145,9 @@ app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), asy
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CACHE_TTL.WAL), async (req, res) => {
     try {
+        const _p = await reqPool(req);
         const [replicas, slots, walReceiver, walSender, walSettings] = await Promise.all([
-            pool.query(`
+            _p.query(`
                 SELECT pid, usename, application_name, client_addr::text,
                     state, sync_state,
                        sent_lsn::text, write_lsn::text, flush_lsn::text, replay_lsn::text,
@@ -1072,7 +1162,7 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
                 FROM pg_stat_replication
                 ORDER BY total_lag_bytes DESC NULLS LAST
             `),
-            pool.query(`
+            _p.query(`
                 SELECT slot_name, plugin, slot_type, database, active, active_pid,
                        pg_wal_lsn_diff(pg_current_wal_lsn(), confirmed_flush_lsn) AS lag_bytes,
                        pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), confirmed_flush_lsn)) AS lag_pretty,
@@ -1080,21 +1170,21 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
                 FROM pg_replication_slots
                 ORDER BY lag_bytes DESC NULLS LAST
             `),
-            pool.query(`
+            _p.query(`
                 SELECT status, receive_start_lsn::text, received_tli,
                        last_msg_send_time::text, last_msg_receipt_time::text,
                     latest_end_lsn::text, latest_end_time::text,
                     sender_host, sender_port, slot_name, conninfo
                 FROM pg_stat_wal_receiver
             `).catch(() => ({ rows: [] })),
-            pool.query(`
+            _p.query(`
                 SELECT pg_current_wal_lsn()::text                    AS current_lsn,
                     pg_walfile_name(pg_current_wal_lsn())          AS current_wal,
                        pg_wal_lsn_diff(pg_current_wal_lsn(), '0/0')  AS total_bytes_generated,
                        (SELECT count(*) FROM pg_stat_replication)      AS replica_count,
                        pg_is_in_recovery()                            AS in_recovery
             `),
-            pool.query(`
+            _p.query(`
                 SELECT name, setting, unit
                 FROM pg_settings
                 WHERE name IN ('wal_level','max_wal_senders','max_replication_slots',
@@ -1117,7 +1207,7 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             WITH stats AS (
                 SELECT
                     schemaname,
@@ -1163,7 +1253,7 @@ app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_T
 
 app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 s.schemaname,
                 s.relname                                                                               AS tablename,
@@ -1191,7 +1281,7 @@ app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE
 
 app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 count(*)                                                                                AS total_tables,
                 count(*) FILTER (WHERE
@@ -1233,7 +1323,7 @@ app.post('/api/regression/capture', authenticate, async (req, res) => {
         if (!query) return res.status(400).json({ error: 'query required' });
         const validationError = validateExplainQuery(query);
         if (validationError) return res.status(400).json({ error: validationError });
-        const result = await pool.query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
+        const result = await (await reqPool(req)).query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
         const plan = result.rows[0]['QUERY PLAN'][0];
         const cost = plan['Plan']['Total Cost'];
         const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
@@ -1252,7 +1342,7 @@ app.post('/api/regression/compare', authenticate, async (req, res) => {
         const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
         const baseline = planBaselines.get(fingerprint);
 
-        const result = await pool.query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
+        const result = await (await reqPool(req)).query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
         const currentPlan = result.rows[0]['QUERY PLAN'][0];
         const currentCost = currentPlan['Plan']['Total Cost'];
 
@@ -1291,7 +1381,7 @@ app.delete('/api/regression/baselines/:fp', authenticate, (req, res) => {
 app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
     try {
         const threshold = parseInt(req.query.min_ms) || 1000;
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT query,
                    calls,
                    round(mean_exec_time::numeric, 2)  AS mean_ms,
@@ -1312,7 +1402,7 @@ app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE
 
 app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT pid, usename, datname, application_name,
                    state, wait_event_type, wait_event,
                 left(query, 200) AS query_preview,
@@ -1433,15 +1523,16 @@ app.post('/api/tasks/reset', authenticate, requireScreen('admin'), (req, res) =>
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000), async (req, res) => {
     try {
+        const _p = await reqPool(req);
         const [waitEvents, lockWaits, slowQueries, errorStates, dbActivity, topQueries] = await Promise.all([
-            pool.query(`
+            _p.query(`
                 SELECT wait_event_type, wait_event, COUNT(*) AS count
                 FROM pg_stat_activity
                 WHERE wait_event IS NOT NULL AND state != 'idle'
                 GROUP BY wait_event_type, wait_event
                 ORDER BY count DESC LIMIT 20
             `),
-            pool.query(`
+            _p.query(`
                 SELECT
                     blocked.pid AS blocked_pid,
                     blocked.usename AS blocked_user,
@@ -1455,7 +1546,7 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0
                     LIMIT 20
             `),
-            pool.query(`
+            _p.query(`
                 SELECT
                     left(query, 100) AS query_preview,
                     calls,
@@ -1469,7 +1560,7 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 ORDER BY total_exec_time DESC
                     LIMIT 15
             `).catch(() => ({ rows: [] })),
-            pool.query(`
+            _p.query(`
                 SELECT state, wait_event_type, COUNT(*) AS count,
                        AVG(EXTRACT(EPOCH FROM (now() - query_start)))::int AS avg_age_sec
                 FROM pg_stat_activity
@@ -1477,7 +1568,7 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 GROUP BY state, wait_event_type
                 ORDER BY count DESC
             `),
-            pool.query(`
+            _p.query(`
                 SELECT datname,
                        numbackends,
                        xact_commit,
@@ -1494,7 +1585,7 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
                 ORDER BY numbackends DESC
                     LIMIT 10
             `),
-            pool.query(`
+            _p.query(`
                 SELECT left(query, 100) AS query_preview, calls, round(mean_exec_time::numeric,2) AS mean_ms, rows
                 FROM pg_stat_statements
                 ORDER BY calls DESC LIMIT 10
@@ -1563,22 +1654,23 @@ setInterval(captureAlertSnapshot, 30_000);
 
 app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), async (req, res) => {
     try {
+        const _p = await reqPool(req);
         const [conns, locks, waits, tables, txAge] = await Promise.all([
-            pool.query(`
+            _p.query(`
                 SELECT state, wait_event_type, wait_event, COUNT(*) AS cnt,
                        MAX(EXTRACT(EPOCH FROM (now()-query_start)))::int AS max_age_sec
                 FROM pg_stat_activity WHERE state IS NOT NULL
                 GROUP BY state, wait_event_type, wait_event ORDER BY cnt DESC
             `),
-            pool.query(`SELECT locktype, mode, granted, COUNT(*) AS cnt FROM pg_locks GROUP BY locktype,mode,granted ORDER BY cnt DESC LIMIT 20`),
-            pool.query(`
+            _p.query(`SELECT locktype, mode, granted, COUNT(*) AS cnt FROM pg_locks GROUP BY locktype,mode,granted ORDER BY cnt DESC LIMIT 20`),
+            _p.query(`
                 SELECT pid, usename, datname, state, wait_event_type, wait_event,
                     left(query,120) AS query, round(EXTRACT(EPOCH FROM (now()-query_start))::numeric,1) AS age_sec
                 FROM pg_stat_activity
                 WHERE state != 'idle' AND query NOT LIKE '%pg_stat_activity%'
                 ORDER BY age_sec DESC NULLS LAST LIMIT 25
             `),
-            pool.query(`
+            _p.query(`
                 SELECT relname AS table_name,
                        n_dead_tup, n_live_tup,
                        round((n_dead_tup::numeric/NULLIF(n_live_tup+n_dead_tup,0)*100),1) AS dead_pct,
@@ -1587,7 +1679,7 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
                 WHERE n_dead_tup > 1000
                 ORDER BY dead_pct DESC NULLS LAST LIMIT 10
             `),
-            pool.query(`
+            _p.query(`
                 SELECT pid, usename, datname,
                        age(backend_xid)  AS xid_age,
                        age(backend_xmin) AS xmin_age,
@@ -1660,8 +1752,9 @@ function guessRootCause(events) {
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
     try {
+        const _p = await reqPool(req);
         const [bgwriter, walLsn, walSettings] = await Promise.all([
-            pool.query(`
+            _p.query(`
                 SELECT checkpoints_timed, checkpoints_req,
                        round(checkpoint_write_time::numeric, 0) AS checkpoint_write_ms,
                        round(checkpoint_sync_time::numeric, 0)  AS checkpoint_sync_ms,
@@ -1670,7 +1763,7 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
                        stats_reset
                 FROM pg_stat_bgwriter
             `),
-            pool.query(`
+            _p.query(`
                 SELECT pg_current_wal_lsn()::text AS current_lsn,
                     pg_walfile_name(pg_current_wal_lsn()) AS current_wal_file,
                        (SELECT setting::int FROM pg_settings WHERE name = 'checkpoint_completion_target') AS completion_target,
@@ -1678,7 +1771,7 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
                        (SELECT setting::int FROM pg_settings WHERE name = 'min_wal_size') AS min_wal_mb,
                        (SELECT setting::int FROM pg_settings WHERE name = 'checkpoint_timeout') AS checkpoint_timeout_sec
             `),
-            pool.query(`
+            _p.query(`
                 SELECT name, setting, unit, short_desc
                 FROM pg_settings
                 WHERE name IN (
@@ -1698,19 +1791,20 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (req, res) => {
     try {
+        const _p = await reqPool(req);
         const [archiver, walInfo, recoveryInfo] = await Promise.all([
-            pool.query(`
+            _p.query(`
                 SELECT archived_count, last_archived_wal, last_archived_time,
                        failed_count, last_failed_wal, last_failed_time, stats_reset
                 FROM pg_stat_archiver
             `),
-            pool.query(`
+            _p.query(`
                 SELECT pg_current_wal_lsn()::text        AS current_lsn,
                        pg_walfile_name(pg_current_wal_lsn()) AS current_wal,
                        pg_is_in_recovery()               AS in_recovery,
                        pg_postmaster_start_time()::text  AS started_at
             `),
-            pool.query(`
+            _p.query(`
                 SELECT name, setting
                 FROM pg_settings
                 WHERE name IN ('wal_level','archive_mode','archive_command','restore_command',
@@ -1731,7 +1825,7 @@ app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 schemaname AS schema, 
                 relname AS name,
@@ -1763,7 +1857,7 @@ app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async
 
 app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 schemaname,
                 tablename,
@@ -1784,7 +1878,7 @@ app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), a
 
 app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 cl1.relname::text AS table_name,
                 COALESCE(
@@ -1821,7 +1915,7 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
 
 app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 n.nspname AS schema,
                 c.relname AS table,
@@ -1846,7 +1940,7 @@ app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async
 
 app.get('/api/tables/temp', authenticate, async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 n.nspname AS schema_name,
                 c.relname AS table_name,
@@ -1867,7 +1961,7 @@ app.get('/api/tables/temp', authenticate, async (req, res) => {
 
 app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CACHE_TTL.INDEXES), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 ui.schemaname                                           AS schema,
                 ui.relname                                              AS "tableName",
@@ -1905,7 +1999,7 @@ app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CAC
 
 app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
     try {
-        const r = await pool.query(`
+        const r = await (await reqPool(req)).query(`
             SELECT
                 n.nspname                                                   AS schema,
                 c.relname                                                   AS name,
@@ -1943,8 +2037,9 @@ app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_T
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CONFIG.CACHE_TTL.VACUUM), async (req, res) => {
     try {
+        const _p = await reqPool(req);
         const [tables, workers, settings] = await Promise.all([
-            pool.query(`
+            _p.query(`
                 SELECT schemaname, relname,
                        n_dead_tup, n_live_tup,
                        CASE WHEN n_live_tup > 0
@@ -1960,7 +2055,7 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
                 ORDER BY n_dead_tup DESC
                     LIMIT 50
             `),
-            pool.query(`
+            _p.query(`
                 SELECT pid, datname,
                        regexp_replace(query, '^autovacuum: ', '') AS table_name,
                        state,
@@ -1970,7 +2065,7 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
                 WHERE query LIKE 'autovacuum:%'
                 ORDER BY query_start ASC
             `),
-            pool.query(`
+            _p.query(`
                 SELECT name, setting, unit, short_desc
                 FROM pg_settings
                 WHERE name LIKE 'autovacuum%'
@@ -1987,7 +2082,7 @@ app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async 
     if (!schema || !/^[a-zA-Z_][a-zA-Z0-9_$-]*$/.test(schema))  return res.status(400).json({ error: 'Invalid schema name' });
     try {
         const cmd = `VACUUM${analyze ? ' ANALYZE' : ''} "${schema}"."${table}"`;
-        await pool.query(cmd);
+        await (await reqPool(req)).query(cmd);
         cache.clear();
         log('INFO', 'Manual VACUUM executed', { schema, table, analyze });
         res.json({ success: true, command: cmd });

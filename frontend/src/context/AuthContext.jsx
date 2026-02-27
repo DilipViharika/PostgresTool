@@ -153,6 +153,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem(STORAGE_KEYS.USER);
         // Clear persisted active tab so the next login always opens Overview
         localStorage.removeItem('pg_monitor_active_tab');
+        // Clear active connection so next login starts fresh
+        localStorage.removeItem('vigil_active_connection_id');
         setCurrentUser(null);
         setError(null);
     }, []);

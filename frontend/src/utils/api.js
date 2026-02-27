@@ -10,8 +10,45 @@ function getAuthHeaders() {
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+/**
+ * Get the currently active connectionId from localStorage.
+ * The ConnectionContext persists this so API calls automatically target the right DB.
+ */
+function getActiveConnectionId() {
+    try { return localStorage.getItem('vigil_active_connection_id') || null; }
+    catch { return null; }
+}
+
+/**
+ * Append ?connectionId=X to a path, if an active connection is set and
+ * the path is a monitoring endpoint (not auth / connections / feedback / admin-meta).
+ */
+function appendConnectionId(path) {
+    const connId = getActiveConnectionId();
+    if (!connId) return path;
+
+    // Don't forward connectionId to these endpoints (they use the app's own pool)
+    const skipPatterns = [
+        '/api/auth',
+        '/api/connections',
+        '/api/feedback',
+        '/api/admin/feedback',
+        '/api/users',
+        '/api/sessions',
+        '/api/audit',
+        '/api/repo',
+    ];
+    if (skipPatterns.some(p => path.startsWith(p))) return path;
+
+    const sep = path.includes('?') ? '&' : '?';
+    return `${path}${sep}connectionId=${connId}`;
+}
+
 async function request(path, options = {}) {
-    const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+    const resolvedPath = (options.method === 'GET' || !options.method)
+        ? appendConnectionId(path)
+        : path;
+    const url = resolvedPath.startsWith('http') ? resolvedPath : `${API_BASE}${resolvedPath}`;
 
     const res = await fetch(url, {
         ...options,
@@ -109,5 +146,16 @@ export async function deleteData(path) {
     return request(path, { method: 'DELETE' });
 }
 
+/**
+ * Persist the active connectionId so all subsequent fetchData calls target that DB.
+ * Called by ConnectionContext when the user switches connections.
+ */
+export function setActiveConnectionId(id) {
+    try {
+        if (id == null) localStorage.removeItem('vigil_active_connection_id');
+        else localStorage.setItem('vigil_active_connection_id', String(id));
+    } catch {}
+}
+
 export { API_BASE };
-export default { fetchData, postData, putData, patchData, deleteData, connectWS, API_BASE };
+export default { fetchData, postData, putData, patchData, deleteData, connectWS, API_BASE, setActiveConnectionId };
