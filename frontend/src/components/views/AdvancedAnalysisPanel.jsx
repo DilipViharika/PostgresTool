@@ -373,14 +373,15 @@ Return EXACTLY this JSON (no extra keys, no markdown):
 }`;
 
             const data = await postData('/api/ai/chat', {
-                model: 'claude-sonnet-4-20250514',
                 max_tokens: 2000,
                 system,
                 messages: [{ role: 'user', content: prompt }],
             });
 
             const raw = data.content?.map(b => b.text || '').join('') || '';
-            const match = raw.match(/\{[\s\S]*\}/);
+            // Strip markdown fences that Llama/Groq often adds despite instructions
+            const stripped = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+            const match = stripped.match(/\{[\s\S]*\}/);
             if (!match) throw new Error('AI returned a non-JSON response. Please try again.');
             setResult(JSON.parse(match[0]));
         } catch (e) {

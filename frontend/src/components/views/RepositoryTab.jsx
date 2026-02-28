@@ -26,7 +26,6 @@ const useAIAnalysis = () => {
 
     const callClaude = async (system, prompt) => {
         const data = await postData('/api/ai/chat', {
-            model: 'claude-sonnet-4-20250514',
             max_tokens: 3000,
             system,
             messages: [{ role: 'user', content: prompt }],
@@ -34,8 +33,10 @@ const useAIAnalysis = () => {
 
         const raw = data.content?.map(b => b.text || '').join('') || '';
 
-        // More robust JSON extraction — handles markdown fences and leading text
-        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        // Strip markdown fences that Llama/Groq often adds despite instructions
+        const stripped = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+        // Extract the outermost JSON object
+        const jsonMatch = stripped.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error("AI returned a non-JSON response. Try again.");
         return JSON.parse(jsonMatch[0]);
     };

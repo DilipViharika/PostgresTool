@@ -804,11 +804,15 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
 
         try {
             const data = await postData('/api/ai/chat', {
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 1000,
+                max_tokens: 1500,
                 messages: [{ role: 'user', content: prompt }]
             });
-            const text = data.content?.map(c => c.text || '').join('') || '';
+            const raw = data.content?.map(c => c.text || '').join('') || '';
+
+            // Strip markdown fences that Llama/Groq often adds
+            const stripped = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+            const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+            const text = jsonMatch ? jsonMatch[0] : stripped;
 
             // Simulate streaming effect
             let i = 0;
@@ -818,10 +822,10 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                 if (i >= text.length) {
                     clearInterval(interval);
                     try {
-                        const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+                        const parsed = JSON.parse(text);
                         setRewrite(parsed);
                     } catch {
-                        setError('Could not parse AI response. Raw output: ' + text.substring(0, 200));
+                        setError('Could not parse AI response. Raw output: ' + raw.substring(0, 200));
                     }
                     setLoading(false);
                 }
