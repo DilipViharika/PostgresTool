@@ -613,20 +613,37 @@ const CodeView = ({ activeRepo }) => {
 
                                             {/* Auto-Fix Result */}
                                             {(fixedCode || fixError) && (
-                                                <div style={{ marginTop:12, borderRadius:10, border:`1px solid ${fixError ? THEME.danger : THEME.success}30`, overflow:'hidden' }}>
-                                                    <div style={{ padding:'8px 14px', background: fixError ? `${THEME.danger}10` : `${THEME.success}10`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                                                <div style={{ marginTop:12, borderRadius:10, border:`1px solid ${fixError ? THEME.danger : THEME.success}40`, overflow:'hidden' }}>
+                                                    <div style={{ padding:'8px 14px', background: fixError ? `${THEME.danger}10` : `${THEME.success}12`, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
                                                         <span style={{ fontSize:11, fontWeight:700, color: fixError ? THEME.danger : THEME.success, display:'flex', alignItems:'center', gap:6 }}>
                                                             {fixError ? <><AlertTriangle size={11}/> Fix Failed</> : <><CheckCircle size={11}/> Fixed Code Ready</>}
                                                         </span>
                                                         {fixedCode && (
-                                                            <button onClick={() => copyToClipboard(fixedCode, 'autofix')} className="r8-btn r8-btn-sm" style={{ background:`${THEME.success}20`, border:`1px solid ${THEME.success}40`, color:THEME.success, padding:'3px 10px', fontSize:10 }}>
-                                                                {copiedFix === 'autofix' ? <><Check size={10}/> Copied!</> : <><Copy size={10}/> Copy Fixed Code</>}
-                                                            </button>
+                                                            <div style={{ display:'flex', gap:6 }}>
+                                                                <button
+                                                                    onClick={() => copyToClipboard(fixedCode, 'autofix')}
+                                                                    className="r8-btn r8-btn-sm"
+                                                                    style={{ background:`${THEME.success}18`, border:`1px solid ${THEME.success}40`, color:THEME.success, padding:'3px 10px', fontSize:10 }}
+                                                                >
+                                                                    {copiedFix === 'autofix' ? <><Check size={10}/> Copied!</> : <><Copy size={10}/> Copy</>}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setFileContent(fixedCode);
+                                                                        setFixedCode(null);
+                                                                        aiEngine.reset();
+                                                                    }}
+                                                                    className="r8-btn r8-btn-sm"
+                                                                    style={{ background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, border:'none', color:'#fff', padding:'3px 12px', fontSize:10, fontWeight:700, boxShadow:`0 2px 8px ${THEME.success}40` }}
+                                                                >
+                                                                    <Save size={10}/> Apply to Editor
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                     {fixError && <div style={{ padding:10, fontSize:11, color:THEME.danger }}>{fixError}</div>}
                                                     {fixedCode && (
-                                                        <pre className="r8-scroll" style={{ margin:0, padding:'12px 14px', fontSize:10, fontFamily:'monospace', color:THEME.textMuted, background:`${THEME.bg}90`, maxHeight:280, overflowY:'auto', whiteSpace:'pre-wrap', lineHeight:1.6 }}>
+                                                        <pre className="r8-scroll" style={{ margin:0, padding:'12px 14px', fontSize:10, fontFamily:'monospace', color:THEME.textMuted, background:`${THEME.bg}90`, maxHeight:240, overflowY:'auto', whiteSpace:'pre-wrap', lineHeight:1.6 }}>
                                                             {fixedCode}
                                                         </pre>
                                                     )}
