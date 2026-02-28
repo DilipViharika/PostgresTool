@@ -384,10 +384,12 @@ const CodeView = ({ activeRepo }) => {
     const lines = fileContent.split('\n');
     const aiResult = aiEngine.result;
 
-    const [fixedCode, setFixedCode] = useState(null);
-    const [fixLoading, setFixLoading] = useState(false);
-    const [fixError, setFixError] = useState(null);
-    const [copiedFix, setCopiedFix] = useState(null);
+    const [originalCode, setOriginalCode]   = useState('');   // pre-fix snapshot for diff
+    const [fixLoading, setFixLoading]       = useState(false);
+    const [fixError, setFixError]           = useState(null);
+    const [fixApplied, setFixApplied]       = useState(false); // banner flag
+    const [fixCount, setFixCount]           = useState(0);
+    const [copiedFix, setCopiedFix]         = useState(null);
 
     const copyToClipboard = (text, key) => {
         navigator.clipboard?.writeText(text).catch(() => {});
@@ -395,22 +397,43 @@ const CodeView = ({ activeRepo }) => {
         setTimeout(() => setCopiedFix(null), 2000);
     };
 
-    const runAutoFix = useCallback(async () => {
-        if (!fileContent || !aiResult?.issues?.length) return;
-        setFixLoading(true); setFixError(null); setFixedCode(null);
-        try {
-            const fixed = await aiEngine.autoFix({
-                filename: selNode?.name || 'file',
-                code: fileContent,
-                issues: aiResult.issues,
-            });
-            setFixedCode(fixed);
-        } catch (e) {
-            setFixError('Auto-fix failed. Please try again.');
-        } finally {
-            setFixLoading(false);
-        }
-    }, [aiEngine, fileContent, aiResult, selNode]);
+    // Auto-run fix as soon as analysis returns issues
+    const autoFixRef = React.useRef(false);
+    React.useEffect(() => {
+        if (!aiResult?.issues?.length) return;
+        if (autoFixRef.current) return; // only once per file load
+        autoFixRef.current = true;
+
+        const run = async () => {
+            setFixLoading(true); setFixError(null); setFixApplied(false);
+            try {
+                const fixed = await aiEngine.autoFix({
+                    filename: selNode?.name || 'file',
+                    code: fileContent,
+                    issues: aiResult.issues,
+                });
+                if (fixed && fixed.trim()) {
+                    setOriginalCode(fileContent);
+                    setFileContent(fixed);
+                    setFixApplied(true);
+                    setFixCount(aiResult.issues.length);
+                }
+            } catch (e) {
+                setFixError('Auto-fix failed. Please try again.');
+            } finally {
+                setFixLoading(false);
+            }
+        };
+        run();
+    }, [aiResult]);
+
+    // Reset autofix flag when a new file is selected
+    React.useEffect(() => {
+        autoFixRef.current = false;
+        setFixApplied(false);
+        setFixError(null);
+        setOriginalCode('');
+    }, [selNode]);
 
     const sevColor = s => {
         const key = (s||'').toLowerCase();
@@ -454,10 +477,46 @@ const CodeView = ({ activeRepo }) => {
 
                 {/* CODE EDITOR */}
                 <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-                    <div style={{ padding:'12px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', gap:8 }}>
+
+                    {/* Editor header */}
+                    <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
                         <Code size={14} color={THEME.primary}/>
-                        <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, fontFamily:'monospace' }}>{selNode ? selNode.name : 'No file selected'}</span>
+                        <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, fontFamily:'monospace', flex:1 }}>{selNode ? selNode.name : 'No file selected'}</span>
+                        {fixLoading && (
+                            <span style={{ fontSize:10, color:THEME.info, display:'flex', alignItems:'center', gap:5, fontWeight:600 }}>
+                                <Loader size={11} style={{ animation:'rSpin 1s linear infinite' }}/> Applying fixes…
+                            </span>
+                        )}
+                        {fixApplied && !fixLoading && (
+                            <span style={{ fontSize:10, color:THEME.success, display:'flex', alignItems:'center', gap:5, fontWeight:700 }}>
+                                <CheckCircle size={11}/> {fixCount} issue{fixCount!==1?'s':''} auto-fixed
+                            </span>
+                        )}
+                        {fixApplied && originalCode && (
+                            <button
+                                onClick={() => { setFileContent(originalCode); setFixApplied(false); setOriginalCode(''); }}
+                                title="Undo auto-fix"
+                                style={{ background:'none', border:`1px solid ${THEME.glassBorder}`, borderRadius:5, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer' }}
+                            >↩ Undo</button>
+                        )}
+                        {fixApplied && (
+                            <button
+                                onClick={() => copyToClipboard(fileContent, 'editor')}
+                                title="Copy fixed code"
+                                style={{ background:'none', border:`1px solid ${THEME.glassBorder}`, borderRadius:5, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+                            >
+                                {copiedFix==='editor' ? <Check size={10} color={THEME.success}/> : <Copy size={10}/>}
+                                {copiedFix==='editor' ? 'Copied!' : 'Copy'}
+                            </button>
+                        )}
                     </div>
+
+                    {/* Fix error banner */}
+                    {fixError && (
+                        <div style={{ padding:'7px 16px', background:`${THEME.warning}12`, borderBottom:`1px solid ${THEME.warning}25`, fontSize:11, color:THEME.warning, display:'flex', alignItems:'center', gap:6 }}>
+                            <AlertTriangle size={11}/> {fixError}
+                        </div>
+                    )}
 
                     {!selNode && !fileLoading && (
                         <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:16, color:THEME.textDim }}>
@@ -468,26 +527,30 @@ const CodeView = ({ activeRepo }) => {
 
                     {fileLoading && <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}><Loader size={24} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/></div>}
 
-                    {selNode && !fileLoading && fileContent && (
-                        <div className="r8-scroll" style={{ flex:1, overflowY:'auto', padding:'16px 0', fontFamily:THEME.fontMono, fontSize:13, lineHeight:1.6 }}>
-                            {lines.map((line, i) => {
-                                const issue = aiResult?.issues?.find(iss => iss.line === (i + 1));
-                                const isIssue = !!issue;
-                                const issueColor = issue?.severity === 'critical' ? THEME.danger : issue?.severity === 'high' ? THEME.warning : THEME.info;
-
-                                return (
-                                    <div key={i} style={{ display:'flex', padding:'0 20px', background: isIssue ? `${issueColor}10` : 'transparent', borderLeft: isIssue ? `3px solid ${issueColor}` : '3px solid transparent' }}>
-                                        <span style={{ width:40, flexShrink:0, color:`${THEME.textDim}50`, userSelect:'none', textAlign:'right', paddingRight:12 }}>{i + 1}</span>
-                                        <span style={{ flex:1, color: isIssue ? issueColor : THEME.textMuted, whiteSpace:'pre' }}>{line}</span>
-                                        {isIssue && (
-                                            <span style={{ fontSize:10, fontWeight:700, color:issueColor, marginLeft:12, padding:'2px 8px', background:`${issueColor}20`, borderRadius:4, alignSelf:'center' }}>
-                                                {issue.title}
-                                            </span>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                    {selNode && !fileLoading && (
+                        <textarea
+                            className="r8-scroll"
+                            value={fileContent}
+                            onChange={e => setFileContent(e.target.value)}
+                            spellCheck={false}
+                            style={{
+                                flex: 1,
+                                resize: 'none',
+                                border: 'none',
+                                outline: 'none',
+                                background: 'transparent',
+                                color: THEME.textMuted,
+                                fontFamily: THEME.fontMono || 'monospace',
+                                fontSize: 12,
+                                lineHeight: 1.65,
+                                padding: '14px 20px',
+                                tabSize: 2,
+                                whiteSpace: 'pre',
+                                overflowWrap: 'normal',
+                                overflowX: 'auto',
+                                minHeight: 0,
+                            }}
+                        />
                     )}
                 </div>
 
@@ -564,22 +627,23 @@ const CodeView = ({ activeRepo }) => {
                                         </div>
                                     )}
 
-                                    {/* Line-Specific Issues */}
+                                    {/* Line-Specific Issues — fixes already auto-applied to editor */}
                                     {aiResult.issues?.length > 0 && (
                                         <div>
                                             <div style={{ fontSize:11, fontWeight:800, color:THEME.textDim, textTransform:'uppercase', marginBottom:10, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                                                <span style={{ display:'flex', alignItems:'center', gap:6 }}><AlertTriangle size={12}/> Issues Found ({aiResult.issues.length})</span>
-                                                <button
-                                                    onClick={runAutoFix}
-                                                    disabled={fixLoading}
-                                                    className="r8-btn r8-btn-p r8-btn-sm"
-                                                    style={{ fontSize:10, padding:'4px 10px', background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, boxShadow:`0 2px 8px ${THEME.success}30` }}
-                                                >
-                                                    {fixLoading
-                                                        ? <><Loader size={11} style={{ animation:'rSpin 1s linear infinite' }}/> Fixing…</>
-                                                        : <><Wrench size={11}/> Auto-Fix All</>
-                                                    }
-                                                </button>
+                                                <span style={{ display:'flex', alignItems:'center', gap:6 }}>
+                                                    <AlertTriangle size={12}/> Issues Found ({aiResult.issues.length})
+                                                </span>
+                                                {fixLoading && (
+                                                    <span style={{ fontSize:10, color:THEME.info, display:'flex', alignItems:'center', gap:5 }}>
+                                                        <Loader size={10} style={{ animation:'rSpin 1s linear infinite' }}/> Applying fixes to editor…
+                                                    </span>
+                                                )}
+                                                {fixApplied && !fixLoading && (
+                                                    <span style={{ fontSize:10, color:THEME.success, display:'flex', alignItems:'center', gap:5 }}>
+                                                        <CheckCircle size={10}/> Applied to editor
+                                                    </span>
+                                                )}
                                             </div>
                                             {aiResult.issues.map((iss, i) => {
                                                 const issColor = sevColor(iss.severity);
@@ -598,57 +662,15 @@ const CodeView = ({ activeRepo }) => {
                                                                 <button
                                                                     onClick={() => copyToClipboard(iss.fix, `fix-${i}`)}
                                                                     title="Copy fix"
-                                                                    style={{ position:'absolute', top:5, right:5, background:'none', border:'none', cursor:'pointer', color: copiedFix === `fix-${i}` ? THEME.success : THEME.textDim, padding:3 }}
+                                                                    style={{ position:'absolute', top:5, right:5, background:'none', border:'none', cursor:'pointer', color: copiedFix===`fix-${i}` ? THEME.success : THEME.textDim, padding:3 }}
                                                                 >
-                                                                    {copiedFix === `fix-${i}` ? <Check size={11} color={THEME.success}/> : <Copy size={11}/>}
+                                                                    {copiedFix===`fix-${i}` ? <Check size={11} color={THEME.success}/> : <Copy size={11}/>}
                                                                 </button>
                                                             </div>
-                                                        )}
-                                                        {!iss.fix && (
-                                                            <div style={{ fontSize:10, color:THEME.textDim, fontStyle:'italic' }}>No fix provided — click Auto-Fix All to generate fixes.</div>
                                                         )}
                                                     </div>
                                                 );
                                             })}
-
-                                            {/* Auto-Fix Result */}
-                                            {(fixedCode || fixError) && (
-                                                <div style={{ marginTop:12, borderRadius:10, border:`1px solid ${fixError ? THEME.danger : THEME.success}40`, overflow:'hidden' }}>
-                                                    <div style={{ padding:'8px 14px', background: fixError ? `${THEME.danger}10` : `${THEME.success}12`, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
-                                                        <span style={{ fontSize:11, fontWeight:700, color: fixError ? THEME.danger : THEME.success, display:'flex', alignItems:'center', gap:6 }}>
-                                                            {fixError ? <><AlertTriangle size={11}/> Fix Failed</> : <><CheckCircle size={11}/> Fixed Code Ready</>}
-                                                        </span>
-                                                        {fixedCode && (
-                                                            <div style={{ display:'flex', gap:6 }}>
-                                                                <button
-                                                                    onClick={() => copyToClipboard(fixedCode, 'autofix')}
-                                                                    className="r8-btn r8-btn-sm"
-                                                                    style={{ background:`${THEME.success}18`, border:`1px solid ${THEME.success}40`, color:THEME.success, padding:'3px 10px', fontSize:10 }}
-                                                                >
-                                                                    {copiedFix === 'autofix' ? <><Check size={10}/> Copied!</> : <><Copy size={10}/> Copy</>}
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setFileContent(fixedCode);
-                                                                        setFixedCode(null);
-                                                                        aiEngine.reset();
-                                                                    }}
-                                                                    className="r8-btn r8-btn-sm"
-                                                                    style={{ background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, border:'none', color:'#fff', padding:'3px 12px', fontSize:10, fontWeight:700, boxShadow:`0 2px 8px ${THEME.success}40` }}
-                                                                >
-                                                                    <Save size={10}/> Apply to Editor
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {fixError && <div style={{ padding:10, fontSize:11, color:THEME.danger }}>{fixError}</div>}
-                                                    {fixedCode && (
-                                                        <pre className="r8-scroll" style={{ margin:0, padding:'12px 14px', fontSize:10, fontFamily:'monospace', color:THEME.textMuted, background:`${THEME.bg}90`, maxHeight:240, overflowY:'auto', whiteSpace:'pre-wrap', lineHeight:1.6 }}>
-                                                            {fixedCode}
-                                                        </pre>
-                                                    )}
-                                                </div>
-                                            )}
                                         </div>
                                     )}
 
