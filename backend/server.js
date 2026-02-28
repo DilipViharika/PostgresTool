@@ -2475,40 +2475,56 @@ app.get('/api/alerts/recent', authenticate, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AI PROXY (Anthropic — keeps API key server-side)
+// AI PROXY (Google Gemini — free tier, keeps API key server-side)
+// Get a free key at https://aistudio.google.com/apikey
 // ─────────────────────────────────────────────────────────────────────────────
 
 app.post('/api/ai/chat', authenticate, async (req, res) => {
-    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-    if (!ANTHROPIC_API_KEY) {
-        return res.status(503).json({ error: 'AI features not configured. Set ANTHROPIC_API_KEY on the server.' });
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+        return res.status(503).json({ error: 'AI features not configured.' });
     }
     try {
-        const { model, max_tokens, messages, system } = req.body || {};
+        const { messages, system, max_tokens } = req.body || {};
         if (!messages || !Array.isArray(messages)) {
             return res.status(400).json({ error: 'messages array is required' });
         }
-        const payload = {
-            model: model || 'claude-sonnet-4-20250514',
-            max_tokens: Math.min(max_tokens || 1000, 8000),
-            messages,
-        };
-        if (system) payload.system = system;
 
-        const upstream = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': ANTHROPIC_API_KEY,
-                'anthropic-version': '2023-06-01',
-            },
-            body: JSON.stringify(payload),
+        // Build Gemini contents array.
+        // If a system prompt is provided, inject it as the opening user/model exchange.
+        const contents = [];
+        if (system) {
+            contents.push(
+                { role: 'user',  parts: [{ text: system }] },
+                { role: 'model', parts: [{ text: 'Understood. I will follow those instructions.' }] }
+            );
+        }
+        messages.forEach(m => {
+            contents.push({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: m.content }],
+            });
         });
+
+        const upstream = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents,
+                    generationConfig: { maxOutputTokens: Math.min(max_tokens || 2000, 8192) },
+                }),
+            }
+        );
         const data = await upstream.json();
         if (!upstream.ok) {
             return res.status(upstream.status).json({ error: data.error?.message || 'AI request failed' });
         }
-        res.json(data);
+
+        // Normalise to the same shape the frontend already expects: { content: [{ text }] }
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        res.json({ content: [{ text }] });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
