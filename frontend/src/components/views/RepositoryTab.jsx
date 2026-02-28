@@ -26,7 +26,7 @@ const useAIAnalysis = () => {
 
     const callClaude = async (system, prompt) => {
         const data = await postData('/api/ai/chat', {
-            max_tokens: 3000,
+            max_tokens: 4000,
             system,
             messages: [{ role: 'user', content: prompt }],
         });
@@ -41,31 +41,59 @@ const useAIAnalysis = () => {
         return JSON.parse(jsonMatch[0]);
     };
 
+    const autoFix = async ({ filename, code, issues }) => {
+        if (!code.trim() || !issues?.length) return null;
+        const issuesList = issues.map((iss, i) =>
+            `${i + 1}. [${iss.severity?.toUpperCase()}] Line ${iss.line || '?'}: ${iss.title} — ${iss.description}`
+        ).join('\n');
+
+        const data = await postData('/api/ai/chat', {
+            max_tokens: 6000,
+            system: 'You are an expert software engineer. When given code and a list of issues, return ONLY the fully corrected code with no explanation, no markdown fences, no commentary — just the raw fixed code.',
+            messages: [{
+                role: 'user',
+                content: `Fix ALL of the following issues in the file '${filename}'.\n\nISSUES TO FIX:\n${issuesList}\n\nORIGINAL CODE:\n${code.substring(0, 18000)}\n\nReturn ONLY the corrected code. No explanations. No markdown. Just the fixed code.`
+            }],
+        });
+        const raw = data.content?.map(b => b.text || '').join('') || '';
+        // Strip any accidental markdown fences
+        return raw.replace(/^```[\w]*\n?/m, '').replace(/\n?```$/m, '').trim();
+    };
+
     const analyze = async ({ filename, code, repoName }) => {
         if (!code.trim()) return;
         setLoading(true); setError(null); setMode('file'); setResult(null);
         try {
-            const system = 'You are an elite Staff Software Engineer and Security Auditor. Respond ONLY with valid, raw JSON — no markdown, no extra text.';
+            const system = 'You are an elite Staff Software Engineer and Security Auditor. You MUST respond ONLY with a single valid raw JSON object. No markdown, no code fences, no prose before or after — just the JSON object starting with { and ending with }.';
             const prompt = `Perform a deep analysis on the following code from file '${filename}' in repo '${repoName}'.
 
 Code:
-\`\`\`
-${code.substring(0, 15000)}
-\`\`\`
+${code.substring(0, 12000)}
 
-Return EXACTLY this JSON structure (no extra keys, no markdown):
+IMPORTANT: The "fix" field in each issue MUST contain the actual corrected code snippet or exact SQL/command to resolve the problem — not a vague description.
+
+Return EXACTLY this JSON object (raw JSON only, no markdown fences, no extra text):
 {
   "healthScore": <0-100 number>,
-  "summary": "<1-2 sentence executive summary of the file's purpose and quality>",
+  "summary": "<1-2 sentence executive summary>",
   "language": "<detected language>",
   "linesAnalyzed": <number>,
   "complexityMetrics": { "cyclomaticComplexity": "<Low|Medium|High>", "coupling": "<Low|Medium|High>", "testability": "<Good|Fair|Poor>" },
   "strengths": ["<strength 1>", "<strength 2>"],
-  "issues": [ { "line": <approximate line number or null>, "title": "<issue>", "severity": "<critical|high|medium|low>", "type": "<Bug|Style|Typo>", "description": "<details>", "fix": "<how to fix>" } ],
+  "issues": [
+    {
+      "line": <line number or null>,
+      "title": "<short issue title>",
+      "severity": "<critical|high|medium|low>",
+      "type": "<Bug|Security|Performance|Style>",
+      "description": "<what is wrong and why it matters>",
+      "fix": "<the actual corrected code or exact command to fix this — must be concrete, not vague>"
+    }
+  ],
   "securityFlags": [ { "title": "<vuln>", "severity": "<critical|high|medium|low>", "description": "<details>" } ],
-  "performanceInsights": [ { "title": "<issue>", "impact": "<high|medium|low>", "suggestion": "<details>" } ],
+  "performanceInsights": [ { "title": "<issue>", "impact": "<high|medium|low>", "suggestion": "<concrete suggestion with example if possible>" } ],
   "refactorOpportunities": [ { "title": "<opportunity>", "effort": "<high|medium|low>", "impact": "<high|medium|low>", "description": "<details>" } ],
-  "aiRecommendations": [ { "priority": <1-5 number>, "title": "<rec>", "rationale": "<why>" } ]
+  "aiRecommendations": [ { "priority": <1-5>, "title": "<rec>", "rationale": "<why>" } ]
 }`;
 
             const aiData = await callClaude(system, prompt);
@@ -114,7 +142,7 @@ Return EXACTLY this JSON structure (no extra keys, no markdown):
         }
     };
 
-    return { loading, result, error, mode, analyze, analyzeRepo, reset: () => { setResult(null); setError(null); } };
+    return { loading, result, error, mode, analyze, analyzeRepo, autoFix, reset: () => { setResult(null); setError(null); } };
 };
 
 
@@ -356,6 +384,34 @@ const CodeView = ({ activeRepo }) => {
     const lines = fileContent.split('\n');
     const aiResult = aiEngine.result;
 
+    const [fixedCode, setFixedCode] = useState(null);
+    const [fixLoading, setFixLoading] = useState(false);
+    const [fixError, setFixError] = useState(null);
+    const [copiedFix, setCopiedFix] = useState(null);
+
+    const copyToClipboard = (text, key) => {
+        navigator.clipboard?.writeText(text).catch(() => {});
+        setCopiedFix(key);
+        setTimeout(() => setCopiedFix(null), 2000);
+    };
+
+    const runAutoFix = useCallback(async () => {
+        if (!fileContent || !aiResult?.issues?.length) return;
+        setFixLoading(true); setFixError(null); setFixedCode(null);
+        try {
+            const fixed = await aiEngine.autoFix({
+                filename: selNode?.name || 'file',
+                code: fileContent,
+                issues: aiResult.issues,
+            });
+            setFixedCode(fixed);
+        } catch (e) {
+            setFixError('Auto-fix failed. Please try again.');
+        } finally {
+            setFixLoading(false);
+        }
+    }, [aiEngine, fileContent, aiResult, selNode]);
+
     const sevColor = s => {
         const key = (s||'').toLowerCase();
         return { critical:THEME.danger, high:THEME.danger, medium:THEME.warning, low:THEME.info }[key] || THEME.textDim;
@@ -511,23 +567,71 @@ const CodeView = ({ activeRepo }) => {
                                     {/* Line-Specific Issues */}
                                     {aiResult.issues?.length > 0 && (
                                         <div>
-                                            <div style={{ fontSize:11, fontWeight:800, color:THEME.textDim, textTransform:'uppercase', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
-                                                <AlertTriangle size={12}/> Critical Findings
+                                            <div style={{ fontSize:11, fontWeight:800, color:THEME.textDim, textTransform:'uppercase', marginBottom:10, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                                                <span style={{ display:'flex', alignItems:'center', gap:6 }}><AlertTriangle size={12}/> Issues Found ({aiResult.issues.length})</span>
+                                                <button
+                                                    onClick={runAutoFix}
+                                                    disabled={fixLoading}
+                                                    className="r8-btn r8-btn-p r8-btn-sm"
+                                                    style={{ fontSize:10, padding:'4px 10px', background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, boxShadow:`0 2px 8px ${THEME.success}30` }}
+                                                >
+                                                    {fixLoading
+                                                        ? <><Loader size={11} style={{ animation:'rSpin 1s linear infinite' }}/> Fixing…</>
+                                                        : <><Wrench size={11}/> Auto-Fix All</>
+                                                    }
+                                                </button>
                                             </div>
-                                            {aiResult.issues.map((iss, i) => (
-                                                <div key={i} style={{ marginBottom:10, padding:12, borderRadius:8, background:`${THEME.danger}08`, border:`1px solid ${THEME.danger}20` }}>
-                                                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-                                                        <span style={{ fontSize:12, fontWeight:700, color:THEME.danger }}>
-                                                            {iss.line ? `Line ${iss.line}: ` : ''}{iss.title}
+                                            {aiResult.issues.map((iss, i) => {
+                                                const issColor = sevColor(iss.severity);
+                                                return (
+                                                    <div key={i} style={{ marginBottom:10, padding:12, borderRadius:8, background:`${issColor}08`, border:`1px solid ${issColor}20` }}>
+                                                        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                                                            <span style={{ fontSize:12, fontWeight:700, color:issColor }}>
+                                                                {iss.line ? `Line ${iss.line}: ` : ''}{iss.title}
+                                                            </span>
+                                                            <RiskBadge risk={iss.severity}/>
+                                                        </div>
+                                                        <div style={{ fontSize:11.5, color:THEME.textDim, lineHeight:1.5, marginBottom:iss.fix ? 8 : 0 }}>{iss.description}</div>
+                                                        {iss.fix && (
+                                                            <div style={{ position:'relative', fontSize:11, color:THEME.success, background:THEME.surface, padding:'7px 36px 7px 10px', borderRadius:6, border:`1px solid ${THEME.glassBorder}`, fontFamily:'monospace', whiteSpace:'pre-wrap', lineHeight:1.5 }}>
+                                                                {iss.fix}
+                                                                <button
+                                                                    onClick={() => copyToClipboard(iss.fix, `fix-${i}`)}
+                                                                    title="Copy fix"
+                                                                    style={{ position:'absolute', top:5, right:5, background:'none', border:'none', cursor:'pointer', color: copiedFix === `fix-${i}` ? THEME.success : THEME.textDim, padding:3 }}
+                                                                >
+                                                                    {copiedFix === `fix-${i}` ? <Check size={11} color={THEME.success}/> : <Copy size={11}/>}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        {!iss.fix && (
+                                                            <div style={{ fontSize:10, color:THEME.textDim, fontStyle:'italic' }}>No fix provided — click Auto-Fix All to generate fixes.</div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {/* Auto-Fix Result */}
+                                            {(fixedCode || fixError) && (
+                                                <div style={{ marginTop:12, borderRadius:10, border:`1px solid ${fixError ? THEME.danger : THEME.success}30`, overflow:'hidden' }}>
+                                                    <div style={{ padding:'8px 14px', background: fixError ? `${THEME.danger}10` : `${THEME.success}10`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                                                        <span style={{ fontSize:11, fontWeight:700, color: fixError ? THEME.danger : THEME.success, display:'flex', alignItems:'center', gap:6 }}>
+                                                            {fixError ? <><AlertTriangle size={11}/> Fix Failed</> : <><CheckCircle size={11}/> Fixed Code Ready</>}
                                                         </span>
-                                                        <RiskBadge risk={iss.severity}/>
+                                                        {fixedCode && (
+                                                            <button onClick={() => copyToClipboard(fixedCode, 'autofix')} className="r8-btn r8-btn-sm" style={{ background:`${THEME.success}20`, border:`1px solid ${THEME.success}40`, color:THEME.success, padding:'3px 10px', fontSize:10 }}>
+                                                                {copiedFix === 'autofix' ? <><Check size={10}/> Copied!</> : <><Copy size={10}/> Copy Fixed Code</>}
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                    <div style={{ fontSize:11.5, color:THEME.textDim, lineHeight:1.5, marginBottom:8 }}>{iss.description}</div>
-                                                    <div style={{ fontSize:11, color:THEME.textMain, background:THEME.surface, padding:'6px 10px', borderRadius:6, border:`1px solid ${THEME.glassBorder}`, fontFamily:'monospace' }}>
-                                                        <span style={{ color:THEME.success, fontWeight:700 }}>Fix: </span>{iss.fix}
-                                                    </div>
+                                                    {fixError && <div style={{ padding:10, fontSize:11, color:THEME.danger }}>{fixError}</div>}
+                                                    {fixedCode && (
+                                                        <pre className="r8-scroll" style={{ margin:0, padding:'12px 14px', fontSize:10, fontFamily:'monospace', color:THEME.textMuted, background:`${THEME.bg}90`, maxHeight:280, overflowY:'auto', whiteSpace:'pre-wrap', lineHeight:1.6 }}>
+                                                            {fixedCode}
+                                                        </pre>
+                                                    )}
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                     )}
 
