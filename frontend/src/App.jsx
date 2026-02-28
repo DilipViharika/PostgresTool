@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
 import { ConnectionProvider, useConnection } from './context/ConnectionContext.jsx';
+import { NavigationContext } from './context/NavigationContext.jsx';
 import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
 
@@ -1893,6 +1894,7 @@ const useWebSocket = (onMessage) => {
    ───────────────────────────────────────────────────────────────── */
 const ConnectionSelector = () => {
     const { connections, activeConnectionId, activeConnection, switchConnection, loading } = useConnection();
+    const { goToTab } = useContext(NavigationContext) || {};
     const [open, setOpen] = useState(false);
     const [switching, setSwitching] = useState(false);
     const ref = useRef(null);
@@ -2056,8 +2058,11 @@ const ConnectionSelector = () => {
                         <span style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono }}>
                             {connections.length} connection{connections.length !== 1 ? 's' : ''} configured
                         </span>
-                        <span style={{ fontSize: 11, color: DS.cyan, fontFamily: DS.fontMono, cursor: 'default' }}>
-                            Manage → Connection Pool tab
+                        <span
+                            onClick={() => { goToTab?.('pool'); setOpen(false); }}
+                            style={{ fontSize: 11, color: DS.cyan, fontFamily: DS.fontMono, cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+                        >
+                            Manage connections →
                         </span>
                     </div>
                 </div>
@@ -2156,6 +2161,7 @@ const DashboardInner = ({ onLogout }) => {
     }, [handleToggleCollapse]);
 
     return (
+        <NavigationContext.Provider value={{ goToTab: handleTabChange }}>
         <div style={{ display: 'flex', height: '100vh', width: '100%', background: DS.bg, color: DS.textPrimary, overflow: 'hidden', fontFamily: DS.fontUI, position: 'relative', zIndex: 1 }}>
             <AppStyles />
             <ChartDefs />
@@ -2274,6 +2280,7 @@ const DashboardInner = ({ onLogout }) => {
             {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} initialSection={activeTab} />}
             {showProfile && <ProfileModal user={profileUser} onClose={() => setShowProfile(false)} onSave={u => setProfileUser(u)} />}
         </div>
+        </NavigationContext.Provider>
     );
 };
 

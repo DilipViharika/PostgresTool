@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { GlassCard, LiveStatusBadge } from '../ui/SharedComponents.jsx';
 import { fetchData } from '../../utils/api';
+import { useConnection } from '../../context/ConnectionContext.jsx';
+import { useNavigation } from '../../context/NavigationContext.jsx';
 
 import {
     Zap, Clock, Database, Activity, Server, HardDrive,
@@ -891,6 +893,192 @@ const VacuumHealthCard = ({ data }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   CONNECTION STATUS BANNER
+   Shows the active DB connection prominently on the Overview and
+   offers an onboarding card when no connections have been added yet.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const ConnectionStatusBanner = () => {
+    const { connections, activeConnection, activeConnectionId, loading, switchConnection } = useConnection();
+    const nav = useNavigation();
+    const [switching, setSwitching] = useState(null);
+    const [dismissed, setDismissed] = useState(false);
+
+    const goToPool = () => nav?.goToTab('pool');
+
+    // ── No connections at all → full onboarding card ──
+    if (!loading && connections.length === 0) {
+        return (
+            <div style={{
+                borderRadius: 16,
+                background: `linear-gradient(135deg, ${THEME.primary}10, ${THEME.secondary || THEME.primary}08)`,
+                border: `1px dashed ${THEME.primary}50`,
+                padding: '28px 32px',
+                display: 'flex', alignItems: 'center', gap: 24,
+            }}>
+                {/* Icon */}
+                <div style={{
+                    width: 64, height: 64, borderRadius: 16, flexShrink: 0,
+                    background: `${THEME.primary}15`,
+                    border: `1px solid ${THEME.primary}30`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                    <Database size={28} color={THEME.primary} />
+                </div>
+                {/* Text */}
+                <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: THEME.textMain, marginBottom: 6 }}>
+                        Connect your first database
+                    </div>
+                    <div style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.6, maxWidth: 520 }}>
+                        VIGIL needs a PostgreSQL connection to show live metrics. Add your host, port, database name and credentials to get started.
+                    </div>
+                    <div style={{ marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {[
+                            { icon: Server,    label: 'Host & Port' },
+                            { icon: Database,  label: 'Database name' },
+                            { icon: Shield,    label: 'Credentials' },
+                            { icon: Lock,      label: 'SSL / SSH optional' },
+                        ].map(({ icon: Icon, label }) => (
+                            <span key={label} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                fontSize: 11, color: THEME.textMuted, fontFamily: 'monospace',
+                                padding: '3px 10px', borderRadius: 20,
+                                background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}25`,
+                            }}>
+                                <Icon size={10} color={THEME.primary} /> {label}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+                {/* CTA */}
+                <button
+                    onClick={goToPool}
+                    style={{
+                        flexShrink: 0, padding: '11px 22px',
+                        background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`,
+                        border: 'none', borderRadius: 10, cursor: 'pointer',
+                        color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.02em',
+                        boxShadow: `0 4px 18px ${THEME.primary}40`,
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        transition: 'transform 0.12s, box-shadow 0.12s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 6px 24px ${THEME.primary}55`; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `0 4px 18px ${THEME.primary}40`; }}
+                >
+                    <Network size={14} /> Add Connection
+                </button>
+            </div>
+        );
+    }
+
+    // ── Has connections → show active connection bar ──
+    if (!activeConnection || dismissed) return null;
+
+    const statusColor = activeConnection.status === 'success' ? THEME.success
+        : activeConnection.status === 'failed' ? THEME.danger
+        : THEME.warning;
+    const connStr = `${activeConnection.host}:${activeConnection.port}/${activeConnection.database}`;
+    const hasMultiple = connections.length > 1;
+
+    return (
+        <div style={{
+            borderRadius: 14,
+            background: THEME.glass,
+            backdropFilter: 'blur(12px)',
+            border: `1px solid ${statusColor}28`,
+            padding: '12px 16px',
+            display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
+        }}>
+            {/* Status dot */}
+            <span style={{
+                width: 9, height: 9, borderRadius: '50%', flexShrink: 0,
+                background: statusColor,
+                boxShadow: `0 0 7px ${statusColor}`,
+                animation: activeConnection.status === 'success' ? 'dotBlink 2.5s ease-in-out infinite' : 'none',
+            }} />
+
+            {/* DB icon */}
+            <Database size={14} color={THEME.primary} style={{ flexShrink: 0 }} />
+
+            {/* Name + connection string */}
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>
+                        {activeConnection.name}
+                    </span>
+                    <span style={{ fontSize: 10, color: statusColor, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        ● {activeConnection.status || 'untested'}
+                    </span>
+                    {activeConnection.ssl && (
+                        <span style={{ fontSize: 10, color: THEME.success, background: `${THEME.success}18`, padding: '1px 7px', borderRadius: 20, fontFamily: 'monospace' }}>SSL</span>
+                    )}
+                    {activeConnection.sshEnabled && (
+                        <span style={{ fontSize: 10, color: '#a78bfa', background: '#a78bfa18', padding: '1px 7px', borderRadius: 20, fontFamily: 'monospace' }}>SSH</span>
+                    )}
+                </div>
+                <span style={{ fontSize: 11, color: THEME.textMuted, fontFamily: 'monospace', marginTop: 2 }}>
+                    {activeConnection.username}@{connStr}
+                </span>
+            </div>
+
+            {/* Switch buttons for other connections */}
+            {hasMultiple && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, color: THEME.textDim, marginRight: 2 }}>Switch:</span>
+                    {connections.filter(c => c.id !== activeConnectionId).slice(0, 3).map(c => (
+                        <button
+                            key={c.id}
+                            onClick={async () => {
+                                setSwitching(c.id);
+                                try { await switchConnection(c.id); } finally { setSwitching(null); }
+                            }}
+                            disabled={switching === c.id}
+                            style={{
+                                padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11,
+                                background: switching === c.id ? `${THEME.primary}20` : `${THEME.primary}12`,
+                                border: `1px solid ${THEME.primary}30`,
+                                color: THEME.primary, fontWeight: 500,
+                                transition: 'all 0.15s', opacity: switching && switching !== c.id ? 0.5 : 1,
+                            }}
+                        >
+                            {switching === c.id ? '…' : c.name}
+                        </button>
+                    ))}
+                    {connections.length > 4 && (
+                        <span style={{ fontSize: 11, color: THEME.textDim }}>+{connections.length - 4} more</span>
+                    )}
+                </div>
+            )}
+
+            {/* Manage link */}
+            <button
+                onClick={goToPool}
+                style={{
+                    flexShrink: 0, padding: '5px 12px', borderRadius: 7, cursor: 'pointer',
+                    background: 'transparent', border: `1px solid ${THEME.border}`,
+                    color: THEME.textMuted, fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
+                    transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = THEME.primary; e.currentTarget.style.color = THEME.primary; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = THEME.border; e.currentTarget.style.color = THEME.textMuted; }}
+            >
+                <Network size={11} /> Manage
+            </button>
+
+            {/* Dismiss */}
+            <button
+                onClick={() => setDismissed(true)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2, flexShrink: 0 }}
+                title="Dismiss"
+            >
+                <X size={13} />
+            </button>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -1061,6 +1249,9 @@ const OverviewTab = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '0 0 48px 0' }}>
             <OvStyles />
+
+            {/* ═══════ Connection Status / Onboarding Banner ═══════ */}
+            <ConnectionStatusBanner />
 
             {/* ═══════ Top Bar ═══════ */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
