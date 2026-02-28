@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { postData } from '../../utils/api.js';
 import {
     Zap, ShieldAlert, Settings, CheckCircle, Copy, Check,
     AlertTriangle, Info, ChevronDown, ChevronRight,
@@ -14,7 +15,8 @@ import {
     LineChart, PieChart, ArrowDown, ArrowUp,
     TriangleAlert, BookOpen, ServerCrash, Workflow,
     Combine, Binary, Scan, ListTree, Hash, Unplug,
-    Fingerprint, ShieldCheck, Orbit, Waypoints, Brain
+    Fingerprint, ShieldCheck, Orbit, Waypoints, Brain,
+    Loader, Lightbulb, ArrowRight, MessageSquare
 } from 'lucide-react';
 
 /* ═══════════ HELPERS ═══════════ */
@@ -315,6 +317,236 @@ const SugCard = ({icon:Ic,title,description,severity,sql,savings,impact,estimate
     </div>);
 };
 
+/* ═══════════ AI ANALYSIS HOOK ═══════════ */
+const useTableAI = () => {
+    const [loading, setLoading] = useState(false);
+    const [result, setResult]   = useState(null);
+    const [error, setError]     = useState(null);
+
+    const analyze = useCallback(async (tableStats, suggestions) => {
+        setLoading(true); setError(null); setResult(null);
+        try {
+            const system = 'You are a senior PostgreSQL DBA and performance engineer. ' +
+                'Respond ONLY with valid raw JSON — no markdown fences, no extra text outside the JSON.';
+
+            const topSugs = suggestions.slice(0, 12).map(s =>
+                `[${s.severity.toUpperCase()}] ${s.title}: ${s.description}${s.savings ? ` (saves ${s.savings})` : ''}`
+            ).join('\n');
+
+            const prompt = `Analyze this PostgreSQL table and provide expert DBA insights.
+
+Table: ${tableStats.tableName}
+Size: ${tableStats.sizeGb} GB  |  Index size: ${tableStats.idxSizeGb} GB  |  Rows: ${tableStats.rowCount}
+Bloat: ${tableStats.bloatPct}%  |  Dead tuples: ${tableStats.deadTuples}
+Cache hit ratio: ${tableStats.cacheHit}%  |  Index usage: ${tableStats.idxRatio.toFixed(1)}%
+Seq scans: ${tableStats.seqScans}  |  Idx scans: ${tableStats.idxScans}
+Last vacuum: ${tableStats.lastVacuum || 'Never'}
+HOT update ratio: ${tableStats.hotRatio != null ? tableStats.hotRatio.toFixed(1) + '%' : 'N/A'}
+Lock waits: ${tableStats.lockWaits ?? 'N/A'}
+Active connections: ${tableStats.connActive ?? 'N/A'}  |  Idle: ${tableStats.connIdle ?? 'N/A'}
+Avg query time: ${tableStats.avgQMs != null ? tableStats.avgQMs + 'ms' : 'N/A'}
+Health score (rule-based): ${tableStats.healthScore}/100
+
+Top identified optimizations:
+${topSugs}
+
+Return EXACTLY this JSON (no extra keys, no markdown):
+{
+  "overallAssessment": "<2-3 sentence executive summary of the table's health, bottlenecks, and urgency>",
+  "healthGrade": "<A|B|C|D|F>",
+  "primaryBottleneck": "<single most impactful root cause right now>",
+  "riskLevel": "<critical|high|medium|low>",
+  "quickWins": [
+    { "title": "<action>", "impact": "<high|medium|low>", "effort": "<minutes|hours|days>", "rationale": "<why this first>" }
+  ],
+  "rootCauses": [
+    { "cause": "<root cause>", "evidence": "<what metric reveals it>", "recommendation": "<specific fix>" }
+  ],
+  "workloadProfile": "<OLTP|OLAP|Mixed|Write-heavy|Read-heavy — inferred from the stats>",
+  "tuningRecommendations": [
+    { "parameter": "<postgresql.conf param or table option>", "currentEstimate": "<likely current value>", "suggestedValue": "<recommended value>", "reason": "<why>" }
+  ],
+  "vacuumStrategy": "<concrete vacuum/autovacuum strategy recommendation for this specific table>",
+  "indexStrategy": "<concrete index recommendation based on scan ratios>",
+  "longTermRisks": ["<risk 1>", "<risk 2>", "<risk 3>"],
+  "estimatedImprovementPct": <0-100 number — estimated query performance improvement if top fixes applied>
+}`;
+
+            const data = await postData('/api/ai/chat', {
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 2000,
+                system,
+                messages: [{ role: 'user', content: prompt }],
+            });
+
+            const raw = data.content?.map(b => b.text || '').join('') || '';
+            const match = raw.match(/\{[\s\S]*\}/);
+            if (!match) throw new Error('AI returned a non-JSON response. Please try again.');
+            setResult(JSON.parse(match[0]));
+        } catch (e) {
+            setError(`AI analysis failed: ${e.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    return { loading, result, error, analyze, reset: () => { setResult(null); setError(null); } };
+};
+
+/* ═══════════ AI RESULT RENDERER ═══════════ */
+const AIAnalysisResult = ({ result, tableName }) => {
+    const gradeColor = g => ({ A: THEME.success, B: THEME.success, C: THEME.warning, D: THEME.danger, F: THEME.danger }[g] || THEME.textDim);
+    const riskColor  = r => ({ critical: '#ff4466', high: THEME.danger, medium: THEME.warning, low: THEME.success }[r] || THEME.textDim);
+    const impactColor = i => ({ high: THEME.danger, medium: THEME.warning, low: THEME.success }[i] || THEME.textDim);
+    const effortColor = e => ({ minutes: THEME.success, hours: THEME.warning, days: THEME.danger }[e] || THEME.textDim);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+
+            {/* Grade + Assessment */}
+            <div style={{ borderRadius: 9, padding: 13, background: `${THEME.primary}04`, border: `1px solid ${THEME.primary}12`, display: 'flex', gap: 13, alignItems: 'flex-start' }}>
+                <div style={{ flexShrink: 0, width: 54, height: 54, borderRadius: 12, background: `${gradeColor(result.healthGrade)}10`, border: `2px solid ${gradeColor(result.healthGrade)}30`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 24, fontWeight: 900, color: gradeColor(result.healthGrade), lineHeight: 1 }}>{result.healthGrade}</span>
+                    <span style={{ fontSize: 7, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em' }}>Grade</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.textMain }}>AI Assessment</span>
+                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 3, background: `${riskColor(result.riskLevel)}10`, color: riskColor(result.riskLevel), border: `1px solid ${riskColor(result.riskLevel)}20`, textTransform: 'uppercase' }}>{result.riskLevel} risk</span>
+                        <span style={{ fontSize: 8, fontWeight: 600, padding: '2px 6px', borderRadius: 3, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18` }}>{result.workloadProfile}</span>
+                    </div>
+                    <p style={{ fontSize: 10.5, color: THEME.textMuted, lineHeight: 1.55, margin: 0 }}>{result.overallAssessment}</p>
+                    {result.estimatedImprovementPct > 0 && (
+                        <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <TrendingUp size={9} color={THEME.success} />
+                            <span style={{ fontSize: 9.5, color: THEME.success, fontWeight: 700 }}>Up to {result.estimatedImprovementPct}% query performance improvement if top fixes applied</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Primary Bottleneck */}
+            {result.primaryBottleneck && (
+                <div style={{ borderRadius: 9, padding: 11, background: `${THEME.danger}04`, border: `1px solid ${THEME.danger}14`, display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+                    <Crosshair size={13} color={THEME.danger} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.danger, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 3 }}>Primary Bottleneck</div>
+                        <div style={{ fontSize: 10.5, color: THEME.textMain, lineHeight: 1.5 }}>{result.primaryBottleneck}</div>
+                    </div>
+                </div>
+            )}
+
+            {/* Quick Wins */}
+            {result.quickWins?.length > 0 && (
+                <div style={{ borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Zap size={9} color={THEME.warning} />Quick Wins
+                    </div>
+                    {result.quickWins.map((w, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 9, padding: '6px 0', borderBottom: i < result.quickWins.length - 1 ? `1px solid ${THEME.grid}14` : 'none' }}>
+                            <span style={{ fontSize: 9, fontWeight: 800, color: THEME.textDim, width: 14, flexShrink: 0 }}>{i + 1}.</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain }}>{w.title}</span>
+                                    <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3, background: `${impactColor(w.impact)}10`, color: impactColor(w.impact), border: `1px solid ${impactColor(w.impact)}18` }}>{w.impact} impact</span>
+                                    <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3, background: `${effortColor(w.effort)}10`, color: effortColor(w.effort), border: `1px solid ${effortColor(w.effort)}18` }}>{w.effort}</span>
+                                </div>
+                                <div style={{ fontSize: 9.5, color: THEME.textDim, lineHeight: 1.4 }}>{w.rationale}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Root Causes */}
+            {result.rootCauses?.length > 0 && (
+                <div style={{ borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Brain size={9} color={THEME.primary} />Root Cause Analysis
+                    </div>
+                    {result.rootCauses.map((rc, i) => (
+                        <div key={i} style={{ padding: '7px 0', borderBottom: i < result.rootCauses.length - 1 ? `1px solid ${THEME.grid}14` : 'none' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                                <ArrowRight size={9} color={THEME.primary} />
+                                <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain }}>{rc.cause}</span>
+                            </div>
+                            <div style={{ paddingLeft: 14 }}>
+                                <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 2 }}>
+                                    <span style={{ fontWeight: 700, color: THEME.info }}>Evidence: </span>{rc.evidence}
+                                </div>
+                                <div style={{ fontSize: 9.5, color: THEME.textMuted }}>
+                                    <span style={{ fontWeight: 700, color: THEME.success }}>Fix: </span>{rc.recommendation}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Vacuum + Index strategy side by side */}
+            <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
+                {result.vacuumStrategy && (
+                    <div style={{ flex: 1, minWidth: 180, borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <Settings size={9} color={THEME.warning} />Vacuum Strategy
+                        </div>
+                        <p style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, margin: 0 }}>{result.vacuumStrategy}</p>
+                    </div>
+                )}
+                {result.indexStrategy && (
+                    <div style={{ flex: 1, minWidth: 180, borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <Layers size={9} color={THEME.info} />Index Strategy
+                        </div>
+                        <p style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, margin: 0 }}>{result.indexStrategy}</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Tuning Recommendations */}
+            {result.tuningRecommendations?.length > 0 && (
+                <div style={{ borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Gauge size={9} color={THEME.primary} />Config Tuning
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: '3px 8px', marginBottom: 4 }}>
+                            {['Parameter', 'Current est.', 'Suggested'].map(h => (
+                                <span key={h} style={{ fontSize: 7.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.04em' }}>{h}</span>
+                            ))}
+                        </div>
+                        {result.tuningRecommendations.map((tr, i) => (
+                            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: '3px 8px', padding: '5px 0', borderTop: `1px solid ${THEME.grid}12` }}>
+                                <span style={{ fontSize: 9.5, fontWeight: 700, color: THEME.primary, fontFamily: THEME.fontMono }}>{tr.parameter}</span>
+                                <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono }}>{tr.currentEstimate}</span>
+                                <span style={{ fontSize: 9, color: THEME.success, fontWeight: 700, fontFamily: THEME.fontMono }}>{tr.suggestedValue}</span>
+                                {tr.reason && (
+                                    <div style={{ gridColumn: '1 / -1', fontSize: 9, color: THEME.textDim, lineHeight: 1.4, paddingBottom: 2 }}>{tr.reason}</div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Long-term Risks */}
+            {result.longTermRisks?.length > 0 && (
+                <div style={{ borderRadius: 9, padding: 11, background: `${THEME.warning}03`, border: `1px solid ${THEME.warning}12` }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <TriangleAlert size={9} color={THEME.warning} />Long-term Risks
+                    </div>
+                    {result.longTermRisks.map((risk, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 7, padding: '3px 0' }}>
+                            <span style={{ fontSize: 8, color: THEME.warning, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>→</span>
+                            <span style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.4 }}>{risk}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 /* ══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════════════ */
@@ -333,6 +565,9 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
     const [severityFilter, setSeverityFilter] = useState('all');
     const [sortBy, setSortBy] = useState('severity');
     const [showResolved, setShowResolved] = useState(true);
+
+    // AI analysis
+    const ai = useTableAI();
 
     const t = table || {};
     const tableName = t.table_name || 'unknown';
@@ -492,6 +727,7 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
         {id:'insights',label:'Insights',icon:LineChart,cnt:null},
         {id:'all',label:'All',icon:Filter,cnt:suggestions.length},
         {id:'script',label:'Script',icon:Terminal,cnt:suggestions.length},
+        {id:'ai',label:'AI',icon:Brain,cnt:null,highlight:true},
     ];
 
     const tabSugs = useMemo(() => {
@@ -534,9 +770,15 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
 
             {/* Tabs */}
             <div className="vsel" style={{display:'flex',gap:3,padding:'9px 16px 0',overflowX:'auto'}}>
-                {tabs.map(tb=>{const on=activeTab===tb.id;return(
-                    <button key={tb.id} onClick={()=>setActiveTab(tb.id)} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'5px 9px',borderRadius:6,border:'none',cursor:'pointer',fontSize:9.5,fontWeight:600,transition:'all .2s',whiteSpace:'nowrap',flexShrink:0,background:on?`linear-gradient(135deg,${THEME.primary},${THEME.secondary})`:THEME.surface,color:on?'#fff':THEME.textMuted,boxShadow:on?`0 2px 8px ${THEME.primary}30`:'none',outline:on?'none':`1px solid ${THEME.grid}40`}}>
-                        <tb.icon size={9}/>{tb.label}{tb.cnt!=null&&tb.cnt>0&&<span style={{fontSize:8,fontWeight:800,padding:'0 4px',borderRadius:5,background:on?'rgba(255,255,255,.2)':`${THEME.primary}10`,color:on?'#fff':THEME.primary}}>{tb.cnt}</span>}
+                {tabs.map(tb=>{const on=activeTab===tb.id;const isAI=tb.id==='ai';return(
+                    <button key={tb.id} onClick={()=>setActiveTab(tb.id)} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'5px 9px',borderRadius:6,border:'none',cursor:'pointer',fontSize:9.5,fontWeight:600,transition:'all .2s',whiteSpace:'nowrap',flexShrink:0,
+                        background: on ? `linear-gradient(135deg,${THEME.primary},${THEME.secondary})` : isAI ? `linear-gradient(135deg,${THEME.primary}18,${THEME.secondary}12)` : THEME.surface,
+                        color: on ? '#fff' : isAI ? THEME.primary : THEME.textMuted,
+                        boxShadow: on ? `0 2px 8px ${THEME.primary}30` : isAI ? `0 0 0 1px ${THEME.primary}30` : 'none',
+                        outline: on || isAI ? 'none' : `1px solid ${THEME.grid}40`}}>
+                        <tb.icon size={9}/>{tb.label}
+                        {isAI && ai.result && !on && <span style={{width:5,height:5,borderRadius:'50%',background:THEME.success,marginLeft:1}}/>}
+                        {tb.cnt!=null&&tb.cnt>0&&<span style={{fontSize:8,fontWeight:800,padding:'0 4px',borderRadius:5,background:on?'rgba(255,255,255,.2)':`${THEME.primary}10`,color:on?'#fff':THEME.primary}}>{tb.cnt}</span>}
                     </button>
                 );})}
             </div>
@@ -612,6 +854,65 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
                     </div>}
                     {tabSugs.length===0?<div style={{textAlign:'center',padding:'26px 0',color:THEME.textDim,fontSize:10.5}}><CheckCircle size={20} color={THEME.success} style={{opacity:.4,display:'block',margin:'0 auto 5px'}}/>{searchQuery?'No matches':'All clear'}</div>
                         :tabSugs.map(s=><SugCard key={s.id} icon={s.icon} title={s.title} description={s.description} severity={s.severity} sql={s.sql} savings={s.savings} impact={s.impact} estimatedTime={s.estimatedTime} prerequisites={s.prerequisites} risks={s.risks} resolved={resolvedOptimizations.has(s.id)} onToggleResolved={()=>resolvedOptimizations.has(s.id)?onUnmarkResolved?.(s.id):onMarkResolved?.(s.id)} defaultOpen={s.severity==='critical'&&tabSugs.indexOf(s)===0}/>)}
+                </div>}
+
+                {/* AI ANALYSIS */}
+                {activeTab==='ai'&&<div className="vfade" style={{display:'flex',flexDirection:'column',gap:11}}>
+
+                    {/* Intro / trigger */}
+                    {!ai.result && !ai.loading && !ai.error && (
+                        <div style={{borderRadius:9,padding:16,background:`${THEME.primary}04`,border:`1px solid ${THEME.primary}14`,textAlign:'center'}}>
+                            <Brain size={28} color={THEME.primary} style={{opacity:.5,margin:'0 auto 8px',display:'block'}}/>
+                            <div style={{fontSize:12,fontWeight:800,color:THEME.textMain,marginBottom:4}}>AI Deep Analysis</div>
+                            <div style={{fontSize:10,color:THEME.textDim,lineHeight:1.6,maxWidth:320,margin:'0 auto 12px'}}>
+                                Send this table's live stats to Claude for expert DBA insights — root cause analysis, workload profiling, config tuning, and prioritised quick wins.
+                            </div>
+                            <div style={{display:'flex',flexWrap:'wrap',gap:5,justifyContent:'center',marginBottom:12}}>
+                                {['Root causes','Workload profile','Config tuning','Quick wins','Long-term risks'].map(f=>(
+                                    <span key={f} style={{fontSize:8.5,padding:'2px 8px',borderRadius:3,background:`${THEME.primary}10`,color:THEME.primary,border:`1px solid ${THEME.primary}18`,fontWeight:600}}>{f}</span>
+                                ))}
+                            </div>
+                            <button onClick={()=>ai.analyze({tableName,sizeGb,idxSizeGb,rowCount,bloatPct,deadTuples,cacheHit,idxRatio,seqScans,idxScans,lastVacuum,hotRatio,lockWaits,connActive,connIdle,avgQMs,healthScore},suggestions)}
+                                style={{display:'inline-flex',alignItems:'center',gap:6,padding:'8px 18px',borderRadius:7,border:'none',cursor:'pointer',fontSize:11,fontWeight:700,background:`linear-gradient(135deg,${THEME.primary},${THEME.secondary})`,color:'#fff',boxShadow:`0 3px 12px ${THEME.primary}30`}}>
+                                <Sparkles size={12}/>Run AI Analysis
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Loading */}
+                    {ai.loading && (
+                        <div style={{borderRadius:9,padding:24,background:`${THEME.primary}04`,border:`1px solid ${THEME.primary}14`,textAlign:'center'}}>
+                            <Loader size={22} color={THEME.primary} style={{margin:'0 auto 10px',display:'block',animation:'relSpin 1s linear infinite'}}/>
+                            <div style={{fontSize:11,fontWeight:700,color:THEME.textMain,marginBottom:3}}>Analysing with Claude…</div>
+                            <div style={{fontSize:9.5,color:THEME.textDim}}>Sending {suggestions.length} optimizations + live stats for expert DBA review</div>
+                        </div>
+                    )}
+
+                    {/* Error */}
+                    {ai.error && !ai.loading && (
+                        <div style={{borderRadius:9,padding:13,background:`${THEME.danger}05`,border:`1px solid ${THEME.danger}14`,display:'flex',gap:9,alignItems:'flex-start'}}>
+                            <AlertTriangle size={14} color={THEME.danger} style={{flexShrink:0,marginTop:1}}/>
+                            <div style={{flex:1}}>
+                                <div style={{fontSize:10.5,fontWeight:700,color:THEME.danger,marginBottom:3}}>Analysis failed</div>
+                                <div style={{fontSize:9.5,color:THEME.textDim,lineHeight:1.4}}>{ai.error}</div>
+                            </div>
+                            <button onClick={()=>{ai.reset();ai.analyze({tableName,sizeGb,idxSizeGb,rowCount,bloatPct,deadTuples,cacheHit,idxRatio,seqScans,idxScans,lastVacuum,hotRatio,lockWaits,connActive,connIdle,avgQMs,healthScore},suggestions)}}
+                                style={{padding:'4px 10px',borderRadius:5,border:`1px solid ${THEME.danger}20`,background:`${THEME.danger}0a`,color:THEME.danger,cursor:'pointer',fontSize:9.5,fontWeight:700,flexShrink:0}}>
+                                Retry
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Result */}
+                    {ai.result && !ai.loading && (
+                        <>
+                            <AIAnalysisResult result={ai.result} tableName={tableName}/>
+                            <button onClick={()=>{ai.reset();}}
+                                style={{alignSelf:'flex-start',display:'inline-flex',alignItems:'center',gap:5,padding:'5px 11px',borderRadius:6,border:`1px solid ${THEME.grid}30`,background:'transparent',cursor:'pointer',fontSize:9.5,fontWeight:600,color:THEME.textDim}}>
+                                <RefreshCw size={9}/>Re-run Analysis
+                            </button>
+                        </>
+                    )}
                 </div>}
 
                 {/* SCRIPT */}
