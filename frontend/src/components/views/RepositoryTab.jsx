@@ -387,12 +387,27 @@ const CodeView = ({ activeRepo }) => {
     const [appliedFixes, setAppliedFixes]   = useState(new Set());
     const [expandedIssue, setExpandedIssue] = useState(null); // issue index shown inline
     const [copiedFix, setCopiedFix]         = useState(null);
+    const editorScrollRef                   = React.useRef(null);
 
     // Reset per-file state when file changes
     React.useEffect(() => {
         setAppliedFixes(new Set());
         setExpandedIssue(null);
     }, [selNode]);
+
+    // Scroll editor to a line number and expand its inline fix panel
+    const goToLine = useCallback((issueIdx, lineNo) => {
+        setExpandedIssue(issueIdx);
+        // Wait one tick for React to render the expanded panel, then scroll
+        setTimeout(() => {
+            const container = editorScrollRef.current;
+            if (!container) return;
+            const target = container.querySelector(`[data-line="${lineNo}"]`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 30);
+    }, []);
 
     // Split lines for the line renderer (derived from fileContent)
     const lines = fileContent.split('\n');
@@ -497,7 +512,7 @@ const CodeView = ({ activeRepo }) => {
                     {fileLoading && <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}><Loader size={24} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/></div>}
 
                     {selNode && !fileLoading && fileContent && (
-                        <div className="r8-scroll" style={{ flex:1, overflowY:'auto', overflowX:'auto', padding:'10px 0', fontFamily: 'monospace', fontSize:12, lineHeight:1.65 }}>
+                        <div ref={editorScrollRef} className="r8-scroll" style={{ flex:1, overflowY:'auto', overflowX:'auto', padding:'10px 0', fontFamily: 'monospace', fontSize:12, lineHeight:1.65 }}>
                             {lines.map((line, i) => {
                                 const lineNo = i + 1;
                                 // find all issues for this line (may be multiple)
@@ -517,6 +532,7 @@ const CodeView = ({ activeRepo }) => {
                                     <React.Fragment key={i}>
                                         {/* Code line */}
                                         <div
+                                            data-line={lineNo}
                                             onClick={() => hasIssue && !allApplied && setExpandedIssue(
                                                 isExpanded ? null : issuesOnLine[0].idx
                                             )}
@@ -705,7 +721,7 @@ const CodeView = ({ activeRepo }) => {
                                                             <div style={{ display:'flex', gap:6 }}>
                                                                 {iss.line && (
                                                                     <button
-                                                                        onClick={() => setExpandedIssue(expandedIssue === i ? null : i)}
+                                                                        onClick={() => goToLine(i, iss.line)}
                                                                         style={{ fontSize:10, padding:'3px 9px', borderRadius:5, border:`1px solid ${issColor}40`, background:`${issColor}10`, color:issColor, cursor:'pointer', fontWeight:600, display:'flex', alignItems:'center', gap:4 }}
                                                                     >
                                                                         <ArrowRight size={10}/> Go to Line {iss.line}
