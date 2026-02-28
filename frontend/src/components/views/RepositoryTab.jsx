@@ -381,15 +381,21 @@ const CodeView = ({ activeRepo }) => {
         setFileLoading(false);
     }, [aiEngine, dirHandle, activeRepo]);
 
-    const lines = fileContent.split('\n');
     const aiResult = aiEngine.result;
 
-    const [originalCode, setOriginalCode]   = useState('');   // pre-fix snapshot for diff
-    const [fixLoading, setFixLoading]       = useState(false);
-    const [fixError, setFixError]           = useState(null);
-    const [fixApplied, setFixApplied]       = useState(false); // banner flag
-    const [fixCount, setFixCount]           = useState(0);
+    // Track which issues have been applied (by index)
+    const [appliedFixes, setAppliedFixes]   = useState(new Set());
+    const [expandedIssue, setExpandedIssue] = useState(null); // issue index shown inline
     const [copiedFix, setCopiedFix]         = useState(null);
+
+    // Reset per-file state when file changes
+    React.useEffect(() => {
+        setAppliedFixes(new Set());
+        setExpandedIssue(null);
+    }, [selNode]);
+
+    // Split lines for the line renderer (derived from fileContent)
+    const lines = fileContent.split('\n');
 
     const copyToClipboard = (text, key) => {
         navigator.clipboard?.writeText(text).catch(() => {});
@@ -397,43 +403,27 @@ const CodeView = ({ activeRepo }) => {
         setTimeout(() => setCopiedFix(null), 2000);
     };
 
-    // Auto-run fix as soon as analysis returns issues
-    const autoFixRef = React.useRef(false);
-    React.useEffect(() => {
-        if (!aiResult?.issues?.length) return;
-        if (autoFixRef.current) return; // only once per file load
-        autoFixRef.current = true;
+    // Apply a single issue's fix: replace lines around the issue line with the fix
+    const applyLineFix = useCallback((issueIdx) => {
+        const issue = aiResult?.issues?.[issueIdx];
+        if (!issue?.fix) return;
+        const lineNo = issue.line; // 1-based
 
-        const run = async () => {
-            setFixLoading(true); setFixError(null); setFixApplied(false);
-            try {
-                const fixed = await aiEngine.autoFix({
-                    filename: selNode?.name || 'file',
-                    code: fileContent,
-                    issues: aiResult.issues,
-                });
-                if (fixed && fixed.trim()) {
-                    setOriginalCode(fileContent);
-                    setFileContent(fixed);
-                    setFixApplied(true);
-                    setFixCount(aiResult.issues.length);
-                }
-            } catch (e) {
-                setFixError('Auto-fix failed. Please try again.');
-            } finally {
-                setFixLoading(false);
+        setFileContent(prev => {
+            const prevLines = prev.split('\n');
+            if (lineNo && lineNo >= 1 && lineNo <= prevLines.length) {
+                // Replace the affected line with the fix lines
+                prevLines.splice(lineNo - 1, 1, ...issue.fix.split('\n'));
+            } else {
+                // No specific line — append a comment with the fix at end
+                prevLines.push('', `// Applied fix: ${issue.title}`, ...issue.fix.split('\n'));
             }
-        };
-        run();
-    }, [aiResult]);
+            return prevLines.join('\n');
+        });
 
-    // Reset autofix flag when a new file is selected
-    React.useEffect(() => {
-        autoFixRef.current = false;
-        setFixApplied(false);
-        setFixError(null);
-        setOriginalCode('');
-    }, [selNode]);
+        setAppliedFixes(prev => new Set([...prev, issueIdx]));
+        setExpandedIssue(null);
+    }, [aiResult]);
 
     const sevColor = s => {
         const key = (s||'').toLowerCase();
@@ -482,41 +472,20 @@ const CodeView = ({ activeRepo }) => {
                     <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
                         <Code size={14} color={THEME.primary}/>
                         <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, fontFamily:'monospace', flex:1 }}>{selNode ? selNode.name : 'No file selected'}</span>
-                        {fixLoading && (
-                            <span style={{ fontSize:10, color:THEME.info, display:'flex', alignItems:'center', gap:5, fontWeight:600 }}>
-                                <Loader size={11} style={{ animation:'rSpin 1s linear infinite' }}/> Applying fixes…
+                        {aiResult?.issues?.length > 0 && (
+                            <span style={{ fontSize:10, color:THEME.textDim }}>
+                                {appliedFixes.size}/{aiResult.issues.length} fixes applied
                             </span>
                         )}
-                        {fixApplied && !fixLoading && (
-                            <span style={{ fontSize:10, color:THEME.success, display:'flex', alignItems:'center', gap:5, fontWeight:700 }}>
-                                <CheckCircle size={11}/> {fixCount} issue{fixCount!==1?'s':''} auto-fixed
-                            </span>
-                        )}
-                        {fixApplied && originalCode && (
-                            <button
-                                onClick={() => { setFileContent(originalCode); setFixApplied(false); setOriginalCode(''); }}
-                                title="Undo auto-fix"
-                                style={{ background:'none', border:`1px solid ${THEME.glassBorder}`, borderRadius:5, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer' }}
-                            >↩ Undo</button>
-                        )}
-                        {fixApplied && (
+                        {selNode && fileContent && (
                             <button
                                 onClick={() => copyToClipboard(fileContent, 'editor')}
-                                title="Copy fixed code"
                                 style={{ background:'none', border:`1px solid ${THEME.glassBorder}`, borderRadius:5, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
                             >
-                                {copiedFix==='editor' ? <Check size={10} color={THEME.success}/> : <Copy size={10}/>}
-                                {copiedFix==='editor' ? 'Copied!' : 'Copy'}
+                                {copiedFix==='editor' ? <><Check size={10} color={THEME.success}/> Copied!</> : <><Copy size={10}/> Copy</>}
                             </button>
                         )}
                     </div>
-
-                    {/* Fix error banner */}
-                    {fixError && (
-                        <div style={{ padding:'7px 16px', background:`${THEME.warning}12`, borderBottom:`1px solid ${THEME.warning}25`, fontSize:11, color:THEME.warning, display:'flex', alignItems:'center', gap:6 }}>
-                            <AlertTriangle size={11}/> {fixError}
-                        </div>
-                    )}
 
                     {!selNode && !fileLoading && (
                         <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:16, color:THEME.textDim }}>
@@ -527,30 +496,112 @@ const CodeView = ({ activeRepo }) => {
 
                     {fileLoading && <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}><Loader size={24} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/></div>}
 
-                    {selNode && !fileLoading && (
-                        <textarea
-                            className="r8-scroll"
-                            value={fileContent}
-                            onChange={e => setFileContent(e.target.value)}
-                            spellCheck={false}
-                            style={{
-                                flex: 1,
-                                resize: 'none',
-                                border: 'none',
-                                outline: 'none',
-                                background: 'transparent',
-                                color: THEME.textMuted,
-                                fontFamily: THEME.fontMono || 'monospace',
-                                fontSize: 12,
-                                lineHeight: 1.65,
-                                padding: '14px 20px',
-                                tabSize: 2,
-                                whiteSpace: 'pre',
-                                overflowWrap: 'normal',
-                                overflowX: 'auto',
-                                minHeight: 0,
-                            }}
-                        />
+                    {selNode && !fileLoading && fileContent && (
+                        <div className="r8-scroll" style={{ flex:1, overflowY:'auto', overflowX:'auto', padding:'10px 0', fontFamily: 'monospace', fontSize:12, lineHeight:1.65 }}>
+                            {lines.map((line, i) => {
+                                const lineNo = i + 1;
+                                // find all issues for this line (may be multiple)
+                                const issuesOnLine = aiResult?.issues
+                                    ?.map((iss, idx) => ({ ...iss, idx }))
+                                    .filter(iss => iss.line === lineNo) || [];
+                                const hasIssue = issuesOnLine.length > 0;
+                                const allApplied = hasIssue && issuesOnLine.every(iss => appliedFixes.has(iss.idx));
+                                const isExpanded = hasIssue && issuesOnLine.some(iss => expandedIssue === iss.idx);
+
+                                const topIssue = issuesOnLine[0];
+                                const issueColor = allApplied ? THEME.success
+                                    : topIssue?.severity === 'critical' || topIssue?.severity === 'high' ? THEME.danger
+                                    : topIssue?.severity === 'medium' ? THEME.warning : THEME.info;
+
+                                return (
+                                    <React.Fragment key={i}>
+                                        {/* Code line */}
+                                        <div
+                                            onClick={() => hasIssue && !allApplied && setExpandedIssue(
+                                                isExpanded ? null : issuesOnLine[0].idx
+                                            )}
+                                            style={{
+                                                display:'flex',
+                                                padding:'0 16px',
+                                                background: allApplied ? `${THEME.success}08`
+                                                    : hasIssue ? `${issueColor}10` : 'transparent',
+                                                borderLeft: allApplied ? `3px solid ${THEME.success}50`
+                                                    : hasIssue ? `3px solid ${issueColor}` : '3px solid transparent',
+                                                cursor: hasIssue && !allApplied ? 'pointer' : 'default',
+                                                minWidth: 0,
+                                            }}
+                                        >
+                                            {/* Line number */}
+                                            <span style={{ width:38, flexShrink:0, color:`${THEME.textDim}50`, userSelect:'none', textAlign:'right', paddingRight:12, fontSize:11 }}>{lineNo}</span>
+
+                                            {/* Code text */}
+                                            <span style={{ flex:1, color: allApplied ? THEME.success : hasIssue ? issueColor : THEME.textMuted, whiteSpace:'pre' }}>{line}</span>
+
+                                            {/* Issue badge */}
+                                            {hasIssue && !allApplied && (
+                                                <span style={{ marginLeft:10, flexShrink:0, fontSize:9, fontWeight:700, color:issueColor, padding:'1px 7px', background:`${issueColor}18`, borderRadius:4, alignSelf:'center', display:'flex', alignItems:'center', gap:4 }}>
+                                                    <AlertTriangle size={9}/> {issuesOnLine.length > 1 ? `${issuesOnLine.length} issues` : topIssue.title}
+                                                    <span style={{ opacity:0.6, fontSize:8 }}>{isExpanded ? '▲' : '▼'}</span>
+                                                </span>
+                                            )}
+                                            {allApplied && (
+                                                <span style={{ marginLeft:10, flexShrink:0, fontSize:9, fontWeight:700, color:THEME.success, padding:'1px 7px', background:`${THEME.success}15`, borderRadius:4, alignSelf:'center', display:'flex', alignItems:'center', gap:3 }}>
+                                                    <CheckCircle size={9}/> Fixed
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Inline fix panel — expands below the issue line */}
+                                        {isExpanded && issuesOnLine.map(iss => !appliedFixes.has(iss.idx) && (
+                                            <div key={iss.idx} style={{ margin:'0 0 2px 41px', background:`${THEME.bg}`, border:`1px solid ${issueColor}30`, borderLeft:`3px solid ${issueColor}`, borderRadius:'0 6px 6px 0', overflow:'hidden' }}>
+                                                {/* Issue header */}
+                                                <div style={{ padding:'7px 12px', background:`${issueColor}10`, display:'flex', alignItems:'center', gap:8 }}>
+                                                    <RiskBadge risk={iss.severity}/>
+                                                    <span style={{ fontSize:11, fontWeight:700, color:issueColor, flex:1 }}>{iss.title}</span>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setExpandedIssue(null); }}
+                                                        style={{ background:'none', border:'none', color:THEME.textDim, cursor:'pointer', padding:2 }}
+                                                    ><X size={11}/></button>
+                                                </div>
+                                                {/* Description */}
+                                                <div style={{ padding:'6px 12px', fontSize:11, color:THEME.textDim, lineHeight:1.5, borderBottom: iss.fix ? `1px solid ${THEME.glassBorder}` : 'none' }}>
+                                                    {iss.description}
+                                                </div>
+                                                {/* Fix */}
+                                                {iss.fix && (
+                                                    <div style={{ padding:'8px 12px' }}>
+                                                        <div style={{ fontSize:10, color:THEME.textDim, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:5 }}>Suggested Fix</div>
+                                                        <div style={{ position:'relative', background:`${THEME.surface}`, border:`1px solid ${THEME.success}30`, borderRadius:5, padding:'7px 70px 7px 10px', fontFamily:'monospace', fontSize:11, color:THEME.success, whiteSpace:'pre-wrap', lineHeight:1.5 }}>
+                                                            {iss.fix}
+                                                            {/* Action buttons */}
+                                                            <div style={{ position:'absolute', top:5, right:5, display:'flex', gap:4 }}>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); copyToClipboard(iss.fix, `fix-${iss.idx}`); }}
+                                                                    title="Copy fix"
+                                                                    style={{ background:`${THEME.glass}`, border:`1px solid ${THEME.glassBorder}`, borderRadius:4, cursor:'pointer', color:copiedFix===`fix-${iss.idx}` ? THEME.success : THEME.textDim, padding:'2px 6px', fontSize:9, display:'flex', alignItems:'center', gap:3 }}
+                                                                >
+                                                                    {copiedFix===`fix-${iss.idx}` ? <Check size={9}/> : <Copy size={9}/>}
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); applyLineFix(iss.idx); }}
+                                                                    title="Apply this fix"
+                                                                    style={{ background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, border:'none', borderRadius:4, cursor:'pointer', color:'#fff', padding:'2px 8px', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', gap:3, boxShadow:`0 2px 6px ${THEME.success}40` }}
+                                                                >
+                                                                    <Check size={9}/> Apply Fix
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {!iss.fix && (
+                                                    <div style={{ padding:'6px 12px 8px', fontSize:10, color:THEME.textDim, fontStyle:'italic' }}>No specific code fix available for this issue.</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
                     )}
                 </div>
 
@@ -627,45 +678,47 @@ const CodeView = ({ activeRepo }) => {
                                         </div>
                                     )}
 
-                                    {/* Line-Specific Issues — fixes already auto-applied to editor */}
+                                    {/* Line-Specific Issues */}
                                     {aiResult.issues?.length > 0 && (
                                         <div>
                                             <div style={{ fontSize:11, fontWeight:800, color:THEME.textDim, textTransform:'uppercase', marginBottom:10, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                                                 <span style={{ display:'flex', alignItems:'center', gap:6 }}>
-                                                    <AlertTriangle size={12}/> Issues Found ({aiResult.issues.length})
+                                                    <AlertTriangle size={12}/> Issues ({appliedFixes.size}/{aiResult.issues.length} fixed)
                                                 </span>
-                                                {fixLoading && (
-                                                    <span style={{ fontSize:10, color:THEME.info, display:'flex', alignItems:'center', gap:5 }}>
-                                                        <Loader size={10} style={{ animation:'rSpin 1s linear infinite' }}/> Applying fixes to editor…
-                                                    </span>
-                                                )}
-                                                {fixApplied && !fixLoading && (
-                                                    <span style={{ fontSize:10, color:THEME.success, display:'flex', alignItems:'center', gap:5 }}>
-                                                        <CheckCircle size={10}/> Applied to editor
-                                                    </span>
-                                                )}
                                             </div>
                                             {aiResult.issues.map((iss, i) => {
                                                 const issColor = sevColor(iss.severity);
+                                                const isApplied = appliedFixes.has(i);
                                                 return (
-                                                    <div key={i} style={{ marginBottom:10, padding:12, borderRadius:8, background:`${issColor}08`, border:`1px solid ${issColor}20` }}>
-                                                        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-                                                            <span style={{ fontSize:12, fontWeight:700, color:issColor }}>
-                                                                {iss.line ? `Line ${iss.line}: ` : ''}{iss.title}
+                                                    <div key={i} style={{ marginBottom:10, padding:12, borderRadius:8, background: isApplied ? `${THEME.success}06` : `${issColor}08`, border:`1px solid ${isApplied ? THEME.success : issColor}25`, opacity: isApplied ? 0.7 : 1, transition:'all .2s' }}>
+                                                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6, gap:6 }}>
+                                                            <span style={{ fontSize:12, fontWeight:700, color: isApplied ? THEME.success : issColor, flex:1 }}>
+                                                                {iss.line ? <span style={{ fontFamily:'monospace', marginRight:4, opacity:0.7 }}>L{iss.line}</span> : null}{iss.title}
                                                             </span>
-                                                            <RiskBadge risk={iss.severity}/>
+                                                            {isApplied
+                                                                ? <span style={{ fontSize:9, fontWeight:700, color:THEME.success, padding:'2px 7px', background:`${THEME.success}18`, borderRadius:4, flexShrink:0, display:'flex', alignItems:'center', gap:3 }}><CheckCircle size={9}/> Fixed</span>
+                                                                : <RiskBadge risk={iss.severity}/>
+                                                            }
                                                         </div>
-                                                        <div style={{ fontSize:11.5, color:THEME.textDim, lineHeight:1.5, marginBottom:iss.fix ? 8 : 0 }}>{iss.description}</div>
-                                                        {iss.fix && (
-                                                            <div style={{ position:'relative', fontSize:11, color:THEME.success, background:THEME.surface, padding:'7px 36px 7px 10px', borderRadius:6, border:`1px solid ${THEME.glassBorder}`, fontFamily:'monospace', whiteSpace:'pre-wrap', lineHeight:1.5 }}>
-                                                                {iss.fix}
-                                                                <button
-                                                                    onClick={() => copyToClipboard(iss.fix, `fix-${i}`)}
-                                                                    title="Copy fix"
-                                                                    style={{ position:'absolute', top:5, right:5, background:'none', border:'none', cursor:'pointer', color: copiedFix===`fix-${i}` ? THEME.success : THEME.textDim, padding:3 }}
-                                                                >
-                                                                    {copiedFix===`fix-${i}` ? <Check size={11} color={THEME.success}/> : <Copy size={11}/>}
-                                                                </button>
+                                                        <div style={{ fontSize:11, color:THEME.textDim, lineHeight:1.5, marginBottom:8 }}>{iss.description}</div>
+                                                        {!isApplied && (
+                                                            <div style={{ display:'flex', gap:6 }}>
+                                                                {iss.line && (
+                                                                    <button
+                                                                        onClick={() => setExpandedIssue(expandedIssue === i ? null : i)}
+                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius:5, border:`1px solid ${issColor}40`, background:`${issColor}10`, color:issColor, cursor:'pointer', fontWeight:600, display:'flex', alignItems:'center', gap:4 }}
+                                                                    >
+                                                                        <ArrowRight size={10}/> Go to Line {iss.line}
+                                                                    </button>
+                                                                )}
+                                                                {iss.fix && (
+                                                                    <button
+                                                                        onClick={() => applyLineFix(i)}
+                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius:5, border:'none', background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, color:'#fff', cursor:'pointer', fontWeight:700, display:'flex', alignItems:'center', gap:4, boxShadow:`0 2px 6px ${THEME.success}30` }}
+                                                                    >
+                                                                        <Wrench size={10}/> Apply Fix
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
