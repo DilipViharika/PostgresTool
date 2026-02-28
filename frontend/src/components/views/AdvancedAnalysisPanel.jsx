@@ -384,7 +384,14 @@ Return EXACTLY this JSON (no extra keys, no markdown):
             if (!match) throw new Error('AI returned a non-JSON response. Please try again.');
             setResult(JSON.parse(match[0]));
         } catch (e) {
-            setError(`AI analysis failed: ${e.message}`);
+            const msg = e.message || '';
+            // Sanitise: never expose API key names or vendor details
+            const clean = msg.includes('not configured') || msg.includes('API key') || msg.includes('503')
+                ? 'AI analysis is not enabled. Ask your administrator to configure the AI key in the backend settings.'
+                : msg.includes('non-JSON')
+                ? 'Received an unexpected response. Please try again.'
+                : `Analysis failed. Please try again.`;
+            setError(clean);
         } finally {
             setLoading(false);
         }
@@ -865,7 +872,7 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
                             <Brain size={28} color={THEME.primary} style={{opacity:.5,margin:'0 auto 8px',display:'block'}}/>
                             <div style={{fontSize:12,fontWeight:800,color:THEME.textMain,marginBottom:4}}>AI Deep Analysis</div>
                             <div style={{fontSize:10,color:THEME.textDim,lineHeight:1.6,maxWidth:320,margin:'0 auto 12px'}}>
-                                Send this table's live stats to Claude for expert DBA insights — root cause analysis, workload profiling, config tuning, and prioritised quick wins.
+                                Send this table's live stats for expert DBA insights — root cause analysis, workload profiling, config tuning, and prioritised quick wins.
                             </div>
                             <div style={{display:'flex',flexWrap:'wrap',gap:5,justifyContent:'center',marginBottom:12}}>
                                 {['Root causes','Workload profile','Config tuning','Quick wins','Long-term risks'].map(f=>(
@@ -883,7 +890,7 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
                     {ai.loading && (
                         <div style={{borderRadius:9,padding:24,background:`${THEME.primary}04`,border:`1px solid ${THEME.primary}14`,textAlign:'center'}}>
                             <Loader size={22} color={THEME.primary} style={{margin:'0 auto 10px',display:'block',animation:'relSpin 1s linear infinite'}}/>
-                            <div style={{fontSize:11,fontWeight:700,color:THEME.textMain,marginBottom:3}}>Analysing with Claude…</div>
+                            <div style={{fontSize:11,fontWeight:700,color:THEME.textMain,marginBottom:3}}>Analysing…</div>
                             <div style={{fontSize:9.5,color:THEME.textDim}}>Sending {suggestions.length} optimizations + live stats for expert DBA review</div>
                         </div>
                     )}

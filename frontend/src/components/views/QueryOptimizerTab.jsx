@@ -828,7 +828,10 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
             }, 12);
 
         } catch (err) {
-            setError('AI rewrite failed: ' + err.message);
+            const m = err.message || '';
+            setError(m.includes('not configured') || m.includes('503') || m.includes('API key')
+                ? 'AI rewrite is not enabled. Ask your administrator to configure the AI key in the backend settings.'
+                : 'Rewrite failed. Please try again.');
             setLoading(false);
         }
     };
@@ -845,8 +848,8 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                         <Wand2 size={15} color={THEME.primary} />
                     </div>
                     <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>AI Query Rewriter</div>
-                        <div style={{ fontSize: 10, color: THEME.textDim }}>Claude analyzes anti-patterns and generates an optimized query</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>Smart Query Rewriter</div>
+                        <div style={{ fontSize: 10, color: THEME.textDim }}>Analyzes anti-patterns and generates an optimized query</div>
                     </div>
                     <button onClick={generateRewrite} disabled={loading || !query.trim()} className="opt-btn"
                             style={{ marginLeft: 'auto', padding: '7px 16px', borderRadius: 6, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary || THEME.primary})`, color: '#fff', fontSize: 11, fontWeight: 600, cursor: loading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, opacity: (loading || !query.trim()) ? 0.6 : 1, boxShadow: `0 3px 12px ${THEME.primary}40` }}>
@@ -872,7 +875,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: 8, background: `${THEME.primary}08`, border: `1px solid ${THEME.primary}20` }}>
                             <RefreshCw size={14} color={THEME.primary} style={{ animation: 'optSpin 1s linear infinite', flexShrink: 0 }} />
                             <div>
-                                <div style={{ fontSize: 11, fontWeight: 600, color: THEME.primary }}>Claude is analyzing your query…</div>
+                                <div style={{ fontSize: 11, fontWeight: 600, color: THEME.primary }}>Analyzing your query…</div>
                                 <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>Detecting anti-patterns, checking join strategies, evaluating index opportunities</div>
                             </div>
                         </div>
@@ -904,9 +907,9 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                         <div style={{ width: 64, height: 64, borderRadius: 16, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                             <Wand2 size={28} color={THEME.primary} opacity={0.6} />
                         </div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: THEME.textMain, marginBottom: 6 }}>AI-Powered Query Optimization</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: THEME.textMain, marginBottom: 6 }}>Smart Query Optimization</div>
                         <div style={{ fontSize: 11, lineHeight: 1.6, maxWidth: 320, color: THEME.textMuted }}>
-                            Claude will analyze your query, detect anti-patterns like missing indexes, bad join strategies, and inefficient subqueries, then generate an optimized rewrite with explanations.
+                            Paste a query on the left, then click Rewrite. The optimizer detects anti-patterns like missing indexes, bad join strategies, and inefficient subqueries, then generates an optimized rewrite with explanations.
                         </div>
                         <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
                             {['Detects anti-patterns', 'Suggests indexes', 'Rewrites joins', 'Estimates improvements'].map(f => (

@@ -70,7 +70,10 @@ Return EXACTLY this JSON structure (no extra keys, no markdown):
             const aiData = await callClaude(system, prompt);
             setResult(aiData);
         } catch (e) {
-            setError(`Analysis failed: ${e.message}`);
+            const m = e.message || '';
+            setError(m.includes('not configured') || m.includes('503') || m.includes('API key')
+                ? 'AI analysis is not enabled. Ask your administrator to configure the AI key in the backend settings.'
+                : 'Analysis failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -101,7 +104,10 @@ Return EXACTLY this JSON structure (no extra keys, no markdown):
             const aiData = await callClaude(system, prompt);
             setResult(aiData);
         } catch (e) {
-            setError(`Repo Analysis failed: ${e.message}`);
+            const m = e.message || '';
+            setError(m.includes('not configured') || m.includes('503') || m.includes('API key')
+                ? 'AI analysis is not enabled. Ask your administrator to configure the AI key in the backend settings.'
+                : 'Analysis failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -453,9 +459,9 @@ const CodeView = ({ activeRepo }) => {
                                         <AlertTriangle size={13}/> Analysis Error
                                     </div>
                                     {aiEngine.error}
-                                    {aiEngine.error.includes('not configured') && (
+                                    {aiEngine.error.includes('not enabled') && (
                                         <div style={{ marginTop:10, padding:10, background:`${THEME.surface}`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
-                                            <b style={{ color:THEME.warning }}>Fix:</b> Add <code>ANTHROPIC_API_KEY=sk-ant-...</code> to your backend <code>.env</code> file and redeploy.
+                                            <b style={{ color:THEME.warning }}>Fix:</b> Add your AI API key to the backend <code>.env</code> file and redeploy.
                                         </div>
                                     )}
                                 </div>
@@ -624,9 +630,9 @@ const InsightsView = ({ activeRepo }) => {
                             <AlertTriangle size={13}/> Analysis Error
                         </div>
                         {ai.error}
-                        {ai.error.includes('not configured') && (
+                        {ai.error.includes('not enabled') && (
                             <div style={{ marginTop:10, padding:10, background:`rgba(0,0,0,.2)`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
-                                <b style={{ color:THEME.warning }}>Fix:</b> Add <code>ANTHROPIC_API_KEY=sk-ant-...</code> to your backend <code>.env</code> file and redeploy.
+                                <b style={{ color:THEME.warning }}>Fix:</b> Add your AI API key to the backend <code>.env</code> file and redeploy.
                             </div>
                         )}
                     </div>
