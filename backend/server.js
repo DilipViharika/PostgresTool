@@ -2475,13 +2475,13 @@ app.get('/api/alerts/recent', authenticate, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AI PROXY (Google Gemini — free tier, keeps API key server-side)
-// Get a free key at https://aistudio.google.com/apikey
+// AI PROXY (Groq — free tier, OpenAI-compatible, keeps API key server-side)
+// Get a free key at https://console.groq.com → API Keys → Create API Key
 // ─────────────────────────────────────────────────────────────────────────────
 
 app.post('/api/ai/chat', authenticate, async (req, res) => {
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
+    const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    if (!GROQ_API_KEY) {
         return res.status(503).json({ error: 'AI features not configured.' });
     }
     try {
@@ -2490,40 +2490,31 @@ app.post('/api/ai/chat', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'messages array is required' });
         }
 
-        // Build Gemini contents array.
-        // If a system prompt is provided, inject it as the opening user/model exchange.
-        const contents = [];
-        if (system) {
-            contents.push(
-                { role: 'user',  parts: [{ text: system }] },
-                { role: 'model', parts: [{ text: 'Understood. I will follow those instructions.' }] }
-            );
-        }
-        messages.forEach(m => {
-            contents.push({
-                role: m.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: m.content }],
-            });
-        });
+        // Groq uses the OpenAI chat format.
+        // Prepend system prompt as a system-role message if provided.
+        const groqMessages = [];
+        if (system) groqMessages.push({ role: 'system', content: system });
+        messages.forEach(m => groqMessages.push({ role: m.role, content: m.content }));
 
-        const upstream = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents,
-                    generationConfig: { maxOutputTokens: Math.min(max_tokens || 2000, 8192) },
-                }),
-            }
-        );
+        const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: groqMessages,
+                max_tokens: Math.min(max_tokens || 2000, 8000),
+            }),
+        });
         const data = await upstream.json();
         if (!upstream.ok) {
             return res.status(upstream.status).json({ error: data.error?.message || 'AI request failed' });
         }
 
         // Normalise to the same shape the frontend already expects: { content: [{ text }] }
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const text = data.choices?.[0]?.message?.content || '';
         res.json({ content: [{ text }] });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
