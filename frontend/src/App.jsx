@@ -21,7 +21,7 @@ const SqlConsoleTab        = lazy(() => import('./components/views/SqlConsoleTab
 const ApiQueriesTab        = lazy(() => import('./components/views/ApiQueriesTab.jsx'));
 const UserManagementTab    = lazy(() => import('./usermanagement/UserManagementTab.jsx'));
 const RepositoryTab        = lazy(() => import('./components/views/RepositoryTab.jsx'));
-const AlertsComponent      = lazy(() => import('./components/AlertsComponent'));
+const AlertsComponent      = lazy(() => import('./components/views/AlertsTab.jsx'));
 const QueryOptimizerTab    = lazy(() => import('./components/views/QueryOptimizerTab.jsx'));
 const ConnectionPoolTab    = lazy(() => import('./components/views/ConnectionPoolTab.jsx'));
 const SchemaVersioningTab  = lazy(() => import('./components/views/SchemaVersioningTab.jsx'));

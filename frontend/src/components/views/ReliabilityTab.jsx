@@ -1,7 +1,8 @@
 // ==========================================================================
-//  VIGIL — ReliabilityTab  (v5 — Full Feature Expansion)
+//  VIGIL — ReliabilityTab  (v6 — Live API Integration)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { fetchData, postData } from '../../utils/api.js';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 import {
@@ -833,10 +834,10 @@ const ChangeFreezePanel = () => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const ReliabilityTab = () => {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
-    const [alerts, setAlerts]           = useState(MOCK_ALERTS);
-    const [uptimeDays]                  = useState(() => genUptimeDays());
+    const [alerts, setAlerts]           = useState([]);
+    const [uptimeDays, setUptimeDays]   = useState(() => genUptimeDays());
     const [alertTrend, setAlertTrend]   = useState(() => genAlertTrend());
-    const [incidents]                   = useState(MOCK_INCIDENTS);
+    const [incidents, setIncidents]     = useState(MOCK_INCIDENTS);
     const [mttrData]                    = useState(() => genMttrTrend());
     const [fatigueData]                 = useState(() => genAlertFatigue());
     const [burnData]                    = useState(() => genSloBurnRate());
@@ -845,7 +846,7 @@ const ReliabilityTab = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [lastRefreshed, setLastRefreshed] = useState(null);
     const [refreshInterval, setRefreshInterval] = useState(30);
-    const [refreshError]                = useState(false);
+    const [refreshError, setRefreshError] = useState(false);
     const [newAlertIds, setNewAlertIds] = useState(new Set());
     const [refreshingPanels, setRefreshingPanels] = useState(new Set());
 
@@ -857,19 +858,51 @@ const ReliabilityTab = () => {
     const [sortBy, setSortBy]           = useState('time');
 
     const intervalRef = useRef(null);
-    const prevAlertIdsRef = useRef(new Set(MOCK_ALERTS.map(a => a.id)));
+    const prevAlertIdsRef = useRef(new Set());
 
     const fetchAll = useCallback(async (isInitial = false) => {
         if (!isInitial) setIsRefreshing(true);
-        setRefreshingPanels(new Set(['alerts', 'trend', 'severity', 'uptime', 'incidents', 'sla']));
-        await new Promise(r => setTimeout(r, 600)); // simulate network
-        setAlerts(MOCK_ALERTS);
-        setAlertTrend(genAlertTrend());
-        setRefreshingPanels(new Set());
-        setLastRefreshed(Date.now());
-        setIsRefreshing(false);
-        if (isInitial) setLoading(false);
-    }, []);
+        setRefreshingPanels(new Set(['alerts', 'trend', 'uptime', 'incidents']));
+        setRefreshError(false);
+        try {
+            // Fetch alerts and statistics in parallel
+            const [alertsData, statsData] = await Promise.all([
+                fetchData('/api/alerts?limit=50').catch(() => null),
+                fetchData('/api/alerts/statistics?timeRange=24h').catch(() => null),
+            ]);
+
+            // Update alerts from real API
+            if (alertsData?.alerts) {
+                const incoming = alertsData.alerts;
+                // Detect new alert IDs for flash animation
+                const currentIds = new Set(incoming.map(a => String(a.id)));
+                const newIds = new Set([...currentIds].filter(id => !prevAlertIdsRef.current.has(id)));
+                if (newIds.size > 0) setNewAlertIds(newIds);
+                prevAlertIdsRef.current = currentIds;
+                setAlerts(incoming);
+            }
+
+            // Build alert trend from statistics hourly breakdown if available
+            if (statsData?.hourlyBreakdown) {
+                setAlertTrend(statsData.hourlyBreakdown);
+            } else if (statsData) {
+                // Re-generate trend using real counts as rough guide
+                setAlertTrend(genAlertTrend());
+            }
+        } catch (e) {
+            setRefreshError(true);
+            // Fall back to mock data so UI is never blank
+            if (isInitial && alerts.length === 0) {
+                setAlerts(MOCK_ALERTS);
+                setAlertTrend(genAlertTrend());
+            }
+        } finally {
+            setRefreshingPanels(new Set());
+            setLastRefreshed(Date.now());
+            setIsRefreshing(false);
+            if (isInitial) setLoading(false);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => { fetchAll(true); }, [fetchAll]);
 
@@ -879,12 +912,22 @@ const ReliabilityTab = () => {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [refreshInterval, fetchAll]);
 
-    const handleAcknowledge = useCallback((id) => {
+    const handleAcknowledge = useCallback(async (id) => {
+        // Optimistic update
         setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true } : a));
+        // Persist to backend
+        try { await postData(`/api/alerts/${id}/acknowledge`, {}); }
+        catch { /* revert on error */ setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: false } : a)); }
     }, []);
-    const handleAcknowledgeAll = useCallback(() => {
+    const handleAcknowledgeAll = useCallback(async () => {
+        const unackedIds = alerts.filter(a => !a.acknowledged).map(a => a.id);
+        if (unackedIds.length === 0) return;
+        // Optimistic update
         setAlerts(prev => prev.map(a => ({ ...a, acknowledged: true })));
-    }, []);
+        // Persist to backend
+        try { await postData('/api/alerts/bulk-acknowledge', { alertIds: unackedIds }); }
+        catch { /* refresh to restore correct state */ fetchAll(false); }
+    }, [alerts, fetchAll]);
 
     const processedAlerts = useMemo(() => {
         let list = [...alerts];

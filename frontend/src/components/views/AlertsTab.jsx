@@ -10,7 +10,8 @@ import {
   Download, Upload, Moon, Sun, SlidersHorizontal, MessageSquare,
   Users, AtSign, Send, Lock, GitMerge, CheckCircle, XCircle
 } from 'lucide-react';
-import { THEME, useAdaptiveTheme } from '../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { fetchData, postData } from '../../utils/api.js';
 
 /* ─────────────────────────────────────────────────────────────────
    VIGIL v3 – Advanced Monitoring & Alert Intelligence Platform
@@ -270,6 +271,8 @@ const VIGILDashboard = () => {
   const [maintenanceMode, setMaintenanceMode]   = useState(false);
   const [soundEnabled, setSoundEnabled]         = useState(true);
   const [alerts, setAlerts]                     = useState(MOCK_ALERTS);
+  const [alertsLoading, setAlertsLoading]       = useState(true);
+  const [alertsRefreshing, setAlertsRefreshing] = useState(false);
   const [alertRules, setAlertRules]             = useState(MOCK_RULES);
   const [history]                               = useState(MOCK_HISTORY);
   const [liveMetrics]                           = useState(LIVE_METRICS);
@@ -284,6 +287,40 @@ const VIGILDashboard = () => {
   const [suppressionWindows, setSuppressionWindows] = useState(MOCK_SUPPRESSION);
   const [simState, setSimState]                 = useState({ rule: 'rule-001', running: false, result: null });
   const [newRule, setNewRule]                   = useState({ name: '', metric: 'cpu_usage', condition: 'gt', threshold: 80, duration: 5, severity: 'warning', channels: { email: true, slack: false, pagerduty: false }, category: 'performance', description: '' });
+
+  // ── Live alerts fetch ──────────────────────────────────────────
+  const loadAlerts = useCallback(async (quiet = false) => {
+    if (!quiet) setAlertsLoading(true); else setAlertsRefreshing(true);
+    try {
+      const data = await fetchData('/api/alerts?limit=100');
+      if (data?.alerts?.length) {
+        // Merge: preserve UI-only fields (comments, impactRadius, pendingApproval)
+        setAlerts(prev => {
+          const prevMap = Object.fromEntries(prev.map(a => [String(a.id), a]));
+          return data.alerts.map(a => ({
+            ...a,
+            // keep local enrichment if available
+            comments: prevMap[String(a.id)]?.comments ?? [],
+            impactRadius: prevMap[String(a.id)]?.impactRadius ?? null,
+            pendingApproval: prevMap[String(a.id)]?.pendingApproval ?? null,
+          }));
+        });
+      }
+    } catch {
+      // Keep existing state (mock data already populated) on network error
+    } finally {
+      setAlertsLoading(false);
+      setAlertsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => { loadAlerts(false); }, [loadAlerts]);
+
+  // Refresh alerts on a 30s interval
+  useEffect(() => {
+    const t = setInterval(() => loadAlerts(true), 30_000);
+    return () => clearInterval(t);
+  }, [loadAlerts]);
 
   useEffect(() => {
     const t = setInterval(() => setTickCount(c => c + 1), 10000);
@@ -316,16 +353,20 @@ const VIGILDashboard = () => {
       history.filter(h => !histFilter || h.message.toLowerCase().includes(histFilter.toLowerCase())), [history, histFilter]);
 
   // Actions
-  const acknowledgeAlert = (id) => {
+  const acknowledgeAlert = async (id) => {
     const alert = alerts.find(a => a.id === id);
     if (alert?.severity === 'critical' && !approvalState[id]) {
       setApprovalState(prev => ({ ...prev, [id]: { status: 'pending', requestedBy: 'you', requestedAt: Date.now() } }));
       showToast('Approval request sent to L2 team', 'info');
       return;
     }
+    // Optimistic update
     setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true, acknowledged_by: 'you' } : a));
     setApprovalState(prev => { const n = {...prev}; delete n[id]; return n; });
     showToast('Alert acknowledged');
+    // Persist to backend
+    try { await postData(`/api/alerts/${id}/acknowledge`, {}); }
+    catch { /* revert */ setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: false, acknowledged_by: undefined } : a)); showToast('Failed to acknowledge', 'warning'); }
   };
 
   const approveAck = (id) => {
@@ -344,10 +385,15 @@ const VIGILDashboard = () => {
   const toggleSelect = (id) => setSelectedAlerts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const selectAll = () => setSelectedAlerts(new Set(filteredAlerts.map(a => a.id)));
   const clearSelection = () => setSelectedAlerts(new Set());
-  const acknowledgeMany = () => {
-    setAlerts(prev => prev.map(a => selectedAlerts.has(a.id) ? { ...a, acknowledged: true, acknowledged_by: 'you' } : a));
-    showToast(`${selectedAlerts.size} alerts acknowledged`);
+  const acknowledgeMany = async () => {
+    const ids = [...selectedAlerts];
+    // Optimistic update
+    setAlerts(prev => prev.map(a => ids.includes(a.id) ? { ...a, acknowledged: true, acknowledged_by: 'you' } : a));
+    showToast(`${ids.length} alerts acknowledged`);
     setSelectedAlerts(new Set());
+    // Persist to backend
+    try { await postData('/api/alerts/bulk-acknowledge', { alertIds: ids }); }
+    catch { loadAlerts(true); showToast('Bulk acknowledge partially failed', 'warning'); }
   };
   const toggleRule = (id) => setAlertRules(prev => prev.map(r => r.id === id ? { ...r, active: !r.active } : r));
   const deleteRule = (id) => { setAlertRules(prev => prev.filter(r => r.id !== id)); showToast('Rule deleted', 'warning'); };
