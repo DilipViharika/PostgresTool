@@ -572,39 +572,13 @@ export const MetricCard = ({
             background: active
                 ? `linear-gradient(145deg, ${color}20 0%, ${color}08 100%)`
                 : _AT.surface,
-            borderRadius: 4, border: `1px solid ${active || hovered ? color + '55' : _AT.glassBorder}`,
+            borderRadius: 4, border: `1px solid ${active || hovered ? color + '40' : _AT.glassBorder}`,
             padding: isCompact ? 14 : 20, position: 'relative', overflow: 'hidden',
             display: 'flex', flexDirection: 'column', gap: isCompact ? 8 : 12,
             cursor: onClick ? 'pointer' : 'default',
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: hovered && onClick ? 'translateY(-3px)' : active ? 'translateY(-2px)' : 'none',
-            boxShadow: active
-                ? `0 14px 34px -8px ${color}28, 0 0 0 1px ${color}22`
-                : hovered && onClick ? `0 10px 28px rgba(0,0,0,0.5), 0 0 0 1px ${color}18` : 'none',
-            animation: `fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards`,
+            transition: 'border-color 0.2s, transform 0.2s',
+            transform: hovered && onClick ? 'translateY(-2px)' : 'none',
         }}>
-            {/* Animated corner accent */}
-            <div style={{
-                position: 'absolute', top: 0, right: 0, width: 80, height: 80,
-                background: `radial-gradient(circle at top right, ${color}15 0%, transparent 60%)`,
-                transition: 'opacity 0.3s', opacity: hovered ? 1 : 0.5
-            }} />
-            {/* Bottom glow line */}
-            <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
-                background: active || hovered ? `linear-gradient(90deg, transparent, ${color}60, transparent)` : 'none',
-                transition: 'all 0.3s'
-            }} />
-
-            {/* Pulse ring on value change */}
-            {pulsing && (
-                <div style={{
-                    position: 'absolute', inset: 0, borderRadius: 4,
-                    border: `2px solid ${color}`,
-                    animation: 'ping 0.6s cubic-bezier(0, 0, 0.2, 1) forwards',
-                    pointerEvents: 'none'
-                }} />
-            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{
@@ -612,8 +586,7 @@ export const MetricCard = ({
                     borderRadius: 8, background: `${color}10`, color,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     border: `1px solid ${color}25`,
-                    boxShadow: active || hovered ? `0 0 20px ${color}35, inset 0 0 10px ${color}12` : 'none',
-                    transition: 'box-shadow 0.3s', flexShrink: 0
+                    flexShrink: 0
                 }}>
                     <Icon size={isCompact ? 17 : 21} />
                 </div>
@@ -658,8 +631,7 @@ export const MetricCard = ({
                   color: _AT.textMain, fontFamily: _AT.fontMono,
                   letterSpacing: '-1.5px', lineHeight: 1,
                   animation: 'countUp 0.6s ease backwards',
-                  textShadow: active ? `0 0 24px ${color}70` : 'none',
-                  transition: 'text-shadow 0.3s'
+                  textShadow: 'none'
               }}>{value}</span>
                             {unit && <span style={{ fontSize: 12, color: _AT.textMuted, fontFamily: _AT.fontMono }}>{unit}</span>}
                         </>
@@ -703,17 +675,6 @@ export const ResourceGauge = ({ label, value, color, thresholds, size = 160, sub
     return (
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
             <div style={{ position: 'relative', height: size, width: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {/* Multiple rings */}
-                <div style={{
-                    position: 'absolute', inset: 12, borderRadius: '50%',
-                    border: `1px solid ${resolvedColor}10`,
-                    animation: 'breathe 3s ease-in-out infinite'
-                }} />
-                <div style={{
-                    position: 'absolute', inset: 20, borderRadius: '50%',
-                    border: `1px dashed ${resolvedColor}08`,
-                    animation: 'spin 20s linear infinite'
-                }} />
 
                 <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart innerRadius="60%" outerRadius="88%" barSize={10} data={data} startAngle={210} endAngle={-30}>
@@ -728,7 +689,6 @@ export const ResourceGauge = ({ label, value, color, thresholds, size = 160, sub
                     <div style={{
                         fontSize: numValue >= 100 ? 18 : 24, fontWeight: 800, color: resolvedColor,
                         fontFamily: _AT.fontMono, lineHeight: 1,
-                        textShadow: `0 0 20px ${resolvedColor}90`,
                         animation: 'countUp 0.8s ease backwards'
                     }}>{numValue}<span style={{ fontSize: 12 }}>%</span></div>
                     <div style={{ fontSize: 9, color: _AT.textMuted, textTransform: 'uppercase', marginTop: 3, fontFamily: _AT.fontDisplay, letterSpacing: '1px' }}>{label}</div>
@@ -772,34 +732,15 @@ export const NeonProgressBar = ({
             )}
             <div style={{
                 width: '100%', height, background: _AT.grid,
-                borderRadius: 3, overflow: 'visible', position: 'relative',
-                border: `1px solid ${_AT.grid}`, boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08)'
+                borderRadius: 3, overflow: 'hidden', position: 'relative',
+                border: `1px solid ${_AT.grid}`
             }}>
-                {/* Track glow */}
-                <div style={{
-                    position: 'absolute', inset: 0, borderRadius: 3,
-                    boxShadow: `inset 0 0 ${height*2}px rgba(0,245,255,0.04)`
-                }} />
                 <div style={{
                     width: `${percent}%`, height: '100%',
-                    background: `linear-gradient(90deg, ${resolvedColor}50, ${resolvedColor} 70%, rgba(255,255,255,0.9) 100%)`,
-                    borderRadius: 3, boxShadow: `0 0 10px ${resolvedColor}90, 0 0 3px ${resolvedColor}`,
+                    background: resolvedColor,
+                    borderRadius: 3,
                     transition: animate ? 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
-                    position: 'relative', overflow: 'hidden', animation: 'expand 1.2s cubic-bezier(0.4,0,0.2,1) backwards',
                 }}>
-                    {/* Animated shimmer on bar */}
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)',
-                        backgroundSize: '200% 100%', animation: 'shimmer 2s linear infinite'
-                    }} />
-                    {/* Leading edge */}
-                    <div style={{
-                        position: 'absolute', right: -1, top: '50%', transform: 'translateY(-50%)',
-                        width: height * 2.5, height: height * 2.5, borderRadius: '50%',
-                        background: 'white', boxShadow: `0 0 14px ${resolvedColor}, 0 0 28px ${resolvedColor}80`
-                    }} />
-                </div>
                 {/* Milestones */}
                 {showMilestones && milestones.map((m, i) => (
                     <div key={i} style={{
