@@ -293,8 +293,8 @@ export function usePrevious(value) {
 
 export const CornerBrackets = ({ color = _AT.primary, size = 14, thickness = 1.5, animated = false, glowing = false }) => {
     const s = { position: 'absolute', width: size, height: size, pointerEvents: 'none' };
-    const line = { background: color, boxShadow: glowing ? `0 0 8px ${color}, 0 0 16px ${color}60` : `0 0 4px ${color}80` };
-    const anim = animated ? { animation: 'plasmaGlow 2s ease-in-out infinite' } : {};
+    const line = { background: color };
+    const anim = {};
     const corners = [
         { top: 0, left: 0, h: { top:0,left:0,width:size,height:thickness }, v: { top:0,left:0,width:thickness,height:size } },
         { top: 0, right: 0, h: { top:0,right:0,width:size,height:thickness }, v: { top:0,right:0,width:thickness,height:size } },
@@ -342,15 +342,7 @@ export const GridPattern = ({ color = _AT.primary, opacity = 0.04, size = 40 }) 
     }} />
 );
 
-export const GlowOrb = ({ color, x = '80%', y = '-20%', size = 300, opacity = 0.06 }) => (
-    <div style={{
-        position: 'absolute', left: x, top: y, width: size, height: size,
-        borderRadius: '50%', pointerEvents: 'none', zIndex: 0,
-        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-        opacity, filter: 'blur(40px)', transform: 'translate(-50%, -50%)',
-        animation: 'breathe 4s ease-in-out infinite'
-    }} />
-);
+export const GlowOrb = () => null;
 
 export const NoiseTexture = ({ opacity = 0.025 }) => (
     <div style={{
@@ -398,7 +390,7 @@ export const ChipBadge = ({ label, color = _AT.primary, micro = false, animated 
         animation: animated ? 'plasmaGlow 2s ease-in-out infinite' : 'none',
         boxShadow: animated ? `0 0 8px ${color}30` : 'none',
     }}>
-    {dot && <span style={{ width: micro ? 4 : 5, height: micro ? 4 : 5, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}`, animation: 'pulse 2s infinite', display: 'inline-block' }} />}
+    {dot && <span style={{ width: micro ? 4 : 5, height: micro ? 4 : 5, borderRadius: '50%', background: color, display: 'inline-block' }} />}
         {label}
   </span>
 );
@@ -464,9 +456,7 @@ export const GlassCard = ({
         <div {...hoverProps} style={{
             background: v.bg, backdropFilter: 'blur(24px) saturate(200%)',
             borderRadius: 4, border: `1px solid ${hovered ? _AT.glassBorderHover : v.border}`,
-            boxShadow: hovered
-                ? `0 0 0 1px ${accent}18, 0 24px 64px ${_AT.shadowLg}, 0 0 40px ${accent}10`
-                : _AT.shadowMd,
+            boxShadow: _AT.shadowMd,
             display: 'flex', flexDirection: 'column',
             position: maximized ? 'fixed' : 'relative',
             inset: maximized ? 0 : undefined,
@@ -487,9 +477,7 @@ export const GlassCard = ({
             <div style={{
                 height: 2, width: '100%',
                 background: `linear-gradient(90deg, transparent 0%, ${accent} 35%, ${_AT.secondary} 65%, ${_AT.danger} 85%, transparent 100%)`,
-                backgroundSize: '200% 100%',
-                animation: hovered ? 'borderFlow 2s linear infinite' : 'none',
-                opacity: hovered ? 1 : 0.45, transition: 'opacity 0.3s'
+                opacity: 0.35
             }} />
 
             {/* Header */}
@@ -1264,7 +1252,7 @@ export const StatusDot = ({ status, size = 8, pulse: doPulse = false }) => {
     injectKeyframes();
     const color = { active: _AT.success, ok: _AT.success, idle: _AT.warning, error: _AT.danger, critical: _AT.danger, warning: _AT.warning }[status] || _AT.textMuted;
     return (
-        <div style={{ width: size, height: size, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}80`, animation: doPulse ? 'pulse 2s ease-in-out infinite' : 'none', flexShrink: 0 }} />
+        <div style={{ width: size, height: size, borderRadius: '50%', background: color, flexShrink: 0 }} />
     );
 };
 
@@ -1910,7 +1898,7 @@ export const NeonSlider = ({ value, min = 0, max = 100, step = 1, onChange, labe
             <div style={{ position: 'relative', height: 20, display: 'flex', alignItems: 'center' }}>
                 {/* Track */}
                 <div style={{ position: 'absolute', left: 0, right: 0, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, ${color}60, ${color})`, boxShadow: `0 0 8px ${color}80`, transition: 'width 0.1s ease', borderRadius: 2 }} />
+                    <div style={{ width: `${pct}%`, height: '100%', background: color, transition: 'width 0.1s ease', borderRadius: 2 }} />
                 </div>
                 <input
                     type="range" min={min} max={max} step={step} value={value}
@@ -2169,9 +2157,9 @@ export const WebSocketStatus = ({ connected, clientCount, lastMessage, uptime, q
     const qualColors = { high: _AT.success, medium: _AT.warning, low: _AT.danger };
     const qColor = quality ? qualColors[quality] || color : color;
     return (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: `${qColor}05`, padding: '6px 14px', borderRadius: 2, border: `1px solid ${qColor}20`, boxShadow: connected ? `0 0 20px ${qColor}08` : 'none' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: `${qColor}05`, padding: '6px 14px', borderRadius: 2, border: `1px solid ${qColor}20` }}>
             {connected ? <Wifi size={12} color={qColor} /> : <WifiOff size={12} color={qColor} />}
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: qColor, boxShadow: `0 0 8px ${qColor}`, animation: connected ? 'pulse 2s infinite' : 'none' }} />
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: qColor }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: qColor, fontFamily: _AT.fontDisplay, letterSpacing: '1px' }}>{connected ? 'WS·CONNECTED' : 'WS·OFFLINE'}</span>
             {clientCount !== undefined && <span style={{ fontSize: 9, fontFamily: _AT.fontMono, color: _AT.textMuted, background: 'rgba(255,255,255,0.04)', padding: '1px 7px', borderRadius: 2 }}>{clientCount}c</span>}
             {uptime && <span style={{ fontSize: 9, color: _AT.textDim, fontFamily: _AT.fontMono }}>{uptime}</span>}
@@ -2189,7 +2177,7 @@ export const NodeLink = ({ from, to, type = 'depends', latency, status = 'active
             <span style={{ color: _AT.textMuted, background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '3px 0 0 3px', border: `1px solid ${_AT.glassBorder}` }}>{from}</span>
             <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', background: `${color}08`, border: `1px solid ${color}20`, borderLeft: 'none', borderRight: 'none', height: 29, gap: 2 }}>
                 {bidirectional && <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderRight: `6px solid ${color}60` }} />}
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}`, animation: status === 'active' ? 'pulse 2s infinite' : 'none' }} />
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
                 <div style={{ width: 36, height: 1, background: `linear-gradient(90deg, ${color}, ${color}50)` }} />
                 {latency && <span style={{ fontSize: 8, color, padding: '0 2px' }}>{latency}ms</span>}
                 <div style={{ width: 18, height: 1, background: `linear-gradient(90deg, ${color}50, ${color})` }} />
