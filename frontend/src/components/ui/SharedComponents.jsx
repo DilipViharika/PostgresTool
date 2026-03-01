@@ -291,27 +291,7 @@ export function usePrevious(value) {
 //  DECORATIVE PRIMITIVES — Enhanced
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const CornerBrackets = ({ color = _AT.primary, size = 14, thickness = 1.5, animated = false, glowing = false }) => {
-    const s = { position: 'absolute', width: size, height: size, pointerEvents: 'none' };
-    const line = { background: color };
-    const anim = {};
-    const corners = [
-        { top: 0, left: 0, h: { top:0,left:0,width:size,height:thickness }, v: { top:0,left:0,width:thickness,height:size } },
-        { top: 0, right: 0, h: { top:0,right:0,width:size,height:thickness }, v: { top:0,right:0,width:thickness,height:size } },
-        { bottom: 0, left: 0, h: { bottom:0,left:0,width:size,height:thickness }, v: { bottom:0,left:0,width:thickness,height:size } },
-        { bottom: 0, right: 0, h: { bottom:0,right:0,width:size,height:thickness }, v: { bottom:0,right:0,width:thickness,height:size } },
-    ];
-    return (
-        <>
-            {corners.map((c, i) => (
-                <div key={i} style={{ ...s, top: c.top, left: c.left, right: c.right, bottom: c.bottom, ...anim }}>
-                    <div style={{ ...line, position:'absolute', ...c.h }} />
-                    <div style={{ ...line, position:'absolute', ...c.v }} />
-                </div>
-            ))}
-        </>
-    );
-};
+export const CornerBrackets = () => null;
 
 export const ScanlineOverlay = ({ opacity = 0.025 }) => (
     <div style={{
@@ -473,12 +453,6 @@ export const GlassCard = ({
             <GlowOrb color={accent} opacity={0.05} />
             <NoiseTexture opacity={0.015} />
 
-            {/* Animated top accent bar */}
-            <div style={{
-                height: 2, width: '100%',
-                background: `linear-gradient(90deg, transparent 0%, ${accent} 35%, ${_AT.secondary} 65%, ${_AT.danger} 85%, transparent 100%)`,
-                opacity: 0.35
-            }} />
 
             {/* Header */}
             {(title || rightNode || onClose || maximizable) && (
@@ -794,15 +768,13 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
         <div style={{
             backgroundColor: 'rgba(1, 5, 16, 0.98)', border: `1px solid ${_AT.glassBorderHot}`,
             borderRadius: 4, padding: '12px 16px',
-            boxShadow: `0 4px 32px rgba(0,0,0,0.9), 0 0 24px ${_AT.primary}12`,
+            boxShadow: `0 4px 24px rgba(0,0,0,0.6)`,
             backdropFilter: 'blur(24px)', maxWidth: 260, position: 'relative', overflow: 'hidden'
         }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${_AT.primary}, transparent)` }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${_AT.ai}50, transparent)` }} />
             {label && <p style={{ color: _AT.textMuted, fontSize: 9, marginBottom: 10, fontFamily: _AT.fontDisplay, letterSpacing: '1.5px', textTransform: 'uppercase' }}>{label}</p>}
             {payload.map((entry, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < payload.length - 1 ? 5 : 0 }}>
-                    <div style={{ width: 3, height: 16, borderRadius: 2, backgroundColor: entry.color, boxShadow: `0 0 8px ${entry.color}` }} />
+                    <div style={{ width: 3, height: 16, borderRadius: 2, backgroundColor: entry.color }} />
                     <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>{entry.name}:</span>
                     <span style={{ fontSize: 13, color: _AT.textMain, fontWeight: 800, fontFamily: _AT.fontMono, marginLeft: 'auto' }}>
             {formatter ? formatter(entry.value, entry.name) : (typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value)}
@@ -2244,9 +2216,8 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(123,47,255,0.05) 100%)',
                 border: `1px solid ${_AT.ai}28`, borderRadius: 4, padding: 16, position: 'relative', overflow: 'hidden'
             }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${_AT.ai}, transparent)` }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 30, height: 30, background: `linear-gradient(135deg, ${_AT.ai}, #5b21b6)`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 18px ${_AT.ai}55`, animation: streaming ? 'plasmaGlow 2s ease-in-out infinite' : 'none' }}>
+                    <div style={{ width: 30, height: 30, background: `linear-gradient(135deg, ${_AT.ai}, #5b21b6)`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Sparkles size={14} color="white" />
                     </div>
                     <div>
