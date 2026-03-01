@@ -740,7 +740,7 @@ export const NeonProgressBar = ({
                     background: resolvedColor,
                     borderRadius: 3,
                     transition: animate ? 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
-                }}>
+                }} />
                 {/* Milestones */}
                 {showMilestones && milestones.map((m, i) => (
                     <div key={i} style={{
