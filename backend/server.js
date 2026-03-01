@@ -390,21 +390,30 @@ function defaultConnection() {
     };
 }
 
-/** Load connections from disk; fall back to the default env-var connection */
+/** Load connections from disk.
+ *  - If the file exists and is valid, return its contents (even an empty array).
+ *  - If the file is missing entirely (first ever boot), seed a single default connection.
+ *  - Never recreate the default connection once a file has been saved (even if it is empty),
+ *    so deleted connections stay deleted across restarts / logouts.
+ */
 async function loadConnections() {
     try {
         await fs.mkdir(path.dirname(CONNECTIONS_FILE), { recursive: true });
         const raw = await fs.readFile(CONNECTIONS_FILE, 'utf8');
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        // File exists and is valid JSON — honour it, even if the array is empty
+        if (Array.isArray(parsed)) {
             return parsed;
         }
     } catch (e) {
-        if (e.code !== 'ENOENT') {
-            log('WARN', 'Could not read connections file, using default', { error: e.message });
+        if (e.code === 'ENOENT') {
+            // File has never been written → genuine first boot, seed the default
+            return [defaultConnection()];
         }
+        log('WARN', 'Could not read connections file, starting empty', { error: e.message });
     }
-    return [defaultConnection()];
+    // Corrupt / non-array JSON — start clean rather than resurrecting stale data
+    return [];
 }
 
 /** Save connections to disk (non-blocking, swallows errors on read-only filesystems like Vercel) */
@@ -932,12 +941,20 @@ async function resolvePoolConfig(c) {
     };
 }
 
+// ── helper: connections visible to a given user ───────────────────────────────
+// Admin/super_admin users can see all connections; regular users only see their own.
+function userConnections(userId, role) {
+    if (role === 'admin' || role === 'super_admin') return CONNECTIONS;
+    return CONNECTIONS.filter(c => !c.userId || c.userId === userId);
+}
+
 app.get('/api/connections', authenticate, ensureConnections, (req, res) => {
-    res.json(CONNECTIONS.map(sanitizeConn));
+    res.json(userConnections(req.user.id, req.user.role).map(sanitizeConn));
 });
 
 app.get('/api/connections/:id', authenticate, (req, res) => {
-    const c = CONNECTIONS.find(c => c.id === parseInt(req.params.id));
+    const visible = userConnections(req.user.id, req.user.role);
+    const c = visible.find(c => c.id === parseInt(req.params.id));
     if (!c) return res.status(404).json({ error: 'Connection not found' });
     res.json(sanitizeConn(c));
 });
@@ -947,10 +964,14 @@ app.post('/api/connections', authenticate, (req, res) => {
     if (!name || !host || !port || !database || !username || !password) {
         return res.status(400).json({ error: 'All fields are required' });
     }
-    if (CONNECTIONS.find(c => c.name === name)) return res.status(409).json({ error: 'Connection name already exists' });
-    if (isDefault) CONNECTIONS.forEach(c => c.isDefault = false);
+    // Name uniqueness check scoped to this user
+    const visible = userConnections(req.user.id, req.user.role);
+    if (visible.find(c => c.name === name)) return res.status(409).json({ error: 'Connection name already exists' });
+    // Only reset isDefault for connections owned by this user
+    if (isDefault) visible.forEach(c => c.isDefault = false);
     const newConn = {
         id: Math.max(...CONNECTIONS.map(c => c.id), 0) + 1,
+        userId: req.user.id,          // ← bind connection to creating user
         name, host, port: parseInt(port), database, username, password,
         ssl: ssl || false, isDefault: isDefault || false,
         ...pickSSH(req.body),
@@ -963,10 +984,11 @@ app.post('/api/connections', authenticate, (req, res) => {
 
 app.put('/api/connections/:id', authenticate, async (req, res) => {
     const id    = parseInt(req.params.id);
-    const index = CONNECTIONS.findIndex(c => c.id === id);
+    const visible = userConnections(req.user.id, req.user.role);
+    const index = CONNECTIONS.findIndex(c => c.id === id && visible.includes(c));
     if (index === -1) return res.status(404).json({ error: 'Connection not found' });
     const { name, host, port, database, username, password, ssl } = req.body;
-    if (CONNECTIONS.find(c => c.name === name && c.id !== id)) return res.status(409).json({ error: 'Connection name already exists' });
+    if (visible.find(c => c.name === name && c.id !== id)) return res.status(409).json({ error: 'Connection name already exists' });
 
     const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== CONNECTIONS[index][f]);
     if (sshChanged) await closeTunnel(id);
@@ -992,30 +1014,36 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
 
 app.delete('/api/connections/:id', authenticate, async (req, res) => {
     const id = parseInt(req.params.id);
-    const c  = CONNECTIONS.find(c => c.id === id);
+    const visible = userConnections(req.user.id, req.user.role);
+    const c = visible.find(c => c.id === id);
     if (!c) return res.status(404).json({ error: 'Connection not found' });
     await closeTunnel(id);
     await destroyPool(id);
     if (activeConnectionId === id) { activeConnectionId = null; cache.clear(); }
     CONNECTIONS = CONNECTIONS.filter(c => c.id !== id);
-    if (c.isDefault && CONNECTIONS.length > 0) {
-        CONNECTIONS[0].isDefault = true;
+    if (c.isDefault) {
+        // Promote the next connection for this user (if any) to default
+        const nextOwn = CONNECTIONS.find(x => !x.userId || x.userId === req.user.id);
+        if (nextOwn) nextOwn.isDefault = true;
     }
     saveConnections();
     res.json({ success: true });
 });
 
 app.post('/api/connections/:id/default', authenticate, (req, res) => {
-    const c = CONNECTIONS.find(c => c.id === parseInt(req.params.id));
+    const visible = userConnections(req.user.id, req.user.role);
+    const c = visible.find(c => c.id === parseInt(req.params.id));
     if (!c) return res.status(404).json({ error: 'Connection not found' });
-    CONNECTIONS.forEach(c => c.isDefault = false);
+    // Only clear isDefault for this user's own connections
+    visible.forEach(c => c.isDefault = false);
     c.isDefault = true;
     saveConnections();
     res.json({ success: true });
 });
 
 app.post('/api/connections/:id/test', authenticate, async (req, res) => {
-    const c = CONNECTIONS.find(c => c.id === parseInt(req.params.id));
+    const visible = userConnections(req.user.id, req.user.role);
+    const c = visible.find(c => c.id === parseInt(req.params.id));
     if (!c) return res.status(404).json({ error: 'Connection not found' });
 
     let poolCfg;
@@ -1048,7 +1076,8 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
 
 app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
     const id = parseInt(req.params.id);
-    const c = CONNECTIONS.find(c => c.id === id);
+    const visible = userConnections(req.user.id, req.user.role);
+    const c = visible.find(c => c.id === id);
     if (!c) return res.status(404).json({ error: 'Connection not found' });
 
     try {
@@ -1061,8 +1090,8 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
         return res.status(400).json({ success: false, error: `Cannot switch: ${err.message}` });
     }
 
-    // Mark as active
-    CONNECTIONS.forEach(c => c.isDefault = false);
+    // Mark as active — only reset isDefault within this user's own connections
+    visible.forEach(c => c.isDefault = false);
     c.isDefault = true;
     activeConnectionId = id;
     cache.clear(); // invalidate all cached responses — they belong to the old connection
