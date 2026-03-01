@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { fetchData } from '../../utils/api';
 
 /* ─────────────────────────────────────────────────────────────────────────
    DESIGN SYSTEM — Adaptive light/dark via THEME
@@ -28,88 +29,139 @@ const C = {
     get textDim()     { return THEME.textDim; },
 };
 
-const gen30 = (base, v) => Array.from({length:30},(_,i)=>
-    Math.max(0, base + Math.sin(i*0.6)*v*0.6 + (Math.random()-0.5)*v*0.5));
-
-const DATA = {
-    health: {
-        hitRatio: 98.2, totalIndexes: 84, totalWaste: '2.8 GB',
-        avgBloat: 44, seqScanRate: 3.7, criticalCount: 2,
-        history: gen30(97.5, 1.8),
-        seqHistory: gen30(4.2, 1.1),
-    },
-    missing: [
-        { id:1, table:'orders', schema:'public', column:'customer_id, status', severity:'critical',
-            seq_scan:892400, tableSize:'4.2 GB', estSize:'210 MB', currentLatency:350, estLatency:12,
-            include:'total_amount, created_at', partial:null, writes:420, reads:18200, type:'missing', hash:'4A9F',
-            scanHistory: gen30(29000,5000) },
-        { id:2, table:'audit_logs', schema:'public', column:'created_at', severity:'critical',
-            seq_scan:341000, tableSize:'12 GB', estSize:'450 MB', currentLatency:890, estLatency:28,
-            include:null, partial:"created_at > NOW() - INTERVAL '1 year'", writes:2100, reads:8400, type:'missing', hash:'7C3B',
-            scanHistory: gen30(11000,2000) },
-        { id:3, table:'user_sessions', schema:'auth', column:'user_id, expires_at', severity:'high',
-            seq_scan:92000, tableSize:'850 MB', estSize:'38 MB', currentLatency:210, estLatency:8,
-            include:'session_token', partial:'expires_at > NOW()', writes:880, reads:6200, type:'missing', hash:'2E8A',
-            scanHistory: gen30(3100,600) },
-        { id:4, table:'events', schema:'analytics', column:'account_id, event_type', severity:'high',
-            seq_scan:74000, tableSize:'8.1 GB', estSize:'320 MB', currentLatency:680, estLatency:40,
-            include:'properties', partial:null, writes:5400, reads:4100, type:'missing', hash:'9D2C',
-            scanHistory: gen30(2500,500) },
-        { id:5, table:'products', schema:'inventory', column:'category_id', severity:'medium',
-            seq_scan:18000, tableSize:'290 MB', estSize:'14 MB', currentLatency:95, estLatency:4,
-            include:'name, price', partial:'is_active = true', writes:120, reads:3800, type:'missing', hash:'5F1D',
-            scanHistory: gen30(600,120) },
-        { id:6, table:'notifications', schema:'messaging', column:'recipient_id, read', severity:'medium',
-            seq_scan:14200, tableSize:'180 MB', estSize:'9 MB', currentLatency:78, estLatency:5,
-            include:'created_at', partial:'read = false', writes:740, reads:2900, type:'missing', hash:'1B6E',
-            scanHistory: gen30(480,90) },
-    ],
-    duplicates: [
-        { id:10, indexName:'idx_users_email_uniq', table:'users', schema:'auth', definition:'(email)', shadowedBy:'idx_users_email_name_role', wastedSpace:'45 MB', writes:220, type:'duplicates', hash:'D4A9' },
-        { id:11, indexName:'idx_orders_cust', table:'orders', schema:'public', definition:'(customer_id)', shadowedBy:'idx_orders_cust_status_date', wastedSpace:'120 MB', writes:420, type:'duplicates', hash:'F2C7' },
-        { id:12, indexName:'idx_products_cat_old', table:'products', schema:'inventory', definition:'(category_id, created_at)', shadowedBy:'idx_products_cat_active_ts', wastedSpace:'31 MB', writes:120, type:'duplicates', hash:'8E3B' },
-        { id:13, indexName:'idx_sessions_user', table:'user_sessions', schema:'auth', definition:'(user_id)', shadowedBy:'idx_sessions_user_expires', wastedSpace:'18 MB', writes:880, type:'duplicates', hash:'A1F4' },
-    ],
-    bloat: [
-        { id:20, indexName:'pk_transactions', table:'transactions', schema:'billing', bloatPct:42, size:'850 MB', wastedSpace:'357 MB', fragLevel:4, lastVacuum:'14d ago', writes:1800, type:'bloat', hash:'3C8D', bloatHistory:gen30(40,4) },
-        { id:21, indexName:'idx_logs_meta', table:'app_logs', schema:'public', bloatPct:65, size:'2.1 GB', wastedSpace:'1.4 GB', fragLevel:5, lastVacuum:'28d ago', writes:5200, type:'bloat', hash:'6F2A', bloatHistory:gen30(60,6) },
-        { id:22, indexName:'idx_audit_ts', table:'audit_logs', schema:'public', bloatPct:38, size:'490 MB', wastedSpace:'186 MB', fragLevel:3, lastVacuum:'7d ago', writes:2100, type:'bloat', hash:'B9E1', bloatHistory:gen30(35,5) },
-        { id:23, indexName:'idx_events_acct', table:'events', schema:'analytics', bloatPct:51, size:'1.3 GB', wastedSpace:'663 MB', fragLevel:4, lastVacuum:'21d ago', writes:5400, type:'bloat', hash:'4D7C', bloatHistory:gen30(48,5) },
-    ],
-    unused: [
-        { id:30, indexName:'idx_temp_fix_2023', table:'products', schema:'inventory', size:'450 MB', scans:0, lastUsed:'Never', writes:120, type:'unused', hash:'C2B5' },
-        { id:31, indexName:'idx_users_legacy_id', table:'users', schema:'auth', size:'88 MB', scans:0, lastUsed:'180d ago', writes:220, type:'unused', hash:'E8F3' },
-        { id:32, indexName:'idx_orders_ref_code', table:'orders', schema:'public', size:'210 MB', scans:2, lastUsed:'94d ago', writes:420, type:'unused', hash:'7A1D' },
-    ],
-    pgvector: {
-        installed: true, version:'0.7.1',
-        indexes: [
-            { id:40, indexName:'idx_embeddings_hnsw', table:'document_embeddings', schema:'ai', type:'hnsw',
-                dimensions:1536, m:16, efConstruction:64, efSearch:40, buildProgress:100,
-                annRecall:0.967, avgQueryMs:2.8, totalVectors:2840000, size:'4.2 GB', status:'healthy' },
-            { id:41, indexName:'idx_product_ivfflat', table:'product_embeddings', schema:'ai', type:'ivfflat',
-                dimensions:768, buildProgress:78, annRecall:0.891, avgQueryMs:8.1, totalVectors:440000,
-                listCount:256, size:'890 MB', status:'building' },
-        ]
-    },
-    rowEstDivergence: [
-        { id:50, table:'order_items', schema:'public', plannerEst:420, actualRows:184200, divergence:438.6, lastAnalyze:'34d ago', severity:'critical' },
-        { id:51, table:'event_properties', schema:'analytics', plannerEst:88, actualRows:27400, divergence:311.4, lastAnalyze:'19d ago', severity:'high' },
-        { id:52, table:'notifications', schema:'messaging', plannerEst:3200, actualRows:41800, divergence:13.1, lastAnalyze:'8d ago', severity:'medium' },
-    ],
-    foreignKeyMissing: [
-        { id:60, table:'order_items', schema:'public', fkColumn:'order_id', refsTable:'orders', rowCount:12400000, writes:2800 },
-        { id:61, table:'payment_transactions', schema:'billing', fkColumn:'customer_id', refsTable:'customers', rowCount:4200000, writes:1200 },
-        { id:62, table:'audit_events', schema:'public', fkColumn:'user_id', refsTable:'users', rowCount:28000000, writes:3400 },
-    ],
-    history: [
-        { ts:'Feb 22, 14:33', action:'CREATE', name:'idx_orders_cust_new', table:'orders', user:'dba_auto', dur:'2m 14s', ok:true },
-        { ts:'Feb 21, 03:01', action:'DROP',   name:'idx_users_old_email',  table:'users',  user:'miguel.r', dur:'0.1s', ok:true },
-        { ts:'Feb 20, 18:45', action:'REINDEX',name:'pk_transactions',      table:'transactions', user:'scheduler', dur:'8m 42s', ok:true },
-        { ts:'Feb 19, 09:12', action:'CREATE', name:'idx_events_tmp',       table:'events', user:'api_svc', dur:'ERR', ok:false },
-        { ts:'Feb 18, 02:14', action:'VACUUM', name:'idx_audit_ts',         table:'audit_logs', user:'autovacuum', dur:'14m 02s', ok:true },
-    ],
+/* ─────────────────────────────────────────────────────────────────────────
+   LIVE DATA HOOK — replaces all dummy DATA const
+───────────────────────────────────────────────────────────────────────── */
+const EMPTY_DATA = {
+    health: { hitRatio: 0, totalIndexes: 0, totalSize: '—', totalBytes: 0, criticalCount: 0, seqScanRate: 0 },
+    missing: [], duplicates: [], bloat: [], unused: [],
+    pgvector: { installed: false, version: null, indexes: [] },
+    rowEstDivergence: [], foreignKeyMissing: [], history: [],
 };
+
+function useIndexData(live) {
+    const [data, setData] = useState(EMPTY_DATA);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const load = useCallback(async () => {
+        setLoading(true); setError(null);
+        try {
+            const [health, missing, unused, dupes, bloat] = await Promise.all([
+                fetchData('/api/indexes/health').catch(() => null),
+                fetchData('/api/indexes/missing').catch(() => []),
+                fetchData('/api/indexes/unused').catch(() => []),
+                fetchData('/api/indexes/duplicates').catch(() => []),
+                fetchData('/api/indexes/bloat').catch(() => []),
+            ]);
+
+            // normalise missing rows
+            const missingNorm = (Array.isArray(missing) ? missing : []).map((r, i) => ({
+                id: i + 1,
+                table: r.table,
+                schema: r.schema,
+                column: '—',
+                severity: r.severity,
+                seq_scan: parseInt(r.seq_scan || 0),
+                idx_scan: parseInt(r.idx_scan || 0),
+                seq_tup_read: parseInt(r.seq_tup_read || 0),
+                tableSize: r.tableSize,
+                tableSizeBytes: parseInt(r.tableSizeBytes || 0),
+                estSize: '—',
+                currentLatency: null,
+                estLatency: null,
+                writes: null,
+                reads: null,
+                type: 'missing',
+                hash: String(r.table || '').slice(0, 4).toUpperCase(),
+            }));
+
+            // normalise unused rows
+            const unusedNorm = (Array.isArray(unused) ? unused : []).map((r, i) => ({
+                id: 100 + i,
+                indexName: r.indexName,
+                table: r.table,
+                schema: r.schema,
+                size: r.size,
+                sizeBytes: parseInt(r.sizeBytes || 0),
+                scans: parseInt(r.scans || 0),
+                lastUsed: r.scans === 0 ? 'Never' : `${r.scans} scan(s)`,
+                definition: r.definition,
+                isUnique: r.isUnique,
+                type: 'unused',
+                hash: String(r.indexName || '').slice(-4).toUpperCase(),
+            }));
+
+            // normalise duplicate rows
+            const dupesNorm = (Array.isArray(dupes) ? dupes : []).map((r, i) => ({
+                id: 200 + i,
+                indexName: r.indexName,
+                table: r.table,
+                schema: r.schema,
+                definition: r.definition,
+                shadowedBy: r.shadowedBy,
+                wastedSpace: r.wastedSpace,
+                wastedBytes: parseInt(r.wastedBytes || 0),
+                writes: parseInt(r.writes || 0),
+                type: 'duplicates',
+                hash: String(r.indexName || '').slice(-4).toUpperCase(),
+            }));
+
+            // normalise bloat rows
+            const bloatNorm = (Array.isArray(bloat) ? bloat : []).map((r, i) => ({
+                id: 300 + i,
+                indexName: r.indexName,
+                table: r.table,
+                schema: r.schema,
+                size: r.size,
+                sizeBytes: parseInt(r.sizeBytes || 0),
+                bloatPct: parseFloat(r.bloatPct || 0),
+                wastedSpace: '—',
+                lastVacuum: '—',
+                writes: parseInt(r.idx_scan || 0),
+                severity: r.severity,
+                definition: r.definition,
+                type: 'bloat',
+                hash: String(r.indexName || '').slice(-4).toUpperCase(),
+            }));
+
+            const h = health || EMPTY_DATA.health;
+            setData({
+                health: {
+                    hitRatio: parseFloat(h.hitRatio || 0),
+                    totalIndexes: parseInt(h.totalIndexes || 0),
+                    totalSize: h.totalSize || '—',
+                    totalBytes: parseInt(h.totalBytes || 0),
+                    criticalCount: parseInt(h.criticalCount || 0),
+                    seqScanRate: parseFloat(h.seqScanRate || 0),
+                },
+                missing: missingNorm,
+                unused: unusedNorm,
+                duplicates: dupesNorm,
+                bloat: bloatNorm,
+                pgvector: EMPTY_DATA.pgvector,
+                rowEstDivergence: EMPTY_DATA.rowEstDivergence,
+                foreignKeyMissing: EMPTY_DATA.foreignKeyMissing,
+                history: EMPTY_DATA.history,
+            });
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { load(); }, [load]);
+
+    // Refresh every 60 s when live mode is on
+    useEffect(() => {
+        if (!live) return;
+        const t = setInterval(load, 60_000);
+        return () => clearInterval(t);
+    }, [live, load]);
+
+    return { data, loading, error, refresh: load };
+}
 
 const genSQL = idx => {
     if (idx.type==='missing') return [
@@ -635,7 +687,7 @@ const IndexTable = ({rows,view,onSelect}) => {
         <div style={{overflowX:'auto'}} className="scroll-thin">
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:12.5}}>
                 <thead><tr>
-                    {view==='missing'&&<><TH>Severity</TH><TH f="table">Table</TH><TH>Columns</TH><TH f="seq_scan" right>Seq scans</TH><TH f="currentLatency" right>Latency</TH><TH>Gain</TH><TH></TH></>}
+                    {view==='missing'&&<><TH>Severity</TH><TH f="table">Table</TH><TH>Table size</TH><TH f="seq_scan" right>Seq scans</TH><TH f="idx_scan" right>Idx scans</TH><TH></TH></>}
                     {view==='bloat'&&<><TH f="indexName">Index</TH><TH f="table">Table</TH><TH f="bloatPct" right>Bloat</TH><TH>Size</TH><TH>Wasted</TH><TH>Last vacuum</TH><TH></TH></>}
                     {view==='duplicates'&&<><TH f="indexName">Index</TH><TH f="table">Table</TH><TH>Covered by</TH><TH f="wastedSpace" right>Wasted</TH><TH></TH></>}
                     {view==='unused'&&<><TH f="indexName">Index</TH><TH f="table">Table</TH><TH>Size</TH><TH f="scans" right>Scans</TH><TH>Last used</TH><TH></TH></>}
@@ -652,19 +704,10 @@ const IndexTable = ({rows,view,onSelect}) => {
                             <div style={{fontSize:13,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody}}>{row.table}</div>
                             <div style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono,marginTop:1}}>{row.schema}</div>
                         </td>
-                        <td style={{padding:'12px 16px',maxWidth:200}}>
-                            <M c={C.ok} sz={11} style={{background:C.okBg,padding:'2px 8px',borderRadius:4,display:'inline-block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{row.column}</M>
-                        </td>
-                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:THEME.fontMono,fontSize:13,fontWeight:500,color:row.seq_scan>100000?C.err:C.warn}}>{row.seq_scan.toLocaleString()}</td>
-                        <td style={{padding:'12px 16px',textAlign:'right'}}>
-                            <div style={{fontFamily:THEME.fontMono,fontSize:12,color:C.err}}>{row.currentLatency}ms</div>
-                            <div style={{fontFamily:THEME.fontMono,fontSize:11,color:C.ok}}>→ {row.estLatency}ms</div>
-                        </td>
-                        <td style={{padding:'12px 16px',minWidth:90}}>
-                            <div style={{fontSize:11,color:C.ok,fontFamily:THEME.fontMono,marginBottom:4}}>{Math.round(((row.currentLatency-row.estLatency)/row.currentLatency)*100)}%</div>
-                            <SegBar pct={(1-(row.estLatency/row.currentLatency))*100} color={C.ok}/>
-                        </td>
-                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono,background:C.surface,border:`1px solid ${C.border}`,padding:'2px 6px',borderRadius:4}}>#{row.hash}</span></td>
+                        <td style={{padding:'12px 16px',fontFamily:THEME.fontMono,fontSize:12,color:C.textSub}}>{row.tableSize||'—'}</td>
+                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:THEME.fontMono,fontSize:13,fontWeight:500,color:row.seq_scan>100000?C.err:C.warn}}>{(row.seq_scan||0).toLocaleString()}</td>
+                        <td style={{padding:'12px 16px',textAlign:'right',fontFamily:THEME.fontMono,fontSize:12,color:C.textSub}}>{(row.idx_scan||0).toLocaleString()}</td>
+                        <td style={{padding:'12px 16px'}}><span className="pk" style={{fontSize:10,color:C.textDim,fontFamily:THEME.fontMono,background:C.surface,border:`1px solid ${C.border}`,padding:'2px 6px',borderRadius:4}}>·</span></td>
                     </>}
 
                     {view==='bloat'&&<>
@@ -703,28 +746,34 @@ const IndexTable = ({rows,view,onSelect}) => {
 /* ─────────────────────────────────────────────────────────────────────────
    RIGHT PANELS
 ───────────────────────────────────────────────────────────────────────── */
-const HealthPanel = ({data}) => <>
+const HealthPanel = ({data}) => {
+    const hitRatio = parseFloat(data.hitRatio || 0);
+    const seqRate  = parseFloat(data.seqScanRate || 0);
+    const efficiency = Math.max(0, Math.round(100 - seqRate * 5));
+    return <>
     <Card>
         <CH title="Health gauges"/>
         <div style={{padding:'16px 18px'}}>
             <div style={{display:'flex',justifyContent:'space-around',marginBottom:16}}>
-                <Arc value={data.hitRatio} color={C.ok} size={82} label="Hit rate"/>
-                <Arc value={Math.round(100-data.avgBloat)} color={C.warn} size={82} label="Bloat-free"/>
-                <Arc value={Math.round(100-data.seqScanRate*5)} color={C.accent} size={82} label="Efficiency"/>
+                <Arc value={hitRatio} color={C.ok} size={82} label="Hit rate"/>
+                <Arc value={Math.min(100, efficiency)} color={C.warn} size={82} label="Efficiency"/>
+                <Arc value={Math.max(0,Math.round(100-seqRate*10))} color={C.accent} size={82} label="Scan health"/>
             </div>
             <div style={{height:1,background:C.border,marginBottom:14}}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-                {[{l:'Hit rate 30d',v:`${data.hitRatio}%`,c:C.ok,spark:data.history},
-                    {l:'Seq scan rate',v:`${data.seqScanRate}%`,c:C.warn,spark:data.seqHistory}].map(m=>
+                {[{l:'Index hit ratio',v:`${hitRatio}%`,c:C.ok},
+                  {l:'Seq scan rate',v:`${seqRate}%`,c:C.warn},
+                  {l:'Total indexes',v:data.totalIndexes,c:C.accent},
+                  {l:'Total size',v:data.totalSize,c:C.textPrimary}].map(m=>
                     <div key={m.l} style={{padding:'10px 12px',background:C.surfaceHi,borderRadius:6}}>
                         <Lbl style={{display:'block',marginBottom:5}}>{m.l}</Lbl>
-                        <div style={{fontSize:18,fontWeight:700,color:m.c,fontFamily:THEME.fontBody,marginBottom:6}}>{m.v}</div>
-                        <Spark data={m.spark} color={m.c} w={88} h={20}/>
+                        <div style={{fontSize:18,fontWeight:700,color:m.c,fontFamily:THEME.fontBody}}>{m.v}</div>
                     </div>)}
             </div>
         </div>
     </Card>
-</>;
+    </>;
+};
 
 const AIPanel = ({view}) => {
     const insights={
@@ -784,14 +833,15 @@ const AIPanel = ({view}) => {
 const TrendPanel = ({rows,view}) => {
     const [sel,setSel]=useState(0);
     if(!rows.length) return null;
-    const row=rows[sel];
-    const hist=row.scanHistory||row.bloatHistory||Array(30).fill(0);
+    const row=rows[Math.min(sel,rows.length-1)];
+    // Use seq_scan for missing, sizeBytes for others as the "value" metric
+    const metric = view==='missing' ? (r=>r.seq_scan||0) : (r=>r.sizeBytes||r.tableSizeBytes||0);
+    const maxVal = Math.max(...rows.map(metric), 1);
     const color=view==='missing'?C.warn:view==='bloat'?C.err:C.accent;
-    const avg7=hist.slice(-7).reduce((a,b)=>a+b,0)/7;
-    const avg30=hist.reduce((a,b)=>a+b,0)/hist.length;
-    const trend=avg30?((avg7-avg30)/avg30*100).toFixed(1):0;
+    // Build a simple bar chart from sorted rows
+    const barData = rows.slice(0,15).map(metric);
     return <Card>
-        <CH title="30-day trend" right={
+        <CH title="Distribution" right={
             <select value={sel} onChange={e=>setSel(+e.target.value)}
                     style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:4,
                         color:C.textSub,fontFamily:THEME.fontMono,fontSize:10,padding:'3px 8px',
@@ -799,14 +849,14 @@ const TrendPanel = ({rows,view}) => {
                 {rows.map((r,i)=><option key={i} value={i}>{r.table||r.indexName}</option>)}
             </select>}/>
         <div style={{padding:'14px 18px'}}>
-            <MiniBar data={hist} color={color} h={44}/>
+            <MiniBar data={barData} color={color} h={44}/>
             <div style={{display:'flex',justifyContent:'space-between',marginTop:5,marginBottom:12}}>
-                <M sz={9}>–30d</M><M sz={9}>Today</M>
+                <M sz={9}>top {barData.length}</M><M sz={9}>by {view==='missing'?'seq scans':'size'}</M>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
-                {[{l:'7-day avg',v:Math.round(avg7).toLocaleString(),c:color},
-                    {l:'30-day avg',v:Math.round(avg30).toLocaleString(),c:C.textSub},
-                    {l:'Trend',v:`${+trend>0?'+':''}${trend}%`,c:+trend>0?C.err:C.ok}].map(m=>
+                {[{l:view==='missing'?'Seq scans':'Size bytes',v:metric(row).toLocaleString(),c:color},
+                    {l:'Schema',v:row.schema||'—',c:C.textSub},
+                    {l:'Issues',v:rows.length,c:C.accent}].map(m=>
                     <div key={m.l} style={{padding:'9px 10px',background:C.surfaceHi,borderRadius:5}}>
                         <Lbl style={{display:'block',marginBottom:4}}>{m.l}</Lbl>
                         <div style={{fontSize:14,fontWeight:700,color:m.c,fontFamily:THEME.fontBody}}>{m.v}</div>
@@ -816,8 +866,15 @@ const TrendPanel = ({rows,view}) => {
     </Card>;
 };
 
-const PgVectorPanel = ({pgvector}) => <Card>
-    <CH title={`pgvector ${pgvector.version}`} right={<Lbl color={C.textDim}>{pgvector.indexes.length} indexes</Lbl>}/>
+const PgVectorPanel = ({pgvector}) => {
+    if (!pgvector || !pgvector.installed) return <Card>
+        <CH title="pgvector"/>
+        <div style={{padding:'24px',textAlign:'center'}}>
+            <div style={{fontSize:12,color:C.textDim,fontFamily:THEME.fontBody}}>pgvector extension not installed or no vector indexes found.</div>
+        </div>
+    </Card>;
+    return <Card>
+    <CH title={`pgvector ${pgvector.version||''}`} right={<Lbl color={C.textDim}>{pgvector.indexes.length} indexes</Lbl>}/>
     <div style={{padding:'14px 18px',display:'flex',flexDirection:'column',gap:10}}>
         {pgvector.indexes.map(idx=><div key={idx.id} style={{padding:'12px 14px',background:C.surfaceHi,
             borderRadius:6,border:`1px solid ${idx.status==='building'?C.warn+'30':C.border}`}}>
@@ -851,8 +908,9 @@ const PgVectorPanel = ({pgvector}) => <Card>
         </div>)}
     </div>
 </Card>;
+};
 
-const RowDivPanel = ({data}) => <Card>
+const RowDivPanel = ({data}) => !data||!data.length ? <Card><CH title="Row estimate divergence"/><div style={{padding:'24px',textAlign:'center',fontSize:12,color:C.textDim,fontFamily:THEME.fontBody}}>No divergence data available. Run ANALYZE on your tables.</div></Card> : <Card>
     <CH title="Row estimate divergence" right={<Lbl color={C.err}>{data.length} tables</Lbl>}/>
     <div style={{padding:'14px 18px',display:'flex',flexDirection:'column',gap:10}}>
         {data.map(row=><div key={row.id} style={{padding:'12px 14px',background:C.surfaceHi,borderRadius:6}}>
@@ -877,7 +935,7 @@ const RowDivPanel = ({data}) => <Card>
     </div>
 </Card>;
 
-const FKPanel = ({data}) => <Card>
+const FKPanel = ({data}) => !data||!data.length ? <Card><CH title="FK index gaps"/><div style={{padding:'24px',textAlign:'center',fontSize:12,color:C.textDim,fontFamily:THEME.fontBody}}>No unindexed FK columns detected.</div></Card> : <Card>
     <CH title="FK index gaps" right={<Lbl color={C.err}>{data.length} unindexed</Lbl>}/>
     <div style={{padding:'14px 18px',display:'flex',flexDirection:'column',gap:8}}>
         {data.map(fk=><div key={fk.id} style={{padding:'11px 12px',background:C.surfaceHi,borderRadius:6}}>
@@ -904,7 +962,8 @@ const HistoryPanel = ({data}) => {
     return <Card>
         <CH title="Operation log"/>
         <div style={{padding:'6px 18px'}}>
-            {data.map((e,i)=><div key={i} style={{display:'flex',gap:12,alignItems:'center',padding:'10px 0',
+            {(!data||data.length===0)&&<div style={{padding:'20px 0',textAlign:'center',fontSize:12,color:C.textDim,fontFamily:THEME.fontBody}}>No operation history available.</div>}
+            {(data||[]).map((e,i)=><div key={i} style={{display:'flex',gap:12,alignItems:'center',padding:'10px 0',
                 borderBottom:i<data.length-1?`1px solid ${C.borderSub}`:'none'}}>
         <span style={{fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:4,flexShrink:0,
             background:`${cols[e.action]||C.textSub}12`,color:cols[e.action]||C.textSub,fontFamily:THEME.fontMono}}>
@@ -926,12 +985,13 @@ const HistoryPanel = ({data}) => {
 export default function IndexIntelligence() {
     useAdaptiveTheme();
     const [view,setView]=useState('missing');
-    const [data]=useState(DATA);
     const [detail,setDetail]=useState(null);
     const [apply,setApply]=useState(null);
     const [cmd,setCmd]=useState(false);
     const [live,setLive]=useState(true);
-    const [rTab,setRTab]=useState('ai');
+    const [rTab,setRTab]=useState('health');
+
+    const { data, loading, error, refresh } = useIndexData(live);
 
     useEffect(()=>{
         const h=e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();setCmd(p=>!p);}};
@@ -972,13 +1032,13 @@ export default function IndexIntelligence() {
                             </M>
                         </div>
                         <div style={{display:'flex',alignItems:'center',gap:7,padding:'5px 12px',
-                            background:data.health.criticalCount>0?C.errBg:C.okBg,
-                            border:`1px solid ${data.health.criticalCount>0?C.err+'22':C.ok+'22'}`,borderRadius:20}}>
+                            background:loading?C.surface:data.health.criticalCount>0?C.errBg:C.okBg,
+                            border:`1px solid ${loading?C.border:data.health.criticalCount>0?C.err+'22':C.ok+'22'}`,borderRadius:20}}>
                             <div style={{width:6,height:6,borderRadius:'50%',flexShrink:0,
-                                background:data.health.criticalCount>0?C.err:C.ok,
-                                animation:data.health.criticalCount>0?'pulse 1.4s infinite':'none'}}/>
-                            <span style={{fontSize:11,color:data.health.criticalCount>0?C.err:C.ok,fontWeight:600}}>
-                {data.health.criticalCount>0?`${data.health.criticalCount} critical`:'All nominal'}
+                                background:loading?C.textDim:data.health.criticalCount>0?C.err:C.ok,
+                                animation:!loading&&data.health.criticalCount>0?'pulse 1.4s infinite':'none'}}/>
+                            <span style={{fontSize:11,color:loading?C.textDim:data.health.criticalCount>0?C.err:C.ok,fontWeight:600}}>
+                {loading?'Loading…':data.health.criticalCount>0?`${data.health.criticalCount} unused`:'All nominal'}
               </span>
                         </div>
                     </div>
@@ -999,25 +1059,32 @@ export default function IndexIntelligence() {
                     </div>
                 </div>
 
+                {/* LOADING / ERROR BANNER */}
+                {loading&&<div style={{padding:'12px 16px',marginBottom:16,background:`${C.accent}0D`,border:`1px solid ${C.accent}25`,borderRadius:6,display:'flex',alignItems:'center',gap:10}}>
+                    <div style={{width:16,height:16,borderRadius:'50%',border:`2px solid ${C.accent}`,borderTopColor:'transparent',animation:'spin .8s linear infinite',flexShrink:0}}/>
+                    <span style={{fontSize:12,color:C.textSub,fontFamily:THEME.fontBody}}>Loading live index data…</span>
+                </div>}
+                {error&&!loading&&<div style={{padding:'12px 16px',marginBottom:16,background:`${C.err}0D`,border:`1px solid ${C.err}25`,borderRadius:6,display:'flex',alignItems:'center',justifyContent:'space-between',gap:10}}>
+                    <span style={{fontSize:12,color:C.err,fontFamily:THEME.fontBody}}>Failed to load: {error}</span>
+                    <button onClick={refresh} className="btn" style={{padding:'4px 10px',background:'none',border:`1px solid ${C.err}`,borderRadius:4,color:C.err,fontSize:11}}>Retry</button>
+                </div>}
+
                 {/* KPI */}
                 <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12,marginBottom:24}}>
                     {[
-                        {l:'Index hit ratio',v:`${data.health.hitRatio}%`,c:C.ok,spark:data.health.history,trend:0.4,cls:'s1'},
-                        {l:'Open issues',v:total,c:C.warn,sub:`${data.health.criticalCount} critical`,cls:'s2'},
+                        {l:'Index hit ratio',v:`${data.health.hitRatio}%`,c:C.ok,cls:'s1'},
+                        {l:'Open issues',v:total,c:C.warn,sub:`${data.health.criticalCount} unused`,cls:'s2'},
                         {l:'Total indexes',v:data.health.totalIndexes,c:C.accent,sub:'across all schemas',cls:'s3'},
-                        {l:'Wasted space',v:data.health.totalWaste,c:C.err,sub:'recoverable',cls:'s4'},
-                        {l:'Seq scan rate',v:`${data.health.seqScanRate}%`,c:C.warn,spark:data.health.seqHistory,trend:-0.3,cls:'s5'},
+                        {l:'Index storage',v:data.health.totalSize,c:C.textPrimary,sub:'all indexes',cls:'s4'},
+                        {l:'Seq scan rate',v:`${data.health.seqScanRate}%`,c:C.warn,cls:'s5'},
                     ].map(t=><div key={t.l} className={`fade-in ${t.cls}`} style={{padding:'18px 20px',background:C.surface,
-                        border:`1px solid ${C.border}`,borderRadius:8,position:'relative',overflow:'hidden'}}>
+                        border:`1px solid ${C.border}`,borderRadius:8,position:'relative',overflow:'hidden',
+                        opacity:loading?0.5:1,transition:'opacity .3s'}}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
                             <Lbl>{t.l}</Lbl>
-                            {t.trend!=null&&<span style={{fontSize:10,fontWeight:600,color:t.trend>0?C.ok:C.err,fontFamily:THEME.fontBody}}>
-                {t.trend>0?'↑':'↓'}{Math.abs(t.trend)}%
-              </span>}
                         </div>
                         <div style={{fontSize:30,fontWeight:700,color:t.c,fontFamily:THEME.fontBody,lineHeight:1,letterSpacing:'-.01em',marginBottom:4}}>{t.v}</div>
-                        {t.sub&&<div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,marginBottom:t.spark?8:0}}>{t.sub}</div>}
-                        {t.spark&&<Spark data={t.spark} color={t.c} w={110} h={22}/>}
+                        {t.sub&&<div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody}}>{t.sub}</div>}
                     </div>)}
                 </div>
 
@@ -1045,7 +1112,7 @@ export default function IndexIntelligence() {
                                     </div>}
                                 </div>
                                 <div style={{display:'flex',gap:8}}>
-                                    <button className="btn" style={{padding:'5px 12px',background:C.surface,border:`1px solid ${C.border}`,borderRadius:5,color:C.textSub,fontSize:11}}>Refresh</button>
+                                    <button onClick={refresh} className="btn" style={{padding:'5px 12px',background:C.surface,border:`1px solid ${C.border}`,borderRadius:5,color:C.textSub,fontSize:11}}>Refresh</button>
                                     <button onClick={()=>rows[0]&&setApply(rows[0])} style={{padding:'5px 14px',background:C.accent,border:'none',borderRadius:5,color:'#fff',fontSize:11,fontWeight:600,cursor:'pointer'}}>Apply top priority</button>
                                 </div>
                             </div>
