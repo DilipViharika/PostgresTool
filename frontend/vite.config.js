@@ -22,13 +22,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Core React
-          'vendor-react': ['react', 'react-dom'],
-          // Routing
           'vendor-router': ['react-router-dom'],
-          // Charts
           'vendor-charts': ['recharts'],
-          // UI / icons
           'vendor-ui': ['lucide-react'],
         }
       }
