@@ -24,5 +24,8 @@
       "src": "/(.*)",
       "dest": "/frontend/dist/index.html"
     }
+  ],
+  "crons": [
+    { "path": "/api/alerts/run-monitoring", "schedule": "* * * * *" }
   ]
 }

@@ -3041,50 +3041,52 @@ app.post('/api/ai/chat', authenticate, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// WEBSOCKET
+// WEBSOCKET  (local / traditional server only — not supported on Vercel)
 // ─────────────────────────────────────────────────────────────────────────────
-const wss = new WebSocketServer({ server, path: '/ws' });
-wss.on('connection', (ws) => {
-    const AUTH_TIMEOUT_MS = 8_000;
-    let authenticated = false;
+if (process.env.VERCEL !== '1') {
+    const wss = new WebSocketServer({ server, path: '/ws' });
+    wss.on('connection', (ws) => {
+        const AUTH_TIMEOUT_MS = 8_000;
+        let authenticated = false;
 
-    const authTimeout = setTimeout(() => {
-        if (!authenticated) {
-            log('WARN', 'WebSocket auth timeout — closing connection');
-            ws.close(1008, 'Auth timeout');
-        }
-    }, AUTH_TIMEOUT_MS);
-
-    ws.once('message', (raw) => {
-        clearTimeout(authTimeout);
-        try {
-            const msg = JSON.parse(raw.toString());
-            if (msg?.type !== 'auth' || !msg.token) throw new Error('Expected {type:"auth",token:"..."}');
-            jwt.verify(msg.token, CONFIG.JWT_SECRET);
-            authenticated = true;
-        } catch (err) {
-            log('WARN', 'WebSocket auth failed — closing connection', { error: err.message });
-            ws.close(1008, 'Unauthorized');
-            return;
-        }
-
-        log('INFO', 'WebSocket connection established');
-        alerts.addSubscriber(ws);
-        alerts.getRecent(10, false).then(recent => {
-            if (ws.readyState === 1) {
-                ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
+        const authTimeout = setTimeout(() => {
+            if (!authenticated) {
+                log('WARN', 'WebSocket auth timeout — closing connection');
+                ws.close(1008, 'Auth timeout');
             }
-        }).catch(() => {});
+        }, AUTH_TIMEOUT_MS);
 
-        ws.on('close', () => { log('INFO', 'WebSocket closed'); alerts.removeSubscriber(ws); });
-        ws.on('error', (e) => log('ERROR', 'WebSocket error', { error: e.message }));
-    });
+        ws.once('message', (raw) => {
+            clearTimeout(authTimeout);
+            try {
+                const msg = JSON.parse(raw.toString());
+                if (msg?.type !== 'auth' || !msg.token) throw new Error('Expected {type:"auth",token:"..."}');
+                jwt.verify(msg.token, CONFIG.JWT_SECRET);
+                authenticated = true;
+            } catch (err) {
+                log('WARN', 'WebSocket auth failed — closing connection', { error: err.message });
+                ws.close(1008, 'Unauthorized');
+                return;
+            }
 
-    ws.on('error', (e) => {
-        clearTimeout(authTimeout);
-        log('ERROR', 'WebSocket pre-auth error', { error: e.message });
+            log('INFO', 'WebSocket connection established');
+            alerts.addSubscriber(ws);
+            alerts.getRecent(10, false).then(recent => {
+                if (ws.readyState === 1) {
+                    ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
+                }
+            }).catch(() => {});
+
+            ws.on('close', () => { log('INFO', 'WebSocket closed'); alerts.removeSubscriber(ws); });
+            ws.on('error', (e) => log('ERROR', 'WebSocket error', { error: e.message }));
+        });
+
+        ws.on('error', (e) => {
+            clearTimeout(authTimeout);
+            log('ERROR', 'WebSocket pre-auth error', { error: e.message });
+        });
     });
-});
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ERROR HANDLING
