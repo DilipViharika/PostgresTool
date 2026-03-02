@@ -362,88 +362,195 @@ const queryHistory = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONNECTIONS — persisted to disk so they survive server restarts
+// CONNECTIONS — persisted in the app database (vigil_connections table)
+// Using the DB instead of a JSON file ensures data survives Vercel cold-starts,
+// is scoped per-user, and is never accidentally recreated after deletion.
 // ─────────────────────────────────────────────────────────────────────────────
-const CONNECTIONS_FILE = path.join(__dirname, 'data', 'connections.json');
 
-/** The default connection seeded from env vars */
-function defaultConnection() {
+/** Ensure the vigil_connections table exists (idempotent) */
+async function ensureConnectionsTable() {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS pgmonitoringtool.vigil_connections (
+            id          SERIAL      PRIMARY KEY,
+            user_id     INTEGER     REFERENCES pgmonitoringtool.users(id) ON DELETE CASCADE,
+            name        TEXT        NOT NULL,
+            host        TEXT        NOT NULL DEFAULT '',
+            port        INTEGER     NOT NULL DEFAULT 5432,
+            db_name     TEXT        NOT NULL DEFAULT 'postgres',
+            username    TEXT        NOT NULL DEFAULT 'postgres',
+            password    TEXT        NOT NULL DEFAULT '',
+            ssl         BOOLEAN     NOT NULL DEFAULT false,
+            ssh_enabled BOOLEAN     NOT NULL DEFAULT false,
+            ssh_host    TEXT        NOT NULL DEFAULT '',
+            ssh_port    INTEGER     NOT NULL DEFAULT 22,
+            ssh_user    TEXT        NOT NULL DEFAULT '',
+            ssh_auth_type   TEXT    NOT NULL DEFAULT 'key',
+            ssh_private_key TEXT    NOT NULL DEFAULT '',
+            ssh_passphrase  TEXT    NOT NULL DEFAULT '',
+            ssh_password    TEXT    NOT NULL DEFAULT '',
+            is_default  BOOLEAN     NOT NULL DEFAULT false,
+            status      TEXT,
+            last_tested TIMESTAMPTZ,
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            UNIQUE (user_id, name)
+        )
+    `);
+}
+
+/** Convert a DB row → the shape the rest of the code (and frontend) expects */
+function rowToConn(row) {
     return {
-        id: 1, name: 'Default Connection',
-        host:     process.env.PGHOST     || '',
-        port:     parseInt(process.env.PGPORT) || 5432,
-        database: process.env.PGDATABASE || 'postgres',
-        username: process.env.PGUSER     || 'postgres',
-        password: process.env.PGPASSWORD || '',
-        ssl:      process.env.PGSSL === 'true',
-        sshEnabled:    false,
-        sshHost:       '',
-        sshPort:       22,
-        sshUser:       '',
-        sshAuthType:   'key',
-        sshPrivateKey: '',
-        sshPassphrase: '',
-        sshPassword:   '',
-        isDefault: true, status: 'success',
-        lastTested: new Date().toISOString(),
-        createdAt:  new Date().toISOString(),
+        id:           row.id,
+        userId:       row.user_id,
+        name:         row.name,
+        host:         row.host,
+        port:         row.port,
+        database:     row.db_name,
+        username:     row.username,
+        password:     row.password,
+        ssl:          row.ssl,
+        sshEnabled:   row.ssh_enabled,
+        sshHost:      row.ssh_host,
+        sshPort:      row.ssh_port,
+        sshUser:      row.ssh_user,
+        sshAuthType:  row.ssh_auth_type,
+        sshPrivateKey:row.ssh_private_key,
+        sshPassphrase:row.ssh_passphrase,
+        sshPassword:  row.ssh_password,
+        isDefault:    row.is_default,
+        status:       row.status,
+        lastTested:   row.last_tested,
+        createdAt:    row.created_at,
     };
 }
 
-/** Load connections from disk.
- *  - If the file exists and is valid, return its contents (even an empty array).
- *  - If the file is missing entirely (first ever boot), seed a single default connection.
- *  - Never recreate the default connection once a file has been saved (even if it is empty),
- *    so deleted connections stay deleted across restarts / logouts.
+/** Load all connections for a specific user from the database.
+ *  Admin / super_admin pass userId=null to load all connections.
  */
-async function loadConnections() {
-    try {
-        await fs.mkdir(path.dirname(CONNECTIONS_FILE), { recursive: true });
-        const raw = await fs.readFile(CONNECTIONS_FILE, 'utf8');
-        const parsed = JSON.parse(raw);
-        // File exists and is valid JSON — honour it, even if the array is empty
-        if (Array.isArray(parsed)) {
-            return parsed;
-        }
-    } catch (e) {
-        if (e.code === 'ENOENT') {
-            // File has never been written → genuine first boot, seed the default
-            return [defaultConnection()];
-        }
-        log('WARN', 'Could not read connections file, starting empty', { error: e.message });
+async function dbLoadConnections(userId, role) {
+    const isAdmin = (role === 'admin' || role === 'super_admin');
+    const { rows } = isAdmin
+        ? await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id')
+        : await pool.query(
+            'SELECT * FROM pgmonitoringtool.vigil_connections WHERE user_id = $1 ORDER BY id',
+            [userId]
+          );
+    return rows.map(rowToConn);
+}
+
+/** Persist a new connection; returns the saved row as a conn object */
+async function dbInsertConnection(conn) {
+    const { rows } = await pool.query(`
+        INSERT INTO pgmonitoringtool.vigil_connections
+            (user_id, name, host, port, db_name, username, password, ssl,
+             ssh_enabled, ssh_host, ssh_port, ssh_user, ssh_auth_type,
+             ssh_private_key, ssh_passphrase, ssh_password, is_default, status, last_tested)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+        RETURNING *
+    `, [
+        conn.userId ?? null,
+        conn.name, conn.host, conn.port, conn.database, conn.username, conn.password, conn.ssl,
+        conn.sshEnabled, conn.sshHost, conn.sshPort, conn.sshUser, conn.sshAuthType,
+        conn.sshPrivateKey, conn.sshPassphrase, conn.sshPassword,
+        conn.isDefault, conn.status ?? null, conn.lastTested ?? null,
+    ]);
+    return rowToConn(rows[0]);
+}
+
+/** Update mutable fields of an existing connection */
+async function dbUpdateConnection(id, fields) {
+    const { rows } = await pool.query(`
+        UPDATE pgmonitoringtool.vigil_connections SET
+            name        = COALESCE($2, name),
+            host        = COALESCE($3, host),
+            port        = COALESCE($4, port),
+            db_name     = COALESCE($5, db_name),
+            username    = COALESCE($6, username),
+            password    = COALESCE($7, password),
+            ssl         = COALESCE($8, ssl),
+            ssh_enabled = COALESCE($9,  ssh_enabled),
+            ssh_host    = COALESCE($10, ssh_host),
+            ssh_port    = COALESCE($11, ssh_port),
+            ssh_user    = COALESCE($12, ssh_user),
+            ssh_auth_type    = COALESCE($13, ssh_auth_type),
+            ssh_private_key  = COALESCE($14, ssh_private_key),
+            ssh_passphrase   = COALESCE($15, ssh_passphrase),
+            ssh_password     = COALESCE($16, ssh_password),
+            is_default  = COALESCE($17, is_default),
+            status      = $18,
+            last_tested = $19
+        WHERE id = $1
+        RETURNING *
+    `, [
+        id,
+        fields.name      ?? null,
+        fields.host      ?? null,
+        fields.port      ?? null,
+        fields.database  ?? null,
+        fields.username  ?? null,
+        fields.password  ?? null,
+        fields.ssl       ?? null,
+        fields.sshEnabled     ?? null,
+        fields.sshHost        ?? null,
+        fields.sshPort        ?? null,
+        fields.sshUser        ?? null,
+        fields.sshAuthType    ?? null,
+        fields.sshPrivateKey  ?? null,
+        fields.sshPassphrase  ?? null,
+        fields.sshPassword    ?? null,
+        fields.isDefault      ?? null,
+        fields.status         ?? null,
+        fields.lastTested     ?? null,
+    ]);
+    return rows[0] ? rowToConn(rows[0]) : null;
+}
+
+/** Delete a connection by ID */
+async function dbDeleteConnection(id) {
+    await pool.query('DELETE FROM pgmonitoringtool.vigil_connections WHERE id = $1', [id]);
+}
+
+/** Clear is_default for all connections belonging to a user, then set one */
+async function dbSetDefault(userId, role, newDefaultId) {
+    const isAdmin = (role === 'admin' || role === 'super_admin');
+    if (isAdmin) {
+        await pool.query(
+            'UPDATE pgmonitoringtool.vigil_connections SET is_default = (id = $1)',
+            [newDefaultId]
+        );
+    } else {
+        await pool.query(
+            'UPDATE pgmonitoringtool.vigil_connections SET is_default = (id = $1) WHERE user_id = $2',
+            [newDefaultId, userId]
+        );
     }
-    // Corrupt / non-array JSON — start clean rather than resurrecting stale data
-    return [];
 }
 
-/** Save connections to disk (non-blocking, swallows errors on read-only filesystems like Vercel) */
-async function saveConnections() {
+// In-memory cache rebuilt from DB on every request (no more stale global state)
+// CONNECTIONS is kept for getPool() lookups — always refreshed from DB before use.
+let CONNECTIONS = [];
+
+/** Sync in-memory CONNECTIONS cache from DB for all connections (used by getPool) */
+async function syncConnectionsCache() {
     try {
-        await fs.mkdir(path.dirname(CONNECTIONS_FILE), { recursive: true });
-        await fs.writeFile(CONNECTIONS_FILE, JSON.stringify(CONNECTIONS, null, 2), 'utf8');
+        const { rows } = await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id');
+        CONNECTIONS = rows.map(rowToConn);
+    } catch { /* DB not reachable yet — leave cache as-is */ }
+}
+
+/** Called once at startup to ensure table exists and warm the cache */
+async function initConnections() {
+    try {
+        await ensureConnectionsTable();
+        await syncConnectionsCache();
     } catch (e) {
-        log('WARN', 'Could not persist connections to disk', { error: e.message });
+        log('WARN', 'Could not initialise connections table', { error: e.message });
     }
 }
 
-// Populated in startup() — default fallback so the app works before startup completes
-let CONNECTIONS = [defaultConnection()];
-let connectionsLoaded = false;
-
-/** Ensure connections are loaded once (needed for Vercel serverless where startup() is skipped) */
-async function ensureConnectionsLoaded() {
-    if (connectionsLoaded) return;
-    connectionsLoaded = true;
-    const saved = await loadConnections();
-    CONNECTIONS = saved;
-    const defaultConn = CONNECTIONS.find(c => c.isDefault);
-    if (defaultConn && !activeConnectionId) activeConnectionId = defaultConn.id;
-}
-
-// Middleware that lazily loads connections on the first /api/connections request
-// so Vercel cold-starts also benefit from persisted data.
+// Middleware: refresh CONNECTIONS cache before every connection API request
 const ensureConnections = (req, res, next) => {
-    ensureConnectionsLoaded().then(next).catch(next);
+    syncConnectionsCache().then(next).catch(next);
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -941,168 +1048,196 @@ async function resolvePoolConfig(c) {
     };
 }
 
-// ── helper: connections visible to a given user ───────────────────────────────
-// Admin/super_admin users can see all connections; regular users only see their own.
-function userConnections(userId, role) {
-    if (role === 'admin' || role === 'super_admin') return CONNECTIONS;
-    return CONNECTIONS.filter(c => !c.userId || c.userId === userId);
-}
-
-app.get('/api/connections', authenticate, ensureConnections, (req, res) => {
-    res.json(userConnections(req.user.id, req.user.role).map(sanitizeConn));
+app.get('/api/connections', authenticate, ensureConnections, async (req, res) => {
+    try {
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        res.json(conns.map(sanitizeConn));
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/connections/:id', authenticate, (req, res) => {
-    const visible = userConnections(req.user.id, req.user.role);
-    const c = visible.find(c => c.id === parseInt(req.params.id));
-    if (!c) return res.status(404).json({ error: 'Connection not found' });
-    res.json(sanitizeConn(c));
+app.get('/api/connections/:id', authenticate, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        const c = conns.find(c => c.id === id);
+        if (!c) return res.status(404).json({ error: 'Connection not found' });
+        res.json(sanitizeConn(c));
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/connections', authenticate, (req, res) => {
-    const { name, host, port, database, username, password, ssl, isDefault } = req.body;
-    if (!name || !host || !port || !database || !username || !password) {
-        return res.status(400).json({ error: 'All fields are required' });
+app.post('/api/connections', authenticate, async (req, res) => {
+    try {
+        const { name, host, port, database, username, password, ssl, isDefault } = req.body;
+        if (!name || !host || !port || !database || !username || !password) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+        // Clear is_default for this user before setting a new default
+        if (isDefault) await dbSetDefault(req.user.id, req.user.role, -1); // -1 = clear all
+        const newConn = await dbInsertConnection({
+            userId: req.user.id,
+            name, host, port: parseInt(port), database, username, password,
+            ssl: ssl || false, isDefault: isDefault || false,
+            ...pickSSH(req.body),
+            status: null, lastTested: null,
+        });
+        await syncConnectionsCache();
+        res.status(201).json(sanitizeConn(newConn));
+    } catch (e) {
+        if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
+        res.status(500).json({ error: e.message });
     }
-    // Name uniqueness check scoped to this user
-    const visible = userConnections(req.user.id, req.user.role);
-    if (visible.find(c => c.name === name)) return res.status(409).json({ error: 'Connection name already exists' });
-    // Only reset isDefault for connections owned by this user
-    if (isDefault) visible.forEach(c => c.isDefault = false);
-    const newConn = {
-        id: Math.max(...CONNECTIONS.map(c => c.id), 0) + 1,
-        userId: req.user.id,          // ← bind connection to creating user
-        name, host, port: parseInt(port), database, username, password,
-        ssl: ssl || false, isDefault: isDefault || false,
-        ...pickSSH(req.body),
-        status: null, lastTested: null, createdAt: new Date().toISOString(),
-    };
-    CONNECTIONS.push(newConn);
-    saveConnections();
-    res.status(201).json(sanitizeConn(newConn));
 });
 
 app.put('/api/connections/:id', authenticate, async (req, res) => {
-    const id    = parseInt(req.params.id);
-    const visible = userConnections(req.user.id, req.user.role);
-    const index = CONNECTIONS.findIndex(c => c.id === id && visible.includes(c));
-    if (index === -1) return res.status(404).json({ error: 'Connection not found' });
-    const { name, host, port, database, username, password, ssl } = req.body;
-    if (visible.find(c => c.name === name && c.id !== id)) return res.status(409).json({ error: 'Connection name already exists' });
+    try {
+        const id = parseInt(req.params.id);
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        const existing = conns.find(c => c.id === id);
+        if (!existing) return res.status(404).json({ error: 'Connection not found' });
 
-    const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== CONNECTIONS[index][f]);
-    if (sshChanged) await closeTunnel(id);
-    // Destroy cached pool so it's recreated with new config on next use
-    await destroyPool(id);
-    if (activeConnectionId === id) cache.clear();
+        const { name, host, port, database, username, password, ssl } = req.body;
+        const ssh = pickSSH({ ...existing, ...req.body });
 
-    CONNECTIONS[index] = {
-        ...CONNECTIONS[index],
-        name:     name     || CONNECTIONS[index].name,
-        host:     host     || CONNECTIONS[index].host,
-        port:     port     ? parseInt(port) : CONNECTIONS[index].port,
-        database: database || CONNECTIONS[index].database,
-        username: username || CONNECTIONS[index].username,
-        password: password || CONNECTIONS[index].password,
-        ssl:      ssl !== undefined ? ssl : CONNECTIONS[index].ssl,
-        ...pickSSH({ ...CONNECTIONS[index], ...req.body }),
-        status: null, lastTested: null,
-    };
-    saveConnections();
-    res.json(sanitizeConn(CONNECTIONS[index]));
+        const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== existing[f]);
+        if (sshChanged) await closeTunnel(id);
+        await destroyPool(id);
+        if (activeConnectionId === id) cache.clear();
+
+        const updated = await dbUpdateConnection(id, {
+            name:     name     || existing.name,
+            host:     host     || existing.host,
+            port:     port     ? parseInt(port) : existing.port,
+            database: database || existing.database,
+            username: username || existing.username,
+            password: password || existing.password,
+            ssl:      ssl !== undefined ? ssl : existing.ssl,
+            sshEnabled:    ssh.sshEnabled,
+            sshHost:       ssh.sshHost,
+            sshPort:       ssh.sshPort,
+            sshUser:       ssh.sshUser,
+            sshAuthType:   ssh.sshAuthType,
+            sshPrivateKey: ssh.sshPrivateKey,
+            sshPassphrase: ssh.sshPassphrase,
+            sshPassword:   ssh.sshPassword,
+            status: null, lastTested: null,
+        });
+        await syncConnectionsCache();
+        res.json(sanitizeConn(updated));
+    } catch (e) {
+        if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
+        res.status(500).json({ error: e.message });
+    }
 });
 
 app.delete('/api/connections/:id', authenticate, async (req, res) => {
-    const id = parseInt(req.params.id);
-    const visible = userConnections(req.user.id, req.user.role);
-    const c = visible.find(c => c.id === id);
-    if (!c) return res.status(404).json({ error: 'Connection not found' });
-    await closeTunnel(id);
-    await destroyPool(id);
-    if (activeConnectionId === id) { activeConnectionId = null; cache.clear(); }
-    CONNECTIONS = CONNECTIONS.filter(c => c.id !== id);
-    if (c.isDefault) {
-        // Promote the next connection for this user (if any) to default
-        const nextOwn = CONNECTIONS.find(x => !x.userId || x.userId === req.user.id);
-        if (nextOwn) nextOwn.isDefault = true;
-    }
-    saveConnections();
-    res.json({ success: true });
+    try {
+        const id = parseInt(req.params.id);
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        const c = conns.find(c => c.id === id);
+        if (!c) return res.status(404).json({ error: 'Connection not found' });
+
+        await closeTunnel(id);
+        await destroyPool(id);
+        if (activeConnectionId === id) { activeConnectionId = null; cache.clear(); }
+
+        await dbDeleteConnection(id);
+
+        // If it was the default, promote the next connection for this user
+        if (c.isDefault) {
+            const remaining = conns.filter(x => x.id !== id);
+            if (remaining.length > 0) {
+                await dbSetDefault(req.user.id, req.user.role, remaining[0].id);
+            }
+        }
+
+        await syncConnectionsCache();
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/connections/:id/default', authenticate, (req, res) => {
-    const visible = userConnections(req.user.id, req.user.role);
-    const c = visible.find(c => c.id === parseInt(req.params.id));
-    if (!c) return res.status(404).json({ error: 'Connection not found' });
-    // Only clear isDefault for this user's own connections
-    visible.forEach(c => c.isDefault = false);
-    c.isDefault = true;
-    saveConnections();
-    res.json({ success: true });
+app.post('/api/connections/:id/default', authenticate, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        if (!conns.find(c => c.id === id)) return res.status(404).json({ error: 'Connection not found' });
+        await dbSetDefault(req.user.id, req.user.role, id);
+        await syncConnectionsCache();
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/connections/:id/test', authenticate, async (req, res) => {
-    const visible = userConnections(req.user.id, req.user.role);
-    const c = visible.find(c => c.id === parseInt(req.params.id));
-    if (!c) return res.status(404).json({ error: 'Connection not found' });
-
-    let poolCfg;
     try {
-        poolCfg = await resolvePoolConfig(c);
-    } catch (tunnelErr) {
-        c.status = 'failed'; c.lastTested = new Date().toISOString();
-        return res.json({ success: false, error: `SSH tunnel error: ${tunnelErr.message}` });
-    }
+        const id = parseInt(req.params.id);
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        const c = conns.find(c => c.id === id);
+        if (!c) return res.status(404).json({ error: 'Connection not found' });
 
-    const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 8000 });
-    try {
-        const client = await testPool.connect();
-        await client.query('SELECT 1');
-        client.release();
-        await testPool.end();
-        c.status = 'success'; c.lastTested = new Date().toISOString();
-        saveConnections();
-        res.json({
-            success: true,
-            message: c.sshEnabled ? 'Connection successful via SSH tunnel' : 'Connection successful',
-        });
-    } catch (e) {
-        c.status = 'failed'; c.lastTested = new Date().toISOString();
-        saveConnections();
-        await testPool.end().catch(() => {});
-        res.json({ success: false, error: e.message });
-    }
+        let poolCfg;
+        try {
+            poolCfg = await resolvePoolConfig(c);
+        } catch (tunnelErr) {
+            await dbUpdateConnection(id, { status: 'failed', lastTested: new Date().toISOString() });
+            await syncConnectionsCache();
+            return res.json({ success: false, error: `SSH tunnel error: ${tunnelErr.message}` });
+        }
+
+        const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 8000 });
+        try {
+            const client = await testPool.connect();
+            await client.query('SELECT 1');
+            client.release();
+            await testPool.end();
+            await dbUpdateConnection(id, { status: 'success', lastTested: new Date().toISOString() });
+            await syncConnectionsCache();
+            res.json({
+                success: true,
+                message: c.sshEnabled ? 'Connection successful via SSH tunnel' : 'Connection successful',
+            });
+        } catch (e) {
+            await dbUpdateConnection(id, { status: 'failed', lastTested: new Date().toISOString() });
+            await syncConnectionsCache();
+            await testPool.end().catch(() => {});
+            res.json({ success: false, error: e.message });
+        }
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
-    const id = parseInt(req.params.id);
-    const visible = userConnections(req.user.id, req.user.role);
-    const c = visible.find(c => c.id === id);
-    if (!c) return res.status(404).json({ error: 'Connection not found' });
-
     try {
-        // Eagerly create / warm-up the pool so we fail fast on bad config
-        const p = await getPool(id);
-        const client = await p.connect();
-        await client.query('SELECT 1');
-        client.release();
-    } catch (err) {
-        return res.status(400).json({ success: false, error: `Cannot switch: ${err.message}` });
-    }
+        const id = parseInt(req.params.id);
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        const c = conns.find(c => c.id === id);
+        if (!c) return res.status(404).json({ error: 'Connection not found' });
 
-    // Mark as active — only reset isDefault within this user's own connections
-    visible.forEach(c => c.isDefault = false);
-    c.isDefault = true;
-    activeConnectionId = id;
-    cache.clear(); // invalidate all cached responses — they belong to the old connection
-    saveConnections();
-    log('INFO', `Active connection switched to ${id} (${c.name})`);
-    res.json({ success: true, message: `Switched to "${c.name}"`, connectionId: id });
+        try {
+            // Eagerly create / warm-up the pool so we fail fast on bad config
+            const p = await getPool(id);
+            const client = await p.connect();
+            await client.query('SELECT 1');
+            client.release();
+        } catch (err) {
+            return res.status(400).json({ success: false, error: `Cannot switch: ${err.message}` });
+        }
+
+        await dbSetDefault(req.user.id, req.user.role, id);
+        activeConnectionId = id;
+        cache.clear();
+        await syncConnectionsCache();
+        log('INFO', `Active connection switched to ${id} (${c.name})`);
+        res.json({ success: true, message: `Switched to "${c.name}"`, connectionId: id });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/connections/active', authenticate, (req, res) => {
-    const active = CONNECTIONS.find(c => c.id === activeConnectionId) || CONNECTIONS.find(c => c.isDefault) || CONNECTIONS[0];
-    res.json({ connectionId: activeConnectionId, connection: active ? sanitizeConn(active) : null });
+app.get('/api/connections/active', authenticate, async (req, res) => {
+    try {
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        const active = conns.find(c => c.id === activeConnectionId)
+                    || conns.find(c => c.isDefault)
+                    || conns[0]
+                    || null;
+        res.json({ connectionId: active?.id ?? null, connection: active ? sanitizeConn(active) : null });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2795,14 +2930,11 @@ app.use((req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function startup() {
     try {
-        // Load persisted connections from disk (must happen before any request is served)
-        const saved = await loadConnections();
-        CONNECTIONS = saved;
-        connectionsLoaded = true;
-        // Restore activeConnectionId from the persisted isDefault flag
+        // Initialise connections table and warm the in-memory cache
+        await initConnections();
         const defaultConn = CONNECTIONS.find(c => c.isDefault);
         if (defaultConn) activeConnectionId = defaultConn.id;
-        log('INFO', `Loaded ${CONNECTIONS.length} connection(s) from disk`);
+        log('INFO', `Loaded ${CONNECTIONS.length} connection(s) from database`);
 
         fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true })
             .then(() => log('INFO', 'Repository directory ready'))
