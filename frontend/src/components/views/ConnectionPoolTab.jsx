@@ -823,7 +823,7 @@ const ConnectionsTab = () => {
                 try {
                     const json = JSON.parse(text);
                     msg = json.error || json.message || msg;
-                } catch {}
+                } catch { /* empty */ }
                 setErrorMsg(msg);
             }
         } catch (e) {
@@ -856,7 +856,7 @@ const ConnectionsTab = () => {
             } else {
                 const text = await res.text();
                 let msg = 'Failed to delete';
-                try { msg = JSON.parse(text).error || msg; } catch {}
+                try { msg = JSON.parse(text).error || msg; } catch { /* empty */ }
                 alert(msg);
             }
         } catch (e) {
@@ -872,7 +872,7 @@ const ConnectionsTab = () => {
             });
             const text = await res.text();
             let r = {};
-            try { r = JSON.parse(text); } catch {}
+            try { r = JSON.parse(text); } catch { /* empty */ }
             alert(r.success ? '✅ Connection successful!' : `❌ Failed: ${r.error || text || res.statusText}`);
         } catch (e) {
             alert(`Network error: ${e.message}`);
