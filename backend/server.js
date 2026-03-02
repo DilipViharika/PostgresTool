@@ -1845,7 +1845,19 @@ async function captureAlertSnapshot() {
             pool.query(`SELECT wait_event_type, COUNT(*) AS cnt FROM pg_stat_activity
                         WHERE wait_event IS NOT NULL AND state!='idle' GROUP BY wait_event_type`),
             pool.query(`SELECT COUNT(*) AS replica_count FROM pg_stat_replication`).catch(() => ({rows:[{replica_count:0}]})),
-            pool.query(`SELECT checkpoints_req, checkpoints_timed FROM pg_stat_bgwriter`),
+            pool.query(`
+                SELECT
+                    COALESCE(
+                        (SELECT num_requested  FROM pg_stat_checkpointer LIMIT 1),
+                        (SELECT checkpoints_req FROM pg_stat_bgwriter    LIMIT 1),
+                        0
+                    ) AS checkpoints_req,
+                    COALESCE(
+                        (SELECT num_timed      FROM pg_stat_checkpointer LIMIT 1),
+                        (SELECT checkpoints_timed FROM pg_stat_bgwriter  LIMIT 1),
+                        0
+                    ) AS checkpoints_timed
+            `).catch(() => ({ rows: [{ checkpoints_req: 0, checkpoints_timed: 0 }] })),
         ]);
 
         const c    = conns.rows[0];
@@ -1979,13 +1991,36 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
         const _p = await reqPool(req);
         const [bgwriter, walLsn, walSettings] = await Promise.all([
             _p.query(`
-                SELECT checkpoints_timed, checkpoints_req,
-                       round(checkpoint_write_time::numeric, 0) AS checkpoint_write_ms,
-                       round(checkpoint_sync_time::numeric, 0)  AS checkpoint_sync_ms,
-                       buffers_checkpoint, buffers_clean, maxwritten_clean,
-                       buffers_backend, buffers_backend_fsync, buffers_alloc,
-                       stats_reset
-                FROM pg_stat_bgwriter
+                SELECT
+                    -- PG 17+ splits checkpoint stats into pg_stat_checkpointer;
+                    -- fall back to pg_stat_bgwriter for older versions.
+                    COALESCE(
+                        (SELECT num_timed    FROM pg_stat_checkpointer LIMIT 1),
+                        (SELECT checkpoints_timed FROM pg_stat_bgwriter LIMIT 1), 0
+                    ) AS checkpoints_timed,
+                    COALESCE(
+                        (SELECT num_requested FROM pg_stat_checkpointer LIMIT 1),
+                        (SELECT checkpoints_req   FROM pg_stat_bgwriter LIMIT 1), 0
+                    ) AS checkpoints_req,
+                    COALESCE(
+                        (SELECT write_time   FROM pg_stat_checkpointer LIMIT 1),
+                        (SELECT checkpoint_write_time FROM pg_stat_bgwriter LIMIT 1), 0
+                    )::numeric AS checkpoint_write_ms,
+                    COALESCE(
+                        (SELECT sync_time    FROM pg_stat_checkpointer LIMIT 1),
+                        (SELECT checkpoint_sync_time  FROM pg_stat_bgwriter LIMIT 1), 0
+                    )::numeric AS checkpoint_sync_ms,
+                    COALESCE(
+                        (SELECT buffers_written FROM pg_stat_checkpointer LIMIT 1),
+                        (SELECT buffers_checkpoint    FROM pg_stat_bgwriter LIMIT 1), 0
+                    ) AS buffers_checkpoint,
+                    b.buffers_clean,
+                    b.maxwritten_clean,
+                    b.buffers_backend,
+                    b.buffers_backend_fsync,
+                    b.buffers_alloc,
+                    b.stats_reset
+                FROM pg_stat_bgwriter b
             `),
             _p.query(`
                 SELECT pg_current_wal_lsn()::text AS current_lsn,
