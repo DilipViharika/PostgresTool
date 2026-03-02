@@ -14,7 +14,7 @@ import { fileURLToPath }        from 'url';
 import { dirname }              from 'path';
 
 import { getStatus, getMetric } from './services/cloudwatchService.js';
-import { sendSlackAlert, sendSlackMessage } from './services/slackService.js';
+import { sendSlackAlert, sendSlackMessage, verifySlackSignature, updateAlertMessage, postThreadComment, resolveSlackUser } from './services/slackService.js';
 import repoRoutes               from './routes/repoRoutes.js';
 import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
@@ -955,10 +955,114 @@ app.post('/api/alerts/slack/test', authenticate, requireScreen('admin'), async (
 
 app.get('/api/alerts/slack/config', authenticate, requireScreen('admin'), (req, res) => {
     res.json({
-        enabled: !!process.env.SLACK_WEBHOOK_URL,
-        channel: process.env.SLACK_ALERT_CHANNEL || 'not set',
+        enabled:           !!(process.env.SLACK_BOT_TOKEN || process.env.SLACK_WEBHOOK_URL),
+        mode:              process.env.SLACK_BOT_TOKEN ? 'bot_api' : 'webhook',
+        channelId:         process.env.SLACK_CHANNEL_ID || 'not set',
+        channel:           process.env.SLACK_ALERT_CHANNEL || process.env.SLACK_CHANNEL_ID || 'not set',
+        botTokenConfigured: !!process.env.SLACK_BOT_TOKEN,
+        signingSecretConfigured: !!process.env.SLACK_SIGNING_SECRET,
         webhookConfigured: !!process.env.SLACK_WEBHOOK_URL,
     });
+});
+
+// ── Slack Slash Commands: /ack and /escalate ──────────────────────────────
+// Slack requires a 200 response within 3 seconds — we respond immediately
+// and process asynchronously.
+app.post('/api/slack/commands', express.raw({ type: 'application/x-www-form-urlencoded' }), async (req, res) => {
+    // Attach rawBody for signature verification before body-parser runs
+    req.rawBody = req.body?.toString?.() || '';
+
+    if (!verifySlackSignature(req)) {
+        return res.status(403).json({ error: 'Invalid Slack signature' });
+    }
+
+    // Parse URL-encoded body from Slack
+    const params = new URLSearchParams(req.rawBody);
+    const command  = params.get('command');
+    const alertId  = (params.get('text') || '').trim();
+    const username = params.get('user_name') || 'unknown';
+
+    if (command === '/ack') {
+        if (!alertId) return res.json({ text: 'Usage: /ack <alert-id>' });
+
+        // Respond to Slack immediately (3s timeout requirement)
+        res.json({ text: `Processing acknowledgement for alert \`${alertId}\`…` });
+
+        // Process async
+        try {
+            const result = await alerts.acknowledge(alertId, null, username);
+            if (!result) {
+                // Slack already got the 200 — we can't send another response
+                log('WARN', `Slack /ack: alert not found`, { alertId, username });
+            }
+        } catch (err) {
+            log('ERROR', 'Slack /ack failed', { error: err.message, alertId });
+        }
+        return;
+    }
+
+    if (command === '/escalate') {
+        if (!alertId) return res.json({ text: 'Usage: /escalate <alert-id>' });
+        res.json({ text: `:rotating_light: Alert \`${alertId}\` escalated to L2 on-call by @${username}` });
+        // TODO: wire up PagerDuty / on-call notification here
+        return;
+    }
+
+    return res.status(400).json({ text: 'Unknown command.' });
+});
+
+// ── Slack Events: thread replies sync back to VIGIL ──────────────────────
+app.post('/api/slack/events', express.raw({ type: 'application/json' }), async (req, res) => {
+    req.rawBody = req.body?.toString?.() || '';
+
+    // Parse JSON manually since we used express.raw
+    let body;
+    try { body = JSON.parse(req.rawBody); } catch { return res.status(400).end(); }
+
+    // One-time URL verification challenge from Slack
+    if (body.type === 'url_verification') {
+        return res.json({ challenge: body.challenge });
+    }
+
+    if (!verifySlackSignature(req)) {
+        return res.status(403).end();
+    }
+
+    // Respond 200 immediately — Slack will retry if we don't
+    res.status(200).end();
+
+    const event = body.event;
+    // Only handle threaded replies that aren't from bots
+    if (event?.type === 'message' && event.thread_ts && !event.bot_id && event.text) {
+        try {
+            // Find the VIGIL alert that owns this Slack thread
+            const alertResult = await pool.query(
+                `SELECT * FROM alerts WHERE slack_ts = $1 LIMIT 1`,
+                [event.thread_ts],
+            );
+            if (alertResult.rows.length > 0) {
+                const alert = alertResult.rows[0];
+                const authorName = await resolveSlackUser(event.user);
+
+                await pool.query(
+                    `UPDATE alerts
+                     SET data = jsonb_set(
+                         COALESCE(data, '{}'),
+                         '{slack_comments}',
+                         COALESCE(data->'slack_comments', '[]') || $1::jsonb
+                     )
+                     WHERE id = $2`,
+                    [
+                        JSON.stringify([{ author: authorName, text: event.text, timestamp: Date.now() }]),
+                        alert.id,
+                    ],
+                );
+                log('INFO', 'Slack thread reply synced to VIGIL', { alertId: alert.id, author: authorName });
+            }
+        } catch (err) {
+            log('ERROR', 'Failed to sync Slack thread reply', { error: err.message });
+        }
+    }
 });
 
 app.get('/api/alerts/email/config', authenticate, requireScreen('admin'), (req, res) => {

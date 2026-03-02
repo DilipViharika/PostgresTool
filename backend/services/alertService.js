@@ -3,7 +3,7 @@
 // ==========================================================================
 
 import { v4 as uuid } from 'uuid';
-import { sendSlackAlert } from './slackService.js';
+import { sendSlackAlert, updateAlertMessage } from './slackService.js';
 
 function log(level, message, meta = {}) {
     const entry = { ts: new Date().toISOString(), level, msg: message, ...meta };
@@ -156,11 +156,18 @@ class EnhancedAlertEngine {
 
             // ── Slack notification ──────────────────────────────────────
             const slackWebhook = process.env.SLACK_WEBHOOK_URL;
-            if (slackWebhook) {
-                sendSlackAlert(alert, slackWebhook).catch(err =>
-                    log('ERROR', 'Failed to send Slack alert', { error: err.message }),
-                );
-            }
+            sendSlackAlert(alert, slackWebhook)
+                .then(async (slackTs) => {
+                    if (slackTs) {
+                        // Persist the Slack message ts so we can update/thread later
+                        await this.pool.query(
+                            `UPDATE alerts SET slack_ts = $1 WHERE id = $2`,
+                            [slackTs, alert.id],
+                        ).catch(err => log('ERROR', 'Failed to store slack_ts', { error: err.message }));
+                        alert.slack_ts = slackTs;
+                    }
+                })
+                .catch(err => log('ERROR', 'Failed to send Slack alert', { error: err.message }));
 
             return alert;
         } catch (error) {
@@ -197,6 +204,8 @@ class EnhancedAlertEngine {
             );
 
             if (result.rows.length > 0) {
+                const updatedAlert = result.rows[0];
+
                 this.broadcast({
                     type: 'alert_acknowledged',
                     payload: {
@@ -205,7 +214,14 @@ class EnhancedAlertEngine {
                         acknowledgedAt: new Date().toISOString(),
                     },
                 });
-                return result.rows[0];
+
+                // ── Sync acknowledgement back to Slack message ──────────
+                if (updatedAlert.slack_ts) {
+                    updateAlertMessage(updatedAlert.slack_ts, updatedAlert)
+                        .catch(err => log('ERROR', 'Failed to update Slack message on acknowledge', { error: err.message }));
+                }
+
+                return updatedAlert;
             }
             return null;
         } catch (error) {
@@ -431,13 +447,18 @@ class EnhancedAlertEngine {
                     acknowledged    BOOLEAN     DEFAULT false,
                     acknowledged_by VARCHAR(100),
                     acknowledged_at TIMESTAMP,
+                    slack_ts        VARCHAR(50),
                     created_at      TIMESTAMP   DEFAULT NOW()
                 );
+
+                -- Add slack_ts to existing tables that were created before this column existed
+                ALTER TABLE alerts ADD COLUMN IF NOT EXISTS slack_ts VARCHAR(50);
 
                 CREATE INDEX IF NOT EXISTS idx_alerts_timestamp    ON alerts(timestamp DESC);
                 CREATE INDEX IF NOT EXISTS idx_alerts_severity     ON alerts(severity);
                 CREATE INDEX IF NOT EXISTS idx_alerts_acknowledged ON alerts(acknowledged);
                 CREATE INDEX IF NOT EXISTS idx_alerts_category     ON alerts(category);
+                CREATE INDEX IF NOT EXISTS idx_alerts_slack_ts     ON alerts(slack_ts);
             `);
             log('INFO', 'Alert database tables initialized');
         } catch (error) {
