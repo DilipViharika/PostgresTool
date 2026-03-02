@@ -919,6 +919,22 @@ app.delete('/api/alerts/cleanup', authenticate, requireScreen('admin'), async (r
     catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Vercel Cron: run monitoring on schedule ───────────────────────────────────
+// Called every minute by Vercel Cron (see vercel.json). No auth required since
+// Vercel calls this internally; protected by checking the cron secret header.
+app.post('/api/alerts/run-monitoring', async (req, res) => {
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && req.headers['authorization'] !== `Bearer ${cronSecret}`) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+        await alerts.runMonitoring();
+        res.json({ success: true, timestamp: new Date().toISOString(), message: 'Monitoring cycle completed' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.post('/api/alerts/email/test', authenticate, requireScreen('admin'), async (req, res) => {
     try {
         const { recipient } = req.body;
