@@ -20,9 +20,9 @@ const Styles = () => (
 );
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-const fmt = (n) => n == null ? '—' : Number(n).toLocaleString();
+const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
 const fmtMs = (ms) => {
-    if (ms == null) return '—';
+    if (ms === null) return '—';
     const m = Number(ms);
     if (m < 1000) return `${m}ms`;
     if (m < 60000) return `${(m/1000).toFixed(1)}s`;

@@ -3,6 +3,7 @@
 // ==========================================================================
 
 import { v4 as uuid } from 'uuid';
+import { sendSlackAlert } from './slackService.js';
 
 function log(level, message, meta = {}) {
     const entry = { ts: new Date().toISOString(), level, msg: message, ...meta };
@@ -150,6 +151,14 @@ class EnhancedAlertEngine {
             if (this.emailService) {
                 this.emailService.sendAlert(alert).catch(err =>
                     log('ERROR', 'Failed to send alert email', { error: err.message }),
+                );
+            }
+
+            // ── Slack notification ──────────────────────────────────────
+            const slackWebhook = process.env.SLACK_WEBHOOK_URL;
+            if (slackWebhook) {
+                sendSlackAlert(alert, slackWebhook).catch(err =>
+                    log('ERROR', 'Failed to send Slack alert', { error: err.message }),
                 );
             }
 

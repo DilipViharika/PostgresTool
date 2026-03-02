@@ -14,6 +14,7 @@ import { fileURLToPath }        from 'url';
 import { dirname }              from 'path';
 
 import { getStatus, getMetric } from './services/cloudwatchService.js';
+import { sendSlackAlert, sendSlackMessage } from './services/slackService.js';
 import repoRoutes               from './routes/repoRoutes.js';
 import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
@@ -924,6 +925,24 @@ app.post('/api/alerts/email/test', authenticate, requireScreen('admin'), async (
         if (!recipient) return res.status(400).json({ error: 'Recipient email required' });
         res.json(await emailService.sendTestEmail(recipient));
     } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Slack: test & config ──────────────────────────────────────────────────
+app.post('/api/alerts/slack/test', authenticate, requireScreen('admin'), async (req, res) => {
+    try {
+        const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+        if (!webhookUrl) return res.status(400).json({ error: 'SLACK_WEBHOOK_URL is not configured.' });
+        await sendSlackMessage(':white_check_mark: *Vigil Slack integration is working!* This is a test message from your Vigil monitoring platform.', webhookUrl);
+        res.json({ success: true, message: 'Test message sent to Slack.' });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/alerts/slack/config', authenticate, requireScreen('admin'), (req, res) => {
+    res.json({
+        enabled: !!process.env.SLACK_WEBHOOK_URL,
+        channel: process.env.SLACK_ALERT_CHANNEL || 'not set',
+        webhookConfigured: !!process.env.SLACK_WEBHOOK_URL,
+    });
 });
 
 app.get('/api/alerts/email/config', authenticate, requireScreen('admin'), (req, res) => {
