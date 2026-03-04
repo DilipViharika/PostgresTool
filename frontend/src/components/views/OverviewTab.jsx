@@ -1136,13 +1136,21 @@ const OverviewTab = () => {
     const load = useCallback(async (isManual = false) => {
         if (isManual) setRefreshing(true);
         try {
-            const [stats, traffic] = await Promise.all([
+            const [statsRes, trafficRes] = await Promise.allSettled([
                 fetchData('/api/overview/stats'),
                 fetchData('/api/overview/traffic'),
             ]);
-            setData({ stats, traffic });
+            const val = r => (r.status === 'fulfilled' ? r.value : null);
+            setData({
+                stats:   val(statsRes)   || { activeConnections: 0, maxConnections: 0, uptimeSeconds: 0, diskUsedGB: 0, indexHitRatio: '0.0' },
+                traffic: val(trafficRes) || { tup_fetched: 0, tup_inserted: 0, tup_updated: 0, tup_deleted: 0 },
+            });
         } catch (e) {
             console.error('Overview load failed', e);
+            setData({
+                stats:   { activeConnections: 0, maxConnections: 0, uptimeSeconds: 0, diskUsedGB: 0, indexHitRatio: '0.0' },
+                traffic: { tup_fetched: 0, tup_inserted: 0, tup_updated: 0, tup_deleted: 0 },
+            });
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -1185,7 +1193,13 @@ const OverviewTab = () => {
             <div style={{ padding: 40, textAlign: 'center' }}>
                 <OvStyles />
                 <AlertTriangle size={32} color={THEME.warning} style={{ opacity: 0.5, marginBottom: 12 }} />
-                <div style={{ fontSize: 14, color: THEME.textMuted }}>Unable to load dashboard data.</div>
+                <div style={{ fontSize: 14, color: THEME.textMuted, marginBottom: 16 }}>Unable to load dashboard data.</div>
+                <button
+                    onClick={() => load(true)}
+                    style={{ padding: '8px 20px', borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: THEME.glass, color: THEME.text, cursor: 'pointer', fontSize: 13 }}
+                >
+                    Retry
+                </button>
             </div>
         );
     }

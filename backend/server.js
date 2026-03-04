@@ -824,28 +824,36 @@ app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 // POSTGRES MONITORING ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
-    const { rows: [d] } = await (await reqPool(req)).query(`
-        SELECT
-                (SELECT count(*) FROM pg_stat_activity WHERE state='active')                             AS active,
-                (SELECT count(*) FROM pg_stat_activity)                                                  AS total_conn,
-                (SELECT setting::int FROM pg_settings WHERE name='max_connections')                      AS max_conn,
-                (SELECT pg_database_size(current_database()))                                            AS db_size_bytes,
-                (SELECT date_part('epoch', now() - pg_postmaster_start_time()))                          AS uptime_seconds,
-                (SELECT sum(heap_blks_hit)/NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100
-                 FROM pg_statio_user_tables)                                                             AS hit_ratio
-    `);
-    res.json({
-        activeConnections: Number(d.active),
-        maxConnections:    Number(d.max_conn),
-        uptimeSeconds:     Number(d.uptime_seconds),
-        diskUsedGB:        parseFloat((d.db_size_bytes / 1024 ** 3).toFixed(2)),
-        indexHitRatio:     parseFloat(d.hit_ratio || 0).toFixed(1),
-    });
+    try {
+        const { rows: [d] } = await (await reqPool(req)).query(`
+            SELECT
+                    (SELECT count(*) FROM pg_stat_activity WHERE state='active')                             AS active,
+                    (SELECT count(*) FROM pg_stat_activity)                                                  AS total_conn,
+                    (SELECT setting::int FROM pg_settings WHERE name='max_connections')                      AS max_conn,
+                    (SELECT pg_database_size(current_database()))                                            AS db_size_bytes,
+                    (SELECT date_part('epoch', now() - pg_postmaster_start_time()))                          AS uptime_seconds,
+                    (SELECT sum(heap_blks_hit)/NULLIF(sum(heap_blks_hit)+sum(heap_blks_read),0)*100
+                     FROM pg_statio_user_tables)                                                             AS hit_ratio
+        `);
+        res.json({
+            activeConnections: Number(d.active),
+            maxConnections:    Number(d.max_conn),
+            uptimeSeconds:     Number(d.uptime_seconds),
+            diskUsedGB:        parseFloat((d.db_size_bytes / 1024 ** 3).toFixed(2)),
+            indexHitRatio:     parseFloat(d.hit_ratio || 0).toFixed(1),
+        });
+    } catch (e) {
+        res.json({ activeConnections: 0, maxConnections: 0, uptimeSeconds: 0, diskUsedGB: 0, indexHitRatio: '0.0', error: e.message });
+    }
 });
 
 app.get('/api/overview/traffic', authenticate, cached('ov:traffic', CONFIG.CACHE_TTL.TRAFFIC), async (req, res) => {
-    const r = await (await reqPool(req)).query("SELECT tup_fetched, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database WHERE datname=current_database()");
-    res.json(r.rows[0]);
+    try {
+        const r = await (await reqPool(req)).query("SELECT tup_fetched, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database WHERE datname=current_database()");
+        res.json(r.rows[0] || { tup_fetched: 0, tup_inserted: 0, tup_updated: 0, tup_deleted: 0 });
+    } catch (e) {
+        res.json({ tup_fetched: 0, tup_inserted: 0, tup_updated: 0, tup_deleted: 0 });
+    }
 });
 
 app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
