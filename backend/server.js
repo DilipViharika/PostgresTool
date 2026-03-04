@@ -581,9 +581,23 @@ async function initConnections() {
     }
 }
 
-// Middleware: refresh CONNECTIONS cache before every connection API request
-const ensureConnections = (req, res, next) => {
-    syncConnectionsCache().then(next).catch(next);
+// Track whether the table has been created in this process instance.
+// On Vercel serverless, startup() is never called so we lazily create the
+// table on the first incoming connection-API request instead.
+let _connectionsTableReady = false;
+
+// Middleware: ensure table exists (lazy, idempotent) then refresh cache
+const ensureConnections = async (req, res, next) => {
+    try {
+        if (!_connectionsTableReady) {
+            await ensureConnectionsTable();
+            _connectionsTableReady = true;
+        }
+        await syncConnectionsCache();
+        next();
+    } catch (err) {
+        next(err);
+    }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
