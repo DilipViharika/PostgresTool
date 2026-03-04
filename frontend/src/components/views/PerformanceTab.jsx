@@ -1608,16 +1608,26 @@ const PerformanceTab = () => {
     useEffect(() => {
         const load = async () => {
             try {
-                const [stats, conns, locks, io, repl] = await Promise.all([
+                // Use allSettled so a single failing endpoint (e.g. replication not
+                // configured, pg_stat_statements not installed) never blanks the tab.
+                const [statsRes, connsRes, locksRes, ioRes, replRes] = await Promise.allSettled([
                     fetchData('/api/performance/stats'),
                     fetchData('/api/reliability/active-connections'),
                     fetchData('/api/reliability/locks'),
                     fetchData('/api/performance/table-io'),
                     fetchData('/api/reliability/replication')
                 ]);
-                setData({ stats, conns: conns || [], locks: locks || [], io: io || [], repl: repl || [] });
+                const val = r => (r.status === 'fulfilled' ? r.value : null);
+                setData({
+                    stats: val(statsRes) || { available: false, slowQueries: [] },
+                    conns: val(connsRes) || [],
+                    locks: val(locksRes) || [],
+                    io:   val(ioRes)   || [],
+                    repl: val(replRes) || [],
+                });
             } catch (e) {
-                // silently handle load error — UI shows empty/null state
+                // Fallback: show empty data rather than blank screen
+                setData({ stats: { available: false, slowQueries: [] }, conns: [], locks: [], io: [], repl: [] });
             } finally {
                 setLoading(false);
             }

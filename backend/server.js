@@ -859,34 +859,42 @@ app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACH
 });
 
 app.get('/api/performance/table-io', authenticate, cached('perf:io', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
-    const r = await (await reqPool(req)).query("SELECT relname AS table_name, seq_scan, idx_scan FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 20");
-    res.json(r.rows);
+    try {
+        const r = await (await reqPool(req)).query("SELECT relname AS table_name, seq_scan, idx_scan FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 20");
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/reliability/active-connections', authenticate, async (req, res) => {
-    const r = await (await reqPool(req)).query(`
-        SELECT pid, usename, state, query,
-               extract(epoch FROM (now()-query_start))::int AS duration_sec,
-            (now()-query_start > interval '5 minutes') AS is_slow
-        FROM pg_stat_activity WHERE pid<>pg_backend_pid() ORDER BY duration_sec DESC
-    `);
-    res.json(r.rows);
+    try {
+        const r = await (await reqPool(req)).query(`
+            SELECT pid, usename, state, query,
+                   extract(epoch FROM (now()-query_start))::int AS duration_sec,
+                (now()-query_start > interval '5 minutes') AS is_slow
+            FROM pg_stat_activity WHERE pid<>pg_backend_pid() ORDER BY duration_sec DESC
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/reliability/locks', authenticate, async (req, res) => {
-    const r = await (await reqPool(req)).query(`
-        SELECT bl.pid AS blocked_pid, kl.pid AS blocking_pid, ka.query AS blocking_query
-        FROM   pg_locks bl
-                   JOIN   pg_locks kl ON kl.locktype=bl.locktype AND kl.pid<>bl.pid
-                   JOIN   pg_stat_activity ka ON ka.pid=kl.pid
-        WHERE  NOT bl.granted
-    `);
-    res.json(r.rows);
+    try {
+        const r = await (await reqPool(req)).query(`
+            SELECT bl.pid AS blocked_pid, kl.pid AS blocking_pid, ka.query AS blocking_query
+            FROM   pg_locks bl
+                       JOIN   pg_locks kl ON kl.locktype=bl.locktype AND kl.pid<>bl.pid
+                       JOIN   pg_stat_activity ka ON ka.pid=kl.pid
+            WHERE  NOT bl.granted
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/reliability/replication', authenticate, async (req, res) => {
-    const r = await (await reqPool(req)).query("SELECT application_name, state, pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replication_lag_bytes FROM pg_stat_replication");
-    res.json(r.rows);
+    try {
+        const r = await (await reqPool(req)).query("SELECT application_name, state, pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replication_lag_bytes FROM pg_stat_replication");
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
 });
 
 app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
