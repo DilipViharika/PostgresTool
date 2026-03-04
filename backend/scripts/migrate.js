@@ -8,6 +8,37 @@ import { pool } from '../db.js';
 
 const migrations = [
 
+    // ── Schema (must exist before any table inside it) ──
+    `CREATE SCHEMA IF NOT EXISTS pgmonitoringtool`,
+
+    // ── Connection registry ──
+    `
+    CREATE TABLE IF NOT EXISTS pgmonitoringtool.vigil_connections (
+        id              SERIAL      PRIMARY KEY,
+        user_id         INTEGER,
+        name            TEXT        NOT NULL,
+        host            TEXT        NOT NULL DEFAULT '',
+        port            INTEGER     NOT NULL DEFAULT 5432,
+        db_name         TEXT        NOT NULL DEFAULT 'postgres',
+        username        TEXT        NOT NULL DEFAULT 'postgres',
+        password        TEXT        NOT NULL DEFAULT '',
+        ssl             BOOLEAN     NOT NULL DEFAULT false,
+        ssh_enabled     BOOLEAN     NOT NULL DEFAULT false,
+        ssh_host        TEXT        NOT NULL DEFAULT '',
+        ssh_port        INTEGER     NOT NULL DEFAULT 22,
+        ssh_user        TEXT        NOT NULL DEFAULT '',
+        ssh_auth_type   TEXT        NOT NULL DEFAULT 'key',
+        ssh_private_key TEXT        NOT NULL DEFAULT '',
+        ssh_passphrase  TEXT        NOT NULL DEFAULT '',
+        ssh_password    TEXT        NOT NULL DEFAULT '',
+        is_default      BOOLEAN     NOT NULL DEFAULT false,
+        status          TEXT,
+        last_tested     TIMESTAMPTZ,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+        UNIQUE (user_id, name)
+    )
+    `,
+
     // ── Metric snapshots (time-series store) ──
     `
     CREATE TABLE IF NOT EXISTS vigil_metric_snapshots (

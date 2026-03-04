@@ -370,10 +370,16 @@ const queryHistory = {
 
 /** Ensure the vigil_connections table exists (idempotent) */
 async function ensureConnectionsTable() {
+    // 1. Guarantee the schema exists before touching any table inside it.
+    await pool.query(`CREATE SCHEMA IF NOT EXISTS pgmonitoringtool`);
+
+    // 2. Create the table with user_id as a plain INTEGER so this succeeds even
+    //    when the users table hasn't been provisioned yet.  The FK is added as a
+    //    separate best-effort step below so it never blocks table creation.
     await pool.query(`
         CREATE TABLE IF NOT EXISTS pgmonitoringtool.vigil_connections (
             id          SERIAL      PRIMARY KEY,
-            user_id     INTEGER     REFERENCES pgmonitoringtool.users(id) ON DELETE CASCADE,
+            user_id     INTEGER,
             name        TEXT        NOT NULL,
             host        TEXT        NOT NULL DEFAULT '',
             port        INTEGER     NOT NULL DEFAULT 5432,
@@ -396,6 +402,32 @@ async function ensureConnectionsTable() {
             UNIQUE (user_id, name)
         )
     `);
+
+    // 3. Best-effort: attach FK to users only when that table already exists.
+    //    A missing users table (fresh DB, different init order) must never
+    //    prevent vigil_connections from being usable.
+    try {
+        await pool.query(`
+            DO $$ BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.tables
+                    WHERE table_schema = 'pgmonitoringtool' AND table_name = 'users'
+                ) AND NOT EXISTS (
+                    SELECT 1 FROM information_schema.table_constraints
+                    WHERE table_schema   = 'pgmonitoringtool'
+                      AND table_name     = 'vigil_connections'
+                      AND constraint_type = 'FOREIGN KEY'
+                      AND constraint_name = 'vigil_connections_user_id_fkey'
+                ) THEN
+                    ALTER TABLE pgmonitoringtool.vigil_connections
+                        ADD CONSTRAINT vigil_connections_user_id_fkey
+                        FOREIGN KEY (user_id)
+                        REFERENCES pgmonitoringtool.users(id)
+                        ON DELETE CASCADE;
+                END IF;
+            END $$
+        `);
+    } catch { /* users table not yet available — FK will be added on next startup */ }
 }
 
 /** Convert a DB row → the shape the rest of the code (and frontend) expects */
