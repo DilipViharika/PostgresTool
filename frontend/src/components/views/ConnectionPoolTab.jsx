@@ -766,7 +766,8 @@ const ConnectionsTab = () => {
                 headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
             if (res.ok) {
-                setConnections(await res.json());
+                const data = await res.json();
+                setConnections(Array.isArray(data) ? data : []);
             } else {
                 console.error('Failed to fetch connections:', res.status, res.statusText);
             }

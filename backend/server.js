@@ -471,7 +471,7 @@ async function dbLoadConnections(userId, role) {
     const { rows } = isAdmin
         ? await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id')
         : await pool.query(
-            'SELECT * FROM pgmonitoringtool.vigil_connections WHERE user_id = $1 ORDER BY id',
+            'SELECT * FROM pgmonitoringtool.vigil_connections WHERE (user_id = $1 OR user_id IS NULL) ORDER BY id',
             [userId]
           );
     return rows.map(rowToConn);
@@ -1263,7 +1263,7 @@ app.get('/api/connections', authenticate, ensureConnections, async (req, res) =>
     try {
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         res.json(conns.map(sanitizeConn));
-    } catch (e) { res.json({}); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/connections/:id', authenticate, async (req, res) => {
