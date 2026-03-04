@@ -612,7 +612,7 @@ const LoginPage = () => {
             <GlobalStyles/>
             <LeftPanel/>
 
-            <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '36px 46px', background: THEME.surfaceHover }}>
+            <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflowY: 'auto', padding: '36px 46px', background: THEME.surfaceHover }}>
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', top: '-5%', right: '-25%', width: 420, height: 420, background: 'radial-gradient(circle, rgba(100,112,255,.065) 0%, transparent 65%)', filter: 'blur(52px)', animation: 'aurora 14s ease-in-out infinite' }}/>
                     <div style={{ position: 'absolute', bottom: '-5%', left: '-20%', width: 320, height: 320, background: 'radial-gradient(circle, rgba(167,139,250,.052) 0%, transparent 65%)', filter: 'blur(42px)', animation: 'aurora 10s ease-in-out infinite reverse' }}/>
@@ -622,7 +622,7 @@ const LoginPage = () => {
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(100,112,255,.45) 25%, rgba(167,139,250,.90) 50%, rgba(100,112,255,.45) 75%, transparent)', opacity: .85, animation: 'edgePulse 4s ease-in-out infinite' }}/>
                 <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(100,112,255,.08) 30%, rgba(100,112,255,.13) 50%, rgba(100,112,255,.08) 70%, transparent)' }}/>
 
-                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center', margin: 'auto 0' }}>
                     <div style={{ marginBottom: 22, animation: 'fadeUp .7s ease .1s backwards' }}>
                         <LogoEmblem success={false}/>
                     </div>
@@ -707,16 +707,16 @@ const LoginPage = () => {
                             </button>
                         </form>
 
-                        <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
-                            <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.06em' }}>
+                        <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
+                            <span style={{ fontSize: 10.5, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em', lineHeight: 1.6, display: 'block' }}>
                                 Enterprise SSO enabled · Contact IT for access provisioning
                             </span>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
-                        <Lock size={8} color={THEME.textDim}/>
-                        <span style={{ fontSize: 8.5, color: THEME.textDim, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
+                    <div style={{ marginTop: 14, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
+                        <Lock size={9} color={THEME.textMuted}/>
+                        <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
                     </div>
                 </div>
 
