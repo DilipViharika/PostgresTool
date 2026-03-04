@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const ThemeContext = createContext(null);
 
@@ -91,13 +91,16 @@ export const ThemeProvider = ({ children }) => {
         document.body.style.color = tokens.textPrimary;
     }, [isDark, tokens]);
 
-    const toggleTheme = () => {
-        setIsDark(p => !p);
-        /* Broadcast for legacy module-level DS consumers */
-        window.dispatchEvent(new CustomEvent('vigil-theme-change', { detail: { isDark: !isDark } }));
-    };
+    const toggleTheme = useCallback(() => {
+        setIsDark(prev => {
+            const next = !prev;
+            /* Broadcast for legacy module-level DS consumers */
+            window.dispatchEvent(new CustomEvent('vigil-theme-change', { detail: { isDark: next } }));
+            return next;
+        });
+    }, []);
 
-    const value = useMemo(() => ({ isDark, tokens, toggleTheme }), [isDark, tokens]); // eslint-disable-line react-hooks/exhaustive-deps
+    const value = useMemo(() => ({ isDark, tokens, toggleTheme }), [isDark, tokens, toggleTheme]);
 
     return (
         <ThemeContext.Provider value={value}>

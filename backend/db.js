@@ -14,12 +14,20 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
+// Resolve SSL config from environment.
+// Set DB_SSL=true to enable SSL with self-signed cert support (rejectUnauthorized: false).
+// Leave unset (or set to false) for plain-text connections (e.g. localhost dev).
+function resolveSsl() {
+    return process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
+}
+
 // Build a connection config that works whether DATABASE_URL is set or not.
 function buildPoolConfig() {
+    const ssl = resolveSsl();
     if (process.env.DATABASE_URL) {
         return {
             connectionString: process.env.DATABASE_URL,
-            ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : { rejectUnauthorized: false },
+            ssl,
         };
     }
     // Fall back to the same individual variables used by server.js
@@ -29,7 +37,7 @@ function buildPoolConfig() {
         database: process.env.PGDATABASE || 'postgres',
         password: process.env.PGPASSWORD,
         port:     Number(process.env.PGPORT) || 5432,
-        ssl: { rejectUnauthorized: false },
+        ssl,
     };
 }
 

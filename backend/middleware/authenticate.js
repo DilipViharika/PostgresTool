@@ -10,8 +10,7 @@
  */
 
 import jwt                          from 'jsonwebtoken';
-import { isSessionActive }          from '../services/sessionService.js';
-import { authenticateApiKey }       from '../services/sessionService.js';
+import { isSessionActive, authenticateApiKey } from '../services/sessionService.js';
 
 /**
  * Build the authenticate middleware with access to pool and config.
@@ -47,8 +46,6 @@ export function buildAuthenticate(pool, config) {
 
         let payload;
         try {
-            console.log('Header:', header?.slice(0, 30));
-            console.log('Secret set:', !!config.JWT_SECRET);
             payload = jwt.verify(header.slice(7), config.JWT_SECRET);
         } catch {
             return res.status(401).json({ error: 'Invalid or expired token' });

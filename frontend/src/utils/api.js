@@ -1,7 +1,9 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 
 export const fetchMetrics = async () => {
-    const res = await fetch(`${API_BASE}/api/metrics`);
+    const res = await fetch(`${API_BASE}/api/metrics`, {
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    });
     return res.json();
 };
 
@@ -101,8 +103,13 @@ export function connectWS(onMessage, intervalMs = 10000) {
                 const newestId = data.alerts[0].id;
                 if (newestId !== lastAlertId) {
                     if (lastAlertId !== null) {
-                        // Find and emit only truly new alerts
-                        const newAlerts = data.alerts.filter(a => a.id !== lastAlertId);
+                        // Emit only alerts that appeared AFTER the last-seen alert.
+                        // data.alerts is sorted newest-first; slice up to the position of
+                        // lastAlertId so we never re-emit already-seen entries.
+                        const cutoff = data.alerts.findIndex(a => a.id === lastAlertId);
+                        const newAlerts = cutoff === -1
+                            ? data.alerts            // entire window is new (edge case: window scrolled)
+                            : data.alerts.slice(0, cutoff);
                         newAlerts.forEach(alert => {
                             if (onMessage) onMessage({ type: 'alert', payload: alert });
                         });

@@ -30,8 +30,10 @@ export function ConnectionProvider({ children }) {
                 const resolvedId = active.connectionId ?? defaultConn?.id ?? null;
                 setActiveConnectionIdState(resolvedId);
                 persistConnectionId(resolvedId);
-            } catch {
-                // silently ignore — dashboard still works with env pool
+            } catch (err) {
+                // Non-fatal — dashboard still works with the env-pool fallback.
+                // Log so developers can spot auth/network issues during debug.
+                console.warn('[ConnectionContext] Failed to load connections:', err?.message ?? err);
             } finally {
                 setLoading(false);
             }
@@ -41,15 +43,20 @@ export function ConnectionProvider({ children }) {
 
     /** Switch the active connection — calls backend and updates local state */
     const switchConnection = useCallback(async (id) => {
-        const data = await postData(`/api/connections/${id}/switch`);
-        if (data.success) {
-            setActiveConnectionIdState(id);
-            persistConnectionId(id); // persist so fetchData picks it up immediately
-            // Refresh connection list so isDefault flag is updated
-            const conns = await fetchData('/api/connections');
-            setConnections(Array.isArray(conns) ? conns : []);
+        try {
+            const data = await postData(`/api/connections/${id}/switch`);
+            if (data.success) {
+                setActiveConnectionIdState(id);
+                persistConnectionId(id); // persist so fetchData picks it up immediately
+                // Refresh connection list so isDefault flag is updated
+                const conns = await fetchData('/api/connections');
+                setConnections(Array.isArray(conns) ? conns : []);
+            }
+            return data;
+        } catch (err) {
+            console.error('[ConnectionContext] switchConnection failed:', err?.message ?? err);
+            throw err; // re-throw so the caller can surface an error toast if needed
         }
-        return data;
     }, []);
 
     /** Refresh connections list (called after add/edit/delete) */
