@@ -2930,7 +2930,7 @@ app.get('/api/indexes/health', authenticate, cached('idx:health', CONFIG.CACHE_T
             criticalCount: u.unused_count,
             seqScanRate:   parseFloat(s.seq_scan_rate || 0),
         });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({ hitRatio: 0, totalIndexes: 0, totalSize: '—', totalBytes: 0, criticalCount: 0, seqScanRate: 0 }); }
 });
 
 // Missing indexes: tables with high seq scans and no covering index
@@ -2959,7 +2959,7 @@ app.get('/api/indexes/missing', authenticate, cached('idx:missing', CONFIG.CACHE
             LIMIT 20
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 // Unused indexes: never scanned since stats reset, non-primary
@@ -2986,7 +2986,7 @@ app.get('/api/indexes/unused', authenticate, cached('idx:unused', CONFIG.CACHE_T
             LIMIT 30
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 // Duplicate / redundant indexes: indexes whose column sets are subsets of other indexes on the same table
@@ -3017,7 +3017,7 @@ app.get('/api/indexes/duplicates', authenticate, cached('idx:dupes', CONFIG.CACH
             LIMIT 20
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 // Bloated indexes: high inefficiency + large size
@@ -3060,7 +3060,7 @@ app.get('/api/indexes/bloat', authenticate, cached('idx:bloat', CONFIG.CACHE_TTL
             LIMIT 30
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
