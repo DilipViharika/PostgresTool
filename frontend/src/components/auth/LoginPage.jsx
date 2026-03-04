@@ -447,11 +447,11 @@ const LeftPanel = () => {
 //  LOGO EMBLEM
 // ─────────────────────────────────────────────────────────────────────────────
 const LogoEmblem = ({ success }) => {
-    const S = 90, C = 45, R1 = 38, R2 = 28, R3 = 19;
+    const S = 76, C = 38, R1 = 32, R2 = 23, R3 = 15;
     const c1 = success ? '#22c55e' : '#6470FF', c2 = success ? '#22c55e' : '#A78BFA';
     return (
         <div style={{ position: 'relative', width: S, height: S, animation: 'floatUp 5s ease-in-out infinite' }}>
-            <div style={{ position: 'absolute', inset: -20, borderRadius: '50%', background: success ? 'radial-gradient(circle,rgba(34,197,94,.16) 0%,transparent 70%)' : 'radial-gradient(circle,rgba(100,112,255,.14) 0%,transparent 70%)', animation: 'glowPulse 3.5s ease-in-out infinite', transition: 'background 1s' }}/>
+            <div style={{ position: 'absolute', inset: -16, borderRadius: '50%', background: success ? 'radial-gradient(circle,rgba(34,197,94,.16) 0%,transparent 70%)' : 'radial-gradient(circle,rgba(100,112,255,.14) 0%,transparent 70%)', animation: 'glowPulse 3.5s ease-in-out infinite', transition: 'background 1s' }}/>
             <svg width={S} height={S} style={{ position: 'absolute', top: 0, left: 0 }}>
                 <defs>
                     <linearGradient id="rg1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -463,18 +463,18 @@ const LogoEmblem = ({ success }) => {
                 <circle cx={C} cy={C} r={R2} fill="none" stroke={c1} strokeWidth="1.6" strokeDasharray={`${Math.PI*R2*.65} ${Math.PI*R2*.35}`} strokeLinecap="round" opacity=".65" style={{ transformOrigin: 'center', animation: 'spinRev 12s linear infinite' }}/>
                 <circle cx={C} cy={C} r={R3} fill="none" stroke={c2} strokeWidth=".8" strokeDasharray="2 5" opacity=".22" style={{ transformOrigin: 'center', animation: 'spin 8s linear infinite' }}/>
                 {[0, 72, 144, 216, 288].map((d, i) => (
-                    <circle key={d} cx={C + R1 * Math.cos(d * Math.PI / 180)} cy={C + R1 * Math.sin(d * Math.PI / 180)} r={i === 0 ? 3 : 2} fill={c1} opacity={.30 + i * .12}/>
+                    <circle key={d} cx={C + R1 * Math.cos(d * Math.PI / 180)} cy={C + R1 * Math.sin(d * Math.PI / 180)} r={i === 0 ? 2.5 : 1.8} fill={c1} opacity={.30 + i * .12}/>
                 ))}
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{
-                    width: 48, height: 48, borderRadius: 14,
+                    width: 40, height: 40, borderRadius: 12,
                     background: success ? 'linear-gradient(135deg,#22c55e,#14b8a6)' : 'linear-gradient(135deg,#3D47D8,#7B3ACF)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: success ? '0 6px 30px rgba(34,197,94,.55), 0 0 0 1px rgba(255,255,255,.10) inset' : '0 6px 30px rgba(74,84,232,.55), 0 0 0 1px rgba(255,255,255,.10) inset',
+                    boxShadow: success ? '0 6px 24px rgba(34,197,94,.55), 0 0 0 1px rgba(255,255,255,.10) inset' : '0 6px 24px rgba(74,84,232,.55), 0 0 0 1px rgba(255,255,255,.10) inset',
                     transition: 'all .9s cubic-bezier(.34,1.56,.64,1)',
                 }}>
-                    {success ? <CheckCircle size={23} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/> : <Database size={23} color="#fff" strokeWidth={1.8}/>}
+                    {success ? <CheckCircle size={19} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/> : <Database size={19} color="#fff" strokeWidth={1.8}/>}
                 </div>
             </div>
         </div>
@@ -520,7 +520,7 @@ const InputField = React.forwardRef(function InputField(
             <label style={{ display: 'block', marginBottom: 7, fontSize: 9, fontWeight: 600, color: focused ? '#818AFF' : THEME.textMuted, textTransform: 'uppercase', letterSpacing: '1.6px', fontFamily: THEME.fontMono, transition: 'color .2s' }}>{label}</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: focused ? 'rgba(100,112,255,.06)' : THEME.surface, border: `1px solid ${focused ? 'rgba(100,112,255,.50)' : THEME.grid}`, borderRadius: 12, padding: '0 14px', transition: 'all .25s', boxShadow: focused ? '0 0 0 4px rgba(100,112,255,.09)' : 'none' }}>
                 <Icon size={14} color={focused ? '#818AFF' : hasVal ? THEME.textMuted : THEME.textDim} style={{ flexShrink: 0, transition: 'color .2s' }}/>
-                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input" style={{ flex: 1, padding: '13px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}/>
+                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input" style={{ flex: 1, padding: '11px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}/>
                 {rightEl}
             </div>
         </div>
@@ -612,7 +612,7 @@ const LoginPage = () => {
             <GlobalStyles/>
             <LeftPanel/>
 
-            <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflowY: 'auto', padding: '36px 46px', background: THEME.surfaceHover }}>
+            <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '24px 46px', background: THEME.surfaceHover }}>
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', top: '-5%', right: '-25%', width: 420, height: 420, background: 'radial-gradient(circle, rgba(100,112,255,.065) 0%, transparent 65%)', filter: 'blur(52px)', animation: 'aurora 14s ease-in-out infinite' }}/>
                     <div style={{ position: 'absolute', bottom: '-5%', left: '-20%', width: 320, height: 320, background: 'radial-gradient(circle, rgba(167,139,250,.052) 0%, transparent 65%)', filter: 'blur(42px)', animation: 'aurora 10s ease-in-out infinite reverse' }}/>
@@ -622,23 +622,23 @@ const LoginPage = () => {
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(100,112,255,.45) 25%, rgba(167,139,250,.90) 50%, rgba(100,112,255,.45) 75%, transparent)', opacity: .85, animation: 'edgePulse 4s ease-in-out infinite' }}/>
                 <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(100,112,255,.08) 30%, rgba(100,112,255,.13) 50%, rgba(100,112,255,.08) 70%, transparent)' }}/>
 
-                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center', margin: 'auto 0' }}>
-                    <div style={{ marginBottom: 22, animation: 'fadeUp .7s ease .1s backwards' }}>
+                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ marginBottom: 12, animation: 'fadeUp .7s ease .1s backwards' }}>
                         <LogoEmblem success={false}/>
                     </div>
 
-                    <div style={{ textAlign: 'center', marginBottom: 4, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 2, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
                         <h1 style={{ fontSize: 30, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>Welcome back</h1>
                         <p style={{ color: THEME.textMuted, margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: THEME.fontBody, fontWeight: 300 }}>Sign in to your monitoring dashboard</p>
                     </div>
 
-                    <div style={{ margin: '18px 0 20px', display: 'flex', alignItems: 'center', gap: 12, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
+                    <div style={{ margin: '10px 0 12px', display: 'flex', alignItems: 'center', gap: 12, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${THEME.grid})` }}/>
                         <ServerStatus status={serverStatus}/>
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${THEME.grid})` }}/>
                     </div>
 
-                    <div style={{ width: '100%', padding: '28px 26px 24px', borderRadius: 22, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: THEME.shadowMd, transition: 'border-color .3s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', padding: '20px 26px 16px', borderRadius: 22, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: THEME.shadowMd, transition: 'border-color .3s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: '6%', right: '6%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(130,138,255,.42), transparent)', animation: 'edgePulse 3.5s ease-in-out infinite' }}/>
                         <Corners color='rgba(100,112,255,.16)'/>
 
@@ -649,7 +649,7 @@ const LoginPage = () => {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                             <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading}/>
                             <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading}
                                         rightEl={
@@ -707,14 +707,14 @@ const LoginPage = () => {
                             </button>
                         </form>
 
-                        <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
+                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
                             <span style={{ fontSize: 10.5, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em', lineHeight: 1.6, display: 'block' }}>
                                 Enterprise SSO enabled · Contact IT for access provisioning
                             </span>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 14, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
+                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
                         <Lock size={9} color={THEME.textMuted}/>
                         <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted · pg_monitor v2.0</span>
                     </div>
