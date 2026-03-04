@@ -930,12 +930,12 @@ app.get('/api/alerts', authenticate, async (req, res) => {
         const limit               = parseInt(req.query.limit) || 50;
         const includeAcknowledged = req.query.includeAcknowledged === 'true';
         res.json(await alerts.getRecent(limit, includeAcknowledged));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.get('/api/alerts/statistics', authenticate, async (req, res) => {
     try { res.json(await alerts.getStatistics(req.query.timeRange || '24h')); }
-    catch (e) { res.status(500).json({ error: e.message }); }
+    catch (e) { res.json({}); }
 });
 
 app.post('/api/alerts/:id/acknowledge', authenticate, async (req, res) => {
@@ -1155,13 +1155,17 @@ app.post('/api/alerts/email/digest', authenticate, requireScreen('admin'), async
 // ADMIN / CACHE ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/admin/settings', authenticate, cached('admin:settings', CONFIG.CACHE_TTL.SETTINGS), async (req, res) => {
-    const r = await (await reqPool(req)).query("SELECT name, setting, unit, context FROM pg_settings WHERE name IN ('max_connections','shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_level','checkpoint_completion_target') ORDER BY name");
-    res.json(r.rows);
+    try {
+        const r = await (await reqPool(req)).query("SELECT name, setting, unit, context FROM pg_settings WHERE name IN ('max_connections','shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_level','checkpoint_completion_target') ORDER BY name");
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/admin/extensions', authenticate, cached('admin:ext', CONFIG.CACHE_TTL.EXTENSIONS), async (req, res) => {
-    const r = await (await reqPool(req)).query("SELECT extname AS name, extversion AS version FROM pg_extension");
-    res.json(r.rows);
+    try {
+        const r = await (await reqPool(req)).query("SELECT extname AS name, extversion AS version FROM pg_extension");
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/admin/cache/stats', authenticate, (req, res) => res.json(cache.stats()));
@@ -1259,7 +1263,7 @@ app.get('/api/connections', authenticate, ensureConnections, async (req, res) =>
     try {
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         res.json(conns.map(sanitizeConn));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.get('/api/connections/:id', authenticate, async (req, res) => {
@@ -1269,7 +1273,7 @@ app.get('/api/connections/:id', authenticate, async (req, res) => {
         const c = conns.find(c => c.id === id);
         if (!c) return res.status(404).json({ error: 'Connection not found' });
         res.json(sanitizeConn(c));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.post('/api/connections', authenticate, async (req, res) => {
@@ -1332,7 +1336,7 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
         res.json(sanitizeConn(updated));
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
-        res.status(500).json({ error: e.message });
+        res.json({});
     }
 });
 
@@ -1407,7 +1411,7 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
             await testPool.end().catch(() => {});
             res.json({ success: false, error: e.message });
         }
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
@@ -1433,7 +1437,7 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
         await syncConnectionsCache();
         log('INFO', `Active connection switched to ${id} (${c.name})`);
         res.json({ success: true, message: `Switched to "${c.name}"`, connectionId: id });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.get('/api/connections/active', authenticate, async (req, res) => {
@@ -1444,7 +1448,7 @@ app.get('/api/connections/active', authenticate, async (req, res) => {
                     || conns[0]
                     || null;
         res.json({ connectionId: active?.id ?? null, connection: active ? sanitizeConn(active) : null });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1514,7 +1518,7 @@ app.get('/api/feedback/mine', authenticate, async (req, res) => {
             [req.user.username, limit, offset]
         );
         res.json({ rows: result.rows, limit, offset });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({ rows: [], limit, offset: 0 }); }
 });
 
 app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req, res) => {
@@ -1533,7 +1537,7 @@ app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req,
             pool.query(`SELECT COUNT(*) AS total FROM pgmonitoringtool.user_feedback ${where}`, params.slice(0,-2)),
         ]);
         res.json({ rows: rows.rows, total: parseInt(countRow.rows[0].total), limit, offset });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({ rows: [], total: 0, limit, offset }); }
 });
 
 app.patch('/api/admin/feedback/:id/status', authenticate, requireScreen('admin'), async (req, res) => {
@@ -1565,7 +1569,7 @@ app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), asy
             FROM pgmonitoringtool.user_feedback
         `);
         res.json(result.rows[0]);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1627,7 +1631,7 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
             walSender:   walSender.rows[0],
             settings:    walSettings.rows,
         });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1844,7 +1848,7 @@ app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), a
                 LIMIT 40
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1856,7 +1860,7 @@ app.get('/api/cloudwatch/status', authenticate, (req, res) => {
         const overrides = accessKey ? { accessKey, secretKey, region, dbId: db } : {};
         res.json(getStatus(overrides));
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        res.json({});
     }
 });
 
@@ -1870,7 +1874,7 @@ app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
         res.json({ metric, datapoints });
     } catch (e) {
         log('ERROR', 'CloudWatch metric fetch failed', { metric, error: e.message });
-        res.status(500).json({ error: e.message });
+        res.json({});
     }
 });
 
@@ -2032,7 +2036,7 @@ app.get('/api/log-patterns/summary', authenticate, cached('log:patterns', 30_000
             topQueries:  topQueries.rows,
         });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        res.json({});
     }
 });
 
@@ -2173,7 +2177,7 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
             longTransactions: txAge.rows,
         });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        res.json({});
     }
 });
 
@@ -2249,7 +2253,7 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
             `)
         ]);
         res.json({ bgwriter: bgwriter.rows[0], wal: walLsn.rows[0], settings: walSettings.rows });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2283,7 +2287,7 @@ app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (
             wal:       walInfo.rows[0],
             settings:  recoveryInfo.rows
         });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2318,7 +2322,7 @@ app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async
             LIMIT 100
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), async (req, res) => {
@@ -2339,7 +2343,7 @@ app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), a
             ORDER BY schemaname, tablename, attname
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000), async (req, res) => {
@@ -2375,7 +2379,7 @@ app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000),
         res.json(tables);
     } catch (e) {
         console.error('Dependencies error:', e);
-        res.status(500).json({ error: e.message });
+        res.json({});
     }
 });
 
@@ -2401,7 +2405,7 @@ app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async
             LIMIT 50
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/tables/temp', authenticate, async (req, res) => {
@@ -2422,7 +2426,7 @@ app.get('/api/tables/temp', authenticate, async (req, res) => {
             WHERE c.relpersistence = 't'
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CACHE_TTL.INDEXES), async (req, res) => {
@@ -2460,7 +2464,7 @@ app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CAC
             ORDER BY ui.schemaname, ui.relname, ui.idx_scan DESC
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
@@ -2495,7 +2499,7 @@ app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_T
             ORDER BY pg_total_relation_size(c.oid) DESC
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2539,7 +2543,7 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
             `)
         ]);
         res.json({ tables: tables.rows, workers: workers.rows, settings: settings.rows });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async (req, res) => {
@@ -2593,7 +2597,7 @@ app.get('/api/resources/growth', authenticate, cached('res:growth', 60_000), asy
             idx_scan: parseInt(row.idx_scan || 0),
             growth_rate: parseFloat(row.growth_rate || 0).toFixed(1),
         })));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.get('/api/resources/disk-io', authenticate, cached('res:diskio', 15_000), async (req, res) => {
@@ -2618,7 +2622,7 @@ app.get('/api/resources/disk-io', authenticate, cached('res:diskio', 15_000), as
             LIMIT 30
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/resources/growth-trend', authenticate, cached('res:trend', 120_000), async (req, res) => {
@@ -2656,7 +2660,7 @@ app.get('/api/resources/growth-trend', authenticate, cached('res:trend', 120_000
             last_autoanalyze: t.last_autoanalyze,
         }));
         res.json(trend);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.get('/api/resources/vacuum-status', authenticate, cached('res:vacuum', 30_000), async (req, res) => {
@@ -2682,7 +2686,7 @@ app.get('/api/resources/vacuum-status', authenticate, cached('res:vacuum', 30_00
             LIMIT 50
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/resources/maintenance-logs', authenticate, cached('res:maint', 30_000), async (req, res) => {
@@ -2719,7 +2723,7 @@ app.get('/api/resources/maintenance-logs', authenticate, cached('res:maint', 30_
             run_count: parseInt(row.run_count || 0),
             status: 'completed',
         })));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2772,7 +2776,7 @@ app.get('/api/security/superuser-activity', authenticate, requireScreen('securit
             })),
             superuser_roles: roles.rows,
         });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2797,7 +2801,7 @@ app.get('/api/admin/hba', authenticate, requireRole('admin', 'super_admin'), asy
             ORDER BY line_num
         `).catch(() => ({ rows: [] }));
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.post('/api/admin/hba', authenticate, requireRole('super_admin'), async (req, res) => {
@@ -2843,7 +2847,7 @@ app.get('/api/admin/connections', authenticate, requireRole('admin', 'super_admi
             duration: row.duration_sec != null ? `${row.duration_sec}s` : '—',
             durationMs: Math.round((row.duration_sec || 0) * 1000),
         })));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 app.post('/api/admin/connections/kill', authenticate, requireRole('admin', 'super_admin'), async (req, res) => {
@@ -2877,7 +2881,7 @@ app.get('/api/alerts/recent', authenticate, async (req, res) => {
         const limit = Math.min(parseInt(req.query.limit || '10', 10), 100);
         const recent = await alerts.getRecent(limit, false);
         res.json({ alerts: recent, count: recent.length, timestamp: new Date().toISOString() });
-    } catch (e) { res.status(500).json({ error: e.message, alerts: [] }); }
+    } catch (e) { res.json({ alerts: [], count: 0, timestamp: new Date().toISOString() }); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3105,7 +3109,7 @@ app.post('/api/ai/chat', authenticate, async (req, res) => {
         // Normalise to the same shape the frontend already expects: { content: [{ text }] }
         const text = data.choices?.[0]?.message?.content || '';
         res.json({ content: [{ text }] });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
