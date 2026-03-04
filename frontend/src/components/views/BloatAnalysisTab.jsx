@@ -393,15 +393,18 @@ export default function BloatAnalysisTab() {
     const load = useCallback(async (initial = false) => {
         if (!initial) setRefreshing(true);
         try {
-            const [t, i, s] = await Promise.all([
+            const [tRes, iRes, sRes] = await Promise.allSettled([
                 fetchData('/api/bloat/tables'),
                 fetchData('/api/bloat/indexes'),
                 fetchData('/api/bloat/summary'),
             ]);
-            setTables((t || []).map(normaliseTable));
-            setIndexes((i || []).map(normaliseIndex));
-            setSummary(s || {});
-            setError(null);
+            const val = r => (r.status === 'fulfilled' ? r.value : null);
+            const rejected = [tRes, iRes, sRes].find(r => r.status === 'rejected');
+            setTables(((val(tRes)) || []).map(normaliseTable));
+            setIndexes(((val(iRes)) || []).map(normaliseIndex));
+            setSummary(val(sRes) || {});
+            // Only show an error if ALL three requests failed (real connection issue)
+            setError((!val(tRes) && !val(iRes) && !val(sRes)) ? (rejected?.reason?.message || 'Failed to load bloat data') : null);
         } catch (e) {
             setError(e.message);
         } finally {

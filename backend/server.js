@@ -175,8 +175,14 @@ async function getPool(connectionId) {
     const id = parseInt(connectionId, 10);
     if (connectionPools.has(id)) return connectionPools.get(id);
 
-    // Find connection config
-    const conn = CONNECTIONS.find(c => c.id === id);
+    // Find connection config — if not in cache (e.g. Vercel cold start where
+    // startup() never ran), do a one-time lazy refresh from the DB before giving up.
+    let conn = CONNECTIONS.find(c => c.id === id);
+    if (!conn) {
+        await ensureConnectionsTable().catch(() => {});
+        await syncConnectionsCache().catch(() => {});
+        conn = CONNECTIONS.find(c => c.id === id);
+    }
     if (!conn) throw new Error(`Connection ${id} not found`);
 
     const cfg = await resolvePoolConfig(conn);
@@ -1670,7 +1676,7 @@ app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_T
                 LIMIT 100
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
@@ -1698,7 +1704,7 @@ app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE
                 LIMIT 80
         `);
         res.json(r.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.json([]); }
 });
 
 app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
@@ -1730,8 +1736,8 @@ app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE
                 sum(n_live_tup)                                                                         AS total_live_tuples
             FROM pg_stat_user_tables
         `);
-        res.json(r.rows[0]);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+        res.json(r.rows[0] || {});
+    } catch (e) { res.json({}); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
