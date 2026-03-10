@@ -1440,19 +1440,14 @@ function S_AIAnalysis() {
         setScore(null);
         try {
             const snapshot = buildSnapshot();
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            const response = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
                     max_tokens: 2000,
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `You are an expert PostgreSQL DBA analyst. Analyze database telemetry and return ONLY valid JSON — no markdown, no preamble, no explanation outside the JSON.
+                    system: `You are an expert PostgreSQL DBA analyst. Analyze database telemetry and return ONLY valid JSON — no markdown, no preamble, no explanation outside the JSON.
 
 Return this exact structure:
 {
@@ -1480,7 +1475,7 @@ Rules:
 - Generate 4-8 findings minimum
 - SQL must be valid PostgreSQL
 - Be specific with table names from the data`,
-                        },
+                    messages: [
                         {
                             role: 'user',
                             content: `Analyze this PostgreSQL database snapshot and return findings JSON:\n\n${JSON.stringify(snapshot, null, 2)}`,
@@ -1496,7 +1491,7 @@ Rules:
                 throw new Error(apiResp.error.message || JSON.stringify(apiResp.error));
             }
 
-            const rawText = apiResp.choices?.[0]?.message?.content || '';
+            const rawText = apiResp.content?.[0]?.text || '';
             const parsed  = extractJSON(rawText); // robust extraction
 
             setFindings(parsed.findings || []);
@@ -1519,20 +1514,15 @@ Rules:
         setChatLog(l => [...l, { role: 'user', content: question }]);
         try {
             const snapshot = buildSnapshot();
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            const response = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
                     max_tokens: 1000,
+                    system: `You are an expert PostgreSQL DBA. Answer questions about the provided database telemetry. Be concise, technical, and actionable. Use plain text — no markdown headers. Include SQL examples where relevant.`,
                     messages: [
-                        {
-                            role: 'system',
-                            content: `You are an expert PostgreSQL DBA. Answer questions about the provided database telemetry. Be concise, technical, and actionable. Use plain text — no markdown headers. Include SQL examples where relevant.`,
-                        },
                         {
                             role: 'user',
                             content: `Database snapshot:\n${JSON.stringify(snapshot, null, 2)}\n\nPrevious analysis summary: ${summary}\n\nQuestion: ${question}`,
@@ -1542,7 +1532,7 @@ Rules:
             });
             const apiResp = await response.json();
             if (apiResp.error) throw new Error(apiResp.error.message || JSON.stringify(apiResp.error));
-            const text = apiResp.choices?.[0]?.message?.content || 'No response.';
+            const text = apiResp.content?.[0]?.text || 'No response.';
             setChatLog(l => [...l, { role: 'assistant', content: text }]);
         } catch (e) {
             setChatLog(l => [...l, { role: 'assistant', content: `Error: ${e.message}` }]);
