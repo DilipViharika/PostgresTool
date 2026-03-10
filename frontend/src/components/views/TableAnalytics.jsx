@@ -1440,17 +1440,19 @@ function S_AIAnalysis() {
         setScore(null);
         try {
             const snapshot = buildSnapshot();
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'anthropic-dangerous-direct-browser-access': 'true',
-                    'anthropic-version': '2023-06-01',
+                    'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 2000, // ← bumped from 1000 to prevent truncated JSON
-                    system: `You are an expert PostgreSQL DBA analyst. Analyze database telemetry and return ONLY valid JSON — no markdown, no preamble, no explanation outside the JSON.
+                    model: 'llama-3.3-70b-versatile',
+                    max_tokens: 2000,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `You are an expert PostgreSQL DBA analyst. Analyze database telemetry and return ONLY valid JSON — no markdown, no preamble, no explanation outside the JSON.
 
 Return this exact structure:
 {
@@ -1478,21 +1480,23 @@ Rules:
 - Generate 4-8 findings minimum
 - SQL must be valid PostgreSQL
 - Be specific with table names from the data`,
-                    messages: [{
-                        role: 'user',
-                        content: `Analyze this PostgreSQL database snapshot and return findings JSON:\n\n${JSON.stringify(snapshot, null, 2)}`,
-                    }],
+                        },
+                        {
+                            role: 'user',
+                            content: `Analyze this PostgreSQL database snapshot and return findings JSON:\n\n${JSON.stringify(snapshot, null, 2)}`,
+                        },
+                    ],
                 }),
             });
 
             const apiResp = await response.json();
 
-            // Surface API-level errors (auth, quota, etc.) immediately
+            // Surface API-level errors immediately
             if (apiResp.error) {
                 throw new Error(apiResp.error.message || JSON.stringify(apiResp.error));
             }
 
-            const rawText = (apiResp.content || []).map(c => c.text || '').join('');
+            const rawText = apiResp.choices?.[0]?.message?.content || '';
             const parsed  = extractJSON(rawText); // robust extraction
 
             setFindings(parsed.findings || []);
@@ -1515,26 +1519,30 @@ Rules:
         setChatLog(l => [...l, { role: 'user', content: question }]);
         try {
             const snapshot = buildSnapshot();
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'anthropic-dangerous-direct-browser-access': 'true',
-                    'anthropic-version': '2023-06-01',
+                    'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
+                    model: 'llama-3.3-70b-versatile',
                     max_tokens: 1000,
-                    system: `You are an expert PostgreSQL DBA. Answer questions about the provided database telemetry. Be concise, technical, and actionable. Use plain text — no markdown headers. Include SQL examples where relevant.`,
-                    messages: [{
-                        role: 'user',
-                        content: `Database snapshot:\n${JSON.stringify(snapshot, null, 2)}\n\nPrevious analysis summary: ${summary}\n\nQuestion: ${question}`,
-                    }],
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `You are an expert PostgreSQL DBA. Answer questions about the provided database telemetry. Be concise, technical, and actionable. Use plain text — no markdown headers. Include SQL examples where relevant.`,
+                        },
+                        {
+                            role: 'user',
+                            content: `Database snapshot:\n${JSON.stringify(snapshot, null, 2)}\n\nPrevious analysis summary: ${summary}\n\nQuestion: ${question}`,
+                        },
+                    ],
                 }),
             });
             const apiResp = await response.json();
             if (apiResp.error) throw new Error(apiResp.error.message || JSON.stringify(apiResp.error));
-            const text = (apiResp.content || []).map(c => c.text || '').join('') || 'No response.';
+            const text = apiResp.choices?.[0]?.message?.content || 'No response.';
             setChatLog(l => [...l, { role: 'assistant', content: text }]);
         } catch (e) {
             setChatLog(l => [...l, { role: 'assistant', content: `Error: ${e.message}` }]);
@@ -1550,7 +1558,7 @@ Rules:
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SecHead Icon={BrainCircuit} accent={THEME.purple} title="AI Deep Analysis"
-                     sub="Claude-powered PostgreSQL diagnostics with actionable findings and follow-up Q&A"
+                     sub="Groq-powered PostgreSQL diagnostics with actionable findings and follow-up Q&A"
                      right={
                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                              {score !== null && (
