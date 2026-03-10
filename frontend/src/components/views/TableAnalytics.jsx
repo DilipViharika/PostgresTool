@@ -1445,6 +1445,7 @@ function S_AIAnalysis() {
                 headers: {
                     'Content-Type': 'application/json',
                     'anthropic-dangerous-direct-browser-access': 'true',
+                    'anthropic-version': '2023-06-01',
                 },
                 body: JSON.stringify({
                     model: 'claude-sonnet-4-20250514',
@@ -1519,6 +1520,7 @@ Rules:
                 headers: {
                     'Content-Type': 'application/json',
                     'anthropic-dangerous-direct-browser-access': 'true',
+                    'anthropic-version': '2023-06-01',
                 },
                 body: JSON.stringify({
                     model: 'claude-sonnet-4-20250514',
