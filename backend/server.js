@@ -2501,7 +2501,140 @@ app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_T
         res.json(r.rows);
     } catch (e) { res.json([]); }
 });
+ 
 
+// ── /api/tables/queries ── pg_stat_statements: slow query analysis ────────────
+app.get('/api/tables/queries', authenticate, cached('tables:queries', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        // Gracefully return [] when pg_stat_statements is not installed
+        const extCheck = await _p.query(
+            `SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace = n.oid WHERE e.extname = 'pg_stat_statements'`
+        );
+        if (extCheck.rowCount === 0) return res.json([]);
+        const schema = extCheck.rows[0].nspname;
+        const r = await _p.query(`
+            SELECT
+                queryid                                                                         AS "queryId",
+                LEFT(query, 500)                                                                AS "query",
+                calls                                                                           AS "calls",
+                ROUND(mean_exec_time::numeric, 2)                                               AS "meanMs",
+                ROUND(max_exec_time::numeric, 2)                                                AS "maxMs",
+                ROUND(total_exec_time::numeric, 2)                                              AS "totalMs",
+                rows                                                                            AS "rows",
+                ROUND(stddev_exec_time::numeric, 2)                                             AS "stddevMs",
+                shared_blks_hit                                                                 AS "cacheHits",
+                shared_blks_read                                                                AS "diskReads",
+                CASE
+                    WHEN shared_blks_hit + shared_blks_read = 0 THEN 0
+                    ELSE ROUND(
+                        100.0 * shared_blks_hit /
+                        NULLIF(shared_blks_hit + shared_blks_read, 0),
+                    1)
+                END                                                                             AS "cacheHitPct"
+            FROM "${schema}".pg_stat_statements
+            WHERE query NOT LIKE '%pg_stat%'
+              AND query NOT LIKE '%pg_catalog%'
+              AND calls > 0
+            ORDER BY total_exec_time DESC
+            LIMIT 50
+        `);
+        res.json(r.rows);
+    } catch (e) {
+        if (e.message.includes('pg_stat_statements')) return res.json([]);
+        res.json([]);
+    }
+});
+
+// ── /api/tables/locks ── active locks & blocking chains from pg_locks ─────────
+app.get('/api/tables/locks', authenticate, async (req, res) => {
+    try {
+        const r = await (await reqPool(req)).query(`
+            SELECT
+                l.pid                                                                           AS "pid",
+                c.relname                                                                       AS "relation",
+                l.locktype                                                                      AS "lockType",
+                l.mode                                                                          AS "mode",
+                l.granted                                                                       AS "granted",
+                NOT l.granted                                                                   AS "blocked",
+                NOT l.granted                                                                   AS "waiting",
+                a.state                                                                         AS "state",
+                a.application_name                                                              AS "appName",
+                a.usename                                                                       AS "userName",
+                a.wait_event_type                                                               AS "waitEventType",
+                a.wait_event                                                                    AS "waitEvent",
+                EXTRACT(EPOCH FROM (NOW() - a.query_start))::INT                               AS "queryAgeSec",
+                LEFT(a.query, 200)                                                              AS "currentQuery"
+            FROM pg_locks l
+            LEFT JOIN pg_class         c ON c.oid = l.relation
+            LEFT JOIN pg_stat_activity a ON a.pid = l.pid
+            WHERE l.pid <> pg_backend_pid()
+            ORDER BY l.granted ASC, l.pid ASC
+            LIMIT 100
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
+});
+
+// ── /api/tables/autovacuum ── per-table daemon run history & timestamps ────────
+app.get('/api/tables/autovacuum', authenticate, cached('tables:autovacuum', CONFIG.CACHE_TTL.VACUUM), async (req, res) => {
+    try {
+        const r = await (await reqPool(req)).query(`
+            SELECT
+                schemaname                                                                      AS "schema",
+                relname                                                                         AS "name",
+                last_vacuum                                                                     AS "lastVacuum",
+                last_autovacuum                                                                 AS "lastAutovacuum",
+                last_analyze                                                                    AS "lastAnalyze",
+                last_autoanalyze                                                                AS "lastAutoanalyze",
+                vacuum_count                                                                    AS "vacuumCount",
+                autovacuum_count                                                                AS "autovacuumCount",
+                analyze_count                                                                   AS "analyzeCount",
+                autoanalyze_count                                                               AS "autoanalyzeCount",
+                n_live_tup                                                                      AS "liveRows",
+                n_dead_tup                                                                      AS "deadRows",
+                CASE
+                    WHEN n_live_tup + n_dead_tup = 0 THEN 0
+                    ELSE ROUND(
+                        100.0 * n_dead_tup / NULLIF(n_live_tup + n_dead_tup, 0),
+                    1)
+                END                                                                             AS "deadPct",
+                EXTRACT(EPOCH FROM (NOW() - COALESCE(last_autovacuum, last_vacuum)))::INT       AS "secsSinceVacuum",
+                EXTRACT(EPOCH FROM (NOW() - COALESCE(last_autoanalyze, last_analyze)))::INT     AS "secsSinceAnalyze"
+            FROM pg_stat_user_tables
+            ORDER BY
+                COALESCE(last_autovacuum, last_vacuum) ASC NULLS FIRST,
+                n_dead_tup DESC
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
+});
+
+// ── /api/tables/connections ── pg_stat_activity grouped by state/app/user ─────
+app.get('/api/tables/connections', authenticate, cached('tables:connections', CONFIG.CACHE_TTL.STATS), async (req, res) => {
+    try {
+        const r = await (await reqPool(req)).query(`
+            SELECT
+                COALESCE(application_name, 'unknown')                                           AS "appName",
+                COALESCE(usename, 'unknown')                                                    AS "useName",
+                COALESCE(datname, 'unknown')                                                    AS "datName",
+                COALESCE(state, 'unknown')                                                      AS "state",
+                wait_event_type                                                                  AS "waitEventType",
+                wait_event                                                                       AS "waitEvent",
+                COUNT(*)::INT                                                                    AS "count",
+                MAX(EXTRACT(EPOCH FROM (NOW() - backend_start))::INT)                           AS "maxAgeSec",
+                MAX(EXTRACT(EPOCH FROM (NOW() - state_change))::INT)                            AS "maxStateAgeSec"
+            FROM pg_stat_activity
+            WHERE pid <> pg_backend_pid()
+            GROUP BY
+                application_name, usename, datname,
+                state, wait_event_type, wait_event
+            ORDER BY COUNT(*) DESC
+            LIMIT 50
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
+});
 // ─────────────────────────────────────────────────────────────────────────────
 // VACUUM & MAINTENANCE
 // ─────────────────────────────────────────────────────────────────────────────
