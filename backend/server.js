@@ -2501,7 +2501,7 @@ app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_T
         res.json(r.rows);
     } catch (e) { res.json([]); }
 });
- 
+
 
 // ── /api/tables/queries ── pg_stat_statements: slow query analysis ────────────
 app.get('/api/tables/queries', authenticate, cached('tables:queries', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
