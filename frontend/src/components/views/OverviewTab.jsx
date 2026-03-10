@@ -240,7 +240,7 @@ const RingGauge = ({ value, color, size = 80, strokeWidth = 6, label, showValue 
     const filled = circ * Math.min(value, 100) / 100;
     const r2 = r - strokeWidth - 3;
     const circ2 = 2 * Math.PI * r2;
-    const filled2 = secondaryValue != null ? circ2 * Math.min(secondaryValue, 100) / 100 : 0;
+    const filled2 = secondaryValue !== null ? circ2 * Math.min(secondaryValue, 100) / 100 : 0;
     return (
         <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
             <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -256,7 +256,7 @@ const RingGauge = ({ value, color, size = 80, strokeWidth = 6, label, showValue 
                     style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.22, 1, 0.36, 1)', filter: `drop-shadow(0 0 5px ${color}50)` }}
                 />
                 {/* Optional inner ring */}
-                {secondaryValue != null && (
+                {secondaryValue !== null && (
                     <>
                         <circle cx={size / 2} cy={size / 2} r={r2} fill="none" stroke={`${THEME.grid}35`} strokeWidth={strokeWidth - 1.5} />
                         <circle
@@ -321,7 +321,7 @@ const Divider = ({ style = {} }) => (
 
 /* ── Helpers ── */
 const fmtNum = (n) => {
-    if (n == null) return '—';
+    if (n === null) return '—';
     const v = Number(n);
     if (v >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
     if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`;

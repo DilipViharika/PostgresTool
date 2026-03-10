@@ -119,9 +119,9 @@ const CWTooltip = ({ active, payload, label, unit, T }) => {
 
 /* ── Connect Instance Modal ── */
 const ConnectModal = ({ T, onAdd, onClose, existing }) => {
-    const [form, setForm]         = useState({ accessKey: '', secretKey: '', region: 'ap-southeast-1', dbId: '' });
+    const [form, setForm]             = useState({ accessKey: '', secretKey: '', region: 'ap-southeast-1', dbId: '' });
     const [showSecret, setShowSecret] = useState(false);
-    const [errors, setErrors]     = useState({});
+    const [errors, setErrors]         = useState({});
 
     const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErrors(p => ({ ...p, [k]: '' })); };
 
@@ -172,7 +172,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
 
     const FieldHint = ({ k, hint }) => (
         <>
-            {errors[k]   && <div style={{ fontSize: 11, color: T.danger,   marginTop: 5, fontFamily: T.fontBody }}>⚠ {errors[k]}</div>}
+            {errors[k]    && <div style={{ fontSize: 11, color: T.danger,   marginTop: 5, fontFamily: T.fontBody }}>⚠ {errors[k]}</div>}
             {!errors[k] && hint && <div style={{ fontSize: 11, color: T.textDim, marginTop: 5, fontFamily: T.fontBody }}>{hint}</div>}
         </>
     );
@@ -370,14 +370,23 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
         try {
             const results = await Promise.allSettled(
                 METRIC_DEFS.map(async (def) => {
+                    // ── FIX: period = granularity in seconds (not the total window) ──
+                    // startTime/endTime define the window; period defines bucket size
+                    const period    = timeRange <= 3600 ? 60 : timeRange <= 86400 ? 300 : 3600;
+                    const endTime   = new Date();
+                    const startTime = new Date(endTime.getTime() - timeRange * 1000);
+
                     const params = new URLSearchParams({
                         metric:    def.key,
-                        period:    String(timeRange),
+                        period:    String(period),
+                        startTime: startTime.toISOString(),
+                        endTime:   endTime.toISOString(),
                         db:        instance.dbId,
                         accessKey: instance.accessKey,
                         secretKey: instance.secretKey,
                         region:    instance.region,
                     });
+
                     const res = await fetch(
                         `${API_BASE}/api/cloudwatch/metrics?${params}`,
                         { headers: authHeader() }
