@@ -947,7 +947,7 @@ function S_Sizes() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ★ NEW SECTION 1: QUERY PERFORMANCE (pg_stat_statements)
+   ★ SECTION: QUERY PERFORMANCE (pg_stat_statements)
 ═══════════════════════════════════════════════════════════════ */
 function S_QueryPerf() {
     const f = useContext(FilterCtx);
@@ -973,8 +973,6 @@ function S_QueryPerf() {
                          <Chip color={THEME.primary}>{totalCalls.toLocaleString()} calls</Chip>
                          {slowQueries > 0 && <Chip color={THEME.danger}>{slowQueries} slow</Chip>}
                      </div>} />
-
-            {/* KPI row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                 {[
                     { label: 'Total Queries', val: rows.length, color: THEME.primary },
@@ -988,7 +986,6 @@ function S_QueryPerf() {
                     </Card>
                 ))}
             </div>
-
             <Card style={{ padding: '18px 18px 10px' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Call Frequency vs. Mean Exec Time (ms)</div>
                 <ResponsiveContainer width="100%" height={130}>
@@ -1003,7 +1000,6 @@ function S_QueryPerf() {
                     </BarChart>
                 </ResponsiveContainer>
             </Card>
-
             <Card style={{ overflowX: 'auto' }}>
                 <div style={{ minWidth: 800 }}>
                     <THead cols="3fr 1fr 1fr 1fr 1fr 1fr" labels={['Query', 'Calls', 'Mean', 'Max', 'Total Time', 'Rows/Call']} />
@@ -1035,7 +1031,7 @@ function S_QueryPerf() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ★ NEW SECTION 2: LOCK & CONTENTION MONITOR
+   ★ SECTION: LOCK & CONTENTION MONITOR
 ═══════════════════════════════════════════════════════════════ */
 function S_Locks() {
     const { data, loading, error } = useTableData('/api/tables/locks');
@@ -1043,7 +1039,6 @@ function S_Locks() {
     if (error)   return <ErrUI msg={error} />;
 
     const blocked  = data.filter(l => l.blocked || l.waiting);
-    const granted  = data.filter(l => !l.blocked && !l.waiting);
     const lockTypes = [...new Set(data.map(l => l.lockType || l.locktype).filter(Boolean))];
 
     const pieData = lockTypes.map(lt => ({
@@ -1060,14 +1055,12 @@ function S_Locks() {
                          <Chip color={THEME.primary}>{data.length} locks</Chip>
                          {blocked.length > 0 && <Chip color={THEME.danger}>{blocked.length} blocked</Chip>}
                      </div>} />
-
             {blocked.length > 0 && (
                 <div style={{ padding: '12px 16px', borderRadius: 10, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}25`, fontSize: 13, color: THEME.danger, display: 'flex', alignItems: 'center', gap: 10 }}>
                     <AlertTriangle size={15} />
                     {blocked.length} session{blocked.length > 1 ? 's are' : ' is'} blocked — potential deadlock or long-running transaction holding locks.
                 </div>
             )}
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
                 <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Lock Types</div>
@@ -1090,7 +1083,6 @@ function S_Locks() {
                         </>
                     ) : <EmptyUI msg="No locks detected." />}
                 </Card>
-
                 <Card>
                     <THead cols="1fr 1fr 1fr 1fr 1fr" labels={['PID', 'Relation', 'Lock Type', 'Mode', 'Status']} />
                     {data.length === 0
@@ -1116,7 +1108,7 @@ function S_Locks() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ★ NEW SECTION 3: AUTOVACUUM TRACKER
+   ★ SECTION: AUTOVACUUM TRACKER
 ═══════════════════════════════════════════════════════════════ */
 function S_Autovacuum() {
     const f = useContext(FilterCtx);
@@ -1149,7 +1141,6 @@ function S_Autovacuum() {
                          {neverVacuumed > 0 && <Chip color={THEME.danger}>{neverVacuumed} never vacuumed</Chip>}
                          {overdue > 0 && <Chip color={THEME.warning}>{overdue} overdue</Chip>}
                      </div>} />
-
             <Card style={{ padding: '18px 18px 10px' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Vacuum & Analyze Run Counts</div>
                 <ResponsiveContainer width="100%" height={110}>
@@ -1163,7 +1154,6 @@ function S_Autovacuum() {
                     </BarChart>
                 </ResponsiveContainer>
             </Card>
-
             <Card>
                 <THead cols="1.5fr 1fr 1fr 1fr 1fr 1fr" labels={['Table', 'Last Vacuum', 'Last Analyze', 'V Count', 'A Count', 'Status']} />
                 {rows.map((t, i) => {
@@ -1192,7 +1182,7 @@ function S_Autovacuum() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ★ NEW SECTION 4: CONNECTION POOL STATS
+   ★ SECTION: CONNECTION POOL STATS
 ═══════════════════════════════════════════════════════════════ */
 function S_Connections() {
     const { data: raw, loading, error } = useTableData('/api/tables/connections');
@@ -1214,13 +1204,12 @@ function S_Connections() {
             <SecHead Icon={Users} accent={THEME.cyan} title="Connection Pool Stats"
                      sub="Active, idle, and waiting connections from pg_stat_activity"
                      right={<Chip color={total > 80 ? THEME.danger : THEME.primary}>{total} total</Chip>} />
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                 {[
-                    { label: 'Total',   val: total,   color: THEME.primary, icon: '⬤' },
-                    { label: 'Active',  val: active,  color: THEME.success, icon: '▶' },
-                    { label: 'Idle',    val: idle,    color: THEME.warning, icon: '⏸' },
-                    { label: 'Waiting', val: waiting, color: waiting > 0 ? THEME.danger : THEME.textDim, icon: '⌛' },
+                    { label: 'Total',   val: total,   color: THEME.primary },
+                    { label: 'Active',  val: active,  color: THEME.success },
+                    { label: 'Idle',    val: idle,    color: THEME.warning },
+                    { label: 'Waiting', val: waiting, color: waiting > 0 ? THEME.danger : THEME.textDim },
                 ].map((k, i) => (
                     <Card key={i} style={{ padding: '16px', textAlign: 'center' }}>
                         <div style={{ fontSize: 26, fontWeight: 800, color: k.color, fontFamily: THEME.fontMono }}>{k.val}</div>
@@ -1229,7 +1218,6 @@ function S_Connections() {
                     </Card>
                 ))}
             </div>
-
             {total > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
                     <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
@@ -1249,7 +1237,6 @@ function S_Connections() {
                             ))}
                         </div>
                     </Card>
-
                     <Card>
                         <THead cols="1fr 1fr 1fr 1fr" labels={['App', 'User', 'DB', 'Count']} />
                         {data.slice(0, 10).map((c, i) => {
@@ -1270,17 +1257,16 @@ function S_Connections() {
                     </Card>
                 </div>
             )}
-
             {total === 0 && <EmptyUI msg="No connection data. Check pg_stat_activity access." />}
         </div>
     );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ★ NEW SECTION 5: AI DEEP ANALYSIS  (Claude-powered)
+   ★ SECTION: AI DEEP ANALYSIS  (Claude-powered)
+   FIX: robust JSON parsing + max_tokens bumped to 2000
 ═══════════════════════════════════════════════════════════════ */
 
-// Severity badge with icon
 const SeverityBadge = ({ level }) => {
     const map = {
         critical: { color: THEME.danger,  icon: '🔴', label: 'Critical' },
@@ -1292,7 +1278,6 @@ const SeverityBadge = ({ level }) => {
     return <Chip color={m.color}>{m.icon} {m.label}</Chip>;
 };
 
-// A single finding card
 const FindingCard = ({ finding, delay = 0 }) => {
     const [open, setOpen] = useState(false);
     const sevColor = finding.severity === 'critical' ? THEME.danger
@@ -1340,7 +1325,6 @@ const FindingCard = ({ finding, delay = 0 }) => {
     );
 };
 
-// Custom ask box for follow-up questions
 const AskBox = ({ onAsk, disabled }) => {
     const [val, setVal] = useState('');
     const presets = [
@@ -1386,30 +1370,41 @@ const AskBox = ({ onAsk, disabled }) => {
     );
 };
 
+// ── Robust JSON extractor ──────────────────────────────────────
+function extractJSON(text) {
+    // Strip markdown fences
+    const stripped = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    // Find the outermost { ... } block
+    const start = stripped.indexOf('{');
+    const end   = stripped.lastIndexOf('}');
+    if (start === -1 || end === -1 || end <= start) {
+        throw new Error(`No JSON object found in response. Preview: ${stripped.slice(0, 200)}`);
+    }
+    return JSON.parse(stripped.slice(start, end + 1));
+}
+
 function S_AIAnalysis() {
     const f = useContext(FilterCtx);
     const { data: statsData }  = useTableData('/api/tables/stats');
     const { data: indexData }  = useTableData('/api/tables/indexes');
     const { data: sizeData }   = useTableData('/api/tables/sizes');
 
-    const [findings, setFindings] = useState([]);
-    const [summary,  setSummary]  = useState('');
-    const [chatLog,  setChatLog]  = useState([]);
-    const [loading,  setLoading]  = useState(false);
+    const [findings,    setFindings]    = useState([]);
+    const [summary,     setSummary]     = useState('');
+    const [chatLog,     setChatLog]     = useState([]);
+    const [loading,     setLoading]     = useState(false);
     const [chatLoading, setChatLoading] = useState(false);
-    const [error,    setError]    = useState(null);
-    const [activeTab, setActiveTab] = useState('findings'); // 'findings' | 'chat'
-    const [score,    setScore]    = useState(null);
+    const [error,       setError]       = useState(null);
+    const [activeTab,   setActiveTab]   = useState('findings');
+    const [score,       setScore]       = useState(null);
     const chatEndRef = useRef(null);
 
-    // Scroll to bottom on new chat messages
     useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatLog]);
 
-    // Build a compact snapshot of the DB state to send to Claude
     const buildSnapshot = useCallback(() => {
-        const tables = (statsData || []).filter(t => matchFilter(t, f)).slice(0, 12);
+        const tables  = (statsData || []).filter(t => matchFilter(t, f)).slice(0, 12);
         const indexes = (indexData || []).filter(ix => (!f.schema || ix.schema === f.schema) && (!f.table || ix.tableName === f.table)).slice(0, 20);
-        const sizes   = (sizeData  || []).filter(s => (!f.schema || s.schema === f.schema) && (!f.table || s.name === f.table)).slice(0, 12);
+        const sizes   = (sizeData  || []).filter(s  => (!f.schema || s.schema === f.schema)  && (!f.table || s.name === f.table)).slice(0, 12);
         return {
             scope: f.table || f.schema || 'global',
             tables: tables.map(t => ({
@@ -1453,7 +1448,7 @@ function S_AIAnalysis() {
                 },
                 body: JSON.stringify({
                     model: 'claude-sonnet-4-20250514',
-                    max_tokens: 1000,
+                    max_tokens: 2000, // ← bumped from 1000 to prevent truncated JSON
                     system: `You are an expert PostgreSQL DBA analyst. Analyze database telemetry and return ONLY valid JSON — no markdown, no preamble, no explanation outside the JSON.
 
 Return this exact structure:
@@ -1488,19 +1483,26 @@ Rules:
                     }],
                 }),
             });
-            const data = await response.json();
-            const text = data.content?.map(c => c.text || '').join('') || '';
-            const clean = text.replace(/```json|```/g, '').trim();
-            const parsed = JSON.parse(clean);
+
+            const apiResp = await response.json();
+
+            // Surface API-level errors (auth, quota, etc.) immediately
+            if (apiResp.error) {
+                throw new Error(apiResp.error.message || JSON.stringify(apiResp.error));
+            }
+
+            const rawText = (apiResp.content || []).map(c => c.text || '').join('');
+            const parsed  = extractJSON(rawText); // robust extraction
+
             setFindings(parsed.findings || []);
-            setSummary(parsed.summary || '');
+            setSummary(parsed.summary   || '');
             setScore(parsed.overallScore ?? null);
             setChatLog([{
                 role: 'assistant',
-                content: `Analysis complete. Overall health score: **${parsed.overallScore}/100**. ${parsed.summary}`,
+                content: `Analysis complete. Overall health score: ${parsed.overallScore}/100. ${parsed.summary}`,
             }]);
         } catch (e) {
-            setError(`AI analysis failed: ${e.message}. Check API connectivity.`);
+            setError(`AI analysis failed: ${e.message}`);
         } finally {
             setLoading(false);
         }
@@ -1509,8 +1511,7 @@ Rules:
     const askFollowUp = useCallback(async (question) => {
         if (!summary) return;
         setChatLoading(true);
-        const newMsg = { role: 'user', content: question };
-        setChatLog(l => [...l, newMsg]);
+        setChatLog(l => [...l, { role: 'user', content: question }]);
         try {
             const snapshot = buildSnapshot();
             const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1523,16 +1524,15 @@ Rules:
                     model: 'claude-sonnet-4-20250514',
                     max_tokens: 1000,
                     system: `You are an expert PostgreSQL DBA. Answer questions about the provided database telemetry. Be concise, technical, and actionable. Use plain text — no markdown headers. Include SQL examples where relevant.`,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: `Database snapshot:\n${JSON.stringify(snapshot, null, 2)}\n\nPrevious analysis summary: ${summary}\n\nQuestion: ${question}`,
-                        },
-                    ],
+                    messages: [{
+                        role: 'user',
+                        content: `Database snapshot:\n${JSON.stringify(snapshot, null, 2)}\n\nPrevious analysis summary: ${summary}\n\nQuestion: ${question}`,
+                    }],
                 }),
             });
-            const data = await response.json();
-            const text = data.content?.map(c => c.text || '').join('') || 'No response.';
+            const apiResp = await response.json();
+            if (apiResp.error) throw new Error(apiResp.error.message || JSON.stringify(apiResp.error));
+            const text = (apiResp.content || []).map(c => c.text || '').join('') || 'No response.';
             setChatLog(l => [...l, { role: 'assistant', content: text }]);
         } catch (e) {
             setChatLog(l => [...l, { role: 'assistant', content: `Error: ${e.message}` }]);
@@ -1541,15 +1541,12 @@ Rules:
         }
     }, [summary, buildSnapshot]);
 
-    const criticals = findings.filter(f => f.severity === 'critical').length;
-    const warnings  = findings.filter(f => f.severity === 'warning').length;
-
-    // Score color
-    const scoreColor = score === null ? THEME.textDim : score >= 75 ? THEME.success : score >= 50 ? THEME.warning : THEME.danger;
+    const criticals   = findings.filter(f => f.severity === 'critical').length;
+    const warnings    = findings.filter(f => f.severity === 'warning').length;
+    const scoreColor  = score === null ? THEME.textDim : score >= 75 ? THEME.success : score >= 50 ? THEME.warning : THEME.danger;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {/* Header */}
             <SecHead Icon={BrainCircuit} accent={THEME.purple} title="AI Deep Analysis"
                      sub="Claude-powered PostgreSQL diagnostics with actionable findings and follow-up Q&A"
                      right={
@@ -1608,7 +1605,7 @@ Rules:
                         </div>
                     </div>
                     {['Scanning table health metrics', 'Analysing index usage patterns', 'Computing write amplification', 'Evaluating bloat thresholds', 'Generating prioritized findings'].map((step, i) => (
-                        <div key={i} className="ai-thinking" style={{ height: 14, borderRadius: 7, marginBottom: 8, width: `${60 + Math.random() * 30}%`, opacity: .7 }} />
+                        <div key={i} className="ai-thinking" style={{ height: 14, borderRadius: 7, marginBottom: 8, width: `${60 + (i * 7)}%`, opacity: .7 }} />
                     ))}
                 </Card>
             )}
@@ -1618,7 +1615,6 @@ Rules:
             {/* Results */}
             {!loading && findings.length > 0 && (
                 <>
-                    {/* Summary bar */}
                     {summary && (
                         <Card style={{ padding: '16px 20px', borderLeft: `3px solid ${THEME.purple}`, background: `${THEME.purple}06` }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
@@ -1635,7 +1631,6 @@ Rules:
                         </Card>
                     )}
 
-                    {/* Tab switcher */}
                     <div style={{ display: 'flex', gap: 4, padding: 3, borderRadius: 10, background: `${THEME.glassBorder}60`, width: 'fit-content' }}>
                         {[
                             { id: 'findings', label: `Findings (${findings.length})`, Icon: AlertCircle },
@@ -1656,10 +1651,8 @@ Rules:
                         ))}
                     </div>
 
-                    {/* Findings tab */}
                     {activeTab === 'findings' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {/* Group by severity */}
                             {['critical', 'warning', 'info', 'success'].map(sev => {
                                 const group = findings.filter(f => f.severity === sev);
                                 if (!group.length) return null;
@@ -1680,10 +1673,8 @@ Rules:
                         </div>
                     )}
 
-                    {/* Chat tab */}
                     {activeTab === 'chat' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            {/* Chat log */}
                             <Card style={{ padding: 0, overflow: 'hidden' }}>
                                 <div style={{ maxHeight: 400, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                                     {chatLog.map((msg, i) => (
@@ -1691,12 +1682,13 @@ Rules:
                                             <div style={{
                                                 width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                                                 background: msg.role === 'user' ? `${THEME.primary}30` : `${THEME.purple}30`,
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
                                             }}>
                                                 {msg.role === 'user' ? '👤' : '🧠'}
                                             </div>
                                             <div style={{
-                                                maxWidth: '78%', padding: '10px 14px', borderRadius: msg.role === 'user' ? '14px 2px 14px 14px' : '2px 14px 14px 14px',
+                                                maxWidth: '78%', padding: '10px 14px',
+                                                borderRadius: msg.role === 'user' ? '14px 2px 14px 14px' : '2px 14px 14px 14px',
                                                 background: msg.role === 'user' ? `${THEME.primary}15` : `${THEME.purple}10`,
                                                 border: `1px solid ${msg.role === 'user' ? THEME.primary : THEME.purple}25`,
                                                 fontSize: 13, color: THEME.textMuted, lineHeight: 1.7,
@@ -1722,8 +1714,6 @@ Rules:
                                     <div ref={chatEndRef} />
                                 </div>
                             </Card>
-
-                            {/* Ask box */}
                             <AskBox onAsk={askFollowUp} disabled={chatLoading} />
                         </div>
                     )}
@@ -1734,36 +1724,36 @@ Rules:
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   NAV REGISTRY  (updated with new sections)
+   NAV REGISTRY
 ───────────────────────────────────────────────────────────────── */
 const GROUPS = [
     {
         id: 'health', label: 'Health', Icon: Activity, color: () => THEME.success,
         items: [
-            { id: 'scorecard', label: 'Health Scorecard', Icon: Activity,   sub: 'VACUUM & health rings',  component: S_Health },
-            { id: 'activity',  label: 'Activity Heatmap', Icon: BarChart2,  sub: 'Scans & DML rates',      component: S_Activity },
-            { id: 'forecast',  label: 'Forecast',         Icon: TrendingUp, sub: 'Dead tuple projection',  component: S_Forecast },
-            { id: 'rows',      label: 'Row Counts',        Icon: Database,   sub: 'Live vs dead tuples',   component: S_RowCounts },
-            { id: 'autovacuum',label: 'Autovacuum',        Icon: RefreshCw,  sub: 'Daemon run tracker',    component: S_Autovacuum }, // ★ NEW
+            { id: 'scorecard',  label: 'Health Scorecard', Icon: Activity,   sub: 'VACUUM & health rings',  component: S_Health },
+            { id: 'activity',   label: 'Activity Heatmap', Icon: BarChart2,  sub: 'Scans & DML rates',      component: S_Activity },
+            { id: 'forecast',   label: 'Forecast',         Icon: TrendingUp, sub: 'Dead tuple projection',  component: S_Forecast },
+            { id: 'rows',       label: 'Row Counts',       Icon: Database,   sub: 'Live vs dead tuples',    component: S_RowCounts },
+            { id: 'autovacuum', label: 'Autovacuum',       Icon: RefreshCw,  sub: 'Daemon run tracker',     component: S_Autovacuum },
         ],
     },
     {
         id: 'diagnostics', label: 'Diagnostics', Icon: Search, color: () => THEME.warning,
         items: [
-            { id: 'columns',  label: 'Column Stats',   Icon: Search,   sub: 'Null % & distinct values',       component: S_Columns },
-            { id: 'toast',    label: 'TOAST Bloat',    Icon: Layers,   sub: 'Oversized columns',               component: S_Toast },
-            { id: 'temp',     label: 'Temp Tables',    Icon: Clock,    sub: 'Session temp usage',              component: S_Temp, hideWhenTable: true },
-            { id: 'queryPerf',label: 'Query Perf',     Icon: FileText, sub: 'pg_stat_statements analysis',     component: S_QueryPerf }, // ★ NEW
-            { id: 'locks',    label: 'Lock Monitor',   Icon: Lock,     sub: 'Blocking chains & deadlocks',     component: S_Locks },      // ★ NEW
-            { id: 'conns',    label: 'Connections',    Icon: Users,    sub: 'Pool & pg_stat_activity',         component: S_Connections, hideWhenTable: true }, // ★ NEW
+            { id: 'columns',   label: 'Column Stats',  Icon: Search,   sub: 'Null % & distinct values',   component: S_Columns },
+            { id: 'toast',     label: 'TOAST Bloat',   Icon: Layers,   sub: 'Oversized columns',          component: S_Toast },
+            { id: 'temp',      label: 'Temp Tables',   Icon: Clock,    sub: 'Session temp usage',         component: S_Temp,        hideWhenTable: true },
+            { id: 'queryPerf', label: 'Query Perf',    Icon: FileText, sub: 'pg_stat_statements',         component: S_QueryPerf },
+            { id: 'locks',     label: 'Lock Monitor',  Icon: Lock,     sub: 'Blocking chains & deadlocks',component: S_Locks },
+            { id: 'conns',     label: 'Connections',   Icon: Users,    sub: 'Pool & pg_stat_activity',    component: S_Connections, hideWhenTable: true },
         ],
     },
     {
         id: 'architecture', label: 'Architecture', Icon: Zap, color: () => THEME.cyan,
         items: [
-            { id: 'schema', label: 'Schema History', Icon: HardDrive, sub: 'DDL timeline',          component: S_Schema },
-            { id: 'deps',   label: 'Dependencies',   Icon: Zap,       sub: 'FK chains & cascades',  component: S_Deps },
-            { id: 'write',  label: 'Write Amp',      Icon: Shield,    sub: 'HOT updates & WAL',     component: S_Write },
+            { id: 'schema', label: 'Schema History', Icon: HardDrive, sub: 'DDL timeline',         component: S_Schema },
+            { id: 'deps',   label: 'Dependencies',   Icon: Zap,       sub: 'FK chains & cascades', component: S_Deps },
+            { id: 'write',  label: 'Write Amp',      Icon: Shield,    sub: 'HOT updates & WAL',    component: S_Write },
         ],
     },
     {
@@ -1776,7 +1766,7 @@ const GROUPS = [
     {
         id: 'ai', label: 'AI Intelligence', Icon: BrainCircuit, color: () => THEME.purple,
         items: [
-            { id: 'ai-analysis', label: 'AI Deep Analysis', Icon: BrainCircuit, sub: 'Claude-powered diagnostics', component: S_AIAnalysis }, // ★ NEW
+            { id: 'ai-analysis', label: 'AI Deep Analysis', Icon: BrainCircuit, sub: 'Claude-powered diagnostics', component: S_AIAnalysis },
         ],
     },
 ];
@@ -1823,9 +1813,9 @@ export default function UnifiedDashboard() {
         }),
     })).filter(g => (!g.tableOnly || !!filter.table) && g.items.length > 0);
 
-    const allItems   = visibleGroups.flatMap(g => g.items);
-    const activeItem = allItems.find(s => s.id === activeId) || allItems[0];
-    const Preview    = activeItem?.component;
+    const allItems    = visibleGroups.flatMap(g => g.items);
+    const activeItem  = allItems.find(s => s.id === activeId) || allItems[0];
+    const Preview     = activeItem?.component;
     const activeGroup = visibleGroups.find(g => g.items.some(s => s.id === activeItem?.id));
 
     const toggleGroup = id => setCollapsed(p => ({ ...p, [id]: !p[id] }));
@@ -1881,7 +1871,7 @@ export default function UnifiedDashboard() {
                                     </button>
 
                                     {isOpen && g.items.map(s => {
-                                        const isActive = activeItem?.id === s.id;
+                                        const isActive  = activeItem?.id === s.id;
                                         const isNewItem = ['queryPerf','locks','conns','autovacuum','ai-analysis'].includes(s.id);
                                         return (
                                             <button key={s.id} onClick={() => setActiveId(s.id)} className={isActive ? '' : 'ud-navitem'}
@@ -1935,7 +1925,7 @@ export default function UnifiedDashboard() {
                             )}
                         </div>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            {filter.db     && <Chip color={THEME.cyan}   size="sm">db: {filter.db}</Chip>}
+                            {filter.db     && <Chip color={THEME.cyan}    size="sm">db: {filter.db}</Chip>}
                             {filter.schema && <Chip color={THEME.primary} size="sm">schema: {filter.schema}</Chip>}
                             {filter.table  && <Chip color={THEME.success} size="sm">table: {filter.table}</Chip>}
                             <button className="ud-btn" onClick={() => activeItem?.reload?.()}
