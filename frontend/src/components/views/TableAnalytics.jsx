@@ -731,29 +731,354 @@ function toSafeArr(v) {
 function S_Deps() {
     const f = useContext(FilterCtx);
     const { data, loading, error } = useTableData('/api/tables/dependencies');
+    const [selected, setSelected] = useState(null);
+    const [hovered, setHovered]   = useState(null);
+    const [viewMode, setViewMode] = useState('map'); // 'map' | 'table'
+    const svgRef = useRef(null);
+
     if (loading) return <Loader />;
     if (error)   return <ErrUI msg={error} />;
+
     const normalized = data.map(t => ({ ...t, refsTo: toSafeArr(t.refsTo), refsBy: toSafeArr(t.refsBy) }));
     const rows = f.table
         ? normalized.filter(t => t.name === f.table || t.refsTo.includes(f.table) || t.refsBy.includes(f.table))
         : normalized.filter(t => matchFilter(t, f));
     if (!rows.length) return <EmptyUI />;
+
+    const focusName = f.table || selected;
+    const focusRow  = focusName ? (normalized.find(r => r.name === focusName) || null) : null;
+
+    /* ── Layout ───────────────────────────────────────────── */
+    const W = 900, H = 480, cx = W / 2, cy = H / 2;
+    let nodes = [], edges = [];
+
+    const truncLabel = (s, n = 16) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+
+    if (focusRow) {
+        /* Focused: center + fan left (deps) + fan right (refs) */
+        const center = { id: focusRow.name, x: cx, y: cy, role: 'center', critical: focusRow.refsBy.length > 2 };
+        nodes.push(center);
+
+        const layout = (list, xOff, role) => {
+            const total = list.length;
+            const spread = Math.min(total * 58, 340);
+            list.forEach((name, i) => {
+                const yOff = total === 1 ? 0 : -spread / 2 + (spread / (total - 1 || 1)) * i;
+                const nx = cx + xOff;
+                const ny = cy + yOff;
+                const n = { id: name, x: nx, y: ny, role };
+                nodes.push(n);
+                edges.push({ from: center, to: n, kind: role });
+            });
+        };
+
+        layout(focusRow.refsTo, -270, 'dep');
+        layout(focusRow.refsBy, +270, 'ref');
+
+    } else {
+        /* Global radial layout */
+        const sorted = [...rows].sort((a, b) => (b.refsBy.length + b.refsTo.length) - (a.refsBy.length + a.refsTo.length));
+        const N = sorted.length;
+        const R = N <= 6 ? 155 : N <= 12 ? 185 : N <= 20 ? 205 : 225;
+        sorted.forEach((t, i) => {
+            const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
+            nodes.push({
+                id: t.name,
+                x: cx + R * Math.cos(angle),
+                y: cy + R * Math.sin(angle),
+                role: 'table',
+                critical: t.refsBy.length > 2,
+                degree: t.refsTo.length + t.refsBy.length,
+            });
+        });
+        rows.forEach(t => {
+            t.refsTo.forEach(dep => {
+                const a = nodes.find(n => n.id === t.name);
+                const b = nodes.find(n => n.id === dep);
+                if (a && b) edges.push({ from: a, to: b, kind: 'dep' });
+            });
+        });
+    }
+
+    /* ── SVG helpers ──────────────────────────────────────── */
+    const nodeColor = n => {
+        if (n.role === 'center') return THEME.cyan;
+        if (n.role === 'dep')    return THEME.primary;
+        if (n.role === 'ref')    return THEME.cyan;
+        if (n.critical)          return THEME.danger;
+        return n.degree > 3 ? THEME.warning : THEME.primary;
+    };
+
+    const nodeR = n => n.role === 'center' ? 42 : n.critical ? 34 : 30;
+
+    const curvePath = (a, b) => {
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2;
+        const bend = focusRow ? 0 : 30;
+        return `M ${a.x} ${a.y} Q ${mx + bend} ${my - bend} ${b.x} ${b.y}`;
+    };
+
+    /* ── Label split for multi-line ───────────────────────── */
+    const splitLabel = (name, maxLen = 12) => {
+        const parts = name.split('_');
+        const lines = [];
+        let cur = '';
+        parts.forEach(p => {
+            if ((cur + (cur ? '_' : '') + p).length <= maxLen) {
+                cur = cur ? cur + '_' + p : p;
+            } else {
+                if (cur) lines.push(cur);
+                cur = p.length > maxLen ? p.slice(0, maxLen - 1) + '…' : p;
+            }
+        });
+        if (cur) lines.push(cur);
+        return lines.slice(0, 3);
+    };
+
+    const handleNodeClick = (node) => {
+        if (node.role === 'center') { setSelected(null); return; }
+        setSelected(prev => prev === node.id ? null : node.id);
+    };
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <SecHead Icon={Zap} accent={THEME.cyan} title="Dependency Map" sub="Foreign key relationships, cascade chains, and drop-impact analysis" />
-            <Card>
-                <THead cols="1fr 1.5fr 1.5fr" labels={['Table', 'Depends On (FK)', 'Referenced By']} />
-                {rows.map((t, i) => (
-                    <TRow key={i} cols="1fr 1.5fr 1.5fr" i={i}>
-                        <div>
-                            <div style={{ fontWeight: 600, fontSize: 13, color: THEME.cyan }}>{t.name}</div>
-                            {t.refsBy.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
-                        </div>
-                        <span style={{ fontSize: 12, color: THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsTo.length ? t.refsTo.join(', ') : '—'}</span>
-                        <span style={{ fontSize: 12, color: t.refsBy.length ? THEME.textMuted : THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsBy.length ? t.refsBy.join(', ') : '—'}</span>
-                    </TRow>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                <SecHead Icon={Zap} accent={THEME.cyan}
+                         title="Dependency Mind Map"
+                         sub="FK relationships & cascade chains — click any node to explore" />
+                <div style={{ display: 'flex', gap: 6 }}>
+                    {['map', 'table'].map(m => (
+                        <button key={m} className="ud-btn"
+                                onClick={() => setViewMode(m)}
+                                style={{
+                                    padding: '5px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                                    fontFamily: THEME.fontMono, cursor: 'pointer',
+                                    background: viewMode === m ? `${THEME.cyan}20` : 'transparent',
+                                    border: `1px solid ${viewMode === m ? THEME.cyan : THEME.glassBorder}`,
+                                    color: viewMode === m ? THEME.cyan : THEME.textDim,
+                                }}>
+                            {m === 'map' ? '⬡ Mind Map' : '☰ Table'}
+                        </button>
+                    ))}
+                    {selected && (
+                        <button className="ud-btn"
+                                onClick={() => setSelected(null)}
+                                style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontFamily: THEME.fontMono, cursor: 'pointer', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}40`, color: THEME.danger }}>
+                            ✕ Reset
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Legend */}
+            <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', padding: '8px 14px', borderRadius: 8, background: `${THEME.glassBorder}30` }}>
+                {[
+                    { color: THEME.primary, label: 'Depends On (FK outgoing)' },
+                    { color: THEME.cyan,    label: 'Referenced By (FK incoming)' },
+                    { color: THEME.danger,  label: 'Critical (3+ refs)' },
+                    { color: THEME.warning, label: 'High connectivity' },
+                ].map(({ color, label }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 9, height: 9, borderRadius: '50%', background: color, boxShadow: `0 0 5px ${color}80` }} />
+                        <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{label}</span>
+                    </div>
                 ))}
-            </Card>
+            </div>
+
+            {viewMode === 'map' ? (
+                /* ── Mind Map SVG ── */
+                <div style={{ borderRadius: 12, overflow: 'hidden', background: `linear-gradient(135deg, ${THEME.bg}cc 0%, ${THEME.surface}80 100%)`, border: `1px solid ${THEME.glassBorder}` }}>
+                    <svg ref={svgRef} width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
+                        <defs>
+                            {/* Arrow markers */}
+                            {[['dep', THEME.primary], ['ref', THEME.cyan]].map(([id, clr]) => (
+                                <marker key={id} id={`arr-${id}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                                    <path d="M0,0 L0,7 L7,3.5 z" fill={clr} opacity={0.8} />
+                                </marker>
+                            ))}
+                            {/* Radial bg pattern */}
+                            <radialGradient id="bg-grad" cx="50%" cy="50%" r="55%">
+                                <stop offset="0%" stopColor={THEME.cyan} stopOpacity={0.04} />
+                                <stop offset="100%" stopColor={THEME.bg} stopOpacity={0} />
+                            </radialGradient>
+                            {/* Node glow filter */}
+                            <filter id="node-glow" x="-40%" y="-40%" width="180%" height="180%">
+                                <feGaussianBlur stdDeviation="4" result="blur" />
+                                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                            </filter>
+                        </defs>
+
+                        {/* Background radial glow */}
+                        <rect width={W} height={H} fill="url(#bg-grad)" />
+
+                        {/* Section labels for focused view */}
+                        {focusRow && (
+                            <>
+                                {focusRow.refsTo.length > 0 && (
+                                    <text x={cx - 270} y={28} textAnchor="middle" fontSize={9} fontWeight={700}
+                                          fill={THEME.primary} fontFamily="'Fira Code',monospace" opacity={0.65} letterSpacing="0.08em">
+                                        ◀ DEPENDS ON (FK)
+                                    </text>
+                                )}
+                                {focusRow.refsBy.length > 0 && (
+                                    <text x={cx + 270} y={28} textAnchor="middle" fontSize={9} fontWeight={700}
+                                          fill={THEME.cyan} fontFamily="'Fira Code',monospace" opacity={0.65} letterSpacing="0.08em">
+                                        REFERENCED BY ▶
+                                    </text>
+                                )}
+                                {focusRow.refsTo.length === 0 && focusRow.refsBy.length === 0 && (
+                                    <text x={cx} y={H - 20} textAnchor="middle" fontSize={11}
+                                          fill={THEME.textDim} fontFamily="'Fira Code',monospace">
+                                        No foreign key relationships found
+                                    </text>
+                                )}
+                            </>
+                        )}
+
+                        {/* Edges */}
+                        {edges.map((e, i) => {
+                            const isLit = hovered === e.from.id || hovered === e.to.id;
+                            const clr   = e.kind === 'dep' ? THEME.primary : THEME.cyan;
+                            return (
+                                <path key={i}
+                                      d={curvePath(e.from, e.to)}
+                                      fill="none"
+                                      stroke={clr}
+                                      strokeWidth={isLit ? 2 : 1}
+                                      strokeOpacity={isLit ? 0.85 : 0.2}
+                                      strokeDasharray={e.kind === 'ref' ? '5 3' : undefined}
+                                      markerEnd={`url(#arr-${e.kind === 'dep' ? 'dep' : 'ref'})`}
+                                      style={{ transition: 'stroke-opacity 0.18s, stroke-width 0.18s' }}
+                                />
+                            );
+                        })}
+
+                        {/* Nodes */}
+                        {nodes.map(node => {
+                            const clr      = nodeColor(node);
+                            const r        = nodeR(node);
+                            const isHov    = hovered === node.id;
+                            const isCenter = node.role === 'center';
+                            const lines    = splitLabel(node.id, isCenter ? 14 : 11);
+                            const lineH    = isCenter ? 13 : 11;
+                            const totalH   = lines.length * lineH;
+
+                            return (
+                                <g key={node.id}
+                                   style={{ cursor: 'pointer' }}
+                                   onMouseEnter={() => setHovered(node.id)}
+                                   onMouseLeave={() => setHovered(null)}
+                                   onClick={() => handleNodeClick(node)}>
+
+                                    {/* Outer glow ring */}
+                                    {(isHov || isCenter) && (
+                                        <circle cx={node.x} cy={node.y} r={r + 10}
+                                                fill="none" stroke={clr}
+                                                strokeWidth={isCenter ? 1.5 : 1}
+                                                strokeOpacity={isCenter ? 0.35 : 0.25}
+                                                style={{ animation: isCenter ? 'ud-pulse 2.5s infinite' : undefined }} />
+                                    )}
+
+                                    {/* Node fill */}
+                                    <circle cx={node.x} cy={node.y} r={r}
+                                            fill={isCenter ? `${clr}22` : isHov ? `${clr}18` : `${clr}0c`}
+                                            stroke={clr}
+                                            strokeWidth={isCenter ? 2 : isHov ? 1.8 : 1.2}
+                                            strokeOpacity={isHov || isCenter ? 1 : 0.55}
+                                            style={{ transition: 'all 0.18s' }} />
+
+                                    {/* Critical dot badge */}
+                                    {node.critical && !isCenter && (
+                                        <>
+                                            <circle cx={node.x + r * 0.68} cy={node.y - r * 0.68} r={6} fill={THEME.danger} />
+                                            <text x={node.x + r * 0.68} y={node.y - r * 0.68}
+                                                  textAnchor="middle" dominantBaseline="central"
+                                                  fontSize={7} fontWeight={700} fill="#fff">!</text>
+                                        </>
+                                    )}
+
+                                    {/* Label */}
+                                    <text x={node.x} y={node.y - totalH / 2 + lineH / 2}
+                                          textAnchor="middle"
+                                          fontSize={isCenter ? 11 : 9}
+                                          fontWeight={isCenter ? 700 : isHov ? 600 : 500}
+                                          fontFamily="'Fira Code',monospace"
+                                          fill={isHov || isCenter ? clr : THEME.textMuted}
+                                          style={{ userSelect: 'none', transition: 'fill 0.15s' }}>
+                                        {lines.map((ln, li) => (
+                                            <tspan key={li} x={node.x} dy={li === 0 ? 0 : lineH}>{ln}</tspan>
+                                        ))}
+                                    </text>
+                                </g>
+                            );
+                        })}
+
+                        {/* Hint text */}
+                        {!focusRow && (
+                            <text x={cx} y={H - 14} textAnchor="middle" fontSize={9}
+                                  fill={THEME.textDim} fontFamily="'Fira Code',monospace" opacity={0.6}>
+                                Click any node to explore its FK relationships
+                            </text>
+                        )}
+                        {focusRow && (
+                            <text x={cx} y={H - 14} textAnchor="middle" fontSize={9}
+                                  fill={THEME.textDim} fontFamily="'Fira Code',monospace" opacity={0.6}>
+                                Click center node or Reset to return to global view
+                            </text>
+                        )}
+                    </svg>
+
+                    {/* Hover tooltip */}
+                    {hovered && (() => {
+                        const row = normalized.find(r => r.name === hovered);
+                        if (!row) return null;
+                        return (
+                            <div style={{
+                                margin: '0 16px 14px',
+                                padding: '10px 14px',
+                                borderRadius: 9,
+                                background: `${THEME.surface}ee`,
+                                border: `1px solid ${THEME.glassBorder}`,
+                                display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap',
+                            }}>
+                                <div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 2 }}>TABLE</div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.cyan, fontFamily: THEME.fontMono }}>{row.name}</div>
+                                    {row.refsBy.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 4 }}>DEPENDS ON ({row.refsTo.length})</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                        {row.refsTo.length ? row.refsTo.map(t => <Chip key={t} color={THEME.primary} size="sm">{t}</Chip>) : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 4 }}>REFERENCED BY ({row.refsBy.length})</div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                        {row.refsBy.length ? row.refsBy.map(t => <Chip key={t} color={THEME.cyan} size="sm">{t}</Chip>) : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
+                </div>
+            ) : (
+                /* ── Fallback table view ── */
+                <Card>
+                    <THead cols="1fr 1.5fr 1.5fr" labels={['Table', 'Depends On (FK)', 'Referenced By']} />
+                    {rows.map((t, i) => (
+                        <TRow key={i} cols="1fr 1.5fr 1.5fr" i={i}>
+                            <div>
+                                <div style={{ fontWeight: 600, fontSize: 13, color: THEME.cyan }}>{t.name}</div>
+                                {t.refsBy.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
+                            </div>
+                            <span style={{ fontSize: 12, color: THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsTo.length ? t.refsTo.join(', ') : '—'}</span>
+                            <span style={{ fontSize: 12, color: t.refsBy.length ? THEME.textMuted : THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsBy.length ? t.refsBy.join(', ') : '—'}</span>
+                        </TRow>
+                    ))}
+                </Card>
+            )}
         </div>
     );
 }
