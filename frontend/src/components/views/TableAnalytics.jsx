@@ -906,24 +906,73 @@ function S_Deps() {
                 {renderSide(depNodes, 'left')}
                 {renderSide(refNodes, 'right')}
 
-                {/* Center hub — rendered last, sits on top of all branches */}
+                {/* ── Premium Center Hub ── */}
                 <g onClick={() => setSelected(null)} style={{ cursor: 'pointer' }}>
-                    <ellipse cx={cx} cy={cy} rx={cRx + 22} ry={cRy + 22}
-                             fill={`${THEME.cyan}04`} style={{ animation: 'ud-pulse 3s infinite' }} />
-                    <ellipse cx={cx} cy={cy} rx={cRx + 11} ry={cRy + 11} fill={`${THEME.cyan}08`} />
+                    {/* Outermost soft halo */}
+                    <ellipse cx={cx} cy={cy} rx={cRx + 38} ry={cRy + 38}
+                             fill="none" stroke="#4ECDC4" strokeWidth={1}
+                             strokeOpacity={0.08} filter="url(#mm-glow)"
+                             style={{ animation: 'ud-pulse 4s ease-in-out infinite' }} />
+                    {/* Orbit ring with dashes */}
+                    <ellipse cx={cx} cy={cy} rx={cRx + 26} ry={cRy + 26}
+                             fill="none" stroke="url(#rim-grad)" strokeWidth={0.8}
+                             strokeDasharray="6 4" strokeOpacity={0.4} />
+                    {/* Mid glow ring */}
+                    <ellipse cx={cx} cy={cy} rx={cRx + 14} ry={cRy + 14}
+                             fill={`#4ECDC408`} stroke="#4ECDC4" strokeWidth={0.5} strokeOpacity={0.18} />
+                    {/* Main body */}
                     <ellipse cx={cx} cy={cy} rx={cRx} ry={cRy}
-                             fill="#0a1628" stroke={THEME.cyan} strokeWidth={2.5} />
-                    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
-                          fontSize={12} fontWeight={800} fill={THEME.cyan}
-                          fontFamily="'Plus Jakarta Sans',sans-serif" style={{ userSelect: 'none' }}>
-                        {sn(focusRow.name, 20)}
+                             fill="url(#hub-grad-focus)" />
+                    {/* Sheen highlight — top-left gloss */}
+                    <ellipse cx={cx - cRx * 0.22} cy={cy - cRy * 0.28}
+                             rx={cRx * 0.52} ry={cRy * 0.32}
+                             fill="white" fillOpacity={0.045} />
+                    {/* Crisp rim stroke */}
+                    <ellipse cx={cx} cy={cy} rx={cRx} ry={cRy}
+                             fill="none" stroke="url(#rim-grad)" strokeWidth={2} />
+                    {/* Inner rim hairline */}
+                    <ellipse cx={cx} cy={cy} rx={cRx - 3} ry={cRy - 3}
+                             fill="none" stroke="#4ECDC4" strokeWidth={0.4} strokeOpacity={0.2} />
+
+                    {/* Table name */}
+                    <text x={cx} y={cy - 7} textAnchor="middle"
+                          fontSize={11.5} fontWeight={800} fill="#e8f4f8"
+                          fontFamily="'Plus Jakarta Sans',sans-serif"
+                          letterSpacing="0.02em" style={{ userSelect: 'none' }}>
+                        {sn(focusRow.name, 18)}
                     </text>
+                    {/* Subtitle: FK stats */}
+                    <text x={cx} y={cy + 10} textAnchor="middle"
+                          fontSize={8} fontWeight={500} fill="#4ECDC4"
+                          fontFamily="'Fira Code',monospace" fillOpacity={0.75}
+                          style={{ userSelect: 'none' }}>
+                        {focusRow.refsTo.length} deps · {focusRow.refsBy.length} refs
+                    </text>
+
+                    {/* Tiny orbit dots at 3 cardinal positions */}
+                    {[0, 120, 240].map((deg, i) => {
+                        const rad = (deg * Math.PI) / 180;
+                        const dx = (cRx + 26) * Math.cos(rad);
+                        const dy = (cRy + 26) * Math.sin(rad);
+                        return (
+                            <circle key={i} cx={cx + dx} cy={cy + dy} r={2.8}
+                                    fill={['#4ECDC4','#FF6B6B','#FFD93D'][i]}
+                                    fillOpacity={0.7} />
+                        );
+                    })}
+
+                    {/* Critical badge */}
                     {focusRow.refsBy.length > 2 && (
-                        <>
-                            <circle cx={cx + cRx - 4} cy={cy - cRy + 5} r={9} fill={THEME.danger} />
-                            <text x={cx + cRx - 4} y={cy - cRy + 5} textAnchor="middle" dominantBaseline="central"
-                                  fontSize={8} fontWeight={800} fill="#fff" fontFamily="sans-serif">!</text>
-                        </>
+                        <g filter="url(#mm-glow-sm)">
+                            <circle cx={cx + cRx + 2} cy={cy - cRy + 2} r={11}
+                                    fill="#FF4757" />
+                            <circle cx={cx + cRx + 2} cy={cy - cRy + 2} r={11}
+                                    fill="none" stroke="#fff" strokeWidth={1.2} strokeOpacity={0.3} />
+                            <text x={cx + cRx + 2} y={cy - cRy + 2}
+                                  textAnchor="middle" dominantBaseline="central"
+                                  fontSize={8.5} fontWeight={900} fill="#fff"
+                                  fontFamily="sans-serif">!</text>
+                        </g>
                     )}
                 </g>
 
@@ -1042,15 +1091,63 @@ function S_Deps() {
                     );
                 })}
 
-                {/* Central hub */}
+                {/* ── Premium Center Hub — Global ── */}
                 <g>
-                    <ellipse cx={cx} cy={cy} rx={84} ry={50} fill={`${THEME.cyan}06`}
-                             style={{ animation: 'ud-pulse 3.5s infinite' }} />
-                    <ellipse cx={cx} cy={cy} rx={76} ry={44} fill="#090f1e" stroke={THEME.cyan} strokeWidth={2.5} />
-                    <text x={cx} y={cy - 9} textAnchor="middle" fontSize={13} fontWeight={800}
-                          fill={THEME.cyan} fontFamily="'Plus Jakarta Sans',sans-serif">Dependency</text>
-                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize={10.5} fontWeight={600}
-                          fill={THEME.textMuted} fontFamily="'Plus Jakarta Sans',sans-serif">Mind Map</text>
+                    {/* Outermost soft halo */}
+                    <ellipse cx={cx} cy={cy} rx={104} ry={66}
+                             fill="none" stroke="#4ECDC4" strokeWidth={1}
+                             strokeOpacity={0.07} filter="url(#mm-glow)"
+                             style={{ animation: 'ud-pulse 4.5s ease-in-out infinite' }} />
+                    {/* Dashed orbit ring */}
+                    <ellipse cx={cx} cy={cy} rx={94} ry={60}
+                             fill="none" stroke="url(#rim-grad)"
+                             strokeWidth={0.9} strokeDasharray="7 5" strokeOpacity={0.35} />
+                    {/* Subtle mid ring */}
+                    <ellipse cx={cx} cy={cy} rx={84} ry={52}
+                             fill="#4ECDC40a" stroke="#4ECDC4" strokeWidth={0.5} strokeOpacity={0.15} />
+                    {/* Main body */}
+                    <ellipse cx={cx} cy={cy} rx={76} ry={46}
+                             fill="url(#hub-grad-global)" />
+                    {/* Gloss sheen */}
+                    <ellipse cx={cx - 17} cy={cy - 13} rx={38} ry={20}
+                             fill="white" fillOpacity={0.04} />
+                    {/* Rim */}
+                    <ellipse cx={cx} cy={cy} rx={76} ry={46}
+                             fill="none" stroke="url(#rim-grad)" strokeWidth={2} />
+                    <ellipse cx={cx} cy={cy} rx={73} ry={43}
+                             fill="none" stroke="#4ECDC4" strokeWidth={0.4} strokeOpacity={0.18} />
+
+                    {/* Title */}
+                    <text x={cx} y={cy - 9} textAnchor="middle"
+                          fontSize={13} fontWeight={800} fill="#e8f4f8"
+                          fontFamily="'Plus Jakarta Sans',sans-serif" letterSpacing="0.015em">
+                        Dependency
+                    </text>
+                    {/* Subtitle */}
+                    <text x={cx} y={cy + 9} textAnchor="middle"
+                          fontSize={9} fontWeight={600} fill="#4ECDC4"
+                          fontFamily="'Fira Code',monospace" fillOpacity={0.8}>
+                        Mind Map
+                    </text>
+                    {/* Row count badge */}
+                    <text x={cx} y={cy + 23} textAnchor="middle"
+                          fontSize={7.5} fontWeight={500} fill="#45B7D1"
+                          fontFamily="'Fira Code',monospace" fillOpacity={0.55}>
+                        {rows.length} tables
+                    </text>
+
+                    {/* Orbit dots */}
+                    {[0, 90, 180, 270].map((deg, i) => {
+                        const rad = (deg * Math.PI) / 180;
+                        return (
+                            <circle key={i}
+                                    cx={cx + 94 * Math.cos(rad)}
+                                    cy={cy + 60 * Math.sin(rad)}
+                                    r={2.5}
+                                    fill={['#4ECDC4','#FF6B6B','#FFD93D','#C77DFF'][i]}
+                                    fillOpacity={0.65} />
+                        );
+                    })}
                 </g>
 
                 <text x={cx} y={H - 14} textAnchor="middle" fontSize={9} fill={THEME.textDim}
@@ -1123,10 +1220,47 @@ function S_Deps() {
                 }}>
                     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
                         <defs>
-                            <filter id="mm-soft" x="-30%" y="-30%" width="160%" height="160%">
-                                <feGaussianBlur stdDeviation="2.5" result="b" />
-                                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                            {/* Soft glow filter */}
+                            <filter id="mm-glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="6" result="blur" />
+                                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
                             </filter>
+                            <filter id="mm-glow-sm" x="-40%" y="-40%" width="180%" height="180%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                            </filter>
+                            <filter id="mm-inner-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="shadow" />
+                                <feOffset dx="0" dy="2" result="offset" />
+                                <feComposite in="SourceGraphic" in2="offset" operator="over" />
+                            </filter>
+                            {/* Center hub gradient — focused view */}
+                            <radialGradient id="hub-grad-focus" cx="38%" cy="35%" r="65%">
+                                <stop offset="0%"   stopColor="#1a3a5c" />
+                                <stop offset="45%"  stopColor="#0d1f38" />
+                                <stop offset="100%" stopColor="#060c1a" />
+                            </radialGradient>
+                            {/* Center hub gradient — global view */}
+                            <radialGradient id="hub-grad-global" cx="38%" cy="35%" r="65%">
+                                <stop offset="0%"   stopColor="#1b2e4a" />
+                                <stop offset="50%"  stopColor="#0e1d32" />
+                                <stop offset="100%" stopColor="#070d1c" />
+                            </radialGradient>
+                            {/* Rim gradient — light sweep */}
+                            <linearGradient id="rim-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%"   stopColor="#4ECDC4" stopOpacity="0.9" />
+                                <stop offset="40%"  stopColor="#45B7D1" stopOpacity="0.6" />
+                                <stop offset="100%" stopColor="#1a6b8a" stopOpacity="0.2" />
+                            </linearGradient>
+                            {/* Stat badge gradient */}
+                            <linearGradient id="badge-dep"  x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#FF6B6B" stopOpacity="0.18" />
+                                <stop offset="100%" stopColor="#FF6B6B" stopOpacity="0.06" />
+                            </linearGradient>
+                            <linearGradient id="badge-ref"  x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#4ECDC4" stopOpacity="0.18" />
+                                <stop offset="100%" stopColor="#4ECDC4" stopOpacity="0.06" />
+                            </linearGradient>
                         </defs>
                         {focusRow ? <FocusedView /> : <GlobalView />}
                     </svg>
