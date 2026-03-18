@@ -801,23 +801,30 @@ function S_Deps() {
         const deps = focusRow.refsTo;
         const refs = focusRow.refsBy;
 
+        const cRx = Math.max(72, sn(focusRow.name, 20).length * 5.8 + 18);
+        const cRy = 38;
+
+        /* Main nodes: positioned comfortably away from both center and edge */
+        const MAIN_INSET = 230; // x distance from SVG edge for main pills
+        const SUB_INSET  = 88;  // x distance from SVG edge for sub-branch pills
+
         const layoutSide = (items, side) => {
             const N = items.length;
             if (!N) return [];
-            const spread = Math.min(N * 58, 440);
-            const ex = side === 'left' ? 108 : W - 108;
+            /* Vertical spread — cap so nodes don't overflow top/bottom */
+            const maxSpread = H - 100;
+            const spread = Math.min(N * 68, maxSpread);
+            const ex = side === 'left' ? MAIN_INSET : W - MAIN_INSET;
             return items.map((name, i) => ({
-                name,
+                name, side,
                 x: ex,
-                y: N === 1 ? cy : cy - spread/2 + (spread / (N - 1)) * i,
+                y: N === 1 ? cy : cy - spread / 2 + (spread / (N - 1)) * i,
                 color: PALETTE[(side === 'left' ? i : i + 8) % PALETTE.length],
             }));
         };
 
         const depNodes = layoutSide(deps, 'left');
         const refNodes = layoutSide(refs, 'right');
-        const cRx = Math.max(66, sn(focusRow.name, 20).length * 5.8 + 18);
-        const cRy = 36;
 
         /* Gather up to 3 second-level connections per node */
         const getSubs = (name, side) => {
@@ -827,123 +834,106 @@ function S_Deps() {
                 .filter(s => s !== focusRow.name).slice(0, 3);
         };
 
+        const renderSide = (nodes, side) => nodes.map((node) => {
+            const lit   = hovered === node.name;
+            const pillW = Math.max(64, sn(node.name).length * 5.6 + 24);
+            const pillH = 26;
+            /* Branch from center ellipse edge → pill near-edge */
+            const fromX = side === 'left' ? cx - cRx : cx + cRx;
+            const toX   = side === 'left' ? node.x + pillW / 2 : node.x - pillW / 2;
+            const d     = makeBranch(fromX, cy, toX, node.y);
+            const subs  = getSubs(node.name, side);
+            /* Sub-branches fan VERTICALLY beside main pill, not outward */
+            const subSpread = Math.min(subs.length * 30, 80);
+            return (
+                <g key={node.name}>
+                    {/* Main branch curve */}
+                    <path d={d} fill="none" stroke={node.color}
+                          strokeWidth={lit ? 3.5 : 2.5} strokeOpacity={lit ? 0.92 : 0.58}
+                          strokeLinecap="round" style={{ transition: 'all 0.18s' }} />
+
+                    {/* Main pill */}
+                    <PillNode x={node.x} y={node.y} label={sn(node.name)} color={node.color}
+                              onClick={() => setSelected(node.name)} />
+
+                    {/* Level-2: small pills fanning vertically at the outer edge */}
+                    {subs.map((sub, si) => {
+                        const N    = subs.length;
+                        /* Fan above/below the main node */
+                        const subY = node.y + (N === 1 ? 0 : -subSpread / 2 + (subSpread / (N - 1)) * si);
+                        /* Anchor x just inside SVG edge */
+                        const subX = side === 'left' ? SUB_INSET : W - SUB_INSET;
+                        const spw  = Math.max(52, sn(sub, 10).length * 4.8 + 16);
+                        /* Connect from pill outer edge to sub pill */
+                        const sx1  = side === 'left' ? node.x - pillW / 2 : node.x + pillW / 2;
+                        const sx2  = side === 'left' ? subX + spw / 2 : subX - spw / 2;
+                        const smx  = (sx1 + sx2) / 2;
+                        const smy  = (node.y + subY) / 2 - 12;
+                        const sd   = `M ${sx1} ${node.y} Q ${smx} ${smy} ${sx2} ${subY}`;
+                        return (
+                            <g key={sub}>
+                                <path d={sd} fill="none" stroke={node.color}
+                                      strokeWidth={1.1} strokeOpacity={0.35} strokeDasharray="4 3" />
+                                <rect x={subX - spw / 2} y={subY - 10} width={spw} height={20} rx={10}
+                                      fill={`${node.color}0e`} stroke={node.color}
+                                      strokeWidth={0.9} strokeOpacity={0.45} />
+                                <text x={subX} y={subY} textAnchor="middle" dominantBaseline="central"
+                                      fontSize={7.5} fill={node.color} opacity={0.78}
+                                      fontFamily="'Fira Code',monospace">{sn(sub, 10)}</text>
+                            </g>
+                        );
+                    })}
+                </g>
+            );
+        });
+
         return (
             <g>
-                {/* Section banners */}
+                {/* Section banners — aligned over each group of nodes */}
                 {deps.length > 0 && (
-                    <text x={115} y={20} textAnchor="middle" fontSize={9} fontWeight={800}
+                    <text x={MAIN_INSET} y={22} textAnchor="middle" fontSize={9} fontWeight={800}
                           letterSpacing="0.09em" fill="#FF6B6B" fontFamily="'Fira Code',monospace" opacity={0.8}>
                         ◀ DEPENDS ON
                     </text>
                 )}
                 {refs.length > 0 && (
-                    <text x={W - 115} y={20} textAnchor="middle" fontSize={9} fontWeight={800}
+                    <text x={W - MAIN_INSET} y={22} textAnchor="middle" fontSize={9} fontWeight={800}
                           letterSpacing="0.09em" fill="#4ECDC4" fontFamily="'Fira Code',monospace" opacity={0.8}>
                         REFERENCED BY ▶
                     </text>
                 )}
 
-                {/* Dep branches (left side) */}
-                {depNodes.map((node) => {
-                    const lit    = hovered === node.name;
-                    const pillW  = Math.max(56, sn(node.name).length * 5.6 + 24);
-                    const d      = makeBranch(cx - cRx, cy, node.x + pillW / 2, node.y);
-                    const subs   = getSubs(node.name, 'left');
-                    return (
-                        <g key={node.name}>
-                            <path d={d} fill="none" stroke={node.color}
-                                  strokeWidth={lit ? 3.5 : 2.5} strokeOpacity={lit ? 0.9 : 0.55}
-                                  strokeLinecap="round" style={{ transition: 'all 0.18s' }} />
-                            <PillNode x={node.x} y={node.y} label={sn(node.name)} color={node.color}
-                                      onClick={() => setSelected(node.name)} />
-                            {/* Level-2 sub-branches */}
-                            {subs.map((sub, si) => {
-                                const subN = subs.length;
-                                const subY = node.y + (si - (subN - 1) / 2) * 32;
-                                const subX = node.x - 95;
-                                const sd   = makeSubBranch(node.x - pillW / 2, node.y, subX, subY);
-                                const spw  = Math.max(48, sn(sub, 9).length * 4.8 + 16);
-                                return (
-                                    <g key={sub}>
-                                        <path d={sd} fill="none" stroke={node.color} strokeWidth={1}
-                                              strokeOpacity={0.32} strokeDasharray="4 2.5" />
-                                        <rect x={subX - spw/2} y={subY - 9} width={spw} height={18} rx={9}
-                                              fill={`${node.color}10`} stroke={node.color} strokeWidth={0.8} strokeOpacity={0.45} />
-                                        <text x={subX} y={subY} textAnchor="middle" dominantBaseline="central"
-                                              fontSize={7.5} fill={node.color} opacity={0.75}
-                                              fontFamily="'Fira Code',monospace">{sn(sub, 9)}</text>
-                                    </g>
-                                );
-                            })}
-                        </g>
-                    );
-                })}
+                {renderSide(depNodes, 'left')}
+                {renderSide(refNodes, 'right')}
 
-                {/* Ref branches (right side) */}
-                {refNodes.map((node) => {
-                    const lit   = hovered === node.name;
-                    const pillW = Math.max(56, sn(node.name).length * 5.6 + 24);
-                    const d     = makeBranch(cx + cRx, cy, node.x - pillW / 2, node.y);
-                    const subs  = getSubs(node.name, 'right');
-                    return (
-                        <g key={node.name}>
-                            <path d={d} fill="none" stroke={node.color}
-                                  strokeWidth={lit ? 3.5 : 2.5} strokeOpacity={lit ? 0.9 : 0.55}
-                                  strokeLinecap="round" style={{ transition: 'all 0.18s' }} />
-                            <PillNode x={node.x} y={node.y} label={sn(node.name)} color={node.color}
-                                      onClick={() => setSelected(node.name)} />
-                            {subs.map((sub, si) => {
-                                const subN = subs.length;
-                                const subY = node.y + (si - (subN - 1) / 2) * 32;
-                                const subX = node.x + 95;
-                                const sd   = makeSubBranch(node.x + pillW / 2, node.y, subX, subY);
-                                const spw  = Math.max(48, sn(sub, 9).length * 4.8 + 16);
-                                return (
-                                    <g key={sub}>
-                                        <path d={sd} fill="none" stroke={node.color} strokeWidth={1}
-                                              strokeOpacity={0.32} strokeDasharray="4 2.5" />
-                                        <rect x={subX - spw/2} y={subY - 9} width={spw} height={18} rx={9}
-                                              fill={`${node.color}10`} stroke={node.color} strokeWidth={0.8} strokeOpacity={0.45} />
-                                        <text x={subX} y={subY} textAnchor="middle" dominantBaseline="central"
-                                              fontSize={7.5} fill={node.color} opacity={0.75}
-                                              fontFamily="'Fira Code',monospace">{sn(sub, 9)}</text>
-                                    </g>
-                                );
-                            })}
-                        </g>
-                    );
-                })}
-
-                {/* Center hub — rendered last so it sits on top */}
+                {/* Center hub — rendered last, sits on top of all branches */}
                 <g onClick={() => setSelected(null)} style={{ cursor: 'pointer' }}>
-                    {/* Pulsing aura rings */}
-                    <ellipse cx={cx} cy={cy} rx={cRx + 20} ry={cRy + 20}
-                             fill={`${THEME.cyan}05`} style={{ animation: 'ud-pulse 3s infinite' }} />
-                    <ellipse cx={cx} cy={cy} rx={cRx + 10} ry={cRy + 10} fill={`${THEME.cyan}09`} />
-                    {/* Main ellipse */}
+                    <ellipse cx={cx} cy={cy} rx={cRx + 22} ry={cRy + 22}
+                             fill={`${THEME.cyan}04`} style={{ animation: 'ud-pulse 3s infinite' }} />
+                    <ellipse cx={cx} cy={cy} rx={cRx + 11} ry={cRy + 11} fill={`${THEME.cyan}08`} />
                     <ellipse cx={cx} cy={cy} rx={cRx} ry={cRy}
                              fill="#0a1628" stroke={THEME.cyan} strokeWidth={2.5} />
                     <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
-                          fontSize={11.5} fontWeight={800} fill={THEME.cyan}
+                          fontSize={12} fontWeight={800} fill={THEME.cyan}
                           fontFamily="'Plus Jakarta Sans',sans-serif" style={{ userSelect: 'none' }}>
                         {sn(focusRow.name, 20)}
                     </text>
                     {focusRow.refsBy.length > 2 && (
                         <>
-                            <circle cx={cx + cRx - 5} cy={cy - cRy + 4} r={9} fill={THEME.danger} />
-                            <text x={cx + cRx - 5} y={cy - cRy + 4} textAnchor="middle" dominantBaseline="central"
+                            <circle cx={cx + cRx - 4} cy={cy - cRy + 5} r={9} fill={THEME.danger} />
+                            <text x={cx + cRx - 4} y={cy - cRy + 5} textAnchor="middle" dominantBaseline="central"
                                   fontSize={8} fontWeight={800} fill="#fff" fontFamily="sans-serif">!</text>
                         </>
                     )}
                 </g>
 
                 {!deps.length && !refs.length && (
-                    <text x={cx} y={cy + 70} textAnchor="middle" fontSize={12} fill={THEME.textDim}
-                          fontFamily="'Fira Code',monospace">No FK relationships found for this table</text>
+                    <text x={cx} y={cy + 80} textAnchor="middle" fontSize={12} fill={THEME.textDim}
+                          fontFamily="'Fira Code',monospace">No FK relationships found</text>
                 )}
-                <text x={cx} y={H - 14} textAnchor="middle" fontSize={9} fill={THEME.textDim}
-                      fontFamily="'Fira Code',monospace" opacity={0.55}>
-                    Click center to return · Click any branch node to pivot
+                <text x={cx} y={H - 12} textAnchor="middle" fontSize={9} fill={THEME.textDim}
+                      fontFamily="'Fira Code',monospace" opacity={0.5}>
+                    Click center to return · Click branch node to pivot
                 </text>
             </g>
         );
