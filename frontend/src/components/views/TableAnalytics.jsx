@@ -796,118 +796,148 @@ function S_Deps() {
         );
     };
 
-    /* ── Inline SVG floating tooltip ────────────────────── */
+    /* ── Inline SVG floating tooltip — compact elegant card ── */
     const SVGTooltip = ({ targetX, targetY, name, side = 'right' }) => {
         const row = normalized.find(r => r.name === name);
         if (!row) return null;
 
-        const depList = row.refsTo.slice(0, 4);
-        const refList = row.refsBy.slice(0, 4);
+        const isCrit  = row.refsBy.length > 2;
+        const depList = row.refsTo.slice(0, 3);
+        const refList = row.refsBy.slice(0, 3);
         const depMore = row.refsTo.length - depList.length;
         const refMore = row.refsBy.length - refList.length;
 
-        const TW = 210, lineH = 13, padX = 12, padY = 10;
-        const headerH = 28;
-        const depH    = depList.length  > 0 ? 16 + depList.length * lineH  + (depMore > 0 ? lineH : 0) : 0;
-        const refH    = refList.length  > 0 ? 16 + refList.length * lineH  + (refMore > 0 ? lineH : 0) : 0;
-        const critH   = row.refsBy.length > 2 ? 18 : 0;
-        const TH      = padY * 2 + headerH + critH + depH + refH + (depH && refH ? 8 : 0);
+        /* Measure width to fit content */
+        const allNames   = [...depList, ...refList];
+        const maxNameLen = allNames.reduce((m, t) => Math.max(m, sn(t, 18).length), name.length);
+        const TW  = Math.min(190, Math.max(130, maxNameLen * 6.2 + 28));
 
-        /* Position tooltip so it stays within SVG bounds */
-        let tx = side === 'right' ? targetX + 20 : targetX - TW - 20;
-        tx = Math.max(4, Math.min(W - TW - 4, tx));
+        /* Height: header(32) + sections */
+        const secH   = (list, more) => list.length > 0 ? 14 + list.length * 14 + (more > 0 ? 12 : 0) + 6 : 0;
+        const depSecH = secH(depList, depMore);
+        const refSecH = secH(refList, refMore);
+        const sepH    = depSecH > 0 && refSecH > 0 ? 6 : 0;
+        const TH      = 10 + 18 + (isCrit ? 14 : 0) + 8 + depSecH + sepH + refSecH + 8;
+
+        /* Smart position: prefer the side with more room, clamp to SVG */
+        const MARGIN = 8;
+        let tx = side === 'right' ? targetX + 18 : targetX - TW - 18;
+        if (tx + TW > W - MARGIN) tx = targetX - TW - 18;
+        if (tx < MARGIN)          tx = targetX + 18;
         let ty = targetY - TH / 2;
-        ty = Math.max(4, Math.min(H - TH - 4, ty));
+        ty = Math.max(MARGIN, Math.min(H - TH - MARGIN, ty));
 
-        let yOff = padY;
+        /* Connector dot */
+        const dotX = side === 'right' ? tx : tx + TW;
 
-        const rows_dep = depList.map((t, i) => {
-            const y = ty + yOff + headerH + critH + 16 + i * lineH;
-            return { t, y };
-        });
-        const rows_ref = refList.map((t, i) => {
-            const y = ty + yOff + headerH + critH + depH + (depH ? 8 : 0) + 16 + i * lineH;
-            return { t, y };
-        });
+        let y = ty + 10;
 
         return (
             <g style={{ pointerEvents: 'none' }}>
-                {/* Shadow */}
-                <rect x={tx + 3} y={ty + 4} width={TW} height={TH} rx={10}
-                      fill="#000" fillOpacity={0.35} />
-                {/* Card body */}
-                <rect x={tx} y={ty} width={TW} height={TH} rx={10}
-                      fill="#0c1929" fillOpacity={0.97}
-                      stroke="#ffffff18" strokeWidth={1} />
-                {/* Top accent bar */}
-                <rect x={tx} y={ty} width={TW} height={3} rx={2}
-                      fill={row.refsBy.length > 2 ? '#FF4757' : '#4ECDC4'} />
+                {/* Connector line from pill to card */}
+                <line x1={targetX} y1={targetY} x2={dotX} y2={ty + TH / 2}
+                      stroke="#ffffff20" strokeWidth={1} strokeDasharray="3 3" />
+
+                {/* Drop shadow */}
+                <rect x={tx + 2} y={ty + 3} width={TW} height={TH} rx={8}
+                      fill="#000" fillOpacity={0.28} />
+
+                {/* Card */}
+                <rect x={tx} y={ty} width={TW} height={TH} rx={8}
+                      fill="#0d1e30" fillOpacity={0.96}
+                      stroke={isCrit ? '#FF475740' : '#4ECDC430'} strokeWidth={1} />
+
+                {/* Top accent line */}
+                <rect x={tx} y={ty} width={TW} height={2.5} rx={2}
+                      fill={isCrit ? '#FF4757' : '#4ECDC4'} fillOpacity={0.9} />
 
                 {/* Table name */}
-                <text x={tx + padX} y={ty + padY + 13} fontSize={11} fontWeight={800}
-                      fill="#e8f4f8" fontFamily="'Fira Code',monospace">{sn(name, 22)}</text>
+                {(() => { const row_y = y + 13; y += 18; return (
+                    <text x={tx + 10} y={row_y} fontSize={10.5} fontWeight={800}
+                          fill="#e8f4f8" fontFamily="'Fira Code',monospace"
+                          letterSpacing="0.01em">{sn(name, 20)}</text>
+                ); })()}
 
-                {/* Critical tag */}
-                {row.refsBy.length > 2 && (
-                    <>
-                        <rect x={tx + padX} y={ty + padY + 20} width={48} height={14} rx={7}
-                              fill="#FF475720" stroke="#FF4757" strokeWidth={0.8} />
-                        <text x={tx + padX + 24} y={ty + padY + 27} textAnchor="middle"
-                              dominantBaseline="central" fontSize={7.5} fontWeight={700}
+                {/* Critical pill */}
+                {isCrit && (() => { const row_y = y; y += 14; return (
+                    <g>
+                        <rect x={tx + 10} y={row_y} width={42} height={12} rx={6}
+                              fill="#FF475720" stroke="#FF4757" strokeWidth={0.7} />
+                        <text x={tx + 31} y={row_y + 6} textAnchor="middle"
+                              dominantBaseline="central" fontSize={7} fontWeight={700}
                               fill="#FF4757" fontFamily="'Fira Code',monospace">Critical</text>
-                    </>
-                )}
+                    </g>
+                ); })()}
 
-                {/* Depends On section */}
-                {depList.length > 0 && (
-                    <>
-                        <text x={tx + padX} y={ty + padY + headerH + critH + 10}
-                              fontSize={7.5} fontWeight={700} fill="#FF6B6B"
-                              fontFamily="'Fira Code',monospace" letterSpacing="0.07em">
-                            DEPENDS ON ({row.refsTo.length})
-                        </text>
-                        {rows_dep.map(({ t, y }) => (
-                            <g key={t}>
-                                <circle cx={tx + padX + 4} cy={y - 2} r={2} fill="#FF6B6B" fillOpacity={0.7} />
-                                <text x={tx + padX + 12} y={y} fontSize={9} fill="#FF6B6Bcc"
-                                      fontFamily="'Fira Code',monospace">{sn(t, 22)}</text>
-                            </g>
-                        ))}
-                        {depMore > 0 && (
-                            <text x={tx + padX + 12}
-                                  y={ty + padY + headerH + critH + 16 + depList.length * lineH}
-                                  fontSize={8} fill="#FF6B6B80" fontFamily="'Fira Code',monospace">
-                                +{depMore} more…
-                            </text>
-                        )}
-                    </>
-                )}
+                {/* Divider */}
+                {(() => { y += 7; return (
+                    <line x1={tx + 8} y1={y} x2={tx + TW - 8} y2={y}
+                          stroke="#ffffff0f" strokeWidth={1} />
+                ); })()}
+                {(() => { y += 6; return null; })()}
 
-                {/* Referenced By section */}
-                {refList.length > 0 && (
-                    <>
-                        <text x={tx + padX}
-                              y={ty + padY + headerH + critH + depH + (depH ? 8 : 0) + 10}
-                              fontSize={7.5} fontWeight={700} fill="#4ECDC4"
-                              fontFamily="'Fira Code',monospace" letterSpacing="0.07em">
-                            REFERENCED BY ({row.refsBy.length})
-                        </text>
-                        {rows_ref.map(({ t, y }) => (
-                            <g key={t}>
-                                <circle cx={tx + padX + 4} cy={y - 2} r={2} fill="#4ECDC4" fillOpacity={0.7} />
-                                <text x={tx + padX + 12} y={y} fontSize={9} fill="#4ECDC4cc"
-                                      fontFamily="'Fira Code',monospace">{sn(t, 22)}</text>
-                            </g>
-                        ))}
-                        {refMore > 0 && (
-                            <text x={tx + padX + 12}
-                                  y={ty + padY + headerH + critH + depH + (depH ? 8 : 0) + 16 + refList.length * lineH}
-                                  fontSize={8} fill="#4ECDC480" fontFamily="'Fira Code',monospace">
-                                +{refMore} more…
+                {/* DEPENDS ON */}
+                {depList.length > 0 && (() => {
+                    const labelY = y + 9; y += 14;
+                    const itemRows = depList.map(t => { const ry = y + 10; y += 14; return { t, ry }; });
+                    let moreY = 0;
+                    if (depMore > 0) { moreY = y + 9; y += 12; }
+                    y += 6;
+                    return (
+                        <g>
+                            <text x={tx + 10} y={labelY} fontSize={7} fontWeight={700}
+                                  fill="#FF6B6B" fillOpacity={0.75} fontFamily="'Fira Code',monospace"
+                                  letterSpacing="0.08em">
+                                DEPS ({row.refsTo.length})
                             </text>
-                        )}
-                    </>
-                )}
+                            {itemRows.map(({ t, ry }) => (
+                                <g key={t}>
+                                    <circle cx={tx + 14} cy={ry - 3} r={1.8} fill="#FF6B6B" fillOpacity={0.65} />
+                                    <text x={tx + 20} y={ry} fontSize={8.5} fill="#FF6B6Bcc"
+                                          fontFamily="'Fira Code',monospace">{sn(t, 18)}</text>
+                                </g>
+                            ))}
+                            {depMore > 0 && (
+                                <text x={tx + 20} y={moreY} fontSize={7.5} fill="#FF6B6B60"
+                                      fontFamily="'Fira Code',monospace">+{depMore} more</text>
+                            )}
+                        </g>
+                    );
+                })()}
+
+                {/* Separator between sections */}
+                {depList.length > 0 && refList.length > 0 && (() => {
+                    const sy = y; y += 6;
+                    return <line x1={tx + 8} y1={sy} x2={tx + TW - 8} y2={sy} stroke="#ffffff08" strokeWidth={1} />;
+                })()}
+
+                {/* REFERENCED BY */}
+                {refList.length > 0 && (() => {
+                    const labelY = y + 9; y += 14;
+                    const itemRows = refList.map(t => { const ry = y + 10; y += 14; return { t, ry }; });
+                    let moreY = 0;
+                    if (refMore > 0) { moreY = y + 9; y += 12; }
+                    return (
+                        <g>
+                            <text x={tx + 10} y={labelY} fontSize={7} fontWeight={700}
+                                  fill="#4ECDC4" fillOpacity={0.75} fontFamily="'Fira Code',monospace"
+                                  letterSpacing="0.08em">
+                                REFS ({row.refsBy.length})
+                            </text>
+                            {itemRows.map(({ t, ry }) => (
+                                <g key={t}>
+                                    <circle cx={tx + 14} cy={ry - 3} r={1.8} fill="#4ECDC4" fillOpacity={0.65} />
+                                    <text x={tx + 20} y={ry} fontSize={8.5} fill="#4ECDC4cc"
+                                          fontFamily="'Fira Code',monospace">{sn(t, 18)}</text>
+                                </g>
+                            ))}
+                            {refMore > 0 && (
+                                <text x={tx + 20} y={moreY} fontSize={7.5} fill="#4ECDC460"
+                                      fontFamily="'Fira Code',monospace">+{refMore} more</text>
+                            )}
+                        </g>
+                    );
+                })()}
             </g>
         );
     };
