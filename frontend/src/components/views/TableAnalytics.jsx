@@ -774,173 +774,44 @@ function S_Deps() {
     /* ── Pill node (rounded rectangle label bubble) ─────── */
     const PillNode = ({ x, y, label, color, size = 'md', onClick }) => {
         const fs  = size === 'sm' ? 8  : size === 'lg' ? 12 : 9.5;
-        const ph  = size === 'sm' ? 20 : size === 'lg' ? 32 : 24;
-        const pw  = Math.max(56, label.length * (size === 'lg' ? 7 : 5.6) + 24);
+        const ph  = size === 'sm' ? 20 : size === 'lg' ? 32 : 26;
+        const pw  = Math.max(60, label.length * (size === 'lg' ? 7 : 5.8) + 26);
         const lit = hovered === label;
         return (
             <g onClick={onClick}
                onMouseEnter={() => setHovered(label)}
                onMouseLeave={() => setHovered(null)}
                style={{ cursor: onClick ? 'pointer' : 'default' }}>
-                {lit && <rect x={x - pw/2 - 5} y={y - ph/2 - 5} width={pw + 10} height={ph + 10}
-                              rx={(ph + 10)/2} fill={`${color}14`} />}
+                {/* Hover glow ring */}
+                {lit && onClick && (
+                    <rect x={x - pw/2 - 6} y={y - ph/2 - 6} width={pw + 12} height={ph + 12}
+                          rx={(ph + 12)/2} fill="none"
+                          stroke={color} strokeWidth={1.2} strokeOpacity={0.35}
+                          strokeDasharray="4 3" />
+                )}
+                {/* Pill body */}
                 <rect x={x - pw/2} y={y - ph/2} width={pw} height={ph} rx={ph/2}
-                      fill={lit ? `${color}30` : `${color}16`}
-                      stroke={color} strokeWidth={lit ? 2.2 : 1.6} strokeOpacity={0.95} />
+                      fill={lit ? `${color}28` : `${color}14`}
+                      stroke={color} strokeWidth={lit ? 2.2 : 1.5} strokeOpacity={lit ? 1 : 0.85}
+                      style={{ transition: 'all 0.15s' }} />
+                {/* Label */}
                 <text x={x} y={y} textAnchor="middle" dominantBaseline="central"
-                      fontSize={fs} fontWeight={700} fill={color}
-                      fontFamily="'Fira Code',monospace" style={{ userSelect: 'none' }}>
+                      fontSize={fs} fontWeight={lit ? 800 : 700} fill={lit ? color : `${color}cc`}
+                      fontFamily="'Fira Code',monospace" style={{ userSelect: 'none', transition: 'all 0.15s' }}>
                     {label}
                 </text>
+                {/* Click-to-explore arrow on hover */}
+                {lit && onClick && (
+                    <text x={x + pw/2 - 8} y={y} textAnchor="middle" dominantBaseline="central"
+                          fontSize={8} fill={color} fillOpacity={0.7}
+                          fontFamily="sans-serif" style={{ userSelect: 'none' }}>›</text>
+                )}
             </g>
         );
     };
 
     /* ── Inline SVG floating tooltip — compact elegant card ── */
-    const SVGTooltip = ({ targetX, targetY, name, side = 'right' }) => {
-        const row = normalized.find(r => r.name === name);
-        if (!row) return null;
 
-        const isCrit  = row.refsBy.length > 2;
-        const depList = row.refsTo.slice(0, 3);
-        const refList = row.refsBy.slice(0, 3);
-        const depMore = row.refsTo.length - depList.length;
-        const refMore = row.refsBy.length - refList.length;
-
-        /* Measure width to fit content */
-        const allNames   = [...depList, ...refList];
-        const maxNameLen = allNames.reduce((m, t) => Math.max(m, sn(t, 18).length), name.length);
-        const TW  = Math.min(190, Math.max(130, maxNameLen * 6.2 + 28));
-
-        /* Height: header(32) + sections */
-        const secH   = (list, more) => list.length > 0 ? 14 + list.length * 14 + (more > 0 ? 12 : 0) + 6 : 0;
-        const depSecH = secH(depList, depMore);
-        const refSecH = secH(refList, refMore);
-        const sepH    = depSecH > 0 && refSecH > 0 ? 6 : 0;
-        const TH      = 10 + 18 + (isCrit ? 14 : 0) + 8 + depSecH + sepH + refSecH + 8;
-
-        /* Smart position: prefer the side with more room, clamp to SVG */
-        const MARGIN = 8;
-        let tx = side === 'right' ? targetX + 18 : targetX - TW - 18;
-        if (tx + TW > W - MARGIN) tx = targetX - TW - 18;
-        if (tx < MARGIN)          tx = targetX + 18;
-        let ty = targetY - TH / 2;
-        ty = Math.max(MARGIN, Math.min(H - TH - MARGIN, ty));
-
-        /* Connector dot */
-        const dotX = side === 'right' ? tx : tx + TW;
-
-        let y = ty + 10;
-
-        return (
-            <g style={{ pointerEvents: 'none' }}>
-                {/* Connector line from pill to card */}
-                <line x1={targetX} y1={targetY} x2={dotX} y2={ty + TH / 2}
-                      stroke="#ffffff20" strokeWidth={1} strokeDasharray="3 3" />
-
-                {/* Drop shadow */}
-                <rect x={tx + 2} y={ty + 3} width={TW} height={TH} rx={8}
-                      fill="#000" fillOpacity={0.28} />
-
-                {/* Card */}
-                <rect x={tx} y={ty} width={TW} height={TH} rx={8}
-                      fill="#0d1e30" fillOpacity={0.96}
-                      stroke={isCrit ? '#FF475740' : '#4ECDC430'} strokeWidth={1} />
-
-                {/* Top accent line */}
-                <rect x={tx} y={ty} width={TW} height={2.5} rx={2}
-                      fill={isCrit ? '#FF4757' : '#4ECDC4'} fillOpacity={0.9} />
-
-                {/* Table name */}
-                {(() => { const row_y = y + 13; y += 18; return (
-                    <text x={tx + 10} y={row_y} fontSize={10.5} fontWeight={800}
-                          fill="#e8f4f8" fontFamily="'Fira Code',monospace"
-                          letterSpacing="0.01em">{sn(name, 20)}</text>
-                ); })()}
-
-                {/* Critical pill */}
-                {isCrit && (() => { const row_y = y; y += 14; return (
-                    <g>
-                        <rect x={tx + 10} y={row_y} width={42} height={12} rx={6}
-                              fill="#FF475720" stroke="#FF4757" strokeWidth={0.7} />
-                        <text x={tx + 31} y={row_y + 6} textAnchor="middle"
-                              dominantBaseline="central" fontSize={7} fontWeight={700}
-                              fill="#FF4757" fontFamily="'Fira Code',monospace">Critical</text>
-                    </g>
-                ); })()}
-
-                {/* Divider */}
-                {(() => { y += 7; return (
-                    <line x1={tx + 8} y1={y} x2={tx + TW - 8} y2={y}
-                          stroke="#ffffff0f" strokeWidth={1} />
-                ); })()}
-                {(() => { y += 6; return null; })()}
-
-                {/* DEPENDS ON */}
-                {depList.length > 0 && (() => {
-                    const labelY = y + 9; y += 14;
-                    const itemRows = depList.map(t => { const ry = y + 10; y += 14; return { t, ry }; });
-                    let moreY = 0;
-                    if (depMore > 0) { moreY = y + 9; y += 12; }
-                    y += 6;
-                    return (
-                        <g>
-                            <text x={tx + 10} y={labelY} fontSize={7} fontWeight={700}
-                                  fill="#FF6B6B" fillOpacity={0.75} fontFamily="'Fira Code',monospace"
-                                  letterSpacing="0.08em">
-                                DEPS ({row.refsTo.length})
-                            </text>
-                            {itemRows.map(({ t, ry }) => (
-                                <g key={t}>
-                                    <circle cx={tx + 14} cy={ry - 3} r={1.8} fill="#FF6B6B" fillOpacity={0.65} />
-                                    <text x={tx + 20} y={ry} fontSize={8.5} fill="#FF6B6Bcc"
-                                          fontFamily="'Fira Code',monospace">{sn(t, 18)}</text>
-                                </g>
-                            ))}
-                            {depMore > 0 && (
-                                <text x={tx + 20} y={moreY} fontSize={7.5} fill="#FF6B6B60"
-                                      fontFamily="'Fira Code',monospace">+{depMore} more</text>
-                            )}
-                        </g>
-                    );
-                })()}
-
-                {/* Separator between sections */}
-                {depList.length > 0 && refList.length > 0 && (() => {
-                    const sy = y; y += 6;
-                    return <line x1={tx + 8} y1={sy} x2={tx + TW - 8} y2={sy} stroke="#ffffff08" strokeWidth={1} />;
-                })()}
-
-                {/* REFERENCED BY */}
-                {refList.length > 0 && (() => {
-                    const labelY = y + 9; y += 14;
-                    const itemRows = refList.map(t => { const ry = y + 10; y += 14; return { t, ry }; });
-                    let moreY = 0;
-                    if (refMore > 0) { moreY = y + 9; y += 12; }
-                    return (
-                        <g>
-                            <text x={tx + 10} y={labelY} fontSize={7} fontWeight={700}
-                                  fill="#4ECDC4" fillOpacity={0.75} fontFamily="'Fira Code',monospace"
-                                  letterSpacing="0.08em">
-                                REFS ({row.refsBy.length})
-                            </text>
-                            {itemRows.map(({ t, ry }) => (
-                                <g key={t}>
-                                    <circle cx={tx + 14} cy={ry - 3} r={1.8} fill="#4ECDC4" fillOpacity={0.65} />
-                                    <text x={tx + 20} y={ry} fontSize={8.5} fill="#4ECDC4cc"
-                                          fontFamily="'Fira Code',monospace">{sn(t, 18)}</text>
-                                </g>
-                            ))}
-                            {refMore > 0 && (
-                                <text x={tx + 20} y={moreY} fontSize={7.5} fill="#4ECDC460"
-                                      fontFamily="'Fira Code',monospace">+{refMore} more</text>
-                            )}
-                        </g>
-                    );
-                })()}
-            </g>
-        );
-    };
     const FocusedView = () => {
         const deps = focusRow.refsTo;
         const refs = focusRow.refsBy;
@@ -1126,17 +997,8 @@ function S_Deps() {
                 )}
                 <text x={cx} y={H - 12} textAnchor="middle" fontSize={9} fill={THEME.textDim}
                       fontFamily="'Fira Code',monospace" opacity={0.5}>
-                    Click center to return · Click branch node to pivot
+                    Click any node to pivot · Click center to go back
                 </text>
-
-                {/* Inline floating tooltip for hovered node */}
-                {hovered && hovered !== focusRow?.name && (() => {
-                    const allNodes = [...depNodes, ...refNodes];
-                    const hn = allNodes.find(n => n.name === hovered);
-                    if (!hn) return null;
-                    const side = hn.side === 'left' ? 'right' : 'left';
-                    return <SVGTooltip targetX={hn.x} targetY={hn.y} name={hn.name} side={side} />;
-                })()}
             </g>
         );
     };
@@ -1306,20 +1168,9 @@ function S_Deps() {
                 <text x={cx} y={H - 14} textAnchor="middle" fontSize={9} fill={THEME.textDim}
                       fontFamily="'Fira Code',monospace" opacity={0.55}>
                     {rows.length > 18
-                        ? `Top 18 of ${rows.length} tables by connectivity · Click any node to drill in`
-                        : 'Click any node to explore FK relationships'}
+                        ? `Top 18 of ${rows.length} tables · Click any node to explore`
+                        : 'Click any node to explore its FK relationships'}
                 </text>
-
-                {/* Inline floating tooltip for global view */}
-                {hovered && (() => {
-                    const hi = displayRows.findIndex(t => t.name === hovered);
-                    if (hi < 0) return null;
-                    const angle = (hi / N) * 2 * Math.PI - Math.PI / 2;
-                    const nx = cx + R * Math.cos(angle);
-                    const ny = cy + R * Math.sin(angle);
-                    const side = nx > cx ? 'left' : 'right';
-                    return <SVGTooltip targetX={nx} targetY={ny} name={hovered} side={side} />;
-                })()}
             </g>
         );
     };
