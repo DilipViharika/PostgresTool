@@ -733,8 +733,7 @@ function S_Deps() {
     const { data, loading, error } = useTableData('/api/tables/dependencies');
     const [selected, setSelected] = useState(null);
     const [hovered, setHovered]   = useState(null);
-    const [viewMode, setViewMode] = useState('map'); // 'map' | 'table'
-    const svgRef = useRef(null);
+    const [viewMode, setViewMode] = useState('map');
 
     if (loading) return <Loader />;
     if (error)   return <ErrUI msg={error} />;
@@ -748,109 +747,344 @@ function S_Deps() {
     const focusName = f.table || selected;
     const focusRow  = focusName ? (normalized.find(r => r.name === focusName) || null) : null;
 
-    /* ── Layout ───────────────────────────────────────────── */
-    const W = 900, H = 480, cx = W / 2, cy = H / 2;
-    let nodes = [], edges = [];
+    const W = 980, H = 560, cx = W / 2, cy = H / 2;
 
-    const truncLabel = (s, n = 16) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+    /* Vibrant mind-map palette — each branch gets its own colour */
+    const PALETTE = [
+        '#FF6B6B','#4ECDC4','#FFD93D','#C77DFF',
+        '#45B7D1','#FF8C69','#A8E063','#F08080',
+        '#7EC8E3','#FFB347','#DDA0DD','#98FB98',
+        '#87CEEB','#FFA07A','#20B2AA','#9370DB',
+    ];
 
-    if (focusRow) {
-        /* Focused: center + fan left (deps) + fan right (refs) */
-        const center = { id: focusRow.name, x: cx, y: cy, role: 'center', critical: focusRow.refsBy.length > 2 };
-        nodes.push(center);
+    const sn = (s, n = 14) => s.length > n ? s.slice(0, n - 1) + '…' : s;
 
-        const layout = (list, xOff, role) => {
-            const total = list.length;
-            const spread = Math.min(total * 58, 340);
-            list.forEach((name, i) => {
-                const yOff = total === 1 ? 0 : -spread / 2 + (spread / (total - 1 || 1)) * i;
-                const nx = cx + xOff;
-                const ny = cy + yOff;
-                const n = { id: name, x: nx, y: ny, role };
-                nodes.push(n);
-                edges.push({ from: center, to: n, kind: role });
-            });
+    /* Smooth cubic-bezier branch — horizontal tension */
+    const makeBranch = (x1, y1, x2, y2, bend = 0.44) => {
+        const dx = x2 - x1;
+        return `M ${x1} ${y1} C ${x1 + dx * bend} ${y1}, ${x2 - dx * bend} ${y2}, ${x2} ${y2}`;
+    };
+
+    /* Quadratic bezier for thinner sub-branches */
+    const makeSubBranch = (x1, y1, x2, y2) => {
+        const mx = (x1 + x2) / 2, my = Math.min(y1, y2) - 22;
+        return `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`;
+    };
+
+    /* ── Pill node (rounded rectangle label bubble) ─────── */
+    const PillNode = ({ x, y, label, color, size = 'md', onClick }) => {
+        const fs  = size === 'sm' ? 8  : size === 'lg' ? 12 : 9.5;
+        const ph  = size === 'sm' ? 20 : size === 'lg' ? 32 : 24;
+        const pw  = Math.max(56, label.length * (size === 'lg' ? 7 : 5.6) + 24);
+        const lit = hovered === label;
+        return (
+            <g onClick={onClick}
+               onMouseEnter={() => setHovered(label)}
+               onMouseLeave={() => setHovered(null)}
+               style={{ cursor: onClick ? 'pointer' : 'default' }}>
+                {lit && <rect x={x - pw/2 - 5} y={y - ph/2 - 5} width={pw + 10} height={ph + 10}
+                              rx={(ph + 10)/2} fill={`${color}14`} />}
+                <rect x={x - pw/2} y={y - ph/2} width={pw} height={ph} rx={ph/2}
+                      fill={lit ? `${color}30` : `${color}16`}
+                      stroke={color} strokeWidth={lit ? 2.2 : 1.6} strokeOpacity={0.95} />
+                <text x={x} y={y} textAnchor="middle" dominantBaseline="central"
+                      fontSize={fs} fontWeight={700} fill={color}
+                      fontFamily="'Fira Code',monospace" style={{ userSelect: 'none' }}>
+                    {label}
+                </text>
+            </g>
+        );
+    };
+
+    /* ── FOCUSED VIEW: selected table as center hub ──────── */
+    const FocusedView = () => {
+        const deps = focusRow.refsTo;
+        const refs = focusRow.refsBy;
+
+        const layoutSide = (items, side) => {
+            const N = items.length;
+            if (!N) return [];
+            const spread = Math.min(N * 58, 440);
+            const ex = side === 'left' ? 108 : W - 108;
+            return items.map((name, i) => ({
+                name,
+                x: ex,
+                y: N === 1 ? cy : cy - spread/2 + (spread / (N - 1)) * i,
+                color: PALETTE[(side === 'left' ? i : i + 8) % PALETTE.length],
+            }));
         };
 
-        layout(focusRow.refsTo, -270, 'dep');
-        layout(focusRow.refsBy, +270, 'ref');
+        const depNodes = layoutSide(deps, 'left');
+        const refNodes = layoutSide(refs, 'right');
+        const cRx = Math.max(66, sn(focusRow.name, 20).length * 5.8 + 18);
+        const cRy = 36;
 
-    } else {
-        /* Global radial layout */
-        const sorted = [...rows].sort((a, b) => (b.refsBy.length + b.refsTo.length) - (a.refsBy.length + a.refsTo.length));
-        const N = sorted.length;
-        const R = N <= 6 ? 155 : N <= 12 ? 185 : N <= 20 ? 205 : 225;
-        sorted.forEach((t, i) => {
-            const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
-            nodes.push({
-                id: t.name,
-                x: cx + R * Math.cos(angle),
-                y: cy + R * Math.sin(angle),
-                role: 'table',
-                critical: t.refsBy.length > 2,
-                degree: t.refsTo.length + t.refsBy.length,
-            });
-        });
-        rows.forEach(t => {
-            t.refsTo.forEach(dep => {
-                const a = nodes.find(n => n.id === t.name);
-                const b = nodes.find(n => n.id === dep);
-                if (a && b) edges.push({ from: a, to: b, kind: 'dep' });
-            });
-        });
-    }
+        /* Gather up to 3 second-level connections per node */
+        const getSubs = (name, side) => {
+            const rel = normalized.find(r => r.name === name);
+            if (!rel) return [];
+            return (side === 'left' ? rel.refsTo : rel.refsBy)
+                .filter(s => s !== focusRow.name).slice(0, 3);
+        };
 
-    /* ── SVG helpers ──────────────────────────────────────── */
-    const nodeColor = n => {
-        if (n.role === 'center') return THEME.cyan;
-        if (n.role === 'dep')    return THEME.primary;
-        if (n.role === 'ref')    return THEME.cyan;
-        if (n.critical)          return THEME.danger;
-        return n.degree > 3 ? THEME.warning : THEME.primary;
+        return (
+            <g>
+                {/* Section banners */}
+                {deps.length > 0 && (
+                    <text x={115} y={20} textAnchor="middle" fontSize={9} fontWeight={800}
+                          letterSpacing="0.09em" fill="#FF6B6B" fontFamily="'Fira Code',monospace" opacity={0.8}>
+                        ◀ DEPENDS ON
+                    </text>
+                )}
+                {refs.length > 0 && (
+                    <text x={W - 115} y={20} textAnchor="middle" fontSize={9} fontWeight={800}
+                          letterSpacing="0.09em" fill="#4ECDC4" fontFamily="'Fira Code',monospace" opacity={0.8}>
+                        REFERENCED BY ▶
+                    </text>
+                )}
+
+                {/* Dep branches (left side) */}
+                {depNodes.map((node) => {
+                    const lit    = hovered === node.name;
+                    const pillW  = Math.max(56, sn(node.name).length * 5.6 + 24);
+                    const d      = makeBranch(cx - cRx, cy, node.x + pillW / 2, node.y);
+                    const subs   = getSubs(node.name, 'left');
+                    return (
+                        <g key={node.name}>
+                            <path d={d} fill="none" stroke={node.color}
+                                  strokeWidth={lit ? 3.5 : 2.5} strokeOpacity={lit ? 0.9 : 0.55}
+                                  strokeLinecap="round" style={{ transition: 'all 0.18s' }} />
+                            <PillNode x={node.x} y={node.y} label={sn(node.name)} color={node.color}
+                                      onClick={() => setSelected(node.name)} />
+                            {/* Level-2 sub-branches */}
+                            {subs.map((sub, si) => {
+                                const subN = subs.length;
+                                const subY = node.y + (si - (subN - 1) / 2) * 32;
+                                const subX = node.x - 95;
+                                const sd   = makeSubBranch(node.x - pillW / 2, node.y, subX, subY);
+                                const spw  = Math.max(48, sn(sub, 9).length * 4.8 + 16);
+                                return (
+                                    <g key={sub}>
+                                        <path d={sd} fill="none" stroke={node.color} strokeWidth={1}
+                                              strokeOpacity={0.32} strokeDasharray="4 2.5" />
+                                        <rect x={subX - spw/2} y={subY - 9} width={spw} height={18} rx={9}
+                                              fill={`${node.color}10`} stroke={node.color} strokeWidth={0.8} strokeOpacity={0.45} />
+                                        <text x={subX} y={subY} textAnchor="middle" dominantBaseline="central"
+                                              fontSize={7.5} fill={node.color} opacity={0.75}
+                                              fontFamily="'Fira Code',monospace">{sn(sub, 9)}</text>
+                                    </g>
+                                );
+                            })}
+                        </g>
+                    );
+                })}
+
+                {/* Ref branches (right side) */}
+                {refNodes.map((node) => {
+                    const lit   = hovered === node.name;
+                    const pillW = Math.max(56, sn(node.name).length * 5.6 + 24);
+                    const d     = makeBranch(cx + cRx, cy, node.x - pillW / 2, node.y);
+                    const subs  = getSubs(node.name, 'right');
+                    return (
+                        <g key={node.name}>
+                            <path d={d} fill="none" stroke={node.color}
+                                  strokeWidth={lit ? 3.5 : 2.5} strokeOpacity={lit ? 0.9 : 0.55}
+                                  strokeLinecap="round" style={{ transition: 'all 0.18s' }} />
+                            <PillNode x={node.x} y={node.y} label={sn(node.name)} color={node.color}
+                                      onClick={() => setSelected(node.name)} />
+                            {subs.map((sub, si) => {
+                                const subN = subs.length;
+                                const subY = node.y + (si - (subN - 1) / 2) * 32;
+                                const subX = node.x + 95;
+                                const sd   = makeSubBranch(node.x + pillW / 2, node.y, subX, subY);
+                                const spw  = Math.max(48, sn(sub, 9).length * 4.8 + 16);
+                                return (
+                                    <g key={sub}>
+                                        <path d={sd} fill="none" stroke={node.color} strokeWidth={1}
+                                              strokeOpacity={0.32} strokeDasharray="4 2.5" />
+                                        <rect x={subX - spw/2} y={subY - 9} width={spw} height={18} rx={9}
+                                              fill={`${node.color}10`} stroke={node.color} strokeWidth={0.8} strokeOpacity={0.45} />
+                                        <text x={subX} y={subY} textAnchor="middle" dominantBaseline="central"
+                                              fontSize={7.5} fill={node.color} opacity={0.75}
+                                              fontFamily="'Fira Code',monospace">{sn(sub, 9)}</text>
+                                    </g>
+                                );
+                            })}
+                        </g>
+                    );
+                })}
+
+                {/* Center hub — rendered last so it sits on top */}
+                <g onClick={() => setSelected(null)} style={{ cursor: 'pointer' }}>
+                    {/* Pulsing aura rings */}
+                    <ellipse cx={cx} cy={cy} rx={cRx + 20} ry={cRy + 20}
+                             fill={`${THEME.cyan}05`} style={{ animation: 'ud-pulse 3s infinite' }} />
+                    <ellipse cx={cx} cy={cy} rx={cRx + 10} ry={cRy + 10} fill={`${THEME.cyan}09`} />
+                    {/* Main ellipse */}
+                    <ellipse cx={cx} cy={cy} rx={cRx} ry={cRy}
+                             fill="#0a1628" stroke={THEME.cyan} strokeWidth={2.5} />
+                    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
+                          fontSize={11.5} fontWeight={800} fill={THEME.cyan}
+                          fontFamily="'Plus Jakarta Sans',sans-serif" style={{ userSelect: 'none' }}>
+                        {sn(focusRow.name, 20)}
+                    </text>
+                    {focusRow.refsBy.length > 2 && (
+                        <>
+                            <circle cx={cx + cRx - 5} cy={cy - cRy + 4} r={9} fill={THEME.danger} />
+                            <text x={cx + cRx - 5} y={cy - cRy + 4} textAnchor="middle" dominantBaseline="central"
+                                  fontSize={8} fontWeight={800} fill="#fff" fontFamily="sans-serif">!</text>
+                        </>
+                    )}
+                </g>
+
+                {!deps.length && !refs.length && (
+                    <text x={cx} y={cy + 70} textAnchor="middle" fontSize={12} fill={THEME.textDim}
+                          fontFamily="'Fira Code',monospace">No FK relationships found for this table</text>
+                )}
+                <text x={cx} y={H - 14} textAnchor="middle" fontSize={9} fill={THEME.textDim}
+                      fontFamily="'Fira Code',monospace" opacity={0.55}>
+                    Click center to return · Click any branch node to pivot
+                </text>
+            </g>
+        );
     };
 
-    const nodeR = n => n.role === 'center' ? 42 : n.critical ? 34 : 30;
+    /* ── GLOBAL RADIAL VIEW: all tables as branches ──────── */
+    const GlobalView = () => {
+        const displayRows = [...rows]
+            .sort((a, b) => (b.refsBy.length + b.refsTo.length) - (a.refsBy.length + a.refsTo.length))
+            .slice(0, 18);
+        const N = displayRows.length;
+        const R = N <= 5 ? 185 : N <= 9 ? 205 : N <= 13 ? 218 : 232;
 
-    const curvePath = (a, b) => {
-        const mx = (a.x + b.x) / 2;
-        const my = (a.y + b.y) / 2;
-        const bend = focusRow ? 0 : 30;
-        return `M ${a.x} ${a.y} Q ${mx + bend} ${my - bend} ${b.x} ${b.y}`;
+        return (
+            <g>
+                {/* Decorative guide ring */}
+                <circle cx={cx} cy={cy} r={R + 38} fill="none"
+                        stroke={THEME.glassBorder} strokeWidth={0.5}
+                        strokeDasharray="5 7" strokeOpacity={0.3} />
+
+                {displayRows.map((t, i) => {
+                    const angle   = (i / N) * 2 * Math.PI - Math.PI / 2;
+                    const cos     = Math.cos(angle);
+                    const sin     = Math.sin(angle);
+                    const nx      = cx + R * cos;
+                    const ny      = cy + R * sin;
+                    const color   = PALETTE[i % PALETTE.length];
+                    const isCrit  = t.refsBy.length > 2;
+                    const degree  = t.refsTo.length + t.refsBy.length;
+                    const lit     = hovered === t.name;
+                    const pillW   = Math.max(60, sn(t.name, 13).length * 5.6 + 24);
+                    const pillH   = 24;
+
+                    /* Branch from center ellipse edge to pill edge */
+                    const ex  = cx + 76 * cos, ey = cy + 44 * sin;
+                    const tx  = nx - (pillW / 2) * cos, ty = ny - (pillH / 2) * sin;
+
+                    /* Organic arc: slight perpendicular bow */
+                    const bow  = 28;
+                    const mx   = (ex + tx) / 2 - sin * bow;
+                    const my   = (ey + ty) / 2 + cos * bow;
+                    const brW  = isCrit ? 4.5 : degree > 3 ? 3.5 : 2.5;
+                    const d    = `M ${ex} ${ey} Q ${mx} ${my} ${tx} ${ty}`;
+
+                    /* Sub-branches: up to 2 FK deps shown as small feathers */
+                    const subItems = t.refsTo.slice(0, 2);
+
+                    return (
+                        <g key={t.name}
+                           onMouseEnter={() => setHovered(t.name)}
+                           onMouseLeave={() => setHovered(null)}
+                           onClick={() => setSelected(t.name)}
+                           style={{ cursor: 'pointer' }}>
+
+                            {/* Main branch */}
+                            <path d={d} fill="none" stroke={color}
+                                  strokeWidth={lit ? brW + 1.8 : brW}
+                                  strokeOpacity={lit ? 0.95 : 0.6}
+                                  strokeLinecap="round"
+                                  style={{ transition: 'all 0.18s' }} />
+
+                            {/* Sub-branches (feathers off the main branch) */}
+                            {subItems.map((sub, si) => {
+                                const featherAngle = angle - 0.38 + si * 0.38;
+                                const fR = R + 58;
+                                const fx = cx + fR * Math.cos(featherAngle);
+                                const fy = cy + fR * Math.sin(featherAngle);
+                                const sd = makeSubBranch(nx, ny, fx, fy);
+                                const spw = Math.max(44, sn(sub, 8).length * 4.6 + 14);
+                                return (
+                                    <g key={sub}>
+                                        <path d={sd} fill="none" stroke={color} strokeWidth={1.2}
+                                              strokeOpacity={0.35} strokeDasharray="3.5 2.5" />
+                                        <rect x={fx - spw/2} y={fy - 9} width={spw} height={18} rx={9}
+                                              fill={`${color}10`} stroke={color} strokeWidth={0.8} strokeOpacity={0.45} />
+                                        <text x={fx} y={fy} textAnchor="middle" dominantBaseline="central"
+                                              fontSize={7} fill={color} opacity={0.7}
+                                              fontFamily="'Fira Code',monospace">{sn(sub, 8)}</text>
+                                    </g>
+                                );
+                            })}
+
+                            {/* Main pill node */}
+                            <PillNode x={nx} y={ny} label={sn(t.name, 13)} color={color}
+                                      size={isCrit || degree > 3 ? 'md' : 'sm'} />
+
+                            {/* Critical badge */}
+                            {isCrit && (
+                                <>
+                                    <circle cx={nx + pillW/2 + 2} cy={ny - 10} r={7} fill={THEME.danger} />
+                                    <text x={nx + pillW/2 + 2} y={ny - 10} textAnchor="middle"
+                                          dominantBaseline="central" fontSize={7.5} fontWeight={800} fill="#fff">!</text>
+                                </>
+                            )}
+
+                            {/* Connectivity badge below pill */}
+                            {degree > 0 && (
+                                <text x={nx} y={ny + 17} textAnchor="middle" fontSize={7} fill={color}
+                                      opacity={0.55} fontFamily="'Fira Code',monospace">
+                                    {t.refsTo.length > 0 ? `→${t.refsTo.length}` : ''}
+                                    {t.refsTo.length > 0 && t.refsBy.length > 0 ? ' ' : ''}
+                                    {t.refsBy.length > 0 ? `←${t.refsBy.length}` : ''}
+                                </text>
+                            )}
+                        </g>
+                    );
+                })}
+
+                {/* Central hub */}
+                <g>
+                    <ellipse cx={cx} cy={cy} rx={84} ry={50} fill={`${THEME.cyan}06`}
+                             style={{ animation: 'ud-pulse 3.5s infinite' }} />
+                    <ellipse cx={cx} cy={cy} rx={76} ry={44} fill="#090f1e" stroke={THEME.cyan} strokeWidth={2.5} />
+                    <text x={cx} y={cy - 9} textAnchor="middle" fontSize={13} fontWeight={800}
+                          fill={THEME.cyan} fontFamily="'Plus Jakarta Sans',sans-serif">Dependency</text>
+                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize={10.5} fontWeight={600}
+                          fill={THEME.textMuted} fontFamily="'Plus Jakarta Sans',sans-serif">Mind Map</text>
+                </g>
+
+                <text x={cx} y={H - 14} textAnchor="middle" fontSize={9} fill={THEME.textDim}
+                      fontFamily="'Fira Code',monospace" opacity={0.55}>
+                    {rows.length > 18
+                        ? `Top 18 of ${rows.length} tables by connectivity · Click any node to drill in`
+                        : 'Click any node to explore FK relationships'}
+                </text>
+            </g>
+        );
     };
 
-    /* ── Label split for multi-line ───────────────────────── */
-    const splitLabel = (name, maxLen = 12) => {
-        const parts = name.split('_');
-        const lines = [];
-        let cur = '';
-        parts.forEach(p => {
-            if ((cur + (cur ? '_' : '') + p).length <= maxLen) {
-                cur = cur ? cur + '_' + p : p;
-            } else {
-                if (cur) lines.push(cur);
-                cur = p.length > maxLen ? p.slice(0, maxLen - 1) + '…' : p;
-            }
-        });
-        if (cur) lines.push(cur);
-        return lines.slice(0, 3);
-    };
-
-    const handleNodeClick = (node) => {
-        if (node.role === 'center') { setSelected(null); return; }
-        setSelected(prev => prev === node.id ? null : node.id);
-    };
-
+    /* ── RENDER ─────────────────────────────────────────── */
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {/* Header row */}
+
+            {/* Header + toggle */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                 <SecHead Icon={Zap} accent={THEME.cyan}
                          title="Dependency Mind Map"
-                         sub="FK relationships & cascade chains — click any node to explore" />
+                         sub="FK relationships & cascade chains — click any branch to explore" />
                 <div style={{ display: 'flex', gap: 6 }}>
                     {['map', 'table'].map(m => (
-                        <button key={m} className="ud-btn"
-                                onClick={() => setViewMode(m)}
+                        <button key={m} className="ud-btn" onClick={() => setViewMode(m)}
                                 style={{
                                     padding: '5px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                                     fontFamily: THEME.fontMono, cursor: 'pointer',
@@ -858,13 +1092,15 @@ function S_Deps() {
                                     border: `1px solid ${viewMode === m ? THEME.cyan : THEME.glassBorder}`,
                                     color: viewMode === m ? THEME.cyan : THEME.textDim,
                                 }}>
-                            {m === 'map' ? '⬡ Mind Map' : '☰ Table'}
+                            {m === 'map' ? '✦ Mind Map' : '☰ Table'}
                         </button>
                     ))}
                     {selected && (
-                        <button className="ud-btn"
-                                onClick={() => setSelected(null)}
-                                style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11, fontFamily: THEME.fontMono, cursor: 'pointer', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}40`, color: THEME.danger }}>
+                        <button className="ud-btn" onClick={() => setSelected(null)}
+                                style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11,
+                                    fontFamily: THEME.fontMono, cursor: 'pointer',
+                                    background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}40`,
+                                    color: THEME.danger }}>
                             ✕ Reset
                         </button>
                     )}
@@ -872,191 +1108,68 @@ function S_Deps() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', padding: '8px 14px', borderRadius: 8, background: `${THEME.glassBorder}30` }}>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '7px 14px', borderRadius: 8, background: `${THEME.glassBorder}22` }}>
                 {[
-                    { color: THEME.primary, label: 'Depends On (FK outgoing)' },
-                    { color: THEME.cyan,    label: 'Referenced By (FK incoming)' },
-                    { color: THEME.danger,  label: 'Critical (3+ refs)' },
-                    { color: THEME.warning, label: 'High connectivity' },
-                ].map(({ color, label }) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: 9, height: 9, borderRadius: '50%', background: color, boxShadow: `0 0 5px ${color}80` }} />
+                    { color: '#FF6B6B', label: 'Depends On (outgoing FK)' },
+                    { color: '#4ECDC4', label: 'Referenced By (incoming FK)' },
+                    { color: THEME.danger, label: 'Critical node (3+ refs)' },
+                    { color: THEME.textDim, label: 'Sub-branch (2nd-level link)', dash: true },
+                ].map(({ color, label, dash }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        {dash
+                            ? <svg width={18} height={8}><line x1={0} y1={4} x2={18} y2={4} stroke={color} strokeWidth={1.5} strokeDasharray="4 2" /></svg>
+                            : <div style={{ width: 22, height: 3, borderRadius: 2, background: color, boxShadow: `0 0 5px ${color}70` }} />
+                        }
                         <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{label}</span>
                     </div>
                 ))}
             </div>
 
             {viewMode === 'map' ? (
-                /* ── Mind Map SVG ── */
-                <div style={{ borderRadius: 12, overflow: 'hidden', background: `linear-gradient(135deg, ${THEME.bg}cc 0%, ${THEME.surface}80 100%)`, border: `1px solid ${THEME.glassBorder}` }}>
-                    <svg ref={svgRef} width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
+                <div style={{
+                    borderRadius: 14, overflow: 'hidden',
+                    border: `1px solid ${THEME.glassBorder}`,
+                    background: `radial-gradient(ellipse at 50% 50%, ${THEME.cyan}05 0%, #060c18 70%)`,
+                }}>
+                    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
                         <defs>
-                            {/* Arrow markers */}
-                            {[['dep', THEME.primary], ['ref', THEME.cyan]].map(([id, clr]) => (
-                                <marker key={id} id={`arr-${id}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-                                    <path d="M0,0 L0,7 L7,3.5 z" fill={clr} opacity={0.8} />
-                                </marker>
-                            ))}
-                            {/* Radial bg pattern */}
-                            <radialGradient id="bg-grad" cx="50%" cy="50%" r="55%">
-                                <stop offset="0%" stopColor={THEME.cyan} stopOpacity={0.04} />
-                                <stop offset="100%" stopColor={THEME.bg} stopOpacity={0} />
-                            </radialGradient>
-                            {/* Node glow filter */}
-                            <filter id="node-glow" x="-40%" y="-40%" width="180%" height="180%">
-                                <feGaussianBlur stdDeviation="4" result="blur" />
-                                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                            <filter id="mm-soft" x="-30%" y="-30%" width="160%" height="160%">
+                                <feGaussianBlur stdDeviation="2.5" result="b" />
+                                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
                             </filter>
                         </defs>
-
-                        {/* Background radial glow */}
-                        <rect width={W} height={H} fill="url(#bg-grad)" />
-
-                        {/* Section labels for focused view */}
-                        {focusRow && (
-                            <>
-                                {focusRow.refsTo.length > 0 && (
-                                    <text x={cx - 270} y={28} textAnchor="middle" fontSize={9} fontWeight={700}
-                                          fill={THEME.primary} fontFamily="'Fira Code',monospace" opacity={0.65} letterSpacing="0.08em">
-                                        ◀ DEPENDS ON (FK)
-                                    </text>
-                                )}
-                                {focusRow.refsBy.length > 0 && (
-                                    <text x={cx + 270} y={28} textAnchor="middle" fontSize={9} fontWeight={700}
-                                          fill={THEME.cyan} fontFamily="'Fira Code',monospace" opacity={0.65} letterSpacing="0.08em">
-                                        REFERENCED BY ▶
-                                    </text>
-                                )}
-                                {focusRow.refsTo.length === 0 && focusRow.refsBy.length === 0 && (
-                                    <text x={cx} y={H - 20} textAnchor="middle" fontSize={11}
-                                          fill={THEME.textDim} fontFamily="'Fira Code',monospace">
-                                        No foreign key relationships found
-                                    </text>
-                                )}
-                            </>
-                        )}
-
-                        {/* Edges */}
-                        {edges.map((e, i) => {
-                            const isLit = hovered === e.from.id || hovered === e.to.id;
-                            const clr   = e.kind === 'dep' ? THEME.primary : THEME.cyan;
-                            return (
-                                <path key={i}
-                                      d={curvePath(e.from, e.to)}
-                                      fill="none"
-                                      stroke={clr}
-                                      strokeWidth={isLit ? 2 : 1}
-                                      strokeOpacity={isLit ? 0.85 : 0.2}
-                                      strokeDasharray={e.kind === 'ref' ? '5 3' : undefined}
-                                      markerEnd={`url(#arr-${e.kind === 'dep' ? 'dep' : 'ref'})`}
-                                      style={{ transition: 'stroke-opacity 0.18s, stroke-width 0.18s' }}
-                                />
-                            );
-                        })}
-
-                        {/* Nodes */}
-                        {nodes.map(node => {
-                            const clr      = nodeColor(node);
-                            const r        = nodeR(node);
-                            const isHov    = hovered === node.id;
-                            const isCenter = node.role === 'center';
-                            const lines    = splitLabel(node.id, isCenter ? 14 : 11);
-                            const lineH    = isCenter ? 13 : 11;
-                            const totalH   = lines.length * lineH;
-
-                            return (
-                                <g key={node.id}
-                                   style={{ cursor: 'pointer' }}
-                                   onMouseEnter={() => setHovered(node.id)}
-                                   onMouseLeave={() => setHovered(null)}
-                                   onClick={() => handleNodeClick(node)}>
-
-                                    {/* Outer glow ring */}
-                                    {(isHov || isCenter) && (
-                                        <circle cx={node.x} cy={node.y} r={r + 10}
-                                                fill="none" stroke={clr}
-                                                strokeWidth={isCenter ? 1.5 : 1}
-                                                strokeOpacity={isCenter ? 0.35 : 0.25}
-                                                style={{ animation: isCenter ? 'ud-pulse 2.5s infinite' : undefined }} />
-                                    )}
-
-                                    {/* Node fill */}
-                                    <circle cx={node.x} cy={node.y} r={r}
-                                            fill={isCenter ? `${clr}22` : isHov ? `${clr}18` : `${clr}0c`}
-                                            stroke={clr}
-                                            strokeWidth={isCenter ? 2 : isHov ? 1.8 : 1.2}
-                                            strokeOpacity={isHov || isCenter ? 1 : 0.55}
-                                            style={{ transition: 'all 0.18s' }} />
-
-                                    {/* Critical dot badge */}
-                                    {node.critical && !isCenter && (
-                                        <>
-                                            <circle cx={node.x + r * 0.68} cy={node.y - r * 0.68} r={6} fill={THEME.danger} />
-                                            <text x={node.x + r * 0.68} y={node.y - r * 0.68}
-                                                  textAnchor="middle" dominantBaseline="central"
-                                                  fontSize={7} fontWeight={700} fill="#fff">!</text>
-                                        </>
-                                    )}
-
-                                    {/* Label */}
-                                    <text x={node.x} y={node.y - totalH / 2 + lineH / 2}
-                                          textAnchor="middle"
-                                          fontSize={isCenter ? 11 : 9}
-                                          fontWeight={isCenter ? 700 : isHov ? 600 : 500}
-                                          fontFamily="'Fira Code',monospace"
-                                          fill={isHov || isCenter ? clr : THEME.textMuted}
-                                          style={{ userSelect: 'none', transition: 'fill 0.15s' }}>
-                                        {lines.map((ln, li) => (
-                                            <tspan key={li} x={node.x} dy={li === 0 ? 0 : lineH}>{ln}</tspan>
-                                        ))}
-                                    </text>
-                                </g>
-                            );
-                        })}
-
-                        {/* Hint text */}
-                        {!focusRow && (
-                            <text x={cx} y={H - 14} textAnchor="middle" fontSize={9}
-                                  fill={THEME.textDim} fontFamily="'Fira Code',monospace" opacity={0.6}>
-                                Click any node to explore its FK relationships
-                            </text>
-                        )}
-                        {focusRow && (
-                            <text x={cx} y={H - 14} textAnchor="middle" fontSize={9}
-                                  fill={THEME.textDim} fontFamily="'Fira Code',monospace" opacity={0.6}>
-                                Click center node or Reset to return to global view
-                            </text>
-                        )}
+                        {focusRow ? <FocusedView /> : <GlobalView />}
                     </svg>
 
-                    {/* Hover tooltip */}
+                    {/* Hover info strip */}
                     {hovered && (() => {
                         const row = normalized.find(r => r.name === hovered);
                         if (!row) return null;
                         return (
                             <div style={{
-                                margin: '0 16px 14px',
-                                padding: '10px 14px',
-                                borderRadius: 9,
-                                background: `${THEME.surface}ee`,
-                                border: `1px solid ${THEME.glassBorder}`,
-                                display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap',
+                                margin: '0 16px 14px', padding: '10px 16px', borderRadius: 9,
+                                background: `${THEME.surface}f0`, border: `1px solid ${THEME.glassBorder}`,
+                                display: 'flex', gap: 22, alignItems: 'flex-start', flexWrap: 'wrap',
                             }}>
                                 <div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 2 }}>TABLE</div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 2, letterSpacing: '0.07em' }}>TABLE</div>
                                     <div style={{ fontSize: 13, fontWeight: 700, color: THEME.cyan, fontFamily: THEME.fontMono }}>{row.name}</div>
                                     {row.refsBy.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 4 }}>DEPENDS ON ({row.refsTo.length})</div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 5, letterSpacing: '0.07em' }}>DEPENDS ON ({row.refsTo.length})</div>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                        {row.refsTo.length ? row.refsTo.map(t => <Chip key={t} color={THEME.primary} size="sm">{t}</Chip>) : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
+                                        {row.refsTo.length
+                                            ? row.refsTo.map(t => <Chip key={t} color="#FF6B6B" size="sm">{t}</Chip>)
+                                            : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 4 }}>REFERENCED BY ({row.refsBy.length})</div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 5, letterSpacing: '0.07em' }}>REFERENCED BY ({row.refsBy.length})</div>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                        {row.refsBy.length ? row.refsBy.map(t => <Chip key={t} color={THEME.cyan} size="sm">{t}</Chip>) : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
+                                        {row.refsBy.length
+                                            ? row.refsBy.map(t => <Chip key={t} color="#4ECDC4" size="sm">{t}</Chip>)
+                                            : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
                                     </div>
                                 </div>
                             </div>
@@ -1064,7 +1177,6 @@ function S_Deps() {
                     })()}
                 </div>
             ) : (
-                /* ── Fallback table view ── */
                 <Card>
                     <THead cols="1fr 1.5fr 1.5fr" labels={['Table', 'Depends On (FK)', 'Referenced By']} />
                     {rows.map((t, i) => (
