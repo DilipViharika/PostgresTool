@@ -796,7 +796,121 @@ function S_Deps() {
         );
     };
 
-    /* ── FOCUSED VIEW: selected table as center hub ──────── */
+    /* ── Inline SVG floating tooltip ────────────────────── */
+    const SVGTooltip = ({ targetX, targetY, name, side = 'right' }) => {
+        const row = normalized.find(r => r.name === name);
+        if (!row) return null;
+
+        const depList = row.refsTo.slice(0, 4);
+        const refList = row.refsBy.slice(0, 4);
+        const depMore = row.refsTo.length - depList.length;
+        const refMore = row.refsBy.length - refList.length;
+
+        const TW = 210, lineH = 13, padX = 12, padY = 10;
+        const headerH = 28;
+        const depH    = depList.length  > 0 ? 16 + depList.length * lineH  + (depMore > 0 ? lineH : 0) : 0;
+        const refH    = refList.length  > 0 ? 16 + refList.length * lineH  + (refMore > 0 ? lineH : 0) : 0;
+        const critH   = row.refsBy.length > 2 ? 18 : 0;
+        const TH      = padY * 2 + headerH + critH + depH + refH + (depH && refH ? 8 : 0);
+
+        /* Position tooltip so it stays within SVG bounds */
+        let tx = side === 'right' ? targetX + 20 : targetX - TW - 20;
+        tx = Math.max(4, Math.min(W - TW - 4, tx));
+        let ty = targetY - TH / 2;
+        ty = Math.max(4, Math.min(H - TH - 4, ty));
+
+        let yOff = padY;
+
+        const rows_dep = depList.map((t, i) => {
+            const y = ty + yOff + headerH + critH + 16 + i * lineH;
+            return { t, y };
+        });
+        const rows_ref = refList.map((t, i) => {
+            const y = ty + yOff + headerH + critH + depH + (depH ? 8 : 0) + 16 + i * lineH;
+            return { t, y };
+        });
+
+        return (
+            <g style={{ pointerEvents: 'none' }}>
+                {/* Shadow */}
+                <rect x={tx + 3} y={ty + 4} width={TW} height={TH} rx={10}
+                      fill="#000" fillOpacity={0.35} />
+                {/* Card body */}
+                <rect x={tx} y={ty} width={TW} height={TH} rx={10}
+                      fill="#0c1929" fillOpacity={0.97}
+                      stroke="#ffffff18" strokeWidth={1} />
+                {/* Top accent bar */}
+                <rect x={tx} y={ty} width={TW} height={3} rx={2}
+                      fill={row.refsBy.length > 2 ? '#FF4757' : '#4ECDC4'} />
+
+                {/* Table name */}
+                <text x={tx + padX} y={ty + padY + 13} fontSize={11} fontWeight={800}
+                      fill="#e8f4f8" fontFamily="'Fira Code',monospace">{sn(name, 22)}</text>
+
+                {/* Critical tag */}
+                {row.refsBy.length > 2 && (
+                    <>
+                        <rect x={tx + padX} y={ty + padY + 20} width={48} height={14} rx={7}
+                              fill="#FF475720" stroke="#FF4757" strokeWidth={0.8} />
+                        <text x={tx + padX + 24} y={ty + padY + 27} textAnchor="middle"
+                              dominantBaseline="central" fontSize={7.5} fontWeight={700}
+                              fill="#FF4757" fontFamily="'Fira Code',monospace">Critical</text>
+                    </>
+                )}
+
+                {/* Depends On section */}
+                {depList.length > 0 && (
+                    <>
+                        <text x={tx + padX} y={ty + padY + headerH + critH + 10}
+                              fontSize={7.5} fontWeight={700} fill="#FF6B6B"
+                              fontFamily="'Fira Code',monospace" letterSpacing="0.07em">
+                            DEPENDS ON ({row.refsTo.length})
+                        </text>
+                        {rows_dep.map(({ t, y }) => (
+                            <g key={t}>
+                                <circle cx={tx + padX + 4} cy={y - 2} r={2} fill="#FF6B6B" fillOpacity={0.7} />
+                                <text x={tx + padX + 12} y={y} fontSize={9} fill="#FF6B6Bcc"
+                                      fontFamily="'Fira Code',monospace">{sn(t, 22)}</text>
+                            </g>
+                        ))}
+                        {depMore > 0 && (
+                            <text x={tx + padX + 12}
+                                  y={ty + padY + headerH + critH + 16 + depList.length * lineH}
+                                  fontSize={8} fill="#FF6B6B80" fontFamily="'Fira Code',monospace">
+                                +{depMore} more…
+                            </text>
+                        )}
+                    </>
+                )}
+
+                {/* Referenced By section */}
+                {refList.length > 0 && (
+                    <>
+                        <text x={tx + padX}
+                              y={ty + padY + headerH + critH + depH + (depH ? 8 : 0) + 10}
+                              fontSize={7.5} fontWeight={700} fill="#4ECDC4"
+                              fontFamily="'Fira Code',monospace" letterSpacing="0.07em">
+                            REFERENCED BY ({row.refsBy.length})
+                        </text>
+                        {rows_ref.map(({ t, y }) => (
+                            <g key={t}>
+                                <circle cx={tx + padX + 4} cy={y - 2} r={2} fill="#4ECDC4" fillOpacity={0.7} />
+                                <text x={tx + padX + 12} y={y} fontSize={9} fill="#4ECDC4cc"
+                                      fontFamily="'Fira Code',monospace">{sn(t, 22)}</text>
+                            </g>
+                        ))}
+                        {refMore > 0 && (
+                            <text x={tx + padX + 12}
+                                  y={ty + padY + headerH + critH + depH + (depH ? 8 : 0) + 16 + refList.length * lineH}
+                                  fontSize={8} fill="#4ECDC480" fontFamily="'Fira Code',monospace">
+                                +{refMore} more…
+                            </text>
+                        )}
+                    </>
+                )}
+            </g>
+        );
+    };
     const FocusedView = () => {
         const deps = focusRow.refsTo;
         const refs = focusRow.refsBy;
@@ -984,6 +1098,15 @@ function S_Deps() {
                       fontFamily="'Fira Code',monospace" opacity={0.5}>
                     Click center to return · Click branch node to pivot
                 </text>
+
+                {/* Inline floating tooltip for hovered node */}
+                {hovered && hovered !== focusRow?.name && (() => {
+                    const allNodes = [...depNodes, ...refNodes];
+                    const hn = allNodes.find(n => n.name === hovered);
+                    if (!hn) return null;
+                    const side = hn.side === 'left' ? 'right' : 'left';
+                    return <SVGTooltip targetX={hn.x} targetY={hn.y} name={hn.name} side={side} />;
+                })()}
             </g>
         );
     };
@@ -1156,6 +1279,17 @@ function S_Deps() {
                         ? `Top 18 of ${rows.length} tables by connectivity · Click any node to drill in`
                         : 'Click any node to explore FK relationships'}
                 </text>
+
+                {/* Inline floating tooltip for global view */}
+                {hovered && (() => {
+                    const hi = displayRows.findIndex(t => t.name === hovered);
+                    if (hi < 0) return null;
+                    const angle = (hi / N) * 2 * Math.PI - Math.PI / 2;
+                    const nx = cx + R * Math.cos(angle);
+                    const ny = cy + R * Math.sin(angle);
+                    const side = nx > cx ? 'left' : 'right';
+                    return <SVGTooltip targetX={nx} targetY={ny} name={hovered} side={side} />;
+                })()}
             </g>
         );
     };
@@ -1264,41 +1398,6 @@ function S_Deps() {
                         </defs>
                         {focusRow ? <FocusedView /> : <GlobalView />}
                     </svg>
-
-                    {/* Hover info strip */}
-                    {hovered && (() => {
-                        const row = normalized.find(r => r.name === hovered);
-                        if (!row) return null;
-                        return (
-                            <div style={{
-                                margin: '0 16px 14px', padding: '10px 16px', borderRadius: 9,
-                                background: `${THEME.surface}f0`, border: `1px solid ${THEME.glassBorder}`,
-                                display: 'flex', gap: 22, alignItems: 'flex-start', flexWrap: 'wrap',
-                            }}>
-                                <div>
-                                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 2, letterSpacing: '0.07em' }}>TABLE</div>
-                                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.cyan, fontFamily: THEME.fontMono }}>{row.name}</div>
-                                    {row.refsBy.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 5, letterSpacing: '0.07em' }}>DEPENDS ON ({row.refsTo.length})</div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                        {row.refsTo.length
-                                            ? row.refsTo.map(t => <Chip key={t} color="#FF6B6B" size="sm">{t}</Chip>)
-                                            : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: 9, color: THEME.textDim, fontFamily: THEME.fontMono, marginBottom: 5, letterSpacing: '0.07em' }}>REFERENCED BY ({row.refsBy.length})</div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                        {row.refsBy.length
-                                            ? row.refsBy.map(t => <Chip key={t} color="#4ECDC4" size="sm">{t}</Chip>)
-                                            : <span style={{ fontSize: 11, color: THEME.textDim }}>—</span>}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })()}
                 </div>
             ) : (
                 <Card>
