@@ -30,10 +30,6 @@ import { writeAudit }                       from './services/auditService.js';
 
 // Enterprise modules
 import { mountEnterpriseRoutes } from './enterprise/index.js';
-import { tenantIsolation, requireOrgRole } from './middleware/tenantIsolation.js';
-import { ipWhitelistMiddleware } from './middleware/ipWhitelist.js';
-import { requireFeature } from './middleware/featureGate.js';
-import { rateLimiter } from './middleware/rateLimiter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -627,15 +623,12 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Org-Id'],
     exposedHeaders: ['X-Cache', 'X-Request-Id'],
 }));
 app.use(securityHeaders);
 app.use(express.json({ limit: '1mb' }));
 app.use(rateLimiter);
-
-// Enterprise middleware
-app.use('/api', rateLimiter({ windowMs: 60_000, maxRequests: CONFIG.RATE_LIMIT.MAX_REQUESTS }));
 
 if (process.env.NODE_ENV !== 'production') {
     app.use((req, _res, next) => { log('INFO', `${req.method} ${req.path}`, { ip: req.ip }); next(); });
