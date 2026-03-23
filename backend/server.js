@@ -702,6 +702,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             'replication', 'bloat', 'regression', 'cloudwatch',
             'tasks', 'log-patterns', 'alert-correlation', 'Table',
             'table-indexes', 'table-sizes',
+            'license', 'organizations',
         ];
         const baseScreens    = user.allowed_screens ?? [];
         const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
@@ -782,7 +783,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             location:    null,
         });
 
-        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes'];
+        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'license', 'organizations'];
         const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
 
         const payload = {

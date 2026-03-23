@@ -195,6 +195,10 @@ const TAB_CONFIG = [
     { id: 'tasks',             icon: CalendarCheck, label: 'DBA Task Scheduler',    component: DBATaskSchedulerTab,     badge: null },
     { id: 'UserManagement',    icon: Users,         label: 'User Management',       component: UserManagementTab,       badge: null },
     { id: 'admin',             icon: Shield,        label: 'Admin',                 component: AdminTab,                badge: null },
+
+    { section: 'Enterprise', accent: DS.violet },
+    { id: 'license',          icon: Star,          label: 'License Management',    component: LicenseManagement,       badge: null },
+    { id: 'organizations',    icon: Users,         label: 'Organizations',         component: OrgManagement,           badge: null },
 ];
 
 const TABS_ONLY = TAB_CONFIG.filter(t => t.id);
@@ -1815,6 +1819,12 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     </button>
                 )}
 
+                {/* Enterprise: Org Switcher */}
+                {!collapsed && <OrgSwitcher />}
+
+                {/* Enterprise: License Status */}
+                {!collapsed && <LicenseStatus />}
+
                 {/* Feedback */}
                 <button
                     onClick={onOpenFeedback}
@@ -2100,7 +2110,11 @@ const ConnectionSelector = () => {
    ───────────────────────────────────────────────────────────────── */
 const Dashboard = ({ onLogout }) => (
     <ConnectionProvider>
-        <DashboardInner onLogout={onLogout} />
+        <LicenseProvider>
+            <OrgProvider>
+                <DashboardInner onLogout={onLogout} />
+            </OrgProvider>
+        </LicenseProvider>
     </ConnectionProvider>
 );
 
