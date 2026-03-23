@@ -844,12 +844,12 @@ app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 // mountEnterpriseRoutes(app, pool, authenticate, requireRole, requireScreen);
 
 // ── Gap feature routes ───────────────────────────────────────────────────────
-app.use('/api/otel',      otelRoutes(pool, authenticate, requireRole));
-app.use('/api/retention',  retentionRoutes(pool, authenticate, requireRole));
-app.use('/api/ai-query',   aiQueryRoutes(pool, authenticate));
-app.use('/api/k8s',        k8sRoutes(pool, authenticate));
-app.use('/api/status',     statusPageRoutes(pool, authenticate, requireRole));
-app.use('/api/terraform',  terraformRoutes(pool, authenticate, requireRole));
+app.use('/api', otelRoutes(pool, authenticate, requireRole));
+app.use('/api', retentionRoutes(pool, authenticate, requireRole));
+app.use('/api', aiQueryRoutes(pool, authenticate));
+app.use('/api', k8sRoutes(pool, authenticate));
+app.use('/api', statusPageRoutes(pool, authenticate, requireRole));
+app.use('/api', terraformRoutes(pool, authenticate, requireRole));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POSTGRES MONITORING ROUTES
