@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { API_BASE } from '../../utils/api.js';
-import { useConnection } from '../../context/ConnectionContext.jsx';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { API_BASE } from '../../../utils/api.js';
+import { useConnection } from '../../../context/ConnectionContext.jsx';
 import {
     Database, Plus, Edit, Trash2, Eye, EyeOff, Check, X,
     Server, Key, User, AlertCircle, CheckCircle, Link as LinkIcon,

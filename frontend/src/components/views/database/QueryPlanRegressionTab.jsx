@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData, postData, deleteData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData, postData, deleteData } from '../../../utils/api';
 import {
     TrendingUp, RefreshCw, AlertTriangle, CheckCircle, Play, Trash2,
     Database, Clock, AlertCircle, PlusCircle, GitCompare, BookOpen,

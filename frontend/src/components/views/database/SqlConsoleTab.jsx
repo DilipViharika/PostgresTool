@@ -5,8 +5,8 @@ import React, {
     useState, useEffect, useMemo, useRef, useCallback,
     useReducer, createContext, useContext, Suspense
 } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { postData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { postData } from '../../../utils/api';
 
 import {
     Play, Eraser, Copy, Check, ChevronDown, ChevronUp,

@@ -2,8 +2,8 @@
 //  VIGIL — RepositoryTab  (v11 — FIXED API INTEGRATION)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { postData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { postData } from '../../../utils/api';
 import {
     GitBranch, FolderOpen, File, FileCode, FileJson, FileText,
     Plus, Trash2, Search, X, Copy, Check, ChevronRight, ChevronDown,

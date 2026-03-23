@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { postData } from '../../utils/api.js';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { postData } from '../../../utils/api.js';
 import {
     Zap, ShieldAlert, Settings, CheckCircle, Copy, Check,
     AlertTriangle, Info, ChevronDown, ChevronRight,

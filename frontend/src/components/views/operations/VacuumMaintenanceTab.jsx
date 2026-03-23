@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData, postData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData, postData } from '../../../utils/api';
 import {
     Zap, RefreshCw, AlertTriangle, Clock, CheckCircle,
     Database, Activity, Settings, AlertCircle, Play, Search, Filter, TrendingUp

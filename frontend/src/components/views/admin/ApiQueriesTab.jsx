@@ -2,8 +2,8 @@
 //  VIGIL — ApiQueriesTab  (v8 — Apex Observability)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api';
 import {
     Network, Cpu, ArrowRight, Search, X, TrendingUp, TrendingDown,
     Clock, Database, Zap, Activity, BarChart3, Filter, ChevronDown, ChevronRight,

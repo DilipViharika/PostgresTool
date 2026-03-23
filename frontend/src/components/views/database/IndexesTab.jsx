@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api';
 
 /* ─────────────────────────────────────────────────────────────────────────
    DESIGN SYSTEM — Adaptive light/dark via THEME

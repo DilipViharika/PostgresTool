@@ -10,8 +10,8 @@ import {
   Download, Upload, Moon, Sun, SlidersHorizontal, MessageSquare,
   Users, AtSign, Send, Lock, GitMerge, CheckCircle, XCircle
 } from 'lucide-react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData, postData } from '../../utils/api.js';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData, postData } from '../../../utils/api.js';
 
 /* ─────────────────────────────────────────────────────────────────
    VIGIL v3 – Advanced Monitoring & Alert Intelligence Platform

@@ -2,8 +2,8 @@
 //  VIGIL — Security & Compliance Center (v2.0)
 // ==========================================================================
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api';
 
 import {
     Shield, Lock, AlertOctagon, FileText, Key, Eye,

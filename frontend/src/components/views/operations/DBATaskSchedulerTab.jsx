@@ -11,8 +11,8 @@ import {
   MessageSquare,
   AlertCircle,
 } from 'lucide-react';
-import { fetchData } from '../../utils/api';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 
 const DBATaskSchedulerTab = () => {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle

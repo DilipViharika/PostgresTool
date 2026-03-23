@@ -19,8 +19,8 @@ import {
     SlidersHorizontal,
     GitBranch,
 } from 'lucide-react';
-import { fetchData } from '../../utils/api';
-import { THEME, useAdaptiveTheme } from '../../utils/theme';
+import { fetchData } from '../../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 
 // ============================================================================
 // STYLES COMPONENT (Keyframes)

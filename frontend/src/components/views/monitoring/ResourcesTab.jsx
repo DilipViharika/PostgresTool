@@ -2,9 +2,9 @@
 //  VIGIL — ResourcesTab  (v5 — Full Analytics Suite)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { GlassCard, ResourceGauge, NeonProgressBar, EmptyState } from '../ui/SharedComponents.jsx';
-import { fetchData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { GlassCard, ResourceGauge, NeonProgressBar, EmptyState } from '../../ui/SharedComponents.jsx';
+import { fetchData } from '../../../utils/api';
 
 import {
     Database, Search, ChevronRight, History, HardDrive, ChevronDown,
@@ -20,7 +20,7 @@ import {
     XAxis, YAxis, Tooltip, CartesianGrid, Cell,
     PieChart as RePieChart, Pie,
 } from 'recharts';
-import AdvancedAnalysisPanel from './AdvancedAnalysisPanel';
+import AdvancedAnalysisPanel from '../analytics/AdvancedAnalysisPanel';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    STYLES

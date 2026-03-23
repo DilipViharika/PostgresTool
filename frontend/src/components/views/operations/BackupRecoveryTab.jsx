@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api';
 import {
     Archive, CheckCircle, AlertTriangle, RefreshCw, Clock, Database,
     Wifi, WifiOff, HardDrive, Shield, Radio, FileCheck, AlertCircle

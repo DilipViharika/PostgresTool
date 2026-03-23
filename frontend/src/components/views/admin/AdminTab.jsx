@@ -2,8 +2,8 @@
 //  VIGIL — AdminTab (v7 — ADVANCED VISUAL EDITION)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef, useReducer } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData, postData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData, postData } from '../../../utils/api';
 import {
     Settings, Puzzle, Database, Trash2, Search, X, Copy, Check,
     Shield, ShieldCheck, ShieldAlert, Zap, Clock, HardDrive,

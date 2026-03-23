@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 
 import {
     GitBranch, GitCommit, GitPullRequest, History, ArrowLeftRight,

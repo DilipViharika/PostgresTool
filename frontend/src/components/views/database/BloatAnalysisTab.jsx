@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
     Cell, CartesianGrid, RadialBarChart, RadialBar, PieChart, Pie, AreaChart, Area

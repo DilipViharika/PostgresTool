@@ -20,8 +20,8 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
-import { fetchData } from '../../utils/api.js';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api.js';
 
 const Styles = () => (
     <style>{`

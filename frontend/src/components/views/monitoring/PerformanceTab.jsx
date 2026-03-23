@@ -1,6 +1,6 @@
 // components/tabs/PerformanceTab.jsx
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { THEME, ChartDefs, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { THEME, ChartDefs, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import {
     GlassCard,
     MetricCard,
@@ -11,8 +11,8 @@ import {
     NeonProgressBar,
     BloatStatusBadge,
     EmptyState
-} from '../ui/SharedComponents.jsx';
-import { fetchData } from '../../utils/api';
+} from '../../ui/SharedComponents.jsx';
+import { fetchData } from '../../../utils/api';
 import {
     Activity, Clock, Server, Lock, Copy, ShieldAlert,
     Cpu, Database, ChevronLeft, Sparkles, Zap,
