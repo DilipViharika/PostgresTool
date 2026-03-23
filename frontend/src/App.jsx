@@ -196,9 +196,10 @@ const TAB_CONFIG = [
     { id: 'UserManagement',    icon: Users,         label: 'User Management',       component: UserManagementTab,       badge: null },
     { id: 'admin',             icon: Shield,        label: 'Admin',                 component: AdminTab,                badge: null },
 
-    { section: 'Enterprise', accent: DS.violet },
-    { id: 'license',          icon: Star,          label: 'License Management',    component: LicenseManagement,       badge: null },
-    { id: 'organizations',    icon: Users,         label: 'Organizations',         component: OrgManagement,           badge: null },
+    // ── Enterprise (hidden — uncomment when ready) ──────────────────────
+    // { section: 'Enterprise', accent: DS.violet },
+    // { id: 'license',          icon: Star,          label: 'License Management',    component: LicenseManagement,       badge: null },
+    // { id: 'organizations',    icon: Users,         label: 'Organizations',         component: OrgManagement,           badge: null },
 ];
 
 const TABS_ONLY = TAB_CONFIG.filter(t => t.id);
@@ -1819,11 +1820,11 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     </button>
                 )}
 
-                {/* Enterprise: Org Switcher */}
-                {!collapsed && <OrgSwitcher />}
+                {/* Enterprise: Org Switcher (hidden — uncomment when ready) */}
+                {/* {!collapsed && <OrgSwitcher />} */}
 
-                {/* Enterprise: License Status */}
-                {!collapsed && <LicenseStatus />}
+                {/* Enterprise: License Status (hidden — uncomment when ready) */}
+                {/* {!collapsed && <LicenseStatus />} */}
 
                 {/* Feedback */}
                 <button
@@ -2110,11 +2111,10 @@ const ConnectionSelector = () => {
    ───────────────────────────────────────────────────────────────── */
 const Dashboard = ({ onLogout }) => (
     <ConnectionProvider>
-        <LicenseProvider>
-            <OrgProvider>
-                <DashboardInner onLogout={onLogout} />
-            </OrgProvider>
-        </LicenseProvider>
+        {/* Enterprise providers (hidden — uncomment when ready) */}
+        {/* <LicenseProvider><OrgProvider> */}
+            <DashboardInner onLogout={onLogout} />
+        {/* </OrgProvider></LicenseProvider> */}
     </ConnectionProvider>
 );
 

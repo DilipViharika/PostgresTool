@@ -28,8 +28,8 @@ import { getUserByUsername, touchLastLogin } from './services/userService.js';
 import { createSession, recordLogin, recordFailedLogin } from './services/sessionService.js';
 import { writeAudit }                       from './services/auditService.js';
 
-// Enterprise modules
-import { mountEnterpriseRoutes } from './enterprise/index.js';
+// Enterprise modules (hidden — uncomment when ready)
+// import { mountEnterpriseRoutes } from './enterprise/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -702,7 +702,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             'replication', 'bloat', 'regression', 'cloudwatch',
             'tasks', 'log-patterns', 'alert-correlation', 'Table',
             'table-indexes', 'table-sizes',
-            'license', 'organizations',
+            // 'license', 'organizations', // Enterprise (uncomment when ready)
         ];
         const baseScreens    = user.allowed_screens ?? [];
         const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
@@ -783,7 +783,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             location:    null,
         });
 
-        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'license', 'organizations'];
+        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes'];
         const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
 
         const payload = {
@@ -830,8 +830,8 @@ app.use('/api', userRoutes(pool, authenticate, requireScreen));
 app.use('/api', sessionRoutes(pool, authenticate, requireScreen, requireRole));
 app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 
-// ── Enterprise routes ────────────────────────────────────────────────────────
-mountEnterpriseRoutes(app, pool, authenticate, requireRole, requireScreen);
+// ── Enterprise routes (hidden — uncomment when ready) ────────────────────────
+// mountEnterpriseRoutes(app, pool, authenticate, requireRole, requireScreen);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POSTGRES MONITORING ROUTES
