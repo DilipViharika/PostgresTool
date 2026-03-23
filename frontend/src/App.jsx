@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
 import { ConnectionProvider, useConnection } from './context/ConnectionContext.jsx';
 import { NavigationContext } from './context/NavigationContext.jsx';
+import { DemoProvider, useDemo, DEMO_USER } from './context/DemoContext.jsx';
 import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
 
@@ -2138,7 +2139,9 @@ const Dashboard = ({ onLogout }) => (
 );
 
 const DashboardInner = ({ onLogout }) => {
-    const { logout: authLogout, currentUser } = useAuth();
+    const { logout: authLogout, currentUser: authUser } = useAuth();
+    const { isDemo, demoUser } = useDemo();
+    const currentUser = authUser || (isDemo ? demoUser : null);
     // Use the parent-provided onLogout (which plays the fade-out) if available,
     // falling back to the raw logout for any edge-cases.
     const logout = onLogout || authLogout;
@@ -2182,7 +2185,7 @@ const DashboardInner = ({ onLogout }) => {
 
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
 
-    const allowedTabIds = useMemo(() => TABS_ONLY.filter(t => currentUser.allowedScreens.includes(t.id)).map(t => t.id), [currentUser.allowedScreens]);
+    const allowedTabIds = useMemo(() => TABS_ONLY.filter(t => (currentUser?.allowedScreens || []).includes(t.id)).map(t => t.id), [currentUser?.allowedScreens]);
 
     const ActiveComponent = useMemo(() => {
         const tab = TABS_ONLY.find(t => t.id === activeTab && allowedTabIds.includes(t.id));
@@ -2301,6 +2304,44 @@ const DashboardInner = ({ onLogout }) => {
                     </div>
                 </header>
 
+                {/* ── DEMO MODE BANNER ── */}
+                {isDemo && (
+                    <div style={{
+                        padding: '8px 28px',
+                        background: 'linear-gradient(90deg, rgba(52,211,153,.12), rgba(56,189,248,.12))',
+                        borderBottom: '1px solid rgba(52,211,153,.20)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        animation: 'fadeIn 0.3s ease',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{
+                                padding: '2px 10px', borderRadius: 20,
+                                background: 'rgba(52,211,153,.15)', border: '1px solid rgba(52,211,153,.30)',
+                                fontSize: 11, fontWeight: 700, color: '#34d399',
+                                fontFamily: DS.fontMono, letterSpacing: '0.08em',
+                            }}>
+                                DEMO
+                            </div>
+                            <span style={{ fontSize: 12, color: DS.textSub, fontFamily: DS.fontUI }}>
+                                Viewing sample data — no database connected
+                            </span>
+                        </div>
+                        <button
+                            onClick={logout}
+                            style={{
+                                background: 'rgba(52,211,153,.10)', border: '1px solid rgba(52,211,153,.25)',
+                                borderRadius: 8, padding: '5px 14px', cursor: 'pointer',
+                                fontSize: 11, fontWeight: 600, color: '#34d399',
+                                fontFamily: DS.fontUI, transition: 'all .2s',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,.20)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(52,211,153,.10)'; }}
+                        >
+                            Exit Demo
+                        </button>
+                    </div>
+                )}
+
                 {/* ── MAIN CONTENT ── */}
                 <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
                     {/* Floating alert toast */}
@@ -2393,25 +2434,32 @@ const LoadingScreen = () => (
 
 const AuthConsumer = () => {
     const { currentUser, loading, logout } = useAuth();
+    const { isDemo, enterDemo, exitDemo } = useDemo();
 
     // readyToEnter is true immediately when logged in — no delay needed
     // (the login-success overlay has been removed; we go straight to the dashboard)
-    const [readyToEnter, setReadyToEnter] = useState(!!currentUser);
+    const [readyToEnter, setReadyToEnter] = useState(!!currentUser || isDemo);
     const prevUser = useRef(currentUser);
 
     useEffect(() => {
-        // User just logged in (was null, now truthy) → enter immediately
-        if (!prevUser.current && currentUser) {
+        // User just logged in or demo activated → enter immediately
+        if ((!prevUser.current && currentUser) || isDemo) {
             setReadyToEnter(true);
             prevUser.current = currentUser;
             return;
         }
-        // User logged out → reset gate for next login
-        if (prevUser.current && !currentUser) {
+        // User logged out and not demo → reset gate for next login
+        if (prevUser.current && !currentUser && !isDemo) {
             setReadyToEnter(false);
         }
         prevUser.current = currentUser;
-    }, [currentUser]);
+    }, [currentUser, isDemo]);
+
+    // Demo login handler
+    const handleDemoLogin = useCallback(() => {
+        enterDemo();
+        setReadyToEnter(true);
+    }, [enterDemo]);
 
     // ── Logout fade-out ──────────────────────────────────────────
     const [loggingOut, setLoggingOut] = useState(false);
@@ -2420,10 +2468,11 @@ const AuthConsumer = () => {
         setLoggingOut(true);
         // Wait for fade-out animation, then clear auth state
         setTimeout(() => {
+            if (isDemo) exitDemo();
             logout();
             setLoggingOut(false);
         }, 400);
-    }, [logout]);
+    }, [logout, isDemo, exitDemo]);
 
     if (loading) return <LoadingScreen />;
 
@@ -2434,7 +2483,7 @@ const AuthConsumer = () => {
                     {/* 1. Login Route: redirect immediately to dashboard if already logged in */}
                     <Route
                         path="/login"
-                        element={!currentUser ? <LoginPage /> : <Navigate to="/" replace />}
+                        element={(!currentUser && !isDemo) ? <LoginPage onDemoLogin={handleDemoLogin} /> : <Navigate to="/" replace />}
                     />
 
                     {/* 2. SSO Callback Route */}
@@ -2447,7 +2496,7 @@ const AuthConsumer = () => {
                     <Route
                         path="/*"
                         element={
-                            currentUser && readyToEnter ? (
+                            (currentUser || isDemo) && readyToEnter ? (
                                 <ErrorBoundary>
                                     {/* Full-screen fade overlay shown during logout */}
                                     {loggingOut && (
@@ -2485,9 +2534,11 @@ const AuthConsumer = () => {
 export default function App() {
     return (
         <ErrorBoundary>
-            <AuthProvider>
-                <AuthConsumer />
-            </AuthProvider>
+            <DemoProvider>
+                <AuthProvider>
+                    <AuthConsumer />
+                </AuthProvider>
+            </DemoProvider>
         </ErrorBoundary>
     );
 }

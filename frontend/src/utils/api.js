@@ -1,6 +1,9 @@
+import { isDemoMode, getDemoData } from './demoData.js';
+
 const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 
 export const fetchMetrics = async () => {
+    if (isDemoMode()) return getDemoData('/api/metrics');
     const res = await fetch(`${API_BASE}/api/metrics`, {
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     });
@@ -47,6 +50,13 @@ function appendConnectionId(path) {
 }
 
 async function request(path, options = {}) {
+    // ── Demo mode: return mock data without hitting backend ──────────────
+    if (isDemoMode()) {
+        // Simulate a small network delay for realism
+        await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
+        return getDemoData(path);
+    }
+
     const resolvedPath = (options.method === 'GET' || !options.method)
         ? appendConnectionId(path)
         : path;
@@ -78,6 +88,12 @@ async function request(path, options = {}) {
 // --- POLLING REPLACEMENT FOR WEBSOCKET ---
 // WebSockets are not supported on Vercel (serverless). This polls /api/alerts/recent instead.
 export function connectWS(onMessage, intervalMs = 10000) {
+    // Demo mode: simulate a connected state with no real alerts
+    if (isDemoMode()) {
+        if (onMessage) setTimeout(() => onMessage({ type: 'snapshot' }), 500);
+        return () => {};
+    }
+
     const token = localStorage.getItem('vigil_token');
     if (!token) return () => {};
 
