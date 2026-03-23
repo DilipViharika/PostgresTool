@@ -10,34 +10,58 @@ import { connectWS, postData } from './utils/api';
 import LoginPage from './components/auth/LoginPage.jsx';
 const SSOCallback = lazy(() => import('./components/auth/SSOCallback.jsx'));
 
+// Enterprise context providers and components
+import { LicenseProvider } from './enterprise/context/LicenseContext.jsx';
+import { OrgProvider } from './enterprise/context/OrgContext.jsx';
+import LicenseGate from './enterprise/components/LicenseGate.jsx';
+import LicenseStatus from './enterprise/components/LicenseStatus.jsx';
+import OrgSwitcher from './enterprise/components/OrgSwitcher.jsx';
+
 /* ── Lazy-loaded tab components for faster initial load ── */
-const OverviewTab          = lazy(() => import('./components/views/OverviewTab.jsx'));
-const PerformanceTab       = lazy(() => import('./components/views/PerformanceTab.jsx'));
+// Monitoring features
+const OverviewTab          = lazy(() => import('./components/views/monitoring/OverviewTab.jsx'));
+const PerformanceTab       = lazy(() => import('./components/views/monitoring/PerformanceTab.jsx'));
+const ResourcesTab         = lazy(() => import('./components/views/monitoring/ResourcesTab.jsx'));
+const CloudWatchTab        = lazy(() => import('./components/views/monitoring/CloudWatchTab.jsx'));
+const CheckpointMonitorTab = lazy(() => import('./components/views/monitoring/CheckpointMonitorTab.jsx'));
+
+// Security features
+const SecurityComplianceTab= lazy(() => import('./components/views/security/SecurityComplianceTab.jsx'));
+const AlertsComponent      = lazy(() => import('./components/views/security/AlertsTab.jsx'));
+const AlertCorrelationTab  = lazy(() => import('./components/views/security/AlertCorrelationTab.jsx'));
+
+// Database features
+const IndexesTab           = lazy(() => import('./components/views/database/IndexesTab.jsx'));
+const SqlConsoleTab        = lazy(() => import('./components/views/database/SqlConsoleTab.jsx'));
+const BloatAnalysisTab     = lazy(() => import('./components/views/database/BloatAnalysisTab.jsx'));
+const TableAnalytics       = lazy(() => import('./components/views/database/TableAnalytics.jsx'));
+const QueryOptimizerTab    = lazy(() => import('./components/views/database/QueryOptimizerTab.jsx'));
+const QueryPlanRegressionTab = lazy(() => import('./components/views/database/QueryPlanRegressionTab.jsx'));
+const SchemaVersioningTab  = lazy(() => import('./components/views/database/SchemaVersioningTab.jsx'));
+
+// Operations features
+const BackupRecoveryTab    = lazy(() => import('./components/views/operations/BackupRecoveryTab.jsx'));
+const VacuumMaintenanceTab = lazy(() => import('./components/views/operations/VacuumMaintenanceTab.jsx'));
+const DBATaskSchedulerTab  = lazy(() => import('./components/views/operations/DBATaskSchedulerTab.jsx'));
+const ReplicationWALTab    = lazy(() => import('./components/views/operations/ReplicationWALTab.jsx'));
+const ConnectionPoolTab    = lazy(() => import('./components/views/operations/ConnectionPoolTab.jsx'));
+
+// Analytics features
+const CapacityPlanningTab  = lazy(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
+const LogPatternAnalysisTab= lazy(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
+
+// Admin features
+const AdminTab             = lazy(() => import('./components/views/admin/AdminTab.jsx'));
+const RepositoryTab        = lazy(() => import('./components/views/admin/RepositoryTab.jsx'));
+const ApiQueriesTab        = lazy(() => import('./components/views/admin/ApiQueriesTab.jsx'));
+
+// Other
 const ReliabilityTab       = lazy(() => import('./components/views/ReliabilityTab.jsx'));
-const ResourcesTab         = lazy(() => import('./components/views/ResourcesTab.jsx'));
-const IndexesTab           = lazy(() => import('./components/views/IndexesTab.jsx'));
-const AdminTab             = lazy(() => import('./components/views/AdminTab.jsx'));
-const SqlConsoleTab        = lazy(() => import('./components/views/SqlConsoleTab.jsx'));
-const ApiQueriesTab        = lazy(() => import('./components/views/ApiQueriesTab.jsx'));
 const UserManagementTab    = lazy(() => import('./usermanagement/UserManagementTab.jsx'));
-const RepositoryTab        = lazy(() => import('./components/views/RepositoryTab.jsx'));
-const AlertsComponent      = lazy(() => import('./components/views/AlertsTab.jsx'));
-const QueryOptimizerTab    = lazy(() => import('./components/views/QueryOptimizerTab.jsx'));
-const ConnectionPoolTab    = lazy(() => import('./components/views/ConnectionPoolTab.jsx'));
-const SchemaVersioningTab  = lazy(() => import('./components/views/SchemaVersioningTab.jsx'));
-const SecurityComplianceTab= lazy(() => import('./components/views/SecurityComplianceTab.jsx'));
-const CapacityPlanningTab  = lazy(() => import('./components/views/CapacityPlanningTab.jsx'));
-const BackupRecoveryTab    = lazy(() => import('./components/views/BackupRecoveryTab.jsx'));
-const CheckpointMonitorTab = lazy(() => import('./components/views/CheckpointMonitorTab.jsx'));
-const VacuumMaintenanceTab = lazy(() => import('./components/views/VacuumMaintenanceTab.jsx'));
-const ReplicationWALTab    = lazy(() => import('./components/views/ReplicationWALTab.jsx'));
-const BloatAnalysisTab     = lazy(() => import('./components/views/BloatAnalysisTab.jsx'));
-const QueryPlanRegressionTab = lazy(() => import('./components/views/QueryPlanRegressionTab.jsx'));
-const CloudWatchTab        = lazy(() => import('./components/views/CloudWatchTab.jsx'));
-const DBATaskSchedulerTab  = lazy(() => import('./components/views/DBATaskSchedulerTab.jsx'));
-const LogPatternAnalysisTab= lazy(() => import('./components/views/LogPatternAnalysisTab.jsx'));
-const AlertCorrelationTab  = lazy(() => import('./components/views/AlertCorrelationTab.jsx'));
-const TableAnalytics = lazy(() => import('./components/views/TableAnalytics.jsx'));
+
+// Enterprise edition
+const LicenseManagement = lazy(() => import('./enterprise/views/LicenseManagement.jsx'));
+const OrgManagement = lazy(() => import('./enterprise/views/OrgManagement.jsx'));
 
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,

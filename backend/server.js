@@ -28,6 +28,13 @@ import { getUserByUsername, touchLastLogin } from './services/userService.js';
 import { createSession, recordLogin, recordFailedLogin } from './services/sessionService.js';
 import { writeAudit }                       from './services/auditService.js';
 
+// Enterprise modules
+import { mountEnterpriseRoutes } from './enterprise/index.js';
+import { tenantIsolation, requireOrgRole } from './middleware/tenantIsolation.js';
+import { ipWhitelistMiddleware } from './middleware/ipWhitelist.js';
+import { requireFeature } from './middleware/featureGate.js';
+import { rateLimiter } from './middleware/rateLimiter.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
@@ -627,6 +634,9 @@ app.use(securityHeaders);
 app.use(express.json({ limit: '1mb' }));
 app.use(rateLimiter);
 
+// Enterprise middleware
+app.use('/api', rateLimiter({ windowMs: 60_000, maxRequests: CONFIG.RATE_LIMIT.MAX_REQUESTS }));
+
 if (process.env.NODE_ENV !== 'production') {
     app.use((req, _res, next) => { log('INFO', `${req.method} ${req.path}`, { ip: req.ip }); next(); });
 }
@@ -825,6 +835,9 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
 app.use('/api', userRoutes(pool, authenticate, requireScreen));
 app.use('/api', sessionRoutes(pool, authenticate, requireScreen, requireRole));
 app.use('/api', auditRoutes(pool, authenticate, requireScreen));
+
+// ── Enterprise routes ────────────────────────────────────────────────────────
+mountEnterpriseRoutes(app, pool, authenticate, requireRole, requireScreen);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POSTGRES MONITORING ROUTES
