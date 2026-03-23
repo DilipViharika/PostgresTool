@@ -49,11 +49,22 @@ const ConnectionPoolTab    = lazy(() => import('./components/views/operations/Co
 // Analytics features
 const CapacityPlanningTab  = lazy(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
 const LogPatternAnalysisTab= lazy(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
+const CustomDashboardTab   = lazy(() => import('./components/views/analytics/CustomDashboardTab.jsx'));
 
 // Admin features
 const AdminTab             = lazy(() => import('./components/views/admin/AdminTab.jsx'));
 const RepositoryTab        = lazy(() => import('./components/views/admin/RepositoryTab.jsx'));
 const ApiQueriesTab        = lazy(() => import('./components/views/admin/ApiQueriesTab.jsx'));
+const RetentionManagementTab = lazy(() => import('./components/views/admin/RetentionManagementTab.jsx'));
+const TerraformExportTab   = lazy(() => import('./components/views/admin/TerraformExportTab.jsx'));
+
+// Gap features — Monitoring
+const OpenTelemetryTab     = lazy(() => import('./components/views/monitoring/OpenTelemetryTab.jsx'));
+const KubernetesTab        = lazy(() => import('./components/views/monitoring/KubernetesTab.jsx'));
+const StatusPageTab        = lazy(() => import('./components/views/monitoring/StatusPageTab.jsx'));
+
+// Gap features — Database
+const AIQueryAdvisorTab    = lazy(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
 
 // Other
 const ReliabilityTab       = lazy(() => import('./components/views/ReliabilityTab.jsx'));
@@ -69,7 +80,8 @@ import {
     AlertCircle, X, User, GitBranch, Users, TrendingUp,
     MessageSquarePlus, Star, Send, Archive, RefreshCw, Radio, Cloud,
     CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
-    ThumbsUp, Lightbulb, AlertTriangle, PlusCircle, Sun, Moon, Save, Edit2
+    ThumbsUp, Lightbulb, AlertTriangle, PlusCircle, Sun, Moon, Save, Edit2,
+    Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
@@ -185,16 +197,23 @@ const TAB_CONFIG = [
     { id: 'cloudwatch',        icon: Cloud,         label: 'CloudWatch',            component: CloudWatchTab,           badge: null },
     { id: 'log-patterns',      icon: FileSearch,    label: 'Log Pattern Analysis',  component: LogPatternAnalysisTab,   badge: null },
     { id: 'alert-correlation', icon: Link2,         label: 'Alert Correlation',     component: AlertCorrelationTab,     badge: null },
+    { id: 'opentelemetry',     icon: Radar,         label: 'OpenTelemetry',         component: OpenTelemetryTab,        badge: null },
+    { id: 'kubernetes',        icon: Container,     label: 'Kubernetes',            component: KubernetesTab,           badge: null },
+    { id: 'status-page',       icon: Globe,         label: 'Status Page',           component: StatusPageTab,           badge: null },
 
     { section: 'Developer Tools', accent: DS.violet },
     { id: 'sql',               icon: Terminal,      label: 'SQL Console',           component: SqlConsoleTab,           badge: null },
     { id: 'api',               icon: Cpu,           label: 'API Tracing',           component: ApiQueriesTab,           badge: null },
     { id: 'repository',        icon: GitBranch,     label: 'Repository',            component: RepositoryTab,           badge: null },
+    { id: 'ai-advisor',        icon: Brain,         label: 'AI Query Advisor',      component: AIQueryAdvisorTab,       badge: null },
 
     { section: 'Admin', accent: DS.rose },
     { id: 'tasks',             icon: CalendarCheck, label: 'DBA Task Scheduler',    component: DBATaskSchedulerTab,     badge: null },
     { id: 'UserManagement',    icon: Users,         label: 'User Management',       component: UserManagementTab,       badge: null },
     { id: 'admin',             icon: Shield,        label: 'Admin',                 component: AdminTab,                badge: null },
+    { id: 'retention',         icon: Clock,         label: 'Data Retention',        component: RetentionManagementTab,  badge: null },
+    { id: 'terraform',         icon: Download,      label: 'Terraform Export',      component: TerraformExportTab,      badge: null },
+    { id: 'custom-dashboard',  icon: LayoutDashboard, label: 'Custom Dashboards',  component: CustomDashboardTab,      badge: null },
 
     // ── Enterprise (hidden — uncomment when ready) ──────────────────────
     // { section: 'Enterprise', accent: DS.violet },

@@ -31,6 +31,14 @@ import { writeAudit }                       from './services/auditService.js';
 // Enterprise modules (hidden — uncomment when ready)
 // import { mountEnterpriseRoutes } from './enterprise/index.js';
 
+// Gap feature routes
+import otelRoutes      from './routes/otelRoutes.js';
+import retentionRoutes from './routes/retentionRoutes.js';
+import aiQueryRoutes   from './routes/aiQueryRoutes.js';
+import k8sRoutes       from './routes/k8sRoutes.js';
+import statusPageRoutes from './routes/statusPageRoutes.js';
+import terraformRoutes from './routes/terraformRoutes.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
@@ -702,6 +710,8 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             'replication', 'bloat', 'regression', 'cloudwatch',
             'tasks', 'log-patterns', 'alert-correlation', 'Table',
             'table-indexes', 'table-sizes',
+            'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor',
+            'retention', 'terraform', 'custom-dashboard',
             // 'license', 'organizations', // Enterprise (uncomment when ready)
         ];
         const baseScreens    = user.allowed_screens ?? [];
@@ -783,7 +793,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             location:    null,
         });
 
-        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes'];
+        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'retention', 'terraform', 'custom-dashboard'];
         const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
 
         const payload = {
@@ -832,6 +842,14 @@ app.use('/api', auditRoutes(pool, authenticate, requireScreen));
 
 // ── Enterprise routes (hidden — uncomment when ready) ────────────────────────
 // mountEnterpriseRoutes(app, pool, authenticate, requireRole, requireScreen);
+
+// ── Gap feature routes ───────────────────────────────────────────────────────
+app.use('/api/otel',      otelRoutes(pool, authenticate, requireRole));
+app.use('/api/retention',  retentionRoutes(pool, authenticate, requireRole));
+app.use('/api/ai-query',   aiQueryRoutes(pool, authenticate));
+app.use('/api/k8s',        k8sRoutes(pool, authenticate));
+app.use('/api/status',     statusPageRoutes(pool, authenticate, requireRole));
+app.use('/api/terraform',  terraformRoutes(pool, authenticate, requireRole));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POSTGRES MONITORING ROUTES
