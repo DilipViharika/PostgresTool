@@ -67,6 +67,7 @@ const ConnectionPoolTab    = lazyRetry(() => import('./components/views/operatio
 const CapacityPlanningTab  = lazyRetry(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
 const LogPatternAnalysisTab= lazyRetry(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
 const CustomDashboardTab   = lazyRetry(() => import('./components/views/analytics/CustomDashboardTab.jsx'));
+const DemoDataTab          = lazyRetry(() => import('./components/views/analytics/DemoDataTab.jsx'));
 
 // Admin features
 const AdminTab             = lazyRetry(() => import('./components/views/admin/AdminTab.jsx'));
@@ -125,7 +126,7 @@ registerComponents({
     KubernetesTab, StatusPageTab, AIMonitoringTab,
     SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
     DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
-    TerraformExportTab, CustomDashboardTab,
+    TerraformExportTab, CustomDashboardTab, DemoDataTab,
     MongoOverviewTab, MongoPerformanceTab, MongoStorageTab,
     MongoReplicationTab, MongoDataToolsTab, MongoShardingTab,
     // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,
@@ -2354,12 +2355,6 @@ const AuthConsumer = () => {
         prevUser.current = currentUser;
     }, [currentUser, isDemo]);
 
-    // Demo login handler
-    const handleDemoLogin = useCallback(() => {
-        enterDemo();
-        setReadyToEnter(true);
-    }, [enterDemo]);
-
     // ── Logout fade-out ──────────────────────────────────────────
     const [loggingOut, setLoggingOut] = useState(false);
 
@@ -2382,7 +2377,7 @@ const AuthConsumer = () => {
                     {/* 1. Login Route: redirect immediately to dashboard if already logged in */}
                     <Route
                         path="/login"
-                        element={(!currentUser && !isDemo) ? <LoginPage onDemoLogin={handleDemoLogin} /> : <Navigate to="/" replace />}
+                        element={(!currentUser && !isDemo) ? <LoginPage /> : <Navigate to="/" replace />}
                     />
 
                     {/* 2. SSO Callback Route */}

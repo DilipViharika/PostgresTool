@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
     User, KeyRound, Shield, Activity, Zap, HardDrive, Lock,
-    Search, RefreshCw, Cloud, Terminal, Users, Sun, Moon, Play,
+    Search, RefreshCw, Cloud, Terminal, Users, Sun, Moon,
     Server, Cpu, Brain, Globe,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -601,7 +601,7 @@ const DbTypeChips = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 //  LOGIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
-const LoginPage = ({ onDemoLogin }) => {
+const LoginPage = () => {
     useAdaptiveTheme();
     const { isDark, toggleTheme } = useTheme();
     const { login, loginWithSSO, authLoading, error, clearError } = useAuth();
@@ -765,29 +765,6 @@ const LoginPage = ({ onDemoLogin }) => {
                                     onMouseLeave={e => { e.currentTarget.style.background = THEME.surface; e.currentTarget.style.borderColor = THEME.grid; }}
                             >
                                 <Shield size={16} color="#00D4FF"/> Continue with SSO
-                            </button>
-
-                            {/* Demo Mode */}
-                            <div style={{ display: 'flex', alignItems: 'center', margin: '2px 0 0' }}>
-                                <div style={{ flex: 1, height: 1, background: THEME.grid }} />
-                                <span style={{ padding: '0 10px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, textTransform: 'uppercase' }}>or explore</span>
-                                <div style={{ flex: 1, height: 1, background: THEME.grid }} />
-                            </div>
-
-                            <button type="button"
-                                    onClick={onDemoLogin}
-                                    style={{
-                                        width: '100%', padding: '10px 20px', borderRadius: 12,
-                                        background: 'linear-gradient(135deg, rgba(46,232,156,.08) 0%, rgba(0,212,255,.08) 100%)',
-                                        border: '1px solid rgba(46,232,156,.25)',
-                                        color: '#2EE89C', fontWeight: 600, fontSize: 13, fontFamily: THEME.fontBody,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                        cursor: 'pointer', transition: 'all .2s'
-                                    }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(46,232,156,.15) 0%, rgba(0,212,255,.15) 100%)'; e.currentTarget.style.borderColor = 'rgba(46,232,156,.45)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(46,232,156,.08) 0%, rgba(0,212,255,.08) 100%)'; e.currentTarget.style.borderColor = 'rgba(46,232,156,.25)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                            >
-                                <Play size={14} fill="#2EE89C" color="#2EE89C"/> Try Demo — No Login Required
                             </button>
                         </form>
 

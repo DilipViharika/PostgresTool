@@ -13,7 +13,7 @@ import {
     CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
     Radio, Cloud, Archive, RefreshCw, Star,
     Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock, CheckCircle,
-    Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge,
+    Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge, FlaskConical,
 } from 'lucide-react';
 
 import { getDS } from './designTokens.js';
@@ -85,6 +85,7 @@ export function buildTabConfig() {
         { id: 'retention',         icon: Clock,         label: 'Data Retention',        component: _components.RetentionManagementTab,  badge: null },
         { id: 'terraform',         icon: Download,      label: 'Terraform Export',      component: _components.TerraformExportTab,      badge: null },
         { id: 'custom-dashboard',  icon: LayoutDashboard, label: 'Custom Dashboards',   component: _components.CustomDashboardTab,      badge: null },
+        { id: 'demo-data',         icon: FlaskConical,    label: 'Demo Data',             component: _components.DemoDataTab,             badge: null },
     ];
 }
 
