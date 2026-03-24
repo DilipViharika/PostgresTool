@@ -1,6 +1,15 @@
-import React from 'react';
-import { Database } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import { THEME } from '../../../utils/theme.jsx';
+import {
+  Database, Activity, Zap, Clock, HardDrive, Shield,
+  ArrowUpRight, ArrowDownRight, Leaf, Hourglass,
+  CheckCircle, AlertTriangle, Server, Cpu, Network,
+  BarChart3, Lock, Globe, ChevronDown
+} from 'lucide-react';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
+  Tooltip, CartesianGrid
+} from 'recharts';
 
 const DB_COLORS = {
   postgresql: '#6495ED',
@@ -437,181 +446,614 @@ const DATABASE_STRUCTURE = {
   }
 };
 
+const DETAIL_WIDGETS = {
+  postgresql: {
+    backup: { time: '2 hours ago', size: '8.9 GB', duration: '12 min', verified: true, next: 'in 22 hours' },
+    longTxns: [
+      { pid: '12847', query: 'SELECT * FROM large_table WHERE...', duration: '45 min', wait: 'I/O', pct: 75 },
+      { pid: '12934', query: 'UPDATE inventory SET qty=qty-1...', duration: '12 min', wait: 'Lock', pct: 40 },
+      { pid: '13021', query: 'DELETE FROM audit_logs WHERE...', duration: '3 min', wait: 'CPU', pct: 15 },
+    ],
+    vacuum: { urgent: 5, soon: 23, healthy: 541, deadTuples: '234.5M', bloat: '12.3' },
+  },
+  mongodb: {
+    backup: { time: '1 hour ago', size: '234 GB', duration: '15 min', verified: true, next: 'in 23 hours' },
+    longTxns: [
+      { pid: 'conn-456', query: 'db.users.aggregate([{$match...', duration: '23 min', wait: 'I/O', pct: 60 },
+      { pid: 'conn-789', query: 'db.orders.find({status:"pen...', duration: '8 min', wait: 'Lock', pct: 30 },
+      { pid: 'conn-123', query: 'db.logs.deleteMany({date:{$...', duration: '2 min', wait: 'CPU', pct: 10 },
+    ],
+    vacuum: { urgent: 0, soon: 12, healthy: 456, deadTuples: '12.3M', bloat: '5.2' },
+  },
+  mysql: {
+    backup: { time: '3 hours ago', size: '12.3 GB', duration: '8 min', verified: true, next: 'in 21 hours' },
+    longTxns: [
+      { pid: '4567', query: 'SELECT * FROM orders JOIN...', duration: '15 min', wait: 'Row Lock', pct: 50 },
+      { pid: '4589', query: 'ALTER TABLE users ADD INDEX...', duration: '5 min', wait: 'Meta Lock', pct: 25 },
+    ],
+    vacuum: { urgent: 2, soon: 15, healthy: 340, deadTuples: '89.2M', bloat: '8.1' },
+  },
+  mssql: {
+    backup: { time: '4 hours ago', size: '45.2 GB', duration: '25 min', verified: true, next: 'in 20 hours' },
+    longTxns: [
+      { pid: 'SPID-52', query: 'EXEC sp_rebuild_indexes...', duration: '30 min', wait: 'PAGEIOLATCH', pct: 65 },
+      { pid: 'SPID-78', query: 'SELECT TOP 1000 FROM Audit...', duration: '8 min', wait: 'LCK_M_S', pct: 25 },
+    ],
+    vacuum: { urgent: 3, soon: 18, healthy: 420, deadTuples: '156.8M', bloat: '10.5' },
+  },
+  oracle: {
+    backup: { time: '5 hours ago', size: '89.4 GB', duration: '45 min', verified: true, next: 'in 19 hours' },
+    longTxns: [
+      { pid: 'SID-234', query: 'SELECT /*+ PARALLEL(8)*/...', duration: '1 hour', wait: 'db file seq', pct: 80 },
+      { pid: 'SID-567', query: 'MERGE INTO fact_sales USING...', duration: '15 min', wait: 'enq: TX', pct: 35 },
+    ],
+    vacuum: { urgent: 0, soon: 8, healthy: 567, deadTuples: '45.6M', bloat: '3.2' },
+  },
+};
+
 function hashSeed(str) {
   let h = 0;
-  for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  }
   return Math.abs(h);
 }
 
-function generateSparkData(label) {
+function genSparkData(label, n = 10, base = 40, variance = 30) {
   let s = hashSeed(label);
-  return Array.from({length: 8}, () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return (s % 80) + 20; });
+  return Array.from({ length: n }, () => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    return base + (s % Math.round(variance));
+  });
 }
 
-function MiniSparkline({ data, color, width = 60, height = 18 }) {
-  const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`).join(' ');
-  const uid = `sp-${Math.random().toString(36).slice(2, 8)}`;
+function genTrend(label) {
+  const s = hashSeed(label);
+  return { value: `+${(s % 50) / 10}%`, up: s % 3 !== 0 };
+}
+
+function genVelocityData(sectionName) {
+  const s = hashSeed(sectionName);
+  return Array.from({ length: 24 }, (_, i) => {
+    const base = 200 + (s % 300);
+    return {
+      time: `${String(i).padStart(2, '0')}:00`,
+      primary: base + Math.round(Math.sin(i / 3) * 80 + (hashSeed(sectionName + i) % 60)),
+      secondary: Math.round((base + Math.sin(i / 3) * 80) * 0.6 + (hashSeed(sectionName + i + 's') % 40)),
+    };
+  });
+}
+
+function DemoStyles() {
   return (
-    <svg width={width} height={height} style={{ display: 'block' }}>
+    <style>{`
+      @keyframes demoFadeIn {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes demoPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      @keyframes demoShine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      .demo-card-shine::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+        animation: demoShine 4s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .demo-stagger > *:nth-child(1) { animation: demoFadeIn 0.5s ease both 0.05s; }
+      .demo-stagger > *:nth-child(2) { animation: demoFadeIn 0.5s ease both 0.1s; }
+      .demo-stagger > *:nth-child(3) { animation: demoFadeIn 0.5s ease both 0.15s; }
+      .demo-stagger > *:nth-child(4) { animation: demoFadeIn 0.5s ease both 0.2s; }
+      .demo-stagger > *:nth-child(5) { animation: demoFadeIn 0.5s ease both 0.25s; }
+      .demo-stagger > *:nth-child(6) { animation: demoFadeIn 0.5s ease both 0.3s; }
+    `}</style>
+  );
+}
+
+function Panel({ title, icon: TIcon, accentColor, rightNode, noPad, children, style = {} }) {
+  return (
+    <div
+      style={{
+        background: THEME.glass,
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
+        borderRadius: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+        boxShadow: accentColor
+          ? `0 0 0 1px ${accentColor}08, inset 0 1px 0 rgba(255,255,255,0.05)`
+          : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+        ...style,
+      }}
+    >
+      <div className="demo-card-shine" />
+      {title && (
+        <div
+          style={{
+            padding: '12px 18px',
+            borderBottom: `1px solid ${THEME.glassBorder}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            minHeight: 44,
+            background: 'rgba(255,255,255,0.012)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {TIcon && (
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: `${accentColor || THEME.textDim}14`,
+                }}
+              >
+                <TIcon size={12} color={accentColor || THEME.textDim} />
+              </div>
+            )}
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: THEME.textMuted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}
+            >
+              {title}
+            </span>
+          </div>
+          {rightNode}
+        </div>
+      )}
+      <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '16px 18px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MiniSparkline({ data = [], color = THEME.primary, width = 64, height = 20, filled = true }) {
+  if (!data || data.length < 2) return <div style={{ width, height }} />;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data
+    .map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`)
+    .join(' ');
+  const uid = `dsp-${color.replace(/[^a-z0-9]/gi, '')}-${width}-${Math.random().toString(36).slice(2, 6)}`;
+  return (
+    <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
       <defs>
         <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+          <stop offset="0%" stopColor={color} stopOpacity={0.28} />
           <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
-      <polygon points={`0,${height} ${pts} ${width},${height}`} fill={`url(#${uid})`} />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {filled && <polygon points={`0,${height} ${pts} ${width},${height}`} fill={`url(#${uid})`} />}
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
+  );
+}
+
+function RingGauge({ value, color, size = 80, strokeWidth = 6, label }) {
+  const r = (size - strokeWidth) / 2;
+  const circ = 2 * Math.PI * r;
+  const filled = (circ * Math.min(value, 100)) / 100;
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={THEME.glassBorder} strokeWidth={strokeWidth} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={`${filled} ${circ - filled}`}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{
+            transition: 'stroke-dasharray 1.2s cubic-bezier(0.22,1,0.36,1)',
+            filter: `drop-shadow(0 0 5px ${color}50)`,
+          }}
+        />
+      </svg>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
+        }}
+      >
+        <span
+          style={{
+            fontSize: size > 70 ? 17 : 10,
+            fontWeight: 700,
+            color,
+            lineHeight: 1,
+            fontFamily: "'JetBrains Mono',monospace",
+          }}
+        >
+          {value}%
+        </span>
+        {label && (
+          <span
+            style={{
+              fontSize: 7.5,
+              color: THEME.textDim,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              marginTop: 1,
+            }}
+          >
+            {label}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ label, color, pulse }) {
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 5,
+        fontSize: 9.5,
+        fontWeight: 700,
+        padding: '3px 9px',
+        borderRadius: 6,
+        background: `${color}12`,
+        color,
+        border: `1px solid ${color}22`,
+        lineHeight: 1.3,
+        whiteSpace: 'nowrap',
+        fontFamily: "'JetBrains Mono',monospace",
+        letterSpacing: '0.04em',
+      }}
+    >
+      <span
+        style={{
+          width: 5,
+          height: 5,
+          borderRadius: '50%',
+          background: color,
+          boxShadow: `0 0 5px ${color}70`,
+          flexShrink: 0,
+          animation: pulse ? 'demoPulse 1.5s ease-in-out infinite' : 'none',
+        }}
+      />
+      {label}
+    </span>
+  );
+}
+
+function LiveDot({ color }) {
+  return (
+    <div
+      style={{
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        background: color,
+        boxShadow: `0 0 8px ${color}, 0 0 12px ${color}60`,
+        animation: 'demoPulse 1.5s ease-in-out infinite',
+      }}
+    />
   );
 }
 
 export default function DemoDataTab({ dbKey = 'postgresql' }) {
   const db = DATABASE_STRUCTURE[dbKey];
-  if (!db) return <div style={{ color: THEME.textMuted }}>Database not found</div>;
+  const widgets = DETAIL_WIDGETS[dbKey] || DETAIL_WIDGETS.postgresql;
+  if (!db) return null;
+
+  const kpiIcons = [Activity, Zap, Database, Clock, HardDrive];
 
   return (
-    <div style={{ padding: '32px', backgroundColor: THEME.bg, color: THEME.text, fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-        {/* Page Header */}
-        <div style={{ marginBottom: '40px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: db.color, opacity: 0.9 }} />
-            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 700, color: THEME.textMain }}>
-              {db.name} Demo
-            </h1>
-          </div>
-          <p style={{ margin: '0 0 0 40px', fontSize: '13px', color: THEME.textMuted, letterSpacing: '0.04em' }}>
-            Demo monitoring dashboard · {db.sections.length} sections · {db.sections.reduce((acc, s) => acc + s.tabs.length, 0)} tabs
-          </p>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '0 0 48px 0' }}>
+      <DemoStyles />
 
-        {/* KPI Hero Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '48px' }}>
-          {db.kpis.map((kpi, idx) => {
-            const sparkData = generateSparkData(kpi.label);
-            const statusDot = kpi.status === 'healthy' ? THEME.success : THEME.warning;
-            return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <LiveDot color={db.color} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.03em' }}>
+            Demo Mode
+          </span>
+          <StatusBadge label={db.name} color={db.color} />
+          <StatusBadge label={`${db.sections.length} sections`} color={THEME.textMuted} />
+        </div>
+        <StatusBadge label="DEMO" color={db.color} pulse />
+      </div>
+
+      <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        {db.kpis.map((kpi, i) => {
+          const Icon = kpiIcons[i] || Activity;
+          const trend = genTrend(kpi.label);
+          return (
+            <div
+              key={i}
+              className="demo-card-shine"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                padding: '14px 16px',
+                borderRadius: 14,
+                background: THEME.glass,
+                backdropFilter: 'blur(14px)',
+                border: `1px solid ${THEME.glassBorder}`,
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `${db.color}10`,
+                    border: `1px solid ${db.color}18`,
+                  }}
+                >
+                  <Icon size={14} color={db.color} />
+                </div>
+                <MiniSparkline data={genSparkData(kpi.label)} color={db.color} width={48} height={18} />
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 9.5,
+                    color: THEME.textDim,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    lineHeight: 1,
+                    marginBottom: 5,
+                  }}
+                >
+                  {kpi.label}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 700,
+                      color: db.color,
+                      lineHeight: 1,
+                      letterSpacing: '-0.02em',
+                      fontFamily: "'JetBrains Mono',monospace",
+                    }}
+                  >
+                    {kpi.value}
+                  </span>
+                  <span style={{ fontSize: 10, color: THEME.textDim }}>{kpi.unit}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                {trend.up ? (
+                  <ArrowUpRight size={10} color={THEME.success} />
+                ) : (
+                  <ArrowDownRight size={10} color={THEME.warning} />
+                )}
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: trend.up ? THEME.success : THEME.warning,
+                    fontFamily: "'JetBrains Mono',monospace",
+                  }}
+                >
+                  {trend.value}
+                </span>
+                <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <Panel title="Last Backup" icon={HardDrive} accentColor={THEME.success}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Completed</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.time}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Size</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.size}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Duration</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.duration}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Verified</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {widgets.backup.verified && <CheckCircle size={12} color={THEME.success} />}
+                <span style={{ fontSize: 11, color: THEME.success, fontWeight: 600 }}>Yes</span>
+              </div>
+            </div>
+            <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 8 }}>
+              <div style={{ fontSize: 10, color: THEME.textDim }}>Next: {widgets.backup.next}</div>
+            </div>
+          </div>
+        </Panel>
+
+        <Panel title="Long-Running Txns" icon={Hourglass} accentColor={THEME.warning}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {widgets.longTxns.map((txn, idx) => (
+              <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: "'JetBrains Mono',monospace" }}>{txn.pid}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim }}>{txn.duration}</span>
+                </div>
+                <div style={{ fontSize: 9, color: THEME.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{txn.query}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.glassBorder, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: THEME.warning, width: `${txn.pct}%` }} />
+                  </div>
+                  <span style={{ fontSize: 9, color: THEME.textDim, minWidth: 30 }}>{txn.wait}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="Maintenance Health" icon={Leaf} accentColor={db.color}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', height: 18, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
+              <div style={{ flex: widgets.vacuum.urgent, background: THEME.danger, opacity: 0.8 }} />
+              <div style={{ flex: widgets.vacuum.soon, background: THEME.warning, opacity: 0.6 }} />
+              <div style={{ flex: widgets.vacuum.healthy, background: THEME.success, opacity: 0.5 }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 9, color: THEME.textDim }}>Urgent</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.danger }}>{widgets.vacuum.urgent}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 9, color: THEME.textDim }}>Soon</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.warning }}>{widgets.vacuum.soon}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 9, color: THEME.textDim }}>Healthy</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.success }}>{widgets.vacuum.healthy}</div>
+              </div>
+            </div>
+            <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 4 }}>
+              <div style={{ fontSize: 9.5, color: THEME.textMuted, marginBottom: 4 }}>Dead Tuples</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{widgets.vacuum.deadTuples}</div>
+            </div>
+          </div>
+        </Panel>
+      </div>
+
+      {db.sections.map((section) => (
+        <div key={section.id} style={{ marginTop: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
+            <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{section.name}</h2>
+            <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
+          </div>
+
+          <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+            {section.tabs.map((tab, idx) => (
               <div
                 key={idx}
                 style={{
                   background: THEME.glass,
-                  backdropFilter: 'blur(18px)',
+                  backdropFilter: 'blur(14px)',
                   border: `1px solid ${THEME.glassBorder}`,
-                  borderRadius: 16,
-                  padding: '16px',
-                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                  borderRadius: 14,
+                  padding: '14px 16px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                   cursor: 'default',
                 }}
                 onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-3px)';
                   e.currentTarget.style.borderColor = db.color;
-                  e.currentTarget.style.boxShadow = `0 0 20px ${db.color}20`;
+                  e.currentTarget.style.boxShadow = `0 8px 24px ${db.color}20`;
                 }}
                 onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.borderColor = THEME.glassBorder;
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <div style={{ fontSize: '10px', fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', marginBottom: '8px' }}>
-                  {kpi.label}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 700, color: db.color }}>
-                    {kpi.value}
+                <div className="demo-card-shine" />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${db.color}, transparent)`, opacity: 0.6 }} />
+                <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{tab.name}</h3>
+                {tab.metrics.map((m, mIdx) => (
+                  <div key={mIdx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: mIdx < tab.metrics.length - 1 ? 10 : 0 }}>
+                    <span style={{ fontSize: 11.5, color: THEME.textMuted }}>{m.label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>{m.value}</span>
+                      <span style={{ fontSize: 10, color: THEME.textDim }}>{m.unit}</span>
+                      <MiniSparkline data={genSparkData(`${tab.name}-${m.label}`)} color={db.color} width={44} height={14} />
+                    </div>
                   </div>
-                  <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                    {kpi.unit}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: statusDot }} />
-                  <span style={{ fontSize: '11px', color: statusDot }}>
-                    {kpi.status === 'healthy' ? 'Healthy' : 'Warning'}
-                  </span>
-                </div>
-                <MiniSparkline data={sparkData} color={db.color} width={160} height={24} />
+                ))}
               </div>
-            );
-          })}
-        </div>
-
-        {/* Sections */}
-        {db.sections.map((section) => (
-          <div key={section.id} style={{ marginBottom: '56px' }}>
-            {/* Section Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', paddingLeft: '16px', borderLeft: `4px solid ${db.color}` }}>
-              <h2 style={{ margin: 0, fontSize: '12px', fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                {section.name}
-              </h2>
-              <div style={{ background: `${db.color}15`, color: db.color, padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
-                {section.tabs.length} tabs
-              </div>
-            </div>
-
-            {/* Tab Cards Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-              {section.tabs.map((tab, idx) => {
-                const sparkData1 = generateSparkData(`${tab.name}-${tab.metrics[0]?.label}`);
-                const sparkData2 = generateSparkData(`${tab.name}-${tab.metrics[1]?.label}`);
-                const sparkData3 = generateSparkData(`${tab.name}-${tab.metrics[2]?.label}`);
-                const sparkData4 = generateSparkData(`${tab.name}-${tab.metrics[3]?.label}`);
-                const sparkLines = [sparkData1, sparkData2, sparkData3, sparkData4];
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      background: THEME.glass,
-                      backdropFilter: 'blur(18px)',
-                      border: `1px solid ${THEME.glassBorder}`,
-                      borderRadius: 16,
-                      padding: '16px',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                      cursor: 'default',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px)';
-                      e.currentTarget.style.borderColor = db.color;
-                      e.currentTarget.style.boxShadow = `0 8px 24px ${db.color}25, inset 0 0 1px ${db.color}20`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.borderColor = THEME.glassBorder;
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    {/* Top gradient border */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: `linear-gradient(90deg, ${db.color}, transparent)`, opacity: 0.6 }} />
-
-                    {/* Tab Title */}
-                    <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 700, color: THEME.textMain }}>
-                      {tab.name}
-                    </h3>
-
-                    {/* Metrics */}
-                    {tab.metrics.map((metric, mIdx) => (
-                      <div key={mIdx} style={{ marginBottom: mIdx < tab.metrics.length - 1 ? '14px' : 0 }}>
-                        <div style={{ fontSize: '12px', color: THEME.textMuted, marginBottom: '4px' }}>
-                          {metric.label}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 700, color: db.color }}>
-                            {metric.value}
-                          </span>
-                          <span style={{ fontSize: '11px', color: THEME.textMuted }}>
-                            {metric.unit}
-                          </span>
-                        </div>
-                        <MiniSparkline data={sparkLines[mIdx]} color={db.color} width={200} height={18} />
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
+            ))}
           </div>
-        ))}
+
+          <div style={{ marginTop: 16 }}>
+            <Panel title={`${section.name} Activity`} icon={Activity} accentColor={db.color} rightNode={<StatusBadge label="DEMO" color={db.color} pulse />}>
+              <div style={{ height: 180 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={genVelocityData(section.name)} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+                    <defs>
+                      <linearGradient id={`dg1-${section.id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={db.color} stopOpacity={0.35} />
+                        <stop offset="100%" stopColor={db.color} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id={`dg2-${section.id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={db.color} stopOpacity={0.15} />
+                        <stop offset="100%" stopColor={db.color} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="time" tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
+                    <YAxis tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="primary" stroke={db.color} strokeWidth={2} fill={`url(#dg1-${section.id})`} />
+                    <Area type="monotone" dataKey="secondary" stroke={db.color} strokeWidth={1} fill={`url(#dg2-${section.id})`} strokeDasharray="5 3" strokeOpacity={0.5} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Panel>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+        <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+            <RingGauge value={92} color={db.color} size={100} strokeWidth={8} label="health" />
+          </div>
+        </Panel>
       </div>
     </div>
   );
