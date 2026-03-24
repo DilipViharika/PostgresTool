@@ -5,7 +5,7 @@ import {
   ArrowUpRight, ArrowDownRight, Leaf, Hourglass,
   CheckCircle, AlertTriangle, Server, Cpu, Network,
   BarChart3, Lock, Globe, ChevronDown, GitBranch,
-  Gauge, MemoryStick, Layers, Radio, Eye
+  Gauge, MemoryStick, Layers, Radio, Eye, Code
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
@@ -1410,30 +1410,128 @@ function mapSectionToWidgetId(sectionId) {
   return mapping[sectionId] || sectionId;
 }
 
-/* ── Render a single section's rich widgets + metric cards + activity chart ── */
+/* ── Reusable demo table component ── */
+function DemoTable({ columns, rows, color }) {
+  return (
+    <div style={{ overflowX: 'auto', maxHeight: 300, overflowY: 'auto' }}>
+      <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+            {columns.map((col, idx) => (
+              <th key={idx} style={{
+                padding: '8px 12px',
+                textAlign: 'left',
+                fontWeight: 600,
+                color: THEME.textMuted,
+                fontSize: 10,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                width: col.width,
+              }}>
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rIdx) => (
+            <tr key={rIdx} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+              {columns.map((col, cIdx) => (
+                <td key={cIdx} style={{
+                  padding: '8px 12px',
+                  color: THEME.textMain,
+                  borderBottom: `1px solid ${THEME.glassBorder}`,
+                }}>
+                  {row[col.key]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ── Code block component for SQL/preview ── */
+function CodeBlock({ code, color }) {
+  const lines = code.split('\n');
+  return (
+    <div style={{
+      background: THEME.glass,
+      border: `1px solid ${THEME.glassBorder}`,
+      borderRadius: 8,
+      padding: '12px 0',
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 10,
+      color: THEME.textDim,
+      overflowX: 'auto',
+      maxHeight: 180,
+      overflowY: 'auto',
+    }}>
+      {lines.map((line, idx) => (
+        <div key={idx} style={{ display: 'flex', lineHeight: '1.5' }}>
+          <span style={{ color: THEME.textMuted, paddingRight: 12, paddingLeft: 8, minWidth: 30, textAlign: 'right', userSelect: 'none' }}>{idx + 1}</span>
+          <span style={{ paddingRight: 8, whiteSpace: 'pre' }}>{line || ' '}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Severity/status badge for tables ── */
+function SeverityBadge({ label, severity }) {
+  const severityColors = {
+    success: THEME.success,
+    warning: THEME.warning,
+    danger: THEME.danger,
+    info: THEME.primary,
+  };
+  const color = severityColors[severity] || THEME.textMuted;
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '2px 6px',
+      borderRadius: 4,
+      background: `${color}20`,
+      color: color,
+      fontSize: 9,
+      fontWeight: 600,
+    }}>
+      {label}
+    </span>
+  );
+}
+
+/* ── Render section-specific content based on widgetId ── */
 function SectionContent({ section, db }) {
   const widgetId = mapSectionToWidgetId(section.id);
   const sw = getSectionWidgets(widgetId, db);
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
-        <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{section.name}</h2>
-        <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
-      </div>
+  const dbName = db.name.toLowerCase().replace(' ', '');
+  const key = dbName === 'sqlserver' ? 'mssql' : dbName;
 
-      {sw.pool && sw.workload && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
-          <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
-            <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
-          </Panel>
-          <Panel title="Workload Split" icon={BarChart3} accentColor={db.color}>
-            <DonutWidget {...sw.workload} color={db.color} size={100} innerRadius={34} outerRadius={46} />
-          </Panel>
-          <Panel title="Top Impacted Tables" icon={Database} accentColor={db.color}>
-            <HorizontalBarList items={sw.topTables} color={db.color} />
-          </Panel>
-        </div>
-      )}
+  // Section header
+  const headerNode = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
+      <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{section.name}</h2>
+      <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
+    </div>
+  );
+
+  // Core section — keep existing layout
+  const coreSection = sw.pool && sw.workload && (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
+          <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+        </Panel>
+        <Panel title="Workload Split" icon={BarChart3} accentColor={db.color}>
+          <DonutWidget {...sw.workload} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+        </Panel>
+        <Panel title="Top Impacted Tables" icon={Database} accentColor={db.color}>
+          <HorizontalBarList items={sw.topTables} color={db.color} />
+        </Panel>
+      </div>
 
       {sw.resources && (
         <div style={{ marginBottom: 16 }}>
@@ -1457,74 +1555,433 @@ function SectionContent({ section, db }) {
           </Panel>
         </div>
       )}
+    </div>
+  );
 
-      {sw.indexUsage && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-          <Panel title="Index Usage" icon={Gauge} accentColor={db.color}>
-            <DonutWidget {...sw.indexUsage} color={THEME.success} size={100} innerRadius={34} outerRadius={46} />
-          </Panel>
-          <Panel title="Top Slow Queries" icon={Clock} accentColor={THEME.warning}>
-            <HorizontalBarList items={sw.slowQueries} color={THEME.warning} />
-          </Panel>
-        </div>
-      )}
+  // Query section — SQL editor + slow queries table + index health
+  const querySection = (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Query Analysis" icon={Code} accentColor={db.color}>
+          <CodeBlock code={`SELECT o.order_id, o.created_at, COUNT(*) as items\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nWHERE o.created_at > NOW() - INTERVAL '7 days'\nGROUP BY o.order_id, o.created_at\nHAVING COUNT(*) > 5\nORDER BY items DESC LIMIT 100`} color={db.color} />
+        </Panel>
+      </div>
 
-      {sw.connPool && sw.replication && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 14, marginBottom: 16 }}>
-          <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
-            <DonutWidget {...sw.connPool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
-          </Panel>
-          <Panel title="Replication & Locks" icon={GitBranch} accentColor={db.color}>
-            <ReplicationTopology nodes={sw.replication} color={db.color} />
-          </Panel>
-        </div>
-      )}
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Slow Queries" icon={Clock} accentColor={THEME.warning}>
+          <DemoTable
+            columns={[
+              { key: 'query', label: 'Query', width: '50%' },
+              { key: 'avgDuration', label: 'Avg Duration', width: '25%' },
+              { key: 'calls', label: 'Calls', width: '25%' },
+            ]}
+            rows={DB_SLOW_QUERIES[key].slice(0, 3).map(q => ({
+              query: q.label.substring(0, 40) + '...',
+              avgDuration: q.display,
+              calls: Math.floor(Math.random() * 1000 + 100),
+            }))}
+            color={db.color}
+          />
+        </Panel>
+      </div>
 
-      {sw.distribution && !sw.pool && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14, marginBottom: 16 }}>
-          <Panel title="Object Distribution" icon={Layers} accentColor={db.color}>
-            <DonutWidget {...sw.distribution} color={db.color} size={110} innerRadius={38} outerRadius={50} />
-          </Panel>
-        </div>
-      )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <Panel title="Index Usage" icon={Gauge} accentColor={db.color}>
+          <DonutWidget
+            data={[
+              { name: 'Index Scan', value: DB_INDEX_STATS[key].indexPct, color: THEME.success, display: `${DB_INDEX_STATS[key].indexPct}%` },
+              { name: 'Seq Scan', value: DB_INDEX_STATS[key].seqPct, color: THEME.warning, display: `${DB_INDEX_STATS[key].seqPct}%` },
+            ]}
+            centerValue={`${DB_INDEX_STATS[key].indexPct}%`}
+            centerLabel="INDEX"
+            color={THEME.success}
+            size={100}
+            innerRadius={34}
+            outerRadius={46}
+          />
+        </Panel>
+        <Panel title="Index Health" icon={BarChart3} accentColor={db.color}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Hit Ratio</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.success }}>{DB_INDEX_STATS[key].indexPct}%</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Seq Scan Rate</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.warning }}>{DB_INDEX_STATS[key].seqPct}%</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Total Indexes</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: db.color }}>342</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: THEME.textMuted }}>Unused</span>
+              <SeverityBadge label="23" severity="warning" />
+            </div>
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
 
-      {sw.latencyData && !sw.pool && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-          <Panel title="Trace & Error Volume" icon={Eye} accentColor={db.color}
-            rightNode={<div style={{ display: 'flex', gap: 10 }}>
-              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Traces</span>
-              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />Errors</span>
-            </div>}>
-            <MultiLineChartWidget data={sw.latencyData} lines={[
-              { key: 'traces', color: db.color },
-              { key: 'errors', color: THEME.danger, dashed: true },
-            ]} color={db.color} />
-          </Panel>
-          <Panel title="Alert Distribution" icon={AlertTriangle} accentColor={THEME.warning}>
-            <HorizontalBarList items={sw.alertDist} color={db.color} />
-          </Panel>
-        </div>
-      )}
+  // Infrastructure section — KPI row + connection pool donut + replication + connection list
+  const infraSection = (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <Panel title="Buffer Hit Rate" icon={Zap} accentColor={db.color} noPad>
+          <div style={{ padding: 16, textAlign: 'center' }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: THEME.success }}>99.2%</div>
+            <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>Cache Efficiency</div>
+          </div>
+        </Panel>
+        <Panel title="WAL Rate" icon={Activity} accentColor={db.color} noPad>
+          <div style={{ padding: 16, textAlign: 'center' }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: db.color }}>24.6 MB/s</div>
+            <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>Current</div>
+          </div>
+        </Panel>
+        <Panel title="Replication Lag" icon={Network} accentColor={db.color} noPad>
+          <div style={{ padding: 16, textAlign: 'center' }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: THEME.success }}>0.3 ms</div>
+            <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>Primary</div>
+          </div>
+        </Panel>
+      </div>
 
-      {sw.opsData && (
-        <div style={{ marginBottom: 16 }}>
-          <Panel title="OPS / Second (Today)" icon={BarChart3} accentColor={db.color}
-            rightNode={<div style={{ display: 'flex', gap: 10 }}>
-              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Reads</span>
-              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: `${db.color}60`, borderRadius: 1 }} />Writes</span>
-            </div>}>
-            <MiniBarChart data={sw.opsData} color={db.color} />
-          </Panel>
-        </div>
-      )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 14, marginBottom: 16 }}>
+        <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
+          <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+        </Panel>
+        <Panel title="Replication Topology" icon={GitBranch} accentColor={db.color}>
+          <ReplicationTopology nodes={sw.replication} color={db.color} />
+        </Panel>
+      </div>
 
-      {sw.userDist && (
-        <div style={{ marginBottom: 16 }}>
-          <Panel title="User Distribution" icon={Shield} accentColor={db.color}>
-            <DonutWidget {...sw.userDist} color={db.color} size={110} innerRadius={38} outerRadius={50} />
-          </Panel>
-        </div>
-      )}
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Connection List" icon={Network} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'name', label: 'Name', width: '25%' },
+              { key: 'host', label: 'Host', width: '25%' },
+              { key: 'status', label: 'Status', width: '20%' },
+              { key: 'poolSize', label: 'Pool Size', width: '15%' },
+              { key: 'active', label: 'Active', width: '15%' },
+            ]}
+            rows={[
+              { name: 'primary', host: 'db-1.internal', status: <SeverityBadge label="active" severity="success" />, poolSize: '100', active: '42' },
+              { name: 'replica-1', host: 'db-2.internal', status: <SeverityBadge label="synced" severity="success" />, poolSize: '50', active: '8' },
+              { name: 'replica-2', host: 'db-3.internal', status: <SeverityBadge label="synced" severity="success" />, poolSize: '50', active: '12' },
+              { name: 'standby', host: 'db-4.internal', status: <SeverityBadge label="idle" severity="info" />, poolSize: '25', active: '0' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+      </div>
+    </div>
+  );
+
+  // Schema section — compliance score + schema objects donut + schema changes table
+  const schemaSection = (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Compliance Score" icon={Shield} accentColor={db.color} noPad>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 32, fontWeight: 700, color: THEME.success }}>88%</div>
+                <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>Overall Compliance</div>
+              </div>
+            </div>
+            <div style={{ height: 4, background: THEME.glassBorder, borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: THEME.success, width: '88%' }} />
+            </div>
+          </div>
+        </Panel>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <Panel title="Schema Objects" icon={Layers} accentColor={db.color}>
+          <DonutWidget
+            data={[
+              { name: 'Tables', value: DB_SCHEMA_OBJECTS[key].tables, color: db.color, display: `${DB_SCHEMA_OBJECTS[key].tables}` },
+              { name: 'Views', value: DB_SCHEMA_OBJECTS[key].views, color: THEME.success, display: `${DB_SCHEMA_OBJECTS[key].views}` },
+              { name: 'Functions', value: DB_SCHEMA_OBJECTS[key].functions, color: THEME.warning, display: `${DB_SCHEMA_OBJECTS[key].functions}` },
+            ]}
+            centerValue={`${DB_SCHEMA_OBJECTS[key].total}`}
+            centerLabel="OBJECTS"
+            color={db.color}
+            size={100}
+            innerRadius={34}
+            outerRadius={46}
+          />
+        </Panel>
+        <Panel title="Schema Changes" icon={Activity} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'migration', label: 'Migration', width: '40%' },
+              { key: 'timestamp', label: 'Timestamp', width: '35%' },
+              { key: 'status', label: 'Status', width: '25%' },
+            ]}
+            rows={[
+              { migration: 'v2.3.1_add_indexes', timestamp: '2h ago', status: <SeverityBadge label="applied" severity="success" /> },
+              { migration: 'v2.3.0_schema_ext', timestamp: '1d ago', status: <SeverityBadge label="applied" severity="success" /> },
+              { migration: 'v2.2.9_rollback', timestamp: '3d ago', status: <SeverityBadge label="applied" severity="success" /> },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Audit Log" icon={Eye} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'user', label: 'User', width: '20%' },
+              { key: 'action', label: 'Action', width: '25%' },
+              { key: 'timestamp', label: 'Timestamp', width: '25%' },
+              { key: 'target', label: 'Target', width: '30%' },
+            ]}
+            rows={[
+              { user: 'admin', action: 'CREATE TABLE', timestamp: '2h ago', target: 'events_backup' },
+              { user: 'dev_user', action: 'DROP INDEX', timestamp: '4h ago', target: 'orders.idx_status' },
+              { user: 'admin', action: 'GRANT', timestamp: '1d ago', target: 'readonly_role' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+      </div>
+    </div>
+  );
+
+  // Observability section — metric cards with sparklines + active alerts + log patterns
+  const observabilitySection = (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <Panel title="Trace Volume" icon={Activity} accentColor={db.color} noPad>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: db.color }}>4.5K</div>
+                <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 2 }}>traces/sec</div>
+              </div>
+              <MiniSparkline data={[2000, 3500, 4200, 4100, 4500, 4200, 4600]} color={db.color} width={44} height={16} />
+            </div>
+          </div>
+        </Panel>
+        <Panel title="Error Rate" icon={AlertTriangle} accentColor={THEME.danger} noPad>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: THEME.success }}>0.02%</div>
+                <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 2 }}>of requests</div>
+              </div>
+              <MiniSparkline data={[0.05, 0.04, 0.03, 0.02, 0.02, 0.03, 0.02]} color={THEME.success} width={44} height={16} />
+            </div>
+          </div>
+        </Panel>
+        <Panel title="Alert Count" icon={AlertTriangle} accentColor={THEME.warning} noPad>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: THEME.warning }}>3</div>
+                <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 2 }}>active alerts</div>
+              </div>
+              <MiniSparkline data={[0, 1, 2, 2, 3, 3, 3]} color={THEME.warning} width={44} height={16} />
+            </div>
+          </div>
+        </Panel>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
+          <DemoTable
+            columns={[
+              { key: 'severity', label: 'Severity', width: '20%' },
+              { key: 'message', label: 'Message', width: '40%' },
+              { key: 'timestamp', label: 'Timestamp', width: '25%' },
+              { key: 'status', label: 'Status', width: '15%' },
+            ]}
+            rows={[
+              { severity: <SeverityBadge label="warning" severity="warning" />, message: 'High CPU usage', timestamp: '12m ago', status: 'firing' },
+              { severity: <SeverityBadge label="info" severity="info" />, message: 'Checkpoint running', timestamp: '1h ago', status: 'resolved' },
+              { severity: <SeverityBadge label="info" severity="info" />, message: 'Autovacuum active', timestamp: '2h ago', status: 'resolved' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Log Patterns" icon={Eye} accentColor={db.color}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[
+              { pattern: 'connection timeout', count: 24, trend: [5, 8, 12, 15, 18, 22, 24] },
+              { pattern: 'query slow', count: 156, trend: [120, 128, 135, 142, 150, 153, 156] },
+              { pattern: 'index scan full table', count: 89, trend: [45, 52, 61, 70, 78, 84, 89] },
+            ].map((entry, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                <div>
+                  <div style={{ fontSize: 11, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{entry.pattern}</div>
+                  <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 2 }}>Count: {entry.count}</div>
+                </div>
+                <MiniSparkline data={entry.trend} color={db.color} width={50} height={20} />
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+
+  // Developer tools section — SQL console + API endpoints + recent queries
+  const devSection = (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="SQL Console" icon={Code} accentColor={db.color}>
+          <CodeBlock code={`-- Find top performing queries\nSELECT query_id, total_time, calls, mean_time\nFROM pg_stat_statements\nORDER BY mean_time DESC\nLIMIT 10;`} color={db.color} />
+        </Panel>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="API Endpoints" icon={Globe} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'method', label: 'Method', width: '15%' },
+              { key: 'path', label: 'Path', width: '40%' },
+              { key: 'avgResponse', label: 'Avg Response', width: '25%' },
+              { key: 'callsHr', label: 'Calls/hr', width: '20%' },
+            ]}
+            rows={[
+              { method: <span style={{ color: THEME.success, fontWeight: 600 }}>GET</span>, path: '/api/orders', avgResponse: '12.3ms', callsHr: '8.2K' },
+              { method: <span style={{ color: THEME.warning, fontWeight: 600 }}>POST</span>, path: '/api/orders', avgResponse: '45.2ms', callsHr: '2.1K' },
+              { method: <span style={{ color: THEME.success, fontWeight: 600 }}>GET</span>, path: '/api/users', avgResponse: '8.5ms', callsHr: '15.4K' },
+              { method: <span style={{ color: db.color, fontWeight: 600 }}>PUT</span>, path: '/api/users/:id', avgResponse: '32.1ms', callsHr: '1.2K' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Recent Queries" icon={Activity} accentColor={db.color}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { sql: 'SELECT * FROM orders WHERE...', timestamp: '2m ago', duration: '23.4ms' },
+              { sql: 'UPDATE inventory SET qty...', timestamp: '5m ago', duration: '108.2ms' },
+              { sql: 'DELETE FROM audit_log WHERE...', timestamp: '12m ago', duration: '2.1s' },
+            ].map((q, idx) => (
+              <div key={idx} style={{ borderLeft: `3px solid ${db.color}`, paddingLeft: 12 }}>
+                <div style={{ fontSize: 10, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{q.sql}</div>
+                <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 4, display: 'flex', gap: 12 }}>
+                  <span>{q.timestamp}</span>
+                  <span style={{ color: db.color }}>{q.duration}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+
+  // Admin section — users table + backup schedule + scheduled tasks + user distribution
+  const adminSection = (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="Users & Roles" icon={Shield} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'username', label: 'Username', width: '25%' },
+              { key: 'role', label: 'Role', width: '20%' },
+              { key: 'lastLogin', label: 'Last Login', width: '25%' },
+              { key: 'status', label: 'Status', width: '30%' },
+            ]}
+            rows={[
+              { username: 'admin', role: <SeverityBadge label="admin" severity="danger" />, lastLogin: '1h ago', status: <SeverityBadge label="active" severity="success" /> },
+              { username: 'dev_user', role: <SeverityBadge label="developer" severity="info" />, lastLogin: '4m ago', status: <SeverityBadge label="active" severity="success" /> },
+              { username: 'readonly', role: <SeverityBadge label="read-only" severity="info" />, lastLogin: '1d ago', status: <SeverityBadge label="idle" severity="info" /> },
+              { username: 'api_service', role: <SeverityBadge label="service" severity="warning" />, lastLogin: '5m ago', status: <SeverityBadge label="active" severity="success" /> },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <Panel title="Backup Schedule" icon={HardDrive} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'name', label: 'Name', width: '30%' },
+              { key: 'schedule', label: 'Schedule', width: '30%' },
+              { key: 'lastRun', label: 'Last Run', width: '25%' },
+              { key: 'status', label: 'Status', width: '15%' },
+            ]}
+            rows={[
+              { name: 'daily-full', schedule: 'Daily 2AM', lastRun: '1h ago', status: <SeverityBadge label="ok" severity="success" /> },
+              { name: 'hourly-inc', schedule: 'Every hour', lastRun: '12m ago', status: <SeverityBadge label="ok" severity="success" /> },
+              { name: 'weekly-arch', schedule: 'Sun 3AM', lastRun: '2d ago', status: <SeverityBadge label="ok" severity="success" /> },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <Panel title="Scheduled Tasks" icon={Activity} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'task', label: 'Task', width: '35%' },
+              { key: 'interval', label: 'Interval', width: '30%' },
+              { key: 'nextRun', label: 'Next Run', width: '35%' },
+            ]}
+            rows={[
+              { task: 'autovacuum', interval: 'Continuous', nextRun: 'Active' },
+              { task: 'analyze', interval: '3 hours', nextRun: '42m' },
+              { task: 'reindex', interval: 'Daily', nextRun: '18h' },
+              { task: 'stats_check', interval: '15 min', nextRun: '3m' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Panel title="User Distribution" icon={Shield} accentColor={db.color}>
+          <DonutWidget {...sw.userDist} color={db.color} size={110} innerRadius={38} outerRadius={50} />
+        </Panel>
+      </div>
+    </div>
+  );
+
+  // Determine which section to render
+  let middleContent;
+  switch (widgetId) {
+    case 'core':
+      middleContent = coreSection;
+      break;
+    case 'query':
+      middleContent = querySection;
+      break;
+    case 'infra':
+      middleContent = infraSection;
+      break;
+    case 'schema':
+      middleContent = schemaSection;
+      break;
+    case 'observability':
+      middleContent = observabilitySection;
+      break;
+    case 'dev':
+      middleContent = devSection;
+      break;
+    case 'admin':
+      middleContent = adminSection;
+      break;
+    default:
+      middleContent = coreSection;
+  }
+
+  return (
+    <div>
+      {headerNode}
+      {middleContent}
 
       <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
         {section.tabs.map((tab, idx) => (
