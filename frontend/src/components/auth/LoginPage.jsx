@@ -23,7 +23,7 @@ const DB_TYPES = [
 ];
 
 const NODE_DEFS = {
-    primary: { label: 'VIGIL',           sub: 'Monitor',      color: '#00D4FF', icon: 'Activity',  r: 16 },
+    primary: { label: 'Monitor',          sub: 'Core',          color: '#00D4FF', icon: 'Activity',  r: 16 },
     hub0:    { label: 'PostgreSQL',      sub: 'RDBMS',        color: '#6495ED', icon: 'Database',  r: 10 },
     hub1:    { label: 'MySQL',           sub: 'RDBMS',        color: '#00B4D8', icon: 'Server',    r: 10 },
     hub2:    { label: 'SQL Server',      sub: 'Enterprise',   color: '#F97316', icon: 'HardDrive', r: 10 },
@@ -396,8 +396,8 @@ const LeftPanel = () => {
                     <Shield size={20} color="#fff" strokeWidth={1.8}/>
                 </div>
                 <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontBody, letterSpacing: '2px', lineHeight: 1, textTransform: 'uppercase' }}>VIGIL</div>
-                    <div style={{ fontSize: 8, color: 'rgba(0,212,255,.6)', fontFamily: THEME.fontMono, marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Database Intelligence</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: THEME.textMain, fontFamily: THEME.fontBody, letterSpacing: '-.2px', lineHeight: 1 }}>Database Monitor</div>
+                    <div style={{ fontSize: 8, color: 'rgba(0,212,255,.6)', fontFamily: THEME.fontMono, marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Multi-Engine Intelligence</div>
                 </div>
             </div>
 
@@ -479,7 +479,7 @@ const LeftPanel = () => {
 //  LOGO EMBLEM
 // ─────────────────────────────────────────────────────────────────────────────
 const LogoEmblem = ({ success }) => {
-    const S = 80, C = 40, R1 = 34, R2 = 25, R3 = 16;
+    const S = 64, C = 32, R1 = 27, R2 = 20, R3 = 13;
     const c1 = success ? '#22c55e' : '#00D4FF', c2 = success ? '#22c55e' : '#2EE89C';
     return (
         <div style={{ position: 'relative', width: S, height: S, animation: 'floatUp 5s ease-in-out infinite' }}>
@@ -502,13 +502,13 @@ const LogoEmblem = ({ success }) => {
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{
-                    width: 42, height: 42, borderRadius: 13,
+                    width: 34, height: 34, borderRadius: 10,
                     background: success ? 'linear-gradient(135deg,#22c55e,#14b8a6)' : 'linear-gradient(135deg,#0099CC,#00D4FF)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: success ? '0 6px 24px rgba(34,197,94,.55), 0 0 0 1px rgba(255,255,255,.10) inset' : '0 6px 24px rgba(0,212,255,.45), 0 0 0 1px rgba(255,255,255,.10) inset',
                     transition: 'all .9s cubic-bezier(.34,1.56,.64,1)',
                 }}>
-                    {success ? <CheckCircle size={20} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/> : <Shield size={20} color="#fff" strokeWidth={1.8}/>}
+                    {success ? <CheckCircle size={17} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/> : <Shield size={17} color="#fff" strokeWidth={1.8}/>}
                 </div>
             </div>
         </div>
@@ -551,10 +551,10 @@ const InputField = React.forwardRef(function InputField(
     const hasVal = value.length > 0;
     return (
         <div>
-            <label style={{ display: 'block', marginBottom: 7, fontSize: 9, fontWeight: 600, color: focused ? '#00D4FF' : THEME.textMuted, textTransform: 'uppercase', letterSpacing: '1.6px', fontFamily: THEME.fontMono, transition: 'color .2s' }}>{label}</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: focused ? 'rgba(0,212,255,.06)' : THEME.surface, border: `1px solid ${focused ? 'rgba(0,212,255,.50)' : THEME.grid}`, borderRadius: 12, padding: '0 14px', transition: 'all .25s', boxShadow: focused ? '0 0 0 4px rgba(0,212,255,.09)' : 'none' }}>
+            <label style={{ display: 'block', marginBottom: 5, fontSize: 9, fontWeight: 600, color: focused ? '#00D4FF' : THEME.textMuted, textTransform: 'uppercase', letterSpacing: '1.6px', fontFamily: THEME.fontMono, transition: 'color .2s' }}>{label}</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: focused ? 'rgba(0,212,255,.06)' : THEME.surface, border: `1px solid ${focused ? 'rgba(0,212,255,.50)' : THEME.grid}`, borderRadius: 10, padding: '0 12px', transition: 'all .25s', boxShadow: focused ? '0 0 0 4px rgba(0,212,255,.09)' : 'none' }}>
                 <Icon size={14} color={focused ? '#00D4FF' : hasVal ? THEME.textMuted : THEME.textDim} style={{ flexShrink: 0, transition: 'color .2s' }}/>
-                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input" style={{ flex: 1, padding: '11px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13.5, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}/>
+                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input" style={{ flex: 1, padding: '9px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}/>
                 {rightEl}
             </div>
         </div>
@@ -665,7 +665,7 @@ const LoginPage = ({ onDemoLogin }) => {
             <GlobalStyles/>
             <LeftPanel/>
 
-            <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '24px 46px', background: THEME.surfaceHover }}>
+            <div style={{ width: 480, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: '16px 40px', background: THEME.surfaceHover }}>
                 {/* Background effects */}
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', top: '-5%', right: '-25%', width: 420, height: 420, background: 'radial-gradient(circle, rgba(0,212,255,.065) 0%, transparent 65%)', filter: 'blur(52px)', animation: 'aurora 14s ease-in-out infinite' }}/>
@@ -678,28 +678,28 @@ const LoginPage = ({ onDemoLogin }) => {
                 <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(0,212,255,.08) 30%, rgba(0,212,255,.13) 50%, rgba(0,212,255,.08) 70%, transparent)' }}/>
 
                 <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ marginBottom: 12, animation: 'fadeUp .7s ease .1s backwards' }}>
+                    <div style={{ marginBottom: 6, animation: 'fadeUp .7s ease .1s backwards' }}>
                         <LogoEmblem success={false}/>
                     </div>
 
                     <div style={{ textAlign: 'center', marginBottom: 2, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
-                        <h1 style={{ fontSize: 30, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>Welcome to VIGIL</h1>
-                        <p style={{ color: THEME.textMuted, margin: '9px 0 0', fontSize: 13, lineHeight: 1.55, fontFamily: THEME.fontBody, fontWeight: 300 }}>Sign in to your database command center</p>
+                        <h1 style={{ fontSize: 26, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>Welcome back</h1>
+                        <p style={{ color: THEME.textMuted, margin: '6px 0 0', fontSize: 12.5, lineHeight: 1.55, fontFamily: THEME.fontBody, fontWeight: 300 }}>Sign in to your database command center</p>
                     </div>
 
                     {/* Database chips */}
-                    <div style={{ margin: '10px 0 8px', animation: 'fadeUp .7s ease .22s backwards' }}>
+                    <div style={{ margin: '7px 0 5px', animation: 'fadeUp .7s ease .22s backwards' }}>
                         <DbTypeChips/>
                     </div>
 
-                    <div style={{ margin: '4px 0 12px', display: 'flex', alignItems: 'center', gap: 12, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
+                    <div style={{ margin: '2px 0 8px', display: 'flex', alignItems: 'center', gap: 12, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${THEME.grid})` }}/>
                         <ServerStatus status={serverStatus}/>
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${THEME.grid})` }}/>
                     </div>
 
                     {/* Login card */}
-                    <div style={{ width: '100%', padding: '20px 26px 16px', borderRadius: 22, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: THEME.shadowMd, transition: 'border-color .3s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', padding: '16px 22px 12px', borderRadius: 18, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: THEME.shadowMd, transition: 'border-color .3s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: '6%', right: '6%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(0,212,255,.42), transparent)', animation: 'edgePulse 3.5s ease-in-out infinite' }}/>
                         <Corners color='rgba(0,212,255,.16)'/>
 
@@ -710,7 +710,7 @@ const LoginPage = ({ onDemoLogin }) => {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading}/>
                             <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading}
                                         rightEl={
@@ -733,7 +733,7 @@ const LoginPage = ({ onDemoLogin }) => {
                             </div>
 
                             <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
-                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? '1px solid rgba(0,212,255,.32)' : `1px solid ${THEME.grid}`, padding: '14px 20px', borderRadius: 13, color: btnTextColor, fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
+                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? '1px solid rgba(0,212,255,.32)' : `1px solid ${THEME.grid}`, padding: '12px 20px', borderRadius: 12, color: btnTextColor, fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
                                 {canSubmit && !authLoading && (
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%)', backgroundSize: '200% auto', animation: btnHover ? 'shimmer 1.2s ease forwards' : 'none', borderRadius: 13 }}/>
                                 )}
@@ -746,7 +746,7 @@ const LoginPage = ({ onDemoLogin }) => {
                             </button>
 
                             {/* SSO */}
-                            <div style={{ display: 'flex', alignItems: 'center', margin: '6px 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', margin: '3px 0' }}>
                                 <div style={{ flex: 1, height: 1, background: THEME.grid }} />
                                 <span style={{ padding: '0 10px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, textTransform: 'uppercase' }}>or</span>
                                 <div style={{ flex: 1, height: 1, background: THEME.grid }} />
@@ -755,7 +755,7 @@ const LoginPage = ({ onDemoLogin }) => {
                             <button type="button"
                                     onClick={() => loginWithSSO('okta')}
                                     style={{
-                                        width: '100%', padding: '12px 20px', borderRadius: 13,
+                                        width: '100%', padding: '10px 20px', borderRadius: 12,
                                         background: THEME.surface, border: `1px solid ${THEME.grid}`,
                                         color: THEME.textMain, fontWeight: 600, fontSize: 13, fontFamily: THEME.fontBody,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -768,7 +768,7 @@ const LoginPage = ({ onDemoLogin }) => {
                             </button>
 
                             {/* Demo Mode */}
-                            <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', margin: '2px 0 0' }}>
                                 <div style={{ flex: 1, height: 1, background: THEME.grid }} />
                                 <span style={{ padding: '0 10px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, textTransform: 'uppercase' }}>or explore</span>
                                 <div style={{ flex: 1, height: 1, background: THEME.grid }} />
@@ -777,7 +777,7 @@ const LoginPage = ({ onDemoLogin }) => {
                             <button type="button"
                                     onClick={onDemoLogin}
                                     style={{
-                                        width: '100%', padding: '12px 20px', borderRadius: 13,
+                                        width: '100%', padding: '10px 20px', borderRadius: 12,
                                         background: 'linear-gradient(135deg, rgba(46,232,156,.08) 0%, rgba(0,212,255,.08) 100%)',
                                         border: '1px solid rgba(46,232,156,.25)',
                                         color: '#2EE89C', fontWeight: 600, fontSize: 13, fontFamily: THEME.fontBody,
@@ -791,16 +791,16 @@ const LoginPage = ({ onDemoLogin }) => {
                             </button>
                         </form>
 
-                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
-                            <span style={{ fontSize: 10.5, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em', lineHeight: 1.6, display: 'block' }}>
+                        <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
+                            <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em', lineHeight: 1.5, display: 'block' }}>
                                 Enterprise SSO enabled &middot; Contact IT for access provisioning
                             </span>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
+                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
                         <Lock size={9} color={THEME.textMuted}/>
-                        <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted &middot; VIGIL v3.0</span>
+                        <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted &middot; v3.0</span>
                     </div>
                 </div>
 
