@@ -16,6 +16,8 @@ const DEMO_ROUTES = [
 
     // ── ConnectionContext ────────────────────────────────────────────────────
     [/\/api\/connections\/active/, () => ({ connectionId: 'demo-conn-1' })],
+    [/\/api\/connections\/[^/]+\/test/, () => ({ success: true })],
+    [/\/api\/connections\/[^/]+\/default/, () => ({ success: true })],
     [/\/api\/connections\/[^/]+\/switch/, () => ({ success: true })],
     [/\/api\/connections$/, () => ([
         { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'vigil_prod', isDefault: true, status: 'connected', created_at: ago(43200) },
@@ -147,6 +149,7 @@ const DEMO_ROUTES = [
             { alert_group: 'Replication Lag + Disk IO', alerts: ['Replication lag 150MB', 'High write IOPS'], confidence: 0.78, root_cause: 'High write workload saturating IO' },
         ],
     })],
+    [/\/api\/alerts\/[^/]+\/acknowledge/, () => ({ success: true })],
     [/\/api\/alerts\/bulk-acknowledge/, () => ({ success: true })],
     [/\/api\/alerts\/recent/, () => ({ alerts: [] })],
     [/\/api\/alerts/, () => ({
@@ -200,7 +203,109 @@ const DEMO_ROUTES = [
         bloat_pct: rand(5, 25), wasted_bytes: Math.floor(rand(1000000, 500000000)),
     }))],
 
-    // ── Tables ───────────────────────────────────────────────────────────────
+    // ── Databases (for TableAnalytics filter) ──────────────────────────────
+    [/\/api\/databases$/, () => ([
+        { name: 'vigil_prod', owner: 'app_user', size: '4.2 GB', tables: 42, encoding: 'UTF8' },
+        { name: 'vigil_analytics', owner: 'analytics_user', size: '1.8 GB', tables: 18, encoding: 'UTF8' },
+        { name: 'postgres', owner: 'postgres', size: '8.5 MB', tables: 12, encoding: 'UTF8' },
+    ])],
+
+    // ── Tables (TableAnalytics sub-endpoints) ──────────────────────────────
+    [/\/api\/tables\/stats/, () => Array.from({ length: 12 }, (_, i) => ({
+        name: pick(['users', 'orders', 'products', 'events', 'sessions', 'audit_log', 'notifications', 'payments', 'inventory', 'categories']),
+        schema: 'public', db: 'vigil_prod',
+        liveRows: Math.floor(rand(5000, 800000)), deadRows: Math.floor(rand(0, 60000)),
+        deadPct: rand(0, 15), rows: Math.floor(rand(5000, 800000)),
+        seqScans: Math.floor(rand(0, 300)), idxScans: Math.floor(rand(500, 120000)),
+        inserts: Math.floor(rand(100, 50000)), updates: Math.floor(rand(50, 20000)),
+        vacuumCount: Math.floor(rand(10, 500)), analyzeCount: Math.floor(rand(10, 300)),
+        lastVacuum: i < 8 ? ago(rand(60, 10080)) : null,
+        lastAutovacuum: i < 10 ? ago(rand(30, 4320)) : null,
+        lastAnalyze: ago(rand(30, 2880)),
+        lastAutoanalyze: ago(rand(60, 4320)),
+        hotPct: rand(0, 35),
+    }))],
+    [/\/api\/tables\/columns/, () => [
+        { tablename: 'users', schema: 'public', name: 'id', nullPct: 0, distinct: -1, topValues: null },
+        { tablename: 'users', schema: 'public', name: 'email', nullPct: 0.2, distinct: -0.98, topValues: null },
+        { tablename: 'users', schema: 'public', name: 'created_at', nullPct: 0, distinct: -0.95, topValues: null },
+        { tablename: 'users', schema: 'public', name: 'status', nullPct: 0, distinct: 4, topValues: ['active', 'inactive', 'suspended', 'pending'] },
+        { tablename: 'orders', schema: 'public', name: 'id', nullPct: 0, distinct: -1, topValues: null },
+        { tablename: 'orders', schema: 'public', name: 'user_id', nullPct: 0, distinct: 45200, topValues: null },
+        { tablename: 'orders', schema: 'public', name: 'status', nullPct: 0, distinct: 5, topValues: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] },
+        { tablename: 'orders', schema: 'public', name: 'total_amount', nullPct: 0, distinct: 8900, topValues: null },
+        { tablename: 'events', schema: 'public', name: 'type', nullPct: 0, distinct: 12, topValues: ['page_view', 'click', 'purchase', 'signup', 'login'] },
+        { tablename: 'events', schema: 'public', name: 'payload', nullPct: 8.5, distinct: -0.99, topValues: null },
+        { tablename: 'sessions', schema: 'public', name: 'token', nullPct: 0, distinct: -1, topValues: null },
+        { tablename: 'sessions', schema: 'public', name: 'expires_at', nullPct: 0, distinct: -0.85, topValues: null },
+    ]],
+    [/\/api\/tables\/toast/, () => [
+        { table: 'events', toastTable: 'pg_toast_16485', toastSize: '892 MB', deadPct: 4.2 },
+        { table: 'audit_log', toastTable: 'pg_toast_16512', toastSize: '345 MB', deadPct: 1.8 },
+        { table: 'notifications', toastTable: 'pg_toast_16538', toastSize: '128 MB', deadPct: 0.5 },
+    ]],
+    [/\/api\/tables\/temp/, () => [
+        { app: 'web-api', user: 'app_user', pid: 10234, size: '24 MB', age_sec: 180 },
+        { app: 'analytics-worker', user: 'analytics_user', pid: 10567, size: '156 MB', age_sec: 3600 },
+        { app: 'migration-tool', user: 'admin', pid: 10890, size: '8 MB', age_sec: 45 },
+    ]],
+    [/\/api\/tables\/dependencies/, () => [
+        { name: 'orders', refsTo: ['users', 'products'], refsBy: ['order_items', 'payments', 'shipments'] },
+        { name: 'users', refsTo: [], refsBy: ['orders', 'sessions', 'audit_log', 'notifications'] },
+        { name: 'products', refsTo: ['categories'], refsBy: ['orders', 'inventory', 'reviews'] },
+        { name: 'payments', refsTo: ['orders'], refsBy: ['refunds'] },
+        { name: 'sessions', refsTo: ['users'], refsBy: [] },
+        { name: 'events', refsTo: ['users'], refsBy: [] },
+    ]],
+    [/\/api\/tables\/indexes/, () => Array.from({ length: 10 }, (_, i) => ({
+        name: pick(['idx_users_email', 'idx_orders_created_at', 'idx_orders_user_id', 'idx_events_type_created', 'idx_sessions_token', 'idx_products_sku', 'idx_payments_order_id', 'idx_audit_timestamp', 'pk_users', 'pk_orders']),
+        schema: 'public',
+        tableName: pick(['users', 'orders', 'events', 'sessions', 'products', 'payments']),
+        scans: Math.floor(rand(0, 80000)),
+        sizeBytes: Math.floor(rand(500000, 200000000)),
+        size: `${rand(0.5, 190)} MB`,
+        type: pick(['btree', 'btree', 'btree', 'hash', 'gin']),
+        definition: pick(['CREATE INDEX idx ON users USING btree (email)', 'CREATE INDEX idx ON orders USING btree (created_at DESC)', 'CREATE UNIQUE INDEX pk ON users USING btree (id)']),
+        isPrimary: i < 2,
+        isUnique: i < 3,
+    }))],
+    [/\/api\/tables\/sizes/, () => [
+        { name: 'events', schema: 'public', heapBytes: 2684354560, indexBytes: 536870912, toastBytes: 935329792, bloatPct: 8.2 },
+        { name: 'orders', schema: 'public', heapBytes: 1073741824, indexBytes: 268435456, toastBytes: 0, bloatPct: 5.1 },
+        { name: 'users', schema: 'public', heapBytes: 536870912, indexBytes: 134217728, toastBytes: 0, bloatPct: 2.3 },
+        { name: 'sessions', schema: 'public', heapBytes: 268435456, indexBytes: 67108864, toastBytes: 0, bloatPct: 12.5 },
+        { name: 'audit_log', schema: 'public', heapBytes: 805306368, indexBytes: 201326592, toastBytes: 361758720, bloatPct: 3.7 },
+        { name: 'products', schema: 'public', heapBytes: 134217728, indexBytes: 33554432, toastBytes: 0, bloatPct: 1.1 },
+        { name: 'notifications', schema: 'public', heapBytes: 402653184, indexBytes: 100663296, toastBytes: 134217728, bloatPct: 6.8 },
+    ]],
+    [/\/api\/tables\/queries/, () => [
+        { query: 'SELECT * FROM users WHERE email = $1', calls: 245000, meanMs: 0.8 },
+        { query: 'SELECT o.*, u.name FROM orders o JOIN users u ON o.user_id = u.id WHERE o.status = $1', calls: 89000, meanMs: 12.4 },
+        { query: 'INSERT INTO events (type, user_id, payload) VALUES ($1, $2, $3)', calls: 567000, meanMs: 1.2 },
+        { query: 'UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2', calls: 34000, meanMs: 3.8 },
+        { query: 'DELETE FROM sessions WHERE expires_at < NOW()', calls: 8900, meanMs: 45.2 },
+        { query: 'SELECT count(*) FROM events WHERE type = $1 AND created_at > $2', calls: 12000, meanMs: 280.5 },
+    ]],
+    [/\/api\/tables\/locks/, () => [
+        { pid: 10234, lockType: 'relation', mode: 'AccessShareLock', granted: true, blocked: false, waiting: false, relation: 'users', query: 'SELECT * FROM users WHERE id = $1' },
+        { pid: 10567, lockType: 'relation', mode: 'RowExclusiveLock', granted: true, blocked: false, waiting: false, relation: 'orders', query: 'UPDATE orders SET status = $1' },
+        { pid: 10890, lockType: 'transactionid', mode: 'ShareLock', granted: false, blocked: true, waiting: true, relation: 'orders', query: 'UPDATE orders SET total = $1 WHERE id = $2' },
+    ]],
+    [/\/api\/tables\/autovacuum/, () => [
+        { name: 'events', schema: 'public', lastVacuum: ago(180), lastAutovacuum: ago(45), vacuumCount: 342, analyzeCount: 285 },
+        { name: 'orders', schema: 'public', lastVacuum: ago(360), lastAutovacuum: ago(90), vacuumCount: 288, analyzeCount: 240 },
+        { name: 'users', schema: 'public', lastVacuum: ago(720), lastAutovacuum: ago(120), vacuumCount: 150, analyzeCount: 200 },
+        { name: 'sessions', schema: 'public', lastVacuum: null, lastAutovacuum: ago(30), vacuumCount: 500, analyzeCount: 480 },
+        { name: 'audit_log', schema: 'public', lastVacuum: ago(1440), lastAutovacuum: ago(60), vacuumCount: 120, analyzeCount: 100 },
+        { name: 'notifications', schema: 'public', lastVacuum: null, lastAutovacuum: ago(240), vacuumCount: 85, analyzeCount: 90 },
+    ]],
+    [/\/api\/tables\/connections/, () => [
+        { appName: 'web-api', useName: 'app_user', datName: 'vigil_prod', state: 'active', count: 18 },
+        { appName: 'worker', useName: 'app_user', datName: 'vigil_prod', state: 'idle', count: 12 },
+        { appName: 'cron', useName: 'app_user', datName: 'vigil_prod', state: 'idle', count: 3 },
+        { appName: 'analytics-worker', useName: 'analytics_user', datName: 'vigil_analytics', state: 'active', count: 5 },
+        { appName: 'admin-panel', useName: 'admin', datName: 'vigil_prod', state: 'idle', count: 2 },
+    ]],
     [/\/api\/table-stats/, () => Array.from({ length: 8 }, () => ({
         schemaname: 'public', relname: pick(['users', 'orders', 'products', 'events', 'sessions']),
         n_live_tup: Math.floor(rand(1000, 500000)), n_dead_tup: Math.floor(rand(0, 50000)),
@@ -233,14 +338,34 @@ const DEMO_ROUTES = [
     [/\/api\/replication/, () => ({ replicas: [{ client_addr: '10.0.2.10', state: 'streaming', replay_lag: '00:00:00.150', sync_state: 'async' }] })],
 
     // ── Vacuum / Maintenance (object) ────────────────────────────────────────
+    [/\/api\/vacuum\/dead-tuple-rate/, () => ({
+        tables: Array.from({ length: 8 }, () => ({
+            relname: pick(['users', 'orders', 'products', 'events', 'sessions', 'audit_log', 'notifications']),
+            n_dead_tup: Math.floor(rand(500, 80000)),
+            n_live_tup: Math.floor(rand(10000, 600000)),
+            dead_pct: rand(0.5, 18),
+            last_autovacuum: pick(['2h ago', '45m ago', '6h ago', '1d ago', '12h ago', 'never']),
+        })),
+    })],
     [/\/api\/maintenance\/vacuum-stats/, () => ({
         tables: Array.from({ length: 10 }, (_, i) => ({
             schemaname: 'public', relname: pick(['users', 'orders', 'products', 'events', 'sessions']),
             n_live_tup: Math.floor(rand(1000, 500000)), n_dead_tup: Math.floor(rand(0, 50000)),
-            dead_ratio: rand(0, 25), last_vacuum: i < 7 ? ago(rand(60, 10080)) : null,
+            dead_pct: rand(0, 25), dead_ratio: rand(0, 25),
+            last_vacuum: i < 7 ? ago(rand(60, 10080)) : null,
             last_autovacuum: i < 8 ? ago(rand(30, 4320)) : null, last_analyze: ago(rand(60, 7200)),
         })),
-        settings: { autovacuum: 'on', vacuum_cost_delay: 20, vacuum_cost_limit: 200 },
+        workers: [
+            { table_name: 'events', datname: 'vigil_prod', phase: 'scanning heap', heap_blks_total: 50000, heap_blks_scanned: 23000 },
+        ],
+        settings: [
+            { name: 'autovacuum', setting: 'on' },
+            { name: 'autovacuum_vacuum_cost_delay', setting: '20ms' },
+            { name: 'autovacuum_vacuum_cost_limit', setting: '200' },
+            { name: 'autovacuum_naptime', setting: '60s' },
+            { name: 'autovacuum_vacuum_threshold', setting: '50' },
+            { name: 'autovacuum_vacuum_scale_factor', setting: '0.2' },
+        ],
     })],
     [/\/api\/maintenance\/vacuum/, () => ({ success: true, message: 'VACUUM ANALYZE completed' })],
     [/\/api\/maintenance/, () => ({ tables: Array.from({ length: 8 }, () => ({ schemaname: 'public', relname: pick(['users', 'orders']), n_dead_tup: Math.floor(rand(0, 50000)), last_autovacuum: ago(rand(30, 4320)) })) })],
@@ -310,11 +435,20 @@ const DEMO_ROUTES = [
         status: 'available', instance: 'db.r6g.xlarge',
     })],
 
-    // ── Tasks (array) ────────────────────────────────────────────────────────
-    [/\/api\/tasks/, () => ([
-        { id: 'task-1', name: 'Daily VACUUM ANALYZE', schedule: '0 2 * * *', last_run: ago(180), next_run: ago(-1260), status: 'success', duration: '12m 30s', enabled: true },
-        { id: 'task-2', name: 'Reindex concurrently', schedule: '0 3 * * 0', last_run: ago(7200), next_run: ago(-2880), status: 'success', duration: '45m 12s', enabled: true },
-        { id: 'task-3', name: 'Cleanup expired sessions', schedule: '*/30 * * * *', last_run: ago(15), next_run: ago(-15), status: 'success', duration: '8s', enabled: true },
+    // ── Tasks (array — DBATaskSchedulerTab) ──────────────────────────────────
+    [/\/api\/tasks\/reset/, () => ({ success: true, message: 'All tasks reset to pending' })],
+    [/\/api\/tasks\/[^/]+$/, () => ({ success: true, message: 'Task updated' })],
+    [/\/api\/tasks$/, () => ([
+        { id: 'task-1', title: 'Run VACUUM ANALYZE on all tables', category: 'Daily', priority: 'high', recurrence: 'daily', done: true, assignee: 'dba_admin', dueDate: ago(-1440), notes: 'Essential for maintaining query performance after heavy writes' },
+        { id: 'task-2', title: 'Review and terminate idle connections', category: 'Daily', priority: 'medium', recurrence: 'daily', done: false, assignee: 'dba_admin', dueDate: ago(-60), notes: 'Kill connections idle for more than 30 minutes' },
+        { id: 'task-3', title: 'Check replication lag across replicas', category: 'Daily', priority: 'high', recurrence: 'daily', done: true, assignee: 'dba_admin', dueDate: ago(-720), notes: 'Ensure replicas are within 1s lag tolerance' },
+        { id: 'task-4', title: 'Reindex bloated indexes (>20% bloat)', category: 'Weekly', priority: 'medium', recurrence: 'weekly', done: false, assignee: 'dba_admin', dueDate: ago(-4320), notes: 'REINDEX CONCURRENTLY to avoid downtime' },
+        { id: 'task-5', title: 'Review pg_stat_statements for new slow queries', category: 'Weekly', priority: 'high', recurrence: 'weekly', done: false, assignee: 'dba_senior', dueDate: ago(-2880), notes: 'Focus on queries > 500ms mean execution time' },
+        { id: 'task-6', title: 'Validate backup integrity and test restore', category: 'Weekly', priority: 'critical', recurrence: 'weekly', done: true, assignee: 'dba_senior', dueDate: ago(-10080), notes: 'Full restore test on staging environment' },
+        { id: 'task-7', title: 'Partition maintenance — detach old partitions', category: 'Monthly', priority: 'medium', recurrence: 'monthly', done: false, assignee: 'dba_admin', dueDate: ago(-20160), notes: 'Archive partitions older than 12 months for events table' },
+        { id: 'task-8', title: 'Review and rotate pg_hba.conf entries', category: 'Monthly', priority: 'low', recurrence: 'monthly', done: false, assignee: 'dba_senior', dueDate: ago(-43200), notes: 'Audit access rules and remove stale entries' },
+        { id: 'task-9', title: 'Investigate deadlock on orders table', category: 'Ad-hoc', priority: 'critical', recurrence: 'daily', done: false, assignee: 'dba_admin', dueDate: ago(-120), notes: 'Deadlock detected between order placement and inventory update transactions' },
+        { id: 'task-10', title: 'Upgrade pg_stat_statements extension', category: 'Ad-hoc', priority: 'low', recurrence: 'monthly', done: false, assignee: 'dba_senior', dueDate: ago(-7200), notes: 'New version 1.11 available with better deallocation tracking' },
     ])],
 
     // ── Schema ───────────────────────────────────────────────────────────────
@@ -373,8 +507,15 @@ const DEMO_ROUTES = [
         query: pick(['SELECT 1', 'COMMIT', 'BEGIN']),
         backend_start: ago(rand(1, 1440)),
     }))],
-    [/\/api\/admin\/feedback/, () => ([])],
-    [/\/api\/admin/, () => ({})],
+    [/\/api\/admin\/feedback/, () => ([
+        { id: 1, user: 'admin', message: 'Dashboard loading time has improved significantly after the connection pool tuning', rating: 5, timestamp: ago(1440) },
+        { id: 2, user: 'dba_admin', message: 'The alert correlation feature saved us 2 hours during the last incident', rating: 4, timestamp: ago(4320) },
+        { id: 3, user: 'dev_lead', message: 'Would love to see query plan diff support for comparing before/after optimization', rating: 3, timestamp: ago(10080) },
+    ])],
+    [/\/api\/admin/, () => ({
+        stats: { total_users: 8, active_sessions: 3, uptime_hours: 2184 },
+        system: { pg_version: '16.2', os: 'Ubuntu 22.04', cpu_cores: 8, memory_gb: 32 },
+    })],
 
     // ── Repository / AI Chat ─────────────────────────────────────────────────
     [/\/api\/ai\/chat/, () => ({ content: [{ text: 'This is a demo response. In live mode, this connects to an AI assistant.' }] })],
@@ -498,6 +639,7 @@ const DEMO_ROUTES = [
             { name: 'Backup Service', description: 'Automated backup pipeline', status: 'degraded' },
         ],
     })],
+    [/\/api\/status\/incidents\/[^/]+/, () => ({ success: true })],
     [/\/api\/status\/incidents$/, () => ({
         incidents: [
             { id: 'inc-001', title: 'Elevated query latency on primary', description: 'Avg query time exceeded 200ms threshold', status: 'resolved', createdAt: ago(2880), severity: 'degraded' },
@@ -530,6 +672,14 @@ const DEMO_ROUTES = [
     [/\/api\/retention\/cleanup/, () => ({ success: true, deleted_rows: 15420 })],
     [/\/api\/retention/, () => ({ policy: { metrics_retention_days: 90, logs_retention_days: 30 }, stats: { total_data_size: '4.2 GB' } })],
 
+    // ── Export API (TerraformExportTab uses /api/export/*) ──────────────────
+    [/\/api\/export\/bundle/, () => ({ code: 'resource "postgresql_database" "vigil_prod" {\n  name     = "vigil_prod"\n  owner    = "app_user"\n  encoding = "UTF8"\n}\n\nresource "postgresql_role" "app_user" {\n  name             = "app_user"\n  login            = true\n  connection_limit = 50\n}\n\nresource "postgresql_role" "analytics_user" {\n  name             = "analytics_user"\n  login            = true\n  connection_limit = 20\n}\n\nresource "postgresql_extension" "pg_stat_statements" {\n  name     = "pg_stat_statements"\n  database = postgresql_database.vigil_prod.name\n}' })],
+    [/\/api\/export\/alert-rules/, () => ({ code: 'resource "postgresql_alert_rule" "high_connections" {\n  name      = "high_connections"\n  metric    = "active_connections"\n  threshold = 150\n  severity  = "warning"\n}\n\nresource "postgresql_alert_rule" "replication_lag" {\n  name      = "replication_lag"\n  metric    = "replication_lag_bytes"\n  threshold = 104857600\n  severity  = "critical"\n}' })],
+    [/\/api\/export\/connections/, () => ({ code: 'resource "postgresql_connection" "prod" {\n  host     = "prod-pg.example.com"\n  port     = 5432\n  database = "vigil_prod"\n  username = "app_user"\n  sslmode  = "require"\n}' })],
+    [/\/api\/export\/retention/, () => ({ code: 'resource "postgresql_retention_policy" "metrics" {\n  type           = "metrics"\n  retention_days = 90\n}\n\nresource "postgresql_retention_policy" "logs" {\n  type           = "logs"\n  retention_days = 30\n}' })],
+    [/\/api\/export\/users/, () => ({ code: 'resource "postgresql_role" "app_user" {\n  name             = "app_user"\n  login            = true\n  connection_limit = 50\n  roles            = ["pg_read_all_data"]\n}\n\nresource "postgresql_role" "readonly" {\n  name  = "readonly"\n  login = true\n  roles = ["pg_read_all_data"]\n}' })],
+    [/\/api\/export/, () => ({ code: 'resource "postgresql_database" "vigil_prod" {\n  name  = "vigil_prod"\n  owner = "app_user"\n}' })],
+
     [/\/api\/terraform\/export\/json/, () => ({ roles: [{ name: 'app_user', login: true }], databases: [{ name: 'vigil', owner: 'app_user' }], extensions: ['pg_stat_statements'] })],
     [/\/api\/terraform\/export/, () => 'resource "postgresql_role" "app_user" {\n  name     = "app_user"\n  login    = true\n  connection_limit = 50\n}'],
     [/\/api\/terraform/, () => ({ export: 'resource "postgresql_database" "vigil" {\n  name = "vigil"\n}' })],
@@ -561,11 +711,47 @@ const DEMO_ROUTES = [
     [/\/api\/slow-queries/, () => Array.from({ length: 5 }, (_, i) => ({ queryid: `sq-${i + 1}`, query: 'SELECT * FROM orders', mean_exec_time: rand(50, 5000), calls: Math.floor(rand(10, 5000)) }))],
     [/\/api\/query-stats/, () => ({ available: true, slowQueries: [] })],
 
-    [/\/api\/settings/, () => ([{ name: 'max_connections', setting: '200' }, { name: 'shared_buffers', setting: '4GB' }])],
-    [/\/api\/migrations/, () => ({ versions: [], pending: [] })],
-    [/\/api\/roles/, () => ([{ rolname: 'app_user', rolsuper: false }, { rolname: 'admin', rolsuper: true }])],
-    [/\/api\/logs/, () => ({ patterns: [] })],
-    [/\/api\/scheduler/, () => ([])],
+    [/\/api\/settings/, () => ([
+        { name: 'max_connections', setting: '200', unit: null, category: 'Connections', context: 'postmaster' },
+        { name: 'shared_buffers', setting: '4GB', unit: null, category: 'Memory', context: 'postmaster' },
+        { name: 'effective_cache_size', setting: '12GB', unit: null, category: 'Planner', context: 'user' },
+        { name: 'work_mem', setting: '64MB', unit: null, category: 'Memory', context: 'user' },
+    ])],
+    [/\/api\/migrations/, () => ({
+        versions: [
+            { version: '20240301_001', name: 'Add events partitioning', applied_at: ago(43200), status: 'applied', duration: '2.3s' },
+            { version: '20240215_002', name: 'Create indexes for orders', applied_at: ago(64800), status: 'applied', duration: '4.1s' },
+            { version: '20240201_001', name: 'Add user preferences table', applied_at: ago(86400), status: 'applied', duration: '0.8s' },
+        ],
+        pending: [
+            { version: '20240320_001', name: 'Add notifications partitioning', status: 'pending' },
+            { version: '20240322_001', name: 'Create audit_log archive table', status: 'pending' },
+        ],
+    })],
+    [/\/api\/roles/, () => ([
+        { rolname: 'postgres', rolsuper: true, rolcreaterole: true, rolcreatedb: true, rolconnlimit: -1 },
+        { rolname: 'app_user', rolsuper: false, rolcreaterole: false, rolcreatedb: false, rolconnlimit: 50 },
+        { rolname: 'analytics_user', rolsuper: false, rolcreaterole: false, rolcreatedb: false, rolconnlimit: 20 },
+        { rolname: 'readonly', rolsuper: false, rolcreaterole: false, rolcreatedb: false, rolconnlimit: 10 },
+        { rolname: 'admin', rolsuper: true, rolcreaterole: true, rolcreatedb: true, rolconnlimit: -1 },
+    ])],
+    [/\/api\/logs/, () => ({
+        patterns: [
+            { pattern: 'ERROR: deadlock detected', count: 12, severity: 'error', first_seen: ago(1440), last_seen: ago(15) },
+            { pattern: 'WARNING: archive command failed with exit code 1', count: 3, severity: 'warning', first_seen: ago(720), last_seen: ago(180) },
+            { pattern: 'LOG: automatic vacuum of table "vigil_prod.public.events"', count: 288, severity: 'info', first_seen: ago(1440), last_seen: ago(5) },
+            { pattern: 'ERROR: canceling statement due to statement timeout', count: 7, severity: 'error', first_seen: ago(960), last_seen: ago(45) },
+            { pattern: 'WARNING: could not send data to client: Broken pipe', count: 22, severity: 'warning', first_seen: ago(2880), last_seen: ago(30) },
+        ],
+        total_entries: 15230, error_count: 40, warning_count: 85,
+    })],
+    [/\/api\/scheduler/, () => ([
+        { id: 'sched-1', name: 'VACUUM ANALYZE (all tables)', cron: '0 2 * * *', last_run: ago(180), next_run: ago(-1260), status: 'success', enabled: true },
+        { id: 'sched-2', name: 'Reindex bloated indexes', cron: '0 3 * * 0', last_run: ago(7200), next_run: ago(-2880), status: 'success', enabled: true },
+        { id: 'sched-3', name: 'Cleanup expired sessions', cron: '*/30 * * * *', last_run: ago(15), next_run: ago(-15), status: 'success', enabled: true },
+        { id: 'sched-4', name: 'Refresh materialized views', cron: '0 4 * * *', last_run: ago(240), next_run: ago(-1200), status: 'success', enabled: true },
+        { id: 'sched-5', name: 'Archive old partitions', cron: '0 1 1 * *', last_run: ago(20160), next_run: ago(-23040), status: 'success', enabled: false },
+    ])],
 
     [/\/health/, () => ({ status: 'ok' })],
     [/\/api\/auth/, () => ({ success: true })],
