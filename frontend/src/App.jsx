@@ -1433,6 +1433,7 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
    SIDEBAR
    ───────────────────────────────────────────────────────────────── */
 const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onToggleCollapse, onOpenFeedback, onOpenProfile, allowedTabIds }) => {
+    const { activeConnection } = useConnection();
     const [openSections, setOpenSections] = useState(() => {
         const active = getSectionForTab(activeTab);
         return active ? new Set([active]) : new Set();
@@ -1451,11 +1452,19 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
         });
     }, []);
 
+    // Determine which DB-specific sections to show based on active connection
+    const connDbType = activeConnection?.dbType || null;
+
     const visibleGroups = useMemo(() =>
             SECTION_GROUPS
                 .map(g => ({ ...g, tabs: g.tabs.filter(t => allowedTabIds.includes(t.id)) }))
-                .filter(g => g.tabs.length > 0),
-        [allowedTabIds]);
+                .filter(g => g.tabs.length > 0)
+                // Hide DB-specific sections unless that DB type is connected
+                .filter(g => {
+                    if (g.section === 'MongoDB') return connDbType === 'mongodb';
+                    return true;
+                }),
+        [allowedTabIds, connDbType]);
 
     const W = collapsed ? 64 : 252;
 
