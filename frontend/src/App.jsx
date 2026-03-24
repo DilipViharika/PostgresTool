@@ -54,6 +54,7 @@ const TableAnalytics       = lazyRetry(() => import('./components/views/database
 const QueryOptimizerTab    = lazyRetry(() => import('./components/views/database/QueryOptimizerTab.jsx'));
 const QueryPlanRegressionTab = lazyRetry(() => import('./components/views/database/QueryPlanRegressionTab.jsx'));
 const SchemaVersioningTab  = lazyRetry(() => import('./components/views/database/SchemaVersioningTab.jsx'));
+const SchemaVisualizerTab  = lazyRetry(() => import('./components/views/database/SchemaVisualizerTab.jsx'));
 
 // Operations features
 const BackupRecoveryTab    = lazyRetry(() => import('./components/views/operations/BackupRecoveryTab.jsx'));
@@ -78,6 +79,7 @@ const TerraformExportTab   = lazyRetry(() => import('./components/views/admin/Te
 const OpenTelemetryTab     = lazyRetry(() => import('./components/views/monitoring/OpenTelemetryTab.jsx'));
 const KubernetesTab        = lazyRetry(() => import('./components/views/monitoring/KubernetesTab.jsx'));
 const StatusPageTab        = lazyRetry(() => import('./components/views/monitoring/StatusPageTab.jsx'));
+const AIMonitoringTab      = lazyRetry(() => import('./components/views/monitoring/AIMonitoringTab.jsx'));
 
 // Gap features — Database
 const AIQueryAdvisorTab    = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
@@ -110,9 +112,9 @@ registerComponents({
     QueryOptimizerTab, IndexesTab, QueryPlanRegressionTab, BloatAnalysisTab, TableAnalytics,
     ConnectionPoolTab, ReplicationWALTab, CheckpointMonitorTab, VacuumMaintenanceTab,
     CapacityPlanningTab, BackupRecoveryTab,
-    SchemaVersioningTab, SecurityComplianceTab,
+    SchemaVersioningTab, SchemaVisualizerTab, SecurityComplianceTab,
     CloudWatchTab, LogPatternAnalysisTab, AlertCorrelationTab, OpenTelemetryTab,
-    KubernetesTab, StatusPageTab,
+    KubernetesTab, StatusPageTab, AIMonitoringTab,
     SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
     DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
     TerraformExportTab, CustomDashboardTab,

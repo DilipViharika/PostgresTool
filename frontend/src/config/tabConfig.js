@@ -51,6 +51,7 @@ export function buildTabConfig() {
 
         { section: 'Schema & Security', accent: DS.rose },
         { id: 'schema',            icon: GitBranch,     label: 'Schema & Migrations',   component: _components.SchemaVersioningTab,     badge: null },
+        { id: 'schema-visualizer', icon: GitBranch,     label: 'Schema Visualizer',     component: _components.SchemaVisualizerTab,     badge: null },
         { id: 'security',          icon: Lock,          label: 'Security & Compliance', component: _components.SecurityComplianceTab,   badge: null },
 
         { section: 'Observability', accent: DS.amber },
@@ -60,6 +61,7 @@ export function buildTabConfig() {
         { id: 'opentelemetry',     icon: Radar,         label: 'OpenTelemetry',         component: _components.OpenTelemetryTab,        badge: null },
         { id: 'kubernetes',        icon: Container,     label: 'Kubernetes',            component: _components.KubernetesTab,           badge: null },
         { id: 'status-page',       icon: Globe,         label: 'Status Page',           component: _components.StatusPageTab,           badge: null },
+        { id: 'ai-monitoring',     icon: Brain,         label: 'AI Monitoring',         component: _components.AIMonitoringTab,         badge: null },
 
         { section: 'Developer Tools', accent: DS.violet },
         { id: 'sql',               icon: Terminal,      label: 'SQL Console',           component: _components.SqlConsoleTab,           badge: null },

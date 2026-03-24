@@ -850,6 +850,277 @@ const DEMO_ROUTES = [
         { id: 'sched-5', name: 'Archive old partitions', cron: '0 1 1 * *', last_run: ago(20160), next_run: ago(-23040), status: 'success', enabled: false },
     ])],
 
+    // ── AI Monitoring routes ────────────────────────────────────────────────────
+    [/\/api\/ai-monitoring\/health-score/, () => ({
+        timestamp: now(),
+        score: Math.floor(rand(75, 98)),
+        components: {
+            performance: rand(80, 99),
+            storage: rand(78, 95),
+            connections: rand(85, 99),
+            replication: rand(70, 99),
+        },
+        metrics: {
+            active_connections: Math.floor(rand(20, 80)),
+            cache_hit_ratio: rand(92, 99.8),
+            disk_reads: Math.floor(rand(100, 5000)),
+            lock_waits: Math.floor(rand(0, 5)),
+            replication_lag: Math.floor(rand(0, 10)),
+            dead_tuples: Math.floor(rand(0, 15)),
+        },
+        trend: 'stable',
+    })],
+    [/\/api\/ai-monitoring\/anomalies/, () => {
+        const anomalies = [];
+        if (rand(0, 1) > 0.6) {
+            anomalies.push({
+                metricId: 'cache_hit_ratio',
+                value: rand(85, 92),
+                expectedRange: [93, 99.5],
+                zScore: rand(2.1, 2.8),
+                severity: 'warning',
+                timestamp: now(),
+                description: 'Cache hit ratio dropped below expected range — queries hitting disk more often',
+            });
+        }
+        if (rand(0, 1) > 0.8) {
+            anomalies.push({
+                metricId: 'active_connections',
+                value: Math.floor(rand(120, 180)),
+                expectedRange: [10, 80],
+                zScore: rand(2.5, 3.2),
+                severity: rand(0, 1) > 0.5 ? 'critical' : 'warning',
+                timestamp: now(),
+                description: 'Active connections spike detected — possible connection pool exhaustion',
+            });
+        }
+        return {
+            timestamp: now(),
+            count: anomalies.length,
+            anomalies,
+        };
+    }],
+    [/\/api\/ai-monitoring\/suggestions/, () => ([
+        {
+            id: 'cache-1',
+            title: 'Improve Cache Hit Ratio',
+            description: `Cache hit ratio is ${rand(90, 95).toFixed(1)}%. Consider increasing shared_buffers.`,
+            priority: 'high',
+            impact: 'Could improve query performance by 30-50%',
+            actions: ['Increase shared_buffers setting', 'Add indexes on frequently accessed columns'],
+        },
+        {
+            id: 'conn-1',
+            title: 'Consider Connection Pooling',
+            description: `Active connections average ${Math.floor(rand(60, 90))}. Consider PgBouncer.`,
+            priority: 'medium',
+            impact: 'Reduce connection overhead and improve scalability',
+            actions: ['Deploy PgBouncer or Pgpool-II', 'Configure connection limits per user'],
+        },
+        {
+            id: 'vac-1',
+            title: 'Optimize Autovacuum Settings',
+            description: `${Math.floor(rand(3, 8))} tables have high dead tuple ratios.`,
+            priority: 'medium',
+            impact: 'Prevent table bloat and improve performance',
+            actions: ['Increase autovacuum_max_workers', 'Decrease autovacuum_naptime'],
+        },
+    ])],
+    [/\/api\/ai-monitoring\/patterns/, () => ([
+        {
+            id: 'pattern-1',
+            name: 'Daily Traffic Spike',
+            description: 'Traffic peaks between 10-11 AM EST',
+            frequency: 'daily',
+            metrics: ['active_connections', 'cache_hit_ratio'],
+            impact: 'CPU usage increases 40%, cache hit ratio drops 5%',
+            recommendation: 'Pre-warm caches or scale resources during peak hours',
+        },
+        {
+            id: 'pattern-2',
+            name: 'Maintenance Window Effect',
+            description: 'Autovacuum runs every night at 2 AM, causing brief slowdown',
+            frequency: 'daily',
+            metrics: ['disk_reads', 'lock_waits'],
+            impact: 'Queries slower by ~200ms for 5-10 minutes',
+            recommendation: 'Schedule autovacuum to off-peak hours',
+        },
+        {
+            id: 'pattern-3',
+            name: 'Weekly Batch Job Impact',
+            description: 'Large batch jobs on Sundays cause resource contention',
+            frequency: 'weekly',
+            metrics: ['disk_reads', 'active_connections'],
+            impact: 'Database performance degrades 30-50% during batch window',
+            recommendation: 'Schedule batch jobs separately or increase resources',
+        },
+    ])],
+
+    // ── Schema Visualizer ─────────────────────────────────────────────────────
+    [/\/api\/schema\/relationships/, () => ({
+        tables: [
+            { id: 'public.users', name: 'users', schema: 'public', rowCount: 45231, size: '2.4 MB' },
+            { id: 'public.orders', name: 'orders', schema: 'public', rowCount: 128450, size: '8.6 MB' },
+            { id: 'public.products', name: 'products', schema: 'public', rowCount: 3421, size: '1.2 MB' },
+            { id: 'public.categories', name: 'categories', schema: 'public', rowCount: 45, size: '32 KB' },
+            { id: 'public.order_items', name: 'order_items', schema: 'public', rowCount: 412560, size: '18.3 MB' },
+            { id: 'public.reviews', name: 'reviews', schema: 'public', rowCount: 89320, size: '6.1 MB' },
+            { id: 'public.payments', name: 'payments', schema: 'public', rowCount: 126890, size: '7.8 MB' },
+            { id: 'public.shipping', name: 'shipping', schema: 'public', rowCount: 128123, size: '5.4 MB' },
+        ],
+        relationships: [
+            { id: 'orders→users', from: 'public.orders', to: 'public.users', fromColumn: 'user_id', toColumn: 'id', type: 'fk', onDelete: 'c', onUpdate: 'a', cardinality: '1:N' },
+            { id: 'order_items→orders', from: 'public.order_items', to: 'public.orders', fromColumn: 'order_id', toColumn: 'id', type: 'fk', onDelete: 'c', onUpdate: 'a', cardinality: '1:N' },
+            { id: 'order_items→products', from: 'public.order_items', to: 'public.products', fromColumn: 'product_id', toColumn: 'id', type: 'fk', onDelete: 'r', onUpdate: 'a', cardinality: '1:N' },
+            { id: 'products→categories', from: 'public.products', to: 'public.categories', fromColumn: 'category_id', toColumn: 'id', type: 'fk', onDelete: 'c', onUpdate: 'a', cardinality: '1:N' },
+            { id: 'reviews→products', from: 'public.reviews', to: 'public.products', fromColumn: 'product_id', toColumn: 'id', type: 'fk', onDelete: 'c', onUpdate: 'a', cardinality: '1:N' },
+            { id: 'reviews→users', from: 'public.reviews', to: 'public.users', fromColumn: 'user_id', toColumn: 'id', type: 'fk', onDelete: 'c', onUpdate: 'a', cardinality: '1:N' },
+            { id: 'payments→orders', from: 'public.payments', to: 'public.orders', fromColumn: 'order_id', toColumn: 'id', type: 'fk', onDelete: 'c', onUpdate: 'a', cardinality: '1:N' },
+            { id: 'shipping→orders', from: 'public.shipping', to: 'public.orders', fromColumn: 'order_id', toColumn: 'id', type: 'fk', onDelete: 'c', onUpdate: 'a', cardinality: '1:1' },
+        ],
+    })],
+
+    [/\/api\/schema\/dependencies/, () => ({
+        dependencies: [
+            { id: 'public.order_summary→public.orders', source: 'public.order_summary', target: 'public.orders', dependencyType: 'view' },
+            { id: 'public.user_stats→public.users', source: 'public.user_stats', target: 'public.users', dependencyType: 'materialized_view' },
+            { id: 'public.product_sales→public.order_items', source: 'public.product_sales', target: 'public.order_items', dependencyType: 'materialized_view' },
+            { id: 'public.daily_revenue→public.payments', source: 'public.daily_revenue', target: 'public.payments', dependencyType: 'view' },
+        ],
+    })],
+
+    [/\/api\/schema\/columns\/public\/users/, () => ({
+        columns: [
+            { name: 'id', type: 'uuid', nullable: false, default: 'uuid_generate_v4()', isPrimaryKey: true, isForeignKey: false, distinctValues: 45231, nullFraction: 0, avgWidth: 16 },
+            { name: 'email', type: 'character varying', nullable: false, default: null, isPrimaryKey: false, isForeignKey: false, distinctValues: 45231, nullFraction: 0, avgWidth: 64 },
+            { name: 'name', type: 'character varying', nullable: true, default: null, isPrimaryKey: false, isForeignKey: false, distinctValues: 44890, nullFraction: 0.008, avgWidth: 48 },
+            { name: 'created_at', type: 'timestamp without time zone', nullable: false, default: 'now()', isPrimaryKey: false, isForeignKey: false, distinctValues: 44123, nullFraction: 0, avgWidth: 8 },
+            { name: 'updated_at', type: 'timestamp without time zone', nullable: false, default: 'now()', isPrimaryKey: false, isForeignKey: false, distinctValues: 45100, nullFraction: 0, avgWidth: 8 },
+        ],
+    })],
+
+    [/\/api\/schema\/columns\/public\/orders/, () => ({
+        columns: [
+            { name: 'id', type: 'bigserial', nullable: false, default: 'nextval(...)', isPrimaryKey: true, isForeignKey: false, distinctValues: 128450, nullFraction: 0, avgWidth: 8 },
+            { name: 'user_id', type: 'uuid', nullable: false, default: null, isPrimaryKey: false, isForeignKey: true, distinctValues: 32101, nullFraction: 0, avgWidth: 16 },
+            { name: 'total_amount', type: 'numeric', nullable: false, default: null, isPrimaryKey: false, isForeignKey: false, distinctValues: 98234, nullFraction: 0, avgWidth: 16 },
+            { name: 'status', type: 'character varying', nullable: false, default: "'pending'", isPrimaryKey: false, isForeignKey: false, distinctValues: 6, nullFraction: 0, avgWidth: 16 },
+            { name: 'created_at', type: 'timestamp without time zone', nullable: false, default: 'now()', isPrimaryKey: false, isForeignKey: false, distinctValues: 128234, nullFraction: 0, avgWidth: 8 },
+        ],
+    })],
+
+    [/\/api\/schema\/columns\/public\/products/, () => ({
+        columns: [
+            { name: 'id', type: 'bigserial', nullable: false, default: 'nextval(...)', isPrimaryKey: true, isForeignKey: false, distinctValues: 3421, nullFraction: 0, avgWidth: 8 },
+            { name: 'name', type: 'character varying', nullable: false, default: null, isPrimaryKey: false, isForeignKey: false, distinctValues: 3421, nullFraction: 0, avgWidth: 96 },
+            { name: 'category_id', type: 'bigint', nullable: false, default: null, isPrimaryKey: false, isForeignKey: true, distinctValues: 42, nullFraction: 0, avgWidth: 8 },
+            { name: 'price', type: 'numeric', nullable: false, default: null, isPrimaryKey: false, isForeignKey: false, distinctValues: 2876, nullFraction: 0, avgWidth: 16 },
+            { name: 'stock_quantity', type: 'integer', nullable: false, default: '0', isPrimaryKey: false, isForeignKey: false, distinctValues: 234, nullFraction: 0, avgWidth: 4 },
+        ],
+    })],
+
+    // ── Metrics Registry & Time-Series ───────────────────────────────────────
+    [/\/api\/metrics\/registry/, () => ({
+        success: true,
+        dbType: 'postgresql',
+        count: 12,
+        metrics: [
+            { id: 'cache_hit_ratio', label: 'Cache Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of heap blocks served from cache vs disk', thresholds: { warning: 90, critical: 80 } },
+            { id: 'active_connections', label: 'Active Connections', unit: 'count', category: 'connections', description: 'Number of actively executing connections', thresholds: { warning: 80, critical: 95 } },
+            { id: 'transactions_per_sec', label: 'TPS', unit: 'tx/s', category: 'performance', description: 'Transactions committed and rolled back per second', thresholds: { warning: 500, critical: 1000 } },
+            { id: 'deadlock_count', label: 'Deadlocks', unit: 'count', category: 'health', description: 'Total number of deadlocks detected', thresholds: { warning: 1, critical: 5 } },
+            { id: 'replication_lag', label: 'Replication Lag', unit: 'bytes', category: 'replication', description: 'WAL bytes behind on replica', thresholds: { warning: 52428800, critical: 104857600 } },
+            { id: 'dead_tuples_ratio', label: 'Dead Tuple Ratio', unit: '%', category: 'maintenance', description: 'Percentage of dead tuples across all tables', thresholds: { warning: 10, critical: 20 } },
+            { id: 'db_size', label: 'Database Size', unit: 'bytes', category: 'storage', description: 'Total size of the current database', thresholds: { warning: 10737418240, critical: 21474836480 } },
+            { id: 'index_hit_ratio', label: 'Index Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of index blocks served from cache', thresholds: { warning: 95, critical: 85 } },
+            { id: 'longest_transaction', label: 'Longest Transaction', unit: 'seconds', category: 'health', description: 'Duration of longest running transaction', thresholds: { warning: 300, critical: 900 } },
+            { id: 'wal_generation_rate', label: 'WAL Generation', unit: 'bytes/s', category: 'replication', description: 'WAL generation rate', thresholds: { warning: 10485760, critical: 20971520 } },
+            { id: 'temp_files_size', label: 'Temp Files', unit: 'bytes', category: 'performance', description: 'Total size of temporary files created', thresholds: { warning: 1073741824, critical: 5368709120 } },
+            { id: 'vacuum_running', label: 'Active Vacuums', unit: 'count', category: 'maintenance', description: 'Number of active VACUUM operations', thresholds: { warning: 2, critical: 4 } },
+        ],
+    })],
+    [/\/api\/metrics\/registry\/postgresql/, () => ({
+        success: true,
+        dbType: 'postgresql',
+        count: 12,
+        metrics: [
+            { id: 'cache_hit_ratio', label: 'Cache Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of heap blocks served from cache vs disk', thresholds: { warning: 90, critical: 80 } },
+            { id: 'active_connections', label: 'Active Connections', unit: 'count', category: 'connections', description: 'Number of actively executing connections', thresholds: { warning: 80, critical: 95 } },
+            { id: 'transactions_per_sec', label: 'TPS', unit: 'tx/s', category: 'performance', description: 'Transactions committed and rolled back per second', thresholds: { warning: 500, critical: 1000 } },
+            { id: 'deadlock_count', label: 'Deadlocks', unit: 'count', category: 'health', description: 'Total number of deadlocks detected', thresholds: { warning: 1, critical: 5 } },
+            { id: 'replication_lag', label: 'Replication Lag', unit: 'bytes', category: 'replication', description: 'WAL bytes behind on replica', thresholds: { warning: 52428800, critical: 104857600 } },
+            { id: 'dead_tuples_ratio', label: 'Dead Tuple Ratio', unit: '%', category: 'maintenance', description: 'Percentage of dead tuples across all tables', thresholds: { warning: 10, critical: 20 } },
+            { id: 'db_size', label: 'Database Size', unit: 'bytes', category: 'storage', description: 'Total size of the current database', thresholds: { warning: 10737418240, critical: 21474836480 } },
+            { id: 'index_hit_ratio', label: 'Index Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of index blocks served from cache', thresholds: { warning: 95, critical: 85 } },
+            { id: 'longest_transaction', label: 'Longest Transaction', unit: 'seconds', category: 'health', description: 'Duration of longest running transaction', thresholds: { warning: 300, critical: 900 } },
+            { id: 'wal_generation_rate', label: 'WAL Generation', unit: 'bytes/s', category: 'replication', description: 'WAL generation rate', thresholds: { warning: 10485760, critical: 20971520 } },
+            { id: 'temp_files_size', label: 'Temp Files', unit: 'bytes', category: 'performance', description: 'Total size of temporary files created', thresholds: { warning: 1073741824, critical: 5368709120 } },
+            { id: 'vacuum_running', label: 'Active Vacuums', unit: 'count', category: 'maintenance', description: 'Number of active VACUUM operations', thresholds: { warning: 2, critical: 4 } },
+        ],
+    })],
+    [/\/api\/metrics\/categories/, () => ({
+        success: true,
+        categories: ['connections', 'health', 'maintenance', 'performance', 'replication', 'storage'],
+    })],
+    [/\/api\/metrics\/current/, () => {
+        const createMetricValue = (id, label, unit) => {
+            const values = {
+                cache_hit_ratio: rand(92, 99.5),
+                active_connections: Math.floor(rand(10, 60)),
+                transactions_per_sec: rand(150, 800),
+                deadlock_count: Math.floor(rand(0, 2)),
+                replication_lag: Math.floor(rand(0, 1000000)),
+                dead_tuples_ratio: rand(2, 12),
+                db_size: Math.floor(rand(5000000000, 15000000000)),
+                index_hit_ratio: rand(93, 99.8),
+                longest_transaction: Math.floor(rand(10, 500)),
+                wal_generation_rate: Math.floor(rand(500000, 5000000)),
+                temp_files_size: Math.floor(rand(0, 500000000)),
+                vacuum_running: Math.floor(rand(0, 2)),
+            };
+            const val = values[id] || 0;
+            const statusCheck = id.includes('ratio') || id.includes('hit') ? val > 90 : val < (id === 'deadlock_count' ? 5 : 100);
+            const status = statusCheck ? 'ok' : 'warning';
+            return { value: Math.round(val * 100) / 100, unit, label, status, timestamp: now() };
+        };
+        const current = {};
+        ['cache_hit_ratio', 'active_connections', 'transactions_per_sec', 'deadlock_count', 'replication_lag', 'dead_tuples_ratio', 'db_size', 'index_hit_ratio', 'longest_transaction', 'wal_generation_rate', 'temp_files_size', 'vacuum_running'].forEach((id, i) => {
+            current[id] = createMetricValue(id, ['Cache Hit Ratio', 'Active Connections', 'TPS', 'Deadlocks', 'Rep Lag', 'Dead Tuples', 'DB Size', 'Index Hit', 'Long Txn', 'WAL Rate', 'Temp Size', 'Vacuums'][i], ['%', 'count', 'tx/s', 'count', 'bytes', '%', 'bytes', '%', 'sec', 'bytes/s', 'bytes', 'count'][i]);
+        });
+        return { success: true, dbType: 'postgresql', current, timestamp: now() };
+    }],
+    [/\/api\/metrics\/history\//, () => {
+        const hours = 24;
+        return {
+            success: true,
+            metricId: 'cache_hit_ratio',
+            metric: { label: 'Cache Hit Ratio', unit: '%', category: 'performance' },
+            history: Array.from({ length: hours }, (_, i) => ({
+                timestamp: ago((hours - i - 1) * 60),
+                value: Math.round((93 + Math.sin(i / 4) * 5 + Math.random() * 3) * 100) / 100,
+            })),
+            range: `${hours}h`,
+        };
+    }],
+    [/\/api\/metrics\/health/, () => ({
+        success: true,
+        dbType: 'postgresql',
+        health: { ok: 9, warning: 2, critical: 1, unknown: 0 },
+        total: 12,
+    })],
+    [/\/api\/metrics\/by-category\//, () => ({
+        success: true,
+        category: 'performance',
+        dbType: 'postgresql',
+        count: 5,
+        metrics: [
+            { id: 'cache_hit_ratio', label: 'Cache Hit Ratio', unit: '%', description: 'Percentage of heap blocks served from cache', thresholds: { warning: 90, critical: 80 } },
+            { id: 'index_hit_ratio', label: 'Index Hit Ratio', unit: '%', description: 'Percentage of index blocks served from cache', thresholds: { warning: 95, critical: 85 } },
+            { id: 'transactions_per_sec', label: 'TPS', unit: 'tx/s', description: 'Transactions per second', thresholds: { warning: 500, critical: 1000 } },
+            { id: 'temp_files_size', label: 'Temp Files', unit: 'bytes', description: 'Size of temp files', thresholds: { warning: 1073741824, critical: 5368709120 } },
+        ],
+    })],
+
     [/\/health/, () => ({ status: 'ok' })],
     [/\/api\/auth/, () => ({ success: true })],
     [/\/api\/metrics/, () => ({ tps: rand(120, 850), connections: Math.floor(rand(20, 80)), cache_hit: rand(95, 99.9) })],

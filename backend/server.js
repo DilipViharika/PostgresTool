@@ -19,6 +19,7 @@ import repoRoutes               from './routes/repoRoutes.js';
 import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
 import { openTunnel, closeTunnel, getTunnelPort, closeAll as closeAllTunnels } from './services/sshTunnel.js';
+import { encrypt, decrypt, isEncrypted } from './services/encryptionService.js';
 
 import { buildAuthenticate, requireScreen, requireRole } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
@@ -38,6 +39,9 @@ import aiQueryRoutes   from './routes/aiQueryRoutes.js';
 import k8sRoutes       from './routes/k8sRoutes.js';
 import statusPageRoutes from './routes/statusPageRoutes.js';
 import terraformRoutes from './routes/terraformRoutes.js';
+import aiMonitoringRoutes from './routes/aiMonitoringRoutes.js';
+import schemaRoutes    from './routes/schemaRoutes.js';
+import metricsRoutes   from './routes/metricsRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -445,10 +449,42 @@ async function ensureConnectionsTable() {
             END $$
         `);
     } catch { /* users table not yet available — FK will be added on next startup */ }
+
+    // 4. Add db_type column if it doesn't exist (backward compatibility)
+    try {
+        await pool.query(`
+            ALTER TABLE pgmonitoringtool.vigil_connections
+            ADD COLUMN IF NOT EXISTS db_type TEXT NOT NULL DEFAULT 'postgresql'
+        `);
+    } catch { /* Column may already exist */ }
 }
 
 /** Convert a DB row → the shape the rest of the code (and frontend) expects */
 function rowToConn(row) {
+    // Decrypt sensitive fields if they are encrypted; handle backward compatibility
+    let password = row.password;
+    let sshPrivateKey = row.ssh_private_key;
+    let sshPassphrase = row.ssh_passphrase;
+    let sshPassword = row.ssh_password;
+
+    try {
+        if (password && isEncrypted(password)) {
+            password = decrypt(password);
+        }
+        if (sshPrivateKey && isEncrypted(sshPrivateKey)) {
+            sshPrivateKey = decrypt(sshPrivateKey);
+        }
+        if (sshPassphrase && isEncrypted(sshPassphrase)) {
+            sshPassphrase = decrypt(sshPassphrase);
+        }
+        if (sshPassword && isEncrypted(sshPassword)) {
+            sshPassword = decrypt(sshPassword);
+        }
+    } catch (error) {
+        // Log decryption errors but don't fail — allow fallback to plaintext
+        console.error('Decryption error in rowToConn:', error.message);
+    }
+
     return {
         id:           row.id,
         userId:       row.user_id,
@@ -457,20 +493,21 @@ function rowToConn(row) {
         port:         row.port,
         database:     row.db_name,
         username:     row.username,
-        password:     row.password,
+        password:     password,
         ssl:          row.ssl,
         sshEnabled:   row.ssh_enabled,
         sshHost:      row.ssh_host,
         sshPort:      row.ssh_port,
         sshUser:      row.ssh_user,
         sshAuthType:  row.ssh_auth_type,
-        sshPrivateKey:row.ssh_private_key,
-        sshPassphrase:row.ssh_passphrase,
-        sshPassword:  row.ssh_password,
+        sshPrivateKey:sshPrivateKey,
+        sshPassphrase:sshPassphrase,
+        sshPassword:  sshPassword,
         isDefault:    row.is_default,
         status:       row.status,
         lastTested:   row.last_tested,
         createdAt:    row.created_at,
+        dbType:       row.db_type || 'postgresql',
     };
 }
 
@@ -490,25 +527,37 @@ async function dbLoadConnections(userId, role) {
 
 /** Persist a new connection; returns the saved row as a conn object */
 async function dbInsertConnection(conn) {
+    // Encrypt sensitive fields before storing
+    const encryptedPassword = conn.password ? encrypt(conn.password) : null;
+    const encryptedSshPrivateKey = (conn.sshPrivateKey && conn.sshPrivateKey.trim()) ? encrypt(conn.sshPrivateKey) : null;
+    const encryptedSshPassphrase = (conn.sshPassphrase && conn.sshPassphrase.trim()) ? encrypt(conn.sshPassphrase) : null;
+    const encryptedSshPassword = (conn.sshPassword && conn.sshPassword.trim()) ? encrypt(conn.sshPassword) : null;
+
     const { rows } = await pool.query(`
         INSERT INTO pgmonitoringtool.vigil_connections
             (user_id, name, host, port, db_name, username, password, ssl,
              ssh_enabled, ssh_host, ssh_port, ssh_user, ssh_auth_type,
-             ssh_private_key, ssh_passphrase, ssh_password, is_default, status, last_tested)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+             ssh_private_key, ssh_passphrase, ssh_password, is_default, status, last_tested, db_type)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
         RETURNING *
     `, [
         conn.userId ?? null,
-        conn.name, conn.host, conn.port, conn.database, conn.username, conn.password, conn.ssl,
+        conn.name, conn.host, conn.port, conn.database, conn.username, encryptedPassword, conn.ssl,
         conn.sshEnabled, conn.sshHost, conn.sshPort, conn.sshUser, conn.sshAuthType,
-        conn.sshPrivateKey, conn.sshPassphrase, conn.sshPassword,
-        conn.isDefault, conn.status ?? null, conn.lastTested ?? null,
+        encryptedSshPrivateKey, encryptedSshPassphrase, encryptedSshPassword,
+        conn.isDefault, conn.status ?? null, conn.lastTested ?? null, conn.dbType ?? 'postgresql',
     ]);
     return rowToConn(rows[0]);
 }
 
 /** Update mutable fields of an existing connection */
 async function dbUpdateConnection(id, fields) {
+    // Encrypt sensitive fields before storing
+    const encryptedPassword = fields.password ? encrypt(fields.password) : null;
+    const encryptedSshPrivateKey = (fields.sshPrivateKey && fields.sshPrivateKey.trim()) ? encrypt(fields.sshPrivateKey) : null;
+    const encryptedSshPassphrase = (fields.sshPassphrase && fields.sshPassphrase.trim()) ? encrypt(fields.sshPassphrase) : null;
+    const encryptedSshPassword = (fields.sshPassword && fields.sshPassword.trim()) ? encrypt(fields.sshPassword) : null;
+
     const { rows } = await pool.query(`
         UPDATE pgmonitoringtool.vigil_connections SET
             name        = COALESCE($2, name),
@@ -528,7 +577,8 @@ async function dbUpdateConnection(id, fields) {
             ssh_password     = COALESCE($16, ssh_password),
             is_default  = COALESCE($17, is_default),
             status      = $18,
-            last_tested = $19
+            last_tested = $19,
+            db_type     = COALESCE($20, db_type)
         WHERE id = $1
         RETURNING *
     `, [
@@ -538,19 +588,20 @@ async function dbUpdateConnection(id, fields) {
         fields.port      ?? null,
         fields.database  ?? null,
         fields.username  ?? null,
-        fields.password  ?? null,
+        encryptedPassword,
         fields.ssl       ?? null,
         fields.sshEnabled     ?? null,
         fields.sshHost        ?? null,
         fields.sshPort        ?? null,
         fields.sshUser        ?? null,
         fields.sshAuthType    ?? null,
-        fields.sshPrivateKey  ?? null,
-        fields.sshPassphrase  ?? null,
-        fields.sshPassword    ?? null,
+        encryptedSshPrivateKey,
+        encryptedSshPassphrase,
+        encryptedSshPassword,
         fields.isDefault      ?? null,
         fields.status         ?? null,
         fields.lastTested     ?? null,
+        fields.dbType         ?? null,
     ]);
     return rows[0] ? rowToConn(rows[0]) : null;
 }
@@ -856,6 +907,9 @@ for (const prefix of modularMounts) {
     app.use(prefix, k8sRoutes(pool, authenticate));
     app.use(prefix, statusPageRoutes(pool, authenticate, requireRole));
     app.use(prefix, terraformRoutes(pool, authenticate, requireRole));
+    app.use(prefix, aiMonitoringRoutes(pool, authenticate));
+    app.use(prefix, metricsRoutes(pool, authenticate));
+    app.use(prefix, schemaRoutes(pool, authenticate));
 }
 
 // ── Enterprise routes (hidden — uncomment when ready) ────────────────────────

@@ -19,16 +19,37 @@ export default defineConfig({
     }
   },
   build: {
+    target: 'es2022',
+    cssCodeSplit: true,
+    sourcemap: false,
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
           'vendor-router': ['react-router-dom'],
           'vendor-charts': ['recharts'],
           'vendor-ui': ['lucide-react'],
+          'vendor-editor': ['codemirror', '@codemirror/lang-javascript', '@codemirror/lang-python', '@codemirror/lang-sql'],
+          'vendor-date': ['date-fns'],
         }
       }
     },
     chunkSizeWarningLimit: 600,
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'recharts',
+      'lucide-react',
+      'codemirror',
+      '@codemirror/lang-javascript',
+      '@codemirror/lang-python',
+      '@codemirror/lang-sql',
+      'date-fns',
+    ],
   },
   test: {
     globals: true,
