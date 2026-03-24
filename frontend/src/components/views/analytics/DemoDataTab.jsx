@@ -4,11 +4,13 @@ import {
   Database, Activity, Zap, Clock, HardDrive, Shield,
   ArrowUpRight, ArrowDownRight, Leaf, Hourglass,
   CheckCircle, AlertTriangle, Server, Cpu, Network,
-  BarChart3, Lock, Globe, ChevronDown
+  BarChart3, Lock, Globe, ChevronDown, GitBranch,
+  Gauge, MemoryStick, Layers, Radio, Eye
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
-  Tooltip, CartesianGrid
+  Tooltip, CartesianGrid, PieChart, Pie, Cell,
+  BarChart, Bar, LineChart, Line
 } from 'recharts';
 
 const DB_COLORS = {
@@ -556,6 +558,12 @@ function DemoStyles() {
       .demo-stagger > *:nth-child(4) { animation: demoFadeIn 0.5s ease both 0.2s; }
       .demo-stagger > *:nth-child(5) { animation: demoFadeIn 0.5s ease both 0.25s; }
       .demo-stagger > *:nth-child(6) { animation: demoFadeIn 0.5s ease both 0.3s; }
+      .demo-stagger > *:nth-child(7) { animation: demoFadeIn 0.5s ease both 0.35s; }
+      .demo-stagger > *:nth-child(8) { animation: demoFadeIn 0.5s ease both 0.4s; }
+      @keyframes demoBarGrow {
+        from { transform: scaleX(0); }
+        to { transform: scaleX(1); }
+      }
     `}</style>
   );
 }
@@ -777,6 +785,283 @@ function LiveDot({ color }) {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   RICH WIDGETS — matching real monitoring visual style
+   ═══════════════════════════════════════════════════════════════ */
+
+function DonutWidget({ data, size = 110, innerRadius = 38, outerRadius = 50, centerLabel, centerValue, color }) {
+  const RADIAN = Math.PI / 180;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+      <div style={{ width: size, height: size, flexShrink: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={data} cx="50%" cy="50%" innerRadius={innerRadius} outerRadius={outerRadius} paddingAngle={2} dataKey="value" stroke="none">
+              {data.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        <div style={{ position: 'relative', top: -(size / 2 + 12), textAlign: 'center', pointerEvents: 'none' }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: color, fontFamily: "'JetBrains Mono',monospace" }}>{centerValue}</div>
+          <div style={{ fontSize: 7.5, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{centerLabel}</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {data.map((d, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 10, color: THEME.textMuted }}>{d.name}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace", marginLeft: 'auto' }}>{d.display || d.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HorizontalBarList({ items, color }) {
+  const maxVal = Math.max(...items.map(i => i.value));
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {items.map((item, i) => (
+        <div key={i}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 11, color: THEME.textMuted }}>{item.label}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color, fontFamily: "'JetBrains Mono',monospace" }}>{item.display}</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 3, background: THEME.glassBorder, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 3, width: `${(item.value / maxVal) * 100}%`,
+              background: `linear-gradient(90deg, ${color}, ${color}88)`,
+              animation: 'demoBarGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both',
+              transformOrigin: 'left',
+            }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ResourceGaugeRow({ resources, color }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${resources.length}, 1fr)`, gap: 14 }}>
+      {resources.map((res, i) => {
+        const r = 34, sw = 7, circ = Math.PI * r;
+        const filled = circ * Math.min(res.value, 100) / 100;
+        const statusColor = res.value > 80 ? THEME.danger : res.value > 60 ? THEME.warning : THEME.success;
+        return (
+          <div key={i} style={{
+            background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14,
+            padding: '14px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+          }}>
+            <svg width={76} height={46} viewBox="0 0 76 46">
+              <path d={`M ${38 - r} 40 A ${r} ${r} 0 0 1 ${38 + r} 40`} fill="none" stroke={`${THEME.glassBorder}`} strokeWidth={sw} strokeLinecap="round" />
+              <path d={`M ${38 - r} 40 A ${r} ${r} 0 0 1 ${38 + r} 40`} fill="none" stroke={statusColor} strokeWidth={sw} strokeLinecap="round"
+                strokeDasharray={`${filled} ${circ - filled}`}
+                style={{ filter: `drop-shadow(0 0 4px ${statusColor}50)`, transition: 'stroke-dasharray 1s ease' }} />
+              <text x="38" y="34" textAnchor="middle" fill={statusColor} fontSize="14" fontWeight="800" fontFamily="'JetBrains Mono',monospace">{res.value}%</text>
+            </svg>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <res.icon size={12} color={THEME.textDim} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textMuted }}>{res.label}</span>
+              <StatusBadge label={res.status} color={statusColor} />
+            </div>
+            <div style={{ fontSize: 9, color: THEME.textDim }}>{res.detail}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ReplicationTopology({ nodes, color }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, padding: '8px 0' }}>
+      {nodes.map((node, i) => (
+        <React.Fragment key={i}>
+          {i > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 24, height: 2, background: `linear-gradient(90deg, ${color}, ${color}40)` }} />
+              <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: `6px solid ${color}` }} />
+            </div>
+          )}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            padding: '10px 14px', borderRadius: 12, background: `${node.color || color}08`,
+            border: `1px solid ${node.color || color}25`, minWidth: 90,
+          }}>
+            <Server size={16} color={node.color || color} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textMain }}>{node.name}</span>
+            <span style={{ fontSize: 9, color: THEME.textDim, fontFamily: "'JetBrains Mono',monospace" }}>lag: {node.lag}</span>
+          </div>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function MultiLineChartWidget({ data, lines, color }) {
+  return (
+    <div style={{ height: 160 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+          <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
+          <Tooltip contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, fontSize: 11 }} />
+          {lines.map((line, i) => (
+            <Line key={i} type="monotone" dataKey={line.key} stroke={line.color} strokeWidth={2} dot={false} strokeDasharray={line.dashed ? '5 3' : undefined} />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function MiniBarChart({ data, color }) {
+  return (
+    <div style={{ height: 140 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+          <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
+          <Tooltip contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, fontSize: 11 }} />
+          <Bar dataKey="reads" fill={color} radius={[3, 3, 0, 0]} opacity={0.8} />
+          <Bar dataKey="writes" fill={`${color}60`} radius={[3, 3, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/* Per-section rich widget data generators */
+function getSectionWidgets(sectionId, db) {
+  const c = db.color;
+  switch (sectionId) {
+    case 'core': return {
+      pool: {
+        data: [
+          { name: 'Active', value: 42, color: c, display: '42' },
+          { name: 'Idle', value: 58, color: `${c}30`, display: '58' },
+          { name: 'Waiting', value: 0, color: THEME.warning, display: '0' },
+        ],
+        centerValue: '42%', centerLabel: 'USED',
+      },
+      resources: [
+        { label: 'CPU Load', value: 34, icon: Cpu, status: 'Normal', detail: '4 cores • 1.8 load avg' },
+        { label: 'Memory', value: 62, icon: MemoryStick, status: 'Moderate', detail: '12 GB / 16 GB allocated' },
+        { label: 'Disk I/O', value: 8, icon: HardDrive, status: 'Normal', detail: '117 GB / 200 GB SSD' },
+      ],
+      latencyData: Array.from({ length: 12 }, (_, i) => ({
+        time: `${String(i * 2).padStart(2, '0')}:00`,
+        p50: 1.2 + Math.random() * 0.5,
+        p95: 8 + Math.random() * 3,
+        p99: 20 + Math.random() * 10,
+      })),
+      workload: {
+        data: [
+          { name: 'Reads', value: 99, color: c, display: '99%' },
+          { name: 'Writes', value: 1, color: THEME.success, display: '1%' },
+        ],
+        centerValue: '99%', centerLabel: 'READS',
+      },
+      topTables: [
+        { label: 'public.orders', value: 51000, display: '51.0K ops' },
+        { label: 'public.events', value: 45000, display: '45.0K ops' },
+        { label: 'public.sessions', value: 32000, display: '32.0K ops' },
+        { label: 'audit.log_entries', value: 21000, display: '21.0K ops' },
+        { label: 'public.users', value: 16200, display: '16.2K ops' },
+      ],
+    };
+    case 'query': return {
+      indexUsage: {
+        data: [
+          { name: 'Index Scans', value: 89, color: THEME.success, display: '89%' },
+          { name: 'Seq Scans', value: 11, color: THEME.warning, display: '11%' },
+        ],
+        centerValue: '89%', centerLabel: 'INDEX',
+      },
+      slowQueries: [
+        { label: 'SELECT * FROM orders JOIN...', value: 850, display: '850ms' },
+        { label: 'UPDATE inventory SET qty...', value: 520, display: '520ms' },
+        { label: 'DELETE FROM audit_logs...', value: 340, display: '340ms' },
+        { label: 'SELECT count(*) FROM...', value: 280, display: '280ms' },
+      ],
+    };
+    case 'infra': return {
+      connPool: {
+        data: [
+          { name: 'Active', value: 42, color: THEME.success, display: '42' },
+          { name: 'Idle', value: 50, color: `${c}40`, display: '50' },
+          { name: 'Reserved', value: 8, color: THEME.warning, display: '8' },
+        ],
+        centerValue: '42%', centerLabel: 'POOL',
+      },
+      replication: [
+        { name: 'primary-1', lag: '0 ms', color: THEME.success },
+        { name: 'replica-1', lag: '128 ms', color: c },
+        { name: 'replica-2', lag: '488 ms', color: THEME.warning },
+      ],
+    };
+    case 'schema': return {
+      distribution: {
+        data: [
+          { name: 'Tables', value: 234, color: c, display: '234' },
+          { name: 'Views', value: 89, color: THEME.success, display: '89' },
+          { name: 'Functions', value: 156, color: THEME.warning, display: '156' },
+          { name: 'Triggers', value: 42, color: THEME.danger, display: '42' },
+        ],
+        centerValue: '521', centerLabel: 'OBJECTS',
+      },
+    };
+    case 'observability': return {
+      latencyData: Array.from({ length: 12 }, (_, i) => ({
+        time: `${String(i * 2).padStart(2, '0')}:00`,
+        traces: 3800 + Math.random() * 1500,
+        errors: Math.random() * 20,
+        latency: 8 + Math.random() * 8,
+      })),
+      alertDist: [
+        { label: 'Critical', value: 2, display: '2' },
+        { label: 'Warning', value: 8, display: '8' },
+        { label: 'Info', value: 24, display: '24' },
+        { label: 'Resolved', value: 156, display: '156' },
+      ],
+    };
+    case 'dev': return {
+      opsData: Array.from({ length: 8 }, (_, i) => ({
+        time: `${String((i + 1) * 3).padStart(2, '0')}:00`,
+        reads: 400 + Math.floor(Math.random() * 300),
+        writes: 80 + Math.floor(Math.random() * 120),
+      })),
+    };
+    case 'admin': return {
+      userDist: {
+        data: [
+          { name: 'Admin', value: 8, color: THEME.danger, display: '8' },
+          { name: 'Developer', value: 45, color: c, display: '45' },
+          { name: 'Read-only', value: 120, color: THEME.success, display: '120' },
+          { name: 'Service', value: 23, color: THEME.warning, display: '23' },
+        ],
+        centerValue: '196', centerLabel: 'USERS',
+      },
+    };
+    default: return {};
+  }
+}
+
+/* MongoDB/MySQL/MSSQL/Oracle use generic section IDs mapped to their structures */
+function mapSectionToWidgetId(sectionId) {
+  const mapping = {
+    'overview': 'core', 'performance': 'query', 'storage': 'infra',
+    'data': 'schema', 'intelligence': 'observability', 'replication': 'infra',
+    'management': 'admin',
+  };
+  return mapping[sectionId] || sectionId;
+}
+
 export default function DemoDataTab({ dbKey = 'postgresql' }) {
   const db = DATABASE_STRUCTURE[dbKey];
   const widgets = DETAIL_WIDGETS[dbKey] || DETAIL_WIDGETS.postgresql;
@@ -969,13 +1254,123 @@ export default function DemoDataTab({ dbKey = 'postgresql' }) {
         </Panel>
       </div>
 
-      {db.sections.map((section) => (
+      {db.sections.map((section) => {
+        const widgetId = mapSectionToWidgetId(section.id);
+        const sw = getSectionWidgets(widgetId, db);
+        return (
         <div key={section.id} style={{ marginTop: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
             <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{section.name}</h2>
             <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
           </div>
 
+          {/* ── Rich Widgets Row ── */}
+          {sw.pool && sw.workload && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+              <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
+                <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+              </Panel>
+              <Panel title="Workload Split" icon={BarChart3} accentColor={db.color}>
+                <DonutWidget {...sw.workload} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+              </Panel>
+              <Panel title="Top Impacted Tables" icon={Database} accentColor={db.color}>
+                <HorizontalBarList items={sw.topTables} color={db.color} />
+              </Panel>
+            </div>
+          )}
+
+          {sw.resources && (
+            <div style={{ marginBottom: 16 }}>
+              <ResourceGaugeRow resources={sw.resources} color={db.color} />
+            </div>
+          )}
+
+          {sw.latencyData && sw.pool && (
+            <div style={{ marginBottom: 16 }}>
+              <Panel title="Transaction Latency Percentiles" icon={Activity} accentColor={db.color}
+                rightNode={<div style={{ display: 'flex', gap: 10 }}>
+                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.success, borderRadius: 1 }} />P50</span>
+                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.warning, borderRadius: 1 }} />P95</span>
+                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />P99</span>
+                </div>}>
+                <MultiLineChartWidget data={sw.latencyData} lines={[
+                  { key: 'p50', color: THEME.success },
+                  { key: 'p95', color: THEME.warning, dashed: true },
+                  { key: 'p99', color: THEME.danger, dashed: true },
+                ]} color={db.color} />
+              </Panel>
+            </div>
+          )}
+
+          {sw.indexUsage && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+              <Panel title="Index Usage" icon={Gauge} accentColor={db.color}>
+                <DonutWidget {...sw.indexUsage} color={THEME.success} size={100} innerRadius={34} outerRadius={46} />
+              </Panel>
+              <Panel title="Top Slow Queries" icon={Clock} accentColor={THEME.warning}>
+                <HorizontalBarList items={sw.slowQueries} color={THEME.warning} />
+              </Panel>
+            </div>
+          )}
+
+          {sw.connPool && sw.replication && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 14, marginBottom: 16 }}>
+              <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
+                <DonutWidget {...sw.connPool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+              </Panel>
+              <Panel title="Replication & Locks" icon={GitBranch} accentColor={db.color}>
+                <ReplicationTopology nodes={sw.replication} color={db.color} />
+              </Panel>
+            </div>
+          )}
+
+          {sw.distribution && !sw.pool && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14, marginBottom: 16 }}>
+              <Panel title="Object Distribution" icon={Layers} accentColor={db.color}>
+                <DonutWidget {...sw.distribution} color={db.color} size={110} innerRadius={38} outerRadius={50} />
+              </Panel>
+            </div>
+          )}
+
+          {sw.latencyData && !sw.pool && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+              <Panel title="Trace & Error Volume" icon={Eye} accentColor={db.color}
+                rightNode={<div style={{ display: 'flex', gap: 10 }}>
+                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Traces</span>
+                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />Errors</span>
+                </div>}>
+                <MultiLineChartWidget data={sw.latencyData} lines={[
+                  { key: 'traces', color: db.color },
+                  { key: 'errors', color: THEME.danger, dashed: true },
+                ]} color={db.color} />
+              </Panel>
+              <Panel title="Alert Distribution" icon={AlertTriangle} accentColor={THEME.warning}>
+                <HorizontalBarList items={sw.alertDist} color={db.color} />
+              </Panel>
+            </div>
+          )}
+
+          {sw.opsData && (
+            <div style={{ marginBottom: 16 }}>
+              <Panel title="OPS / Second (Today)" icon={BarChart3} accentColor={db.color}
+                rightNode={<div style={{ display: 'flex', gap: 10 }}>
+                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Reads</span>
+                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: `${db.color}60`, borderRadius: 1 }} />Writes</span>
+                </div>}>
+                <MiniBarChart data={sw.opsData} color={db.color} />
+              </Panel>
+            </div>
+          )}
+
+          {sw.userDist && (
+            <div style={{ marginBottom: 16 }}>
+              <Panel title="User Distribution" icon={Shield} accentColor={db.color}>
+                <DonutWidget {...sw.userDist} color={db.color} size={110} innerRadius={38} outerRadius={50} />
+              </Panel>
+            </div>
+          )}
+
+          {/* ── Metric Cards Grid ── */}
           <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
             {section.tabs.map((tab, idx) => (
               <div
@@ -1019,6 +1414,7 @@ export default function DemoDataTab({ dbKey = 'postgresql' }) {
             ))}
           </div>
 
+          {/* ── Section Activity Chart ── */}
           <div style={{ marginTop: 16 }}>
             <Panel title={`${section.name} Activity`} icon={Activity} accentColor={db.color} rightNode={<StatusBadge label="DEMO" color={db.color} pulse />}>
               <div style={{ height: 180 }}>
@@ -1046,7 +1442,8 @@ export default function DemoDataTab({ dbKey = 'postgresql' }) {
             </Panel>
           </div>
         </div>
-      ))}
+        );
+      })}
 
       <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
         <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
