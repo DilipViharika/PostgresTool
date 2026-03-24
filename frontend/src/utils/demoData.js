@@ -144,9 +144,82 @@ const DEMO_ROUTES = [
         total: 42, critical: 5, warning: 18, info: 19,
     })],
     [/\/api\/alerts\/correlation/, () => ({
-        correlations: [
-            { alert_group: 'Connection Spike + Slow Queries', alerts: ['Connection usage 85%', 'Query > 5min'], confidence: 0.92, root_cause: 'Long-running transaction holding locks' },
-            { alert_group: 'Replication Lag + Disk IO', alerts: ['Replication lag 150MB', 'High write IOPS'], confidence: 0.78, root_cause: 'High write workload saturating IO' },
+        correlationGroups: [
+            {
+                id: 'cg-001', severity: 'critical', type: 'Lock Contention Cascade',
+                root_cause: 'Long-running transaction on orders table blocking 3 concurrent writers, causing connection pool exhaustion',
+                start_ts: Math.floor(Date.now() / 1000) - 1800, end_ts: Math.floor(Date.now() / 1000) - 600,
+                types: ['lock_contention', 'connection_spike', 'slow_query'],
+                events: [
+                    { severity: 'critical', timestamp: ago(30), message: 'Transaction on orders table running for 25 minutes (pid 10567)' },
+                    { severity: 'warning', timestamp: ago(25), message: 'Connection pool usage reached 85% (170/200)' },
+                    { severity: 'warning', timestamp: ago(22), message: '3 queries waiting on RowExclusiveLock for > 10s' },
+                    { severity: 'critical', timestamp: ago(18), message: 'Active connections exceeded threshold: 185/200' },
+                ],
+            },
+            {
+                id: 'cg-002', severity: 'warning', type: 'Replication Lag Spike',
+                root_cause: 'Bulk INSERT on events table generating high WAL volume, replicas falling behind',
+                start_ts: Math.floor(Date.now() / 1000) - 7200, end_ts: Math.floor(Date.now() / 1000) - 5400,
+                types: ['replication_lag', 'high_io', 'wal_volume'],
+                events: [
+                    { severity: 'warning', timestamp: ago(120), message: 'WAL generation rate spiked to 45 MB/s (normal: 2 MB/s)' },
+                    { severity: 'warning', timestamp: ago(115), message: 'Replica postgres-replica-0 lag reached 8.2s' },
+                    { severity: 'warning', timestamp: ago(110), message: 'Replica postgres-replica-1 lag reached 12.5s' },
+                    { severity: 'info', timestamp: ago(90), message: 'Bulk INSERT completed, WAL rate returning to normal' },
+                ],
+            },
+            {
+                id: 'cg-003', severity: 'warning', type: 'Cache Pressure Event',
+                root_cause: 'Analytics query scanning large table bypassed shared_buffers, evicting hot pages',
+                start_ts: Math.floor(Date.now() / 1000) - 14400, end_ts: Math.floor(Date.now() / 1000) - 13200,
+                types: ['cache_miss', 'slow_query', 'io_spike'],
+                events: [
+                    { severity: 'warning', timestamp: ago(240), message: 'Cache hit ratio dropped to 89.2% (threshold: 95%)' },
+                    { severity: 'info', timestamp: ago(235), message: 'Sequential scan on events table: 2.8M rows, 1.2 GB read from disk' },
+                    { severity: 'warning', timestamp: ago(230), message: 'Read IOPS spiked to 4500 (baseline: 800)' },
+                ],
+            },
+        ],
+        recentEvents: [
+            { severity: 'critical', timestamp: ago(18), message: 'Active connections exceeded threshold: 185/200' },
+            { severity: 'critical', timestamp: ago(30), message: 'Transaction on orders table running for 25 minutes' },
+            { severity: 'warning', timestamp: ago(22), message: '3 queries waiting on RowExclusiveLock for > 10s' },
+            { severity: 'warning', timestamp: ago(25), message: 'Connection pool usage reached 85%' },
+            { severity: 'warning', timestamp: ago(115), message: 'Replica postgres-replica-0 lag reached 8.2s' },
+            { severity: 'warning', timestamp: ago(230), message: 'Read IOPS spiked to 4500' },
+            { severity: 'warning', timestamp: ago(240), message: 'Cache hit ratio dropped to 89.2%' },
+            { severity: 'info', timestamp: ago(90), message: 'Bulk INSERT completed, WAL rate returning to normal' },
+            { severity: 'info', timestamp: ago(235), message: 'Sequential scan on events table: 2.8M rows' },
+        ],
+        sessionStates: [
+            { state: 'active', wait_event_type: null, cnt: '18' },
+            { state: 'idle', wait_event_type: null, cnt: '24' },
+            { state: 'idle in transaction', wait_event_type: 'Lock', cnt: '5' },
+            { state: 'active', wait_event_type: 'IO', cnt: '8' },
+            { state: 'active', wait_event_type: 'Client', cnt: '3' },
+            { state: 'idle in transaction', wait_event_type: 'Client', cnt: '2' },
+            { state: 'active', wait_event_type: 'LWLock', cnt: '4' },
+        ],
+        longTransactions: [
+            { pid: 10567, usename: 'admin', xact_age_sec: 1520, state: 'idle in transaction', query: 'UPDATE orders SET status = $1 WHERE batch_id = $2', datname: 'vigil_prod', backend_start: ago(180) },
+            { pid: 10890, usename: 'app_user', xact_age_sec: 480, state: 'active', query: 'INSERT INTO events SELECT generate_series(...)', datname: 'vigil_prod', backend_start: ago(45) },
+            { pid: 11023, usename: 'analytics_user', xact_age_sec: 320, state: 'active', query: 'SELECT date_trunc(day, created_at), count(*) FROM events GROUP BY 1', datname: 'vigil_analytics', backend_start: ago(30) },
+        ],
+        lockSummary: [
+            { locktype: 'relation', mode: 'AccessShareLock', count: 42 },
+            { locktype: 'relation', mode: 'RowExclusiveLock', count: 15 },
+            { locktype: 'relation', mode: 'ShareLock', count: 3 },
+            { locktype: 'transactionid', mode: 'ShareLock', count: 7 },
+            { locktype: 'tuple', mode: 'ExclusiveLock', count: 2 },
+            { locktype: 'advisory', mode: 'ExclusiveLock', count: 4 },
+        ],
+        bloatedTables: [
+            { relname: 'events', schema: 'public', dead_pct: '22.5', n_dead_tup: 680000, n_live_tup: 2340000, total_size: '2.8 GB', last_autovacuum: ago(45) },
+            { relname: 'sessions', schema: 'public', dead_pct: '18.3', n_dead_tup: 125000, n_live_tup: 558000, total_size: '256 MB', last_autovacuum: ago(120) },
+            { relname: 'audit_log', schema: 'public', dead_pct: '8.7', n_dead_tup: 89000, n_live_tup: 934000, total_size: '1.1 GB', last_autovacuum: ago(180) },
+            { relname: 'notifications', schema: 'public', dead_pct: '6.2', n_dead_tup: 45000, n_live_tup: 680000, total_size: '380 MB', last_autovacuum: ago(60) },
+            { relname: 'orders', schema: 'public', dead_pct: '3.1', n_dead_tup: 23000, n_live_tup: 720000, total_size: '1.0 GB', last_autovacuum: ago(30) },
         ],
     })],
     [/\/api\/alerts\/[^/]+\/acknowledge/, () => ({ success: true })],
@@ -410,14 +483,38 @@ const DEMO_ROUTES = [
 
     // ── Log Patterns (object) ────────────────────────────────────────────────
     [/\/api\/log-patterns\/summary/, () => ({
-        patterns: [
-            { pattern: 'ERROR: deadlock detected', count: 12, severity: 'error', first_seen: ago(1440), last_seen: ago(15) },
-            { pattern: 'WARNING: archive command failed', count: 3, severity: 'warning', first_seen: ago(720), last_seen: ago(180) },
-            { pattern: 'LOG: checkpoint starting', count: 288, severity: 'info', first_seen: ago(1440), last_seen: ago(5) },
+        lockWaits: [
+            { blocked_pid: 10234, blocked_user: 'app_user', blocked_query: 'UPDATE orders SET status = $1 WHERE id = $2', blocking_pid: 10567, blocking_user: 'admin', wait_sec: '12.4' },
+            { blocked_pid: 10890, blocked_user: 'app_user', blocked_query: 'DELETE FROM sessions WHERE expires_at < NOW()', blocking_pid: 10234, blocking_user: 'app_user', wait_sec: '5.8' },
+            { blocked_pid: 11023, blocked_user: 'analytics_user', blocked_query: 'SELECT count(*) FROM events WHERE type = $1', blocking_pid: 10567, blocking_user: 'admin', wait_sec: '3.2' },
         ],
-        total_entries: 15230, error_count: 40, warning_count: 85,
+        waitEvents: [
+            { wait_event_type: 'Lock', wait_event: 'relation', count: '18' },
+            { wait_event_type: 'Lock', wait_event: 'transactionid', count: '7' },
+            { wait_event_type: 'IO', wait_event: 'DataFileRead', count: '45' },
+            { wait_event_type: 'IO', wait_event: 'WALWrite', count: '12' },
+            { wait_event_type: 'Client', wait_event: 'ClientRead', count: '156' },
+            { wait_event_type: 'LWLock', wait_event: 'buffer_content', count: '8' },
+            { wait_event_type: 'LWLock', wait_event: 'WALInsertLock', count: '3' },
+            { wait_event_type: 'Activity', wait_event: 'LogicalLauncherMain', count: '2' },
+        ],
+        slowQueries: [
+            { query_preview: 'SELECT o.*, u.name FROM orders o JOIN users u ON o.user_id = u.id WHERE o.created_at > $1 ORDER BY o.created_at DESC', calls: 12450, mean_ms: '245.8', max_ms: '4820.3', stddev_ms: '189.2', pct_total: '18.4' },
+            { query_preview: 'SELECT count(*) FROM events WHERE type = $1 AND created_at BETWEEN $2 AND $3 GROUP BY date_trunc($4, created_at)', calls: 3200, mean_ms: '890.5', max_ms: '12500.0', stddev_ms: '1250.8', pct_total: '12.1' },
+            { query_preview: 'UPDATE inventory SET quantity = quantity - $1 WHERE product_id = $2 AND warehouse_id = $3', calls: 45000, mean_ms: '15.2', max_ms: '2340.5', stddev_ms: '85.4', pct_total: '8.7' },
+            { query_preview: 'DELETE FROM sessions WHERE expires_at < NOW() - interval $1', calls: 8900, mean_ms: '52.3', max_ms: '3400.0', stddev_ms: '245.1', pct_total: '6.2' },
+            { query_preview: 'INSERT INTO audit_log (user_id, action, details, created_at) VALUES ($1, $2, $3, NOW())', calls: 156000, mean_ms: '3.8', max_ms: '890.2', stddev_ms: '28.5', pct_total: '4.5' },
+            { query_preview: 'SELECT p.*, array_agg(c.name) AS categories FROM products p JOIN product_categories pc ON p.id = pc.product_id JOIN categories c ON pc.category_id = c.id GROUP BY p.id', calls: 5600, mean_ms: '125.4', max_ms: '1890.0', stddev_ms: '95.2', pct_total: '3.8' },
+        ],
+        dbActivity: [
+            { datname: 'vigil_prod', numbackends: 42, cache_hit_pct: '97.8', rollback_pct: '0.3', xact_commit: '4562000', temp_files: '12', deadlocks: '3' },
+            { datname: 'vigil_analytics', numbackends: 8, cache_hit_pct: '94.2', rollback_pct: '1.1', xact_commit: '890000', temp_files: '45', deadlocks: '0' },
+            { datname: 'postgres', numbackends: 2, cache_hit_pct: '99.9', rollback_pct: '0.0', xact_commit: '12000', temp_files: '0', deadlocks: '0' },
+        ],
     })],
-    [/\/api\/log-patterns/, () => ({ patterns: [{ pattern: 'ERROR: deadlock detected', count: 12, severity: 'error' }] })],
+    [/\/api\/log-patterns/, () => ({
+        lockWaits: [], waitEvents: [], slowQueries: [], dbActivity: [],
+    })],
 
     // ── CloudWatch (datapoints with t/v keys) ──────────────────────────────
     [/\/api\/cloudwatch\/metrics/, () => ({
