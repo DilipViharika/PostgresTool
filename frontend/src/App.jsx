@@ -21,13 +21,23 @@ import OrgSwitcher from './enterprise/components/OrgSwitcher.jsx';
 
 /* ── Retry wrapper for lazy imports (handles stale chunk hashes after deploy) ── */
 const lazyRetry = (importFn) => lazy(() =>
-    importFn().catch(() => {
-        // Chunk fetch failed (likely stale hash after deploy) — reload once
-        if (!sessionStorage.getItem('vigil_chunk_retry')) {
-            sessionStorage.setItem('vigil_chunk_retry', '1');
-            window.location.reload();
-        }
-        return importFn(); // second attempt
+    importFn().catch((err) => {
+        // Chunk fetch failed (likely stale hash after deploy) — force-reload once
+        const key = 'vigil_chunk_retry';
+        try {
+            if (!sessionStorage.getItem(key)) {
+                sessionStorage.setItem(key, '1');
+                window.location.reload();
+                return new Promise(() => {}); // hang while reloading
+            }
+            sessionStorage.removeItem(key);
+        } catch { /* sessionStorage unavailable — fall through */ }
+        // second attempt with cache-bust
+        return importFn().catch(() => {
+            // final fallback: hard reload with cache-bust query
+            window.location.href = window.location.pathname + '?cb=' + Date.now();
+            return new Promise(() => {});
+        });
     })
 );
 
