@@ -4,8 +4,15 @@ import DemoDataTab from './DemoDataTab.jsx';
 /**
  * DemoSectionView — a single component used for ALL demo subsection tabs.
  * Reads the active tab ID from localStorage to determine which database + section to render.
- * Tab ID format: demo-{dbShort}-{sectionId}
- *   e.g. demo-pg-core, demo-mysql-query, demo-mongo-overview
+ *
+ * Tab ID format: demo-{dbShort}-{subTabId}
+ *   e.g. demo-pg-overview, demo-mysql-optimizer, demo-mongo-overview
+ *
+ * For SQL databases (pg/mysql/mssql/oracle), the subTabId is mapped to a section
+ * widget ID (core, query, infra, schema, observability, dev, admin) via TAB_TO_SECTION.
+ *
+ * For MongoDB, the subTabId is passed through as-is because DemoDataTab already
+ * handles MongoDB-specific mapping via mapSectionToWidgetId().
  */
 
 const DB_MAP = {
@@ -16,20 +23,55 @@ const DB_MAP = {
   mongo: 'mongodb',
 };
 
+/** Maps individual SQL-database sub-tab IDs to section widget IDs used by DemoDataTab */
+const SQL_TAB_TO_SECTION = {
+  // Core Monitoring
+  'overview': 'core', 'performance': 'core', 'resources': 'core',
+  'reliability': 'core', 'alerts': 'core',
+  // Query & Indexes
+  'optimizer': 'query', 'indexes': 'query', 'regression': 'query',
+  'bloat': 'query', 'table': 'query',
+  // Infrastructure
+  'pool': 'infra', 'replication': 'infra', 'checkpoint': 'infra',
+  'maintenance': 'infra', 'capacity': 'infra', 'backup': 'infra',
+  // Schema & Security
+  'schema': 'schema', 'schema-viz': 'schema', 'security': 'schema',
+  // Observability
+  'cloudwatch': 'observability', 'log-patterns': 'observability',
+  'alert-correlation': 'observability', 'opentelemetry': 'observability',
+  'kubernetes': 'observability', 'status-page': 'observability',
+  'ai-monitoring': 'observability',
+  // Developer Tools
+  'sql': 'dev', 'api': 'dev', 'repository': 'dev', 'ai-advisor': 'dev',
+  // Admin
+  'tasks': 'admin', 'users': 'admin', 'admin-panel': 'admin',
+  'retention': 'admin', 'terraform': 'admin', 'custom-dashboard': 'admin',
+  // Legacy single-section IDs (backward compat)
+  'core': 'core', 'query': 'query', 'infra': 'infra',
+  'observability': 'observability', 'dev': 'dev', 'admin': 'admin',
+};
+
 export default function DemoSectionView() {
   const tabId = (() => {
     try { return localStorage.getItem('pg_monitor_active_tab') || ''; } catch { return ''; }
   })();
 
-  // Parse: "demo-pg-core" → dbShort="pg", sectionId="core"
-  // Parse: "demo-mongo-overview" → dbShort="mongo", sectionId="overview"
+  // Parse: "demo-pg-overview" → dbShort="pg", subTabId="overview"
+  // Parse: "demo-mongo-data-tools" → dbShort="mongo", subTabId="data-tools"
   const match = tabId.match(/^demo-(\w+?)-(.+)$/);
   if (!match) {
     return <DemoDataTab dbKey="postgresql" />;
   }
 
-  const dbKey = DB_MAP[match[1]] || 'postgresql';
-  const sectionId = match[2];
+  const dbShort = match[1];
+  const dbKey = DB_MAP[dbShort] || 'postgresql';
+  const subTabId = match[2];
+
+  // For MongoDB, pass the subTabId as-is — DemoDataTab's mapSectionToWidgetId handles it.
+  // For SQL databases, map individual tabs back to their parent section widget ID.
+  const sectionId = dbShort === 'mongo'
+    ? subTabId
+    : (SQL_TAB_TO_SECTION[subTabId] || subTabId);
 
   return <DemoDataTab dbKey={dbKey} sectionId={sectionId} />;
 }
