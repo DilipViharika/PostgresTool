@@ -936,116 +936,262 @@ function MiniBarChart({ data, color }) {
   );
 }
 
-/* Per-section rich widget data generators */
+/* ═══════════════════════════════════════════════════════════════
+   DATABASE-SPECIFIC widget data — each DB × section is unique
+   ═══════════════════════════════════════════════════════════════ */
+
+const DB_TABLE_NAMES = {
+  postgresql: ['public.orders', 'public.events', 'public.sessions', 'audit.log_entries', 'public.users'],
+  mysql: ['orders', 'wp_posts', 'user_sessions', 'inventory', 'wp_comments'],
+  mssql: ['dbo.Transactions', 'dbo.AuditLog', 'dbo.Customers', 'dbo.Products', 'dbo.OrderItems'],
+  oracle: ['HR.EMPLOYEES', 'SALES.ORDERS', 'FIN.LEDGER', 'APP.SESSIONS', 'AUDIT.TRAIL'],
+  mongodb: ['users', 'orders', 'products', 'sessions', 'analytics'],
+};
+
+const DB_SLOW_QUERIES = {
+  postgresql: [
+    { label: 'SELECT * FROM orders JOIN...', value: 850, display: '850ms' },
+    { label: 'UPDATE inventory SET qty...', value: 520, display: '520ms' },
+    { label: 'VACUUM ANALYZE public.events', value: 340, display: '340ms' },
+    { label: 'SELECT count(*) FROM sessions', value: 280, display: '280ms' },
+  ],
+  mysql: [
+    { label: 'SELECT SQL_NO_CACHE * FROM wp_posts...', value: 1240, display: '1.24s' },
+    { label: 'INSERT INTO orders SELECT...', value: 890, display: '890ms' },
+    { label: 'ALTER TABLE inventory ADD INDEX...', value: 650, display: '650ms' },
+    { label: 'UPDATE wp_comments SET status...', value: 420, display: '420ms' },
+  ],
+  mssql: [
+    { label: 'EXEC sp_rebuild_indexes @table...', value: 2100, display: '2.1s' },
+    { label: 'SELECT TOP 1000 FROM AuditLog...', value: 960, display: '960ms' },
+    { label: 'MERGE INTO Customers USING...', value: 780, display: '780ms' },
+    { label: 'UPDATE Statistics dbo.Products', value: 450, display: '450ms' },
+  ],
+  oracle: [
+    { label: 'SELECT /*+ PARALLEL(8) */ FROM...', value: 3200, display: '3.2s' },
+    { label: 'MERGE INTO fact_sales USING...', value: 1800, display: '1.8s' },
+    { label: 'CREATE INDEX CONCURRENTLY ON...', value: 1200, display: '1.2s' },
+    { label: 'ANALYZE TABLE HR.EMPLOYEES...', value: 560, display: '560ms' },
+  ],
+  mongodb: [
+    { label: 'db.orders.aggregate([{$lookup...', value: 1560, display: '1.56s' },
+    { label: 'db.analytics.find({ts:{$gte...', value: 980, display: '980ms' },
+    { label: 'db.users.updateMany({active...', value: 720, display: '720ms' },
+    { label: 'db.products.distinct("category")', value: 340, display: '340ms' },
+  ],
+};
+
+const DB_CONN_STATS = {
+  postgresql: { active: 42, idle: 58, waiting: 0, max: 100, pct: 42 },
+  mysql: { active: 156, idle: 44, waiting: 3, max: 200, pct: 78 },
+  mssql: { active: 189, idle: 67, waiting: 5, max: 256, pct: 74 },
+  oracle: { active: 312, idle: 188, waiting: 12, max: 500, pct: 62 },
+  mongodb: { active: 234, idle: 166, waiting: 8, max: 500, pct: 47 },
+};
+
+const DB_RESOURCE_STATS = {
+  postgresql: { cpu: 34, mem: 62, disk: 8, cpuCores: 4, memGB: '12 / 16', diskGB: '117 / 200 SSD' },
+  mysql: { cpu: 28, mem: 71, disk: 45, cpuCores: 8, memGB: '24 / 32', diskGB: '156 / 500 NVMe' },
+  mssql: { cpu: 42, mem: 71, disk: 38, cpuCores: 16, memGB: '48 / 64', diskGB: '890 / 2000 SAN' },
+  oracle: { cpu: 45, mem: 67, disk: 52, cpuCores: 32, memGB: '96 / 128', diskGB: '2.4T / 5T ASM' },
+  mongodb: { cpu: 38, mem: 78, disk: 67, cpuCores: 8, memGB: '64 / 128', diskGB: '456 / 1000 EBS' },
+};
+
+const DB_WORKLOAD = {
+  postgresql: { reads: 99, writes: 1 },
+  mysql: { reads: 72, writes: 28 },
+  mssql: { reads: 65, writes: 35 },
+  oracle: { reads: 58, writes: 42 },
+  mongodb: { reads: 81, writes: 19 },
+};
+
+const DB_REPLICATION = {
+  postgresql: [
+    { name: 'pg-primary', lag: '0 ms', color: null },
+    { name: 'pg-replica-1', lag: '128 ms', color: null },
+    { name: 'pg-replica-2', lag: '488 ms', color: null },
+  ],
+  mysql: [
+    { name: 'mysql-source', lag: '0 ms', color: null },
+    { name: 'mysql-replica', lag: '250 ms', color: null },
+  ],
+  mssql: [
+    { name: 'sql-primary', lag: '0 ms', color: null },
+    { name: 'sql-ag-sync', lag: '12 ms', color: null },
+    { name: 'sql-ag-async', lag: '340 ms', color: null },
+  ],
+  oracle: [
+    { name: 'ora-primary', lag: '0 ms', color: null },
+    { name: 'ora-standby1', lag: '300 ms', color: null },
+    { name: 'ora-standby2', lag: '1.2 s', color: null },
+  ],
+  mongodb: [
+    { name: 'rs0-primary', lag: '0 ms', color: null },
+    { name: 'rs0-sec-1', lag: '50 ms', color: null },
+    { name: 'rs0-sec-2', lag: '120 ms', color: null },
+    { name: 'rs0-arbiter', lag: 'N/A', color: null },
+  ],
+};
+
+const DB_SCHEMA_OBJECTS = {
+  postgresql: { tables: 234, views: 89, functions: 156, triggers: 42, total: 521 },
+  mysql: { tables: 456, views: 78, functions: 45, triggers: 23, total: 602 },
+  mssql: { tables: 567, views: 234, functions: 89, triggers: 67, total: 957 },
+  oracle: { tables: 890, views: 345, functions: 234, triggers: 112, total: 1581 },
+  mongodb: { tables: 567, views: 34, functions: 0, triggers: 0, total: 601 },
+};
+
+const DB_INDEX_STATS = {
+  postgresql: { indexPct: 89, seqPct: 11 },
+  mysql: { indexPct: 98, seqPct: 2 },
+  mssql: { indexPct: 94, seqPct: 6 },
+  oracle: { indexPct: 97, seqPct: 3 },
+  mongodb: { indexPct: 85, seqPct: 15 },
+};
+
+const DB_ALERT_DIST = {
+  postgresql: [{ label: 'Critical', value: 0, display: '0' }, { label: 'Warning', value: 3, display: '3' }, { label: 'Info', value: 18, display: '18' }, { label: 'Resolved', value: 145, display: '145' }],
+  mysql: [{ label: 'Critical', value: 1, display: '1' }, { label: 'Warning', value: 5, display: '5' }, { label: 'Info', value: 22, display: '22' }, { label: 'Resolved', value: 189, display: '189' }],
+  mssql: [{ label: 'Critical', value: 2, display: '2' }, { label: 'Warning', value: 8, display: '8' }, { label: 'Info', value: 34, display: '34' }, { label: 'Resolved', value: 267, display: '267' }],
+  oracle: [{ label: 'Critical', value: 0, display: '0' }, { label: 'Warning', value: 2, display: '2' }, { label: 'Info', value: 45, display: '45' }, { label: 'Resolved', value: 312, display: '312' }],
+  mongodb: [{ label: 'Critical', value: 1, display: '1' }, { label: 'Warning', value: 6, display: '6' }, { label: 'Info', value: 28, display: '28' }, { label: 'Resolved', value: 201, display: '201' }],
+};
+
+const DB_USER_DIST = {
+  postgresql: { admin: 8, dev: 45, readonly: 120, service: 23, total: 196 },
+  mysql: { admin: 5, dev: 34, readonly: 89, service: 12, total: 140 },
+  mssql: { admin: 12, dev: 67, readonly: 234, service: 45, total: 358 },
+  oracle: { admin: 15, dev: 89, readonly: 456, service: 78, total: 638 },
+  mongodb: { admin: 6, dev: 28, readonly: 67, service: 18, total: 119 },
+};
+
+/* Per-section rich widget data generators — now DB-aware */
 function getSectionWidgets(sectionId, db) {
   const c = db.color;
+  const dbName = db.name.toLowerCase().replace(' ', '');
+  /* normalize key for lookups */
+  const key = dbName === 'sqlserver' ? 'mssql' : dbName;
+  const conn = DB_CONN_STATS[key] || DB_CONN_STATS.postgresql;
+  const res = DB_RESOURCE_STATS[key] || DB_RESOURCE_STATS.postgresql;
+  const wl = DB_WORKLOAD[key] || DB_WORKLOAD.postgresql;
+  const tables = DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql;
+  const schema = DB_SCHEMA_OBJECTS[key] || DB_SCHEMA_OBJECTS.postgresql;
+  const idx = DB_INDEX_STATS[key] || DB_INDEX_STATS.postgresql;
+  const alerts = DB_ALERT_DIST[key] || DB_ALERT_DIST.postgresql;
+  const users = DB_USER_DIST[key] || DB_USER_DIST.postgresql;
+  const repl = (DB_REPLICATION[key] || DB_REPLICATION.postgresql).map((n, i) => ({
+    ...n, color: i === 0 ? THEME.success : (i === (DB_REPLICATION[key] || DB_REPLICATION.postgresql).length - 1 ? THEME.warning : c),
+  }));
+  const seed = hashSeed(key);
+
   switch (sectionId) {
-    case 'core': return {
-      pool: {
-        data: [
-          { name: 'Active', value: 42, color: c, display: '42' },
-          { name: 'Idle', value: 58, color: `${c}30`, display: '58' },
-          { name: 'Waiting', value: 0, color: THEME.warning, display: '0' },
+    case 'core': {
+      const tblOps = [51000, 45000, 32000, 21000, 16200].map(v => v + (seed % 20000));
+      return {
+        pool: {
+          data: [
+            { name: 'Active', value: conn.active, color: c, display: `${conn.active}` },
+            { name: 'Idle', value: conn.idle, color: `${c}30`, display: `${conn.idle}` },
+            { name: 'Waiting', value: conn.waiting, color: THEME.warning, display: `${conn.waiting}` },
+          ],
+          centerValue: `${conn.pct}%`, centerLabel: 'USED',
+        },
+        resources: [
+          { label: 'CPU Load', value: res.cpu, icon: Cpu, status: res.cpu > 60 ? 'High' : res.cpu > 40 ? 'Moderate' : 'Normal', detail: `${res.cpuCores} cores` },
+          { label: 'Memory', value: res.mem, icon: MemoryStick, status: res.mem > 75 ? 'High' : res.mem > 50 ? 'Moderate' : 'Normal', detail: `${res.memGB} GB` },
+          { label: 'Disk I/O', value: res.disk, icon: HardDrive, status: res.disk > 60 ? 'High' : res.disk > 30 ? 'Moderate' : 'Normal', detail: `${res.diskGB}` },
         ],
-        centerValue: '42%', centerLabel: 'USED',
-      },
-      resources: [
-        { label: 'CPU Load', value: 34, icon: Cpu, status: 'Normal', detail: '4 cores • 1.8 load avg' },
-        { label: 'Memory', value: 62, icon: MemoryStick, status: 'Moderate', detail: '12 GB / 16 GB allocated' },
-        { label: 'Disk I/O', value: 8, icon: HardDrive, status: 'Normal', detail: '117 GB / 200 GB SSD' },
-      ],
-      latencyData: Array.from({ length: 12 }, (_, i) => ({
-        time: `${String(i * 2).padStart(2, '0')}:00`,
-        p50: 1.2 + Math.random() * 0.5,
-        p95: 8 + Math.random() * 3,
-        p99: 20 + Math.random() * 10,
-      })),
-      workload: {
-        data: [
-          { name: 'Reads', value: 99, color: c, display: '99%' },
-          { name: 'Writes', value: 1, color: THEME.success, display: '1%' },
-        ],
-        centerValue: '99%', centerLabel: 'READS',
-      },
-      topTables: [
-        { label: 'public.orders', value: 51000, display: '51.0K ops' },
-        { label: 'public.events', value: 45000, display: '45.0K ops' },
-        { label: 'public.sessions', value: 32000, display: '32.0K ops' },
-        { label: 'audit.log_entries', value: 21000, display: '21.0K ops' },
-        { label: 'public.users', value: 16200, display: '16.2K ops' },
-      ],
-    };
+        latencyData: Array.from({ length: 12 }, (_, i) => {
+          const s = hashSeed(key + 'lat' + i);
+          return {
+            time: `${String(i * 2).padStart(2, '0')}:00`,
+            p50: 0.5 + (s % 30) / 10,
+            p95: 4 + (s % 80) / 10,
+            p99: 12 + (s % 200) / 10,
+          };
+        }),
+        workload: {
+          data: [
+            { name: 'Reads', value: wl.reads, color: c, display: `${wl.reads}%` },
+            { name: 'Writes', value: wl.writes, color: THEME.success, display: `${wl.writes}%` },
+          ],
+          centerValue: `${wl.reads}%`, centerLabel: 'READS',
+        },
+        topTables: tables.map((t, i) => ({
+          label: t, value: tblOps[i], display: `${(tblOps[i] / 1000).toFixed(1)}K ops`,
+        })),
+      };
+    }
     case 'query': return {
       indexUsage: {
         data: [
-          { name: 'Index Scans', value: 89, color: THEME.success, display: '89%' },
-          { name: 'Seq Scans', value: 11, color: THEME.warning, display: '11%' },
+          { name: 'Index Scans', value: idx.indexPct, color: THEME.success, display: `${idx.indexPct}%` },
+          { name: key === 'mongodb' ? 'Coll Scans' : 'Seq Scans', value: idx.seqPct, color: THEME.warning, display: `${idx.seqPct}%` },
         ],
-        centerValue: '89%', centerLabel: 'INDEX',
+        centerValue: `${idx.indexPct}%`, centerLabel: 'INDEX',
       },
-      slowQueries: [
-        { label: 'SELECT * FROM orders JOIN...', value: 850, display: '850ms' },
-        { label: 'UPDATE inventory SET qty...', value: 520, display: '520ms' },
-        { label: 'DELETE FROM audit_logs...', value: 340, display: '340ms' },
-        { label: 'SELECT count(*) FROM...', value: 280, display: '280ms' },
-      ],
+      slowQueries: DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql,
     };
     case 'infra': return {
       connPool: {
         data: [
-          { name: 'Active', value: 42, color: THEME.success, display: '42' },
-          { name: 'Idle', value: 50, color: `${c}40`, display: '50' },
-          { name: 'Reserved', value: 8, color: THEME.warning, display: '8' },
+          { name: 'Active', value: conn.active, color: THEME.success, display: `${conn.active}` },
+          { name: 'Idle', value: conn.idle, color: `${c}40`, display: `${conn.idle}` },
+          { name: 'Reserved', value: conn.waiting, color: THEME.warning, display: `${conn.waiting}` },
         ],
-        centerValue: '42%', centerLabel: 'POOL',
+        centerValue: `${conn.pct}%`, centerLabel: 'POOL',
       },
-      replication: [
-        { name: 'primary-1', lag: '0 ms', color: THEME.success },
-        { name: 'replica-1', lag: '128 ms', color: c },
-        { name: 'replica-2', lag: '488 ms', color: THEME.warning },
-      ],
+      replication: repl,
     };
-    case 'schema': return {
-      distribution: {
-        data: [
-          { name: 'Tables', value: 234, color: c, display: '234' },
-          { name: 'Views', value: 89, color: THEME.success, display: '89' },
-          { name: 'Functions', value: 156, color: THEME.warning, display: '156' },
-          { name: 'Triggers', value: 42, color: THEME.danger, display: '42' },
-        ],
-        centerValue: '521', centerLabel: 'OBJECTS',
-      },
-    };
+    case 'schema': {
+      const objLabel = key === 'mongodb' ? 'Collections' : 'Tables';
+      const obj2 = key === 'mongodb' ? 'Indexes' : 'Views';
+      const obj3 = key === 'oracle' ? 'Packages' : (key === 'mongodb' ? 'Validators' : 'Functions');
+      const obj4 = key === 'mssql' ? 'Stored Procs' : (key === 'mongodb' ? 'Change Streams' : 'Triggers');
+      return {
+        distribution: {
+          data: [
+            { name: objLabel, value: schema.tables, color: c, display: `${schema.tables}` },
+            { name: obj2, value: schema.views, color: THEME.success, display: `${schema.views}` },
+            { name: obj3, value: schema.functions, color: THEME.warning, display: `${schema.functions || 0}` },
+            { name: obj4, value: schema.triggers, color: THEME.danger, display: `${schema.triggers || 0}` },
+          ].filter(d => d.value > 0),
+          centerValue: `${schema.total}`, centerLabel: 'OBJECTS',
+        },
+      };
+    }
     case 'observability': return {
-      latencyData: Array.from({ length: 12 }, (_, i) => ({
-        time: `${String(i * 2).padStart(2, '0')}:00`,
-        traces: 3800 + Math.random() * 1500,
-        errors: Math.random() * 20,
-        latency: 8 + Math.random() * 8,
-      })),
-      alertDist: [
-        { label: 'Critical', value: 2, display: '2' },
-        { label: 'Warning', value: 8, display: '8' },
-        { label: 'Info', value: 24, display: '24' },
-        { label: 'Resolved', value: 156, display: '156' },
-      ],
+      latencyData: Array.from({ length: 12 }, (_, i) => {
+        const s = hashSeed(key + 'obs' + i);
+        return {
+          time: `${String(i * 2).padStart(2, '0')}:00`,
+          traces: 2000 + (s % 4000),
+          errors: (s % 30),
+          latency: 4 + (s % 120) / 10,
+        };
+      }),
+      alertDist: alerts,
     };
     case 'dev': return {
-      opsData: Array.from({ length: 8 }, (_, i) => ({
-        time: `${String((i + 1) * 3).padStart(2, '0')}:00`,
-        reads: 400 + Math.floor(Math.random() * 300),
-        writes: 80 + Math.floor(Math.random() * 120),
-      })),
+      opsData: Array.from({ length: 8 }, (_, i) => {
+        const s = hashSeed(key + 'ops' + i);
+        const base = key === 'oracle' ? 800 : key === 'mssql' ? 600 : key === 'mongodb' ? 900 : key === 'mysql' ? 500 : 400;
+        return {
+          time: `${String((i + 1) * 3).padStart(2, '0')}:00`,
+          reads: base + (s % (base / 2)),
+          writes: Math.round(base * 0.2) + (s % Math.round(base * 0.3)),
+        };
+      }),
     };
     case 'admin': return {
       userDist: {
         data: [
-          { name: 'Admin', value: 8, color: THEME.danger, display: '8' },
-          { name: 'Developer', value: 45, color: c, display: '45' },
-          { name: 'Read-only', value: 120, color: THEME.success, display: '120' },
-          { name: 'Service', value: 23, color: THEME.warning, display: '23' },
+          { name: 'Admin', value: users.admin, color: THEME.danger, display: `${users.admin}` },
+          { name: 'Developer', value: users.dev, color: c, display: `${users.dev}` },
+          { name: 'Read-only', value: users.readonly, color: THEME.success, display: `${users.readonly}` },
+          { name: 'Service', value: users.service, color: THEME.warning, display: `${users.service}` },
         ],
-        centerValue: '196', centerLabel: 'USERS',
+        centerValue: `${users.total}`, centerLabel: 'USERS',
       },
     };
     default: return {};
