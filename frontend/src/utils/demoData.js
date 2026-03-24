@@ -294,7 +294,13 @@ const DEMO_ROUTES = [
     })],
     [/\/api\/log-patterns/, () => ({ patterns: [{ pattern: 'ERROR: deadlock detected', count: 12, severity: 'error' }] })],
 
-    // ── CloudWatch (object with metrics) ─────────────────────────────────────
+    // ── CloudWatch (datapoints with t/v keys) ──────────────────────────────
+    [/\/api\/cloudwatch\/metrics/, () => ({
+        datapoints: Array.from({ length: 60 }, (_, i) => ({
+            t: new Date(Date.now() - (59 - i) * 60000).toISOString(),
+            v: rand(5, 95),
+        })),
+    })],
     [/\/api\/cloudwatch/, () => ({
         metrics: {
             CPUUtilization: Array.from({ length: 24 }, (_, i) => ({ timestamp: ago((23 - i) * 60), value: rand(15, 65) })),
@@ -394,24 +400,122 @@ const DEMO_ROUTES = [
     [/\/api\/wal/, () => ({ current_lsn: '0/3A000148', wal_level: 'replica', archive_mode: 'on', wal_rate_mbps: rand(0.5, 8.0) })],
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  GAP FEATURES
+    //  GAP FEATURES — OpenTelemetry
     // ═══════════════════════════════════════════════════════════════════════
 
-    [/\/api\/otel\/services/, () => ['web-api', 'worker-service', 'cron-jobs', 'auth-service']],
-    [/\/api\/otel\/metrics\/names/, () => ['pg_connections_active', 'pg_query_duration_ms', 'pg_transactions_total', 'pg_cache_hit_ratio']],
-    [/\/api\/otel\/metrics\/[^/]+\/stats/, () => ({ avg: rand(10, 50), min: rand(1, 10), max: rand(50, 100), count: Math.floor(rand(100, 5000)) })],
-    [/\/api\/otel\/metrics/, () => ({ metrics: Array.from({ length: 24 }, (_, i) => ({ timestamp: ago((23 - i) * 60), value: rand(10, 50) })), services: ['web-api', 'worker-service'], names: ['pg_connections_active', 'pg_query_duration_ms'], stats: { total_ingested: 45230, ingestion_rate: 125.4, unique_metrics: 7, services_count: 4 } })],
-    [/\/api\/otel/, () => ({ services: ['web-api', 'worker-service'], stats: { total_ingested: 45230, ingestion_rate: 125.4, unique_metrics: 7, services_count: 4 } })],
+    [/\/api\/otel\/services$/, () => ({
+        services: ['web-api', 'worker-service', 'cron-jobs', 'auth-service'],
+    })],
+    [/\/api\/otel\/metrics\/names$/, () => ({
+        names: ['pg_connections_active', 'pg_query_duration_ms', 'pg_transactions_total', 'pg_cache_hit_ratio', 'pg_rows_fetched', 'pg_deadlocks'],
+    })],
+    [/\/api\/otel\/metrics\/data/, () => ({
+        data: Array.from({ length: 60 }, (_, i) => ({
+            timestamp: ago((59 - i) * 5),
+            value: rand(5, 95),
+        })),
+        stats: {
+            avg: rand(20, 60),
+            min: rand(1, 15),
+            max: rand(70, 100),
+            p95: rand(80, 98),
+            lastIngested: ago(1),
+        },
+    })],
+    [/\/api\/otel\/metrics/, () => ({
+        metrics: Array.from({ length: 24 }, (_, i) => ({ timestamp: ago((23 - i) * 60), value: rand(10, 50) })),
+        services: ['web-api', 'worker-service'],
+        names: ['pg_connections_active', 'pg_query_duration_ms'],
+        stats: { total_ingested: 45230, ingestion_rate: 125.4, unique_metrics: 7, services_count: 4 },
+    })],
+    [/\/api\/otel/, () => ({
+        services: ['web-api', 'worker-service'],
+        stats: { total_ingested: 45230, ingestion_rate: 125.4, unique_metrics: 7, services_count: 4 },
+    })],
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  GAP FEATURES — Kubernetes
+    // ═══════════════════════════════════════════════════════════════════════
 
     [/\/api\/k8s\/health/, () => ({ cluster: 'healthy', primary: 'running', replicas: { total: 2, healthy: 2 }, pgbouncer: 'running' })],
-    [/\/api\/k8s\/pod-info/, () => ([{ name: 'postgres-primary-0', status: 'Running', cpu: '250m', memory: '512Mi', restarts: 0, node: 'node-1' }])],
-    [/\/api\/k8s/, () => ({ metrics: { pods: [{ name: 'postgres-primary-0', status: 'Running', cpu: '250m', memory: '512Mi' }], nodes: [{ name: 'node-1', cpu_pct: 45, memory_pct: 62, status: 'Ready' }] }, health: { cluster: 'healthy', primary: 'running', replicas: { total: 2, healthy: 2 } } })],
+    [/\/api\/k8s\/pod-info/, () => ({
+        name: 'postgres-primary-0',
+        namespace: 'database',
+        node: 'gke-prod-pool-1-abc123',
+        containerId: 'docker://a1b2c3d4e5f6',
+    })],
+    [/\/api\/k8s\/metrics$/, () => ({
+        readinessProbe: true,
+        livenessProbe: true,
+    })],
+    [/\/api\/k8s\/connections/, () => ({
+        connections: [
+            { podName: 'postgres-primary-0', activeConnections: 42, maxConnections: 200, usagePercent: 21 },
+            { podName: 'postgres-replica-0', activeConnections: 28, maxConnections: 200, usagePercent: 14 },
+            { podName: 'postgres-replica-1', activeConnections: 15, maxConnections: 200, usagePercent: 7.5 },
+        ],
+    })],
+    [/\/api\/k8s\/topology/, () => ({
+        primary: 'postgres-primary-0',
+        replicas: ['postgres-replica-0', 'postgres-replica-1'],
+    })],
+    [/\/api\/k8s\/resources/, (_path, qs) => {
+        if (qs && qs.includes('history=true')) {
+            return {
+                history: Array.from({ length: 48 }, (_, i) => ({
+                    timestamp: ago((47 - i) * 30),
+                    cpuPercent: rand(15, 75),
+                    memoryPercent: rand(40, 85),
+                })),
+            };
+        }
+        return {
+            cpuUsagePercent: rand(20, 65),
+            cpuUsage: '480m',
+            cpuLimit: '1000m',
+            memoryUsagePercent: rand(45, 80),
+            memoryUsage: 536870912,
+            memoryLimit: 1073741824,
+        };
+    }],
+    [/\/api\/k8s/, () => ({
+        metrics: { pods: [{ name: 'postgres-primary-0', status: 'Running', cpu: '250m', memory: '512Mi' }], nodes: [{ name: 'node-1', cpu_pct: 45, memory_pct: 62, status: 'Ready' }] },
+        health: { cluster: 'healthy', primary: 'running', replicas: { total: 2, healthy: 2 } },
+    })],
 
-    [/\/api\/status\/public/, () => ({ status: 'operational', services: [{ name: 'PostgreSQL Primary', status: 'operational', uptime: 99.97 }, { name: 'PgBouncer', status: 'operational', uptime: 99.99 }] })],
-    [/\/api\/status\/incidents/, () => ([{ id: 'inc-001', title: 'Elevated query latency', status: 'monitoring', severity: 'minor', created_at: ago(120) }])],
+    // ═══════════════════════════════════════════════════════════════════════
+    //  GAP FEATURES — Status Page
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [/\/api\/status\/public/, () => ({
+        status: 'operational',
+        uptime30d: 99.94,
+        lastUpdate: ago(15),
+        components: [
+            { name: 'PostgreSQL Primary', description: 'Main database cluster', status: 'operational' },
+            { name: 'PgBouncer', description: 'Connection pooler', status: 'operational' },
+            { name: 'Replication', description: 'Streaming replication to replicas', status: 'operational' },
+            { name: 'Backup Service', description: 'Automated backup pipeline', status: 'degraded' },
+        ],
+    })],
+    [/\/api\/status\/incidents$/, () => ({
+        incidents: [
+            { id: 'inc-001', title: 'Elevated query latency on primary', description: 'Avg query time exceeded 200ms threshold', status: 'resolved', createdAt: ago(2880), severity: 'degraded' },
+            { id: 'inc-002', title: 'Backup service delayed', description: 'Nightly backup took 3x longer than usual', status: 'active', createdAt: ago(120), severity: 'degraded' },
+            { id: 'inc-003', title: 'Replica lag spike', description: 'Replication lag exceeded 30s during bulk import', status: 'resolved', createdAt: ago(7200), severity: 'outage' },
+        ],
+    })],
     [/\/api\/status\/summary/, () => ({ overall_uptime: 99.94, incidents_30d: 3, mttr_minutes: 18 })],
-    [/\/api\/status\/uptime/, () => Array.from({ length: 90 }, (_, i) => ({ date: new Date(Date.now() - (89 - i) * 86400000).toISOString().slice(0, 10), uptime_pct: +(99 + Math.random()).toFixed(2) }))],
-    [/\/api\/status/, () => ({ status: 'operational', services: [{ name: 'PostgreSQL Primary', status: 'operational', uptime: 99.97 }] })],
+    [/\/api\/status\/uptime/, () => ({
+        data: Array.from({ length: 90 }, (_, i) => ({
+            date: new Date(Date.now() - (89 - i) * 86400000).toISOString().slice(0, 10),
+            uptime: +(99 + Math.random()).toFixed(2),
+        })),
+    })],
+    [/\/api\/status/, () => ({
+        status: 'operational',
+        components: [{ name: 'PostgreSQL Primary', status: 'operational', uptime: 99.97 }],
+    })],
 
     [/\/api\/ai-query\/analyze/, () => ({ analysis: { has_issues: true }, suggestions: [{ type: 'add_index', description: 'Add index on orders(created_at)', impact: 'high' }], explain_plan: 'Seq Scan on orders' })],
     [/\/api\/ai-query\/suggestions/, () => ([{ query: 'SELECT * FROM orders WHERE created_at > NOW()', issue: 'Sequential scan', suggestion: 'Add index on orders(created_at)', impact: 'high' }])],
@@ -431,6 +535,26 @@ const DEMO_ROUTES = [
     [/\/api\/terraform/, () => ({ export: 'resource "postgresql_database" "vigil" {\n  name = "vigil"\n}' })],
 
     [/\/api\/custom-dashboard/, () => ({ dashboards: [{ id: 'dash-1', name: 'Production Overview', widgets: 6, created_at: ago(10080) }], available_metrics: ['connections.active', 'cache.hit_ratio', 'tps.commit'] })],
+
+    // ── Metrics API (used by CustomDashboardTab) ────────────────────────────
+    [/\/api\/metrics\/names/, () => ({
+        names: [
+            'connections.active', 'connections.idle', 'connections.total',
+            'cache.hit_ratio', 'cache.block_reads', 'cache.block_hits',
+            'tps.commit', 'tps.rollback', 'tps.total',
+            'query.avg_time_ms', 'query.slow_count',
+            'disk.usage_gb', 'disk.read_iops', 'disk.write_iops',
+            'replication.lag_bytes', 'replication.lag_seconds',
+            'locks.total', 'locks.waiting', 'deadlocks.count',
+            'temp_files.count', 'temp_files.size_mb',
+        ],
+    })],
+    [/\/api\/metrics\/data/, () =>
+        Array.from({ length: 60 }, (_, i) => ({
+            timestamp: ago((59 - i) * 5),
+            value: rand(10, 90),
+        }))
+    ],
 
     [/\/api\/optimizer/, () => ({ slow_queries: Array.from({ length: 5 }, (_, i) => ({ queryid: `sq-${i + 1}`, query: 'SELECT * FROM orders WHERE status = $1', mean_exec_time: rand(50, 5000), calls: Math.floor(rand(10, 5000)) })) })],
     [/\/api\/query-plan/, () => ({ plan: 'Seq Scan on orders (cost=0.00..45230.00)' })],
@@ -452,10 +576,10 @@ const DEMO_ROUTES = [
  * Look up demo data for a given API path.
  */
 export function getDemoData(path) {
-    const cleanPath = path.split('?')[0];
+    const [cleanPath, queryString] = path.split('?');
     for (const [regex, generator] of DEMO_ROUTES) {
         if (regex.test(cleanPath)) {
-            return generator();
+            return generator(cleanPath, queryString || '');
         }
     }
     console.warn(`[DEMO] No mock data for: ${cleanPath}`);
