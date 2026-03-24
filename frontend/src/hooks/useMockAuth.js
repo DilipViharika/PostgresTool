@@ -20,7 +20,11 @@ const ROLE_PERMISSIONS = {
         'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
         'tasks', 'UserManagement', 'admin',
         'retention', 'terraform', 'custom-dashboard', 'demo-data',
-        'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb',
+        'demo-pg-core', 'demo-pg-query', 'demo-pg-infra', 'demo-pg-schema', 'demo-pg-observability', 'demo-pg-dev', 'demo-pg-admin',
+        'demo-mysql-core', 'demo-mysql-query', 'demo-mysql-infra', 'demo-mysql-schema', 'demo-mysql-observability', 'demo-mysql-admin',
+        'demo-mssql-core', 'demo-mssql-query', 'demo-mssql-infra', 'demo-mssql-schema', 'demo-mssql-observability', 'demo-mssql-admin',
+        'demo-oracle-core', 'demo-oracle-query', 'demo-oracle-infra', 'demo-oracle-schema', 'demo-oracle-observability', 'demo-oracle-admin',
+        'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-data', 'demo-mongo-intelligence', 'demo-mongo-replication', 'demo-mongo-management',
     ],
     admin: [
         'overview', 'performance', 'resources', 'reliability', 'alerts',
@@ -34,10 +38,14 @@ const ROLE_PERMISSIONS = {
         'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
         'tasks', 'admin',
         'retention', 'terraform', 'custom-dashboard', 'demo-data',
-        'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb',
+        'demo-pg-core', 'demo-pg-query', 'demo-pg-infra', 'demo-pg-schema', 'demo-pg-observability', 'demo-pg-dev', 'demo-pg-admin',
+        'demo-mysql-core', 'demo-mysql-query', 'demo-mysql-infra', 'demo-mysql-schema', 'demo-mysql-observability', 'demo-mysql-admin',
+        'demo-mssql-core', 'demo-mssql-query', 'demo-mssql-infra', 'demo-mssql-schema', 'demo-mssql-observability', 'demo-mssql-admin',
+        'demo-oracle-core', 'demo-oracle-query', 'demo-oracle-infra', 'demo-oracle-schema', 'demo-oracle-observability', 'demo-oracle-admin',
+        'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-data', 'demo-mongo-intelligence', 'demo-mongo-replication', 'demo-mongo-management',
     ],
-    user: ['overview', 'performance', 'resources', 'reliability', 'alerts', 'indexes', 'sql', 'demo-data', 'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb'],
-    viewer: ['overview', 'performance', 'resources', 'reliability', 'demo-data', 'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb']
+    user: ['overview', 'performance', 'resources', 'reliability', 'alerts', 'indexes', 'sql', 'demo-data', 'demo-pg-core', 'demo-pg-query', 'demo-pg-infra', 'demo-pg-schema', 'demo-pg-observability', 'demo-pg-dev', 'demo-pg-admin', 'demo-mysql-core', 'demo-mysql-query', 'demo-mysql-infra', 'demo-mysql-schema', 'demo-mysql-observability', 'demo-mysql-admin', 'demo-mssql-core', 'demo-mssql-query', 'demo-mssql-infra', 'demo-mssql-schema', 'demo-mssql-observability', 'demo-mssql-admin', 'demo-oracle-core', 'demo-oracle-query', 'demo-oracle-infra', 'demo-oracle-schema', 'demo-oracle-observability', 'demo-oracle-admin', 'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-data', 'demo-mongo-intelligence', 'demo-mongo-replication', 'demo-mongo-management'],
+    viewer: ['overview', 'performance', 'resources', 'reliability', 'demo-data', 'demo-pg-core', 'demo-pg-query', 'demo-pg-infra', 'demo-pg-schema', 'demo-pg-observability', 'demo-pg-dev', 'demo-pg-admin', 'demo-mysql-core', 'demo-mysql-query', 'demo-mysql-infra', 'demo-mysql-schema', 'demo-mysql-observability', 'demo-mysql-admin', 'demo-mssql-core', 'demo-mssql-query', 'demo-mssql-infra', 'demo-mssql-schema', 'demo-mssql-observability', 'demo-mssql-admin', 'demo-oracle-core', 'demo-oracle-query', 'demo-oracle-infra', 'demo-oracle-schema', 'demo-oracle-observability', 'demo-oracle-admin', 'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-data', 'demo-mongo-intelligence', 'demo-mongo-replication', 'demo-mongo-management']
 };
 
 export const useMockAuth = () => {

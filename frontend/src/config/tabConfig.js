@@ -85,12 +85,52 @@ export function buildTabConfig() {
         { id: 'retention',         icon: Clock,         label: 'Data Retention',        component: _components.RetentionManagementTab,  badge: null },
         { id: 'terraform',         icon: Download,      label: 'Terraform Export',      component: _components.TerraformExportTab,      badge: null },
         { id: 'custom-dashboard',  icon: LayoutDashboard, label: 'Custom Dashboards',   component: _components.CustomDashboardTab,      badge: null },
-        { section: 'Demo', accent: DS.emerald },
-        { id: 'demo-postgresql',   icon: Database,        label: 'PostgreSQL',            component: _components.DemoPostgresTab,         badge: null },
-        { id: 'demo-mysql',        icon: Database,        label: 'MySQL',                 component: _components.DemoMySQLTab,            badge: null },
-        { id: 'demo-sqlserver',    icon: Server,          label: 'SQL Server',            component: _components.DemoSQLServerTab,        badge: null },
-        { id: 'demo-oracle',       icon: HardDriveDownload, label: 'Oracle',              component: _components.DemoOracleTab,           badge: null },
-        { id: 'demo-mongodb',      icon: FlaskConical,    label: 'MongoDB',               component: _components.DemoMongoDBTab,          badge: null },
+        /* ── Demo: PostgreSQL ── */
+        { section: 'Demo — PostgreSQL', accent: '#6495ED' },
+        { id: 'demo-pg-core',          icon: Activity,      label: 'Core Monitoring',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-pg-query',         icon: Zap,           label: 'Query & Indexes',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-pg-infra',         icon: Network,       label: 'Infrastructure',        component: _components.DemoSectionView, badge: null },
+        { id: 'demo-pg-schema',        icon: GitBranch,     label: 'Schema & Security',     component: _components.DemoSectionView, badge: null },
+        { id: 'demo-pg-observability',  icon: Radar,         label: 'Observability',         component: _components.DemoSectionView, badge: null },
+        { id: 'demo-pg-dev',           icon: Terminal,       label: 'Developer Tools',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-pg-admin',         icon: Shield,         label: 'Admin',                 component: _components.DemoSectionView, badge: null },
+
+        /* ── Demo: MySQL ── */
+        { section: 'Demo — MySQL', accent: '#00B4D8' },
+        { id: 'demo-mysql-core',       icon: Activity,      label: 'Core Monitoring',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mysql-query',      icon: Zap,           label: 'Query & Indexes',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mysql-infra',      icon: Network,       label: 'Infrastructure',        component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mysql-schema',     icon: GitBranch,     label: 'Schema & Security',     component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mysql-observability', icon: Radar,       label: 'Observability',         component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mysql-admin',      icon: Shield,         label: 'Admin',                 component: _components.DemoSectionView, badge: null },
+
+        /* ── Demo: SQL Server ── */
+        { section: 'Demo — SQL Server', accent: '#F97316' },
+        { id: 'demo-mssql-core',       icon: Activity,      label: 'Core Monitoring',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mssql-query',      icon: Zap,           label: 'Query & Indexes',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mssql-infra',      icon: Network,       label: 'Infrastructure',        component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mssql-schema',     icon: GitBranch,     label: 'Schema & Security',     component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mssql-observability', icon: Radar,       label: 'Observability',         component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mssql-admin',      icon: Shield,         label: 'Admin',                 component: _components.DemoSectionView, badge: null },
+
+        /* ── Demo: Oracle ── */
+        { section: 'Demo — Oracle', accent: '#FF4560' },
+        { id: 'demo-oracle-core',      icon: Activity,      label: 'Core Monitoring',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-oracle-query',     icon: Zap,           label: 'Query & Indexes',       component: _components.DemoSectionView, badge: null },
+        { id: 'demo-oracle-infra',     icon: Network,       label: 'Infrastructure',        component: _components.DemoSectionView, badge: null },
+        { id: 'demo-oracle-schema',    icon: GitBranch,     label: 'Schema & Security',     component: _components.DemoSectionView, badge: null },
+        { id: 'demo-oracle-observability', icon: Radar,      label: 'Observability',         component: _components.DemoSectionView, badge: null },
+        { id: 'demo-oracle-admin',     icon: Shield,         label: 'Admin',                 component: _components.DemoSectionView, badge: null },
+
+        /* ── Demo: MongoDB ── */
+        { section: 'Demo — MongoDB', accent: '#2EE89C' },
+        { id: 'demo-mongo-overview',     icon: Activity,    label: 'Overview',              component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mongo-performance',  icon: Zap,         label: 'Performance',           component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mongo-storage',      icon: HardDrive,   label: 'Storage',               component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mongo-data',         icon: Database,    label: 'Data',                  component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mongo-intelligence', icon: Brain,       label: 'Intelligence',          component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mongo-replication',  icon: Radio,       label: 'Replication',           component: _components.DemoSectionView, badge: null },
+        { id: 'demo-mongo-management',   icon: Shield,      label: 'Management',            component: _components.DemoSectionView, badge: null },
     ];
 }
 

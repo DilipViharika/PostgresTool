@@ -767,7 +767,11 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             'mongo-overview', 'mongo-performance', 'mongo-storage',
             'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
             'demo-data',
-            'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb',
+            'demo-pg-core', 'demo-pg-query', 'demo-pg-infra', 'demo-pg-schema', 'demo-pg-observability', 'demo-pg-dev', 'demo-pg-admin',
+            'demo-mysql-core', 'demo-mysql-query', 'demo-mysql-infra', 'demo-mysql-schema', 'demo-mysql-observability', 'demo-mysql-admin',
+            'demo-mssql-core', 'demo-mssql-query', 'demo-mssql-infra', 'demo-mssql-schema', 'demo-mssql-observability', 'demo-mssql-admin',
+            'demo-oracle-core', 'demo-oracle-query', 'demo-oracle-infra', 'demo-oracle-schema', 'demo-oracle-observability', 'demo-oracle-admin',
+            'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-data', 'demo-mongo-intelligence', 'demo-mongo-replication', 'demo-mongo-management',
         ];
         const baseScreens    = user.allowed_screens ?? [];
         const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
@@ -848,7 +852,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             location:    null,
         });
 
-        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring', 'retention', 'terraform', 'custom-dashboard', 'schema-visualizer', 'mongo-overview', 'mongo-performance', 'mongo-storage', 'mongo-replication', 'mongo-data-tools', 'mongo-sharding', 'demo-data', 'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb'];
+        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring', 'retention', 'terraform', 'custom-dashboard', 'schema-visualizer', 'mongo-overview', 'mongo-performance', 'mongo-storage', 'mongo-replication', 'mongo-data-tools', 'mongo-sharding', 'demo-data', 'demo-pg-core', 'demo-pg-query', 'demo-pg-infra', 'demo-pg-schema', 'demo-pg-observability', 'demo-pg-dev', 'demo-pg-admin', 'demo-mysql-core', 'demo-mysql-query', 'demo-mysql-infra', 'demo-mysql-schema', 'demo-mysql-observability', 'demo-mysql-admin', 'demo-mssql-core', 'demo-mssql-query', 'demo-mssql-infra', 'demo-mssql-schema', 'demo-mssql-observability', 'demo-mssql-admin', 'demo-oracle-core', 'demo-oracle-query', 'demo-oracle-infra', 'demo-oracle-schema', 'demo-oracle-observability', 'demo-oracle-admin', 'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-data', 'demo-mongo-intelligence', 'demo-mongo-replication', 'demo-mongo-management'];
         const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
 
         const payload = {

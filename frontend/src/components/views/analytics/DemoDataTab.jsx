@@ -1062,12 +1062,288 @@ function mapSectionToWidgetId(sectionId) {
   return mapping[sectionId] || sectionId;
 }
 
-export default function DemoDataTab({ dbKey = 'postgresql' }) {
+/* ── Render a single section's rich widgets + metric cards + activity chart ── */
+function SectionContent({ section, db }) {
+  const widgetId = mapSectionToWidgetId(section.id);
+  const sw = getSectionWidgets(widgetId, db);
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
+        <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{section.name}</h2>
+        <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
+      </div>
+
+      {sw.pool && sw.workload && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+          <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
+            <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+          </Panel>
+          <Panel title="Workload Split" icon={BarChart3} accentColor={db.color}>
+            <DonutWidget {...sw.workload} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+          </Panel>
+          <Panel title="Top Impacted Tables" icon={Database} accentColor={db.color}>
+            <HorizontalBarList items={sw.topTables} color={db.color} />
+          </Panel>
+        </div>
+      )}
+
+      {sw.resources && (
+        <div style={{ marginBottom: 16 }}>
+          <ResourceGaugeRow resources={sw.resources} color={db.color} />
+        </div>
+      )}
+
+      {sw.latencyData && sw.pool && (
+        <div style={{ marginBottom: 16 }}>
+          <Panel title="Transaction Latency Percentiles" icon={Activity} accentColor={db.color}
+            rightNode={<div style={{ display: 'flex', gap: 10 }}>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.success, borderRadius: 1 }} />P50</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.warning, borderRadius: 1 }} />P95</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />P99</span>
+            </div>}>
+            <MultiLineChartWidget data={sw.latencyData} lines={[
+              { key: 'p50', color: THEME.success },
+              { key: 'p95', color: THEME.warning, dashed: true },
+              { key: 'p99', color: THEME.danger, dashed: true },
+            ]} color={db.color} />
+          </Panel>
+        </div>
+      )}
+
+      {sw.indexUsage && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+          <Panel title="Index Usage" icon={Gauge} accentColor={db.color}>
+            <DonutWidget {...sw.indexUsage} color={THEME.success} size={100} innerRadius={34} outerRadius={46} />
+          </Panel>
+          <Panel title="Top Slow Queries" icon={Clock} accentColor={THEME.warning}>
+            <HorizontalBarList items={sw.slowQueries} color={THEME.warning} />
+          </Panel>
+        </div>
+      )}
+
+      {sw.connPool && sw.replication && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 14, marginBottom: 16 }}>
+          <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
+            <DonutWidget {...sw.connPool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
+          </Panel>
+          <Panel title="Replication & Locks" icon={GitBranch} accentColor={db.color}>
+            <ReplicationTopology nodes={sw.replication} color={db.color} />
+          </Panel>
+        </div>
+      )}
+
+      {sw.distribution && !sw.pool && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14, marginBottom: 16 }}>
+          <Panel title="Object Distribution" icon={Layers} accentColor={db.color}>
+            <DonutWidget {...sw.distribution} color={db.color} size={110} innerRadius={38} outerRadius={50} />
+          </Panel>
+        </div>
+      )}
+
+      {sw.latencyData && !sw.pool && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+          <Panel title="Trace & Error Volume" icon={Eye} accentColor={db.color}
+            rightNode={<div style={{ display: 'flex', gap: 10 }}>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Traces</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />Errors</span>
+            </div>}>
+            <MultiLineChartWidget data={sw.latencyData} lines={[
+              { key: 'traces', color: db.color },
+              { key: 'errors', color: THEME.danger, dashed: true },
+            ]} color={db.color} />
+          </Panel>
+          <Panel title="Alert Distribution" icon={AlertTriangle} accentColor={THEME.warning}>
+            <HorizontalBarList items={sw.alertDist} color={db.color} />
+          </Panel>
+        </div>
+      )}
+
+      {sw.opsData && (
+        <div style={{ marginBottom: 16 }}>
+          <Panel title="OPS / Second (Today)" icon={BarChart3} accentColor={db.color}
+            rightNode={<div style={{ display: 'flex', gap: 10 }}>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Reads</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: `${db.color}60`, borderRadius: 1 }} />Writes</span>
+            </div>}>
+            <MiniBarChart data={sw.opsData} color={db.color} />
+          </Panel>
+        </div>
+      )}
+
+      {sw.userDist && (
+        <div style={{ marginBottom: 16 }}>
+          <Panel title="User Distribution" icon={Shield} accentColor={db.color}>
+            <DonutWidget {...sw.userDist} color={db.color} size={110} innerRadius={38} outerRadius={50} />
+          </Panel>
+        </div>
+      )}
+
+      <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+        {section.tabs.map((tab, idx) => (
+          <div
+            key={idx}
+            style={{
+              background: THEME.glass,
+              backdropFilter: 'blur(14px)',
+              border: `1px solid ${THEME.glassBorder}`,
+              borderRadius: 14,
+              padding: '14px 16px',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+              cursor: 'default',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.borderColor = db.color;
+              e.currentTarget.style.boxShadow = `0 8px 24px ${db.color}20`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = THEME.glassBorder;
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <div className="demo-card-shine" />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${db.color}, transparent)`, opacity: 0.6 }} />
+            <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{tab.name}</h3>
+            {tab.metrics.map((m, mIdx) => (
+              <div key={mIdx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: mIdx < tab.metrics.length - 1 ? 10 : 0 }}>
+                <span style={{ fontSize: 11.5, color: THEME.textMuted }}>{m.label}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>{m.value}</span>
+                  <span style={{ fontSize: 10, color: THEME.textDim }}>{m.unit}</span>
+                  <MiniSparkline data={genSparkData(`${tab.name}-${m.label}`)} color={db.color} width={44} height={14} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <Panel title={`${section.name} Activity`} icon={Activity} accentColor={db.color} rightNode={<StatusBadge label="DEMO" color={db.color} pulse />}>
+          <div style={{ height: 180 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={genVelocityData(section.name)} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+                <defs>
+                  <linearGradient id={`dg1-${section.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={db.color} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={db.color} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id={`dg2-${section.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={db.color} stopOpacity={0.15} />
+                    <stop offset="100%" stopColor={db.color} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="time" tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
+                <YAxis tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
+                <Tooltip />
+                <Area type="monotone" dataKey="primary" stroke={db.color} strokeWidth={2} fill={`url(#dg1-${section.id})`} />
+                <Area type="monotone" dataKey="secondary" stroke={db.color} strokeWidth={1} fill={`url(#dg2-${section.id})`} strokeDasharray="5 3" strokeOpacity={0.5} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+/* ── Helper: shared backup/txn/maintenance panels ── */
+function OverviewPanels({ widgets, db }) {
+  return (
+    <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+      <Panel title="Last Backup" icon={HardDrive} accentColor={THEME.success}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: THEME.textMuted }}>Completed</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.time}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: THEME.textMuted }}>Size</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.size}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: THEME.textMuted }}>Duration</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.duration}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: THEME.textMuted }}>Verified</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {widgets.backup.verified && <CheckCircle size={12} color={THEME.success} />}
+              <span style={{ fontSize: 11, color: THEME.success, fontWeight: 600 }}>Yes</span>
+            </div>
+          </div>
+          <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 8 }}>
+            <div style={{ fontSize: 10, color: THEME.textDim }}>Next: {widgets.backup.next}</div>
+          </div>
+        </div>
+      </Panel>
+
+      <Panel title="Long-Running Txns" icon={Hourglass} accentColor={THEME.warning}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {widgets.longTxns.map((txn, idx) => (
+            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: "'JetBrains Mono',monospace" }}>{txn.pid}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim }}>{txn.duration}</span>
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{txn.query}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.glassBorder, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: THEME.warning, width: `${txn.pct}%` }} />
+                </div>
+                <span style={{ fontSize: 9, color: THEME.textDim, minWidth: 30 }}>{txn.wait}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Maintenance Health" icon={Leaf} accentColor={db.color}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', height: 18, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
+            <div style={{ flex: widgets.vacuum.urgent, background: THEME.danger, opacity: 0.8 }} />
+            <div style={{ flex: widgets.vacuum.soon, background: THEME.warning, opacity: 0.6 }} />
+            <div style={{ flex: widgets.vacuum.healthy, background: THEME.success, opacity: 0.5 }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Urgent</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: THEME.danger }}>{widgets.vacuum.urgent}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Soon</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: THEME.warning }}>{widgets.vacuum.soon}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Healthy</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: THEME.success }}>{widgets.vacuum.healthy}</div>
+            </div>
+          </div>
+          <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 4 }}>
+            <div style={{ fontSize: 9.5, color: THEME.textMuted, marginBottom: 4 }}>Dead Tuples</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{widgets.vacuum.deadTuples}</div>
+          </div>
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+export default function DemoDataTab({ dbKey = 'postgresql', sectionId }) {
   const db = DATABASE_STRUCTURE[dbKey];
   const widgets = DETAIL_WIDGETS[dbKey] || DETAIL_WIDGETS.postgresql;
   if (!db) return null;
 
   const kpiIcons = [Activity, Zap, Database, Clock, HardDrive];
+
+  /* When sectionId is provided, find and render only that section */
+  const filteredSection = sectionId
+    ? db.sections.find((s) => s.id === sectionId)
+    : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '0 0 48px 0' }}>
@@ -1080,7 +1356,10 @@ export default function DemoDataTab({ dbKey = 'postgresql' }) {
             Demo Mode
           </span>
           <StatusBadge label={db.name} color={db.color} />
-          <StatusBadge label={`${db.sections.length} sections`} color={THEME.textMuted} />
+          {filteredSection
+            ? <StatusBadge label={filteredSection.name} color={db.color} />
+            : <StatusBadge label={`${db.sections.length} sections`} color={THEME.textMuted} />
+          }
         </div>
         <StatusBadge label="DEMO" color={db.color} pulse />
       </div>
@@ -1177,281 +1456,39 @@ export default function DemoDataTab({ dbKey = 'postgresql' }) {
         })}
       </div>
 
-      <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-        <Panel title="Last Backup" icon={HardDrive} accentColor={THEME.success}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: THEME.textMuted }}>Completed</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.time}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: THEME.textMuted }}>Size</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.size}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: THEME.textMuted }}>Duration</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{widgets.backup.duration}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: THEME.textMuted }}>Verified</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {widgets.backup.verified && <CheckCircle size={12} color={THEME.success} />}
-                <span style={{ fontSize: 11, color: THEME.success, fontWeight: 600 }}>Yes</span>
-              </div>
-            </div>
-            <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 8 }}>
-              <div style={{ fontSize: 10, color: THEME.textDim }}>Next: {widgets.backup.next}</div>
-            </div>
+      <OverviewPanels widgets={widgets} db={db} />
+
+      {filteredSection ? (
+        /* ── Single section mode (sidebar subsection click) ── */
+        <>
+          <div style={{ marginTop: 24 }}>
+            <SectionContent section={filteredSection} db={db} />
           </div>
-        </Panel>
-
-        <Panel title="Long-Running Txns" icon={Hourglass} accentColor={THEME.warning}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {widgets.longTxns.map((txn, idx) => (
-              <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: "'JetBrains Mono',monospace" }}>{txn.pid}</span>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim }}>{txn.duration}</span>
-                </div>
-                <div style={{ fontSize: 9, color: THEME.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{txn.query}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.glassBorder, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', background: THEME.warning, width: `${txn.pct}%` }} />
-                  </div>
-                  <span style={{ fontSize: 9, color: THEME.textDim, minWidth: 30 }}>{txn.wait}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel title="Maintenance Health" icon={Leaf} accentColor={db.color}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', height: 18, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
-              <div style={{ flex: widgets.vacuum.urgent, background: THEME.danger, opacity: 0.8 }} />
-              <div style={{ flex: widgets.vacuum.soon, background: THEME.warning, opacity: 0.6 }} />
-              <div style={{ flex: widgets.vacuum.healthy, background: THEME.success, opacity: 0.5 }} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <div style={{ fontSize: 9, color: THEME.textDim }}>Urgent</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.danger }}>{widgets.vacuum.urgent}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 9, color: THEME.textDim }}>Soon</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.warning }}>{widgets.vacuum.soon}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 9, color: THEME.textDim }}>Healthy</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.success }}>{widgets.vacuum.healthy}</div>
-              </div>
-            </div>
-            <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 4 }}>
-              <div style={{ fontSize: 9.5, color: THEME.textMuted, marginBottom: 4 }}>Dead Tuples</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{widgets.vacuum.deadTuples}</div>
-            </div>
-          </div>
-        </Panel>
-      </div>
-
-      {db.sections.map((section) => {
-        const widgetId = mapSectionToWidgetId(section.id);
-        const sw = getSectionWidgets(widgetId, db);
-        return (
-        <div key={section.id} style={{ marginTop: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
-            <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{section.name}</h2>
-            <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
-          </div>
-
-          {/* ── Rich Widgets Row ── */}
-          {sw.pool && sw.workload && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
-              <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
-                <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
-              </Panel>
-              <Panel title="Workload Split" icon={BarChart3} accentColor={db.color}>
-                <DonutWidget {...sw.workload} color={db.color} size={100} innerRadius={34} outerRadius={46} />
-              </Panel>
-              <Panel title="Top Impacted Tables" icon={Database} accentColor={db.color}>
-                <HorizontalBarList items={sw.topTables} color={db.color} />
-              </Panel>
-            </div>
-          )}
-
-          {sw.resources && (
-            <div style={{ marginBottom: 16 }}>
-              <ResourceGaugeRow resources={sw.resources} color={db.color} />
-            </div>
-          )}
-
-          {sw.latencyData && sw.pool && (
-            <div style={{ marginBottom: 16 }}>
-              <Panel title="Transaction Latency Percentiles" icon={Activity} accentColor={db.color}
-                rightNode={<div style={{ display: 'flex', gap: 10 }}>
-                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.success, borderRadius: 1 }} />P50</span>
-                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.warning, borderRadius: 1 }} />P95</span>
-                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />P99</span>
-                </div>}>
-                <MultiLineChartWidget data={sw.latencyData} lines={[
-                  { key: 'p50', color: THEME.success },
-                  { key: 'p95', color: THEME.warning, dashed: true },
-                  { key: 'p99', color: THEME.danger, dashed: true },
-                ]} color={db.color} />
-              </Panel>
-            </div>
-          )}
-
-          {sw.indexUsage && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-              <Panel title="Index Usage" icon={Gauge} accentColor={db.color}>
-                <DonutWidget {...sw.indexUsage} color={THEME.success} size={100} innerRadius={34} outerRadius={46} />
-              </Panel>
-              <Panel title="Top Slow Queries" icon={Clock} accentColor={THEME.warning}>
-                <HorizontalBarList items={sw.slowQueries} color={THEME.warning} />
-              </Panel>
-            </div>
-          )}
-
-          {sw.connPool && sw.replication && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 14, marginBottom: 16 }}>
-              <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
-                <DonutWidget {...sw.connPool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
-              </Panel>
-              <Panel title="Replication & Locks" icon={GitBranch} accentColor={db.color}>
-                <ReplicationTopology nodes={sw.replication} color={db.color} />
-              </Panel>
-            </div>
-          )}
-
-          {sw.distribution && !sw.pool && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14, marginBottom: 16 }}>
-              <Panel title="Object Distribution" icon={Layers} accentColor={db.color}>
-                <DonutWidget {...sw.distribution} color={db.color} size={110} innerRadius={38} outerRadius={50} />
-              </Panel>
-            </div>
-          )}
-
-          {sw.latencyData && !sw.pool && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-              <Panel title="Trace & Error Volume" icon={Eye} accentColor={db.color}
-                rightNode={<div style={{ display: 'flex', gap: 10 }}>
-                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Traces</span>
-                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />Errors</span>
-                </div>}>
-                <MultiLineChartWidget data={sw.latencyData} lines={[
-                  { key: 'traces', color: db.color },
-                  { key: 'errors', color: THEME.danger, dashed: true },
-                ]} color={db.color} />
-              </Panel>
-              <Panel title="Alert Distribution" icon={AlertTriangle} accentColor={THEME.warning}>
-                <HorizontalBarList items={sw.alertDist} color={db.color} />
-              </Panel>
-            </div>
-          )}
-
-          {sw.opsData && (
-            <div style={{ marginBottom: 16 }}>
-              <Panel title="OPS / Second (Today)" icon={BarChart3} accentColor={db.color}
-                rightNode={<div style={{ display: 'flex', gap: 10 }}>
-                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Reads</span>
-                  <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: `${db.color}60`, borderRadius: 1 }} />Writes</span>
-                </div>}>
-                <MiniBarChart data={sw.opsData} color={db.color} />
-              </Panel>
-            </div>
-          )}
-
-          {sw.userDist && (
-            <div style={{ marginBottom: 16 }}>
-              <Panel title="User Distribution" icon={Shield} accentColor={db.color}>
-                <DonutWidget {...sw.userDist} color={db.color} size={110} innerRadius={38} outerRadius={50} />
-              </Panel>
-            </div>
-          )}
-
-          {/* ── Metric Cards Grid ── */}
-          <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-            {section.tabs.map((tab, idx) => (
-              <div
-                key={idx}
-                style={{
-                  background: THEME.glass,
-                  backdropFilter: 'blur(14px)',
-                  border: `1px solid ${THEME.glassBorder}`,
-                  borderRadius: 14,
-                  padding: '14px 16px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
-                  cursor: 'default',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                  e.currentTarget.style.borderColor = db.color;
-                  e.currentTarget.style.boxShadow = `0 8px 24px ${db.color}20`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = THEME.glassBorder;
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div className="demo-card-shine" />
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${db.color}, transparent)`, opacity: 0.6 }} />
-                <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{tab.name}</h3>
-                {tab.metrics.map((m, mIdx) => (
-                  <div key={mIdx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: mIdx < tab.metrics.length - 1 ? 10 : 0 }}>
-                    <span style={{ fontSize: 11.5, color: THEME.textMuted }}>{m.label}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>{m.value}</span>
-                      <span style={{ fontSize: 10, color: THEME.textDim }}>{m.unit}</span>
-                      <MiniSparkline data={genSparkData(`${tab.name}-${m.label}`)} color={db.color} width={44} height={14} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* ── Section Activity Chart ── */}
-          <div style={{ marginTop: 16 }}>
-            <Panel title={`${section.name} Activity`} icon={Activity} accentColor={db.color} rightNode={<StatusBadge label="DEMO" color={db.color} pulse />}>
-              <div style={{ height: 180 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={genVelocityData(section.name)} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-                    <defs>
-                      <linearGradient id={`dg1-${section.id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={db.color} stopOpacity={0.35} />
-                        <stop offset="100%" stopColor={db.color} stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id={`dg2-${section.id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={db.color} stopOpacity={0.15} />
-                        <stop offset="100%" stopColor={db.color} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="time" tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
-                    <YAxis tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="primary" stroke={db.color} strokeWidth={2} fill={`url(#dg1-${section.id})`} />
-                    <Area type="monotone" dataKey="secondary" stroke={db.color} strokeWidth={1} fill={`url(#dg2-${section.id})`} strokeDasharray="5 3" strokeOpacity={0.5} />
-                  </AreaChart>
-                </ResponsiveContainer>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+            <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+                <RingGauge value={92} color={db.color} size={100} strokeWidth={8} label="health" />
               </div>
             </Panel>
           </div>
-        </div>
-        );
-      })}
-
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-        <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
-            <RingGauge value={92} color={db.color} size={100} strokeWidth={8} label="health" />
+        </>
+      ) : (
+        /* ── All sections mode (no sectionId) ── */
+        <>
+          {db.sections.map((section) => (
+            <div key={section.id} style={{ marginTop: 24 }}>
+              <SectionContent section={section} db={db} />
+            </div>
+          ))}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+            <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+                <RingGauge value={92} color={db.color} size={100} strokeWidth={8} label="health" />
+              </div>
+            </Panel>
           </div>
-        </Panel>
-      </div>
+        </>
+      )}
     </div>
   );
 }
