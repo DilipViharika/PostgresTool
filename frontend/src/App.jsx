@@ -9,7 +9,6 @@ import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
 
 import LoginPage from './components/auth/LoginPage.jsx';
-const SSOCallback = lazyRetry(() => import('./components/auth/SSOCallback.jsx'));
 
 // Enterprise context providers and components
 import { LicenseProvider } from './enterprise/context/LicenseContext.jsx';
@@ -29,6 +28,8 @@ const lazyRetry = (importFn) => lazy(() =>
         return importFn(); // second attempt
     })
 );
+
+const SSOCallback = lazyRetry(() => import('./components/auth/SSOCallback.jsx'));
 
 /* ── Lazy-loaded tab components for faster initial load ── */
 // Monitoring features
