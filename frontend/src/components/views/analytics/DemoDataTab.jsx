@@ -3,7 +3,7 @@ import {
   Database, TrendingUp, Activity, Zap, HardDrive, Cpu,
   ChevronDown, ChevronRight, AlertCircle, CheckCircle,
   Clock, BarChart3, PieChart as PieChartIcon, GitBranch,
-  Shield, Zap as ZapIcon, Settings
+  Shield, Settings
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -967,7 +967,7 @@ function VacuumWidget({ data, dbColor }) {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <ZapIcon size={16} color={dbColor} />
+          <Zap size={16} color={dbColor} />
         </div>
         <h4 style={{
           fontSize: 12,
