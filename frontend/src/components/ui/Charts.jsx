@@ -20,24 +20,6 @@ import {
     Sun, Crosshair, Map, Compass, Navigation,
     Power, Share2, GitMerge, Flag, Bookmark, Archive
 } from 'lucide-react';
-    ResponsiveContainer, LineChart, Line, RadialBarChart, RadialBar,
-    PolarAngleAxis, AreaChart, Area, BarChart, Bar, Cell, Tooltip,
-    PieChart, Pie, CartesianGrid, XAxis, YAxis, ReferenceLine, ComposedChart,
-    ScatterChart, Scatter, ZAxis
-} from 'recharts';
-    TrendingUp, TrendingDown, Terminal as TerminalIcon, Zap, Bell, BellOff, Wifi, WifiOff,
-    Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Clock, Star, StarOff,
-    Tag, Hash, Database, HardDrive, Lock, Unlock, AlertTriangle, AlertCircle,
-    CheckCircle, XCircle, Info, ChevronRight, ChevronDown, Copy, Check,
-    RefreshCw, Loader, Search, Filter, X, MoreVertical, ExternalLink,
-    Activity, Server, Cpu, ArrowUpRight, ArrowDownRight, Layers as LayersIcon, GitBranch,
-    Radio, Hexagon, Triangle, Sparkles, Binary, Braces, Orbit, Play, Pause,
-    SkipForward, Volume2, Maximize2, Minimize2, Settings, User, Globe,
-    BarChart2, ChevronLeft, ChevronUp, Download,
-    Upload, Link, Unlink, Box, Sliders, Code, FileText, Folder, Moon,
-    Sun, Crosshair, Map, Compass, Navigation,
-    Power, Share2, GitMerge, Flag, Bookmark, Archive
-} from 'lucide-react';
 
 export const ResourceGauge = ({ label, value, color, thresholds, size = 160, subtitle, showHistory = false, historyData }) => {
     useAdaptiveTheme();

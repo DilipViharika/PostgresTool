@@ -20,8 +20,6 @@ import {
     Sun, Crosshair, Map, Compass, Navigation,
     Power, Share2, GitMerge, Flag, Bookmark, Archive
 } from 'lucide-react';
-import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
-import { THEME as _AT } from '../../utils/theme.jsx';
 
 export const CornerBrackets = () => null;
 
