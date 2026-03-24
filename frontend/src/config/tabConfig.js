@@ -13,6 +13,7 @@ import {
     CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
     Radio, Cloud, Archive, RefreshCw, Star,
     Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock, CheckCircle,
+    Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge,
 } from 'lucide-react';
 
 import { getDS } from './designTokens.js';
@@ -68,6 +69,14 @@ export function buildTabConfig() {
         { id: 'api',               icon: Cpu,           label: 'API Tracing',           component: _components.ApiQueriesTab,           badge: null },
         { id: 'repository',        icon: GitBranch,     label: 'Repository',            component: _components.RepositoryTab,           badge: null },
         { id: 'ai-advisor',        icon: Brain,         label: 'AI Query Advisor',      component: _components.AIQueryAdvisorTab,       badge: null },
+
+        { section: 'MongoDB', accent: DS.emerald },
+        { id: 'mongo-overview',     icon: Database,          label: 'Mongo Overview',        component: _components.MongoOverviewTab,        badge: null },
+        { id: 'mongo-performance',  icon: Gauge,             label: 'Mongo Performance',     component: _components.MongoPerformanceTab,     badge: null },
+        { id: 'mongo-storage',      icon: HardDriveDownload, label: 'Mongo Storage',         component: _components.MongoStorageTab,         badge: null },
+        { id: 'mongo-replication',  icon: GitMerge,          label: 'Mongo Replication',     component: _components.MongoReplicationTab,     badge: null },
+        { id: 'mongo-data-tools',   icon: Workflow,          label: 'Mongo Data Tools',      component: _components.MongoDataToolsTab,       badge: null },
+        { id: 'mongo-sharding',     icon: Server,            label: 'Mongo Sharding',        component: _components.MongoShardingTab,        badge: null },
 
         { section: 'Admin', accent: DS.rose },
         { id: 'tasks',             icon: CalendarCheck, label: 'DBA Task Scheduler',    component: _components.DBATaskSchedulerTab,     badge: null },

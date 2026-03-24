@@ -309,27 +309,37 @@ export class OracleAdapter extends BaseAdapter {
         const metrics = [];
 
         try {
+            // Batch query for multiple v$sysstat metrics
             const statResult = await this.query(`
                 SELECT
                     round((1 - (sum(decode(name, 'physical reads', value, 0)) /
-                        (sum(decode(name, 'db block gets', value, 0)) + sum(decode(name, 'consistent gets', value, 0))))) * 100, 2) AS hit_ratio
+                        (sum(decode(name, 'db block gets', value, 0)) + sum(decode(name, 'consistent gets', value, 0))))) * 100, 2) AS sga_hit_ratio,
+                    round(sum(decode(name, 'physical reads', value, 0)) / (
+                        select (sysdate - startup_time) * 24 * 3600 from v$instance), 2) AS physical_reads_sec,
+                    round(sum(decode(name, 'user commits', value, 0)) / (
+                        select (sysdate - startup_time) * 24 * 3600 from v$instance), 2) AS user_commits_sec,
+                    round(sum(decode(name, 'sorts (disk)', value, 0)) / (
+                        select (sysdate - startup_time) * 24 * 3600 from v$instance), 2) AS sorts_disk_sec
                 FROM v$sysstat
             `);
 
-            const hitRatio = this.toNumber(statResult.rows[0]?.hit_ratio, 0);
+            const statRow = statResult.rows[0] || {};
+
+            // 1. SGA hit ratio
+            const sgaHitRatio = this.toNumber(statRow.sga_hit_ratio, 0);
             metrics.push({
                 id: 'sga_hit_ratio',
                 label: 'SGA Cache Hit Ratio',
-                value: hitRatio,
+                value: sgaHitRatio,
                 unit: '%',
                 category: 'performance',
-                severity: hitRatio >= 99 ? 'ok' : hitRatio >= 90 ? 'warning' : 'critical',
+                severity: sgaHitRatio >= 99 ? 'ok' : sgaHitRatio >= 90 ? 'warning' : 'critical',
                 thresholds: { warning: 90, critical: 80 },
                 description: 'System Global Area cache hit ratio',
                 dbSpecific: true,
             });
 
-            // Active connections
+            // 2. Active connections
             const connResult = await this.query(`
                 SELECT count(*) AS active_conn FROM v$session WHERE type != 'BACKGROUND'
             `);
@@ -346,7 +356,7 @@ export class OracleAdapter extends BaseAdapter {
                 dbSpecific: false,
             });
 
-            // Redo log switches per hour
+            // 3. Redo log switches per hour
             const redoResult = await this.query(`
                 SELECT count(*) AS switches FROM v$log_history WHERE first_time > sysdate - 1/24
             `);
@@ -360,6 +370,250 @@ export class OracleAdapter extends BaseAdapter {
                 severity: redoSwitches > 10 ? 'warning' : redoSwitches > 50 ? 'critical' : 'ok',
                 thresholds: { warning: 10, critical: 50 },
                 description: 'Number of redo log switches in the last hour',
+                dbSpecific: true,
+            });
+
+            // 4. Physical reads per second
+            const physicalReadsSec = this.toNumber(statRow.physical_reads_sec, 0);
+            metrics.push({
+                id: 'physical_reads_per_sec',
+                label: 'Physical Reads/sec',
+                value: physicalReadsSec,
+                unit: 'reads/sec',
+                category: 'performance',
+                severity: physicalReadsSec > 1000 ? 'critical' : physicalReadsSec > 100 ? 'warning' : 'ok',
+                thresholds: { warning: 100, critical: 1000 },
+                description: 'Physical disk reads per second',
+                dbSpecific: false,
+            });
+
+            // 5. User commits per second
+            const userCommitsSec = this.toNumber(statRow.user_commits_sec, 0);
+            metrics.push({
+                id: 'user_commits_per_sec',
+                label: 'User Commits/sec',
+                value: userCommitsSec,
+                unit: 'commits/sec',
+                category: 'performance',
+                severity: 'ok',
+                thresholds: { warning: 10000, critical: 50000 },
+                description: 'User commits per second',
+                dbSpecific: true,
+            });
+
+            // 6. Sorts to disk per second
+            const sortsDiskSec = this.toNumber(statRow.sorts_disk_sec, 0);
+            metrics.push({
+                id: 'sorts_disk_per_sec',
+                label: 'Disk Sorts/sec',
+                value: sortsDiskSec,
+                unit: 'sorts/sec',
+                category: 'performance',
+                severity: sortsDiskSec > 10 ? 'critical' : sortsDiskSec > 1 ? 'warning' : 'ok',
+                thresholds: { warning: 1, critical: 10 },
+                description: 'Sorts performed on disk per second',
+                dbSpecific: true,
+            });
+
+            // 7. Library cache hit ratio
+            const libraryCacheResult = await this.query(`
+                SELECT
+                    round((sum(decode(namespace, 'SQL AREA', pins, 0)) - sum(decode(namespace, 'SQL AREA', reloads, 0))) /
+                        sum(decode(namespace, 'SQL AREA', pins, 0)) * 100, 2) AS lib_cache_ratio
+                FROM v$librarycache
+                WHERE sum(decode(namespace, 'SQL AREA', pins, 0)) > 0
+            `);
+            const libraryCacheRatio = this.toNumber((libraryCacheResult.rows[0] || {}).lib_cache_ratio, 0);
+            metrics.push({
+                id: 'library_cache_hit_ratio',
+                label: 'Library Cache Hit Ratio',
+                value: libraryCacheRatio,
+                unit: '%',
+                category: 'performance',
+                severity: libraryCacheRatio >= 99 ? 'ok' : libraryCacheRatio >= 90 ? 'warning' : 'critical',
+                thresholds: { warning: 90, critical: 80 },
+                description: 'SQL library cache hit ratio',
+                dbSpecific: true,
+            });
+
+            // 8. Dictionary cache hit ratio
+            const dictCacheResult = await this.query(`
+                SELECT
+                    round((sum(decode(namespace, 'ROWCACHE', pins, 0)) - sum(decode(namespace, 'ROWCACHE', reloads, 0))) /
+                        sum(decode(namespace, 'ROWCACHE', pins, 0)) * 100, 2) AS dict_cache_ratio
+                FROM v$librarycache
+                WHERE sum(decode(namespace, 'ROWCACHE', pins, 0)) > 0
+            `);
+            const dictCacheRatio = this.toNumber((dictCacheResult.rows[0] || {}).dict_cache_ratio, 0);
+            metrics.push({
+                id: 'dictionary_cache_hit_ratio',
+                label: 'Dictionary Cache Hit Ratio',
+                value: dictCacheRatio,
+                unit: '%',
+                category: 'performance',
+                severity: dictCacheRatio >= 99 ? 'ok' : dictCacheRatio >= 90 ? 'warning' : 'critical',
+                thresholds: { warning: 90, critical: 80 },
+                description: 'Row cache hit ratio',
+                dbSpecific: true,
+            });
+
+            // 9. Active sessions
+            const activeSessResult = await this.query(`
+                SELECT count(*) AS active_sess FROM v$session WHERE type != 'BACKGROUND' AND state = 'ACTIVE'
+            `);
+            const activeSessions = this.toNumber((activeSessResult.rows[0] || {}).active_sess, 0);
+            metrics.push({
+                id: 'active_sessions',
+                label: 'Active Sessions',
+                value: activeSessions,
+                unit: 'count',
+                category: 'performance',
+                severity: activeSessions > 50 ? 'warning' : activeSessions > 100 ? 'critical' : 'ok',
+                thresholds: { warning: 50, critical: 100 },
+                description: 'Currently active sessions',
+                dbSpecific: false,
+            });
+
+            // 10. Enqueue waits
+            const enqueueResult = await this.query(`
+                SELECT round(sum(total_wait#) / (select (sysdate - startup_time) * 24 * 3600 from v$instance), 2) AS enq_waits_sec
+                FROM v$enqueue_stat
+            `);
+            const enqueueWaits = this.toNumber((enqueueResult.rows[0] || {}).enq_waits_sec, 0);
+            metrics.push({
+                id: 'enqueue_waits_per_sec',
+                label: 'Enqueue Waits/sec',
+                value: enqueueWaits,
+                unit: 'waits/sec',
+                category: 'locks',
+                severity: enqueueWaits > 100 ? 'critical' : enqueueWaits > 10 ? 'warning' : 'ok',
+                thresholds: { warning: 10, critical: 100 },
+                description: 'Enqueue (lock) waits per second',
+                dbSpecific: true,
+            });
+
+            // 11. Open cursors current
+            const cursorResult = await this.query(`
+                SELECT max(value) AS open_cursors FROM v$sysstat WHERE name = 'opened cursors current'
+            `);
+            const openCursors = this.toNumber((cursorResult.rows[0] || {}).open_cursors, 0);
+            metrics.push({
+                id: 'open_cursors_current',
+                label: 'Open Cursors',
+                value: openCursors,
+                unit: 'count',
+                category: 'performance',
+                severity: openCursors > 1000 ? 'critical' : openCursors > 500 ? 'warning' : 'ok',
+                thresholds: { warning: 500, critical: 1000 },
+                description: 'Currently open cursors',
+                dbSpecific: true,
+            });
+
+            // 12. PGA usage
+            const pgaResult = await this.query(`
+                SELECT round(sum(pga_alloc_mem) / 1024 / 1024 / 1024, 2) AS pga_usage_gb FROM v$process
+            `);
+            const pgaUsageGb = this.toNumber((pgaResult.rows[0] || {}).pga_usage_gb, 0);
+            metrics.push({
+                id: 'pga_usage_gb',
+                label: 'PGA Usage',
+                value: pgaUsageGb,
+                unit: 'GB',
+                category: 'performance',
+                severity: pgaUsageGb > 10 ? 'critical' : pgaUsageGb > 5 ? 'warning' : 'ok',
+                thresholds: { warning: 5, critical: 10 },
+                description: 'Program Global Area usage',
+                dbSpecific: true,
+            });
+
+            // 13. Tablespace usage percent
+            const tablespaceResult = await this.query(`
+                SELECT
+                    round(sum(used_space) / sum(tablespace_size) * 100, 2) AS tbsp_used_pct
+                FROM dba_tablespace_usage_metrics
+            `);
+            const tablespaceUsed = this.toNumber((tablespaceResult.rows[0] || {}).tbsp_used_pct, 0);
+            metrics.push({
+                id: 'tablespace_usage_pct',
+                label: 'Tablespace Usage',
+                value: tablespaceUsed,
+                unit: '%',
+                category: 'performance',
+                severity: tablespaceUsed > 90 ? 'critical' : tablespaceUsed > 80 ? 'warning' : 'ok',
+                thresholds: { warning: 80, critical: 90 },
+                description: 'Percentage of tablespace used',
+                dbSpecific: true,
+            });
+
+            // 14. Shared pool free percent
+            const poolResult = await this.query(`
+                SELECT round((1 - (select sum(bytes) from v$sgastat where pool = 'shared pool' and name != 'free memory') /
+                    (select sum(bytes) from v$sgastat where pool = 'shared pool')) * 100, 2) AS pool_free_pct
+                FROM dual
+            `);
+            const poolFree = this.toNumber((poolResult.rows[0] || {}).pool_free_pct, 0);
+            metrics.push({
+                id: 'shared_pool_free_pct',
+                label: 'Shared Pool Free %',
+                value: poolFree,
+                unit: '%',
+                category: 'performance',
+                severity: poolFree < 10 ? 'critical' : poolFree < 20 ? 'warning' : 'ok',
+                thresholds: { warning: 20, critical: 10 },
+                description: 'Percentage of shared pool free',
+                dbSpecific: true,
+            });
+
+            // 15. Buffer cache usage
+            const bufferCacheResult = await this.query(`
+                SELECT round((1 - (select count(*) from v$bh where state = 'free') / count(*)) * 100, 2) AS buffer_cache_pct
+                FROM v$bh
+            `);
+            const bufferCacheUsed = this.toNumber((bufferCacheResult.rows[0] || {}).buffer_cache_pct, 0);
+            metrics.push({
+                id: 'buffer_cache_usage_pct',
+                label: 'Buffer Cache Usage',
+                value: bufferCacheUsed,
+                unit: '%',
+                category: 'performance',
+                severity: 'ok',
+                thresholds: { warning: 80, critical: 95 },
+                description: 'Percentage of buffer cache in use',
+                dbSpecific: true,
+            });
+
+            // 16. Redo log buffer waits
+            const redoBufferResult = await this.query(`
+                SELECT round(sum(value), 2) AS redo_buf_waits FROM v$sysstat WHERE name LIKE '%redo%buffer%'
+            `);
+            const redoBufferWaits = this.toNumber((redoBufferResult.rows[0] || {}).redo_buf_waits, 0);
+            metrics.push({
+                id: 'redo_buffer_waits',
+                label: 'Redo Buffer Waits',
+                value: redoBufferWaits,
+                unit: 'count',
+                category: 'performance',
+                severity: redoBufferWaits > 100 ? 'critical' : redoBufferWaits > 10 ? 'warning' : 'ok',
+                thresholds: { warning: 10, critical: 100 },
+                description: 'Number of redo log buffer waits',
+                dbSpecific: true,
+            });
+
+            // 17. DB CPU usage
+            const cpuResult = await this.query(`
+                SELECT round(sum(value) / 1000000 / (select (sysdate - startup_time) * 24 * 3600 from v$instance), 2) AS cpu_sec_per_sec
+                FROM v$sysstat WHERE name LIKE '%DB CPU%'
+            `);
+            const cpuUsage = this.toNumber((cpuResult.rows[0] || {}).cpu_sec_per_sec, 0);
+            metrics.push({
+                id: 'db_cpu_usage',
+                label: 'DB CPU Usage',
+                value: cpuUsage,
+                unit: 'cpu_sec/sec',
+                category: 'performance',
+                severity: cpuUsage > 0.8 ? 'critical' : cpuUsage > 0.5 ? 'warning' : 'ok',
+                thresholds: { warning: 0.5, critical: 0.8 },
+                description: 'Database CPU usage per second',
                 dbSpecific: true,
             });
         } catch (error) {

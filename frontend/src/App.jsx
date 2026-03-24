@@ -84,6 +84,14 @@ const AIMonitoringTab      = lazyRetry(() => import('./components/views/monitori
 // Gap features — Database
 const AIQueryAdvisorTab    = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
 
+// MongoDB features
+const MongoOverviewTab     = lazyRetry(() => import('./components/views/mongodb/MongoOverviewTab.jsx'));
+const MongoPerformanceTab  = lazyRetry(() => import('./components/views/mongodb/MongoPerformanceTab.jsx'));
+const MongoStorageTab      = lazyRetry(() => import('./components/views/mongodb/MongoStorageTab.jsx'));
+const MongoReplicationTab  = lazyRetry(() => import('./components/views/mongodb/MongoReplicationTab.jsx'));
+const MongoDataToolsTab    = lazyRetry(() => import('./components/views/mongodb/MongoDataToolsTab.jsx'));
+const MongoShardingTab     = lazyRetry(() => import('./components/views/mongodb/MongoShardingTab.jsx'));
+
 // Other
 const ReliabilityTab       = lazyRetry(() => import('./components/views/ReliabilityTab.jsx'));
 const UserManagementTab    = lazyRetry(() => import('./usermanagement/UserManagementTab.jsx'));
@@ -118,6 +126,8 @@ registerComponents({
     SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
     DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
     TerraformExportTab, CustomDashboardTab,
+    MongoOverviewTab, MongoPerformanceTab, MongoStorageTab,
+    MongoReplicationTab, MongoDataToolsTab, MongoShardingTab,
     // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,
 });
 

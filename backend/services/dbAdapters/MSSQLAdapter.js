@@ -330,12 +330,36 @@ export class MSSQLAdapter extends BaseAdapter {
                     (SELECT cntr_value FROM sys.dm_os_performance_counters
                      WHERE object_name LIKE '%Buffer Manager%' AND counter_name = 'Buffer cache hit ratio') AS hit_ratio,
                     (SELECT count(*) FROM sys.dm_exec_sessions WHERE session_id > 50) AS connections,
-                    (SELECT count(*) FROM sys.dm_exec_requests WHERE session_id > 50) AS active_queries
+                    (SELECT count(*) FROM sys.dm_exec_requests WHERE session_id > 50) AS active_queries,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%Memory Manager%' AND counter_name = 'Memory Grants Pending') AS memory_grants_pending,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%Buffer Manager%' AND counter_name = 'Lazy writes/sec') AS lazy_writes_sec,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%Buffer Manager%' AND counter_name = 'Checkpoint pages/sec') AS checkpoint_pages_sec,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%Access Methods%' AND counter_name = 'Full Scans/sec') AS full_scans_sec,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%Access Methods%' AND counter_name = 'Index Searches/sec') AS index_searches_sec,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%SQL Statistics%' AND counter_name = 'SQL Compilations/sec') AS sql_compilations,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%SQL Statistics%' AND counter_name = 'SQL Re-compilations/sec') AS sql_recompilations,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%General Statistics%' AND counter_name = 'Processes blocked') AS processes_blocked,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%Locks%' AND counter_name = 'Lock Waits/sec') AS lock_waits_sec,
+                    (SELECT cntr_value FROM sys.dm_os_performance_counters
+                     WHERE object_name LIKE '%Locks%' AND counter_name = 'Deadlocks/sec') AS deadlocks_sec,
+                    (SELECT COUNT(DISTINCT task_address) FROM sys.dm_exec_requests WHERE wait_type IS NOT NULL) AS waiting_tasks,
+                    (SELECT SUM(used_memory_kb) FROM sys.dm_os_memory_cache_hash_tables) AS memory_cache_kb,
+                    (SELECT SUM(pages_allocated_count * 8) FROM sys.dm_os_memory_brokers) AS memory_brokers_kb
             `);
 
-            const row = perfResult.rows[0];
-            const hitRatio = this.toNumber(row.hit_ratio, 0);
+            const row = perfResult.rows[0] || {};
 
+            // 1. Buffer cache hit ratio
+            const hitRatio = this.toNumber(row.hit_ratio, 0);
             metrics.push({
                 id: 'buffer_cache_hit_ratio',
                 label: 'Buffer Cache Hit Ratio',
@@ -348,6 +372,7 @@ export class MSSQLAdapter extends BaseAdapter {
                 dbSpecific: false,
             });
 
+            // 2. Active connections
             const connections = this.toNumber(row.connections, 0);
             metrics.push({
                 id: 'active_connections',
@@ -361,6 +386,7 @@ export class MSSQLAdapter extends BaseAdapter {
                 dbSpecific: false,
             });
 
+            // 3. Active queries
             const activeQueries = this.toNumber(row.active_queries, 0);
             metrics.push({
                 id: 'active_queries',
@@ -372,6 +398,213 @@ export class MSSQLAdapter extends BaseAdapter {
                 thresholds: { warning: 50, critical: 100 },
                 description: 'Number of active queries',
                 dbSpecific: false,
+            });
+
+            // 4. Memory grants pending
+            const memoryGrantsPending = this.toNumber(row.memory_grants_pending, 0);
+            metrics.push({
+                id: 'memory_grants_pending',
+                label: 'Memory Grants Pending',
+                value: memoryGrantsPending,
+                unit: 'count',
+                category: 'performance',
+                severity: memoryGrantsPending > 10 ? 'critical' : memoryGrantsPending > 0 ? 'warning' : 'ok',
+                thresholds: { warning: 0, critical: 10 },
+                description: 'Queries waiting for memory grants',
+                dbSpecific: true,
+            });
+
+            // 5. Lazy writes per second
+            const lazyWritesSec = this.toNumber(row.lazy_writes_sec, 0);
+            metrics.push({
+                id: 'lazy_writes_per_sec',
+                label: 'Lazy Writes/sec',
+                value: lazyWritesSec,
+                unit: 'writes/sec',
+                category: 'performance',
+                severity: lazyWritesSec > 100 ? 'critical' : lazyWritesSec > 10 ? 'warning' : 'ok',
+                thresholds: { warning: 10, critical: 100 },
+                description: 'Lazy writer activity per second',
+                dbSpecific: true,
+            });
+
+            // 6. Checkpoint pages per second
+            const checkpointPagesSec = this.toNumber(row.checkpoint_pages_sec, 0);
+            metrics.push({
+                id: 'checkpoint_pages_per_sec',
+                label: 'Checkpoint Pages/sec',
+                value: checkpointPagesSec,
+                unit: 'pages/sec',
+                category: 'performance',
+                severity: checkpointPagesSec > 1000 ? 'critical' : checkpointPagesSec > 100 ? 'warning' : 'ok',
+                thresholds: { warning: 100, critical: 1000 },
+                description: 'Pages flushed by checkpoint per second',
+                dbSpecific: true,
+            });
+
+            // 7. Full scans per second
+            const fullScansSec = this.toNumber(row.full_scans_sec, 0);
+            metrics.push({
+                id: 'full_scans_per_sec',
+                label: 'Full Scans/sec',
+                value: fullScansSec,
+                unit: 'scans/sec',
+                category: 'performance',
+                severity: fullScansSec > 100 ? 'critical' : fullScansSec > 10 ? 'warning' : 'ok',
+                thresholds: { warning: 10, critical: 100 },
+                description: 'Full table/index scans per second',
+                dbSpecific: false,
+            });
+
+            // 8. Index searches per second
+            const indexSearchesSec = this.toNumber(row.index_searches_sec, 0);
+            metrics.push({
+                id: 'index_searches_per_sec',
+                label: 'Index Searches/sec',
+                value: indexSearchesSec,
+                unit: 'searches/sec',
+                category: 'performance',
+                severity: 'ok',
+                thresholds: { warning: 100000, critical: 500000 },
+                description: 'Index searches per second',
+                dbSpecific: false,
+            });
+
+            // 9. SQL compilations per second
+            const sqlCompilations = this.toNumber(row.sql_compilations, 0);
+            metrics.push({
+                id: 'sql_compilations_per_sec',
+                label: 'SQL Compilations/sec',
+                value: sqlCompilations,
+                unit: 'compilations/sec',
+                category: 'performance',
+                severity: sqlCompilations > 1000 ? 'critical' : sqlCompilations > 100 ? 'warning' : 'ok',
+                thresholds: { warning: 100, critical: 1000 },
+                description: 'SQL query compilations per second',
+                dbSpecific: false,
+            });
+
+            // 10. SQL recompilations per second
+            const sqlRecompilations = this.toNumber(row.sql_recompilations, 0);
+            metrics.push({
+                id: 'sql_recompilations_per_sec',
+                label: 'SQL Recompilations/sec',
+                value: sqlRecompilations,
+                unit: 'recompilations/sec',
+                category: 'performance',
+                severity: sqlRecompilations > 100 ? 'critical' : sqlRecompilations > 10 ? 'warning' : 'ok',
+                thresholds: { warning: 10, critical: 100 },
+                description: 'SQL query recompilations per second',
+                dbSpecific: false,
+            });
+
+            // 11. Processes blocked
+            const processesBlocked = this.toNumber(row.processes_blocked, 0);
+            metrics.push({
+                id: 'processes_blocked',
+                label: 'Blocked Processes',
+                value: processesBlocked,
+                unit: 'count',
+                category: 'locks',
+                severity: processesBlocked > 10 ? 'critical' : processesBlocked > 0 ? 'warning' : 'ok',
+                thresholds: { warning: 0, critical: 10 },
+                description: 'Number of currently blocked processes',
+                dbSpecific: false,
+            });
+
+            // 12. Lock waits per second
+            const lockWaitsSec = this.toNumber(row.lock_waits_sec, 0);
+            metrics.push({
+                id: 'lock_waits_per_sec',
+                label: 'Lock Waits/sec',
+                value: lockWaitsSec,
+                unit: 'waits/sec',
+                category: 'locks',
+                severity: lockWaitsSec > 100 ? 'critical' : lockWaitsSec > 10 ? 'warning' : 'ok',
+                thresholds: { warning: 10, critical: 100 },
+                description: 'Lock waits per second',
+                dbSpecific: true,
+            });
+
+            // 13. Deadlocks per second
+            const deadlocksSec = this.toNumber(row.deadlocks_sec, 0);
+            metrics.push({
+                id: 'deadlocks_per_sec',
+                label: 'Deadlocks/sec',
+                value: deadlocksSec,
+                unit: 'deadlocks/sec',
+                category: 'locks',
+                severity: deadlocksSec > 1 ? 'critical' : deadlocksSec > 0 ? 'warning' : 'ok',
+                thresholds: { warning: 0, critical: 1 },
+                description: 'Deadlocks per second',
+                dbSpecific: true,
+            });
+
+            // 14. Tasks waiting
+            const waitingTasks = this.toNumber(row.waiting_tasks, 0);
+            metrics.push({
+                id: 'waiting_tasks',
+                label: 'Waiting Tasks',
+                value: waitingTasks,
+                unit: 'count',
+                category: 'performance',
+                severity: waitingTasks > 50 ? 'critical' : waitingTasks > 10 ? 'warning' : 'ok',
+                thresholds: { warning: 10, critical: 50 },
+                description: 'Tasks currently waiting',
+                dbSpecific: true,
+            });
+
+            // 15. Memory cache KB
+            const memoryCacheKb = this.toNumber(row.memory_cache_kb, 0);
+            metrics.push({
+                id: 'memory_cache_kb',
+                label: 'Memory Cache',
+                value: memoryCacheKb,
+                unit: 'MB',
+                category: 'performance',
+                severity: 'ok',
+                thresholds: { warning: 1000000, critical: 2000000 },
+                description: 'Total memory cache usage in KB',
+                dbSpecific: true,
+            });
+
+            // 16. Plan cache ratio
+            const planCacheRatioResult = await this.query(`
+                SELECT
+                    (SELECT COUNT(*) FROM sys.dm_exec_cached_plans WHERE objtype = 'Proc' AND usecounts > 1) AS reused_plans,
+                    (SELECT COUNT(*) FROM sys.dm_exec_cached_plans) AS total_plans
+            `);
+            const planRow = planCacheRatioResult.rows[0] || { reused_plans: 0, total_plans: 0 };
+            const totalPlans = this.toNumber(planRow.total_plans, 1);
+            const reusedPlans = this.toNumber(planRow.reused_plans, 0);
+            const planCacheRatio = totalPlans > 0 ? this.round((reusedPlans / totalPlans) * 100, 2) : 0;
+            metrics.push({
+                id: 'plan_cache_hit_ratio',
+                label: 'Plan Cache Hit Ratio',
+                value: planCacheRatio,
+                unit: '%',
+                category: 'performance',
+                severity: planCacheRatio >= 80 ? 'ok' : planCacheRatio >= 50 ? 'warning' : 'critical',
+                thresholds: { warning: 50, critical: 20 },
+                description: 'Percentage of reused execution plans',
+                dbSpecific: true,
+            });
+
+            // 17. Tempdb size
+            const tempdbResult = await this.query(`
+                SELECT SUM(size * 8 / 1024.0) AS tempdb_size_mb FROM sys.master_files WHERE database_id = 2
+            `);
+            const tempdbSize = this.toNumber((tempdbResult.rows[0] || {}).tempdb_size_mb, 0);
+            metrics.push({
+                id: 'tempdb_size_mb',
+                label: 'TempDB Size',
+                value: tempdbSize,
+                unit: 'MB',
+                category: 'performance',
+                severity: tempdbSize > 5000 ? 'critical' : tempdbSize > 1000 ? 'warning' : 'ok',
+                thresholds: { warning: 1000, critical: 5000 },
+                description: 'Current TempDB size',
+                dbSpecific: true,
             });
         } catch (error) {
             console.error('Error getting MSSQL metrics:', error.message);

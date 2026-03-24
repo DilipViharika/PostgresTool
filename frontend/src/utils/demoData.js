@@ -1019,76 +1019,6 @@ const DEMO_ROUTES = [
         ],
     })],
 
-    // ── Metrics Registry & Time-Series ───────────────────────────────────────
-    [/\/api\/metrics\/registry/, () => ({
-        success: true,
-        dbType: 'postgresql',
-        count: 12,
-        metrics: [
-            { id: 'cache_hit_ratio', label: 'Cache Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of heap blocks served from cache vs disk', thresholds: { warning: 90, critical: 80 } },
-            { id: 'active_connections', label: 'Active Connections', unit: 'count', category: 'connections', description: 'Number of actively executing connections', thresholds: { warning: 80, critical: 95 } },
-            { id: 'transactions_per_sec', label: 'TPS', unit: 'tx/s', category: 'performance', description: 'Transactions committed and rolled back per second', thresholds: { warning: 500, critical: 1000 } },
-            { id: 'deadlock_count', label: 'Deadlocks', unit: 'count', category: 'health', description: 'Total number of deadlocks detected', thresholds: { warning: 1, critical: 5 } },
-            { id: 'replication_lag', label: 'Replication Lag', unit: 'bytes', category: 'replication', description: 'WAL bytes behind on replica', thresholds: { warning: 52428800, critical: 104857600 } },
-            { id: 'dead_tuples_ratio', label: 'Dead Tuple Ratio', unit: '%', category: 'maintenance', description: 'Percentage of dead tuples across all tables', thresholds: { warning: 10, critical: 20 } },
-            { id: 'db_size', label: 'Database Size', unit: 'bytes', category: 'storage', description: 'Total size of the current database', thresholds: { warning: 10737418240, critical: 21474836480 } },
-            { id: 'index_hit_ratio', label: 'Index Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of index blocks served from cache', thresholds: { warning: 95, critical: 85 } },
-            { id: 'longest_transaction', label: 'Longest Transaction', unit: 'seconds', category: 'health', description: 'Duration of longest running transaction', thresholds: { warning: 300, critical: 900 } },
-            { id: 'wal_generation_rate', label: 'WAL Generation', unit: 'bytes/s', category: 'replication', description: 'WAL generation rate', thresholds: { warning: 10485760, critical: 20971520 } },
-            { id: 'temp_files_size', label: 'Temp Files', unit: 'bytes', category: 'performance', description: 'Total size of temporary files created', thresholds: { warning: 1073741824, critical: 5368709120 } },
-            { id: 'vacuum_running', label: 'Active Vacuums', unit: 'count', category: 'maintenance', description: 'Number of active VACUUM operations', thresholds: { warning: 2, critical: 4 } },
-        ],
-    })],
-    [/\/api\/metrics\/registry\/postgresql/, () => ({
-        success: true,
-        dbType: 'postgresql',
-        count: 12,
-        metrics: [
-            { id: 'cache_hit_ratio', label: 'Cache Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of heap blocks served from cache vs disk', thresholds: { warning: 90, critical: 80 } },
-            { id: 'active_connections', label: 'Active Connections', unit: 'count', category: 'connections', description: 'Number of actively executing connections', thresholds: { warning: 80, critical: 95 } },
-            { id: 'transactions_per_sec', label: 'TPS', unit: 'tx/s', category: 'performance', description: 'Transactions committed and rolled back per second', thresholds: { warning: 500, critical: 1000 } },
-            { id: 'deadlock_count', label: 'Deadlocks', unit: 'count', category: 'health', description: 'Total number of deadlocks detected', thresholds: { warning: 1, critical: 5 } },
-            { id: 'replication_lag', label: 'Replication Lag', unit: 'bytes', category: 'replication', description: 'WAL bytes behind on replica', thresholds: { warning: 52428800, critical: 104857600 } },
-            { id: 'dead_tuples_ratio', label: 'Dead Tuple Ratio', unit: '%', category: 'maintenance', description: 'Percentage of dead tuples across all tables', thresholds: { warning: 10, critical: 20 } },
-            { id: 'db_size', label: 'Database Size', unit: 'bytes', category: 'storage', description: 'Total size of the current database', thresholds: { warning: 10737418240, critical: 21474836480 } },
-            { id: 'index_hit_ratio', label: 'Index Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of index blocks served from cache', thresholds: { warning: 95, critical: 85 } },
-            { id: 'longest_transaction', label: 'Longest Transaction', unit: 'seconds', category: 'health', description: 'Duration of longest running transaction', thresholds: { warning: 300, critical: 900 } },
-            { id: 'wal_generation_rate', label: 'WAL Generation', unit: 'bytes/s', category: 'replication', description: 'WAL generation rate', thresholds: { warning: 10485760, critical: 20971520 } },
-            { id: 'temp_files_size', label: 'Temp Files', unit: 'bytes', category: 'performance', description: 'Total size of temporary files created', thresholds: { warning: 1073741824, critical: 5368709120 } },
-            { id: 'vacuum_running', label: 'Active Vacuums', unit: 'count', category: 'maintenance', description: 'Number of active VACUUM operations', thresholds: { warning: 2, critical: 4 } },
-        ],
-    })],
-    [/\/api\/metrics\/categories/, () => ({
-        success: true,
-        categories: ['connections', 'health', 'maintenance', 'performance', 'replication', 'storage'],
-    })],
-    [/\/api\/metrics\/current/, () => {
-        const createMetricValue = (id, label, unit) => {
-            const values = {
-                cache_hit_ratio: rand(92, 99.5),
-                active_connections: Math.floor(rand(10, 60)),
-                transactions_per_sec: rand(150, 800),
-                deadlock_count: Math.floor(rand(0, 2)),
-                replication_lag: Math.floor(rand(0, 1000000)),
-                dead_tuples_ratio: rand(2, 12),
-                db_size: Math.floor(rand(5000000000, 15000000000)),
-                index_hit_ratio: rand(93, 99.8),
-                longest_transaction: Math.floor(rand(10, 500)),
-                wal_generation_rate: Math.floor(rand(500000, 5000000)),
-                temp_files_size: Math.floor(rand(0, 500000000)),
-                vacuum_running: Math.floor(rand(0, 2)),
-            };
-            const val = values[id] || 0;
-            const statusCheck = id.includes('ratio') || id.includes('hit') ? val > 90 : val < (id === 'deadlock_count' ? 5 : 100);
-            const status = statusCheck ? 'ok' : 'warning';
-            return { value: Math.round(val * 100) / 100, unit, label, status, timestamp: now() };
-        };
-        const current = {};
-        ['cache_hit_ratio', 'active_connections', 'transactions_per_sec', 'deadlock_count', 'replication_lag', 'dead_tuples_ratio', 'db_size', 'index_hit_ratio', 'longest_transaction', 'wal_generation_rate', 'temp_files_size', 'vacuum_running'].forEach((id, i) => {
-            current[id] = createMetricValue(id, ['Cache Hit Ratio', 'Active Connections', 'TPS', 'Deadlocks', 'Rep Lag', 'Dead Tuples', 'DB Size', 'Index Hit', 'Long Txn', 'WAL Rate', 'Temp Size', 'Vacuums'][i], ['%', 'count', 'tx/s', 'count', 'bytes', '%', 'bytes', '%', 'sec', 'bytes/s', 'bytes', 'count'][i]);
-        });
-        return { success: true, dbType: 'postgresql', current, timestamp: now() };
-    }],
     [/\/api\/metrics\/history\//, () => {
         const hours = 24;
         return {
@@ -1119,6 +1049,421 @@ const DEMO_ROUTES = [
             { id: 'transactions_per_sec', label: 'TPS', unit: 'tx/s', description: 'Transactions per second', thresholds: { warning: 500, critical: 1000 } },
             { id: 'temp_files_size', label: 'Temp Files', unit: 'bytes', description: 'Size of temp files', thresholds: { warning: 1073741824, critical: 5368709120 } },
         ],
+    })],
+
+    // ── MongoDB Endpoints (expanded metrics & monitoring) ───────────────────
+    [/\/api\/mongodb\/server-status/, () => ({
+        success: true,
+        timestamp: now(),
+        server: {
+            host: 'mongodb-prod-01.example.com:27017',
+            version: '6.0.4',
+            pid: 12345,
+            uptime: Math.floor(rand(86400, 7776000)),
+            uptimeEstimate: Math.floor(rand(86400, 7776000)),
+        },
+        connections: {
+            current: Math.floor(rand(45, 250)),
+            available: Math.floor(rand(500, 1000)),
+            totalCreated: Math.floor(rand(5000, 50000)),
+            active: Math.floor(rand(25, 200)),
+            waiting: Math.floor(rand(5, 50)),
+        },
+        memory: {
+            bits: 64,
+            resident: Math.floor(rand(2000, 8000)),
+            virtual: Math.floor(rand(4000, 12000)),
+            mapped: Math.floor(rand(2000, 8000)),
+            mappedWithJournal: Math.floor(rand(2500, 9000)),
+        },
+        repl: {
+            setName: 'rs0',
+            setVersion: 15,
+            ismaster: true,
+            secondary: false,
+            primary: 'mongodb-prod-01.example.com:27017',
+            hosts: ['mongodb-prod-01.example.com:27017', 'mongodb-prod-02.example.com:27017', 'mongodb-prod-03.example.com:27017'],
+            me: 'mongodb-prod-01.example.com:27017',
+        },
+        opcounters: {
+            insert: Math.floor(rand(100000, 5000000)),
+            query: Math.floor(rand(1000000, 50000000)),
+            update: Math.floor(rand(500000, 8000000)),
+            delete: Math.floor(rand(50000, 500000)),
+            getmore: Math.floor(rand(500000, 10000000)),
+            command: Math.floor(rand(2000000, 20000000)),
+        },
+        opcountersRepl: {
+            insert: Math.floor(rand(100000, 5000000)),
+            query: 0,
+            update: Math.floor(rand(500000, 8000000)),
+            delete: Math.floor(rand(50000, 500000)),
+            getmore: 0,
+            command: Math.floor(rand(1000000, 10000000)),
+        },
+    })],
+
+    [/\/api\/mongodb\/wiredtiger/, () => ({
+        success: true,
+        timestamp: now(),
+        cache: {
+            bytesCurrentlyInTheCache: Math.floor(rand(1000000000, 8000000000)),
+            maxBytesConfigured: Math.floor(rand(10000000000, 20000000000)),
+            bytesReadIntoCache: Math.floor(rand(5000000000, 50000000000)),
+            bytesWrittenFromCache: Math.floor(rand(3000000000, 30000000000)),
+            pagesEvictedByAppThread: Math.floor(rand(10000, 500000)),
+            pagesEvictedByServerThread: Math.floor(rand(5000, 100000)),
+            pagesRequestedFromCacheThatWouldGenerateIO: Math.floor(rand(100000, 1000000)),
+            pagesSplitDuringEviction: Math.floor(rand(1000, 50000)),
+            percentageOfCacheCurrentlyUsed: rand(40, 85),
+            trackedPages: Math.floor(rand(1000000, 10000000)),
+            unmodifiedPages: Math.floor(rand(500000, 5000000)),
+        },
+        eviction: {
+            evictionWorkerThreadCreated: Math.floor(rand(1, 5)),
+            pagesEvictedHavingNewerVersionWrittenToWAL: Math.floor(rand(100000, 1000000)),
+            pagesWithExcessiveWiredTigerInternalPagesBetweenCheckpoints: Math.floor(rand(1000, 10000)),
+        },
+        blockcache: {
+            blocksReadIntoBlockCache: Math.floor(rand(100000, 1000000)),
+            blockReadyForEviction: Math.floor(rand(10000, 100000)),
+            blocksNotReadIntoBlockCache: Math.floor(rand(50000, 500000)),
+        },
+    })],
+
+    [/\/api\/mongodb\/active-operations/, () => ({
+        success: true,
+        timestamp: now(),
+        totalOperations: Math.floor(rand(20, 150)),
+        inProgress: Array.from({ length: Math.floor(rand(5, 25)) }, (_, i) => ({
+            opid: 100000 + i,
+            type: pick(['query', 'insert', 'update', 'delete', 'aggregate', 'command']),
+            namespace: pick(['mydb.users', 'mydb.orders', 'mydb.products', 'mydb.events', 'mydb.sessions']),
+            operation: pick(['find', 'insert', 'update', 'delete', 'aggregate']),
+            durationMillis: Math.floor(rand(10, 5000)),
+            client: `10.0.${Math.floor(rand(1, 5))}.${Math.floor(rand(1, 254))}`,
+            user: pick(['app_user', 'analytics', 'admin']),
+            comment: pick(['batch_process', 'dashboard_query', 'sync_operation', '']),
+            planSummary: pick(['COLLSCAN', 'IXSCAN { _id: 1 }', 'IXSCAN { created_at: -1 }']),
+            killed: false,
+        })),
+        killOps: [],
+    })],
+
+    [/\/api\/mongodb\/slow-queries/, () => ({
+        success: true,
+        timestamp: now(),
+        slowMs: 100,
+        operations: Array.from({ length: 12 }, (_, i) => ({
+            id: `slow-${i + 1}`,
+            namespace: pick(['mydb.users', 'mydb.orders', 'mydb.products']),
+            operation: pick(['find', 'aggregate', 'update']),
+            durationMillis: Math.floor(rand(100, 5000)),
+            execStats: {
+                executionStages: {
+                    stage: pick(['COLLSCAN', 'IXSCAN', 'FETCH']),
+                    nReturned: Math.floor(rand(100, 100000)),
+                    executionTimeMillis: Math.floor(rand(50, 3000)),
+                    totalDocsExamined: Math.floor(rand(100, 500000)),
+                    totalKeysExamined: Math.floor(rand(0, 100000)),
+                    executionStages: {
+                        stage: 'COLLSCAN',
+                        nReturned: Math.floor(rand(100, 50000)),
+                    },
+                },
+            },
+            timestamp: ago(rand(1, 60)),
+        })),
+    })],
+
+    [/\/api\/mongodb\/lock-stats/, () => ({
+        success: true,
+        timestamp: now(),
+        lockMode: {
+            none: Math.floor(rand(0, 100)),
+            intentShared: Math.floor(rand(100, 1000)),
+            intentExclusive: Math.floor(rand(50, 500)),
+            shared: Math.floor(rand(0, 100)),
+            exclusive: Math.floor(rand(0, 50)),
+        },
+        deadlocks: Math.floor(rand(0, 5)),
+        lockContentionPercentage: rand(0.5, 8.5),
+        acquireCount: {
+            r: Math.floor(rand(1000000, 10000000)),
+            w: Math.floor(rand(500000, 5000000)),
+            R: Math.floor(rand(100000, 1000000)),
+            W: Math.floor(rand(50000, 500000)),
+        },
+        timeAcquiringMicros: {
+            r: Math.floor(rand(10000, 1000000)),
+            w: Math.floor(rand(50000, 500000)),
+            R: Math.floor(rand(1000, 100000)),
+            W: Math.floor(rand(5000, 50000)),
+        },
+    })],
+
+    [/\/api\/mongodb\/latency-stats/, () => ({
+        success: true,
+        timestamp: now(),
+        histogram: [
+            { latencyRange: '0-100µs', count: Math.floor(rand(10000, 100000)), percentage: 45 },
+            { latencyRange: '100-1000µs', count: Math.floor(rand(5000, 50000)), percentage: 30 },
+            { latencyRange: '1-10ms', count: Math.floor(rand(2000, 20000)), percentage: 15 },
+            { latencyRange: '10-100ms', count: Math.floor(rand(500, 5000)), percentage: 7 },
+            { latencyRange: '100+ms', count: Math.floor(rand(100, 1000)), percentage: 3 },
+        ],
+        percentiles: {
+            p50: Math.floor(rand(50, 200)),
+            p75: Math.floor(rand(200, 500)),
+            p90: Math.floor(rand(500, 2000)),
+            p95: Math.floor(rand(1000, 3000)),
+            p99: Math.floor(rand(3000, 10000)),
+            p999: Math.floor(rand(5000, 15000)),
+        },
+        reads: {
+            latency: Math.floor(rand(100, 500)),
+            operations: Math.floor(rand(1000000, 5000000)),
+        },
+        writes: {
+            latency: Math.floor(rand(200, 1000)),
+            operations: Math.floor(rand(500000, 2000000)),
+        },
+        commands: {
+            latency: Math.floor(rand(50, 300)),
+            operations: Math.floor(rand(2000000, 10000000)),
+        },
+    })],
+
+    [/\/api\/mongodb\/network-stats/, () => ({
+        success: true,
+        timestamp: now(),
+        bytesIn: Math.floor(rand(1000000000, 50000000000)),
+        bytesOut: Math.floor(rand(500000000, 25000000000)),
+        numRequests: Math.floor(rand(1000000, 20000000)),
+        averageMessageSize: Math.floor(rand(1000, 10000)),
+        networkIOPS: {
+            bytesInPerSec: Math.floor(rand(10000000, 100000000)),
+            bytesOutPerSec: Math.floor(rand(5000000, 50000000)),
+            requestsPerSec: Math.floor(rand(1000, 50000)),
+        },
+        clients: {
+            connected: Math.floor(rand(20, 200)),
+            disconnected: Math.floor(rand(5, 50)),
+        },
+        replicationLagBytes: Math.floor(rand(0, 100000000)),
+        replicationLagSecs: rand(0, 30),
+    })],
+
+    [/\/api\/mongodb\/sharding/, () => ({
+        success: true,
+        timestamp: now(),
+        clusterId: 'cluster-id-12345',
+        shardingVersion: '1.5',
+        shards: Array.from({ length: Math.floor(rand(2, 5)) }, (_, i) => ({
+            id: `shard-${i + 1}`,
+            host: `shard${i + 1}.example.com/rs-${i + 1}`,
+            state: pick(['up', 'down']),
+            documents: Math.floor(rand(1000000, 10000000)),
+            dataSize: Math.floor(rand(1000000000, 50000000000)),
+            draining: false,
+        })),
+        chunks: {
+            total: Math.floor(rand(100, 1000)),
+            balanced: Math.floor(rand(80, 950)),
+            unbalanced: Math.floor(rand(5, 100)),
+        },
+        databases: [
+            {
+                name: 'mydb',
+                partitioned: true,
+                shardKey: '_id',
+                chunks: Math.floor(rand(50, 500)),
+                collections: [
+                    { name: 'users', sharded: true, chunkCount: Math.floor(rand(20, 100)), documents: Math.floor(rand(1000000, 5000000)) },
+                    { name: 'orders', sharded: true, chunkCount: Math.floor(rand(50, 300)), documents: Math.floor(rand(5000000, 20000000)) },
+                    { name: 'products', sharded: false, chunkCount: 1, documents: Math.floor(rand(10000, 100000)) },
+                ],
+            },
+        ],
+        balancerEnabled: true,
+        balancerRound: Math.floor(rand(100, 10000)),
+    })],
+
+    [/\/api\/metrics\/registry/, (path, queryString) => {
+        const params = new URLSearchParams(queryString);
+        const dbType = params.get('db_type') || 'postgresql';
+
+        if (dbType === 'mongodb') {
+            return {
+            success: true,
+            count: 70,
+            metrics: [
+                // Connections (5)
+                { id: 'connections_current', label: 'Current Connections', unit: 'count', category: 'connections', description: 'Current number of connections' },
+                { id: 'connections_available', label: 'Available Connections', unit: 'count', category: 'connections', description: 'Available connections' },
+                { id: 'connections_created', label: 'Connections Created', unit: 'count', category: 'connections', description: 'Total connections created' },
+                { id: 'connections_active', label: 'Active Connections', unit: 'count', category: 'connections', description: 'Active operations' },
+                { id: 'connections_waiting', label: 'Waiting Connections', unit: 'count', category: 'connections', description: 'Waiting for locks' },
+                // Memory (6)
+                { id: 'memory_resident', label: 'Resident Memory', unit: 'MB', category: 'memory', description: 'Resident memory used' },
+                { id: 'memory_virtual', label: 'Virtual Memory', unit: 'MB', category: 'memory', description: 'Virtual memory used' },
+                { id: 'memory_mapped', label: 'Mapped Memory', unit: 'MB', category: 'memory', description: 'Memory-mapped data' },
+                { id: 'memory_percentused', label: 'Memory Usage %', unit: '%', category: 'memory', description: 'Percentage of cache used' },
+                { id: 'memory_evictions', label: 'Cache Evictions', unit: 'count', category: 'memory', description: 'Pages evicted from cache' },
+                { id: 'memory_pagefaults', label: 'Page Faults', unit: 'count', category: 'memory', description: 'Page fault events' },
+                // Operations (8)
+                { id: 'opcounters_insert', label: 'Insert Operations', unit: 'count', category: 'operations', description: 'Total insert operations' },
+                { id: 'opcounters_query', label: 'Query Operations', unit: 'count', category: 'operations', description: 'Total query operations' },
+                { id: 'opcounters_update', label: 'Update Operations', unit: 'count', category: 'operations', description: 'Total update operations' },
+                { id: 'opcounters_delete', label: 'Delete Operations', unit: 'count', category: 'operations', description: 'Total delete operations' },
+                { id: 'opcounters_getmore', label: 'Getmore Operations', unit: 'count', category: 'operations', description: 'Total getmore operations' },
+                { id: 'opcounters_command', label: 'Command Operations', unit: 'count', category: 'operations', description: 'Total command operations' },
+                { id: 'opcounters_iops', label: 'Operations Per Second', unit: 'ops/s', category: 'operations', description: 'Operations per second' },
+                { id: 'query_efficiency', label: 'Query Efficiency', unit: '%', category: 'operations', description: 'Query execution efficiency' },
+                // Replication (5)
+                { id: 'repl_setname', label: 'Replica Set', unit: 'string', category: 'replication', description: 'Replica set name' },
+                { id: 'repl_ismaster', label: 'Is Primary', unit: 'boolean', category: 'replication', description: 'Is this the primary' },
+                { id: 'repl_secondary', label: 'Is Secondary', unit: 'boolean', category: 'replication', description: 'Is this a secondary' },
+                { id: 'repl_hosts', label: 'Replica Hosts', unit: 'count', category: 'replication', description: 'Number of hosts in replica set' },
+                { id: 'repl_lag_seconds', label: 'Replication Lag', unit: 'seconds', category: 'replication', description: 'Replication lag in seconds' },
+                // Locking (5)
+                { id: 'lock_none', label: 'Lock Mode: None', unit: 'count', category: 'locking', description: 'None lock acquisitions' },
+                { id: 'lock_intentshared', label: 'Lock Mode: IntentShared', unit: 'count', category: 'locking', description: 'IntentShared lock acquisitions' },
+                { id: 'lock_intentexclusive', label: 'Lock Mode: IntentExclusive', unit: 'count', category: 'locking', description: 'IntentExclusive lock acquisitions' },
+                { id: 'lock_shared', label: 'Lock Mode: Shared', unit: 'count', category: 'locking', description: 'Shared lock acquisitions' },
+                { id: 'lock_exclusive', label: 'Lock Mode: Exclusive', unit: 'count', category: 'locking', description: 'Exclusive lock acquisitions' },
+                // Storage/Disk (8)
+                { id: 'storage_datasize', label: 'Data Size', unit: 'bytes', category: 'storage', description: 'Total data size' },
+                { id: 'storage_indexsize', label: 'Index Size', unit: 'bytes', category: 'storage', description: 'Total index size' },
+                { id: 'storage_collections', label: 'Collection Count', unit: 'count', category: 'storage', description: 'Number of collections' },
+                { id: 'storage_indexes', label: 'Index Count', unit: 'count', category: 'storage', description: 'Total number of indexes' },
+                { id: 'storage_read_iops', label: 'Read IOPS', unit: 'ops/s', category: 'storage', description: 'Read operations per second' },
+                { id: 'storage_write_iops', label: 'Write IOPS', unit: 'ops/s', category: 'storage', description: 'Write operations per second' },
+                { id: 'storage_diskused', label: 'Disk Used', unit: 'GB', category: 'storage', description: 'Disk space used' },
+                { id: 'storage_compression_ratio', label: 'Compression Ratio', unit: '%', category: 'storage', description: 'Data compression ratio' },
+                // Latency (8)
+                { id: 'latency_p50', label: 'Latency P50', unit: 'ms', category: 'latency', description: 'P50 latency' },
+                { id: 'latency_p75', label: 'Latency P75', unit: 'ms', category: 'latency', description: 'P75 latency' },
+                { id: 'latency_p90', label: 'Latency P90', unit: 'ms', category: 'latency', description: 'P90 latency' },
+                { id: 'latency_p95', label: 'Latency P95', unit: 'ms', category: 'latency', description: 'P95 latency' },
+                { id: 'latency_p99', label: 'Latency P99', unit: 'ms', category: 'latency', description: 'P99 latency' },
+                { id: 'latency_read', label: 'Read Latency', unit: 'ms', category: 'latency', description: 'Read operation latency' },
+                { id: 'latency_write', label: 'Write Latency', unit: 'ms', category: 'latency', description: 'Write operation latency' },
+                { id: 'latency_command', label: 'Command Latency', unit: 'ms', category: 'latency', description: 'Command operation latency' },
+                // Network (4)
+                { id: 'network_bytesin', label: 'Bytes In', unit: 'bytes', category: 'network', description: 'Bytes received' },
+                { id: 'network_bytesout', label: 'Bytes Out', unit: 'bytes', category: 'network', description: 'Bytes sent' },
+                { id: 'network_requests', label: 'Network Requests', unit: 'count', category: 'network', description: 'Total network requests' },
+                { id: 'network_avgmessagesize', label: 'Avg Message Size', unit: 'bytes', category: 'network', description: 'Average message size' },
+                // Health (6)
+                { id: 'health_uptime', label: 'Uptime', unit: 'seconds', category: 'health', description: 'MongoDB uptime' },
+                { id: 'health_deadlocks', label: 'Deadlocks', unit: 'count', category: 'health', description: 'Number of deadlocks' },
+                { id: 'health_slowqueries', label: 'Slow Queries', unit: 'count', category: 'health', description: 'Slow query count' },
+                { id: 'health_fsyncwait', label: 'FSync Wait', unit: 'count', category: 'health', description: 'FSync wait events' },
+                { id: 'health_lockcontention', label: 'Lock Contention', unit: '%', category: 'health', description: 'Lock contention percentage' },
+                { id: 'health_maxconnections', label: 'Max Connections', unit: 'count', category: 'health', description: 'Maximum connections allowed' },
+                // Sharding (5)
+                { id: 'sharding_chunks', label: 'Total Chunks', unit: 'count', category: 'sharding', description: 'Total chunks in cluster' },
+                { id: 'sharding_balanced', label: 'Balanced Chunks', unit: 'count', category: 'sharding', description: 'Chunks with balanced distribution' },
+                { id: 'sharding_unbalanced', label: 'Unbalanced Chunks', unit: 'count', category: 'sharding', description: 'Chunks needing rebalancing' },
+                { id: 'sharding_shards', label: 'Shard Count', unit: 'count', category: 'sharding', description: 'Number of shards' },
+                { id: 'sharding_databases', label: 'Sharded Databases', unit: 'count', category: 'sharding', description: 'Sharded databases' },
+            ],
+            };
+        }
+        // PostgreSQL fallback
+        return {
+            success: true,
+            count: 12,
+            metrics: [
+                { id: 'cache_hit_ratio', label: 'Cache Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of heap blocks served from cache', thresholds: { warning: 90, critical: 80 } },
+                { id: 'active_connections', label: 'Active Connections', unit: 'count', category: 'connections', description: 'Current active connections', thresholds: { warning: 150, critical: 190 } },
+                { id: 'transactions_per_sec', label: 'TPS', unit: 'tx/s', category: 'performance', description: 'Transactions per second', thresholds: { warning: 500, critical: 1000 } },
+                { id: 'deadlock_count', label: 'Deadlocks', unit: 'count', category: 'health', description: 'Total number of deadlocks detected', thresholds: { warning: 1, critical: 5 } },
+                { id: 'replication_lag', label: 'Replication Lag', unit: 'bytes', category: 'replication', description: 'WAL bytes behind on replica', thresholds: { warning: 52428800, critical: 104857600 } },
+                { id: 'dead_tuples_ratio', label: 'Dead Tuple Ratio', unit: '%', category: 'maintenance', description: 'Percentage of dead tuples across all tables', thresholds: { warning: 10, critical: 20 } },
+                { id: 'db_size', label: 'Database Size', unit: 'bytes', category: 'storage', description: 'Total size of the current database', thresholds: { warning: 10737418240, critical: 21474836480 } },
+                { id: 'index_hit_ratio', label: 'Index Hit Ratio', unit: '%', category: 'performance', description: 'Percentage of index blocks served from cache', thresholds: { warning: 95, critical: 85 } },
+                { id: 'longest_transaction', label: 'Longest Transaction', unit: 'seconds', category: 'health', description: 'Duration of longest running transaction', thresholds: { warning: 300, critical: 900 } },
+                { id: 'wal_generation_rate', label: 'WAL Generation', unit: 'bytes/s', category: 'replication', description: 'WAL generation rate', thresholds: { warning: 10485760, critical: 20971520 } },
+                { id: 'temp_files_size', label: 'Temp Files', unit: 'bytes', category: 'performance', description: 'Total size of temporary files created', thresholds: { warning: 1073741824, critical: 5368709120 } },
+                { id: 'vacuum_running', label: 'Active Vacuums', unit: 'count', category: 'maintenance', description: 'Number of active VACUUM operations', thresholds: { warning: 2, critical: 4 } },
+            ],
+        };
+    }],
+
+    // Update /api/metrics/current to support MongoDB
+    [/\/api\/metrics\/current/, (path, queryString) => {
+        const createMongoDBMetricValue = (id, label, unit) => {
+            const values = {
+                connections_current: Math.floor(rand(50, 250)),
+                connections_available: Math.floor(rand(500, 1000)),
+                connections_created: Math.floor(rand(5000, 50000)),
+                memory_resident: Math.floor(rand(2000, 8000)),
+                memory_virtual: Math.floor(rand(4000, 12000)),
+                memory_percentused: rand(40, 85),
+                opcounters_insert: Math.floor(rand(100000, 5000000)),
+                opcounters_query: Math.floor(rand(1000000, 50000000)),
+                opcounters_update: Math.floor(rand(500000, 8000000)),
+                opcounters_delete: Math.floor(rand(50000, 500000)),
+                opcounters_iops: Math.floor(rand(1000, 50000)),
+                repl_lag_seconds: rand(0, 5),
+                lock_intentshared: Math.floor(rand(100, 1000)),
+                lock_intentexclusive: Math.floor(rand(50, 500)),
+                storage_datasize: Math.floor(rand(10000000000, 100000000000)),
+                storage_indexsize: Math.floor(rand(1000000000, 20000000000)),
+                latency_p50: Math.floor(rand(10, 200)),
+                latency_p99: Math.floor(rand(500, 5000)),
+                network_bytesin: Math.floor(rand(1000000000, 50000000000)),
+                network_bytesout: Math.floor(rand(500000000, 25000000000)),
+                health_slowqueries: Math.floor(rand(0, 50)),
+            };
+            const val = values[id] || 0;
+            const statusCheck = id.includes('ratio') ? val > 90 : val < 1000;
+            const status = statusCheck ? 'ok' : 'warning';
+            return { value: Math.round(val * 100) / 100, unit, label, status, timestamp: now() };
+        };
+        const params = new URLSearchParams(queryString);
+        const dbType = params.get('db_type') || 'postgresql';
+        if (dbType === 'mongodb') {
+            const current = {};
+            const mongoMetrics = ['connections_current', 'memory_resident', 'memory_percentused', 'opcounters_iops', 'repl_lag_seconds', 'latency_p99', 'network_bytesin', 'network_bytesout', 'health_slowqueries', 'storage_datasize'];
+            mongoMetrics.forEach((id, i) => {
+                current[id] = createMongoDBMetricValue(id, ['Current Conn', 'Resident Mem', 'Mem %', 'Ops/s', 'Rep Lag', 'P99 Lat', 'Bytes In', 'Bytes Out', 'Slow Qry', 'Data Size'][i], ['count', 'MB', '%', 'ops/s', 's', 'ms', 'bytes', 'bytes', 'count', 'bytes'][i]);
+            });
+            return { success: true, dbType: 'mongodb', current, timestamp: now() };
+        }
+        // PostgreSQL fallback (existing code)
+        const createMetricValue = (id, label, unit) => {
+            const values = {
+                cache_hit_ratio: rand(92, 99.5),
+                active_connections: Math.floor(rand(10, 60)),
+                transactions_per_sec: rand(150, 800),
+                deadlock_count: Math.floor(rand(0, 2)),
+                replication_lag: Math.floor(rand(0, 1000000)),
+                dead_tuples_ratio: rand(2, 12),
+                db_size: Math.floor(rand(5000000000, 15000000000)),
+                index_hit_ratio: rand(93, 99.8),
+                longest_transaction: Math.floor(rand(10, 500)),
+                wal_generation_rate: Math.floor(rand(500000, 5000000)),
+                temp_files_size: Math.floor(rand(0, 500000000)),
+                vacuum_running: Math.floor(rand(0, 2)),
+            };
+            const val = values[id] || 0;
+            const statusCheck = id.includes('ratio') || id.includes('hit') ? val > 90 : val < (id === 'deadlock_count' ? 5 : 100);
+            const status = statusCheck ? 'ok' : 'warning';
+            return { value: Math.round(val * 100) / 100, unit, label, status, timestamp: now() };
+        };
+        const current = {};
+        ['cache_hit_ratio', 'active_connections', 'transactions_per_sec', 'deadlock_count', 'replication_lag', 'dead_tuples_ratio', 'db_size', 'index_hit_ratio', 'longest_transaction', 'wal_generation_rate', 'temp_files_size', 'vacuum_running'].forEach((id, i) => {
+            current[id] = createMetricValue(id, ['Cache Hit Ratio', 'Active Connections', 'TPS', 'Deadlocks', 'Rep Lag', 'Dead Tuples', 'DB Size', 'Index Hit', 'Long Txn', 'WAL Rate', 'Temp Size', 'Vacuums'][i], ['%', 'count', 'tx/s', 'count', 'bytes', '%', 'bytes', '%', 'sec', 'bytes/s', 'bytes', 'count'][i]);
+        });
+        return { success: true, dbType: 'postgresql', current, timestamp: now() };
+    }],
+
+    [/\/api\/metrics\/categories/, () => ({
+        success: true,
+        categories: ['connections', 'health', 'maintenance', 'performance', 'replication', 'storage', 'memory', 'operations', 'locking', 'latency', 'network', 'sharding'],
     })],
 
     [/\/health/, () => ({ status: 'ok' })],
