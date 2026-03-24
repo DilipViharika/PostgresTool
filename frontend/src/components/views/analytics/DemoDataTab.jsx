@@ -1084,6 +1084,17 @@ function getSectionWidgets(sectionId, db) {
   }));
   const seed = hashSeed(key);
 
+  /* helper: deterministic latency-style time series */
+  const mkTimeSeries = (tag, fields) => Array.from({ length: 12 }, (_, i) => {
+    const s = hashSeed(key + tag + i);
+    const row = { time: `${String(i * 2).padStart(2, '0')}:00` };
+    fields.forEach(f => { row[f.key] = f.base + (s % f.range) / (f.div || 1); });
+    return row;
+  });
+
+  /* helper: status from value */
+  const st = (v, hi = 60, mid = 40) => v > hi ? 'High' : v > mid ? 'Moderate' : 'Normal';
+
   switch (sectionId) {
     case 'core': {
       const tblOps = [51000, 45000, 32000, 21000, 16200].map(v => v + (seed % 20000));
@@ -1097,19 +1108,15 @@ function getSectionWidgets(sectionId, db) {
           centerValue: `${conn.pct}%`, centerLabel: 'USED',
         },
         resources: [
-          { label: 'CPU Load', value: res.cpu, icon: Cpu, status: res.cpu > 60 ? 'High' : res.cpu > 40 ? 'Moderate' : 'Normal', detail: `${res.cpuCores} cores` },
-          { label: 'Memory', value: res.mem, icon: MemoryStick, status: res.mem > 75 ? 'High' : res.mem > 50 ? 'Moderate' : 'Normal', detail: `${res.memGB} GB` },
-          { label: 'Disk I/O', value: res.disk, icon: HardDrive, status: res.disk > 60 ? 'High' : res.disk > 30 ? 'Moderate' : 'Normal', detail: `${res.diskGB}` },
+          { label: 'CPU Load', value: res.cpu, icon: Cpu, status: st(res.cpu), detail: `${res.cpuCores} cores` },
+          { label: 'Memory', value: res.mem, icon: MemoryStick, status: st(res.mem, 75, 50), detail: `${res.memGB} GB` },
+          { label: 'Disk I/O', value: res.disk, icon: HardDrive, status: st(res.disk), detail: `${res.diskGB}` },
         ],
-        latencyData: Array.from({ length: 12 }, (_, i) => {
-          const s = hashSeed(key + 'lat' + i);
-          return {
-            time: `${String(i * 2).padStart(2, '0')}:00`,
-            p50: 0.5 + (s % 30) / 10,
-            p95: 4 + (s % 80) / 10,
-            p99: 12 + (s % 200) / 10,
-          };
-        }),
+        latencyData: mkTimeSeries('lat', [
+          { key: 'p50', base: 0.5, range: 30, div: 10 },
+          { key: 'p95', base: 4, range: 80, div: 10 },
+          { key: 'p99', base: 12, range: 200, div: 10 },
+        ]),
         workload: {
           data: [
             { name: 'Reads', value: wl.reads, color: c, display: `${wl.reads}%` },
@@ -1122,33 +1129,134 @@ function getSectionWidgets(sectionId, db) {
         })),
       };
     }
-    case 'query': return {
-      indexUsage: {
-        data: [
-          { name: 'Index Scans', value: idx.indexPct, color: THEME.success, display: `${idx.indexPct}%` },
-          { name: key === 'mongodb' ? 'Coll Scans' : 'Seq Scans', value: idx.seqPct, color: THEME.warning, display: `${idx.seqPct}%` },
+    case 'query': {
+      const cacheHit = 70 + (seed % 25);
+      const planCached = 5000 + (seed % 8000);
+      const avgCost = 100 + (seed % 400);
+      return {
+        pool: {
+          data: [
+            { name: 'Index Scans', value: idx.indexPct, color: THEME.success, display: `${idx.indexPct}%` },
+            { name: key === 'mongodb' ? 'Coll Scans' : 'Seq Scans', value: idx.seqPct, color: THEME.warning, display: `${idx.seqPct}%` },
+          ],
+          centerValue: `${idx.indexPct}%`, centerLabel: 'INDEX',
+        },
+        workload: {
+          data: [
+            { name: 'Cache Hits', value: cacheHit, color: c, display: `${cacheHit}%` },
+            { name: 'Cache Miss', value: 100 - cacheHit, color: THEME.danger, display: `${100 - cacheHit}%` },
+          ],
+          centerValue: `${cacheHit}%`, centerLabel: 'CACHE',
+        },
+        topTables: (DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql),
+        resources: [
+          { label: 'Query Cache', value: cacheHit, icon: Zap, status: st(cacheHit, 90, 70), detail: `${planCached.toLocaleString()} plans cached` },
+          { label: 'Avg Cost', value: Math.min(Math.round(avgCost / 10), 100), icon: Gauge, status: st(Math.round(avgCost / 10), 60, 30), detail: `${avgCost} cost units` },
+          { label: 'Index Hit', value: idx.indexPct, icon: Database, status: st(idx.indexPct, 95, 80), detail: `${idx.indexPct}% of scans` },
         ],
-        centerValue: `${idx.indexPct}%`, centerLabel: 'INDEX',
-      },
-      slowQueries: DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql,
-    };
-    case 'infra': return {
-      connPool: {
-        data: [
-          { name: 'Active', value: conn.active, color: THEME.success, display: `${conn.active}` },
-          { name: 'Idle', value: conn.idle, color: `${c}40`, display: `${conn.idle}` },
-          { name: 'Reserved', value: conn.waiting, color: THEME.warning, display: `${conn.waiting}` },
+        latencyData: mkTimeSeries('qry', [
+          { key: 'p50', base: 0.8, range: 20, div: 10 },
+          { key: 'p95', base: 5, range: 100, div: 10 },
+          { key: 'p99', base: 15, range: 300, div: 10 },
+        ]),
+        indexUsage: {
+          data: [
+            { name: 'Index Scans', value: idx.indexPct, color: THEME.success, display: `${idx.indexPct}%` },
+            { name: key === 'mongodb' ? 'Coll Scans' : 'Seq Scans', value: idx.seqPct, color: THEME.warning, display: `${idx.seqPct}%` },
+          ],
+          centerValue: `${idx.indexPct}%`, centerLabel: 'INDEX',
+        },
+        slowQueries: DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql,
+      };
+    }
+    case 'infra': {
+      const bufferHit = 85 + (seed % 14);
+      const walRate = 2 + (seed % 18);
+      const checkpointAvg = 200 + (seed % 600);
+      return {
+        pool: {
+          data: [
+            { name: 'Active', value: conn.active, color: THEME.success, display: `${conn.active}` },
+            { name: 'Idle', value: conn.idle, color: `${c}40`, display: `${conn.idle}` },
+            { name: 'Reserved', value: conn.waiting, color: THEME.warning, display: `${conn.waiting}` },
+          ],
+          centerValue: `${conn.pct}%`, centerLabel: 'POOL',
+        },
+        workload: {
+          data: [
+            { name: 'Buffer Hit', value: bufferHit, color: c, display: `${bufferHit}%` },
+            { name: 'Disk Read', value: 100 - bufferHit, color: THEME.warning, display: `${100 - bufferHit}%` },
+          ],
+          centerValue: `${bufferHit}%`, centerLabel: 'BUFFER',
+        },
+        topTables: [
+          { label: key === 'mssql' ? 'Buffer Pool' : key === 'oracle' ? 'SGA Cache' : key === 'mongodb' ? 'WiredTiger' : 'Shared Buffers', value: bufferHit, display: `${bufferHit}% hit` },
+          { label: key === 'oracle' ? 'Redo Log' : key === 'mssql' ? 'Transaction Log' : key === 'mongodb' ? 'Oplog' : 'WAL', value: walRate, display: `${walRate} MB/s` },
+          { label: 'Checkpoint Avg', value: checkpointAvg, display: `${checkpointAvg} ms` },
+          { label: key === 'mongodb' ? 'Journaling' : 'Archiving', value: 99, display: 'active' },
+          { label: 'Repl Lag Max', value: 488, display: repl[repl.length - 1]?.lag || '0 ms' },
         ],
-        centerValue: `${conn.pct}%`, centerLabel: 'POOL',
-      },
-      replication: repl,
-    };
+        resources: [
+          { label: 'Buffer Hit', value: bufferHit, icon: Layers, status: st(bufferHit, 95, 80), detail: `${bufferHit}% from cache` },
+          { label: key === 'oracle' ? 'Redo Rate' : key === 'mssql' ? 'Log Writes' : key === 'mongodb' ? 'Oplog Rate' : 'WAL Rate', value: Math.min(walRate * 5, 100), icon: Radio, status: st(walRate * 5), detail: `${walRate} MB/s throughput` },
+          { label: 'Disk Latency', value: res.disk, icon: HardDrive, status: st(res.disk), detail: `${res.diskGB}` },
+        ],
+        latencyData: mkTimeSeries('inf', [
+          { key: 'p50', base: 0.3, range: 15, div: 10 },
+          { key: 'p95', base: 2, range: 50, div: 10 },
+          { key: 'p99', base: 8, range: 150, div: 10 },
+        ]),
+        connPool: {
+          data: [
+            { name: 'Active', value: conn.active, color: THEME.success, display: `${conn.active}` },
+            { name: 'Idle', value: conn.idle, color: `${c}40`, display: `${conn.idle}` },
+            { name: 'Reserved', value: conn.waiting, color: THEME.warning, display: `${conn.waiting}` },
+          ],
+          centerValue: `${conn.pct}%`, centerLabel: 'POOL',
+        },
+        replication: repl,
+      };
+    }
     case 'schema': {
       const objLabel = key === 'mongodb' ? 'Collections' : 'Tables';
       const obj2 = key === 'mongodb' ? 'Indexes' : 'Views';
       const obj3 = key === 'oracle' ? 'Packages' : (key === 'mongodb' ? 'Validators' : 'Functions');
       const obj4 = key === 'mssql' ? 'Stored Procs' : (key === 'mongodb' ? 'Change Streams' : 'Triggers');
+      const securityScore = 75 + (seed % 24);
+      const compliancePct = 80 + (seed % 19);
       return {
+        pool: {
+          data: [
+            { name: objLabel, value: schema.tables, color: c, display: `${schema.tables}` },
+            { name: obj2, value: schema.views, color: THEME.success, display: `${schema.views}` },
+            { name: obj3, value: Math.max(schema.functions, 1), color: THEME.warning, display: `${schema.functions || 0}` },
+          ],
+          centerValue: `${schema.total}`, centerLabel: 'OBJECTS',
+        },
+        workload: {
+          data: [
+            { name: 'Compliant', value: compliancePct, color: THEME.success, display: `${compliancePct}%` },
+            { name: 'Non-compliant', value: 100 - compliancePct, color: THEME.danger, display: `${100 - compliancePct}%` },
+          ],
+          centerValue: `${compliancePct}%`, centerLabel: 'COMPLY',
+        },
+        topTables: [
+          { label: key === 'mongodb' ? 'users' : key === 'oracle' ? 'HR.EMPLOYEES' : key === 'mssql' ? 'dbo.Customers' : tables[0], value: 45, display: `${45 + (seed % 20)} GB` },
+          { label: key === 'mongodb' ? 'orders' : key === 'oracle' ? 'SALES.ORDERS' : key === 'mssql' ? 'dbo.Transactions' : tables[1], value: 32, display: `${32 + (seed % 15)} GB` },
+          { label: key === 'mongodb' ? 'analytics' : key === 'oracle' ? 'FIN.LEDGER' : key === 'mssql' ? 'dbo.AuditLog' : tables[2], value: 21, display: `${21 + (seed % 12)} GB` },
+          { label: key === 'mongodb' ? 'sessions' : key === 'oracle' ? 'AUDIT.TRAIL' : key === 'mssql' ? 'dbo.Products' : tables[3], value: 15, display: `${15 + (seed % 8)} GB` },
+          { label: key === 'mongodb' ? 'products' : key === 'oracle' ? 'APP.SESSIONS' : key === 'mssql' ? 'dbo.OrderItems' : tables[4], value: 9, display: `${9 + (seed % 6)} GB` },
+        ],
+        resources: [
+          { label: 'Security Score', value: securityScore, icon: Shield, status: st(securityScore, 90, 70), detail: `${securityScore}/100 rating` },
+          { label: 'Compliance', value: compliancePct, icon: Lock, status: st(compliancePct, 95, 80), detail: `${compliancePct}% compliant` },
+          { label: 'Audit Coverage', value: 88 + (seed % 11), icon: Eye, status: st(88 + (seed % 11), 95, 80), detail: `${users.total} users tracked` },
+        ],
+        latencyData: mkTimeSeries('sch', [
+          { key: 'p50', base: 1, range: 20, div: 10 },
+          { key: 'p95', base: 3, range: 40, div: 10 },
+          { key: 'p99', base: 8, range: 100, div: 10 },
+        ]),
         distribution: {
           data: [
             { name: objLabel, value: schema.tables, color: c, display: `${schema.tables}` },
@@ -1160,40 +1268,134 @@ function getSectionWidgets(sectionId, db) {
         },
       };
     }
-    case 'observability': return {
-      latencyData: Array.from({ length: 12 }, (_, i) => {
-        const s = hashSeed(key + 'obs' + i);
-        return {
-          time: `${String(i * 2).padStart(2, '0')}:00`,
-          traces: 2000 + (s % 4000),
-          errors: (s % 30),
-          latency: 4 + (s % 120) / 10,
-        };
-      }),
-      alertDist: alerts,
-    };
-    case 'dev': return {
-      opsData: Array.from({ length: 8 }, (_, i) => {
-        const s = hashSeed(key + 'ops' + i);
-        const base = key === 'oracle' ? 800 : key === 'mssql' ? 600 : key === 'mongodb' ? 900 : key === 'mysql' ? 500 : 400;
-        return {
-          time: `${String((i + 1) * 3).padStart(2, '0')}:00`,
-          reads: base + (s % (base / 2)),
-          writes: Math.round(base * 0.2) + (s % Math.round(base * 0.3)),
-        };
-      }),
-    };
-    case 'admin': return {
-      userDist: {
-        data: [
-          { name: 'Admin', value: users.admin, color: THEME.danger, display: `${users.admin}` },
-          { name: 'Developer', value: users.dev, color: c, display: `${users.dev}` },
-          { name: 'Read-only', value: users.readonly, color: THEME.success, display: `${users.readonly}` },
-          { name: 'Service', value: users.service, color: THEME.warning, display: `${users.service}` },
+    case 'observability': {
+      const traceRate = 2000 + (seed % 6000);
+      const errorRate = seed % 5;
+      const metricCount = 500 + (seed % 1500);
+      return {
+        pool: {
+          data: [
+            { name: 'Healthy', value: 100 - errorRate, color: THEME.success, display: `${100 - errorRate}%` },
+            { name: 'Degraded', value: Math.max(errorRate - 1, 0), color: THEME.warning, display: `${Math.max(errorRate - 1, 0)}%` },
+            { name: 'Critical', value: Math.min(errorRate, 2), color: THEME.danger, display: `${Math.min(errorRate, 2)}%` },
+          ],
+          centerValue: `${100 - errorRate}%`, centerLabel: 'HEALTH',
+        },
+        workload: {
+          data: [
+            { name: 'Traces', value: 78, color: c, display: `${(traceRate / 1000).toFixed(1)}K/s` },
+            { name: 'Metrics', value: 22, color: THEME.success, display: `${metricCount}` },
+          ],
+          centerValue: `${(traceRate / 1000).toFixed(1)}K`, centerLabel: 'TRACES/S',
+        },
+        topTables: alerts,
+        resources: [
+          { label: 'Trace Volume', value: Math.min(Math.round(traceRate / 80), 100), icon: Radio, status: st(Math.round(traceRate / 80), 80, 50), detail: `${(traceRate).toLocaleString()} traces/s` },
+          { label: 'Error Rate', value: errorRate, icon: AlertTriangle, status: errorRate > 3 ? 'High' : errorRate > 1 ? 'Moderate' : 'Normal', detail: `${(errorRate / 10).toFixed(2)}% of requests` },
+          { label: 'Metric Coverage', value: Math.min(Math.round(metricCount / 20), 100), icon: Eye, status: st(Math.round(metricCount / 20), 90, 70), detail: `${metricCount} active metrics` },
         ],
-        centerValue: `${users.total}`, centerLabel: 'USERS',
-      },
-    };
+        latencyData: mkTimeSeries('obs', [
+          { key: 'p50', base: 2000, range: 4000, div: 1 },
+          { key: 'p95', base: 0, range: 30, div: 1 },
+          { key: 'p99', base: 4, range: 120, div: 10 },
+        ]),
+        alertDist: alerts,
+      };
+    }
+    case 'dev': {
+      const apiSuccessRate = 95 + (seed % 5);
+      const deployCount = 10 + (seed % 40);
+      const base = key === 'oracle' ? 800 : key === 'mssql' ? 600 : key === 'mongodb' ? 900 : key === 'mysql' ? 500 : 400;
+      return {
+        pool: {
+          data: [
+            { name: 'Success', value: apiSuccessRate, color: THEME.success, display: `${apiSuccessRate}%` },
+            { name: 'Errors', value: 100 - apiSuccessRate, color: THEME.danger, display: `${100 - apiSuccessRate}%` },
+          ],
+          centerValue: `${apiSuccessRate}%`, centerLabel: 'API',
+        },
+        workload: {
+          data: [
+            { name: 'Queries', value: 65, color: c, display: '65%' },
+            { name: 'Mutations', value: 25, color: THEME.warning, display: '25%' },
+            { name: 'Admin Ops', value: 10, color: THEME.success, display: '10%' },
+          ],
+          centerValue: '65%', centerLabel: 'QUERIES',
+        },
+        topTables: [
+          { label: 'Deployments/week', value: deployCount, display: `${deployCount}` },
+          { label: 'Open PRs', value: 8 + (seed % 15), display: `${8 + (seed % 15)}` },
+          { label: 'API Latency P99', value: 150 + (seed % 200), display: `${150 + (seed % 200)} ms` },
+          { label: 'Test Coverage', value: 70 + (seed % 25), display: `${70 + (seed % 25)}%` },
+          { label: 'Query Optimizations', value: 5 + (seed % 20), display: `${5 + (seed % 20)}/week` },
+        ],
+        resources: [
+          { label: 'API Uptime', value: apiSuccessRate, icon: Globe, status: st(apiSuccessRate, 99, 95), detail: `${apiSuccessRate}% success rate` },
+          { label: 'Deploy Freq', value: Math.min(deployCount * 2, 100), icon: Zap, status: st(deployCount * 2, 80, 40), detail: `${deployCount} deploys/week` },
+          { label: 'Query Perf', value: 85 + (seed % 12), icon: Activity, status: st(85 + (seed % 12), 95, 80), detail: 'avg 2.1ms response' },
+        ],
+        latencyData: mkTimeSeries('dev', [
+          { key: 'p50', base: 1, range: 30, div: 10 },
+          { key: 'p95', base: 6, range: 80, div: 10 },
+          { key: 'p99', base: 15, range: 250, div: 10 },
+        ]),
+        opsData: Array.from({ length: 8 }, (_, i) => {
+          const s = hashSeed(key + 'ops' + i);
+          return {
+            time: `${String((i + 1) * 3).padStart(2, '0')}:00`,
+            reads: base + (s % (base / 2)),
+            writes: Math.round(base * 0.2) + (s % Math.round(base * 0.3)),
+          };
+        }),
+      };
+    }
+    case 'admin': {
+      const backupHealth = 90 + (seed % 10);
+      const taskSuccess = 95 + (seed % 5);
+      return {
+        pool: {
+          data: [
+            { name: 'Admin', value: users.admin, color: THEME.danger, display: `${users.admin}` },
+            { name: 'Developer', value: users.dev, color: c, display: `${users.dev}` },
+            { name: 'Read-only', value: users.readonly, color: THEME.success, display: `${users.readonly}` },
+          ],
+          centerValue: `${users.total}`, centerLabel: 'USERS',
+        },
+        workload: {
+          data: [
+            { name: 'Automated', value: 72, color: c, display: '72%' },
+            { name: 'Manual', value: 28, color: THEME.warning, display: '28%' },
+          ],
+          centerValue: '72%', centerLabel: 'AUTO',
+        },
+        topTables: [
+          { label: 'Scheduled Tasks', value: 34 + (seed % 20), display: `${34 + (seed % 20)} active` },
+          { label: 'Backup Success', value: backupHealth, display: `${backupHealth}%` },
+          { label: 'Config Changes/day', value: 5 + (seed % 15), display: `${5 + (seed % 15)}` },
+          { label: 'Retention Policies', value: 8 + (seed % 10), display: `${8 + (seed % 10)} active` },
+          { label: 'Custom Dashboards', value: 10 + (seed % 15), display: `${10 + (seed % 15)}` },
+        ],
+        resources: [
+          { label: 'Backup Health', value: backupHealth, icon: HardDrive, status: st(backupHealth, 95, 85), detail: `Last: ${(seed % 4) + 1}h ago` },
+          { label: 'Task Success', value: taskSuccess, icon: CheckCircle, status: st(taskSuccess, 99, 95), detail: `${taskSuccess}% success rate` },
+          { label: 'System Load', value: res.cpu, icon: Cpu, status: st(res.cpu), detail: `${res.cpuCores} cores available` },
+        ],
+        latencyData: mkTimeSeries('adm', [
+          { key: 'p50', base: 0.5, range: 15, div: 10 },
+          { key: 'p95', base: 3, range: 50, div: 10 },
+          { key: 'p99', base: 10, range: 150, div: 10 },
+        ]),
+        userDist: {
+          data: [
+            { name: 'Admin', value: users.admin, color: THEME.danger, display: `${users.admin}` },
+            { name: 'Developer', value: users.dev, color: c, display: `${users.dev}` },
+            { name: 'Read-only', value: users.readonly, color: THEME.success, display: `${users.readonly}` },
+            { name: 'Service', value: users.service, color: THEME.warning, display: `${users.service}` },
+          ],
+          centerValue: `${users.total}`, centerLabel: 'USERS',
+        },
+      };
+    }
     default: return {};
   }
 }
