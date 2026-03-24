@@ -7,6 +7,8 @@ import { NavigationContext } from './context/NavigationContext.jsx';
 import { DemoProvider, useDemo, DEMO_USER } from './context/DemoContext.jsx';
 import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
+import { DS_DARK, DS_LIGHT, DS_ACCENTS, setDS, getDS } from './config/designTokens.js';
+import { registerComponents, buildTabConfig, getTabsOnly, getSectionGroups, STORAGE_KEYS } from './config/tabConfig.js';
 
 import LoginPage from './components/auth/LoginPage.jsx';
 
@@ -99,157 +101,27 @@ import {
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
-/* ─────────────────────────────────────────────────────────────────
-   DESIGN TOKENS — single source of truth for the new visual system
-   ───────────────────────────────────────────────────────────────── */
+/* ── Local DS alias — kept in sync with designTokens module by setDS() ── */
+let DS = getDS();
 
-/* Accent colors shared by both themes */
-const DS_ACCENTS = {
-    cyan:         '#38bdf8',
-    cyanDim:      'rgba(56,189,248,0.15)',
-    cyanGlow:     'rgba(56,189,248,0.35)',
-    violet:       '#818cf8',
-    violetDim:    'rgba(129,140,248,0.15)',
-    emerald:      '#34d399',
-    amber:        '#fbbf24',
-    rose:         '#fb7185',
+/* ── Register lazy-loaded components with tabConfig ── */
+registerComponents({
+    OverviewTab, PerformanceTab, ResourcesTab, ReliabilityTab, AlertsComponent,
+    QueryOptimizerTab, IndexesTab, QueryPlanRegressionTab, BloatAnalysisTab, TableAnalytics,
+    ConnectionPoolTab, ReplicationWALTab, CheckpointMonitorTab, VacuumMaintenanceTab,
+    CapacityPlanningTab, BackupRecoveryTab,
+    SchemaVersioningTab, SecurityComplianceTab,
+    CloudWatchTab, LogPatternAnalysisTab, AlertCorrelationTab, OpenTelemetryTab,
+    KubernetesTab, StatusPageTab,
+    SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
+    DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
+    TerraformExportTab, CustomDashboardTab,
+    // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,
+});
 
-    // Fonts
-    fontMono: `'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace`,
-    fontUI:   `'DM Sans', 'Sora', system-ui, sans-serif`,
-};
-
-const DS_DARK = {
-    ...DS_ACCENTS,
-    bg:           '#04060f',
-    bgDeep:       '#020409',
-    surface:      '#0a0f1e',
-    surfaceHover: '#0e1528',
-    border:       'rgba(255,255,255,0.06)',
-    borderAccent: 'rgba(56,189,248,0.25)',
-    textPrimary:  '#f0f4ff',
-    textSub:      '#94a3b8',
-    textMuted:    '#475569',
-    glowCyan:     '0 0 20px rgba(56,189,248,0.18), 0 0 60px rgba(56,189,248,0.06)',
-    glowViolet:   '0 0 20px rgba(129,140,248,0.18), 0 0 60px rgba(129,140,248,0.06)',
-    shadowCard:   '0 4px 24px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.8)',
-    shadowDeep:   '0 20px 60px rgba(0,0,0,0.7)',
-    sidebarBg:    '#050810',
-    sidebarBorder:'rgba(255,255,255,0.07)',
-    sidebarText:  '#64748b',
-    sidebarHover: 'rgba(255,255,255,0.03)',
-    headerBg:     'rgba(4,6,15,0.85)',
-    logoBg:       'linear-gradient(135deg, #38bdf8 0%, #818cf8 100%)',
-    logoText:     '#f0f4ff',
-    logoSub:      '#475569',
-    _dark: true,
-};
-
-const DS_LIGHT = {
-    ...DS_ACCENTS,
-    bg:           '#f0f4f8',
-    bgDeep:       '#e2e8f0',
-    surface:      '#ffffff',
-    surfaceHover: '#f1f5f9',
-    border:       'rgba(0,0,0,0.09)',
-    borderAccent: 'rgba(14,165,233,0.35)',
-    textPrimary:  '#0f172a',
-    textSub:      '#334155',
-    textMuted:    '#64748b',
-    glowCyan:     '0 0 20px rgba(14,165,233,0.12), 0 0 40px rgba(14,165,233,0.04)',
-    glowViolet:   '0 0 20px rgba(99,102,241,0.12), 0 0 40px rgba(99,102,241,0.04)',
-    shadowCard:   '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-    shadowDeep:   '0 20px 60px rgba(0,0,0,0.12)',
-    sidebarBg:    '#f8fafc',
-    sidebarBorder:'rgba(0,0,0,0.08)',
-    sidebarText:  '#475569',
-    sidebarHover: 'rgba(0,0,0,0.04)',
-    headerBg:     'rgba(240,244,248,0.92)',
-    logoBg:       'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
-    logoText:     '#0f172a',
-    logoSub:      '#64748b',
-    _dark: false,
-};
-
-/* Mutable DS — swapped by ThemeToggle, picked up on re-render */
-let DS = (() => {
-    try { return localStorage.getItem('vigil_theme') === 'light' ? DS_LIGHT : DS_DARK; }
-    catch { return DS_DARK; }
-})();
-
-/* ─────────────────────────────────────────────────────────────────
-   TAB CONFIG
-   ───────────────────────────────────────────────────────────────── */
-const TAB_CONFIG = [
-    { section: 'Core Monitoring', accent: DS.cyan },
-    { id: 'overview',          icon: Activity,      label: 'Overview',              component: OverviewTab,             badge: null },
-    { id: 'performance',       icon: Zap,           label: 'Performance',           component: PerformanceTab,          badge: null },
-    { id: 'resources',         icon: HardDrive,     label: 'Resources',             component: ResourcesTab,            badge: null },
-    { id: 'reliability',       icon: CheckCircle,   label: 'Reliability',           component: ReliabilityTab,          badge: null },
-    { id: 'alerts',            icon: Bell,          label: 'Alerts',                component: AlertsComponent,         badge: '3' },
-
-    { section: 'Query & Indexes', accent: DS.violet },
-    { id: 'optimizer',         icon: Zap,           label: 'Query Optimizer',       component: QueryOptimizerTab,       badge: null },
-    { id: 'indexes',           icon: Layers,        label: 'Indexes',               component: IndexesTab,              badge: null },
-    { id: 'regression',        icon: TrendingUp,    label: 'Plan Regression',       component: QueryPlanRegressionTab,  badge: null },
-    { id: 'bloat',             icon: Layers,        label: 'Bloat Analysis',        component: BloatAnalysisTab,        badge: null },
-    { id: 'Table',             icon: Layers,        label: 'Table Analysis',        component: TableAnalytics,        badge: null },
-
-    { section: 'Infrastructure', accent: DS.emerald },
-    { id: 'pool',              icon: Network,       label: 'Connection Pool',       component: ConnectionPoolTab,       badge: null },
-    { id: 'replication',       icon: Radio,         label: 'Replication & WAL',     component: ReplicationWALTab,       badge: null },
-    { id: 'checkpoint',        icon: CheckCircle,   label: 'Checkpoint Monitor',    component: CheckpointMonitorTab,    badge: null },
-    { id: 'maintenance',       icon: RefreshCw,     label: 'Vacuum & Maintenance',  component: VacuumMaintenanceTab,    badge: null },
-    { id: 'capacity',          icon: BarChart2,     label: 'Capacity Planning',     component: CapacityPlanningTab,     badge: null },
-    { id: 'backup',            icon: Archive,       label: 'Backup & Recovery',     component: BackupRecoveryTab,       badge: null },
-
-    { section: 'Schema & Security', accent: DS.rose },
-    { id: 'schema',            icon: GitBranch,     label: 'Schema & Migrations',   component: SchemaVersioningTab,     badge: null },
-    { id: 'security',          icon: Lock,          label: 'Security & Compliance', component: SecurityComplianceTab,   badge: null },
-
-    { section: 'Observability', accent: DS.amber },
-    { id: 'cloudwatch',        icon: Cloud,         label: 'CloudWatch',            component: CloudWatchTab,           badge: null },
-    { id: 'log-patterns',      icon: FileSearch,    label: 'Log Pattern Analysis',  component: LogPatternAnalysisTab,   badge: null },
-    { id: 'alert-correlation', icon: Link2,         label: 'Alert Correlation',     component: AlertCorrelationTab,     badge: null },
-    { id: 'opentelemetry',     icon: Radar,         label: 'OpenTelemetry',         component: OpenTelemetryTab,        badge: null },
-    { id: 'kubernetes',        icon: Container,     label: 'Kubernetes',            component: KubernetesTab,           badge: null },
-    { id: 'status-page',       icon: Globe,         label: 'Status Page',           component: StatusPageTab,           badge: null },
-
-    { section: 'Developer Tools', accent: DS.violet },
-    { id: 'sql',               icon: Terminal,      label: 'SQL Console',           component: SqlConsoleTab,           badge: null },
-    { id: 'api',               icon: Cpu,           label: 'API Tracing',           component: ApiQueriesTab,           badge: null },
-    { id: 'repository',        icon: GitBranch,     label: 'Repository',            component: RepositoryTab,           badge: null },
-    { id: 'ai-advisor',        icon: Brain,         label: 'AI Query Advisor',      component: AIQueryAdvisorTab,       badge: null },
-
-    { section: 'Admin', accent: DS.rose },
-    { id: 'tasks',             icon: CalendarCheck, label: 'DBA Task Scheduler',    component: DBATaskSchedulerTab,     badge: null },
-    { id: 'UserManagement',    icon: Users,         label: 'User Management',       component: UserManagementTab,       badge: null },
-    { id: 'admin',             icon: Shield,        label: 'Admin',                 component: AdminTab,                badge: null },
-    { id: 'retention',         icon: Clock,         label: 'Data Retention',        component: RetentionManagementTab,  badge: null },
-    { id: 'terraform',         icon: Download,      label: 'Terraform Export',      component: TerraformExportTab,      badge: null },
-    { id: 'custom-dashboard',  icon: LayoutDashboard, label: 'Custom Dashboards',  component: CustomDashboardTab,      badge: null },
-
-    // ── Enterprise (hidden — uncomment when ready) ──────────────────────
-    // { section: 'Enterprise', accent: DS.violet },
-    // { id: 'license',          icon: Star,          label: 'License Management',    component: LicenseManagement,       badge: null },
-    // { id: 'organizations',    icon: Users,         label: 'Organizations',         component: OrgManagement,           badge: null },
-];
-
-const TABS_ONLY = TAB_CONFIG.filter(t => t.id);
-
-const SECTION_GROUPS = (() => {
-    const groups = [];
-    let current = null;
-    for (const item of TAB_CONFIG) {
-        if (item.section) {
-            current = { section: item.section, tabs: [], accent: item.accent || DS.cyan };
-            groups.push(current);
-        } else if (current) {
-            current.tabs.push(item);
-        }
-    }
-    return groups;
-})();
+const TAB_CONFIG      = buildTabConfig();
+const TABS_ONLY       = getTabsOnly(TAB_CONFIG);
+const SECTION_GROUPS  = getSectionGroups(TAB_CONFIG);
 
 const getSectionForTab = (tabId) => {
     for (const g of SECTION_GROUPS) {
@@ -263,13 +135,6 @@ const getSectionAccent = (tabId) => {
         if (g.tabs.some(t => t.id === tabId)) return g.accent;
     }
     return DS.cyan;
-};
-
-const STORAGE_KEYS = {
-    ACTIVE_TAB:               'pg_monitor_active_tab',
-    SIDEBAR_COLLAPSED:        'pg_monitor_sidebar_collapsed',
-    NOTIFICATIONS_DISMISSED:  'pg_monitor_notifications_dismissed',
-    FEEDBACK_PROMPT:          'pg_monitor_feedback_prompt_shown',
 };
 
 const WS_RECONNECT_INTERVAL   = 5000;
@@ -478,6 +343,7 @@ const ThemeToggle = () => {
         const next = !isDark;
         /* Sync module-level DS so legacy inline styles re-read it on next render */
         DS = next ? DS_DARK : DS_LIGHT;
+        setDS(DS);
         toggleTheme();
     };
 
@@ -1640,7 +1506,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
             </div>
 
             {/* ── NAV ── */}
-            <div className="sidebar-nav" style={{
+            <nav className="sidebar-nav" role="navigation" aria-label="Main navigation" style={{
                 flex: 1,
                 overflowY: 'auto',
                 overflowX: 'hidden',
@@ -1667,6 +1533,8 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                 <button
                                     className="section-btn"
                                     onClick={() => toggleSection(group.section)}
+                                    role="group"
+                                    aria-label={group.section}
                                     style={{
                                         width: '100%',
                                         display: 'flex',
@@ -1707,10 +1575,15 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                 <div className={collapsed ? '' : 'section-open'}>
                                     {group.tabs.map(tab => {
                                         const isActive = activeTab === tab.id;
+                                        const panelId = `${tab.id}-panel`;
                                         return (
                                             <button
+                                                id={`${tab.id}-tab`}
                                                 key={tab.id}
                                                 onClick={() => onTabChange(tab.id)}
+                                                role="tab"
+                                                aria-selected={isActive}
+                                                aria-controls={panelId}
                                                 aria-label={tab.label}
                                                 aria-current={isActive ? 'page' : undefined}
                                                 title={collapsed ? tab.label : undefined}
@@ -1807,7 +1680,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                         </div>
                     );
                 })}
-            </div>
+            </nav>
 
             {/* ── FOOTER ── */}
             <div style={{
@@ -2163,6 +2036,7 @@ const DashboardInner = ({ onLogout }) => {
 
     /* Keep module-level DS in sync with ThemeContext on every render */
     DS = isDark ? DS_DARK : DS_LIGHT;
+    setDS(DS);
 
     // Default to 'overview' always. The ACTIVE_TAB key is cleared by AuthContext
     // on logout, so every fresh login session starts at the Overview page.
@@ -2379,7 +2253,7 @@ const DashboardInner = ({ onLogout }) => {
                                     <span style={{ fontSize: 13 }}>Loading…</span>
                                 </div>
                             }>
-                                <div key={activeTab} className="tab-mount">
+                                <div key={activeTab} className="tab-mount" role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
                                     {ActiveComponent && <ActiveComponent />}
                                 </div>
                             </Suspense>

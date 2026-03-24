@@ -100,6 +100,13 @@ export function connectWS(onMessage, intervalMs = 10000) {
     let lastAlertId = null;
     let stopped = false;
 
+    // Exponential backoff state
+    let retryCount = 0;
+    let reconnectDelay = 1000; // Start with 1 second
+    const MAX_DELAY = 30000; // Max 30 seconds
+    const MAX_RETRIES = 10;
+    let reconnectTimer = null;
+
     const poll = async () => {
         if (stopped) return;
         try {
@@ -108,6 +115,10 @@ export function connectWS(onMessage, intervalMs = 10000) {
             });
             if (!res.ok) return;
             const data = await res.json();
+
+            // Connection successful: reset backoff state
+            retryCount = 0;
+            reconnectDelay = 1000;
 
             // Signal "connected" on first successful poll
             if (lastAlertId === null) {
@@ -135,6 +146,16 @@ export function connectWS(onMessage, intervalMs = 10000) {
             }
         } catch (e) {
             console.error('Alert poll error', e);
+
+            // Connection failed: apply exponential backoff
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                reconnectTimer = setTimeout(poll, reconnectDelay);
+                // Double the delay up to max
+                reconnectDelay = Math.min(reconnectDelay * 2, MAX_DELAY);
+            } else {
+                console.warn(`Alert poll: max retries (${MAX_RETRIES}) exceeded, stopping reconnection attempts`);
+            }
         }
     };
 
@@ -146,6 +167,7 @@ export function connectWS(onMessage, intervalMs = 10000) {
     return () => {
         stopped = true;
         clearInterval(timer);
+        if (reconnectTimer) clearTimeout(reconnectTimer);
     };
 }
 

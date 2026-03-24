@@ -834,22 +834,32 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MODULAR ROUTES
+// API VERSION HEADER — all responses include the current API version
 // ─────────────────────────────────────────────────────────────────────────────
-app.use('/api', userRoutes(pool, authenticate, requireScreen));
-app.use('/api', sessionRoutes(pool, authenticate, requireScreen, requireRole));
-app.use('/api', auditRoutes(pool, authenticate, requireScreen));
+app.use('/api', (req, res, next) => {
+    res.set('X-API-Version', '1');
+    next();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODULAR ROUTES — mounted at both /api and /api/v1 for forward-compatibility
+// ─────────────────────────────────────────────────────────────────────────────
+const modularMounts = ['/api', '/api/v1'];
+
+for (const prefix of modularMounts) {
+    app.use(prefix, userRoutes(pool, authenticate, requireScreen));
+    app.use(prefix, sessionRoutes(pool, authenticate, requireScreen, requireRole));
+    app.use(prefix, auditRoutes(pool, authenticate, requireScreen));
+    app.use(prefix, otelRoutes(pool, authenticate, requireRole));
+    app.use(prefix, retentionRoutes(pool, authenticate, requireRole));
+    app.use(prefix, aiQueryRoutes(pool, authenticate));
+    app.use(prefix, k8sRoutes(pool, authenticate));
+    app.use(prefix, statusPageRoutes(pool, authenticate, requireRole));
+    app.use(prefix, terraformRoutes(pool, authenticate, requireRole));
+}
 
 // ── Enterprise routes (hidden — uncomment when ready) ────────────────────────
 // mountEnterpriseRoutes(app, pool, authenticate, requireRole, requireScreen);
-
-// ── Gap feature routes ───────────────────────────────────────────────────────
-app.use('/api', otelRoutes(pool, authenticate, requireRole));
-app.use('/api', retentionRoutes(pool, authenticate, requireRole));
-app.use('/api', aiQueryRoutes(pool, authenticate));
-app.use('/api', k8sRoutes(pool, authenticate));
-app.use('/api', statusPageRoutes(pool, authenticate, requireRole));
-app.use('/api', terraformRoutes(pool, authenticate, requireRole));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POSTGRES MONITORING ROUTES
