@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  Database, TrendingUp, Activity, Zap, HardDrive, Cpu,
-  ChevronDown, ChevronRight, AlertCircle, CheckCircle,
-  Clock, BarChart3, PieChart as PieChartIcon, GitBranch,
-  Shield, Settings
+  Database, ChevronDown, ChevronRight
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -20,7 +17,6 @@ const DARK_THEME = {
   success: '#3fb950',
   warning: '#d29922',
   danger: '#f85149',
-  accent2: '#79c0ff',
 };
 
 const DB_COLORS = {
@@ -31,6 +27,7 @@ const DB_COLORS = {
   oracle: '#FF4560',
   mongodb: '#2EE89C',
 };
+
 const DATABASE_STRUCTURE = {
   postgresql: {
     name: 'PostgreSQL',
@@ -456,1152 +453,65 @@ const DATABASE_STRUCTURE = {
     ]
   }
 };
-const DETAIL_WIDGETS = {
-  postgresql: [
-    {
-      title: 'Last Backup',
-      type: 'backup',
-      data: {
-        time: '2 hours ago',
-        size: '8.9 GB',
-        duration: '12 min',
-        verified: true,
-        nextScheduled: 'in 22 hours'
-      }
-    },
-    {
-      title: 'Long-Running Transactions',
-      type: 'transactions',
-      data: [
-        { pid: '12847', query: 'SELECT * FROM large_table WHERE...', duration: '45 min', waitState: 'I/O' },
-        { pid: '12934', query: 'UPDATE inventory SET qty=qty-1...', duration: '12 min', waitState: 'Lock' },
-        { pid: '13021', query: 'DELETE FROM audit_logs WHERE...', duration: '3 min', waitState: 'None' }
-      ]
-    },
-    {
-      title: 'Vacuum Health',
-      type: 'vacuum',
-      data: {
-        urgent: 8,
-        soon: 23,
-        healthy: 541,
-        deadTuples: '234.5M',
-        bloatPercent: '12.3'
-      }
-    }
-  ],
-  mongodb: [
-    {
-      title: 'Replica Set Status',
-      type: 'replica',
-      data: {
-        primary: 'mongod-01',
-        secondaries: ['mongod-02', 'mongod-03'],
-        health: 'healthy',
-        syncProgress: '100%'
-      }
-    },
-    {
-      title: 'Oplog Health',
-      type: 'oplog',
-      data: {
-        oplogSize: '5.2 GB',
-        maxAge: '24 hours',
-        currentSize: '4.8 GB',
-        utilization: '92.3%'
-      }
-    },
-    {
-      title: 'WiredTiger Cache',
-      type: 'wiredtiger',
-      data: {
-        cacheSize: '8.0 GB',
-        evictionRate: '234/sec',
-        inUse: '7.2 GB',
-        available: '0.8 GB'
-      }
-    }
-  ],
-  mysql: [
-    {
-      title: 'InnoDB Buffer Pool',
-      type: 'bufferpool',
-      data: {
-        size: '8.0 GB',
-        utilization: '89.2%',
-        hitRatio: '96.8%',
-        pages: '2.1M'
-      }
-    },
-    {
-      title: 'Replication Status',
-      type: 'replication',
-      data: {
-        role: 'Master',
-        replicas: 2,
-        lag: '0.5 seconds',
-        binlogPos: '45234',
-        status: 'healthy'
-      }
-    },
-    {
-      title: 'Slow Query Summary',
-      type: 'slowquery',
-      data: {
-        count: '12/day',
-        avgTime: '4.5 sec',
-        maxTime: '23.2 sec',
-        topQuery: 'SELECT * FROM orders WHERE created_at...'
-      }
-    }
-  ],
-  mssql: [
-    {
-      title: 'TempDB Health',
-      type: 'tempdb',
-      data: {
-        size: '4.5 GB',
-        usage: '67.2%',
-        contention: 'low',
-        allocation: 'normal'
-      }
-    },
-    {
-      title: 'Always On Status',
-      type: 'alwayson',
-      data: {
-        role: 'Primary',
-        replicas: 2,
-        syncHealth: 'Healthy',
-        syncMode: 'Synchronous'
-      }
-    },
-    {
-      title: 'Wait Statistics',
-      type: 'waits',
-      data: {
-        topWait: 'PAGEIOLATCH_SH',
-        waitTime: '234 ms',
-        signalWait: '45 ms',
-        resourceWait: '189 ms'
-      }
-    }
-  ],
-  oracle: [
-    {
-      title: 'SGA/PGA Usage',
-      type: 'memory',
-      data: {
-        sgaTotal: '16.0 GB',
-        pgaTotal: '2.5 GB',
-        sgaUsed: '14.2 GB',
-        pgaUsed: '2.1 GB'
-      }
-    },
-    {
-      title: 'Data Guard Status',
-      type: 'dataguard',
-      data: {
-        primary: 'ORCL_PRIMARY',
-        standby: 'ORCL_STANDBY',
-        logTransport: 'Enabled',
-        lag: '0.3 seconds'
-      }
-    },
-    {
-      title: 'RMAN Backup',
-      type: 'rman',
-      data: {
-        lastBackup: '4 hours ago',
-        status: 'Success',
-        duration: '45 min',
-        nextBackup: 'in 20 hours'
-      }
-    }
-  ]
-};
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
-/* KPI CARD COMPONENT */
+/* SPARKLINE SVG */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-function KPICard({ label, value, unit, status, sparkline, dbColor }) {
-  const statusColor = status === 'healthy' ? DARK_THEME.success :
-                      status === 'warning' ? DARK_THEME.warning : DARK_THEME.danger;
+function Sparkline() {
+  const points = [10, 25, 15, 35, 45, 40, 55, 50, 60, 48, 52].map((v, i) => {
+    const x = (i / 10) * 80;
+    const y = 24 - (v / 60) * 20;
+    return `${x},${y}`;
+  }).join(' ');
+  return (
+    <svg width="80" height="24" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+    </svg>
+  );
+}
 
-  const max = Math.max(...sparkline);
-  const min = Math.min(...sparkline);
-  const range = max - min || 1;
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* AREA CHART */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 
-  const points = sparkline.map((val, idx) => {
-    const x = (idx / (sparkline.length - 1)) * 100;
-    const y = 24 - ((val - min) / range) * 20;
+function AreaChart({ title, color }) {
+  const data1 = [20, 35, 28, 45, 52, 48, 65, 72, 58, 68, 42, 56, 61, 55, 59, 48, 65, 72, 58, 68, 75, 62, 70, 68];
+  const data2 = [12, 22, 18, 28, 35, 32, 44, 50, 40, 48, 30, 38, 42, 38, 40, 32, 44, 50, 40, 48, 52, 43, 48, 46];
+  const width = 600;
+  const height = 200;
+  const maxVal = 100;
+  const xStep = width / (data1.length - 1);
+
+  const points1 = data1.map((v, i) => {
+    const x = i * xStep;
+    const y = height - (v / maxVal) * height;
     return `${x},${y}`;
   }).join(' ');
 
-  const trend = sparkline[sparkline.length - 1] >= sparkline[sparkline.length - 2] ? '↑' : '↓';
+  const points2 = data2.map((v, i) => {
+    const x = i * xStep;
+    const y = height - (v / maxVal) * height;
+    return `${x},${y}`;
+  }).join(' ');
 
   return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}aa 0%, rgba(22, 27, 34, 0.4) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 12,
-      padding: '16px',
-      position: 'relative',
-      overflow: 'hidden',
-      backdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-    }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = statusColor;
-        e.currentTarget.style.boxShadow = `0 8px 20px rgba(0, 0, 0, 0.3), 0 0 20px ${statusColor}30`;
-        e.currentTarget.style.transform = 'translateY(-4px)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = DARK_THEME.border;
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-        e.currentTarget.style.transform = 'translateY(0)';
-      }}>
-      {/* Background accent */}
-      <div style={{
-        position: 'absolute',
-        top: -20,
-        right: -20,
-        width: 80,
-        height: 80,
-        background: `radial-gradient(circle, ${statusColor}15 0%, transparent 70%)`,
-        borderRadius: '50%',
-      }} />
-
-      {/* Label with icon */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <span style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: DARK_THEME.textMuted,
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          {label}
-        </span>
-        <div style={{
-          width: 20,
-          height: 20,
-          borderRadius: 6,
-          background: `${statusColor}30`,
-          border: `1px solid ${statusColor}60`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 10,
-        }}>
-          <Activity size={12} color={statusColor} />
-        </div>
-      </div>
-
-      {/* Value */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'baseline',
-        gap: 4,
-        marginBottom: 8,
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <div style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: statusColor,
-        }}>
-          {value}
-        </div>
-        {unit && (
-          <div style={{
-            fontSize: 11,
-            color: DARK_THEME.textMuted,
-            fontWeight: 500,
-          }}>
-            {unit}
-          </div>
-        )}
-      </div>
-
-      {/* Sparkline */}
-      <svg width="100%" height="32" style={{ marginTop: 4, position: 'relative', zIndex: 1 }}>
+    <div style={{ padding: '16px', border: `1px solid ${DARK_THEME.border}`, borderRadius: '8px', marginTop: '24px' }}>
+      <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: DARK_THEME.text }}>{title}</h3>
+      <svg width={width} height={height} style={{ width: '100%', height: 'auto' }} viewBox={`0 0 ${width} ${height}`}>
         <defs>
-          <linearGradient id={`sparkGrad_${label}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={statusColor} stopOpacity="0.4" />
-            <stop offset="100%" stopColor={statusColor} stopOpacity="0" />
+          <linearGradient id={`grad1`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.3 }} />
+            <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.05 }} />
+          </linearGradient>
+          <linearGradient id={`grad2`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.15 }} />
+            <stop offset="100%" style={{ stopColor: color, stopOpacity: 0 }} />
           </linearGradient>
         </defs>
-        <polyline
-          points={points}
-          fill={`url(#sparkGrad_${label})`}
-          fillOpacity="1"
-          stroke="none"
-        />
-        <polyline
-          points={points}
-          fill="none"
-          stroke={statusColor}
-          strokeWidth="2"
-          strokeOpacity="0.8"
-        />
+        <polyline points={points1} fill={`url(#grad1)`} stroke={color} strokeWidth="2" />
+        <polyline points={points2} fill={`url(#grad2)`} stroke={color} strokeWidth="2" opacity="0.6" />
       </svg>
-
-      {/* Trend indicator */}
-      <div style={{
-        fontSize: 10,
-        color: DARK_THEME.textMuted,
-        marginTop: 6,
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <span style={{ color: statusColor }}>{trend} 2.3%</span> vs last hour
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* BACKUP DETAIL WIDGET */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function BackupWidget({ data, dbColor }) {
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}aa 0%, rgba(22, 27, 34, 0.4) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 10,
-      padding: '14px',
-      backdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <div style={{
-          width: 32,
-          height: 32,
-          borderRadius: 6,
-          background: `${dbColor}30`,
-          border: `1px solid ${dbColor}60`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <HardDrive size={16} color={dbColor} />
-        </div>
-        <h4 style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: DARK_THEME.text,
-          margin: 0,
-          flex: 1,
-        }}>
-          Last Backup
-        </h4>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          color: DARK_THEME.success,
-          fontSize: 10,
-        }}>
-          <CheckCircle size={12} />
-          Verified
-        </div>
-      </div>
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-        fontSize: 11,
-        color: DARK_THEME.textMuted,
-      }}>
-        <div>
-          <div style={{ color: DARK_THEME.textMuted, marginBottom: 2 }}>Backup Time</div>
-          <div style={{ color: dbColor, fontWeight: 600 }}>{data.time}</div>
-        </div>
-        <div>
-          <div style={{ color: DARK_THEME.textMuted, marginBottom: 2 }}>Size</div>
-          <div style={{ color: dbColor, fontWeight: 600 }}>{data.size}</div>
-        </div>
-        <div>
-          <div style={{ color: DARK_THEME.textMuted, marginBottom: 2 }}>Duration</div>
-          <div style={{ color: dbColor, fontWeight: 600 }}>{data.duration}</div>
-        </div>
-        <div>
-          <div style={{ color: DARK_THEME.textMuted, marginBottom: 2 }}>Next Scheduled</div>
-          <div style={{ color: dbColor, fontWeight: 600 }}>{data.nextScheduled}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* TRANSACTIONS DETAIL WIDGET */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function TransactionsWidget({ data, dbColor }) {
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}aa 0%, rgba(22, 27, 34, 0.4) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 10,
-      padding: '14px',
-      backdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <div style={{
-          width: 32,
-          height: 32,
-          borderRadius: 6,
-          background: `${dbColor}30`,
-          border: `1px solid ${dbColor}60`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Activity size={16} color={dbColor} />
-        </div>
-        <h4 style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: DARK_THEME.text,
-          margin: 0,
-        }}>
-          Long-Running Transactions
-        </h4>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {data.map((txn, idx) => (
-          <div key={idx} style={{ fontSize: 10 }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: 3,
-              color: DARK_THEME.textMuted,
-            }}>
-              <span>PID {txn.pid}</span>
-              <span style={{ color: DARK_THEME.text }}>{txn.duration}</span>
-            </div>
-            <div style={{
-              fontSize: 9,
-              color: DARK_THEME.textMuted,
-              marginBottom: 3,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}>
-              {txn.query}
-            </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              height: 4,
-              background: DARK_THEME.border,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${Math.min(parseInt(txn.duration) * 2, 100)}%`,
-                background: `linear-gradient(90deg, ${dbColor}, ${dbColor}60)`,
-                borderRadius: 2,
-              }} />
-            </div>
-            <div style={{
-              fontSize: 8,
-              color: DARK_THEME.textMuted,
-              marginTop: 2,
-            }}>
-              Wait: {txn.waitState}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* VACUUM HEALTH WIDGET */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function VacuumWidget({ data, dbColor }) {
-  const total = data.urgent + data.soon + data.healthy;
-  const urgentPct = (data.urgent / total) * 100;
-  const soonPct = (data.soon / total) * 100;
-  const healthyPct = (data.healthy / total) * 100;
-
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}aa 0%, rgba(22, 27, 34, 0.4) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 10,
-      padding: '14px',
-      backdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <div style={{
-          width: 32,
-          height: 32,
-          borderRadius: 6,
-          background: `${dbColor}30`,
-          border: `1px solid ${dbColor}60`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Zap size={16} color={dbColor} />
-        </div>
-        <h4 style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: DARK_THEME.text,
-          margin: 0,
-        }}>
-          Vacuum Health
-        </h4>
-      </div>
-
-      {/* Segmented progress bar */}
-      <div style={{
-        display: 'flex',
-        height: 12,
-        background: DARK_THEME.border,
-        borderRadius: 4,
-        overflow: 'hidden',
-        marginBottom: 12,
-      }}>
-        <div style={{
-          width: `${urgentPct}%`,
-          background: DARK_THEME.danger,
-          height: '100%',
-        }} />
-        <div style={{
-          width: `${soonPct}%`,
-          background: DARK_THEME.warning,
-          height: '100%',
-        }} />
-        <div style={{
-          width: `${healthyPct}%`,
-          background: DARK_THEME.success,
-          height: '100%',
-        }} />
-      </div>
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-        fontSize: 10,
-        marginBottom: 8,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 8,
-            height: 8,
-            background: DARK_THEME.danger,
-            borderRadius: 2,
-          }} />
-          <span style={{ color: DARK_THEME.textMuted }}>Urgent: {data.urgent}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 8,
-            height: 8,
-            background: DARK_THEME.warning,
-            borderRadius: 2,
-          }} />
-          <span style={{ color: DARK_THEME.textMuted }}>Soon: {data.soon}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 8,
-            height: 8,
-            background: DARK_THEME.success,
-            borderRadius: 2,
-          }} />
-          <span style={{ color: DARK_THEME.textMuted }}>Healthy: {data.healthy}</span>
-        </div>
-      </div>
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-        fontSize: 10,
-        color: DARK_THEME.textMuted,
-      }}>
-        <div>
-          <div style={{ marginBottom: 2 }}>Dead Tuples</div>
-          <div style={{ color: dbColor, fontWeight: 600 }}>{data.deadTuples}</div>
-        </div>
-        <div>
-          <div style={{ marginBottom: 2 }}>Bloat %</div>
-          <div style={{ color: dbColor, fontWeight: 600 }}>{data.bloatPercent}%</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* GENERIC DETAIL WIDGET */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function GenericDetailWidget({ widget, dbColor }) {
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}aa 0%, rgba(22, 27, 34, 0.4) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 10,
-      padding: '14px',
-      backdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <div style={{
-          width: 32,
-          height: 32,
-          borderRadius: 6,
-          background: `${dbColor}30`,
-          border: `1px solid ${dbColor}60`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Settings size={16} color={dbColor} />
-        </div>
-        <h4 style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: DARK_THEME.text,
-          margin: 0,
-        }}>
-          {widget.title}
-        </h4>
-      </div>
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-        fontSize: 10,
-        color: DARK_THEME.textMuted,
-      }}>
-        {Object.entries(widget.data).map(([key, val]) => (
-          <div key={key}>
-            <div style={{ marginBottom: 2, textTransform: 'capitalize' }}>
-              {key.replace(/([A-Z])/g, ' $1')}
-            </div>
-            <div style={{ color: dbColor, fontWeight: 600, wordBreak: 'break-word' }}>
-              {typeof val === 'object' ? JSON.stringify(val).slice(0, 20) + '...' : String(val)}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* THROUGHPUT AREA CHART */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function ThroughputChart({ dbColor }) {
-  const width = 800;
-  const height = 160;
-  const padding = 30;
-  const chartWidth = width - padding * 2;
-  const chartHeight = height - padding * 2;
-
-  const qpsData = [450, 480, 520, 580, 620, 650, 680, 700, 720, 750, 780, 820];
-  const tpsData = [180, 195, 215, 245, 280, 310, 340, 360, 380, 410, 430, 460];
-
-  const maxQps = 850;
-  const maxTps = 500;
-
-  const qpsPoints = qpsData.map((val, idx) => {
-    const x = padding + (idx / (qpsData.length - 1)) * chartWidth;
-    const y = height - padding - (val / maxQps) * chartHeight;
-    return `${x},${y}`;
-  }).join(' ');
-
-  const tpsPoints = tpsData.map((val, idx) => {
-    const x = padding + (idx / (tpsData.length - 1)) * chartWidth;
-    const y = height - padding - (val / maxTps) * chartHeight;
-    return `${x},${y}`;
-  }).join(' ');
-
-  const qpsAreaPoints = `${padding},${height - padding} ` + qpsPoints + ` ${width - padding},${height - padding}`;
-  const tpsAreaPoints = `${padding},${height - padding} ` + tpsPoints + ` ${width - padding},${height - padding}`;
-
-  const lighterColor = dbColor + '40';
-
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}aa 0%, rgba(22, 27, 34, 0.4) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 12,
-      padding: '16px',
-      backdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-      marginBottom: 24,
-    }}>
-      <h3 style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: DARK_THEME.text,
-        margin: '0 0 12px',
-      }}>
-        Cluster Velocity (Last 24h)
-      </h3>
-
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} style={{ marginBottom: 8 }}>
-        <defs>
-          <linearGradient id="qpsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={dbColor} stopOpacity="0.3" />
-            <stop offset="100%" stopColor={dbColor} stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="tpsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={lighterColor} stopOpacity="0.3" />
-            <stop offset="100%" stopColor={lighterColor} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((val) => (
-          <line
-            key={`grid-${val}`}
-            x1={padding}
-            y1={height - padding - val * chartHeight}
-            x2={width - padding}
-            y2={height - padding - val * chartHeight}
-            stroke={DARK_THEME.border}
-            strokeWidth="1"
-            strokeOpacity="0.3"
-          />
-        ))}
-
-        {/* TPS Area */}
-        <polygon points={tpsAreaPoints} fill="url(#tpsGrad)" stroke="none" />
-        <polyline
-          points={tpsPoints}
-          fill="none"
-          stroke={lighterColor}
-          strokeWidth="2"
-        />
-
-        {/* QPS Area */}
-        <polygon points={qpsAreaPoints} fill="url(#qpsGrad)" stroke="none" />
-        <polyline
-          points={qpsPoints}
-          fill="none"
-          stroke={dbColor}
-          strokeWidth="2"
-        />
-
-        {/* Y-axis labels */}
-        <text x="15" y={height - padding + 4} fontSize="10" fill={DARK_THEME.textMuted} textAnchor="end">
-          0
-        </text>
-        <text x="15" y={height - padding - chartHeight + 4} fontSize="10" fill={DARK_THEME.textMuted} textAnchor="end">
-          {Math.round(maxQps)}
-        </text>
-
-        {/* X-axis labels */}
-        {['0h', '6h', '12h', '18h', '24h'].map((label, idx) => (
-          <text
-            key={`x-${idx}`}
-            x={padding + (idx / 4) * chartWidth}
-            y={height - 10}
-            fontSize="10"
-            fill={DARK_THEME.textMuted}
-            textAnchor="middle"
-          >
-            {label}
-          </text>
-        ))}
-      </svg>
-
-      <div style={{
-        display: 'flex',
-        gap: 16,
-        fontSize: 11,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 12,
-            height: 2,
-            background: dbColor,
-          }} />
-          <span style={{ color: DARK_THEME.textMuted }}>QPS</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 12,
-            height: 2,
-            background: lighterColor,
-          }} />
-          <span style={{ color: DARK_THEME.textMuted }}>TPS</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* HEALTH DONUT GAUGE */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function HealthGauge({ health = 92, dbColor }) {
-  const gaugeColor = health >= 90 ? DARK_THEME.success :
-                     health >= 70 ? DARK_THEME.warning : DARK_THEME.danger;
-
-  const circumference = 2 * Math.PI * 45;
-  const offset = circumference - (health / 100) * circumference;
-
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}aa 0%, rgba(22, 27, 34, 0.4) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 12,
-      padding: '16px',
-      backdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 200,
-    }}>
-      <h3 style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: DARK_THEME.text,
-        margin: '0 0 16px',
-      }}>
-        Overall Database Health
-      </h3>
-
-      <svg width="140" height="140" viewBox="0 0 140 140" style={{ marginBottom: 12 }}>
-        {/* Background circle */}
-        <circle cx="70" cy="70" r="45" fill="none" stroke={DARK_THEME.border} strokeWidth="8" />
-
-        {/* Progress circle */}
-        <circle
-          cx="70"
-          cy="70"
-          r="45"
-          fill="none"
-          stroke={gaugeColor}
-          strokeWidth="8"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          style={{ transform: 'rotate(-90deg)', transformOrigin: '70px 70px' }}
-        />
-
-        {/* Center text */}
-        <text x="70" y="65" textAnchor="middle" fontSize="28" fontWeight="700" fill={gaugeColor}>
-          {health}%
-        </text>
-        <text x="70" y="85" textAnchor="middle" fontSize="11" fill={DARK_THEME.textMuted}>
-          Healthy
-        </text>
-      </svg>
-
-      <div style={{
-        fontSize: 11,
-        color: DARK_THEME.textMuted,
-      }}>
-        {health >= 90 ? 'Excellent condition' : health >= 70 ? 'Monitor closely' : 'Critical attention needed'}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* TAB CARD COMPONENT */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function TabCard({ tab, dbColor }) {
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}dd 0%, rgba(22, 27, 34, 0.6) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 10,
-      padding: '14px',
-      backdropFilter: 'blur(8px)',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-      position: 'relative',
-      overflow: 'hidden',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-    }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = dbColor;
-        e.currentTarget.style.boxShadow = `0 8px 20px rgba(0, 0, 0, 0.3), 0 0 20px ${dbColor}30`;
-        e.currentTarget.style.transform = 'translateY(-2px)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = DARK_THEME.border;
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-        e.currentTarget.style.transform = 'translateY(0)';
-      }}>
-      {/* Accent bar */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: 3,
-        background: `linear-gradient(90deg, ${dbColor} 0%, ${dbColor}40 100%)`,
-      }} />
-
-      {/* Title */}
-      <h4 style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: DARK_THEME.text,
-        marginBottom: 12,
-        marginTop: 0,
-        padding: 0,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
-        {tab.name}
-      </h4>
-
-      {/* Metrics */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {tab.metrics.map((metric, idx) => (
-          <div key={idx} style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: 3,
-            }}>
-              <span>{metric.label}</span>
-              <span style={{ color: dbColor, fontWeight: 600 }}>
-                {metric.value} {metric.unit && <span style={{ color: DARK_THEME.textMuted }}>{metric.unit}</span>}
-              </span>
-            </div>
-            <div style={{
-              height: 3,
-              background: DARK_THEME.border,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${Math.min(parseInt(metric.value) % 100, 95)}%`,
-                background: `linear-gradient(90deg, ${dbColor}, ${dbColor}60)`,
-                borderRadius: 2,
-              }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* SECTION CARD COMPONENT */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function SectionCard({ section, tabs, dbColor, isExpanded, onToggle }) {
-  return (
-    <div style={{
-      background: `linear-gradient(135deg, ${DARK_THEME.card}88 0%, rgba(22, 27, 34, 0.5) 100%)`,
-      border: `1px solid ${DARK_THEME.border}`,
-      borderRadius: 12,
-      backdropFilter: 'blur(10px)',
-      overflow: 'hidden',
-      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-    }}>
-      {/* Section Header */}
-      <div
-        onClick={onToggle}
-        style={{
-          padding: '14px 16px',
-          background: `linear-gradient(90deg, ${DARK_THEME.card} 0%, ${DARK_THEME.card}40 100%)`,
-          borderBottom: `1px solid ${DARK_THEME.border}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = `linear-gradient(90deg, ${DARK_THEME.card} 0%, ${DARK_THEME.card}60 100%)`;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = `linear-gradient(90deg, ${DARK_THEME.card} 0%, ${DARK_THEME.card}40 100%)`;
-        }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 4,
-            height: 20,
-            background: dbColor,
-            borderRadius: 2,
-          }} />
-          <h3 style={{
-            fontSize: 13,
-            fontWeight: 700,
-            color: DARK_THEME.text,
-            margin: 0,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}>
-            {section.name}
-          </h3>
-          <span style={{
-            fontSize: 11,
-            background: `${dbColor}30`,
-            color: dbColor,
-            padding: '2px 8px',
-            borderRadius: 4,
-            fontWeight: 600,
-          }}>
-            {tabs.length} tabs
-          </span>
-        </div>
-        <div style={{
-          transition: 'transform 0.2s ease',
-          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-        }}>
-          <ChevronDown size={18} color={dbColor} />
-        </div>
-      </div>
-
-      {/* Section Content - Collapsible */}
-      {isExpanded && (
-        <div style={{
-          padding: '16px',
-          borderTop: `1px solid ${DARK_THEME.border}`,
-        }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 12,
-          }}>
-            {tabs.map((tab, idx) => (
-              <TabCard key={idx} tab={tab} dbColor={dbColor} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* DATABASE DASHBOARD COMPONENT */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
-function DatabaseDashboard({ db }) {
-  const [expandedSections, setExpandedSections] = useState({});
-
-  const toggleSection = (sectionId) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  };
-
-  const widgets = DETAIL_WIDGETS[Object.keys(DATABASE_STRUCTURE).find(key => DATABASE_STRUCTURE[key] === db)] || [];
-
-  return (
-    <div style={{ animation: 'fadeIn 0.4s ease' }}>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
-      {/* KPI Hero Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-        gap: 12,
-        marginBottom: 24,
-      }}>
-        {db.kpis.map((kpi, idx) => (
-          <KPICard
-            key={idx}
-            label={kpi.label}
-            value={kpi.value}
-            unit={kpi.unit}
-            status={kpi.status}
-            sparkline={kpi.sparkline}
-            dbColor={db.color}
-          />
-        ))}
-      </div>
-
-      {/* Detail Widgets Row */}
-      {widgets.length > 0 && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 12,
-          marginBottom: 24,
-        }}>
-          {widgets.map((widget, idx) => {
-            if (widget.type === 'backup') {
-              return <BackupWidget key={idx} data={widget.data} dbColor={db.color} />;
-            } else if (widget.type === 'transactions') {
-              return <TransactionsWidget key={idx} data={widget.data} dbColor={db.color} />;
-            } else if (widget.type === 'vacuum') {
-              return <VacuumWidget key={idx} data={widget.data} dbColor={db.color} />;
-            } else {
-              return <GenericDetailWidget key={idx} widget={widget} dbColor={db.color} />;
-            }
-          })}
-        </div>
-      )}
-
-      {/* Throughput Chart */}
-      <ThroughputChart dbColor={db.color} />
-
-      {/* Health Gauge */}
-      <div style={{ marginBottom: 24 }}>
-        <HealthGauge health={92} dbColor={db.color} />
-      </div>
-
-      {/* Sections */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {db.sections.map((section) => (
-          <SectionCard
-            key={section.id}
-            section={section}
-            tabs={section.tabs}
-            dbColor={db.color}
-            isExpanded={expandedSections[section.id]}
-            onToggle={() => toggleSection(section.id)}
-          />
-        ))}
-      </div>
     </div>
   );
 }
@@ -1610,45 +520,183 @@ function DatabaseDashboard({ db }) {
 /* MAIN COMPONENT */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-export default function DemoDataTab({ dbKey = 'postgresql' }) {
-  const currentDb = DATABASE_STRUCTURE[dbKey];
-  if (!currentDb) return null;
+export default function DemoDataTab({ dbKey }) {
+  const dbs = Object.keys(DATABASE_STRUCTURE);
+  const defaultDb = dbKey && dbs.includes(dbKey) ? dbKey : 'postgresql';
+  const defaultSection = DATABASE_STRUCTURE[defaultDb]?.sections?.[0]?.id || 'core';
+
+  const [selectedDb, setSelectedDb] = useState(defaultDb);
+  const [selectedSection, setSelectedSection] = useState(defaultSection);
+  const [expandedDbs, setExpandedDbs] = useState(dbs.reduce((acc, k) => ({ ...acc, [k]: true }), {}));
+
+  const dbData = DATABASE_STRUCTURE[selectedDb];
+  const sectionData = dbData?.sections?.find(s => s.id === selectedSection);
+
+  const toggleDb = (key) => setExpandedDbs(prev => ({ ...prev, [key]: !prev[key] }));
 
   return (
-    <div style={{
-      background: DARK_THEME.bg,
-      color: DARK_THEME.text,
-      minHeight: '100vh',
-      padding: '20px',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-    }}>
-      {/* Page Title */}
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 10,
-          background: `linear-gradient(135deg, ${currentDb.color}30, ${currentDb.color}10)`,
-          border: `1px solid ${currentDb.color}50`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <currentDb.icon size={22} style={{ color: currentDb.color }} />
-        </div>
-        <div>
-          <h1 style={{
-            fontSize: 24, fontWeight: 700, margin: 0, color: DARK_THEME.text,
-          }}>
-            {currentDb.name} Overview
-          </h1>
-          <p style={{
-            fontSize: 13, color: DARK_THEME.textMuted, margin: '2px 0 0',
-          }}>
-            Real-time monitoring dashboard with rich analytics
-          </p>
-        </div>
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: DARK_THEME.bg, color: DARK_THEME.text, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {/* LEFT PANEL */}
+      <div style={{ width: '280px', borderRight: `1px solid ${DARK_THEME.border}`, overflowY: 'auto', padding: '16px 0', backgroundColor: DARK_THEME.bg }}>
+        {dbs.map(dbKey => {
+          const db = DATABASE_STRUCTURE[dbKey];
+          const isExpanded = expandedDbs[dbKey];
+          return (
+            <div key={dbKey} style={{ marginBottom: '12px' }}>
+              <div
+                onClick={() => toggleDb(dbKey)}
+                style={{
+                  padding: '10px 16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: DARK_THEME.text,
+                  userSelect: 'none',
+                  transition: 'background-color 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = DARK_THEME.card}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: db.color, flexShrink: 0 }} />
+                <span>{db.name}</span>
+                <span style={{ marginLeft: 'auto', fontSize: '12px', color: DARK_THEME.textMuted }}>({db.sections.length})</span>
+                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </div>
+              {isExpanded && (
+                <div>
+                  {db.sections.map(section => (
+                    <div
+                      key={section.id}
+                      onClick={() => { setSelectedDb(dbKey); setSelectedSection(section.id); }}
+                      style={{
+                        padding: '8px 16px 8px 40px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        color: selectedDb === dbKey && selectedSection === section.id ? db.color : DARK_THEME.textMuted,
+                        backgroundColor: selectedDb === dbKey && selectedSection === section.id ? DARK_THEME.card : 'transparent',
+                        borderLeft: selectedDb === dbKey && selectedSection === section.id ? `3px solid ${db.color}` : '3px solid transparent',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        transition: 'all 0.15s',
+                        userSelect: 'none',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!(selectedDb === dbKey && selectedSection === section.id)) {
+                          e.currentTarget.style.backgroundColor = DARK_THEME.card;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!(selectedDb === dbKey && selectedSection === section.id)) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      <span>{section.name}</span>
+                      <span style={{ fontSize: '11px', color: DARK_THEME.textMuted }}>({section.tabs.length})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Main Dashboard Content */}
-      <div style={{ maxWidth: 1600, margin: '0 auto' }}>
-        <DatabaseDashboard db={currentDb} />
+      {/* RIGHT PANEL */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+        {sectionData && (
+          <div>
+            {/* HEADER */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '12px', color: DARK_THEME.textMuted, marginBottom: '8px' }}>
+                <span style={{ color: DARK_THEME.text }}>{dbData.name}</span> {' > '} <span>{sectionData.name}</span>
+              </div>
+              <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '700', color: DARK_THEME.text }}>{sectionData.name}</h1>
+              <div style={{ width: '60px', height: '3px', backgroundColor: dbData.color }} />
+            </div>
+
+            {/* KPI ROW */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+              {dbData.kpis.map((kpi, i) => (
+                <div
+                  key={i}
+                  style={{
+                    backgroundColor: DARK_THEME.card,
+                    border: `1px solid ${DARK_THEME.border}`,
+                    borderRadius: '8px',
+                    padding: '12px',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = dbData.color;
+                    e.currentTarget.style.boxShadow = `0 0 12px ${dbData.color}40`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = DARK_THEME.border;
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ fontSize: '11px', color: DARK_THEME.textMuted, marginBottom: '6px' }}>{kpi.label}</div>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: DARK_THEME.text, marginBottom: '6px' }}>
+                    {kpi.value}<span style={{ fontSize: '12px', color: dbData.color, marginLeft: '2px' }}>{kpi.unit}</span>
+                  </div>
+                  <div style={{ fontSize: '10px', color: kpi.status === 'healthy' ? DARK_THEME.success : DARK_THEME.warning, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: kpi.status === 'healthy' ? DARK_THEME.success : DARK_THEME.warning }} />
+                    {kpi.status}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* TAB CARDS GRID */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              {sectionData.tabs.map((tab, i) => (
+                <div
+                  key={i}
+                  style={{
+                    backgroundColor: DARK_THEME.card,
+                    border: `1px solid ${DARK_THEME.border}`,
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    transition: 'all 0.2s',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ height: '3px', background: `linear-gradient(90deg, ${dbData.color} 0%, ${dbData.color}60 100%)` }} />
+                  <div style={{ padding: '12px' }}>
+                    <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: DARK_THEME.text }}>{tab.name}</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {tab.metrics.map((metric, j) => (
+                        <div key={j} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                          <span style={{ color: DARK_THEME.textMuted }}>{metric.label}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ color: dbData.color, fontWeight: '600' }}>{metric.value}</span>
+                            <span style={{ color: DARK_THEME.textMuted, fontSize: '10px' }}>{metric.unit}</span>
+                            <Sparkline />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* DETAIL CHART */}
+            <AreaChart title={`${sectionData.name} Activity`} color={dbData.color} />
+          </div>
+        )}
       </div>
     </div>
   );
