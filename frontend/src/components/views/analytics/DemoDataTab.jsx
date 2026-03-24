@@ -410,7 +410,7 @@ const TAB_METRICS = {
       { label: 'Throttled Requests', value: 23, unit: 'requests', status: 'ok' }
     ],
     'Repository': [
-      { label: 'Objects', value: 4.2M, unit: 'objects', status: 'ok' },
+      { label: 'Objects', value: '4.2M', unit: 'objects', status: 'ok' },
       { label: 'Size', value: '18.4 GB', unit: '', status: 'ok' },
       { label: 'Commits', value: '127K', unit: 'commits', status: 'ok' },
       { label: 'Branches', value: 156, unit: 'branches', status: 'ok' },
