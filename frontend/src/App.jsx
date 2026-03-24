@@ -9,7 +9,7 @@ import { THEME, ChartDefs, useAdaptiveTheme } from './utils/theme.jsx';
 import { connectWS, postData } from './utils/api';
 
 import LoginPage from './components/auth/LoginPage.jsx';
-const SSOCallback = lazy(() => import('./components/auth/SSOCallback.jsx'));
+const SSOCallback = lazyRetry(() => import('./components/auth/SSOCallback.jsx'));
 
 // Enterprise context providers and components
 import { LicenseProvider } from './enterprise/context/LicenseContext.jsx';
@@ -18,62 +18,74 @@ import LicenseGate from './enterprise/components/LicenseGate.jsx';
 import LicenseStatus from './enterprise/components/LicenseStatus.jsx';
 import OrgSwitcher from './enterprise/components/OrgSwitcher.jsx';
 
+/* ── Retry wrapper for lazy imports (handles stale chunk hashes after deploy) ── */
+const lazyRetry = (importFn) => lazy(() =>
+    importFn().catch(() => {
+        // Chunk fetch failed (likely stale hash after deploy) — reload once
+        if (!sessionStorage.getItem('vigil_chunk_retry')) {
+            sessionStorage.setItem('vigil_chunk_retry', '1');
+            window.location.reload();
+        }
+        return importFn(); // second attempt
+    })
+);
+
 /* ── Lazy-loaded tab components for faster initial load ── */
 // Monitoring features
-const OverviewTab          = lazy(() => import('./components/views/monitoring/OverviewTab.jsx'));
-const PerformanceTab       = lazy(() => import('./components/views/monitoring/PerformanceTab.jsx'));
-const ResourcesTab         = lazy(() => import('./components/views/monitoring/ResourcesTab.jsx'));
-const CloudWatchTab        = lazy(() => import('./components/views/monitoring/CloudWatchTab.jsx'));
-const CheckpointMonitorTab = lazy(() => import('./components/views/monitoring/CheckpointMonitorTab.jsx'));
+const OverviewTab          = lazyRetry(() => import('./components/views/monitoring/OverviewTab.jsx'));
+const PerformanceTab       = lazyRetry(() => import('./components/views/monitoring/PerformanceTab.jsx'));
+const ResourcesTab         = lazyRetry(() => import('./components/views/monitoring/ResourcesTab.jsx'));
+const CloudWatchTab        = lazyRetry(() => import('./components/views/monitoring/CloudWatchTab.jsx'));
+const CheckpointMonitorTab = lazyRetry(() => import('./components/views/monitoring/CheckpointMonitorTab.jsx'));
 
 // Security features
-const SecurityComplianceTab= lazy(() => import('./components/views/security/SecurityComplianceTab.jsx'));
-const AlertsComponent      = lazy(() => import('./components/views/security/AlertsTab.jsx'));
-const AlertCorrelationTab  = lazy(() => import('./components/views/security/AlertCorrelationTab.jsx'));
+const SecurityComplianceTab= lazyRetry(() => import('./components/views/security/SecurityComplianceTab.jsx'));
+const AlertsComponent      = lazyRetry(() => import('./components/views/security/AlertsTab.jsx'));
+const AlertCorrelationTab  = lazyRetry(() => import('./components/views/security/AlertCorrelationTab.jsx'));
 
 // Database features
-const IndexesTab           = lazy(() => import('./components/views/database/IndexesTab.jsx'));
-const SqlConsoleTab        = lazy(() => import('./components/views/database/SqlConsoleTab.jsx'));
-const BloatAnalysisTab     = lazy(() => import('./components/views/database/BloatAnalysisTab.jsx'));
-const TableAnalytics       = lazy(() => import('./components/views/database/TableAnalytics.jsx'));
-const QueryOptimizerTab    = lazy(() => import('./components/views/database/QueryOptimizerTab.jsx'));
-const QueryPlanRegressionTab = lazy(() => import('./components/views/database/QueryPlanRegressionTab.jsx'));
-const SchemaVersioningTab  = lazy(() => import('./components/views/database/SchemaVersioningTab.jsx'));
+const IndexesTab           = lazyRetry(() => import('./components/views/database/IndexesTab.jsx'));
+const SqlConsoleTab        = lazyRetry(() => import('./components/views/database/SqlConsoleTab.jsx'));
+const BloatAnalysisTab     = lazyRetry(() => import('./components/views/database/BloatAnalysisTab.jsx'));
+const TableAnalytics       = lazyRetry(() => import('./components/views/database/TableAnalytics.jsx'));
+const QueryOptimizerTab    = lazyRetry(() => import('./components/views/database/QueryOptimizerTab.jsx'));
+const QueryPlanRegressionTab = lazyRetry(() => import('./components/views/database/QueryPlanRegressionTab.jsx'));
+const SchemaVersioningTab  = lazyRetry(() => import('./components/views/database/SchemaVersioningTab.jsx'));
 
 // Operations features
-const BackupRecoveryTab    = lazy(() => import('./components/views/operations/BackupRecoveryTab.jsx'));
-const VacuumMaintenanceTab = lazy(() => import('./components/views/operations/VacuumMaintenanceTab.jsx'));
-const DBATaskSchedulerTab  = lazy(() => import('./components/views/operations/DBATaskSchedulerTab.jsx'));
-const ReplicationWALTab    = lazy(() => import('./components/views/operations/ReplicationWALTab.jsx'));
-const ConnectionPoolTab    = lazy(() => import('./components/views/operations/ConnectionPoolTab.jsx'));
+const BackupRecoveryTab    = lazyRetry(() => import('./components/views/operations/BackupRecoveryTab.jsx'));
+const VacuumMaintenanceTab = lazyRetry(() => import('./components/views/operations/VacuumMaintenanceTab.jsx'));
+const DBATaskSchedulerTab  = lazyRetry(() => import('./components/views/operations/DBATaskSchedulerTab.jsx'));
+const ReplicationWALTab    = lazyRetry(() => import('./components/views/operations/ReplicationWALTab.jsx'));
+const ConnectionPoolTab    = lazyRetry(() => import('./components/views/operations/ConnectionPoolTab.jsx'));
 
 // Analytics features
-const CapacityPlanningTab  = lazy(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
-const LogPatternAnalysisTab= lazy(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
-const CustomDashboardTab   = lazy(() => import('./components/views/analytics/CustomDashboardTab.jsx'));
+const CapacityPlanningTab  = lazyRetry(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
+const LogPatternAnalysisTab= lazyRetry(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
+const CustomDashboardTab   = lazyRetry(() => import('./components/views/analytics/CustomDashboardTab.jsx'));
 
 // Admin features
-const AdminTab             = lazy(() => import('./components/views/admin/AdminTab.jsx'));
-const RepositoryTab        = lazy(() => import('./components/views/admin/RepositoryTab.jsx'));
-const ApiQueriesTab        = lazy(() => import('./components/views/admin/ApiQueriesTab.jsx'));
-const RetentionManagementTab = lazy(() => import('./components/views/admin/RetentionManagementTab.jsx'));
-const TerraformExportTab   = lazy(() => import('./components/views/admin/TerraformExportTab.jsx'));
+const AdminTab             = lazyRetry(() => import('./components/views/admin/AdminTab.jsx'));
+const RepositoryTab        = lazyRetry(() => import('./components/views/admin/RepositoryTab.jsx'));
+const ApiQueriesTab        = lazyRetry(() => import('./components/views/admin/ApiQueriesTab.jsx'));
+const RetentionManagementTab = lazyRetry(() => import('./components/views/admin/RetentionManagementTab.jsx'));
+const TerraformExportTab   = lazyRetry(() => import('./components/views/admin/TerraformExportTab.jsx'));
 
 // Gap features — Monitoring
-const OpenTelemetryTab     = lazy(() => import('./components/views/monitoring/OpenTelemetryTab.jsx'));
-const KubernetesTab        = lazy(() => import('./components/views/monitoring/KubernetesTab.jsx'));
-const StatusPageTab        = lazy(() => import('./components/views/monitoring/StatusPageTab.jsx'));
+const OpenTelemetryTab     = lazyRetry(() => import('./components/views/monitoring/OpenTelemetryTab.jsx'));
+const KubernetesTab        = lazyRetry(() => import('./components/views/monitoring/KubernetesTab.jsx'));
+const StatusPageTab        = lazyRetry(() => import('./components/views/monitoring/StatusPageTab.jsx'));
 
 // Gap features — Database
-const AIQueryAdvisorTab    = lazy(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
+const AIQueryAdvisorTab    = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
 
 // Other
-const ReliabilityTab       = lazy(() => import('./components/views/ReliabilityTab.jsx'));
-const UserManagementTab    = lazy(() => import('./usermanagement/UserManagementTab.jsx'));
+const ReliabilityTab       = lazyRetry(() => import('./components/views/ReliabilityTab.jsx'));
+const UserManagementTab    = lazyRetry(() => import('./usermanagement/UserManagementTab.jsx'));
 
 // Enterprise edition
-const LicenseManagement = lazy(() => import('./enterprise/views/LicenseManagement.jsx'));
-const OrgManagement = lazy(() => import('./enterprise/views/OrgManagement.jsx'));
+const LicenseManagement = lazyRetry(() => import('./enterprise/views/LicenseManagement.jsx'));
+const OrgManagement = lazyRetry(() => import('./enterprise/views/OrgManagement.jsx'));
 
 import {
     Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
