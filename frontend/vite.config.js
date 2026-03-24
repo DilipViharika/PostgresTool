@@ -30,7 +30,7 @@ export default defineConfig({
           'vendor-router': ['react-router-dom'],
           'vendor-charts': ['recharts'],
           'vendor-ui': ['lucide-react'],
-          'vendor-editor': ['codemirror', '@codemirror/lang-javascript', '@codemirror/lang-python', '@codemirror/lang-sql'],
+          'vendor-editor': ['@uiw/react-codemirror', '@codemirror/lang-sql'],
           'vendor-date': ['date-fns'],
         }
       }
@@ -44,9 +44,7 @@ export default defineConfig({
       'react-router-dom',
       'recharts',
       'lucide-react',
-      'codemirror',
-      '@codemirror/lang-javascript',
-      '@codemirror/lang-python',
+      '@uiw/react-codemirror',
       '@codemirror/lang-sql',
       'date-fns',
     ],
