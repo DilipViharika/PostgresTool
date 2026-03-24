@@ -85,7 +85,12 @@ export function buildTabConfig() {
         { id: 'retention',         icon: Clock,         label: 'Data Retention',        component: _components.RetentionManagementTab,  badge: null },
         { id: 'terraform',         icon: Download,      label: 'Terraform Export',      component: _components.TerraformExportTab,      badge: null },
         { id: 'custom-dashboard',  icon: LayoutDashboard, label: 'Custom Dashboards',   component: _components.CustomDashboardTab,      badge: null },
-        { id: 'demo-data',         icon: FlaskConical,    label: 'Demo Data',             component: _components.DemoDataTab,             badge: null },
+        { section: 'Demo', accent: DS.emerald },
+        { id: 'demo-postgresql',   icon: Database,        label: 'PostgreSQL',            component: _components.DemoPostgresTab,         badge: null },
+        { id: 'demo-mysql',        icon: Database,        label: 'MySQL',                 component: _components.DemoMySQLTab,            badge: null },
+        { id: 'demo-sqlserver',    icon: Server,          label: 'SQL Server',            component: _components.DemoSQLServerTab,        badge: null },
+        { id: 'demo-oracle',       icon: HardDriveDownload, label: 'Oracle',              component: _components.DemoOracleTab,           badge: null },
+        { id: 'demo-mongodb',      icon: FlaskConical,    label: 'MongoDB',               component: _components.DemoMongoDBTab,          badge: null },
     ];
 }
 

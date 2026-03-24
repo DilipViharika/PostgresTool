@@ -20,6 +20,7 @@ const ROLE_PERMISSIONS = {
         'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
         'tasks', 'UserManagement', 'admin',
         'retention', 'terraform', 'custom-dashboard', 'demo-data',
+        'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb',
     ],
     admin: [
         'overview', 'performance', 'resources', 'reliability', 'alerts',
@@ -33,9 +34,10 @@ const ROLE_PERMISSIONS = {
         'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
         'tasks', 'admin',
         'retention', 'terraform', 'custom-dashboard', 'demo-data',
+        'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb',
     ],
-    user: ['overview', 'performance', 'resources', 'reliability', 'alerts', 'indexes', 'sql', 'demo-data'],
-    viewer: ['overview', 'performance', 'resources', 'reliability', 'demo-data']
+    user: ['overview', 'performance', 'resources', 'reliability', 'alerts', 'indexes', 'sql', 'demo-data', 'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb'],
+    viewer: ['overview', 'performance', 'resources', 'reliability', 'demo-data', 'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb']
 };
 
 export const useMockAuth = () => {

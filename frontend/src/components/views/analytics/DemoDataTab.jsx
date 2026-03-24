@@ -841,9 +841,9 @@ function DatabaseDashboard({ db }) {
 /* MAIN COMPONENT */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-export default function DemoDataTab() {
-  const [selectedDb, setSelectedDb] = useState('postgresql');
-  const currentDb = DATABASE_STRUCTURE[selectedDb];
+export default function DemoDataTab({ dbKey = 'postgresql' }) {
+  const currentDb = DATABASE_STRUCTURE[dbKey];
+  if (!currentDb) return null;
 
   return (
     <div style={{
@@ -854,85 +854,32 @@ export default function DemoDataTab() {
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
       {/* Page Title */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{
-          fontSize: 28,
-          fontWeight: 700,
-          margin: '0 0 8px 0',
-          color: DARK_THEME.text,
+      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10,
+          background: `linear-gradient(135deg, ${currentDb.color}30, ${currentDb.color}10)`,
+          border: `1px solid ${currentDb.color}50`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          Demo Analytics Dashboard
-        </h1>
-        <p style={{
-          fontSize: 14,
-          color: DARK_THEME.textMuted,
-          margin: 0,
-        }}>
-          Explore comprehensive monitoring and analytics across multiple database platforms
-        </p>
-      </div>
-
-      {/* Database Selector */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-        gap: 12,
-        marginBottom: 32,
-        maxWidth: 800,
-      }}>
-        {Object.entries(DATABASE_STRUCTURE).map(([key, db]) => {
-          const isSelected = selectedDb === key;
-          const Icon = db.icon;
-          return (
-            <button
-              key={key}
-              onClick={() => setSelectedDb(key)}
-              style={{
-                background: isSelected
-                  ? `linear-gradient(135deg, ${db.color}30 0%, ${db.color}15 100%)`
-                  : `linear-gradient(135deg, ${DARK_THEME.card} 0%, ${DARK_THEME.card}60 100%)`,
-                border: `2px solid ${isSelected ? db.color : DARK_THEME.border}`,
-                borderRadius: 10,
-                padding: '12px 14px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 12,
-                fontWeight: 600,
-                color: isSelected ? db.color : DARK_THEME.textMuted,
-                position: 'relative',
-                overflow: 'hidden',
-                backdropFilter: 'blur(8px)',
-                boxShadow: isSelected ? `0 0 20px ${db.color}40, inset 0 1px 0 ${db.color}20` : 'none',
-              }}
-              onMouseEnter={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.borderColor = db.color;
-                  e.currentTarget.style.color = db.color;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.borderColor = DARK_THEME.border;
-                  e.currentTarget.style.color = DARK_THEME.textMuted;
-                }
-              }}>
-              <Icon size={20} />
-              <span style={{ textAlign: 'center' }}>{db.name}</span>
-            </button>
-          );
-        })}
+          <currentDb.icon size={22} style={{ color: currentDb.color }} />
+        </div>
+        <div>
+          <h1 style={{
+            fontSize: 24, fontWeight: 700, margin: 0, color: DARK_THEME.text,
+          }}>
+            {currentDb.name} Demo
+          </h1>
+          <p style={{
+            fontSize: 13, color: DARK_THEME.textMuted, margin: '2px 0 0',
+          }}>
+            {currentDb.sections.length} sections · {currentDb.sections.reduce((sum, s) => sum + s.tabs.length, 0)} tabs · Sample monitoring data
+          </p>
+        </div>
       </div>
 
       {/* Main Dashboard Content */}
-      <div style={{
-        maxWidth: 1600,
-        margin: '0 auto',
-      }}>
-        {currentDb && <DatabaseDashboard db={currentDb} />}
+      <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+        <DatabaseDashboard db={currentDb} />
       </div>
     </div>
   );

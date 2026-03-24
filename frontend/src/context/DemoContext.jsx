@@ -27,6 +27,7 @@ const DEMO_USER = {
         'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
         'tasks', 'UserManagement', 'admin',
         'retention', 'terraform', 'custom-dashboard', 'demo-data',
+        'demo-postgresql', 'demo-mysql', 'demo-sqlserver', 'demo-oracle', 'demo-mongodb',
     ],
 };
 

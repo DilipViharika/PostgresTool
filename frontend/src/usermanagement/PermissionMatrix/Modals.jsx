@@ -91,6 +91,17 @@ const SCREEN_CATEGORIES = [
       { id: 'mongo-sharding',    label: 'Mongo Sharding',     icon: '🗂️' },
     ],
   },
+  {
+    label: 'Demo',
+    color: '#2EE89C',
+    screens: [
+      { id: 'demo-postgresql',  label: 'Demo PostgreSQL',  icon: '🐘' },
+      { id: 'demo-mysql',       label: 'Demo MySQL',       icon: '🐬' },
+      { id: 'demo-sqlserver',   label: 'Demo SQL Server',  icon: '🔷' },
+      { id: 'demo-oracle',      label: 'Demo Oracle',      icon: '🔴' },
+      { id: 'demo-mongodb',     label: 'Demo MongoDB',     icon: '🍃' },
+    ],
+  },
 ];
 
 // Role-based default screen presets
