@@ -8,10 +8,34 @@ const STORAGE_KEYS = {
 };
 
 const ROLE_PERMISSIONS = {
-    super_admin: ['overview', 'performance', 'resources', 'reliability', 'indexes', 'sql', 'api', 'admin', 'UserManagement'],
-    admin: ['overview', 'performance', 'resources', 'reliability', 'indexes', 'sql', 'api', 'UserManagement'],
-    user: ['overview', 'performance', 'resources', 'reliability', 'indexes'],
-    viewer: ['overview', 'performance', 'resources', 'reliability']
+    super_admin: [
+        'overview', 'performance', 'resources', 'reliability', 'alerts',
+        'optimizer', 'indexes', 'regression', 'bloat', 'Table',
+        'pool', 'replication', 'checkpoint', 'maintenance', 'capacity', 'backup',
+        'schema', 'schema-visualizer', 'security',
+        'cloudwatch', 'log-patterns', 'alert-correlation',
+        'opentelemetry', 'kubernetes', 'status-page', 'ai-monitoring',
+        'sql', 'api', 'repository', 'ai-advisor',
+        'mongo-overview', 'mongo-performance', 'mongo-storage',
+        'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
+        'tasks', 'UserManagement', 'admin',
+        'retention', 'terraform', 'custom-dashboard', 'demo-data',
+    ],
+    admin: [
+        'overview', 'performance', 'resources', 'reliability', 'alerts',
+        'optimizer', 'indexes', 'regression', 'bloat', 'Table',
+        'pool', 'replication', 'checkpoint', 'maintenance', 'capacity', 'backup',
+        'schema', 'schema-visualizer', 'security',
+        'cloudwatch', 'log-patterns', 'alert-correlation',
+        'opentelemetry', 'kubernetes', 'status-page', 'ai-monitoring',
+        'sql', 'api', 'repository', 'ai-advisor',
+        'mongo-overview', 'mongo-performance', 'mongo-storage',
+        'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
+        'tasks', 'admin',
+        'retention', 'terraform', 'custom-dashboard', 'demo-data',
+    ],
+    user: ['overview', 'performance', 'resources', 'reliability', 'alerts', 'indexes', 'sql', 'demo-data'],
+    viewer: ['overview', 'performance', 'resources', 'reliability', 'demo-data']
 };
 
 export const useMockAuth = () => {

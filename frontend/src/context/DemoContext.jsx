@@ -19,12 +19,14 @@ const DEMO_USER = {
         'overview', 'performance', 'resources', 'reliability', 'alerts',
         'optimizer', 'indexes', 'regression', 'bloat', 'Table',
         'pool', 'replication', 'checkpoint', 'maintenance', 'capacity', 'backup',
-        'schema', 'security',
+        'schema', 'schema-visualizer', 'security',
         'cloudwatch', 'log-patterns', 'alert-correlation',
-        'opentelemetry', 'kubernetes', 'status-page',
+        'opentelemetry', 'kubernetes', 'status-page', 'ai-monitoring',
         'sql', 'api', 'repository', 'ai-advisor',
+        'mongo-overview', 'mongo-performance', 'mongo-storage',
+        'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
         'tasks', 'UserManagement', 'admin',
-        'retention', 'terraform', 'custom-dashboard',
+        'retention', 'terraform', 'custom-dashboard', 'demo-data',
     ],
 };
 
