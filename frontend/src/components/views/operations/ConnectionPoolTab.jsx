@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { API_BASE } from '../../../utils/api.js';
 import { useConnection } from '../../../context/ConnectionContext.jsx';
+import { encryptConnectionFields } from '../../../utils/cryptoUtils.js';
 import {
     Database, Plus, Edit, Trash2, Eye, EyeOff, Check, X,
     Server, Key, User, AlertCircle, CheckCircle, Link as LinkIcon,
-    RefreshCw, ChevronDown, Terminal, Lock, ChevronRight,
+    RefreshCw, ChevronDown, Terminal, Lock, ChevronRight, ShieldCheck,
 } from 'lucide-react';
 
 // ─── Database type definitions ───────────────────────────────────────────────
@@ -658,6 +659,8 @@ const ConnectionsTab = () => {
     const [formErrors, setFormErrors] = useState({});
     const [errorMsg, setErrorMsg] = useState('');
     const [switchingId, setSwitchingId] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState('');
 
     // Connection context — keeps the header dropdown in sync
     const { refreshConnections: refreshCtxConnections, activeConnectionId, switchConnection } = useConnection();
@@ -711,18 +714,33 @@ const ConnectionsTab = () => {
     const saveConnection = async () => {
         if (!validateForm()) return;
         setErrorMsg('');
+        setSaving(true);
         try {
+            // Encrypt sensitive fields (password, SSH keys) client-side before transit
+            const token = getAuthToken();
+            const encryptedData = await encryptConnectionFields(API_BASE, token, formData);
+
             const url = editingConnection
                 ? `${API_BASE}/api/connections/${editingConnection.id}`
                 : `${API_BASE}/api/connections`;
             const res = await fetch(url, {
                 method: editingConnection ? 'PUT' : 'POST',
-                headers: { Authorization: `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(encryptedData),
             });
             if (res.ok) {
+                const result = await res.json();
                 await fetchConnections();
-                refreshCtxConnections(); // keep header dropdown in sync
+                refreshCtxConnections();
+
+                // Show auto-test result if available (new connections)
+                if (result.testResult) {
+                    if (result.testResult.success) {
+                        setSaveSuccess(`Connection "${formData.name}" saved & verified successfully`);
+                    } else {
+                        setSaveSuccess(`Connection "${formData.name}" saved, but test failed: ${result.testResult.error}`);
+                    }
+                }
                 closeModal();
             } else {
                 const text = await res.text();
@@ -735,6 +753,8 @@ const ConnectionsTab = () => {
             }
         } catch (e) {
             setErrorMsg(`Network error: ${e.message}`);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -832,8 +852,36 @@ const ConnectionsTab = () => {
         setErrorMsg('');
     };
 
+    // Auto-dismiss success toast
+    useEffect(() => {
+        if (!saveSuccess) return;
+        const t = setTimeout(() => setSaveSuccess(''), 6000);
+        return () => clearTimeout(t);
+    }, [saveSuccess]);
+
     return (
         <div style={S.root}>
+            {/* ── Success / Error Toast ── */}
+            {saveSuccess && (
+                <div style={{
+                    position: 'fixed', top: 20, right: 20, zIndex: 600,
+                    padding: '12px 18px', borderRadius: 12, maxWidth: 420,
+                    background: saveSuccess.includes('failed') ? `${THEME.danger}12` : `${THEME.success}12`,
+                    border: `1px solid ${saveSuccess.includes('failed') ? THEME.danger : THEME.success}30`,
+                    backdropFilter: 'blur(16px)',
+                    boxShadow: '0 8px 28px rgba(0,0,0,.3)',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    animation: 'fadeUp .3s ease',
+                    cursor: 'pointer',
+                }} onClick={() => setSaveSuccess('')}>
+                    {saveSuccess.includes('failed')
+                        ? <AlertCircle size={16} color={THEME.danger} />
+                        : <ShieldCheck size={16} color={THEME.success} />
+                    }
+                    <span style={{ fontSize: 13, fontWeight: 600, color: THEME.textMain }}>{saveSuccess}</span>
+                </div>
+            )}
+
             {/* ── Header ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
                 <div>
@@ -841,7 +889,7 @@ const ConnectionsTab = () => {
                         Database Connections
                     </h2>
                     <p style={{ fontSize: 13, color: THEME.textMuted, marginTop: 4, fontWeight: 500 }}>
-                        {connections.length} connection{connections.length !== 1 ? 's' : ''} · PostgreSQL, MySQL, MongoDB, Redis & more
+                        {connections.length} connection{connections.length !== 1 ? 's' : ''} · Encrypted at rest · PostgreSQL, MySQL, MongoDB
                     </p>
                 </div>
                 <button
@@ -878,6 +926,9 @@ const ConnectionsTab = () => {
                                                     <Terminal size={10} /> SSH
                                                 </span>
                                             )}
+                                            <span style={{ ...S.badge('#22c55e'), display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                                <Lock size={9} /> AES-256
+                                            </span>
                                         </div>
                                         <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 2 }}>
                                             <span style={{ color: dbMeta.accent }}>{dbMeta.label}</span>
@@ -1163,12 +1214,17 @@ const ConnectionsTab = () => {
                             </button>
                             <button
                                 onClick={saveConnection}
-                                style={S.btn(THEME.primary + '33', THEME.primary + '73', THEME.primary)}
-                                onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '52'}
-                                onMouseLeave={e => e.currentTarget.style.background = THEME.primary + '33'}
+                                disabled={saving}
+                                style={{
+                                    ...S.btn(THEME.primary + '33', THEME.primary + '73', THEME.primary),
+                                    opacity: saving ? 0.7 : 1,
+                                    cursor: saving ? 'wait' : 'pointer',
+                                }}
+                                onMouseEnter={e => !saving && (e.currentTarget.style.background = THEME.primary + '52')}
+                                onMouseLeave={e => !saving && (e.currentTarget.style.background = THEME.primary + '33')}
                             >
-                                <Check size={16} />
-                                {editingConnection ? 'Update' : 'Add Connection'}
+                                {saving ? <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <ShieldCheck size={16} />}
+                                {saving ? 'Encrypting & Saving...' : editingConnection ? 'Update' : 'Encrypt & Save'}
                             </button>
                         </div>
                     </div>

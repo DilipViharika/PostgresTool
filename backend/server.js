@@ -19,7 +19,7 @@ import repoRoutes               from './routes/repoRoutes.js';
 import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
 import { openTunnel, closeTunnel, getTunnelPort, closeAll as closeAllTunnels } from './services/sshTunnel.js';
-import { encrypt, decrypt, isEncrypted } from './services/encryptionService.js';
+import { encrypt, decrypt, isEncrypted, getPublicKey, unwrapField, validateEncryptionConfig } from './services/encryptionService.js';
 
 import { buildAuthenticate, requireScreen, requireRole } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
@@ -1315,6 +1315,28 @@ app.use('/api/repo', authenticate, requireScreen('repository'), repoRoutes);
 // ─────────────────────────────────────────────────────────────────────────────
 const SSH_FIELDS = ['sshEnabled','sshHost','sshPort','sshUser','sshAuthType','sshPrivateKey','sshPassphrase','sshPassword'];
 
+// ── Key exchange: frontend encrypts passwords with this RSA public key ──
+app.get('/api/connections/handshake', authenticate, (req, res) => {
+    try {
+        res.json({ publicKey: getPublicKey() });
+    } catch (e) {
+        res.status(500).json({ error: 'Encryption not configured' });
+    }
+});
+
+/**
+ * Unwrap sensitive fields that may arrive RSA-encrypted from the frontend.
+ * Falls back gracefully to plaintext for backward compatibility.
+ */
+function unwrapSensitiveFields(body) {
+    const SENSITIVE = ['password', 'sshPrivateKey', 'sshPassphrase', 'sshPassword'];
+    const out = { ...body };
+    for (const f of SENSITIVE) {
+        if (out[f]) out[f] = unwrapField(out[f]);
+    }
+    return out;
+}
+
 function pickSSH(body) {
     return {
         sshEnabled:    body.sshEnabled    ?? false,
@@ -1384,21 +1406,41 @@ app.get('/api/connections/:id', authenticate, async (req, res) => {
 
 app.post('/api/connections', authenticate, async (req, res) => {
     try {
-        const { name, host, port, database, username, password, ssl, isDefault } = req.body;
+        // Unwrap RSA-encrypted sensitive fields from the frontend
+        const body = unwrapSensitiveFields(req.body);
+        const { name, host, port, database, username, password, ssl, isDefault, dbType } = body;
         if (!name || !host || !port || !database || !username || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
-        // Clear is_default for this user before setting a new default
-        if (isDefault) await dbSetDefault(req.user.id, req.user.role, -1); // -1 = clear all
+        if (isDefault) await dbSetDefault(req.user.id, req.user.role, -1);
         const newConn = await dbInsertConnection({
             userId: req.user.id,
             name, host, port: parseInt(port), database, username, password,
             ssl: ssl || false, isDefault: isDefault || false,
-            ...pickSSH(req.body),
+            dbType: dbType || 'postgresql',
+            ...pickSSH(body),
             status: null, lastTested: null,
         });
         await syncConnectionsCache();
-        res.status(201).json(sanitizeConn(newConn));
+
+        // Auto-test the new connection so the user gets immediate feedback
+        let testResult = null;
+        try {
+            const cfg = await resolvePoolConfig(newConn);
+            const testPool = new Pool({ ...cfg, connectionTimeoutMillis: 8000 });
+            const client = await testPool.connect();
+            await client.query('SELECT 1');
+            client.release();
+            await testPool.end();
+            await dbUpdateConnection(newConn.id, { status: 'success', lastTested: new Date().toISOString() });
+            testResult = { success: true, message: 'Connection verified' };
+        } catch (testErr) {
+            await dbUpdateConnection(newConn.id, { status: 'failed', lastTested: new Date().toISOString() });
+            testResult = { success: false, error: testErr.message };
+        }
+        await syncConnectionsCache();
+
+        res.status(201).json({ ...sanitizeConn(newConn), testResult });
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
         res.status(500).json({ error: e.message });
@@ -1412,8 +1454,10 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
         const existing = conns.find(c => c.id === id);
         if (!existing) return res.status(404).json({ error: 'Connection not found' });
 
-        const { name, host, port, database, username, password, ssl } = req.body;
-        const ssh = pickSSH({ ...existing, ...req.body });
+        // Unwrap RSA-encrypted sensitive fields from the frontend
+        const body = unwrapSensitiveFields(req.body);
+        const { name, host, port, database, username, password, ssl } = body;
+        const ssh = pickSSH({ ...existing, ...body });
 
         const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== existing[f]);
         if (sshChanged) await closeTunnel(id);
@@ -3417,6 +3461,14 @@ app.use((req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function startup() {
     try {
+        // Validate encryption is properly configured before anything else
+        try {
+            validateEncryptionConfig();
+            log('INFO', 'Encryption self-test passed (AES-256-GCM)');
+        } catch (encErr) {
+            log('WARN', 'Encryption not configured — set ENCRYPTION_KEY or JWT_SECRET. ' + encErr.message);
+        }
+
         // Initialise connections table and warm the in-memory cache
         await initConnections();
         const defaultConn = CONNECTIONS.find(c => c.isDefault);
