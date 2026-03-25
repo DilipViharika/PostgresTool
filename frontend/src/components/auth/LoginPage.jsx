@@ -17,8 +17,6 @@ const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.
 const DB_TYPES = [
     { key: 'postgresql', label: 'PostgreSQL',  color: '#336791', icon: '🐘', shortLabel: 'PG' },
     { key: 'mysql',      label: 'MySQL',       color: '#00758F', icon: '🐬', shortLabel: 'MY' },
-    { key: 'mssql',      label: 'SQL Server',  color: '#CC2927', icon: '🔷', shortLabel: 'MS' },
-    { key: 'oracle',     label: 'Oracle',       color: '#F80000', icon: '🔴', shortLabel: 'OR' },
     { key: 'mongodb',    label: 'MongoDB',      color: '#47A248', icon: '🍃', shortLabel: 'MG' },
 ];
 
@@ -26,10 +24,8 @@ const NODE_DEFS = {
     primary: { label: 'Monitor',          sub: 'Core',          color: '#00D4FF', icon: 'Activity',  r: 16 },
     hub0:    { label: 'PostgreSQL',      sub: 'RDBMS',        color: '#6495ED', icon: 'Database',  r: 10 },
     hub1:    { label: 'MySQL',           sub: 'RDBMS',        color: '#00B4D8', icon: 'Server',    r: 10 },
-    hub2:    { label: 'SQL Server',      sub: 'Enterprise',   color: '#F97316', icon: 'HardDrive', r: 10 },
-    hub3:    { label: 'Oracle',          sub: 'Enterprise',   color: '#FF4560', icon: 'Cpu',       r: 10 },
-    hub4:    { label: 'MongoDB',         sub: 'NoSQL',        color: '#2EE89C', icon: 'Cloud',     r: 10 },
-    hub5:    { label: 'AI Engine',       sub: 'Intelligence', color: '#A78BFA', icon: 'Brain',     r: 9.5 },
+    hub2:    { label: 'MongoDB',         sub: 'NoSQL',        color: '#2EE89C', icon: 'Cloud',     r: 10 },
+    hub3:    { label: 'AI Engine',       sub: 'Intelligence', color: '#A78BFA', icon: 'Brain',     r: 9.5 },
 };
 
 const ICON_MAP = { Database, Activity, Zap, HardDrive, Lock, Cloud, Terminal, Search, RefreshCw, Users, Server, Cpu, Brain, Globe };
@@ -38,8 +34,6 @@ const PALETTE = [
     { h: 190, s: 100, l: 55 },   // cyan — primary
     { h: 220, s: 80,  l: 66 },   // blue — PostgreSQL
     { h: 192, s: 100, l: 46 },   // teal — MySQL
-    { h:  27, s: 100, l: 55 },   // orange — MSSQL
-    { h: 348, s: 100, l: 60 },   // red — Oracle
     { h: 157, s: 100, l: 58 },   // green — MongoDB
     { h: 264, s: 80,  l: 72 },   // violet — AI
     { h: 200, s: 100, l: 65 },
@@ -115,14 +109,12 @@ function useNetworkCanvas(canvasRef) {
             // Primary node — VIGIL core
             nodes.push({ x: W * 0.44, y: NET_H * 0.50, vx: 0, vy: 0, r: NODE_DEFS.primary.r, ci: 0, role: 'primary', phase: 0, pulse: 0, key: 'primary' });
 
-            // Hub nodes — 5 databases + AI
+            // Hub nodes — 3 databases + AI
             const hubPos = [
                 { x: 0.18, y: 0.18, key: 'hub0' },
                 { x: 0.68, y: 0.12, key: 'hub1' },
                 { x: 0.82, y: 0.48, key: 'hub2' },
-                { x: 0.65, y: 0.84, key: 'hub3' },
-                { x: 0.20, y: 0.80, key: 'hub4' },
-                { x: 0.08, y: 0.48, key: 'hub5' },
+                { x: 0.20, y: 0.80, key: 'hub3' },
             ];
             hubPos.forEach(({ x, y, key }, i) => nodes.push({
                 x: W * x + (Math.random() - .5) * 14,
@@ -339,8 +331,6 @@ const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
 const BOTTOM_DOTS = [
     { label: 'PostgreSQL',   color: '#6495ED' },
     { label: 'MySQL',        color: '#00B4D8' },
-    { label: 'SQL Server',   color: '#F97316' },
-    { label: 'Oracle',       color: '#FF4560' },
     { label: 'MongoDB',      color: '#2EE89C' },
 ];
 
@@ -446,7 +436,7 @@ const LeftPanel = () => {
                 </div>
 
                 <p style={{ fontSize: 11.5, fontWeight: 300, color: THEME.textMuted, lineHeight: 1.75, margin: 0, maxWidth: 520, fontFamily: THEME.fontBody, animation: 'fadeUp .85s ease .30s backwards' }}>
-                    Real-time intelligence across PostgreSQL, MySQL, SQL Server, Oracle, and MongoDB.
+                    Real-time intelligence across PostgreSQL, MySQL, and MongoDB.
                     183 metrics, AI anomaly detection, and end-to-end operations from a single pane.
                 </p>
 

@@ -251,18 +251,8 @@ describe('Project Structure', () => {
       expect(existsSync(filePath)).toBe(true);
     });
 
-    it('should have DemoOracleTab.jsx', () => {
-      const filePath = resolve(projectRoot, 'src/components/views/analytics/DemoOracleTab.jsx');
-      expect(existsSync(filePath)).toBe(true);
-    });
-
     it('should have DemoMongoDBTab.jsx', () => {
       const filePath = resolve(projectRoot, 'src/components/views/analytics/DemoMongoDBTab.jsx');
-      expect(existsSync(filePath)).toBe(true);
-    });
-
-    it('should have DemoSQLServerTab.jsx', () => {
-      const filePath = resolve(projectRoot, 'src/components/views/analytics/DemoSQLServerTab.jsx');
       expect(existsSync(filePath)).toBe(true);
     });
   });

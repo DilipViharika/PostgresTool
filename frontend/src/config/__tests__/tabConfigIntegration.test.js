@@ -155,8 +155,6 @@ describe('tabConfigIntegration', () => {
       const demoTabs = [
         'demo-postgres',
         'demo-mysql',
-        'demo-sqlserver',
-        'demo-oracle',
         'demo-mongodb',
       ];
 

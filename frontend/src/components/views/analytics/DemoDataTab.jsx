@@ -19,9 +19,6 @@ import {
 const DB_COLORS = {
   postgresql: '#6495ED',
   mysql: '#00B4D8',
-  mssql: '#F97316',
-  sqlserver: '#F97316',
-  oracle: '#FF4560',
   mongodb: '#2EE89C',
 };
 
@@ -297,170 +294,6 @@ const DATABASE_STRUCTURE = {
       }
     ]
   },
-  mssql: {
-    name: 'SQL Server',
-    color: DB_COLORS.mssql,
-    icon: Database,
-    kpis: [
-      { label: 'Batch Req/s', value: '3,420', unit: '/s', status: 'healthy', sparkline: [2800, 2900, 3000, 3200, 3300, 3350, 3420] },
-      { label: 'PLE', value: '48,200', unit: 's', status: 'healthy', sparkline: [40000, 42000, 44000, 46000, 47500, 48000, 48200] },
-      { label: 'Connections', value: '189', unit: '', status: 'healthy', sparkline: [150, 160, 170, 180, 185, 187, 189] },
-      { label: 'CPU', value: '42', unit: '%', status: 'healthy', sparkline: [30, 35, 38, 40, 41, 41.5, 42] },
-      { label: 'Memory', value: '71', unit: '%', status: 'warning', sparkline: [50, 55, 60, 65, 68, 70, 71] },
-    ],
-    sections: [
-      {
-        id: 'core',
-        name: 'Core Monitoring',
-        tabs: [
-          { name: 'Overview', metrics: [{ label: 'Batch Req/s', value: '3,420', unit: '/s' }, { label: 'Transactions/s', value: '1,234', unit: '/s' }, { label: 'Connections', value: '189', unit: '' }, { label: 'Uptime', value: '38', unit: 'days' }] },
-          { name: 'Performance', metrics: [{ label: 'Page Lookups/s', value: '234K', unit: '' }, { label: 'Lock Waits/s', value: '0', unit: '' }, { label: 'Compilations/s', value: '234', unit: '' }, { label: 'Avg Batch Time', value: '1.2', unit: 'ms' }] },
-          { name: 'Resources', metrics: [{ label: 'CPU Usage', value: '42', unit: '%' }, { label: 'Memory Usage', value: '71', unit: '%' }, { label: 'Disk Queue', value: '2', unit: '' }, { label: 'Avg Disk Latency', value: '5.2', unit: 'ms' }] },
-          { name: 'Reliability', metrics: [{ label: 'Error Rate', value: '0.02', unit: '%' }, { label: 'Failed Transactions', value: '1', unit: '/hour' }, { label: 'Recovery Time', value: '2.5', unit: 's' }, { label: 'Availability', value: '99.98', unit: '%' }] },
-          { name: 'Alerts', metrics: [{ label: 'Active Alerts', value: '1', unit: '' }, { label: 'Total Rules', value: '32', unit: '' }, { label: 'Triggered Today', value: '3', unit: '' }, { label: 'Avg Response', value: '7', unit: 'mins' }] },
-        ]
-      },
-      {
-        id: 'query',
-        name: 'Query & Indexes',
-        tabs: [
-          { name: 'Query Store', metrics: [{ label: 'Tracked Queries', value: '2,345', unit: '' }, { label: 'Plan Variants', value: '234', unit: '' }, { label: 'Regressions', value: '0', unit: '' }, { label: 'Avg Duration', value: '3.2', unit: 'ms' }] },
-          { name: 'Execution Plans', metrics: [{ label: 'Cached Plans', value: '8,234', unit: '' }, { label: 'Ad Hoc Plans', value: '234', unit: '' }, { label: 'Avg Cost', value: '234.5', unit: 'units' }, { label: 'CPU Time', value: '234', unit: 's/hour' }] },
-          { name: 'Index Tuning', metrics: [{ label: 'Missing Indexes', value: '12', unit: '' }, { label: 'Unused Indexes', value: '5', unit: '' }, { label: 'Fragmentation > 10%', value: '8', unit: '' }, { label: 'Index Hit Ratio', value: '94.2', unit: '%' }] },
-          { name: 'Missing Indexes', metrics: [{ label: 'Suggestions', value: '45', unit: '' }, { label: 'Est Improvement', value: '23.4', unit: '%' }, { label: 'Creation Impact', value: '1.2', unit: '%' }, { label: 'Ready to Create', value: '12', unit: '' }] },
-          { name: 'Statistics', metrics: [{ label: 'Statistics', value: '678', unit: '' }, { label: 'Outdated', value: '23', unit: '' }, { label: 'Auto Update', value: 'enabled', unit: '' }, { label: 'Last Update', value: '2', unit: 'hours' }] },
-        ]
-      },
-      {
-        id: 'infra',
-        name: 'Infrastructure',
-        tabs: [
-          { name: 'Connection Management', metrics: [{ label: 'Active Conn', value: '189', unit: '' }, { label: 'Max Pool', value: '256', unit: '' }, { label: 'Failed Conn', value: '0', unit: '/day' }, { label: 'Conn Efficiency', value: '96.8', unit: '%' }] },
-          { name: 'Always On AG', metrics: [{ label: 'Replicas', value: '2', unit: '' }, { label: 'Sync Status', value: 'healthy', unit: '' }, { label: 'Replication Lag', value: '0.2', unit: 'ms' }, { label: 'Log Send Queue', value: '0', unit: 'KB' }] },
-          { name: 'Transaction Log', metrics: [{ label: 'Log Size', value: '12.3', unit: 'GB' }, { label: 'Used Space', value: '78', unit: '%' }, { label: 'VLF Count', value: '234', unit: '' }, { label: 'Last Backup', value: '5', unit: 'mins' }] },
-          { name: 'TempDB', metrics: [{ label: 'Size', value: '4.5', unit: 'GB' }, { label: 'Used', value: '62.3', unit: '%' }, { label: 'Contention', value: 'low', unit: '' }, { label: 'Version Store', value: '234', unit: 'MB' }] },
-          { name: 'Buffer Management', metrics: [{ label: 'Buffer Pool', value: '16.0', unit: 'GB' }, { label: 'Util', value: '71.2', unit: '%' }, { label: 'Free Buffers', value: '4.6', unit: 'GB' }, { label: 'Lazy Writer', value: 'active', unit: '' }] },
-        ]
-      },
-      {
-        id: 'schema',
-        name: 'Schema & Security',
-        tabs: [
-          { name: 'Schema Explorer', metrics: [{ label: 'Databases', value: '34', unit: '' }, { label: 'Tables', value: '567', unit: '' }, { label: 'Stored Procs', value: '234', unit: '' }, { label: 'Functions', value: '89', unit: '' }] },
-          { name: 'Security Audit', metrics: [{ label: 'Logins', value: '45', unit: '' }, { label: 'Database Users', value: '234', unit: '' }, { label: 'Roles', value: '23', unit: '' }, { label: 'Failed Logins', value: '0', unit: '/day' }] },
-          { name: 'Permissions Matrix', metrics: [{ label: 'Permissions', value: '456', unit: '' }, { label: 'Object Permissions', value: '234', unit: '' }, { label: 'Role Memberships', value: '189', unit: '' }, { label: 'Orphaned Permissions', value: '2', unit: '' }] },
-        ]
-      },
-      {
-        id: 'observability',
-        name: 'Observability',
-        tabs: [
-          { name: 'Wait Statistics', metrics: [{ label: 'Total Waits', value: '234K', unit: '' }, { label: 'CPU Waits', value: '42', unit: '%' }, { label: 'I/O Waits', value: '28', unit: '%' }, { label: 'Lock Waits', value: '0.1', unit: '%' }] },
-          { name: 'Extended Events', metrics: [{ label: 'Sessions', value: '8', unit: '' }, { label: 'Events Captured', value: '23.4M', unit: '/day' }, { label: 'Target Size', value: '456', unit: 'MB' }, { label: 'Avg Session Size', value: '57', unit: 'MB' }] },
-          { name: 'Activity Monitor', metrics: [{ label: 'Active Sessions', value: '189', unit: '' }, { label: 'Blocking Chains', value: '0', unit: '' }, { label: 'Deadlocks', value: '0', unit: '/day' }, { label: 'Blocked Procs', value: '0', unit: '' }] },
-          { name: 'DMV Explorer', metrics: [{ label: 'DMV Count', value: '234', unit: '' }, { label: 'Queries', value: '456K', unit: '/hour' }, { label: 'Avg Query Time', value: '2.3', unit: 'ms' }, { label: 'Last Refresh', value: '5', unit: 's ago' }] },
-        ]
-      },
-      {
-        id: 'admin',
-        name: 'Admin',
-        tabs: [
-          { name: 'SQL Agent Jobs', metrics: [{ label: 'Jobs', value: '45', unit: '' }, { label: 'Running', value: '2', unit: '' }, { label: 'Failed', value: '0', unit: '/day' }, { label: 'Success Rate', value: '99.8', unit: '%' }] },
-          { name: 'Backup Strategy', metrics: [{ label: 'Full Backups', value: '1', unit: '/day' }, { label: 'Diff Backups', value: '4', unit: '/day' }, { label: 'Last Backup', value: '3', unit: 'hours' }, { label: 'Restore Time', value: '12', unit: 'mins' }] },
-          { name: 'Maintenance Plans', metrics: [{ label: 'Plans', value: '12', unit: '' }, { label: 'Scheduled', value: '12', unit: '' }, { label: 'Last Run', value: '2', unit: 'hours' }, { label: 'Success Rate', value: '100', unit: '%' }] },
-          { name: 'Server Configuration', metrics: [{ label: 'Config Options', value: '234', unit: '' }, { label: 'Modified', value: '18', unit: '' }, { label: 'Recommended', value: '3', unit: '' }, { label: 'Last Change', value: '5', unit: 'days' }] },
-        ]
-      }
-    ]
-  },
-  oracle: {
-    name: 'Oracle',
-    color: DB_COLORS.oracle,
-    icon: Database,
-    kpis: [
-      { label: 'TPS', value: '4,150', unit: '/s', status: 'healthy', sparkline: [3500, 3700, 3900, 4000, 4100, 4120, 4150] },
-      { label: 'SGA Hit', value: '99.1', unit: '%', status: 'healthy', sparkline: [98, 98.5, 98.8, 99, 99.05, 99.08, 99.1] },
-      { label: 'Sessions', value: '312', unit: '', status: 'healthy', sparkline: [280, 290, 300, 310, 311, 311.5, 312] },
-      { label: 'Redo', value: '8.2', unit: 'MB/s', status: 'healthy', sparkline: [6, 6.5, 7, 7.5, 8, 8.1, 8.2] },
-      { label: 'Tablespace', value: '67', unit: '%', status: 'warning', sparkline: [45, 50, 55, 60, 65, 66, 67] },
-    ],
-    sections: [
-      {
-        id: 'core',
-        name: 'Core Monitoring',
-        tabs: [
-          { name: 'Overview', metrics: [{ label: 'TPS', value: '4,150', unit: '/s' }, { label: 'Transactions', value: '234K', unit: '/hour' }, { label: 'Sessions', value: '312', unit: '' }, { label: 'Uptime', value: '156', unit: 'days' }] },
-          { name: 'Performance', metrics: [{ label: 'CPU Usage', value: '45', unit: '%' }, { label: 'I/O Read Rate', value: '234', unit: 'MB/s' }, { label: 'I/O Write Rate', value: '89', unit: 'MB/s' }, { label: 'Avg Query Time', value: '2.1', unit: 'ms' }] },
-          { name: 'Resources', metrics: [{ label: 'SGA Usage', value: '67', unit: '%' }, { label: 'PGA Usage', value: '42', unit: '%' }, { label: 'Free Space', value: '12.3', unit: 'GB' }, { label: 'Temp Space', value: '5.6', unit: 'GB' }] },
-          { name: 'Reliability', metrics: [{ label: 'Error Rate', value: '0.01', unit: '%' }, { label: 'Failed Transactions', value: '0', unit: '/hour' }, { label: 'Recovery Time', value: '3.2', unit: 's' }, { label: 'Availability', value: '99.99', unit: '%' }] },
-          { name: 'Alerts', metrics: [{ label: 'Active Alerts', value: '0', unit: '' }, { label: 'Total Rules', value: '42', unit: '' }, { label: 'Triggered Today', value: '0', unit: '' }, { label: 'Avg Response', value: '4', unit: 'mins' }] },
-        ]
-      },
-      {
-        id: 'query',
-        name: 'Query & Indexes',
-        tabs: [
-          { name: 'AWR Reports', metrics: [{ label: 'Snapshots', value: '4,320', unit: '' }, { label: 'Avg Load', value: '3.2', unit: 'DB CPU' }, { label: 'Peak Load', value: '8.9', unit: 'DB CPU' }, { label: 'Reports', value: '234', unit: '' }] },
-          { name: 'SQL Tuning Advisor', metrics: [{ label: 'SQL Profiles', value: '45', unit: '' }, { label: 'Active Profiles', value: '34', unit: '' }, { label: 'Recommendations', value: '12', unit: '' }, { label: 'Potential Gain', value: '23.4', unit: '%' }] },
-          { name: 'Explain Plans', metrics: [{ label: 'Plans Generated', value: '234K', unit: '/day' }, { label: 'Avg Cost', value: '234.5', unit: 'units' }, { label: 'Full Scans', value: '2.3', unit: '%' }, { label: 'Index Usage', value: '97.7', unit: '%' }] },
-          { name: 'Index Analysis', metrics: [{ label: 'Indexes', value: '567', unit: '' }, { label: 'Unused Indexes', value: '8', unit: '' }, { label: 'Duplicate Indexes', value: '3', unit: '' }, { label: 'Fragmentation', value: '2.1', unit: '%' }] },
-          { name: 'Optimizer Stats', metrics: [{ label: 'Table Stats', value: '678', unit: '' }, { label: 'Outdated', value: '12', unit: '' }, { label: 'Auto Gather', value: 'enabled', unit: '' }, { label: 'Last Run', value: '3', unit: 'hours' }] },
-        ]
-      },
-      {
-        id: 'infra',
-        name: 'Infrastructure',
-        tabs: [
-          { name: 'Tablespace Management', metrics: [{ label: 'Tablespaces', value: '23', unit: '' }, { label: 'Used', value: '67', unit: '%' }, { label: 'Autoextend', value: '18', unit: '' }, { label: 'Max Size', value: '500', unit: 'GB' }] },
-          { name: 'Redo Logs', metrics: [{ label: 'Log Groups', value: '3', unit: '' }, { label: 'Members', value: '2', unit: '/group' }, { label: 'Redo Rate', value: '8.2', unit: 'MB/s' }, { label: 'Archive Status', value: 'enabled', unit: '' }] },
-          { name: 'Data Guard', metrics: [{ label: 'Standby DBs', value: '2', unit: '' }, { label: 'Protection Mode', value: 'maximum', unit: 'availability' }, { label: 'Lag Time', value: '0.3', unit: 's' }, { label: 'Status', value: 'healthy', unit: '' }] },
-          { name: 'RAC Monitor', metrics: [{ label: 'Cluster Nodes', value: '4', unit: '' }, { label: 'Instance Status', value: 'all healthy', unit: '' }, { label: 'Interconnect Util', value: '34.2', unit: '%' }, { label: 'Global Lock Waits', value: '0', unit: '%' }] },
-          { name: 'Undo Management', metrics: [{ label: 'Undo Tablespace', value: '12.3', unit: 'GB' }, { label: 'Used', value: '56.2', unit: '%' }, { label: 'Retention', value: '900', unit: 's' }, { label: 'Max Extents', value: '234', unit: '' }] },
-        ]
-      },
-      {
-        id: 'schema',
-        name: 'Schema & Security',
-        tabs: [
-          { name: 'Schema Objects', metrics: [{ label: 'Tables', value: '567', unit: '' }, { label: 'Indexes', value: '1,234', unit: '' }, { label: 'Views', value: '234', unit: '' }, { label: 'Packages', value: '89', unit: '' }] },
-          { name: 'Privilege Audit', metrics: [{ label: 'Users', value: '45', unit: '' }, { label: 'Roles', value: '23', unit: '' }, { label: 'System Privileges', value: '567', unit: '' }, { label: 'Object Privileges', value: '1,234', unit: '' }] },
-          { name: 'VPD Policies', metrics: [{ label: 'Policies', value: '12', unit: '' }, { label: 'Protected Tables', value: '34', unit: '' }, { label: 'Predicate Count', value: '45', unit: '' }, { label: 'Policy Rows', value: '234K', unit: '' }] },
-        ]
-      },
-      {
-        id: 'observability',
-        name: 'Observability',
-        tabs: [
-          { name: 'ASH Analytics', metrics: [{ label: 'ASH Samples', value: '234M', unit: '/day' }, { label: 'Avg Events', value: '234K', unit: '/s' }, { label: 'Top Events', value: '8', unit: '' }, { label: 'Sampling Rate', value: '100', unit: '%' }] },
-          { name: 'Alert Log', metrics: [{ label: 'Entries', value: '2.3K', unit: '/day' }, { label: 'Errors', value: '0', unit: '' }, { label: 'Warnings', value: '5', unit: '' }, { label: 'Critical', value: '0', unit: '' }] },
-          { name: 'Trace Files', metrics: [{ label: 'Trace Files', value: '234', unit: '' }, { label: 'Total Size', value: '45.6', unit: 'GB' }, { label: 'Avg Size', value: '195', unit: 'MB' }, { label: 'Retention', value: '30', unit: 'days' }] },
-          { name: 'Enterprise Manager Bridge', metrics: [{ label: 'EM Version', value: '13.4.0.0', unit: '' }, { label: 'Agents', value: '12', unit: '' }, { label: 'Agent Status', value: 'all up', unit: '' }, { label: 'Metrics Collected', value: '234K', unit: '/hour' }] },
-        ]
-      },
-      {
-        id: 'admin',
-        name: 'Admin',
-        tabs: [
-          { name: 'RMAN Backup', metrics: [{ label: 'Backups', value: '234', unit: '' }, { label: 'Full Backups', value: '1', unit: '/day' }, { label: 'Backup Time', value: '45', unit: 'mins' }, { label: 'Backup Status', value: 'healthy', unit: '' }] },
-          { name: 'Scheduler Jobs', metrics: [{ label: 'Jobs', value: '67', unit: '' }, { label: 'Running', value: '3', unit: '' }, { label: 'Failed', value: '0', unit: '/day' }, { label: 'Success Rate', value: '100', unit: '%' }] },
-          { name: 'Data Pump', metrics: [{ label: 'Jobs', value: '12', unit: '' }, { label: 'Running', value: '1', unit: '' }, { label: 'Total Transferred', value: '234', unit: 'GB' }, { label: 'Avg Rate', value: '12', unit: 'MB/s' }] },
-          { name: 'Patch Management', metrics: [{ label: 'Current Version', value: '19.18', unit: '' }, { label: 'Patches Available', value: '3', unit: '' }, { label: 'Last Patched', value: '45', unit: 'days' }, { label: 'Patch Status', value: 'up to date', unit: '' }] },
-        ]
-      }
-    ]
-  }
-};
-
-const DETAIL_WIDGETS = {
-  postgresql: {
-    backup: { time: '2 hours ago', size: '8.9 GB', duration: '12 min', verified: true, next: 'in 22 hours' },
-    longTxns: [
-      { pid: '12847', query: 'SELECT * FROM large_table WHERE...', duration: '45 min', wait: 'I/O', pct: 75 },
-      { pid: '12934', query: 'UPDATE inventory SET qty=qty-1...', duration: '12 min', wait: 'Lock', pct: 40 },
-      { pid: '13021', query: 'DELETE FROM audit_logs WHERE...', duration: '3 min', wait: 'CPU', pct: 15 },
-    ],
-    vacuum: { urgent: 5, soon: 23, healthy: 541, deadTuples: '234.5M', bloat: '12.3' },
-  },
   mongodb: {
     backup: { time: '1 hour ago', size: '234 GB', duration: '15 min', verified: true, next: 'in 23 hours' },
     longTxns: [
@@ -477,22 +310,6 @@ const DETAIL_WIDGETS = {
       { pid: '4589', query: 'ALTER TABLE users ADD INDEX...', duration: '5 min', wait: 'Meta Lock', pct: 25 },
     ],
     vacuum: { urgent: 2, soon: 15, healthy: 340, deadTuples: '89.2M', bloat: '8.1' },
-  },
-  mssql: {
-    backup: { time: '4 hours ago', size: '45.2 GB', duration: '25 min', verified: true, next: 'in 20 hours' },
-    longTxns: [
-      { pid: 'SPID-52', query: 'EXEC sp_rebuild_indexes...', duration: '30 min', wait: 'PAGEIOLATCH', pct: 65 },
-      { pid: 'SPID-78', query: 'SELECT TOP 1000 FROM Audit...', duration: '8 min', wait: 'LCK_M_S', pct: 25 },
-    ],
-    vacuum: { urgent: 3, soon: 18, healthy: 420, deadTuples: '156.8M', bloat: '10.5' },
-  },
-  oracle: {
-    backup: { time: '5 hours ago', size: '89.4 GB', duration: '45 min', verified: true, next: 'in 19 hours' },
-    longTxns: [
-      { pid: 'SID-234', query: 'SELECT /*+ PARALLEL(8)*/...', duration: '1 hour', wait: 'db file seq', pct: 80 },
-      { pid: 'SID-567', query: 'MERGE INTO fact_sales USING...', duration: '15 min', wait: 'enq: TX', pct: 35 },
-    ],
-    vacuum: { urgent: 0, soon: 8, healthy: 567, deadTuples: '45.6M', bloat: '3.2' },
   },
 };
 
@@ -950,8 +767,6 @@ function MiniBarChart({ data, color }) {
 const DB_TABLE_NAMES = {
   postgresql: ['public.orders', 'public.events', 'public.sessions', 'audit.log_entries', 'public.users'],
   mysql: ['orders', 'wp_posts', 'user_sessions', 'inventory', 'wp_comments'],
-  mssql: ['dbo.Transactions', 'dbo.AuditLog', 'dbo.Customers', 'dbo.Products', 'dbo.OrderItems'],
-  oracle: ['HR.EMPLOYEES', 'SALES.ORDERS', 'FIN.LEDGER', 'APP.SESSIONS', 'AUDIT.TRAIL'],
   mongodb: ['users', 'orders', 'products', 'sessions', 'analytics'],
 };
 
@@ -968,18 +783,6 @@ const DB_SLOW_QUERIES = {
     { label: 'ALTER TABLE inventory ADD INDEX...', value: 650, display: '650ms' },
     { label: 'UPDATE wp_comments SET status...', value: 420, display: '420ms' },
   ],
-  mssql: [
-    { label: 'EXEC sp_rebuild_indexes @table...', value: 2100, display: '2.1s' },
-    { label: 'SELECT TOP 1000 FROM AuditLog...', value: 960, display: '960ms' },
-    { label: 'MERGE INTO Customers USING...', value: 780, display: '780ms' },
-    { label: 'UPDATE Statistics dbo.Products', value: 450, display: '450ms' },
-  ],
-  oracle: [
-    { label: 'SELECT /*+ PARALLEL(8) */ FROM...', value: 3200, display: '3.2s' },
-    { label: 'MERGE INTO fact_sales USING...', value: 1800, display: '1.8s' },
-    { label: 'CREATE INDEX CONCURRENTLY ON...', value: 1200, display: '1.2s' },
-    { label: 'ANALYZE TABLE HR.EMPLOYEES...', value: 560, display: '560ms' },
-  ],
   mongodb: [
     { label: 'db.orders.aggregate([{$lookup...', value: 1560, display: '1.56s' },
     { label: 'db.analytics.find({ts:{$gte...', value: 980, display: '980ms' },
@@ -991,24 +794,18 @@ const DB_SLOW_QUERIES = {
 const DB_CONN_STATS = {
   postgresql: { active: 42, idle: 58, waiting: 0, max: 100, pct: 42 },
   mysql: { active: 156, idle: 44, waiting: 3, max: 200, pct: 78 },
-  mssql: { active: 189, idle: 67, waiting: 5, max: 256, pct: 74 },
-  oracle: { active: 312, idle: 188, waiting: 12, max: 500, pct: 62 },
   mongodb: { active: 234, idle: 166, waiting: 8, max: 500, pct: 47 },
 };
 
 const DB_RESOURCE_STATS = {
   postgresql: { cpu: 34, mem: 62, disk: 8, cpuCores: 4, memGB: '12 / 16', diskGB: '117 / 200 SSD' },
   mysql: { cpu: 28, mem: 71, disk: 45, cpuCores: 8, memGB: '24 / 32', diskGB: '156 / 500 NVMe' },
-  mssql: { cpu: 42, mem: 71, disk: 38, cpuCores: 16, memGB: '48 / 64', diskGB: '890 / 2000 SAN' },
-  oracle: { cpu: 45, mem: 67, disk: 52, cpuCores: 32, memGB: '96 / 128', diskGB: '2.4T / 5T ASM' },
   mongodb: { cpu: 38, mem: 78, disk: 67, cpuCores: 8, memGB: '64 / 128', diskGB: '456 / 1000 EBS' },
 };
 
 const DB_WORKLOAD = {
   postgresql: { reads: 99, writes: 1 },
   mysql: { reads: 72, writes: 28 },
-  mssql: { reads: 65, writes: 35 },
-  oracle: { reads: 58, writes: 42 },
   mongodb: { reads: 81, writes: 19 },
 };
 
@@ -1022,16 +819,6 @@ const DB_REPLICATION = {
     { name: 'mysql-source', lag: '0 ms', color: null },
     { name: 'mysql-replica', lag: '250 ms', color: null },
   ],
-  mssql: [
-    { name: 'sql-primary', lag: '0 ms', color: null },
-    { name: 'sql-ag-sync', lag: '12 ms', color: null },
-    { name: 'sql-ag-async', lag: '340 ms', color: null },
-  ],
-  oracle: [
-    { name: 'ora-primary', lag: '0 ms', color: null },
-    { name: 'ora-standby1', lag: '300 ms', color: null },
-    { name: 'ora-standby2', lag: '1.2 s', color: null },
-  ],
   mongodb: [
     { name: 'rs0-primary', lag: '0 ms', color: null },
     { name: 'rs0-sec-1', lag: '50 ms', color: null },
@@ -1043,32 +830,24 @@ const DB_REPLICATION = {
 const DB_SCHEMA_OBJECTS = {
   postgresql: { tables: 234, views: 89, functions: 156, triggers: 42, total: 521 },
   mysql: { tables: 456, views: 78, functions: 45, triggers: 23, total: 602 },
-  mssql: { tables: 567, views: 234, functions: 89, triggers: 67, total: 957 },
-  oracle: { tables: 890, views: 345, functions: 234, triggers: 112, total: 1581 },
   mongodb: { tables: 567, views: 34, functions: 0, triggers: 0, total: 601 },
 };
 
 const DB_INDEX_STATS = {
   postgresql: { indexPct: 89, seqPct: 11 },
   mysql: { indexPct: 98, seqPct: 2 },
-  mssql: { indexPct: 94, seqPct: 6 },
-  oracle: { indexPct: 97, seqPct: 3 },
   mongodb: { indexPct: 85, seqPct: 15 },
 };
 
 const DB_ALERT_DIST = {
   postgresql: [{ label: 'Critical', value: 0, display: '0' }, { label: 'Warning', value: 3, display: '3' }, { label: 'Info', value: 18, display: '18' }, { label: 'Resolved', value: 145, display: '145' }],
   mysql: [{ label: 'Critical', value: 1, display: '1' }, { label: 'Warning', value: 5, display: '5' }, { label: 'Info', value: 22, display: '22' }, { label: 'Resolved', value: 189, display: '189' }],
-  mssql: [{ label: 'Critical', value: 2, display: '2' }, { label: 'Warning', value: 8, display: '8' }, { label: 'Info', value: 34, display: '34' }, { label: 'Resolved', value: 267, display: '267' }],
-  oracle: [{ label: 'Critical', value: 0, display: '0' }, { label: 'Warning', value: 2, display: '2' }, { label: 'Info', value: 45, display: '45' }, { label: 'Resolved', value: 312, display: '312' }],
   mongodb: [{ label: 'Critical', value: 1, display: '1' }, { label: 'Warning', value: 6, display: '6' }, { label: 'Info', value: 28, display: '28' }, { label: 'Resolved', value: 201, display: '201' }],
 };
 
 const DB_USER_DIST = {
   postgresql: { admin: 8, dev: 45, readonly: 120, service: 23, total: 196 },
   mysql: { admin: 5, dev: 34, readonly: 89, service: 12, total: 140 },
-  mssql: { admin: 12, dev: 67, readonly: 234, service: 45, total: 358 },
-  oracle: { admin: 15, dev: 89, readonly: 456, service: 78, total: 638 },
   mongodb: { admin: 6, dev: 28, readonly: 67, service: 18, total: 119 },
 };
 
@@ -1077,7 +856,7 @@ function getSectionWidgets(sectionId, db) {
   const c = db.color;
   const dbName = db.name.toLowerCase().replace(' ', '');
   /* normalize key for lookups */
-  const key = dbName === 'sqlserver' ? 'mssql' : dbName;
+  const key = dbName;
   const conn = DB_CONN_STATS[key] || DB_CONN_STATS.postgresql;
   const res = DB_RESOURCE_STATS[key] || DB_RESOURCE_STATS.postgresql;
   const wl = DB_WORKLOAD[key] || DB_WORKLOAD.postgresql;
@@ -1197,15 +976,15 @@ function getSectionWidgets(sectionId, db) {
           centerValue: `${bufferHit}%`, centerLabel: 'BUFFER',
         },
         topTables: [
-          { label: key === 'mssql' ? 'Buffer Pool' : key === 'oracle' ? 'SGA Cache' : key === 'mongodb' ? 'WiredTiger' : 'Shared Buffers', value: bufferHit, display: `${bufferHit}% hit` },
-          { label: key === 'oracle' ? 'Redo Log' : key === 'mssql' ? 'Transaction Log' : key === 'mongodb' ? 'Oplog' : 'WAL', value: walRate, display: `${walRate} MB/s` },
+          { label: key === 'mongodb' ? 'WiredTiger' : 'Shared Buffers', value: bufferHit, display: `${bufferHit}% hit` },
+          { label: key === 'mongodb' ? 'Oplog' : 'WAL', value: walRate, display: `${walRate} MB/s` },
           { label: 'Checkpoint Avg', value: checkpointAvg, display: `${checkpointAvg} ms` },
           { label: key === 'mongodb' ? 'Journaling' : 'Archiving', value: 99, display: 'active' },
           { label: 'Repl Lag Max', value: 488, display: repl[repl.length - 1]?.lag || '0 ms' },
         ],
         resources: [
           { label: 'Buffer Hit', value: bufferHit, icon: Layers, status: st(bufferHit, 95, 80), detail: `${bufferHit}% from cache` },
-          { label: key === 'oracle' ? 'Redo Rate' : key === 'mssql' ? 'Log Writes' : key === 'mongodb' ? 'Oplog Rate' : 'WAL Rate', value: Math.min(walRate * 5, 100), icon: Radio, status: st(walRate * 5), detail: `${walRate} MB/s throughput` },
+          { label: key === 'mongodb' ? 'Oplog Rate' : 'WAL Rate', value: Math.min(walRate * 5, 100), icon: Radio, status: st(walRate * 5), detail: `${walRate} MB/s throughput` },
           { label: 'Disk Latency', value: res.disk, icon: HardDrive, status: st(res.disk), detail: `${res.diskGB}` },
         ],
         latencyData: mkTimeSeries('inf', [
@@ -1227,8 +1006,8 @@ function getSectionWidgets(sectionId, db) {
     case 'schema': {
       const objLabel = key === 'mongodb' ? 'Collections' : 'Tables';
       const obj2 = key === 'mongodb' ? 'Indexes' : 'Views';
-      const obj3 = key === 'oracle' ? 'Packages' : (key === 'mongodb' ? 'Validators' : 'Functions');
-      const obj4 = key === 'mssql' ? 'Stored Procs' : (key === 'mongodb' ? 'Change Streams' : 'Triggers');
+      const obj3 = key === 'mongodb' ? 'Validators' : 'Functions';
+      const obj4 = key === 'mongodb' ? 'Change Streams' : 'Triggers';
       const securityScore = 75 + (seed % 24);
       const compliancePct = 80 + (seed % 19);
       return {
@@ -1248,11 +1027,11 @@ function getSectionWidgets(sectionId, db) {
           centerValue: `${compliancePct}%`, centerLabel: 'COMPLY',
         },
         topTables: [
-          { label: key === 'mongodb' ? 'users' : key === 'oracle' ? 'HR.EMPLOYEES' : key === 'mssql' ? 'dbo.Customers' : tables[0], value: 45, display: `${45 + (seed % 20)} GB` },
-          { label: key === 'mongodb' ? 'orders' : key === 'oracle' ? 'SALES.ORDERS' : key === 'mssql' ? 'dbo.Transactions' : tables[1], value: 32, display: `${32 + (seed % 15)} GB` },
-          { label: key === 'mongodb' ? 'analytics' : key === 'oracle' ? 'FIN.LEDGER' : key === 'mssql' ? 'dbo.AuditLog' : tables[2], value: 21, display: `${21 + (seed % 12)} GB` },
-          { label: key === 'mongodb' ? 'sessions' : key === 'oracle' ? 'AUDIT.TRAIL' : key === 'mssql' ? 'dbo.Products' : tables[3], value: 15, display: `${15 + (seed % 8)} GB` },
-          { label: key === 'mongodb' ? 'products' : key === 'oracle' ? 'APP.SESSIONS' : key === 'mssql' ? 'dbo.OrderItems' : tables[4], value: 9, display: `${9 + (seed % 6)} GB` },
+          { label: key === 'mongodb' ? 'users' : tables[0], value: 45, display: `${45 + (seed % 20)} GB` },
+          { label: key === 'mongodb' ? 'orders' : tables[1], value: 32, display: `${32 + (seed % 15)} GB` },
+          { label: key === 'mongodb' ? 'analytics' : tables[2], value: 21, display: `${21 + (seed % 12)} GB` },
+          { label: key === 'mongodb' ? 'sessions' : tables[3], value: 15, display: `${15 + (seed % 8)} GB` },
+          { label: key === 'mongodb' ? 'products' : tables[4], value: 9, display: `${9 + (seed % 6)} GB` },
         ],
         resources: [
           { label: 'Security Score', value: securityScore, icon: Shield, status: st(securityScore, 90, 70), detail: `${securityScore}/100 rating` },
@@ -1312,7 +1091,7 @@ function getSectionWidgets(sectionId, db) {
     case 'dev': {
       const apiSuccessRate = 95 + (seed % 5);
       const deployCount = 10 + (seed % 40);
-      const base = key === 'oracle' ? 800 : key === 'mssql' ? 600 : key === 'mongodb' ? 900 : key === 'mysql' ? 500 : 400;
+      const base = key === 'mongodb' ? 900 : key === 'mysql' ? 500 : 400;
       return {
         pool: {
           data: [
@@ -1515,7 +1294,7 @@ function SectionContent({ section, db }) {
   const widgetId = mapSectionToWidgetId(section.id);
   const sw = getSectionWidgets(widgetId, db);
   const dbName = db.name.toLowerCase().replace(' ', '');
-  const key = dbName === 'sqlserver' ? 'mssql' : dbName;
+  const key = dbName;
 
   // Section header
   const headerNode = (
@@ -2182,7 +1961,7 @@ function StatCard({ label, value, unit, color }) {
 
 function SubTabContent({ subTabId, _section, db, _widgets }) {
   const dbName = db.name.toLowerCase().replace(' ', '');
-  const key = dbName === 'sqlserver' ? 'mssql' : dbName;
+  const key = dbName;
   const seed = `${key}-${subTabId}`;
 
   /* ══════════════════════════════════════════════════════════════════════

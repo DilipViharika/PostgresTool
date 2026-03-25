@@ -262,7 +262,7 @@ describe('Performance', () => {
 
     it('combined operations should be memory efficient', () => {
       // Simulate realistic usage pattern
-      const databases = ['postgresql', 'mysql', 'oracle', 'mongodb', 'sqlserver'];
+      const databases = ['postgresql', 'mysql', 'mongodb'];
       const sections = 7;
       const iterations = 10;
 

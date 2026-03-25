@@ -8,7 +8,7 @@ import DemoDataTab from './DemoDataTab.jsx';
  * Tab ID format: demo-{dbShort}-{subTabId}
  *   e.g. demo-pg-overview, demo-mysql-optimizer, demo-mongo-overview
  *
- * For SQL databases (pg/mysql/mssql/oracle), the subTabId is mapped to a section
+ * For SQL databases (pg/mysql), the subTabId is mapped to a section
  * widget ID (core, query, infra, schema, observability, dev, admin) via TAB_TO_SECTION.
  *
  * For MongoDB, the subTabId is passed through as-is because DemoDataTab already
@@ -18,8 +18,6 @@ import DemoDataTab from './DemoDataTab.jsx';
 const DB_MAP = {
   pg: 'postgresql',
   mysql: 'mysql',
-  mssql: 'mssql',
-  oracle: 'oracle',
   mongo: 'mongodb',
 };
 

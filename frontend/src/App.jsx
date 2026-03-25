@@ -82,8 +82,6 @@ const CustomDashboardTab   = lazyRetry(() => import('./components/views/analytic
 const DemoDataTab          = lazyRetry(() => import('./components/views/analytics/DemoDataTab.jsx'));
 const DemoPostgresTab      = lazyRetry(() => import('./components/views/analytics/DemoPostgresTab.jsx'));
 const DemoMySQLTab         = lazyRetry(() => import('./components/views/analytics/DemoMySQLTab.jsx'));
-const DemoSQLServerTab     = lazyRetry(() => import('./components/views/analytics/DemoSQLServerTab.jsx'));
-const DemoOracleTab        = lazyRetry(() => import('./components/views/analytics/DemoOracleTab.jsx'));
 const DemoMongoDBTab       = lazyRetry(() => import('./components/views/analytics/DemoMongoDBTab.jsx'));
 const DemoSectionView      = lazyRetry(() => import('./components/views/analytics/DemoSectionView.jsx'));
 
@@ -147,7 +145,7 @@ registerComponents({
     SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
     DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
     TerraformExportTab, ReportBuilderTab, CustomDashboardTab, DemoDataTab,
-    DemoPostgresTab, DemoMySQLTab, DemoSQLServerTab, DemoOracleTab, DemoMongoDBTab, DemoSectionView,
+    DemoPostgresTab, DemoMySQLTab, DemoMongoDBTab, DemoSectionView,
     MongoOverviewTab, MongoPerformanceTab, MongoStorageTab,
     MongoReplicationTab, MongoDataToolsTab, MongoShardingTab,
     // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,

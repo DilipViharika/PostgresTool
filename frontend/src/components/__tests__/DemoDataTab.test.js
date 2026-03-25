@@ -47,9 +47,6 @@ function gen7d(seed, base, variance) {
 const DB_COLORS = {
   postgresql: '#6495ED',
   mysql: '#00B4D8',
-  mssql: '#F97316',
-  sqlserver: '#F97316',
-  oracle: '#FF4560',
   mongodb: '#2EE89C',
 };
 
@@ -71,16 +68,6 @@ const DATABASE_STRUCTURE = {
     name: 'MySQL',
     color: DB_COLORS.mysql,
     sections: [{ id: 'overview', name: 'Overview' }]
-  },
-  sqlserver: {
-    name: 'SQL Server',
-    color: DB_COLORS.sqlserver,
-    sections: [{ id: 'overview', name: 'Overview' }]
-  },
-  oracle: {
-    name: 'Oracle',
-    color: DB_COLORS.oracle,
-    sections: [{ id: 'core', name: 'Core Monitoring' }]
   },
   mongodb: {
     name: 'MongoDB',
@@ -267,9 +254,6 @@ describe('DemoDataTab Component', () => {
     it('should have all required database colors', () => {
       expect(DB_COLORS).toHaveProperty('postgresql');
       expect(DB_COLORS).toHaveProperty('mysql');
-      expect(DB_COLORS).toHaveProperty('mssql');
-      expect(DB_COLORS).toHaveProperty('sqlserver');
-      expect(DB_COLORS).toHaveProperty('oracle');
       expect(DB_COLORS).toHaveProperty('mongodb');
     });
 
@@ -280,33 +264,24 @@ describe('DemoDataTab Component', () => {
       });
     });
 
-    it('should have sqlserver color same as mssql', () => {
-      expect(DB_COLORS.sqlserver).toBe(DB_COLORS.mssql);
-    });
   });
 
   describe('DATABASE_STRUCTURE', () => {
     it('should have all required databases', () => {
       expect(DATABASE_STRUCTURE).toHaveProperty('postgresql');
       expect(DATABASE_STRUCTURE).toHaveProperty('mysql');
-      expect(DATABASE_STRUCTURE).toHaveProperty('sqlserver');
-      expect(DATABASE_STRUCTURE).toHaveProperty('oracle');
       expect(DATABASE_STRUCTURE).toHaveProperty('mongodb');
     });
 
     it('should have correct names for each database', () => {
       expect(DATABASE_STRUCTURE.postgresql.name).toBe('PostgreSQL');
       expect(DATABASE_STRUCTURE.mysql.name).toBe('MySQL');
-      expect(DATABASE_STRUCTURE.sqlserver.name).toBe('SQL Server');
-      expect(DATABASE_STRUCTURE.oracle.name).toBe('Oracle');
       expect(DATABASE_STRUCTURE.mongodb.name).toBe('MongoDB');
     });
 
     it('should have colors matching DB_COLORS', () => {
       expect(DATABASE_STRUCTURE.postgresql.color).toBe(DB_COLORS.postgresql);
       expect(DATABASE_STRUCTURE.mysql.color).toBe(DB_COLORS.mysql);
-      expect(DATABASE_STRUCTURE.sqlserver.color).toBe(DB_COLORS.sqlserver);
-      expect(DATABASE_STRUCTURE.oracle.color).toBe(DB_COLORS.oracle);
       expect(DATABASE_STRUCTURE.mongodb.color).toBe(DB_COLORS.mongodb);
     });
 

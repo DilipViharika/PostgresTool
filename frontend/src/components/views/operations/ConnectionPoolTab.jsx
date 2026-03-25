@@ -34,22 +34,6 @@ const DB_TYPES = {
         icon: '🦭',
         fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
     },
-    mssql: {
-        label: 'SQL Server',
-        defaultPort: 1433,
-        color: '#cc2927',
-        accent: '#e84040',
-        icon: '🪟',
-        fields: ['host', 'port', 'database', 'username', 'password', 'ssl', 'instanceName'],
-    },
-    oracle: {
-        label: 'Oracle',
-        defaultPort: 1521,
-        color: '#f80000',
-        accent: '#ff4444',
-        icon: '🔮',
-        fields: ['host', 'port', 'serviceName', 'username', 'password', 'ssl'],
-    },
     sqlite: {
         label: 'SQLite',
         defaultPort: null,

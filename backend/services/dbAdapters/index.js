@@ -12,16 +12,12 @@
 
 import PostgresAdapter from './PostgresAdapter.js';
 import MySQLAdapter from './MySQLAdapter.js';
-import MSSQLAdapter from './MSSQLAdapter.js';
-import OracleAdapter from './OracleAdapter.js';
 import MongoDBAdapter from './MongoDBAdapter.js';
 
 /** Supported database types */
 export const SUPPORTED_DB_TYPES = [
     'postgresql',
     'mysql',
-    'mssql',
-    'oracle',
     'mongodb',
 ];
 
@@ -32,10 +28,6 @@ export const SUPPORTED_DB_TYPES = [
  * - postgres://user:pass@host:port/db
  * - postgresql://user:pass@host:port/db
  * - mysql://user:pass@host:port/db
- * - mssql://user:pass@host:port/db
- * - sqlserver://user:pass@host:port/db (alias for MSSQL)
- * - oracle://user:pass@host:port/sid
- * - oracledb://user:pass@host:port/sid (alias for Oracle)
  * - mongodb://user:pass@host:port/db
  * - mongodb+srv://user:pass@host/db (MongoDB with SRV records)
  *
@@ -55,12 +47,6 @@ export function detectDbType(connectionString) {
     if (lower.startsWith('mysql://')) {
         return 'mysql';
     }
-    if (lower.startsWith('mssql://') || lower.startsWith('sqlserver://')) {
-        return 'mssql';
-    }
-    if (lower.startsWith('oracle://') || lower.startsWith('oracledb://')) {
-        return 'oracle';
-    }
     if (lower.startsWith('mongodb://') || lower.startsWith('mongodb+srv://')) {
         return 'mongodb';
     }
@@ -71,7 +57,7 @@ export function detectDbType(connectionString) {
 /**
  * Get an adapter instance for the specified database type
  *
- * @param {string} dbType - Database type ('postgresql', 'mysql', 'mssql', 'oracle', 'mongodb')
+ * @param {string} dbType - Database type ('postgresql', 'mysql', 'mongodb')
  * @param {Object} config - Database connection configuration
  * @returns {BaseAdapter} Adapter instance
  * @throws {Error} If database type is not supported
@@ -86,14 +72,6 @@ export function getAdapter(dbType, config = {}) {
 
         case 'mysql':
             return new MySQLAdapter(config);
-
-        case 'mssql':
-        case 'sqlserver':
-            return new MSSQLAdapter(config);
-
-        case 'oracle':
-        case 'oracledb':
-            return new OracleAdapter(config);
 
         case 'mongodb':
         case 'mongo':
@@ -118,7 +96,7 @@ export function getAdapterFromString(connectionString, config = {}) {
     if (!dbType) {
         throw new Error(
             `Cannot detect database type from connection string. ` +
-            `Supported formats: postgres://, mysql://, mssql://, oracle://, mongodb://`
+            `Supported formats: postgres://, mysql://, mongodb://`
         );
     }
     return getAdapter(dbType, config);

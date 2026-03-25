@@ -155,8 +155,6 @@ export function buildTabConfig() {
            ══════════════════════════════════════════════════════════════════ */
         ...buildDemoSqlTabs('pg',     'PG',         '#6495ED'),
         ...buildDemoSqlTabs('mysql',  'MySQL',      '#00B4D8'),
-        ...buildDemoSqlTabs('mssql',  'SQL Server', '#F97316'),
-        ...buildDemoSqlTabs('oracle', 'Oracle',     '#FF4560'),
 
         /* ── Demo: MongoDB (matches real MongoDB section structure) ── */
         { section: 'Demo MongoDB — Core', accent: '#2EE89C', group: 'Demo MongoDB' },
