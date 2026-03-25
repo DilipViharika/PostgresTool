@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     Database, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowRight,
     User, KeyRound, Shield, Activity, Zap, HardDrive, Lock,
     Search, RefreshCw, Cloud, Terminal, Users, Sun, Moon,
-    Server, Cpu, Brain, Globe,
+    Server, Cpu, Brain, Globe, Fingerprint, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
@@ -12,30 +12,30 @@ import { useTheme } from '../../context/ThemeContext.jsx';
 const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  DATABASE TYPE DEFINITIONS — The five engines orbiting the core
+//  DATABASE TYPE DEFINITIONS
 // ─────────────────────────────────────────────────────────────────────────────
 const DB_TYPES = [
-    { key: 'postgresql', label: 'PostgreSQL',  color: '#336791', icon: '🐘', shortLabel: 'PG' },
-    { key: 'mysql',      label: 'MySQL',       color: '#00758F', icon: '🐬', shortLabel: 'MY' },
-    { key: 'mongodb',    label: 'MongoDB',      color: '#47A248', icon: '🍃', shortLabel: 'MG' },
+    { key: 'postgresql', label: 'PostgreSQL', color: '#6495ED', icon: '🐘', shortLabel: 'PG' },
+    { key: 'mysql',      label: 'MySQL',      color: '#00B4D8', icon: '🐬', shortLabel: 'MY' },
+    { key: 'mongodb',    label: 'MongoDB',     color: '#2EE89C', icon: '🍃', shortLabel: 'MG' },
 ];
 
 const NODE_DEFS = {
-    primary: { label: 'Monitor',          sub: 'Core',          color: '#00D4FF', icon: 'Activity',  r: 16 },
-    hub0:    { label: 'PostgreSQL',      sub: 'RDBMS',        color: '#6495ED', icon: 'Database',  r: 10 },
-    hub1:    { label: 'MySQL',           sub: 'RDBMS',        color: '#00B4D8', icon: 'Server',    r: 10 },
-    hub2:    { label: 'MongoDB',         sub: 'NoSQL',        color: '#2EE89C', icon: 'Cloud',     r: 10 },
-    hub3:    { label: 'AI Engine',       sub: 'Intelligence', color: '#A78BFA', icon: 'Brain',     r: 9.5 },
+    primary: { label: 'VIGIL',        sub: 'Core Engine',    color: '#00D4FF', icon: 'Activity',  r: 18 },
+    hub0:    { label: 'PostgreSQL',   sub: 'RDBMS',          color: '#6495ED', icon: 'Database',  r: 11 },
+    hub1:    { label: 'MySQL',        sub: 'RDBMS',          color: '#00B4D8', icon: 'Server',    r: 11 },
+    hub2:    { label: 'MongoDB',      sub: 'NoSQL',          color: '#2EE89C', icon: 'Cloud',     r: 11 },
+    hub3:    { label: 'AI Engine',    sub: 'Intelligence',   color: '#A78BFA', icon: 'Brain',     r: 10 },
 };
 
 const ICON_MAP = { Database, Activity, Zap, HardDrive, Lock, Cloud, Terminal, Search, RefreshCw, Users, Server, Cpu, Brain, Globe };
 
 const PALETTE = [
-    { h: 190, s: 100, l: 55 },   // cyan — primary
-    { h: 220, s: 80,  l: 66 },   // blue — PostgreSQL
-    { h: 192, s: 100, l: 46 },   // teal — MySQL
-    { h: 157, s: 100, l: 58 },   // green — MongoDB
-    { h: 264, s: 80,  l: 72 },   // violet — AI
+    { h: 190, s: 100, l: 55 },
+    { h: 220, s: 80,  l: 66 },
+    { h: 192, s: 100, l: 46 },
+    { h: 157, s: 100, l: 58 },
+    { h: 264, s: 80,  l: 72 },
     { h: 200, s: 100, l: 65 },
     { h: 320, s: 70,  l: 68 },
     { h:  20, s: 90,  l: 68 },
@@ -50,26 +50,31 @@ const GlobalStyles = () => (
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; }
 
-        @keyframes fadeUp     { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes fadeIn     { from{opacity:0} to{opacity:1} }
-        @keyframes slideDown  { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes shake      { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
-        @keyframes spin       { to{transform:rotate(360deg)} }
-        @keyframes spinRev    { to{transform:rotate(-360deg)} }
-        @keyframes pulseDot   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.78)} }
-        @keyframes ringOut    { 0%{transform:scale(.7);opacity:.8} 100%{transform:scale(2.8);opacity:0} }
-        @keyframes successPop { 0%{transform:scale(0) rotate(-45deg);opacity:0} 55%{transform:scale(1.15);opacity:1} 100%{transform:scale(1);opacity:1} }
-        @keyframes ripple     { 0%{transform:scale(.5);opacity:.6} 100%{transform:scale(4);opacity:0} }
-        @keyframes floatUp    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-        @keyframes glowPulse  { 0%,100%{opacity:.7} 50%{opacity:1} }
-        @keyframes edgePulse  { 0%,100%{opacity:.25} 50%{opacity:.9} }
-        @keyframes labelIn    { from{opacity:0;transform:translate(-50%,6px) scale(.88)} to{opacity:1;transform:translate(-50%,0) scale(1)} }
-        @keyframes aurora     { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(3%,2%) scale(1.04)} 66%{transform:translate(-2%,1%) scale(.97)} }
-        @keyframes shimmer    { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        @keyframes borderGlow { 0%,100%{box-shadow:0 0 0 1px rgba(0,212,255,.12),0 32px 80px rgba(0,0,0,.7)} 50%{box-shadow:0 0 0 1px rgba(0,212,255,.30),0 32px 80px rgba(0,0,0,.7),0 0 60px rgba(0,212,255,.06)} }
-        @keyframes dotBlink   { 0%,100%{opacity:1} 50%{opacity:.25} }
-        @keyframes orbitPulse { 0%,100%{opacity:.4;transform:scale(.95)} 50%{opacity:1;transform:scale(1.05)} }
-        @keyframes dbSlide    { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes fadeUp       { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn       { from{opacity:0} to{opacity:1} }
+        @keyframes slideDown    { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes shake        { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(2px)} }
+        @keyframes spin         { to{transform:rotate(360deg)} }
+        @keyframes spinRev      { to{transform:rotate(-360deg)} }
+        @keyframes pulseDot     { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.75)} }
+        @keyframes ringOut      { 0%{transform:scale(.7);opacity:.8} 100%{transform:scale(3);opacity:0} }
+        @keyframes successPop   { 0%{transform:scale(0) rotate(-45deg);opacity:0} 55%{transform:scale(1.15);opacity:1} 100%{transform:scale(1);opacity:1} }
+        @keyframes floatUp      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        @keyframes glowPulse    { 0%,100%{opacity:.6} 50%{opacity:1} }
+        @keyframes edgePulse    { 0%,100%{opacity:.2} 50%{opacity:.85} }
+        @keyframes labelIn      { from{opacity:0;transform:translate(-50%,8px) scale(.85)} to{opacity:1;transform:translate(-50%,0) scale(1)} }
+        @keyframes aurora       { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(3%,2%) scale(1.04)} 66%{transform:translate(-2%,1%) scale(.97)} }
+        @keyframes shimmer      { 0%{background-position:-200% center} 100%{background-position:200% center} }
+        @keyframes borderRotate { 0%{--angle:0deg} 100%{--angle:360deg} }
+        @keyframes dotBlink     { 0%,100%{opacity:1} 50%{opacity:.2} }
+        @keyframes orbitPulse   { 0%,100%{opacity:.35;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
+        @keyframes dbSlide      { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes cardGlow     { 0%,100%{box-shadow:0 0 0 1px rgba(0,212,255,.10),0 28px 72px rgba(0,0,0,.6)} 50%{box-shadow:0 0 0 1px rgba(0,212,255,.25),0 28px 72px rgba(0,0,0,.6),0 0 48px rgba(0,212,255,.05)} }
+        @keyframes gradientMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes meshFloat    { 0%{transform:translate(0,0) rotate(0deg)} 33%{transform:translate(20px,-15px) rotate(120deg)} 66%{transform:translate(-10px,20px) rotate(240deg)} 100%{transform:translate(0,0) rotate(360deg)} }
+        @keyframes pulseRing    { 0%{transform:scale(1);opacity:.4} 50%{transform:scale(1.08);opacity:.8} 100%{transform:scale(1);opacity:.4} }
+        @keyframes slideInRight { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes typeIn       { from{width:0;opacity:0} to{width:100%;opacity:1} }
 
         input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus {
             -webkit-box-shadow:0 0 0 1000px ${THEME.surface} inset !important;
@@ -78,11 +83,15 @@ const GlobalStyles = () => (
             transition:background-color 5000s ease-in-out 0s;
         }
         .vi-input::placeholder { color:${THEME.textDim}; opacity:1; }
-        .vi-input:focus::placeholder { opacity:0; transition:opacity .25s; }
-        .stat-pill { transition:all .25s ease; }
-        .stat-pill:hover { background:rgba(0,212,255,.12) !important; border-color:rgba(0,212,255,.28) !important; transform:translateY(-1px); }
-        .db-chip { transition:all .25s ease; }
-        .db-chip:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.4) !important; }
+        .vi-input:focus::placeholder { opacity:.4; transition:opacity .3s; }
+        .stat-pill { transition:all .3s cubic-bezier(.4,0,.2,1); }
+        .stat-pill:hover { background:rgba(0,212,255,.14) !important; border-color:rgba(0,212,255,.32) !important; transform:translateY(-2px); }
+        .db-chip { transition:all .3s cubic-bezier(.4,0,.2,1); }
+        .db-chip:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 12px 28px rgba(0,0,0,.45) !important; }
+        .sso-btn { transition:all .3s cubic-bezier(.4,0,.2,1) !important; }
+        .sso-btn:hover { background:${THEME.surfaceHover} !important; border-color:rgba(0,212,255,.35) !important; transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,.3) !important; }
+        .vi-input-wrap { transition:all .3s cubic-bezier(.4,0,.2,1); }
+        .vi-input-wrap:focus-within { border-color:rgba(0,212,255,.55) !important; box-shadow:0 0 0 4px rgba(0,212,255,.08), 0 2px 8px rgba(0,0,0,.2) !important; background:rgba(0,212,255,.04) !important; }
     `}</style>
 );
 
@@ -106,10 +115,8 @@ function useNetworkCanvas(canvasRef) {
             const nodes = [], edges = [];
             const NET_H = H * 0.62;
 
-            // Primary node — VIGIL core
             nodes.push({ x: W * 0.44, y: NET_H * 0.50, vx: 0, vy: 0, r: NODE_DEFS.primary.r, ci: 0, role: 'primary', phase: 0, pulse: 0, key: 'primary' });
 
-            // Hub nodes — 3 databases + AI
             const hubPos = [
                 { x: 0.18, y: 0.18, key: 'hub0' },
                 { x: 0.68, y: 0.12, key: 'hub1' },
@@ -125,39 +132,34 @@ function useNetworkCanvas(canvasRef) {
                 maxY: NET_H,
             }));
 
-            // Micro nodes — metric particles
-            for (let i = 0; i < 24; i++) {
-                const ci = 7 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < 28; i++) {
+                const ci = 5 + Math.floor(Math.random() * 3);
                 nodes.push({
                     x: W * (.05 + Math.random() * .90),
                     y: NET_H * (.04 + Math.random() * .92),
-                    vx: (Math.random() - .5) * .13, vy: (Math.random() - .5) * .13,
-                    r: 1.0 + Math.random() * 2.2, ci: Math.min(ci, PALETTE.length - 1),
+                    vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12,
+                    r: 1.2 + Math.random() * 2.4, ci: Math.min(ci, PALETTE.length - 1),
                     role: 'micro', phase: Math.random() * Math.PI * 2, pulse: 0, key: null,
                     maxY: NET_H,
                 });
             }
 
-            // Edges: primary → hubs
-            for (let i = 1; i <= 6; i++) edges.push({ a: 0, b: i, s: 1.0 });
-            // Hub cross-connections
-            [[1,2],[2,3],[3,4],[4,5],[5,6],[6,1],[1,4],[2,5],[3,6]].forEach(([a, b]) => edges.push({ a, b, s: 0.45 }));
-            // Micro → nearest hub
-            for (let i = 7; i < nodes.length; i++) {
+            for (let i = 1; i <= 4; i++) edges.push({ a: 0, b: i, s: 1.0 });
+            [[1,2],[2,3],[3,4],[4,1],[1,3],[2,4]].forEach(([a, b]) => edges.push({ a, b, s: 0.4 }));
+            for (let i = 5; i < nodes.length; i++) {
                 let best = 0, bestD = Infinity;
-                for (let j = 0; j <= 6; j++) {
+                for (let j = 0; j <= 4; j++) {
                     const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
                     const d = Math.sqrt(dx * dx + dy * dy);
                     if (d < bestD) { bestD = d; best = j; }
                 }
-                edges.push({ a: best, b: i, s: 0.22 });
+                edges.push({ a: best, b: i, s: 0.20 });
             }
-            // Nearby micro connections
-            for (let i = 7; i < nodes.length; i++) {
+            for (let i = 5; i < nodes.length; i++) {
                 for (let j = i + 1; j < nodes.length; j++) {
                     const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
-                    if (Math.sqrt(dx * dx + dy * dy) < 110 && Math.random() > .6)
-                        edges.push({ a: i, b: j, s: 0.12 });
+                    if (Math.sqrt(dx * dx + dy * dy) < 120 && Math.random() > .55)
+                        edges.push({ a: i, b: j, s: 0.10 });
                 }
             }
 
@@ -170,7 +172,7 @@ function useNetworkCanvas(canvasRef) {
             const e = edgesRef.current;
             if (!e.length) return;
             const edge = e[Math.floor(Math.random() * e.length)];
-            packetsRef.current.push({ edge, t: 0, sp: .004 + Math.random() * .007, rev: Math.random() > .5 });
+            packetsRef.current.push({ edge, t: 0, sp: .003 + Math.random() * .006, rev: Math.random() > .5 });
         }
 
         function resize() {
@@ -185,74 +187,70 @@ function useNetworkCanvas(canvasRef) {
             const nodes = nodesRef.current, edges = edgesRef.current, pkts = packetsRef.current;
             ctx.clearRect(0, 0, W, H);
 
-            // Physics step
             nodes.forEach(n => {
                 if (n.role === 'primary') return;
-                n.phase += .006;
-                n.x += n.vx + Math.sin(n.phase * .55) * .025;
-                n.y += n.vy + Math.cos(n.phase * .40) * .025;
+                n.phase += .005;
+                n.x += n.vx + Math.sin(n.phase * .55) * .02;
+                n.y += n.vy + Math.cos(n.phase * .40) * .02;
                 const pad = 28;
                 const yMax = n.maxY || H * .62;
                 if (n.x < pad) n.vx += .05; if (n.x > W - pad) n.vx -= .05;
                 if (n.y < pad) n.vy += .05; if (n.y > yMax) n.vy -= .06;
-                n.vx *= .994; n.vy *= .994;
-                n.vx = Math.max(-.40, Math.min(.40, n.vx));
-                n.vy = Math.max(-.40, Math.min(.40, n.vy));
+                n.vx *= .993; n.vy *= .993;
+                n.vx = Math.max(-.38, Math.min(.38, n.vx));
+                n.vy = Math.max(-.38, Math.min(.38, n.vy));
                 const dx = n.x - mouseRef.current.x, dy = n.y - mouseRef.current.y;
                 const d = Math.sqrt(dx * dx + dy * dy);
-                if (d < 110 && d > 0) { const f = (1 - d / 110) * .20; n.vx += (dx / d) * f; n.vy += (dy / d) * f; }
+                if (d < 120 && d > 0) { const f = (1 - d / 120) * .22; n.vx += (dx / d) * f; n.vy += (dy / d) * f; }
             });
 
-            // Draw edges
             edges.forEach(e => {
                 const a = nodes[e.a], b = nodes[e.b];
                 const dist = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
-                const alpha = e.s * .16 * Math.max(0, 1 - dist / 480);
-                if (alpha < .005) return;
+                const alpha = e.s * .14 * Math.max(0, 1 - dist / 500);
+                if (alpha < .004) return;
                 const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
                 g.addColorStop(0, hsl(PALETTE[a.ci], alpha));
                 g.addColorStop(1, hsl(PALETTE[b.ci], alpha));
                 ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-                ctx.strokeStyle = g; ctx.lineWidth = e.s * .65; ctx.stroke();
+                ctx.strokeStyle = g; ctx.lineWidth = e.s * .6; ctx.stroke();
             });
 
-            // Draw packets
             for (let pi = pkts.length - 1; pi >= 0; pi--) {
                 const pk = pkts[pi]; pk.t += pk.sp;
                 if (pk.t >= 1) { pkts.splice(pi, 1); continue; }
                 const a = nodes[pk.edge.a], b = nodes[pk.edge.b];
                 const t = pk.rev ? 1 - pk.t : pk.t;
                 const x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
-                const gg = ctx.createRadialGradient(x, y, 0, x, y, 9);
-                gg.addColorStop(0, hsl(PALETTE[a.ci], .28)); gg.addColorStop(1, hsl(PALETTE[a.ci], 0));
-                ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fillStyle = gg; ctx.fill();
-                ctx.beginPath(); ctx.arc(x, y, 1.8, 0, Math.PI * 2); ctx.fillStyle = hsl(PALETTE[a.ci], .95); ctx.fill();
+                const gg = ctx.createRadialGradient(x, y, 0, x, y, 10);
+                gg.addColorStop(0, hsl(PALETTE[a.ci], .30)); gg.addColorStop(1, hsl(PALETTE[a.ci], 0));
+                ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fillStyle = gg; ctx.fill();
+                ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fillStyle = hsl(PALETTE[a.ci], .95); ctx.fill();
             }
 
-            // Draw nodes
             nodes.forEach(n => {
-                n.phase += .007;
-                const rr = n.r * (Math.sin(n.phase) * .12 + 1);
+                n.phase += .006;
+                const rr = n.r * (Math.sin(n.phase) * .10 + 1);
                 const pal = PALETTE[n.ci];
                 if (n.role !== 'micro') {
-                    const gr = rr + (n.role === 'primary' ? 42 : 26);
+                    const gr = rr + (n.role === 'primary' ? 48 : 30);
                     const gg = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, gr);
-                    gg.addColorStop(0, hsl(pal, n.role === 'primary' ? .24 : .14)); gg.addColorStop(1, hsl(pal, 0));
+                    gg.addColorStop(0, hsl(pal, n.role === 'primary' ? .22 : .12)); gg.addColorStop(1, hsl(pal, 0));
                     ctx.beginPath(); ctx.arc(n.x, n.y, gr, 0, Math.PI * 2); ctx.fillStyle = gg; ctx.fill();
-                    ctx.beginPath(); ctx.arc(n.x, n.y, rr + 6, 0, Math.PI * 2);
-                    ctx.strokeStyle = hsl(pal, .20); ctx.lineWidth = 1; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(n.x, n.y, rr + 7, 0, Math.PI * 2);
+                    ctx.strokeStyle = hsl(pal, .18); ctx.lineWidth = .8; ctx.stroke();
                 }
                 const fc = ctx.createRadialGradient(n.x - rr * .3, n.y - rr * .3, 0, n.x, n.y, rr);
-                fc.addColorStop(0, hsl({ ...pal, l: Math.min(96, pal.l + 24) }, 1));
-                fc.addColorStop(1, hsl(pal, .88));
+                fc.addColorStop(0, hsl({ ...pal, l: Math.min(96, pal.l + 26) }, 1));
+                fc.addColorStop(1, hsl(pal, .85));
                 ctx.beginPath(); ctx.arc(n.x, n.y, rr, 0, Math.PI * 2); ctx.fillStyle = fc; ctx.fill();
 
                 if (n.role === 'primary') {
-                    n.pulse = (n.pulse + .008) % 1;
+                    n.pulse = (n.pulse + .007) % 1;
                     [n.pulse, (n.pulse + .5) % 1].forEach((p, i) => {
-                        ctx.beginPath(); ctx.arc(n.x, n.y, rr + 14 + p * 42, 0, Math.PI * 2);
-                        ctx.strokeStyle = hsl(pal, (1 - p) * (i === 0 ? .28 : .13));
-                        ctx.lineWidth = i === 0 ? 1.5 : 1; ctx.stroke();
+                        ctx.beginPath(); ctx.arc(n.x, n.y, rr + 16 + p * 48, 0, Math.PI * 2);
+                        ctx.strokeStyle = hsl(pal, (1 - p) * (i === 0 ? .25 : .10));
+                        ctx.lineWidth = i === 0 ? 1.2 : .8; ctx.stroke();
                     });
                 }
             });
@@ -266,7 +264,7 @@ function useNetworkCanvas(canvasRef) {
             animRef.current = requestAnimationFrame(draw);
         }
 
-        const pktIv = setInterval(() => { if (packetsRef.current.length < 36) spawn(); }, 260);
+        const pktIv = setInterval(() => { if (packetsRef.current.length < 40) spawn(); }, 220);
         resize(); draw();
 
         const onResize = () => { cancelAnimationFrame(animRef.current); resize(); draw(); };
@@ -284,7 +282,7 @@ function useNetworkCanvas(canvasRef) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  NODE LABEL
+//  NODE LABEL — Refined glass tags
 // ─────────────────────────────────────────────────────────────────────────────
 const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
     const def = NODE_DEFS[nodeKey];
@@ -292,30 +290,30 @@ const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
     const IconComp  = ICON_MAP[def.icon];
     const color     = def.color;
     const isPrimary = role === 'primary';
-    const offset    = r + (isPrimary ? 32 : 24);
+    const offset    = r + (isPrimary ? 36 : 26);
 
     return (
         <div style={{ position: 'absolute', left: x, top: y, pointerEvents: 'none', zIndex: 5 }}>
             <div style={{ position: 'absolute', top: 0, left: 0, transform: 'translate(-50%,-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {IconComp && <IconComp size={isPrimary ? 14 : 9} color={THEME.textMain} strokeWidth={1.8}/>}
+                {IconComp && <IconComp size={isPrimary ? 15 : 10} color="#fff" strokeWidth={1.6}/>}
             </div>
-            <div style={{ position: 'absolute', top: offset, left: 0, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'labelIn .6s cubic-bezier(.34,1.3,.64,1) both', whiteSpace: 'nowrap' }}>
-                <div style={{ width: 1, height: isPrimary ? 16 : 11, background: `linear-gradient(to bottom, transparent, ${color}55)` }}/>
+            <div style={{ position: 'absolute', top: offset, left: 0, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'labelIn .7s cubic-bezier(.34,1.3,.64,1) both', whiteSpace: 'nowrap' }}>
+                <div style={{ width: 1, height: isPrimary ? 18 : 12, background: `linear-gradient(to bottom, transparent, ${color}60)` }}/>
                 <div style={{
-                    display: 'flex', alignItems: 'center', gap: isPrimary ? 7 : 5,
-                    background: THEME.glass,
-                    backdropFilter: 'blur(16px)',
-                    border: `1px solid ${color}28`,
-                    borderRadius: isPrimary ? 10 : 8,
-                    padding: isPrimary ? '6px 12px' : '3px 8px',
-                    boxShadow: `0 4px 20px rgba(0,0,0,.3), 0 0 0 1px ${color}10 inset`,
+                    display: 'flex', alignItems: 'center', gap: isPrimary ? 8 : 5,
+                    background: 'rgba(4,6,15,.75)',
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${color}22`,
+                    borderRadius: isPrimary ? 12 : 8,
+                    padding: isPrimary ? '7px 14px' : '4px 9px',
+                    boxShadow: `0 4px 24px rgba(0,0,0,.35), 0 0 0 1px ${color}08 inset`,
                 }}>
-                    <div style={{ width: isPrimary ? 7 : 5, height: isPrimary ? 7 : 5, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}CC`, flexShrink: 0 }}/>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 9.5 : 7.5, fontWeight: 700, color: THEME.textMain, letterSpacing: '1px', textTransform: 'uppercase', lineHeight: 1 }}>
+                    <div style={{ width: isPrimary ? 8 : 5, height: isPrimary ? 8 : 5, borderRadius: '50%', background: color, boxShadow: `0 0 10px ${color}BB`, flexShrink: 0 }}/>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 10 : 8, fontWeight: 700, color: '#f0f4ff', letterSpacing: '1.2px', textTransform: 'uppercase', lineHeight: 1 }}>
                             {def.label}
                         </span>
-                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 7.5 : 6.5, color: `${color}99`, letterSpacing: '.5px', lineHeight: 1 }}>
+                        <span style={{ fontFamily: THEME.fontMono, fontSize: isPrimary ? 8 : 6.5, color: `${color}90`, letterSpacing: '.5px', lineHeight: 1 }}>
                             {def.sub}
                         </span>
                     </div>
@@ -328,21 +326,15 @@ const NodeLabel = React.memo(({ x, y, nodeKey, ci, r, role }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 //  DATA
 // ─────────────────────────────────────────────────────────────────────────────
-const BOTTOM_DOTS = [
-    { label: 'PostgreSQL',   color: '#6495ED' },
-    { label: 'MySQL',        color: '#00B4D8' },
-    { label: 'MongoDB',      color: '#2EE89C' },
-];
-
 const FEATURE_STATS = [
-    { val: '5',    desc: 'DB Engines'   },
-    { val: '183',  desc: 'Metrics'      },
-    { val: '42',   desc: 'Dashboards'   },
-    { val: 'AI',   desc: 'Powered'      },
+    { val: '3',    desc: 'DB Engines',   color: '#00D4FF' },
+    { val: '203',  desc: 'Metrics',      color: '#2EE89C' },
+    { val: '42',   desc: 'Dashboards',   color: '#A78BFA' },
+    { val: 'AI',   desc: 'Powered',      color: '#fbbf24' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LEFT PANEL
+//  LEFT PANEL — Network canvas with improved bottom section
 // ─────────────────────────────────────────────────────────────────────────────
 const LeftPanel = () => {
     useAdaptiveTheme();
@@ -361,101 +353,101 @@ const LeftPanel = () => {
                 {labelPos.map(n => <NodeLabel key={n.key} x={n.x} y={n.y} nodeKey={n.key} ci={n.ci} r={n.r} role={n.role}/>)}
             </div>
 
-            {/* Aurora glows */}
+            {/* Aurora glows — refined colors */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }}>
-                <div style={{ position: 'absolute', top: '-10%', left: '10%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,212,255,.09) 0%, transparent 70%)', filter: 'blur(60px)', animation: 'aurora 12s ease-in-out infinite' }}/>
-                <div style={{ position: 'absolute', top: '20%', right: '-5%', width: '45%', height: '50%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(46,232,156,.06) 0%, transparent 70%)', filter: 'blur(55px)', animation: 'aurora 16s ease-in-out infinite reverse' }}/>
-                <div style={{ position: 'absolute', bottom: '25%', left: '5%', width: '40%', height: '40%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(167,139,250,.05) 0%, transparent 70%)', filter: 'blur(50px)', animation: 'aurora 10s ease-in-out infinite 3s' }}/>
+                <div style={{ position: 'absolute', top: '-12%', left: '8%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,212,255,.08) 0%, transparent 70%)', filter: 'blur(70px)', animation: 'aurora 14s ease-in-out infinite' }}/>
+                <div style={{ position: 'absolute', top: '18%', right: '-8%', width: '48%', height: '52%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(46,232,156,.055) 0%, transparent 70%)', filter: 'blur(60px)', animation: 'aurora 18s ease-in-out infinite reverse' }}/>
+                <div style={{ position: 'absolute', bottom: '28%', left: '3%', width: '42%', height: '42%', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(167,139,250,.045) 0%, transparent 70%)', filter: 'blur(55px)', animation: 'aurora 12s ease-in-out infinite 3s' }}/>
             </div>
 
-            {/* Noise texture */}
+            {/* Subtle noise */}
             <div style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2, opacity: .022,
+                position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2, opacity: .018,
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E")`,
             }}/>
 
-            {/* Brand mark */}
-            <div style={{ position: 'absolute', top: 28, left: 36, zIndex: 8, display: 'flex', alignItems: 'center', gap: 12, animation: 'fadeUp .8s ease .05s backwards' }}>
+            {/* Brand mark — top left */}
+            <div style={{ position: 'absolute', top: 28, left: 36, zIndex: 8, display: 'flex', alignItems: 'center', gap: 14, animation: 'fadeUp .8s ease .05s backwards' }}>
                 <div style={{
-                    width: 42, height: 42, borderRadius: 13,
-                    background: 'linear-gradient(145deg, #0099CC, #00D4FF)',
+                    width: 44, height: 44, borderRadius: 14,
+                    background: 'linear-gradient(145deg, #0088BB, #00D4FF)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 0 0 1px rgba(255,255,255,.12) inset, 0 8px 28px rgba(0,212,255,.45), 0 0 0 5px rgba(0,212,255,.07)',
-                    animation: 'floatUp 5s ease-in-out infinite',
+                    boxShadow: '0 0 0 1px rgba(255,255,255,.14) inset, 0 10px 32px rgba(0,212,255,.40), 0 0 0 6px rgba(0,212,255,.06)',
+                    animation: 'floatUp 6s ease-in-out infinite',
                 }}>
-                    <Shield size={20} color="#fff" strokeWidth={1.8}/>
+                    <Shield size={21} color="#fff" strokeWidth={1.6}/>
                 </div>
                 <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: THEME.textMain, fontFamily: THEME.fontBody, letterSpacing: '-.2px', lineHeight: 1 }}>Database Monitor</div>
-                    <div style={{ fontSize: 8, color: 'rgba(0,212,255,.6)', fontFamily: THEME.fontMono, marginTop: 3, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Multi-Engine Intelligence</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontBody, letterSpacing: '-.3px', lineHeight: 1.1 }}>VIGIL</div>
+                    <div style={{ fontSize: 8.5, color: 'rgba(0,212,255,.55)', fontFamily: THEME.fontMono, marginTop: 4, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Database Monitor</div>
                 </div>
             </div>
 
-            {/* Bottom gradient fade */}
+            {/* Bottom gradient */}
             <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: '38%',
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
                 pointerEvents: 'none', zIndex: 3,
-                background: `linear-gradient(to top, ${THEME.bg} 0%, ${THEME.bg}F5 30%, ${THEME.bg}8C 60%, transparent 100%)`,
+                background: `linear-gradient(to top, ${THEME.bg} 0%, ${THEME.bg}F0 25%, ${THEME.bg}80 55%, transparent 100%)`,
             }}/>
 
-            {/* Bottom content */}
+            {/* Bottom content — refined */}
             <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0,
-                height: '36%', zIndex: 8,
+                height: '38%', zIndex: 8,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', textAlign: 'center', gap: 11, padding: '0 52px',
+                justifyContent: 'center', textAlign: 'center', gap: 14, padding: '0 56px',
             }}>
                 <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    padding: '4px 14px 4px 10px',
-                    background: 'rgba(0,212,255,.07)',
-                    border: '1px solid rgba(0,212,255,.18)',
+                    display: 'inline-flex', alignItems: 'center', gap: 9,
+                    padding: '5px 16px 5px 11px',
+                    background: 'rgba(0,212,255,.06)',
+                    border: '1px solid rgba(0,212,255,.15)',
                     borderRadius: 100,
                     animation: 'fadeUp .8s ease .1s backwards',
                 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00D4FF', boxShadow: '0 0 8px #00D4FF', display: 'inline-block', animation: 'dotBlink 2.5s ease-in-out infinite' }}/>
-                    <span style={{ fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '2.5px', textTransform: 'uppercase', color: THEME.primary }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00D4FF', boxShadow: '0 0 10px #00D4FF', display: 'inline-block', animation: 'dotBlink 2.5s ease-in-out infinite' }}/>
+                    <span style={{ fontFamily: THEME.fontMono, fontSize: 9, letterSpacing: '2.5px', textTransform: 'uppercase', color: THEME.primary }}>
                         Universal Database Observatory
                     </span>
                 </div>
 
                 <div style={{ animation: 'fadeUp .85s ease .2s backwards' }}>
-                    <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(20px, 2.2vw, 36px)', fontWeight: 700, color: THEME.textMain, letterSpacing: '-0.5px' }}>
-                        Every database,&nbsp;
+                    <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(22px, 2.4vw, 38px)', fontWeight: 700, color: THEME.textMain, letterSpacing: '-0.5px' }}>
+                        Every database,{'\u00A0'}
                     </span>
                     <span style={{
-                        fontFamily: "'Playfair Display',serif", fontSize: 'clamp(20px, 2.2vw, 36px)',
+                        fontFamily: "'Playfair Display',serif", fontSize: 'clamp(22px, 2.4vw, 38px)',
                         fontWeight: 400, fontStyle: 'italic',
-                        background: 'linear-gradient(90deg, #00D4FF, #2EE89C, #00D4FF)',
-                        backgroundSize: '200% auto',
+                        background: 'linear-gradient(90deg, #00D4FF, #2EE89C, #A78BFA, #00D4FF)',
+                        backgroundSize: '300% auto',
                         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                        animation: 'shimmer 4s linear infinite',
+                        animation: 'gradientMove 6s linear infinite',
                     }}>
                         one command center.
                     </span>
                 </div>
 
-                <p style={{ fontSize: 11.5, fontWeight: 300, color: THEME.textMuted, lineHeight: 1.75, margin: 0, maxWidth: 520, fontFamily: THEME.fontBody, animation: 'fadeUp .85s ease .30s backwards' }}>
+                <p style={{ fontSize: 12, fontWeight: 300, color: THEME.textMuted, lineHeight: 1.8, margin: 0, maxWidth: 540, fontFamily: THEME.fontBody, animation: 'fadeUp .85s ease .30s backwards' }}>
                     Real-time intelligence across PostgreSQL, MySQL, and MongoDB.
-                    183 metrics, AI anomaly detection, and end-to-end operations from a single pane.
+                    203 production metrics, AI anomaly detection, and end-to-end operations.
                 </p>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, animation: 'fadeUp .85s ease .38s backwards' }}>
-                    {FEATURE_STATS.map(({ val, desc }, i) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, animation: 'fadeUp .85s ease .38s backwards', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {FEATURE_STATS.map(({ val, desc, color }, i) => (
                         <React.Fragment key={desc}>
-                            <div className="stat-pill" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 13px', background: 'rgba(0,212,255,.06)', border: '1px solid rgba(0,212,255,.13)', borderRadius: 8, cursor: 'default' }}>
-                                <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: '#00D4FF', letterSpacing: '-.3px' }}>{val}</span>
-                                <span style={{ fontFamily: THEME.fontBody, fontSize: 10, color: THEME.textDim }}>{desc}</span>
+                            <div className="stat-pill" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 14px', background: `${color}09`, border: `1px solid ${color}18`, borderRadius: 10, cursor: 'default' }}>
+                                <span style={{ fontFamily: THEME.fontMono, fontSize: 13, fontWeight: 700, color, letterSpacing: '-.3px' }}>{val}</span>
+                                <span style={{ fontFamily: THEME.fontBody, fontSize: 10.5, color: THEME.textDim }}>{desc}</span>
                             </div>
-                            {i < FEATURE_STATS.length - 1 && <div style={{ width: 1, height: 14, background: THEME.grid, flexShrink: 0 }}/>}
+                            {i < FEATURE_STATS.length - 1 && <div style={{ width: 1, height: 16, background: `${THEME.grid}60`, flexShrink: 0 }}/>}
                         </React.Fragment>
                     ))}
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 18, animation: 'fadeUp .85s ease .46s backwards' }}>
-                    {BOTTOM_DOTS.map(({ label, color }) => (
-                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: THEME.fontMono, fontSize: 8.5, letterSpacing: '.5px', color: THEME.textDim }}>
-                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}AA`, flexShrink: 0 }}/>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, animation: 'fadeUp .85s ease .46s backwards' }}>
+                    {DB_TYPES.map(({ label, color }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: THEME.fontMono, fontSize: 9, letterSpacing: '.5px', color: THEME.textDim }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}AA`, flexShrink: 0 }}/>
                             {label}
                         </div>
                     ))}
@@ -466,39 +458,38 @@ const LeftPanel = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LOGO EMBLEM
+//  LOGO EMBLEM — Animated orbital rings
 // ─────────────────────────────────────────────────────────────────────────────
 const LogoEmblem = ({ success }) => {
-    const S = 64, C = 32, R1 = 27, R2 = 20, R3 = 13;
+    const S = 72, C = 36, R1 = 30, R2 = 22, R3 = 14;
     const c1 = success ? '#22c55e' : '#00D4FF', c2 = success ? '#22c55e' : '#2EE89C';
     return (
-        <div style={{ position: 'relative', width: S, height: S, animation: 'floatUp 5s ease-in-out infinite' }}>
-            <div style={{ position: 'absolute', inset: -16, borderRadius: '50%', background: success ? 'radial-gradient(circle,rgba(34,197,94,.16) 0%,transparent 70%)' : 'radial-gradient(circle,rgba(0,212,255,.14) 0%,transparent 70%)', animation: 'glowPulse 3.5s ease-in-out infinite', transition: 'background 1s' }}/>
+        <div style={{ position: 'relative', width: S, height: S, animation: 'floatUp 6s ease-in-out infinite' }}>
+            <div style={{ position: 'absolute', inset: -20, borderRadius: '50%', background: success ? 'radial-gradient(circle,rgba(34,197,94,.14) 0%,transparent 70%)' : 'radial-gradient(circle,rgba(0,212,255,.12) 0%,transparent 70%)', animation: 'glowPulse 4s ease-in-out infinite', transition: 'background 1.2s' }}/>
             <svg width={S} height={S} style={{ position: 'absolute', top: 0, left: 0 }}>
                 <defs>
                     <linearGradient id="rg1" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor={c1} stopOpacity=".75"/>
-                        <stop offset="100%" stopColor={c2} stopOpacity=".2"/>
+                        <stop offset="0%" stopColor={c1} stopOpacity=".70"/>
+                        <stop offset="100%" stopColor={c2} stopOpacity=".15"/>
                     </linearGradient>
                 </defs>
-                <circle cx={C} cy={C} r={R1} fill="none" stroke="url(#rg1)" strokeWidth="1.2" strokeDasharray="5 3.5" style={{ transformOrigin: 'center', animation: 'spin 24s linear infinite' }}/>
-                <circle cx={C} cy={C} r={R2} fill="none" stroke={c1} strokeWidth="1.6" strokeDasharray={`${Math.PI*R2*.65} ${Math.PI*R2*.35}`} strokeLinecap="round" opacity=".65" style={{ transformOrigin: 'center', animation: 'spinRev 12s linear infinite' }}/>
-                <circle cx={C} cy={C} r={R3} fill="none" stroke={c2} strokeWidth=".8" strokeDasharray="2 5" opacity=".22" style={{ transformOrigin: 'center', animation: 'spin 8s linear infinite' }}/>
-                {/* Orbital dots for each DB type */}
+                <circle cx={C} cy={C} r={R1} fill="none" stroke="url(#rg1)" strokeWidth="1" strokeDasharray="4 3" style={{ transformOrigin: 'center', animation: 'spin 28s linear infinite' }}/>
+                <circle cx={C} cy={C} r={R2} fill="none" stroke={c1} strokeWidth="1.4" strokeDasharray={`${Math.PI*R2*.6} ${Math.PI*R2*.4}`} strokeLinecap="round" opacity=".55" style={{ transformOrigin: 'center', animation: 'spinRev 14s linear infinite' }}/>
+                <circle cx={C} cy={C} r={R3} fill="none" stroke={c2} strokeWidth=".6" strokeDasharray="2 5" opacity=".18" style={{ transformOrigin: 'center', animation: 'spin 9s linear infinite' }}/>
                 {DB_TYPES.map(({ color }, i) => {
                     const angle = (i / DB_TYPES.length) * Math.PI * 2 - Math.PI / 2;
-                    return <circle key={i} cx={C + R1 * Math.cos(angle)} cy={C + R1 * Math.sin(angle)} r={2.5} fill={color} opacity={.7} style={{ animation: `orbitPulse ${2 + i * .3}s ease-in-out infinite ${i * .2}s` }}/>;
+                    return <circle key={i} cx={C + R1 * Math.cos(angle)} cy={C + R1 * Math.sin(angle)} r={3} fill={color} opacity={.65} style={{ animation: `orbitPulse ${2.2 + i * .4}s ease-in-out infinite ${i * .25}s` }}/>;
                 })}
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{
-                    width: 34, height: 34, borderRadius: 10,
-                    background: success ? 'linear-gradient(135deg,#22c55e,#14b8a6)' : 'linear-gradient(135deg,#0099CC,#00D4FF)',
+                    width: 38, height: 38, borderRadius: 12,
+                    background: success ? 'linear-gradient(135deg,#22c55e,#14b8a6)' : 'linear-gradient(135deg,#0088BB,#00D4FF)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: success ? '0 6px 24px rgba(34,197,94,.55), 0 0 0 1px rgba(255,255,255,.10) inset' : '0 6px 24px rgba(0,212,255,.45), 0 0 0 1px rgba(255,255,255,.10) inset',
-                    transition: 'all .9s cubic-bezier(.34,1.56,.64,1)',
+                    boxShadow: success ? '0 8px 28px rgba(34,197,94,.50), 0 0 0 1px rgba(255,255,255,.12) inset' : '0 8px 28px rgba(0,212,255,.40), 0 0 0 1px rgba(255,255,255,.12) inset',
+                    transition: 'all 1s cubic-bezier(.34,1.56,.64,1)',
                 }}>
-                    {success ? <CheckCircle size={17} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/> : <Shield size={17} color="#fff" strokeWidth={1.8}/>}
+                    {success ? <CheckCircle size={18} color="#fff" style={{ animation: 'successPop .5s ease backwards' }}/> : <Shield size={18} color="#fff" strokeWidth={1.6}/>}
                 </div>
             </div>
         </div>
@@ -506,7 +497,7 @@ const LogoEmblem = ({ success }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SERVER STATUS
+//  SERVER STATUS — Refined pill
 // ─────────────────────────────────────────────────────────────────────────────
 const ServerStatus = ({ status }) => {
     const on  = status.status === 'online';
@@ -515,16 +506,16 @@ const ServerStatus = ({ status }) => {
     const color = on ? '#22c55e' : off ? '#ef4444' : '#f59e0b';
     const label = on ? 'ONLINE' : off ? 'OFFLINE' : chk ? 'CHECKING' : 'DEGRADED';
     return (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 14px 5px 10px', borderRadius: 100, background: `${color}0D`, border: `1px solid ${color}28`, fontFamily: THEME.fontMono, fontSize: 9.5 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px 6px 11px', borderRadius: 100, background: `${color}0A`, border: `1px solid ${color}22`, fontFamily: THEME.fontMono, fontSize: 10 }}>
             {chk
-                ? <><Loader size={9} color="#334155" style={{ animation: 'spin 1s linear infinite' }}/><span style={{ color: '#334155', letterSpacing: '.05em' }}>CHECKING...</span></>
+                ? <><Loader size={10} color={THEME.textDim} style={{ animation: 'spin 1s linear infinite' }}/><span style={{ color: THEME.textDim, letterSpacing: '.05em' }}>CHECKING...</span></>
                 : <>
-                    <div style={{ position: 'relative', width: 7, height: 7 }}>
-                        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}`, animation: on ? 'pulseDot 2.2s ease-in-out infinite' : 'none' }}/>
-                        {on && <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${color}70`, animation: 'ringOut 2.2s ease-out infinite' }}/>}
+                    <div style={{ position: 'relative', width: 8, height: 8 }}>
+                        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 10px ${color}`, animation: on ? 'pulseDot 2.2s ease-in-out infinite' : 'none' }}/>
+                        {on && <div style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: `1px solid ${color}60`, animation: 'ringOut 2.2s ease-out infinite' }}/>}
                     </div>
                     <span style={{ color, fontWeight: 700, letterSpacing: '.08em' }}>{label}</span>
-                    {status.latency != null && <span style={{ color: THEME.textMuted, fontSize: 8.5, padding: '1px 6px', borderRadius: 4, background: THEME.surfaceHover, border: `1px solid ${THEME.grid}` }}>{status.latency}ms</span>}
+                    {status.latency != null && <span style={{ color: THEME.textMuted, fontSize: 9, padding: '2px 7px', borderRadius: 6, background: THEME.surfaceHover, border: `1px solid ${THEME.grid}50` }}>{status.latency}ms</span>}
                 </>
             }
         </div>
@@ -532,19 +523,36 @@ const ServerStatus = ({ status }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  INPUT FIELD
+//  INPUT FIELD — Refined with icon, focus ring, better spacing
 // ─────────────────────────────────────────────────────────────────────────────
 const InputField = React.forwardRef(function InputField(
     { icon: Icon, label, type = 'text', value, onChange, placeholder, autoComplete, disabled, rightEl }, ref
 ) {
     const [focused, setFocused] = useState(false);
     const hasVal = value.length > 0;
+    const accentColor = '#00D4FF';
     return (
-        <div>
-            <label style={{ display: 'block', marginBottom: 5, fontSize: 9, fontWeight: 600, color: focused ? '#00D4FF' : THEME.textMuted, textTransform: 'uppercase', letterSpacing: '1.6px', fontFamily: THEME.fontMono, transition: 'color .2s' }}>{label}</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: focused ? 'rgba(0,212,255,.06)' : THEME.surface, border: `1px solid ${focused ? 'rgba(0,212,255,.50)' : THEME.grid}`, borderRadius: 10, padding: '0 12px', transition: 'all .25s', boxShadow: focused ? '0 0 0 4px rgba(0,212,255,.09)' : 'none' }}>
-                <Icon size={14} color={focused ? '#00D4FF' : hasVal ? THEME.textMuted : THEME.textDim} style={{ flexShrink: 0, transition: 'color .2s' }}/>
-                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input" style={{ flex: 1, padding: '9px 0', background: 'none', border: 'none', color: THEME.textMain, fontSize: 13, outline: 'none', fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1 }}/>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{
+                fontSize: 10, fontWeight: 600,
+                color: focused ? accentColor : THEME.textMuted,
+                textTransform: 'uppercase', letterSpacing: '1.8px',
+                fontFamily: THEME.fontMono,
+                transition: 'color .25s',
+            }}>{label}</label>
+            <div className="vi-input-wrap" style={{
+                display: 'flex', alignItems: 'center', gap: 11,
+                background: THEME.surface,
+                border: `1px solid ${THEME.grid}`,
+                borderRadius: 12, padding: '0 14px',
+                boxShadow: 'none',
+            }}>
+                <Icon size={15} color={focused ? accentColor : hasVal ? THEME.textMuted : THEME.textDim} style={{ flexShrink: 0, transition: 'color .25s' }}/>
+                <input ref={ref} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} disabled={disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} className="vi-input" style={{
+                    flex: 1, padding: '11px 0', background: 'none', border: 'none',
+                    color: THEME.textMain, fontSize: 13.5, outline: 'none',
+                    fontFamily: THEME.fontBody, fontWeight: 400, opacity: disabled ? .4 : 1,
+                }}/>
                 {rightEl}
             </div>
         </div>
@@ -552,44 +560,28 @@ const InputField = React.forwardRef(function InputField(
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CORNER ACCENTS
-// ─────────────────────────────────────────────────────────────────────────────
-const Corners = ({ color = 'rgba(0,212,255,.18)' }) => (
-    <>
-        {[
-            { top: 0,    left: 0,   borderTop: `1px solid ${color}`,    borderLeft: `1px solid ${color}`,   borderRadius: '4px 0 0 0' },
-            { top: 0,    right: 0,  borderTop: `1px solid ${color}`,    borderRight: `1px solid ${color}`,  borderRadius: '0 4px 0 0' },
-            { bottom: 0, left: 0,   borderBottom: `1px solid ${color}`, borderLeft: `1px solid ${color}`,   borderRadius: '0 0 0 4px' },
-            { bottom: 0, right: 0,  borderBottom: `1px solid ${color}`, borderRight: `1px solid ${color}`,  borderRadius: '0 0 4px 0' },
-        ].map(({ borderRadius, ...s }, i) => (
-            <div key={i} style={{ position: 'absolute', width: 16, height: 16, pointerEvents: 'none', borderRadius, ...s }}/>
-        ))}
-    </>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  DATABASE TYPE CHIPS — visual connector strip
+//  DATABASE TYPE CHIPS — Compact, animated
 // ─────────────────────────────────────────────────────────────────────────────
 const DbTypeChips = () => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
-        {DB_TYPES.map(({ key, shortLabel, label, color, icon }, i) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+        {DB_TYPES.map(({ key, shortLabel, color, icon }, i) => (
             <div key={key} className="db-chip" style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                padding: '4px 10px', borderRadius: 8,
-                background: `${color}0D`,
-                border: `1px solid ${color}25`,
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '5px 12px', borderRadius: 10,
+                background: `${color}0B`,
+                border: `1px solid ${color}20`,
                 cursor: 'default',
-                animation: `dbSlide .5s ease ${.1 + i * .06}s backwards`,
+                animation: `dbSlide .5s ease ${.12 + i * .07}s backwards`,
             }}>
-                <span style={{ fontSize: 11 }}>{icon}</span>
-                <span style={{ fontFamily: THEME.fontMono, fontSize: 8.5, fontWeight: 600, color, letterSpacing: '.5px', textTransform: 'uppercase' }}>{shortLabel}</span>
+                <span style={{ fontSize: 12 }}>{icon}</span>
+                <span style={{ fontFamily: THEME.fontMono, fontSize: 9, fontWeight: 700, color, letterSpacing: '.8px', textTransform: 'uppercase' }}>{shortLabel}</span>
             </div>
         ))}
     </div>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LOGIN PAGE
+//  LOGIN PAGE — Full redesign
 // ─────────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
     useAdaptiveTheme();
@@ -643,131 +635,176 @@ const LoginPage = () => {
 
     const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading;
 
-    const btnGrad      = canSubmit ? 'linear-gradient(135deg, #0099CC 0%, #00B4D8 50%, #00D4FF 100%)' : THEME.surfaceHover;
-    const btnTextColor = canSubmit ? 'white' : THEME.textMuted;
-
-    const btnShadow = canSubmit && !authLoading
-        ? btnHover ? '0 14px 42px rgba(0,212,255,.55), 0 0 0 1px rgba(0,212,255,.38) inset, 0 1px 0 rgba(255,255,255,.16) inset' : '0 8px 28px rgba(0,212,255,.32), 0 0 0 1px rgba(0,212,255,.24) inset'
-        : 'none';
-
     return (
         <div style={{ height: '100vh', width: '100vw', display: 'flex', background: THEME.bg, fontFamily: THEME.fontBody, overflow: 'hidden' }}>
             <GlobalStyles/>
             <LeftPanel/>
 
-            <div style={{ width: 480, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: '16px 40px', background: THEME.surfaceHover }}>
-                {/* Background effects */}
+            {/* ────── RIGHT PANEL ────── */}
+            <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: '24px 48px', background: THEME.surfaceHover }}>
+                {/* Background mesh */}
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-                    <div style={{ position: 'absolute', top: '-5%', right: '-25%', width: 420, height: 420, background: 'radial-gradient(circle, rgba(0,212,255,.065) 0%, transparent 65%)', filter: 'blur(52px)', animation: 'aurora 14s ease-in-out infinite' }}/>
-                    <div style={{ position: 'absolute', bottom: '-5%', left: '-20%', width: 320, height: 320, background: 'radial-gradient(circle, rgba(46,232,156,.052) 0%, transparent 65%)', filter: 'blur(42px)', animation: 'aurora 10s ease-in-out infinite reverse' }}/>
-                    <div style={{ position: 'absolute', inset: 0, opacity: .008, backgroundImage: 'linear-gradient(rgba(0,212,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,1) 1px,transparent 1px)', backgroundSize: '48px 48px' }}/>
+                    <div style={{ position: 'absolute', top: '-8%', right: '-20%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(0,212,255,.06) 0%, transparent 65%)', filter: 'blur(60px)', animation: 'meshFloat 20s ease-in-out infinite' }}/>
+                    <div style={{ position: 'absolute', bottom: '-8%', left: '-15%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(46,232,156,.045) 0%, transparent 65%)', filter: 'blur(50px)', animation: 'meshFloat 16s ease-in-out infinite reverse' }}/>
+                    <div style={{ position: 'absolute', top: '40%', right: '10%', width: 200, height: 200, background: 'radial-gradient(circle, rgba(167,139,250,.035) 0%, transparent 65%)', filter: 'blur(40px)', animation: 'meshFloat 22s ease-in-out infinite 5s' }}/>
+                    {/* Subtle dot grid */}
+                    <div style={{ position: 'absolute', inset: 0, opacity: .008, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,212,255,.8) .5px, transparent 0)', backgroundSize: '32px 32px' }}/>
                 </div>
 
                 {/* Top edge glow */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(0,212,255,.45) 25%, rgba(46,232,156,.80) 50%, rgba(0,212,255,.45) 75%, transparent)', opacity: .85, animation: 'edgePulse 4s ease-in-out infinite' }}/>
-                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(0,212,255,.08) 30%, rgba(0,212,255,.13) 50%, rgba(0,212,255,.08) 70%, transparent)' }}/>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent 5%, rgba(0,212,255,.5) 30%, rgba(46,232,156,.70) 50%, rgba(167,139,250,.5) 70%, transparent 95%)', opacity: .7, animation: 'edgePulse 5s ease-in-out infinite' }}/>
+                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(0,212,255,.06) 30%, rgba(0,212,255,.10) 50%, rgba(0,212,255,.06) 70%, transparent)' }}/>
 
-                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 385, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ marginBottom: 6, animation: 'fadeUp .7s ease .1s backwards' }}>
+                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 390, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    {/* Logo */}
+                    <div style={{ marginBottom: 8, animation: 'fadeUp .7s ease .1s backwards' }}>
                         <LogoEmblem success={false}/>
                     </div>
 
-                    <div style={{ textAlign: 'center', marginBottom: 2, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
-                        <h1 style={{ fontSize: 26, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.1, letterSpacing: '-.06em', fontFamily: "'Playfair Display',serif" }}>Welcome back</h1>
-                        <p style={{ color: THEME.textMuted, margin: '6px 0 0', fontSize: 12.5, lineHeight: 1.55, fontFamily: THEME.fontBody, fontWeight: 300 }}>Sign in to your database command center</p>
+                    {/* Heading */}
+                    <div style={{ textAlign: 'center', marginBottom: 4, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
+                        <h1 style={{ fontSize: 28, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.15, letterSpacing: '-.05em', fontFamily: "'Playfair Display',serif" }}>Welcome back</h1>
+                        <p style={{ color: THEME.textMuted, margin: '8px 0 0', fontSize: 13, lineHeight: 1.6, fontFamily: THEME.fontBody, fontWeight: 300 }}>Sign in to your database command center</p>
                     </div>
 
                     {/* Database chips */}
-                    <div style={{ margin: '7px 0 5px', animation: 'fadeUp .7s ease .22s backwards' }}>
+                    <div style={{ margin: '10px 0 6px', animation: 'fadeUp .7s ease .22s backwards' }}>
                         <DbTypeChips/>
                     </div>
 
-                    <div style={{ margin: '2px 0 8px', display: 'flex', alignItems: 'center', gap: 12, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
+                    {/* Server status divider */}
+                    <div style={{ margin: '4px 0 12px', display: 'flex', alignItems: 'center', gap: 14, width: '100%', animation: 'fadeUp .7s ease .24s backwards' }}>
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${THEME.grid})` }}/>
                         <ServerStatus status={serverStatus}/>
                         <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${THEME.grid})` }}/>
                     </div>
 
-                    {/* Login card */}
-                    <div style={{ width: '100%', padding: '16px 22px 12px', borderRadius: 18, background: THEME.surface, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${error ? 'rgba(239,68,68,.20)' : THEME.glassBorder}`, boxShadow: THEME.shadowMd, transition: 'border-color .3s', animation: shake ? 'shake .5s ease' : 'borderGlow 5s ease-in-out infinite, fadeUp .7s ease .32s backwards', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, left: '6%', right: '6%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(0,212,255,.42), transparent)', animation: 'edgePulse 3.5s ease-in-out infinite' }}/>
-                        <Corners color='rgba(0,212,255,.16)'/>
+                    {/* ────── LOGIN CARD ────── */}
+                    <div style={{
+                        width: '100%', padding: '20px 24px 16px',
+                        borderRadius: 20,
+                        background: THEME.surface,
+                        backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                        border: `1px solid ${error ? 'rgba(239,68,68,.22)' : THEME.glassBorder}`,
+                        boxShadow: '0 28px 72px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.03) inset',
+                        transition: 'border-color .3s',
+                        animation: shake ? 'shake .5s ease' : 'cardGlow 6s ease-in-out infinite, fadeUp .7s ease .32s backwards',
+                        position: 'relative', overflow: 'hidden',
+                    }}>
+                        {/* Top accent bar */}
+                        <div style={{ position: 'absolute', top: 0, left: '8%', right: '8%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(0,212,255,.38), rgba(46,232,156,.38), transparent)', animation: 'edgePulse 4s ease-in-out infinite' }}/>
 
+                        {/* Corner accents */}
+                        {[
+                            { top: 0, left: 0, borderTop: '1px solid rgba(0,212,255,.16)', borderLeft: '1px solid rgba(0,212,255,.16)', borderRadius: '4px 0 0 0' },
+                            { top: 0, right: 0, borderTop: '1px solid rgba(0,212,255,.16)', borderRight: '1px solid rgba(0,212,255,.16)', borderRadius: '0 4px 0 0' },
+                            { bottom: 0, left: 0, borderBottom: '1px solid rgba(0,212,255,.16)', borderLeft: '1px solid rgba(0,212,255,.16)', borderRadius: '0 0 0 4px' },
+                            { bottom: 0, right: 0, borderBottom: '1px solid rgba(0,212,255,.16)', borderRight: '1px solid rgba(0,212,255,.16)', borderRadius: '0 0 4px 0' },
+                        ].map(({ borderRadius, ...s }, i) => (
+                            <div key={i} style={{ position: 'absolute', width: 18, height: 18, pointerEvents: 'none', borderRadius, ...s }}/>
+                        ))}
+
+                        {/* Error banner */}
                         {error && (
-                            <div style={{ marginBottom: 18, padding: '10px 14px', borderRadius: 11, background: 'rgba(239,68,68,.07)', border: '1px solid rgba(239,68,68,.20)', display: 'flex', alignItems: 'center', gap: 10, animation: 'slideDown .3s ease backwards' }}>
-                                <AlertCircle size={13} color="#ef4444" style={{ flexShrink: 0 }}/>
-                                <span style={{ color: '#ef4444', fontSize: 12, fontWeight: 500, fontFamily: THEME.fontBody }}>{error}</span>
+                            <div style={{ marginBottom: 16, padding: '11px 15px', borderRadius: 12, background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.18)', display: 'flex', alignItems: 'center', gap: 10, animation: 'slideDown .3s ease backwards' }}>
+                                <AlertCircle size={14} color="#ef4444" style={{ flexShrink: 0 }}/>
+                                <span style={{ color: '#ef4444', fontSize: 12.5, fontWeight: 500, fontFamily: THEME.fontBody }}>{error}</span>
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                             <InputField ref={userRef} icon={User} label="Username" value={username} onChange={setUsername} placeholder="Enter your username" autoComplete="username" disabled={authLoading}/>
                             <InputField ref={pwdRef} icon={KeyRound} label="Password" type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword} placeholder="Enter your password" autoComplete="current-password" disabled={authLoading}
                                         rightEl={
-                                            <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 4, display: 'flex', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#00D4FF'} onMouseLeave={e => e.currentTarget.style.color = THEME.textDim}>
-                                                {showPwd ? <EyeOff size={14}/> : <Eye size={14}/>}
+                                            <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 5, display: 'flex', borderRadius: 6, transition: 'all .2s' }} onMouseEnter={e => { e.currentTarget.style.color = '#00D4FF'; e.currentTarget.style.background = 'rgba(0,212,255,.08)'; }} onMouseLeave={e => { e.currentTarget.style.color = THEME.textDim; e.currentTarget.style.background = 'none'; }}>
+                                                {showPwd ? <EyeOff size={15}/> : <Eye size={15}/>}
                                             </button>
                                         }
                             />
 
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: -2 }}>
+                            {/* Remember + Forgot */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 2px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', userSelect: 'none' }} onClick={() => setRememberMe(r => !r)}>
-                                    <div style={{ width: 16, height: 16, borderRadius: 5, flexShrink: 0, border: `1.5px solid ${rememberMe ? '#00D4FF' : THEME.grid}`, background: rememberMe ? '#00D4FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .25s cubic-bezier(.34,1.56,.64,1)', boxShadow: rememberMe ? '0 0 12px rgba(0,212,255,.45)' : 'none' }}>
+                                    <div style={{
+                                        width: 17, height: 17, borderRadius: 6, flexShrink: 0,
+                                        border: `1.5px solid ${rememberMe ? '#00D4FF' : THEME.grid}`,
+                                        background: rememberMe ? '#00D4FF' : 'transparent',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        transition: 'all .3s cubic-bezier(.34,1.56,.64,1)',
+                                        boxShadow: rememberMe ? '0 0 14px rgba(0,212,255,.40)' : 'none',
+                                    }}>
                                         {rememberMe && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                     </div>
-                                    <span style={{ fontSize: 12, color: THEME.textMuted, fontFamily: THEME.fontBody }}>Remember me</span>
+                                    <span style={{ fontSize: 12.5, color: THEME.textMuted, fontFamily: THEME.fontBody }}>Remember me</span>
                                 </div>
-                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: THEME.textMuted, fontFamily: THEME.fontBody, padding: 0, transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = '#00D4FF'} onMouseLeave={e => e.currentTarget.style.color = THEME.textMuted}>
+                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12.5, color: THEME.textMuted, fontFamily: THEME.fontBody, padding: 0, transition: 'color .25s' }} onMouseEnter={e => e.currentTarget.style.color = '#00D4FF'} onMouseLeave={e => e.currentTarget.style.color = THEME.textMuted}>
                                     Forgot password?
                                 </button>
                             </div>
 
+                            {/* Sign in button */}
                             <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
-                                    style={{ position: 'relative', overflow: 'hidden', background: btnGrad, border: canSubmit ? '1px solid rgba(0,212,255,.32)' : `1px solid ${THEME.grid}`, padding: '12px 20px', borderRadius: 12, color: btnTextColor, fontWeight: 600, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.01em', cursor: canSubmit ? 'pointer' : 'not-allowed', marginTop: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, transition: 'all .3s cubic-bezier(.4,0,.2,1)', boxShadow: btnShadow, transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)' }}>
+                                    style={{
+                                        position: 'relative', overflow: 'hidden',
+                                        background: canSubmit ? 'linear-gradient(135deg, #0088BB 0%, #00A8D6 40%, #00D4FF 100%)' : THEME.surfaceHover,
+                                        border: canSubmit ? '1px solid rgba(0,212,255,.28)' : `1px solid ${THEME.grid}`,
+                                        padding: '13px 20px', borderRadius: 14,
+                                        color: canSubmit ? '#fff' : THEME.textMuted,
+                                        fontWeight: 700, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.02em',
+                                        cursor: canSubmit ? 'pointer' : 'not-allowed',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                        transition: 'all .35s cubic-bezier(.4,0,.2,1)',
+                                        boxShadow: canSubmit && !authLoading
+                                            ? btnHover
+                                                ? '0 16px 48px rgba(0,180,216,.50), 0 0 0 1px rgba(0,212,255,.35) inset, 0 1px 0 rgba(255,255,255,.18) inset'
+                                                : '0 10px 32px rgba(0,180,216,.30), 0 0 0 1px rgba(0,212,255,.20) inset'
+                                            : 'none',
+                                        transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)',
+                                    }}>
                                 {canSubmit && !authLoading && (
-                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%)', backgroundSize: '200% auto', animation: btnHover ? 'shimmer 1.2s ease forwards' : 'none', borderRadius: 13 }}/>
+                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 38%, rgba(255,255,255,.10) 50%, transparent 62%)', backgroundSize: '200% auto', animation: btnHover ? 'shimmer 1s ease forwards' : 'none', borderRadius: 14 }}/>
                                 )}
-                                <span style={{ position: 'relative' }}>
+                                <span style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
                                     {authLoading
-                                        ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite', verticalAlign: 'middle', marginRight: 8 }}/>Authenticating...</>
-                                        : <>Sign In&nbsp;<ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle', transition: 'transform .25s', transform: btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>
+                                        ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }}/>Authenticating...</>
+                                        : <>Sign In <ArrowRight size={15} style={{ transition: 'transform .3s', transform: btnHover ? 'translateX(4px)' : 'translateX(0)' }}/></>
                                     }
                                 </span>
                             </button>
 
-                            {/* SSO */}
-                            <div style={{ display: 'flex', alignItems: 'center', margin: '3px 0' }}>
+                            {/* SSO divider */}
+                            <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
                                 <div style={{ flex: 1, height: 1, background: THEME.grid }} />
-                                <span style={{ padding: '0 10px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, textTransform: 'uppercase' }}>or</span>
+                                <span style={{ padding: '0 12px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, textTransform: 'uppercase', letterSpacing: '1px' }}>or</span>
                                 <div style={{ flex: 1, height: 1, background: THEME.grid }} />
                             </div>
 
-                            <button type="button"
+                            {/* SSO button */}
+                            <button type="button" className="sso-btn"
                                     onClick={() => loginWithSSO('okta')}
                                     style={{
-                                        width: '100%', padding: '10px 20px', borderRadius: 12,
+                                        width: '100%', padding: '11px 20px', borderRadius: 14,
                                         background: THEME.surface, border: `1px solid ${THEME.grid}`,
-                                        color: THEME.textMain, fontWeight: 600, fontSize: 13, fontFamily: THEME.fontBody,
+                                        color: THEME.textMain, fontWeight: 600, fontSize: 13.5, fontFamily: THEME.fontBody,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                        cursor: 'pointer', transition: 'all .2s'
+                                        cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,.15)',
                                     }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = THEME.surfaceHover; e.currentTarget.style.borderColor = 'rgba(0,212,255,.3)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = THEME.surface; e.currentTarget.style.borderColor = THEME.grid; }}
                             >
-                                <Shield size={16} color="#00D4FF"/> Continue with SSO
+                                <Fingerprint size={16} color="#00D4FF"/> Continue with SSO
                             </button>
                         </form>
 
-                        <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.grid}`, textAlign: 'center' }}>
-                            <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em', lineHeight: 1.5, display: 'block' }}>
-                                Enterprise SSO enabled &middot; Contact IT for access provisioning
+                        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${THEME.grid}40`, textAlign: 'center' }}>
+                            <span style={{ fontSize: 10.5, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em', lineHeight: 1.6, display: 'block' }}>
+                                Enterprise SSO enabled &middot; Contact IT for access
                             </span>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'fadeUp .7s ease .65s backwards' }}>
-                        <Lock size={9} color={THEME.textMuted}/>
-                        <span style={{ fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted &middot; v3.0</span>
+                    {/* Security badge */}
+                    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, animation: 'fadeUp .7s ease .65s backwards' }}>
+                        <Lock size={10} color={THEME.textMuted}/>
+                        <span style={{ fontSize: 10.5, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '.04em' }}>TLS 1.3 encrypted &middot; v3.0</span>
                     </div>
                 </div>
 
@@ -776,43 +813,32 @@ const LoginPage = () => {
                     onClick={toggleTheme}
                     title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                     style={{
-                        position: 'absolute',
-                        bottom: 24,
-                        left: 24,
-                        zIndex: 10,
-                        width: 36,
-                        height: 36,
-                        borderRadius: '50%',
+                        position: 'absolute', bottom: 24, left: 24, zIndex: 10,
+                        width: 38, height: 38, borderRadius: '50%',
                         background: THEME.surface,
                         border: `1px solid ${THEME.glassBorder}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: THEME.textMuted,
-                        transition: 'all .25s cubic-bezier(.4,0,.2,1)',
-                        boxShadow: THEME.shadowSm,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', color: THEME.textMuted,
+                        transition: 'all .3s cubic-bezier(.4,0,.2,1)',
+                        boxShadow: '0 4px 16px rgba(0,0,0,.25)',
                         outline: 'none',
                     }}
                     onMouseEnter={e => {
                         e.currentTarget.style.background = THEME.surfaceHover;
                         e.currentTarget.style.borderColor = THEME.primary + '55';
                         e.currentTarget.style.color = THEME.primary;
-                        e.currentTarget.style.transform = 'scale(1.08)';
-                        e.currentTarget.style.boxShadow = `${THEME.shadowSm}, 0 0 0 3px ${THEME.primary}18`;
+                        e.currentTarget.style.transform = 'scale(1.1) rotate(12deg)';
+                        e.currentTarget.style.boxShadow = `0 6px 20px rgba(0,0,0,.3), 0 0 0 3px ${THEME.primary}15`;
                     }}
                     onMouseLeave={e => {
                         e.currentTarget.style.background = THEME.surface;
                         e.currentTarget.style.borderColor = THEME.glassBorder;
                         e.currentTarget.style.color = THEME.textMuted;
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.boxShadow = THEME.shadowSm;
+                        e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,.25)';
                     }}
                 >
-                    {isDark
-                        ? <Sun size={15} strokeWidth={1.8}/>
-                        : <Moon size={15} strokeWidth={1.8}/>
-                    }
+                    {isDark ? <Sun size={16} strokeWidth={1.6}/> : <Moon size={16} strokeWidth={1.6}/>}
                 </button>
             </div>
         </div>
