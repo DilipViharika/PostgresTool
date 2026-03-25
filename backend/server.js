@@ -188,15 +188,14 @@ let activeConnectionId = null;
  * Return the pool for a given connectionId.
  * - If connectionId is null/undefined → use the active user connection.
  * - Otherwise look up (or create) a pool for that CONNECTIONS entry.
- * - NEVER falls back to the admin pool for monitoring queries.
+ * - NEVER falls back to the admin pool — monitoring data must come from
+ *   user-added connections only.
  */
 async function getPool(connectionId) {
     if (!connectionId) {
         // Use the active user-added connection if one is selected
         if (activeConnectionId) return getPool(activeConnectionId);
-        // No active connection — return admin pool as last resort for backward compat
-        // (monitoring pages will show "no connection" once env vars are removed)
-        if (pool) return pool;
+        // No active connection — do NOT fall back to admin pool
         throw new Error('No database connection configured. Please add a connection in the Connection Pool settings.');
     }
     const id = parseInt(connectionId, 10);
