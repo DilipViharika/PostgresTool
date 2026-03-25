@@ -79,11 +79,7 @@ const ConnectionPoolTab    = lazyRetry(() => import('./components/views/operatio
 const CapacityPlanningTab  = lazyRetry(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
 const LogPatternAnalysisTab= lazyRetry(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
 const CustomDashboardTab   = lazyRetry(() => import('./components/views/analytics/CustomDashboardTab.jsx'));
-const DemoDataTab          = lazyRetry(() => import('./components/views/analytics/DemoDataTab.jsx'));
-const DemoPostgresTab      = lazyRetry(() => import('./components/views/analytics/DemoPostgresTab.jsx'));
-const DemoMySQLTab         = lazyRetry(() => import('./components/views/analytics/DemoMySQLTab.jsx'));
-const DemoMongoDBTab       = lazyRetry(() => import('./components/views/analytics/DemoMongoDBTab.jsx'));
-const DemoSectionView      = lazyRetry(() => import('./components/views/analytics/DemoSectionView.jsx'));
+/* Demo data components removed — production metrics now served via metricsRegistry.js */
 
 // Admin features
 const AdminTab             = lazyRetry(() => import('./components/views/admin/AdminTab.jsx'));
@@ -144,8 +140,7 @@ registerComponents({
     KubernetesTab, StatusPageTab, AIMonitoringTab, ObservabilityHub,
     SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
     DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
-    TerraformExportTab, ReportBuilderTab, CustomDashboardTab, DemoDataTab,
-    DemoPostgresTab, DemoMySQLTab, DemoMongoDBTab, DemoSectionView,
+    TerraformExportTab, ReportBuilderTab, CustomDashboardTab,
     MongoOverviewTab, MongoPerformanceTab, MongoStorageTab,
     MongoReplicationTab, MongoDataToolsTab, MongoShardingTab,
     // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,
@@ -162,13 +157,7 @@ const getSectionForTab = (tabId) => {
     return null;
 };
 
-/** For grouped (demo) sections, return the parent group name alongside the section name */
-const getGroupForTab = (tabId) => {
-    for (const g of SECTION_GROUPS) {
-        if (g.tabs.some(t => t.id === tabId)) return g.group || null;
-    }
-    return null;
-};
+const getGroupForTab = () => null;
 
 const getSectionAccent = (tabId) => {
     for (const g of SECTION_GROUPS) {
@@ -1646,24 +1635,9 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 }),
         [allowedTabIds, connDbType]);
 
-    /* Build three-level nav: regular sections stay flat, demo sections with
-       a `group` property get nested under a collapsible parent header.
-       Output: [{ type:'section', ...group }, { type:'parent', name, accent, children:[...groups] }, ...] */
+    /* Build flat nav: each section becomes a { type:'section', ... } entry */
     const groupedNav = useMemo(() => {
-        const result = [];
-        const parentMap = new Map(); // group name → index in result
-        for (const g of visibleGroups) {
-            if (g.group) {
-                if (!parentMap.has(g.group)) {
-                    parentMap.set(g.group, result.length);
-                    result.push({ type: 'parent', name: g.group, accent: g.accent, children: [] });
-                }
-                result[parentMap.get(g.group)].children.push(g);
-            } else {
-                result.push({ type: 'section', ...g });
-            }
-        }
-        return result;
+        return visibleGroups.map(g => ({ type: 'section', ...g }));
     }, [visibleGroups]);
 
     const W = collapsed ? 64 : 252;
@@ -1880,83 +1854,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
 
                     /* ── Render all nav items ── */
                     return groupedNav.map((item, gi) => {
-                        if (item.type === 'parent') {
-                            /* ═══ Three-level: Parent group → Sub-sections → Tabs ═══ */
-                            const parentOpen = collapsed || openSections.has(item.name);
-                            const hasActiveInParent = item.children.some(ch => ch.tabs.some(t => t.id === activeTab));
-
-                            return (
-                                <div key={item.name} style={{ marginBottom: 2 }}>
-                                    {collapsed ? (
-                                        gi > 0 && (
-                                            <div style={{
-                                                margin: '6px 16px', height: '1px',
-                                                background: `linear-gradient(90deg, transparent, ${item.accent}40, transparent)`,
-                                            }} />
-                                        )
-                                    ) : (
-                                        renderSectionHeader(item.name, item.name, item.accent, hasActiveInParent, gi === 0 ? 2 : 8)
-                                    )}
-
-                                    {parentOpen && item.children.map(sub => {
-                                        const subOpen = collapsed || openSections.has(sub.section);
-                                        const hasActiveSub = sub.tabs.some(t => t.id === activeTab);
-                                        /* Strip "Demo PG — " prefix to show just "Core Monitoring" */
-                                        const displayName = sub.section.replace(/^Demo\s+\S+\s*—\s*/, '');
-
-                                        return (
-                                            <div key={sub.section}>
-                                                {!collapsed && (
-                                                    <button
-                                                        className="section-btn"
-                                                        onClick={() => toggleSection(sub.section)}
-                                                        style={{
-                                                            width: '100%',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'space-between',
-                                                            padding: '5px 16px 4px 28px',
-                                                            background: 'transparent',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                            borderRadius: 0,
-                                                            marginTop: 2,
-                                                        }}
-                                                    >
-                                                        <span style={{
-                                                            fontSize: 9,
-                                                            fontWeight: 600,
-                                                            letterSpacing: '0.08em',
-                                                            textTransform: 'uppercase',
-                                                            fontFamily: DS.fontMono,
-                                                            color: hasActiveSub ? sub.accent : (DS.sidebarText + 'aa'),
-                                                        }}>
-                                                            {'— '}{displayName}
-                                                        </span>
-                                                        <ChevronDown
-                                                            size={10}
-                                                            color={hasActiveSub ? sub.accent : '#334155'}
-                                                            style={{
-                                                                transition: 'transform 0.2s ease',
-                                                                transform: subOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                                                                flexShrink: 0,
-                                                            }}
-                                                        />
-                                                    </button>
-                                                )}
-                                                {subOpen && (
-                                                    <div className={collapsed ? '' : 'section-open'}>
-                                                        {sub.tabs.map(tab => renderTab(tab, sub.accent, collapsed ? 0 : 12))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            );
-                        }
-
-                        /* ═══ Two-level: Section header → Tabs (normal sections) ═══ */
+                        /* ═══ Two-level: Section header → Tabs ═══ */
                         const group = item;
                         const isOpen = collapsed || openSections.has(group.section);
                         const hasActive = group.tabs.some(t => t.id === activeTab);
