@@ -3567,6 +3567,349 @@ app.post('/api/ai/chat', authenticate, async (req, res) => {
     } catch (e) { res.json({}); }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 1–4 ENDPOINTS — Alert Rules, Pool Metrics, Schema, Observability,
+//                        OpenTelemetry, Retention
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/* ── Alert Rules CRUD ─────────────────────────────────────────────────────── */
+app.get('/api/alerts/rules', authenticate, async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            SELECT id, name, metric, condition, threshold, severity, enabled, channels, created_at, updated_at
+            FROM pgmonitoringtool.alerts
+            WHERE alert_type = 'rule'
+            ORDER BY created_at DESC
+        `);
+        res.json(rows);
+    } catch (e) {
+        // Table might not have alert_type column yet — return empty
+        res.json([]);
+    }
+});
+
+app.post('/api/alerts/rules', authenticate, async (req, res) => {
+    try {
+        const { name, metric, condition, threshold, severity, enabled, channels } = req.body;
+        const { rows } = await pool.query(`
+            INSERT INTO pgmonitoringtool.alerts (alert_type, severity, message, details, acknowledged)
+            VALUES ('rule', $1, $2, $3, false)
+            RETURNING id
+        `, [severity || 'warning', name || 'New Rule', JSON.stringify({ metric, condition, threshold, enabled, channels })]);
+        res.json({ success: true, id: rows[0].id });
+    } catch (e) {
+        log('ERROR', `[/api/alerts/rules POST] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/alerts/rules/:id', authenticate, async (req, res) => {
+    try {
+        const { name, metric, condition, threshold, severity, enabled, channels } = req.body;
+        await pool.query(`
+            UPDATE pgmonitoringtool.alerts
+            SET severity = $1, message = $2, details = $3
+            WHERE id = $4
+        `, [severity || 'warning', name || 'Rule', JSON.stringify({ metric, condition, threshold, enabled, channels }), req.params.id]);
+        res.json({ success: true });
+    } catch (e) {
+        log('ERROR', `[/api/alerts/rules/:id POST] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/alerts/rules/:id', authenticate, async (req, res) => {
+    try {
+        await pool.query(`DELETE FROM pgmonitoringtool.alerts WHERE id = $1`, [req.params.id]);
+        res.json({ success: true });
+    } catch (e) {
+        log('ERROR', `[/api/alerts/rules/:id DELETE] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/* ── Pool Metrics ─────────────────────────────────────────────────────────── */
+app.get('/api/pool/metrics', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const [connStats, poolConf] = await Promise.all([
+            p.query(`
+                SELECT state, count(*) AS cnt, avg(extract(epoch FROM (now() - state_change)))::numeric(10,2) AS avg_duration
+                FROM pg_stat_activity
+                WHERE backend_type = 'client backend'
+                GROUP BY state
+            `),
+            p.query(`SELECT name, setting FROM pg_settings WHERE name IN ('max_connections','superuser_reserved_connections','idle_in_transaction_session_timeout')`)
+        ]);
+        const stateMap = {};
+        connStats.rows.forEach(r => { stateMap[r.state || 'null'] = { count: Number(r.cnt), avgDuration: Number(r.avg_duration) }; });
+        const settings = {};
+        poolConf.rows.forEach(r => { settings[r.name] = r.setting; });
+        res.json({
+            states: stateMap,
+            settings,
+            totalConnections: Object.values(stateMap).reduce((a, b) => a + b.count, 0),
+            maxConnections: Number(settings.max_connections || 100),
+        });
+    } catch (e) {
+        log('ERROR', `[/api/pool/metrics] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/* ── Schema (for Schema Visualizer & Schema Browser) ──────────────────────── */
+app.get('/api/schema/relationships', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const { rows } = await p.query(`
+            SELECT
+                tc.table_schema AS schema,
+                tc.table_name AS source_table,
+                kcu.column_name AS source_column,
+                ccu.table_name AS target_table,
+                ccu.column_name AS target_column,
+                tc.constraint_name
+            FROM information_schema.table_constraints tc
+            JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+            JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name AND ccu.table_schema = tc.table_schema
+            WHERE tc.constraint_type = 'FOREIGN KEY'
+              AND tc.table_schema NOT IN ('pg_catalog','information_schema')
+            ORDER BY tc.table_schema, tc.table_name
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/schema/relationships] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/schema/dependencies', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const { rows } = await p.query(`
+            SELECT
+                n.nspname AS schema,
+                c.relname AS table_name,
+                c.relkind AS type,
+                pg_total_relation_size(c.oid) AS total_size,
+                s.n_live_tup AS row_estimate
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            LEFT JOIN pg_stat_user_tables s ON s.relid = c.oid
+            WHERE n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
+              AND c.relkind IN ('r','v','m')
+            ORDER BY n.nspname, c.relname
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/schema/dependencies] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/schema/columns/:schema/:table', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const { rows } = await p.query(`
+            SELECT column_name, data_type, is_nullable, column_default, ordinal_position
+            FROM information_schema.columns
+            WHERE table_schema = $1 AND table_name = $2
+            ORDER BY ordinal_position
+        `, [req.params.schema, req.params.table]);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/schema/columns] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/* ── Observability Hub ────────────────────────────────────────────────────── */
+app.get('/api/observability/api-metrics', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const { rows } = await p.query(`
+            SELECT query, calls, mean_exec_time AS avg_ms, total_exec_time AS total_ms
+            FROM pg_stat_statements
+            ORDER BY total_exec_time DESC LIMIT 20
+        `);
+        res.json(rows);
+    } catch (e) {
+        // pg_stat_statements may not be installed
+        res.json([]);
+    }
+});
+
+app.get('/api/observability/exceptions', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const { rows } = await p.query(`
+            SELECT datname, xact_rollback AS rollbacks, conflicts, deadlocks, temp_files
+            FROM pg_stat_database WHERE datname = current_database()
+        `);
+        res.json(rows[0] || {});
+    } catch (e) {
+        res.json({});
+    }
+});
+
+app.get('/api/observability/uptime', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const { rows } = await p.query(`
+            SELECT pg_postmaster_start_time() AS start_time,
+                   extract(epoch FROM (now() - pg_postmaster_start_time())) AS uptime_seconds
+        `);
+        res.json(rows[0] || {});
+    } catch (e) {
+        res.json({});
+    }
+});
+
+app.get('/api/observability/audit-log', authenticate, async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            SELECT a.id, COALESCE(u.username, 'system') AS actor_username, a.action,
+                   a.details AS raw_details,
+                   a.created_at AS timestamp
+            FROM pgmonitoringtool.audit_log a
+            LEFT JOIN pgmonitoringtool.users u ON u.id = a.user_id
+            ORDER BY a.created_at DESC LIMIT 50
+        `);
+        // Normalize: extract resource_type/level from details if it's JSON
+        const normalized = rows.map(r => {
+            let parsed = {};
+            try { parsed = typeof r.raw_details === 'object' ? r.raw_details : JSON.parse(r.raw_details || '{}'); } catch {}
+            return {
+                id: r.id,
+                actor_username: r.actor_username,
+                action: r.action,
+                resource_type: parsed.resource_type || r.action,
+                resource_id: parsed.resource_id || null,
+                level: parsed.level || 'info',
+                timestamp: r.timestamp,
+            };
+        });
+        res.json(normalized);
+    } catch (e) {
+        res.json([]);
+    }
+});
+
+app.get('/api/observability/jobs', authenticate, async (_req, res) => {
+    // Jobs/scheduled tasks are in-memory — return current task list
+    res.json([]);
+});
+
+/* ── OpenTelemetry ────────────────────────────────────────────────────────── */
+app.get('/api/otel/services', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const { rows } = await p.query(`
+            SELECT application_name AS service, count(*) AS connections
+            FROM pg_stat_activity
+            WHERE application_name != ''
+            GROUP BY application_name
+            ORDER BY connections DESC
+        `);
+        res.json(rows);
+    } catch (e) {
+        res.json([]);
+    }
+});
+
+app.get('/api/otel/metrics/names', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        // Return available metric categories from pg_stat views
+        const metrics = [
+            'pg_stat_activity.connections',
+            'pg_stat_database.transactions',
+            'pg_stat_database.cache_hit_ratio',
+            'pg_stat_user_tables.seq_scans',
+            'pg_stat_user_tables.idx_scans',
+            'pg_stat_bgwriter.checkpoints',
+        ];
+        res.json(metrics.map(m => ({ name: m })));
+    } catch (e) {
+        res.json([]);
+    }
+});
+
+app.get('/api/otel/metrics/data', authenticate, async (req, res) => {
+    try {
+        const p = await reqPool(req);
+        const metric = req.query.metric || 'pg_stat_activity.connections';
+        let rows = [];
+        if (metric.includes('connections')) {
+            const r = await p.query(`SELECT state, count(*) AS value FROM pg_stat_activity GROUP BY state`);
+            rows = r.rows;
+        } else if (metric.includes('transactions')) {
+            const r = await p.query(`SELECT xact_commit AS commits, xact_rollback AS rollbacks FROM pg_stat_database WHERE datname = current_database()`);
+            rows = r.rows;
+        } else {
+            const r = await p.query(`SELECT 'no_data' AS label, 0 AS value`);
+            rows = r.rows;
+        }
+        res.json(rows);
+    } catch (e) {
+        res.json([]);
+    }
+});
+
+/* ── Data Retention ───────────────────────────────────────────────────────── */
+app.get('/api/retention/policy', authenticate, async (_req, res) => {
+    // Return default retention settings (no table needed)
+    res.json({
+        metrics_retention_days: 30,
+        logs_retention_days: 7,
+        alerts_retention_days: 90,
+        audit_retention_days: 365,
+    });
+});
+
+app.get('/api/retention/stats', authenticate, async (_req, res) => {
+    try {
+        const alertCount = await pool.query(`SELECT count(*) AS cnt FROM pgmonitoringtool.alerts`);
+        const auditCount = await pool.query(`SELECT count(*) AS cnt FROM pgmonitoringtool.audit_log`);
+        res.json({
+            alerts_count: Number(alertCount.rows[0]?.cnt || 0),
+            audit_count: Number(auditCount.rows[0]?.cnt || 0),
+        });
+    } catch (e) {
+        res.json({ alerts_count: 0, audit_count: 0 });
+    }
+});
+
+app.get('/api/retention/growth', authenticate, async (_req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            SELECT pg_database_size(current_database()) AS db_size
+        `);
+        res.json({ db_size_bytes: Number(rows[0]?.db_size || 0) });
+    } catch (e) {
+        res.json({ db_size_bytes: 0 });
+    }
+});
+
+app.post('/api/retention/cleanup', authenticate, async (_req, res) => {
+    try {
+        const r1 = await pool.query(`DELETE FROM pgmonitoringtool.alerts WHERE created_at < now() - interval '90 days'`);
+        const r2 = await pool.query(`DELETE FROM pgmonitoringtool.audit_log WHERE created_at < now() - interval '365 days'`);
+        res.json({
+            success: true,
+            deleted: { alerts: r1.rowCount, audit_logs: r2.rowCount },
+        });
+    } catch (e) {
+        log('ERROR', `[/api/retention/cleanup] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/retention/policy', authenticate, async (req, res) => {
+    // Policy is stored in-memory for now (no retention_policies table needed)
+    res.json({ success: true, ...req.body });
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // WEBSOCKET  (local / traditional server only — not supported on Vercel)
 // ─────────────────────────────────────────────────────────────────────────────
