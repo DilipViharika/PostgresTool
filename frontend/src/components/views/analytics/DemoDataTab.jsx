@@ -294,6 +294,18 @@ const DATABASE_STRUCTURE = {
       }
     ]
   },
+};
+
+const DETAIL_WIDGETS = {
+  postgresql: {
+    backup: { time: '2 hours ago', size: '8.9 GB', duration: '12 min', verified: true, next: 'in 22 hours' },
+    longTxns: [
+      { pid: '12847', query: 'SELECT * FROM large_table WHERE...', duration: '45 min', wait: 'I/O', pct: 75 },
+      { pid: '12934', query: 'UPDATE inventory SET qty=qty-1...', duration: '12 min', wait: 'Lock', pct: 40 },
+      { pid: '13021', query: 'DELETE FROM audit_logs WHERE...', duration: '3 min', wait: 'CPU', pct: 15 },
+    ],
+    vacuum: { urgent: 5, soon: 23, healthy: 541, deadTuples: '234.5M', bloat: '12.3' },
+  },
   mongodb: {
     backup: { time: '1 hour ago', size: '234 GB', duration: '15 min', verified: true, next: 'in 23 hours' },
     longTxns: [
