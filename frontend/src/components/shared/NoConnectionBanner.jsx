@@ -7,13 +7,14 @@ import React, { useState, useEffect } from 'react';
 import { Database, Plus, Shield, Key, Wifi, Zap } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useConnection } from '../../context/ConnectionContext';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 const NoConnectionBanner = ({
   title = 'No Database Connected',
   description = 'Create a new connection or select an existing one to get started.',
   showAddButton = true,
 }) => {
+  useAdaptiveTheme();
   const { goToTab } = useNavigation();
   const { connections } = useConnection();
   const [borderGlow, setBorderGlow] = useState(false);

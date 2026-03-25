@@ -2763,7 +2763,9 @@ const AuthConsumer = () => {
                         path="/onboarding"
                         element={
                             (currentUser || isDemo)
-                                ? <ConnectionWizard />
+                                ? <NavigationContext.Provider value={{ goToTab: () => window.location.href = '/' }}>
+                                      <ConnectionWizard />
+                                  </NavigationContext.Provider>
                                 : <Navigate to="/login" replace />
                         }
                     />

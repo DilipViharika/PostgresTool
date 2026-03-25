@@ -5,9 +5,10 @@
  */
 import React, { useState, useCallback } from 'react';
 import { Copy, Check, AlertCircle } from 'lucide-react';
-import { THEME } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 
 const ConnectionStringParser = ({ onChange, onError }) => {
+  useAdaptiveTheme();
   const [connectionString, setConnectionString] = useState('');
   const [parsedData, setParsedData] = useState(null);
   const [error, setError] = useState(null);

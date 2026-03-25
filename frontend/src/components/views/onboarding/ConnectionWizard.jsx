@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { postData } from '../../../utils/api';
 import ConnectionStringParser from '../../shared/ConnectionStringParser';
-import { THEME } from '../../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { useNavigation } from '../../../context/NavigationContext';
 import { useConnection } from '../../../context/ConnectionContext';
 
@@ -87,6 +87,7 @@ const PROVIDER_TEMPLATES = {
 };
 
 const ConnectionWizard = () => {
+  useAdaptiveTheme();
   const [step, setStep] = useState(1); // 1: Type, 2: Details, 3: Options, 4: Test, 5: Success
   const [selectedType, setSelectedType] = useState(null);
   const [formData, setFormData] = useState({
