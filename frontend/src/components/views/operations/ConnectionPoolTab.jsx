@@ -1038,7 +1038,7 @@ const ConnectionsTab = () => {
                         <div style={{ fontSize: 48, marginBottom: 16 }}>🔌</div>
                         <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>No connections yet</h3>
                         <p style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 20 }}>
-                            Connect to PostgreSQL, MySQL, MongoDB, Redis, Snowflake and more
+                            Connect to PostgreSQL, MySQL, MongoDB.
                         </p>
                         <button
                             onClick={openNew}
