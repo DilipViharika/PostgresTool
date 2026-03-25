@@ -2410,7 +2410,7 @@ const DashboardInner = ({ onLogout }) => {
                                 </div>
                             }>
                                 <div key={activeTab} className="tab-mount" role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
-                                    {ActiveComponent && <ActiveComponent />}
+                                    {ActiveComponent && <ActiveComponent tabId={activeTab} />}
                                 </div>
                             </Suspense>
                         </ErrorBoundary>

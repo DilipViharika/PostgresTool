@@ -51,8 +51,9 @@ const SQL_TAB_TO_SECTION = {
   'observability': 'observability', 'dev': 'dev', 'admin': 'admin',
 };
 
-export default function DemoSectionView() {
-  const tabId = (() => {
+export default function DemoSectionView({ tabId: propTabId }) {
+  // Prefer prop-based tabId (passed from App.jsx) over localStorage for reliable re-renders
+  const tabId = propTabId || (() => {
     try { return localStorage.getItem('pg_monitor_active_tab') || ''; } catch { return ''; }
   })();
 
@@ -73,5 +74,5 @@ export default function DemoSectionView() {
     ? subTabId
     : (SQL_TAB_TO_SECTION[subTabId] || subTabId);
 
-  return <DemoDataTab dbKey={dbKey} sectionId={sectionId} subTabId={subTabId} />;
+  return <DemoDataTab key={tabId} dbKey={dbKey} sectionId={sectionId} subTabId={subTabId} />;
 }
