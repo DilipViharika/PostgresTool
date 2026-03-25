@@ -1831,8 +1831,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {recentlyViewed.slice(1, 4).map((tabId) => {
-                            const allTabs = getTabsOnly();
-                            const tab = allTabs.find(t => t.id === tabId);
+                            const tab = TABS_ONLY.find(t => t.id === tabId);
                             if (!tab) return null;
                             const accent = tab.accent || DS.cyan;
                             return (
@@ -2675,7 +2674,7 @@ const DashboardInner = ({ onLogout }) => {
                                 </h2>
                             </div>
                             <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono, padding: '2px 8px', borderRadius: 4, background: `${DS.cyan}10` }}>
-                                Tab {getTabsOnly().findIndex(t => t.id === activeTab) + 1} of {getTabsOnly().length}
+                                Tab {TABS_ONLY.findIndex(t => t.id === activeTab) + 1} of {TABS_ONLY.length}
                             </span>
                         </div>
 
