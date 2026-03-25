@@ -983,7 +983,7 @@ const AddRepoModal = ({ onAdd, onClose }) => {
     };
 
     return (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.72)', backdropFilter:'blur(10px)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.72)', backdropFilter:'blur(10px)', zIndex:500, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <div style={{ width:560, background:THEME.glass, backdropFilter:'blur(24px) saturate(180%)', border:`1px solid ${THEME.glassBorder}`, borderRadius:18, boxShadow:`0 28px 80px rgba(0,0,0,.55)`, animation:'rScaleIn .22s ease' }}>
                 <div style={{ padding:'18px 22px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <div style={{ fontSize:15, fontWeight:800, color:THEME.textMain }}>Connect Repository</div>

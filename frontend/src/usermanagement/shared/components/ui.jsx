@@ -216,7 +216,7 @@ export const StatCard = ({ label, value, sub, icon, color = T.primary, trend, sp
 
 /* ─── Toast notification stack ────────────────────────────────────────────── */
 export const Toast = ({ toasts }) => (
-    <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+    <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 600, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
         {toasts.map(t => (
             <div key={t.id} style={{
                 padding: '12px 18px', borderRadius: 10,

@@ -11,9 +11,9 @@ import {
     Activity, Zap, HardDrive, Bell, Layers, Network,
     Terminal, Users, Shield, GitBranch, TrendingUp,
     CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
-    Radio, Cloud, Archive, RefreshCw, Star,
+    Radio, Cloud, Archive, RefreshCw,
     Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock, CheckCircle,
-    Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge, FlaskConical, Eye, FileText,
+    Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge, Eye, FileText,
 } from 'lucide-react';
 
 import { getDS } from './designTokens.js';

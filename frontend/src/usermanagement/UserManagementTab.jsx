@@ -237,7 +237,7 @@ GlobalStylesInjector.displayName = 'GlobalStylesInjector';
 const ToastContainer = memo(({ toasts }) => {
     if (!toasts.length) return null;
     return createPortal(
-        <div style={{ position:'fixed', top:20, right:20, zIndex:99999, display:'flex', flexDirection:'column', gap:8 }} aria-live="polite">
+        <div style={{ position:'fixed', top:20, right:20, zIndex:600, display:'flex', flexDirection:'column', gap:8 }} aria-live="polite">
             {toasts.map(t => (
                 <div key={t.id} style={{
                     padding:'10px 16px', borderRadius:10, fontSize:13, fontWeight:500, color:'#fff', maxWidth:360,
@@ -267,7 +267,7 @@ const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', 
     return (
         <div
             onClick={e => e.target === e.currentTarget && onCancel()}
-            style={{ position:'fixed', inset:0, zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.55)', backdropFilter:'blur(4px)' }}
+            style={{ position:'fixed', inset:0, zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.55)', backdropFilter:'blur(4px)' }}
         >
             <div style={{ background:T.surface || '#12121f', border:`1px solid ${T.border || '#2a2a3e'}`, borderRadius:16, padding:'28px 32px', maxWidth:420, width:'90vw', boxShadow:'0 24px 80px rgba(0,0,0,.5)', animation:'umSlideUp .2s ease' }}>
                 <div style={{ display:'flex', alignItems:'flex-start', gap:14, marginBottom:20 }}>

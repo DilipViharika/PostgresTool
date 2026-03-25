@@ -878,7 +878,7 @@ export const AlertToast = ({ alerts, onDismiss }) => {
     injectKeyframes();
     return (
         <div style={{
-            position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
+            position: 'fixed', bottom: 24, right: 24, zIndex: 600,
             display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 380
         }}>
             {alerts.slice(0, 4).map((alert, i) => {
@@ -1585,7 +1585,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
 
     return (
         <div style={{
-            position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
             paddingTop: '12vh', background: 'rgba(0,0,20,0.85)', backdropFilter: 'blur(10px)',
             animation: 'fadeIn 0.15s ease'
         }} onClick={onClose}>
@@ -2547,7 +2547,7 @@ const ToastContainer = ({ toasts, onRemove }) => {
             position: 'fixed',
             top: 20,
             right: 20,
-            zIndex: 9999,
+            zIndex: 600,
             pointerEvents: 'none',
             maxWidth: 400,
         }}>
@@ -2701,7 +2701,7 @@ export const ProgressBar = ({ progress = 0, isVisible = true }) => {
             background: `linear-gradient(90deg, #00f5ff, #7b2fff, #ff2d78)`,
             backgroundSize: '200% 100%',
             animation: 'waveFlow 2s ease-in-out infinite',
-            zIndex: 10000,
+            zIndex: 500,
             transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             boxShadow: '0 0 10px rgba(0, 245, 255, 0.6)',
         }} />

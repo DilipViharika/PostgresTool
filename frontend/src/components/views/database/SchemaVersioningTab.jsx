@@ -989,9 +989,8 @@ const SchemaVersioningTab = () => {
 
     const debouncedSearch = useDebounce(searchQuery, 300);
 
-    const { isConnected } = useWebSocket('ws://localhost:8080', (msg) => {
-        if (msg.type !== 'heartbeat') console.log('Migration WS event:', msg);
-    });
+    const wsUrl = (import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app').replace(/^http/, 'ws');
+    const { isConnected } = useWebSocket(wsUrl, () => {});
 
     const allTags = useMemo(() => {
         const tags = new Set();

@@ -935,8 +935,6 @@ const FeedbackModal = ({ onClose, initialSection }) => {
         setError('');
 
         const payload = buildPayload();
-        console.debug('[FeedbackModal] payload →', JSON.stringify(payload, null, 2));
-
         try {
             await postData('/api/feedback', payload);
 
@@ -2740,7 +2738,7 @@ const AuthConsumer = () => {
                                     {/* Full-screen fade overlay shown during logout */}
                                     {loggingOut && (
                                         <div style={{
-                                            position: 'fixed', inset: 0, zIndex: 9999,
+                                            position: 'fixed', inset: 0, zIndex: 500,
                                             background: DS.bg,
                                             animation: 'fadeIn 0.4s ease-out both',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',

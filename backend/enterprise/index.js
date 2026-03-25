@@ -112,8 +112,8 @@ export function validateEnterpriseSetup() {
 
 /* ─── EXPORTS ──────────────────────────────────────────────────────────────── */
 
-// Licensing exports
 export {
+  // Licensing
   TIERS,
   getFeaturesForTier,
   getTierConfig,
@@ -129,10 +129,7 @@ export {
   isUserLimitReached,
   listAllLicenses,
   revokeLicense,
-};
-
-// Organization exports
-export {
+  // Organization
   createOrganization,
   getOrganization,
   getOrganizationBySlug,
@@ -148,10 +145,7 @@ export {
   isOrgMember,
   isOrgAdmin,
   isSlugAvailable,
-};
-
-// IP Whitelist exports
-export {
+  // IP Whitelist
   getWhitelist,
   addToWhitelist,
   removeFromWhitelist,

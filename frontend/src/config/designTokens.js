@@ -69,6 +69,26 @@ export const DS_LIGHT = {
     _dark: false,
 };
 
+/* ── Z-Index Scale ── consistent layering across the app ──────────────── *
+ *  Use these instead of arbitrary values (e.g. 9999, 10000).
+ *  Import: import { Z } from '@/config/designTokens.js';
+ *
+ *  TODO: Migrate remaining hardcoded accent colors (#38bdf8, #818cf8,
+ *        #34d399, #fbbf24, #fb7185) in ~11 component files to use
+ *        DS.cyan / DS.violet / DS.emerald / DS.amber / DS.rose instead.
+ * ──────────────────────────────────────────────────────────────────────── */
+export const Z = {
+    base:       1,      // default stacking (sticky headers, relative layers)
+    dropdown:   100,    // dropdowns, popovers, tooltips
+    sticky:     200,    // sticky elements, floating action buttons
+    sidebar:    300,    // sidebar, panels
+    overlay:    400,    // overlays, backdrops
+    modal:      500,    // modal dialogs
+    toast:      600,    // toast notifications, snackbars
+    popover:    700,    // popovers that sit above modals
+    max:        999,    // absolute top (debug tools, critical alerts)
+};
+
 /* Mutable DS — swapped by ThemeToggle, picked up on re-render */
 let DS = (() => {
     try { return localStorage.getItem('vigil_theme') === 'light' ? DS_LIGHT : DS_DARK; }

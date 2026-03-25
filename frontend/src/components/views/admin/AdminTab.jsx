@@ -448,7 +448,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
 
 /* ── Confirm Dialog ── */
 const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>
         <div style={{ width: 420, background: T.surface, borderRadius: 16, border: `1px solid ${danger ? T.danger+'40' : T.glassBorder}`, padding: 28, boxShadow: `0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)`, animation: 'admSlideUp 0.2s ease' }}>
             <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: danger ? `${T.danger}15` : `${T.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${danger ? T.danger : T.primary}25` }}>
@@ -628,7 +628,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
     const restartCount = recommendations.filter(r => selected.has(r.name) && r.impact === 'restart').length;
 
     return (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}>
             <div style={{ width: 680, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: T.surface, borderRadius: 20, border: `1px solid ${T.glassBorder}`, boxShadow: `0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px ${T.primary}10`, overflow: 'hidden', animation: 'admSlideUp 0.25s cubic-bezier(0.22,1,0.36,1)' }}>
                 {/* Header */}
                 <div style={{ padding: '18px 26px', borderBottom: `1px solid ${T.grid}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(135deg, ${T.primary}08, ${T.secondary}04)`, position: 'relative', overflow: 'hidden' }}>
@@ -822,7 +822,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
    CHANGE LOG MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
 const ChangeLogModal = ({ onClose }) => (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}>
         <div style={{ width: 560, maxHeight: '80vh', display: 'flex', flexDirection: 'column', background: T.surface, borderRadius: 18, border: `1px solid ${T.glassBorder}`, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.7)', animation: 'admSlideUp 0.2s ease' }}>
             <div style={{ padding: '16px 22px', borderBottom: `1px solid ${T.grid}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(90deg, ${T.primary}06, transparent)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -1940,7 +1940,7 @@ const AdminTab = () => {
 
             {/* Toast */}
             {toast && (
-                <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 10000, padding: '13px 18px', borderRadius: 12, background: T.surface, backdropFilter: 'blur(20px)', border: `1px solid ${toast.type === 'error' ? T.danger : T.success}35`, boxShadow: `0 10px 36px rgba(0,0,0,0.6), 0 0 0 1px ${toast.type === 'error' ? T.danger : T.success}12, 0 0 24px ${toast.type === 'error' ? T.danger : T.success}15`, display: 'flex', alignItems: 'center', gap: 11, animation: 'admSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)' }}>
+                <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 600, padding: '13px 18px', borderRadius: 12, background: T.surface, backdropFilter: 'blur(20px)', border: `1px solid ${toast.type === 'error' ? T.danger : T.success}35`, boxShadow: `0 10px 36px rgba(0,0,0,0.6), 0 0 0 1px ${toast.type === 'error' ? T.danger : T.success}12, 0 0 24px ${toast.type === 'error' ? T.danger : T.success}15`, display: 'flex', alignItems: 'center', gap: 11, animation: 'admSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)' }}>
                     {toast.type === 'error' ? <XCircle size={18} color={T.danger} /> : <CheckCircle size={18} color={T.success} />}
                     <span style={{ fontWeight: 700, color: T.textMain, fontSize: 13, fontFamily: T.fontBody }}>{toast.msg}</span>
                     <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 0, marginLeft: 4 }}><X size={12} /></button>

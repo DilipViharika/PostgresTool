@@ -337,7 +337,7 @@ const IconBtn = ({ icon:Icon, onClick, active, disabled, title, color, size=12 }
 );
 
 const Notification = ({ notifications, onDismiss }) => (
-    <div style={{ position:'fixed', bottom:24, right:24, zIndex:9999, display:'flex', flexDirection:'column', gap:6, maxWidth:340 }}>
+    <div style={{ position:'fixed', bottom:24, right:24, zIndex:600, display:'flex', flexDirection:'column', gap:6, maxWidth:340 }}>
         {notifications.map(n => (
             <div key={n.id} className="sql-notification" style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:10, background:n.type==='error'?`${THEME.danger}14`:`${THEME.success}10`, border:`1px solid ${n.type==='error'?THEME.danger:THEME.success}25`, backdropFilter:'blur(20px)' }}>
                 {n.type==='error' ? <XCircle size={14} color={THEME.danger}/> : <CheckCircle size={14} color={THEME.success}/>}
@@ -647,7 +647,7 @@ const AutoComplete = ({ suggestions, onSelect, anchorRect }) => {
     useEffect(() => setIdx(0), [suggestions]);
     if (!suggestions.length) return null;
     return (
-        <div className="sql-suggest-box" style={{ position:'fixed', zIndex:9999, top:(anchorRect?.top||0)+20, left:(anchorRect?.left||0), background:THEME.surface, border:`1px solid ${THEME.primary}25`, borderRadius:10, overflow:'hidden', minWidth:220, maxWidth:360, boxShadow:`0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${THEME.primary}12` }}>
+        <div className="sql-suggest-box" style={{ position:'fixed', zIndex:600, top:(anchorRect?.top||0)+20, left:(anchorRect?.left||0), background:THEME.surface, border:`1px solid ${THEME.primary}25`, borderRadius:10, overflow:'hidden', minWidth:220, maxWidth:360, boxShadow:`0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${THEME.primary}12` }}>
             <div style={{ padding:'4px 10px', borderBottom:`1px solid ${THEME.grid}30`, fontSize:9, color:THEME.textDim, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em' }}>
                 {suggestions.length} completions · Tab to accept
             </div>
