@@ -1,0 +1,22 @@
+{
+    "files": {
+        "shared/validators/dist/tsconfig.tsbuildinfo": {
+            "size": 45760,
+            "mtime_nanos": 1774452044026811100,
+            "mode": 420,
+            "is_dir": false
+        },
+        "shared/validators/.turbo/turbo-build.log": {
+            "size": 251,
+            "mtime_nanos": 1774453160100444100,
+            "mode": 420,
+            "is_dir": false
+        },
+        "shared/validators/dist": { "size": 0, "mtime_nanos": 0, "mode": 0, "is_dir": true }
+    },
+    "order": [
+        "shared/validators/.turbo/turbo-build.log",
+        "shared/validators/dist",
+        "shared/validators/dist/tsconfig.tsbuildinfo"
+    ]
+}

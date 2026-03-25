@@ -1,0 +1,11 @@
+{
+    "files": {
+        "shared/validators/.turbo/turbo-type-check.log": {
+            "size": 54,
+            "mtime_nanos": 1774453186424828400,
+            "mode": 420,
+            "is_dir": false
+        }
+    },
+    "order": ["shared/validators/.turbo/turbo-type-check.log"]
+}

@@ -1,0 +1,14 @@
+import { Router, Request, Response } from 'express';
+import { Pool } from 'pg';
+
+const router = Router();
+
+router.get('/', async (req: Request, res: Response, next) => {
+    try {
+        res.json([]);
+    } catch (err) {
+        next(err);
+    }
+});
+
+export default router;

@@ -1,0 +1,999 @@
+// @ts-nocheck
+/**
+ * ConnectionWizard.tsx
+ * Multi-step wizard for connecting a database.
+ * Steps: Type → Details → Options → Test → Success
+ */
+import React, { useState, useEffect, useCallback, FC } from 'react';
+import {
+  ChevronRight, ChevronLeft, CheckCircle, Loader, AlertCircle,
+  Database, Key, Zap, Shield, Wifi, Globe, Lock, Plus
+} from 'lucide-react';
+import { postData } from '../../../utils/api';
+import ConnectionStringParser from '../../shared/ConnectionStringParser';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { useNavigation } from '../../../context/NavigationContext';
+import { useConnection } from '../../../context/ConnectionContext';
+
+interface DBType {
+  label: string;
+  defaultPort: number;
+  color: string;
+  icon: string;
+  description: string;
+}
+
+interface ProviderTemplate {
+  label: string;
+  icon: string;
+  template: {
+    hostPattern: string;
+    ssl: boolean;
+    hint: string;
+  };
+}
+
+interface FormData {
+  type: string | null;
+  host: string;
+  port: string;
+  username: string;
+  password: string;
+  database: string;
+  ssl: boolean;
+  sshTunnel: boolean;
+  sshHost: string;
+  sshUsername: string;
+  sshPassword: string;
+  sshKey: string;
+}
+
+interface ParsedConnection {
+  type?: string;
+  host: string;
+  port?: string;
+  username: string;
+  password: string;
+  database: string;
+  ssl?: boolean;
+}
+
+const DB_TYPES: Record<string, DBType> = {
+  postgresql: {
+    label: 'PostgreSQL',
+    defaultPort: 5432,
+    color: '#336791',
+    icon: '🐘',
+    description: 'Open-source relational database'
+  },
+  mysql: {
+    label: 'MySQL',
+    defaultPort: 3306,
+    color: '#f29111',
+    icon: '🐬',
+    description: 'Popular relational database'
+  },
+  mongodb: {
+    label: 'MongoDB',
+    defaultPort: 27017,
+    color: '#13aa52',
+    icon: '🍃',
+    description: 'Document-oriented database'
+  },
+};
+
+const PROVIDER_TEMPLATES: Record<string, ProviderTemplate> = {
+  aws_rds: {
+    label: 'AWS RDS',
+    icon: '☁️',
+    template: {
+      hostPattern: '*.*.rds.amazonaws.com',
+      ssl: true,
+      hint: 'Use your RDS endpoint as the host'
+    }
+  },
+  neon: {
+    label: 'Neon',
+    icon: '⚡',
+    template: {
+      hostPattern: 'pg-*.neon.tech',
+      ssl: true,
+      hint: 'Neon requires SSL. Use your connection string above.'
+    }
+  },
+  supabase: {
+    label: 'Supabase',
+    icon: '🟢',
+    template: {
+      hostPattern: '*.supabase.co',
+      ssl: true,
+      hint: 'Supabase uses PostgreSQL. Find your credentials in Settings > Database.'
+    }
+  },
+  planetscale: {
+    label: 'PlanetScale',
+    icon: '🪐',
+    template: {
+      hostPattern: '*.psdb.cloud',
+      ssl: true,
+      hint: 'PlanetScale MySQL requires SSL. Use connection string above.'
+    }
+  },
+  mongodb_atlas: {
+    label: 'MongoDB Atlas',
+    icon: '🎯',
+    template: {
+      hostPattern: 'cluster*.mongodb.net',
+      ssl: true,
+      hint: 'Use mongodb+srv:// connection string from Atlas console.'
+    }
+  },
+};
+
+const ConnectionWizard: FC = () => {
+  useAdaptiveTheme();
+  const [step, setStep] = useState(1); // 1: Type, 2: Details, 3: Options, 4: Test, 5: Success
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData>({
+    type: null,
+    host: '',
+    port: '',
+    username: '',
+    password: '',
+    database: '',
+    ssl: false,
+    sshTunnel: false,
+    sshHost: '',
+    sshUsername: '',
+    sshPassword: '',
+    sshKey: '',
+  });
+  const [testStatus, setTestStatus] = useState<'loading' | 'success' | 'error' | null>(null);
+  const [testError, setTestError] = useState<string | null>(null);
+  const [connectionId, setConnectionId] = useState<string | null>(null);
+  const [useConnectionString, setUseConnectionString] = useState(false);
+  const [parsedFromString, setParsedFromString] = useState<ParsedConnection | null>(null);
+
+  const { goToTab } = useNavigation();
+  const { refreshConnections } = useConnection();
+
+  // Step 1: Select database type
+  const handleSelectType = (type: string): void => {
+    setSelectedType(type);
+    setFormData(prev => ({
+      ...prev,
+      type,
+      port: DB_TYPES[type].defaultPort.toString(),
+    }));
+    setStep(2);
+  };
+
+  // Step 2: Form input changes
+  const handleFormChange = (field: keyof FormData, value: string | boolean): void => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Parse connection string
+  const handleParsedConnection = (parsed: ParsedConnection): void => {
+    setParsedFromString(parsed);
+    setFormData(prev => ({
+      ...prev,
+      type: parsed.type || prev.type,
+      host: parsed.host,
+      port: parsed.port?.toString() || prev.port,
+      username: parsed.username,
+      password: parsed.password,
+      database: parsed.database,
+      ssl: parsed.ssl || false,
+    }));
+  };
+
+  // Step 3: Additional options (SSH, SSL details)
+  const handleProceedToTest = (): void => {
+    setStep(4);
+  };
+
+  // Step 4: Test connection
+  const handleTestConnection = useCallback(async (): Promise<void> => {
+    setTestStatus('loading');
+    setTestError(null);
+    try {
+      const response = await postData('/api/connections/test', {
+        type: formData.type,
+        host: formData.host,
+        port: parseInt(formData.port),
+        username: formData.username,
+        password: formData.password,
+        database: formData.database,
+        ssl: formData.ssl,
+      });
+
+      if (response.success) {
+        setTestStatus('success');
+        // Create the actual connection
+        handleCreateConnection();
+      } else {
+        setTestStatus('error');
+        setTestError(response.error || 'Connection test failed');
+      }
+    } catch (err) {
+      setTestStatus('error');
+      setTestError(err instanceof Error ? err.message : 'Failed to test connection');
+    }
+  }, [formData]);
+
+  // Create connection in database
+  const handleCreateConnection = useCallback(async (): Promise<void> => {
+    try {
+      const response = await postData('/api/connections', {
+        type: formData.type,
+        host: formData.host,
+        port: parseInt(formData.port),
+        username: formData.username,
+        password: formData.password,
+        database: formData.database,
+        ssl: formData.ssl,
+        name: `${formData.type ? DB_TYPES[formData.type]?.label : 'Database'} - ${formData.host}`,
+        isDefault: true, // Make it default on creation
+      });
+
+      if (response.success) {
+        setConnectionId(response.connectionId || response.id);
+        setStep(5); // Success screen
+
+        // Refresh connections in context
+        setTimeout(() => {
+          refreshConnections();
+        }, 500);
+      } else {
+        setTestStatus('error');
+        setTestError(response.error || 'Failed to create connection');
+      }
+    } catch (err) {
+      setTestStatus('error');
+      setTestError(err instanceof Error ? err.message : 'Failed to create connection');
+    }
+  }, [formData, refreshConnections]);
+
+  const handleBackStep = (): void => {
+    if (step > 1) {
+      setStep(step - 1);
+      if (step === 4) {
+        setTestStatus(null);
+        setTestError(null);
+      }
+    }
+  };
+
+  const handleGoToDashboard = (): void => {
+    goToTab('dashboard');
+  };
+
+  const styles = {
+    container: {
+      width: '100%' as const,
+      maxWidth: '700px',
+      margin: '0 auto',
+      padding: '40px 24px',
+    },
+    card: {
+      padding: '32px',
+      borderRadius: '12px',
+      background: 'rgba(18, 10, 31, 0.6)',
+      border: '1px solid rgba(0, 212, 255, 0.12)',
+      backdropFilter: 'blur(8px)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    },
+    stepIndicator: {
+      display: 'flex' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
+      marginBottom: '32px',
+      position: 'relative' as const,
+    },
+    stepDot: {
+      width: '32px',
+      height: '32px',
+      borderRadius: '50%',
+      display: 'flex' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      fontSize: '12px',
+      fontWeight: '600' as const,
+      zIndex: 2,
+      transition: 'all 0.2s',
+    },
+    stepDotActive: {
+      background: 'linear-gradient(135deg, #00D4FF, #2AFFD4)',
+      color: '#07030D',
+    },
+    stepDotInactive: {
+      background: 'rgba(0, 212, 255, 0.1)',
+      border: '1px solid rgba(0, 212, 255, 0.2)',
+      color: THEME.textMuted,
+    },
+    stepDotCompleted: {
+      background: '#2EE89C',
+      color: '#07030D',
+    },
+    stepLine: {
+      position: 'absolute' as const,
+      top: '16px',
+      left: '0',
+      right: '0',
+      height: '1px',
+      background: 'rgba(0, 212, 255, 0.1)',
+      zIndex: 1,
+    },
+    title: {
+      fontSize: '20px',
+      fontWeight: '700' as const,
+      color: THEME.textMain,
+      marginBottom: '8px',
+      fontFamily: THEME.fontBody,
+    },
+    description: {
+      fontSize: '13px',
+      color: THEME.textMuted,
+      marginBottom: '24px',
+      fontFamily: THEME.fontBody,
+    },
+    typeGrid: {
+      display: 'grid' as const,
+      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+      gap: '12px',
+      marginBottom: '24px',
+    },
+    typeCard: {
+      padding: '16px',
+      borderRadius: '8px',
+      border: '1px solid rgba(0, 212, 255, 0.15)',
+      background: 'rgba(0, 212, 255, 0.02)',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      textAlign: 'center' as const,
+    },
+    typeCardHover: {
+      borderColor: 'rgba(0, 212, 255, 0.4)',
+      background: 'rgba(0, 212, 255, 0.08)',
+      transform: 'translateY(-2px)',
+      boxShadow: '0 8px 20px rgba(0, 212, 255, 0.15)',
+    },
+    typeIcon: {
+      fontSize: '32px',
+      marginBottom: '8px',
+    },
+    typeLabel: {
+      fontSize: '13px',
+      fontWeight: '600' as const,
+      color: THEME.textMain,
+      marginBottom: '4px',
+      fontFamily: THEME.fontBody,
+    },
+    typeDescription: {
+      fontSize: '11px',
+      color: THEME.textMuted,
+      fontFamily: THEME.fontBody,
+    },
+    formSection: {
+      marginBottom: '24px',
+    },
+    formLabel: {
+      fontSize: '12px',
+      fontWeight: '600' as const,
+      color: THEME.textMuted,
+      marginBottom: '8px',
+      textTransform: 'uppercase' as const,
+      letterSpacing: '0.5px',
+      fontFamily: THEME.fontMono,
+      display: 'block' as const,
+    },
+    formInput: {
+      width: '100%',
+      padding: '10px 12px',
+      borderRadius: '8px',
+      border: '1px solid rgba(0, 212, 255, 0.15)',
+      background: 'rgba(7, 3, 13, 0.4)',
+      color: THEME.textMain,
+      fontSize: '13px',
+      fontFamily: THEME.fontMono,
+      transition: 'all 0.2s',
+      boxSizing: 'border-box' as const,
+    },
+    formInputFocus: {
+      borderColor: 'rgba(0, 212, 255, 0.4)',
+      background: 'rgba(7, 3, 13, 0.6)',
+      boxShadow: '0 0 12px rgba(0, 212, 255, 0.1)',
+      outline: 'none',
+    },
+    formGrid: {
+      display: 'grid' as const,
+      gridTemplateColumns: '1fr 1fr',
+      gap: '12px',
+      marginBottom: '12px',
+    },
+    formFull: {
+      gridColumn: '1 / -1',
+    },
+    toggleSection: {
+      padding: '12px',
+      borderRadius: '8px',
+      background: 'rgba(0, 212, 255, 0.03)',
+      border: '1px solid rgba(0, 212, 255, 0.1)',
+      marginBottom: '16px',
+    },
+    toggleLabel: {
+      display: 'flex' as const,
+      alignItems: 'center' as const,
+      gap: '8px',
+      cursor: 'pointer',
+      fontSize: '13px',
+      fontWeight: '500' as const,
+      color: THEME.textMain,
+      fontFamily: THEME.fontBody,
+    },
+    toggle: {
+      width: '40px',
+      height: '24px',
+      borderRadius: '12px',
+      background: 'rgba(0, 212, 255, 0.2)',
+      border: '1px solid rgba(0, 212, 255, 0.3)',
+      cursor: 'pointer',
+      position: 'relative' as const,
+      transition: 'all 0.2s',
+      display: 'flex' as const,
+      alignItems: 'center' as const,
+      paddingRight: '3px',
+    },
+    toggleActive: {
+      background: 'linear-gradient(135deg, #00D4FF, #2AFFD4)',
+      borderColor: '#00D4FF',
+      paddingLeft: '3px',
+    },
+    toggleDot: {
+      width: '18px',
+      height: '18px',
+      borderRadius: '50%',
+      background: '#fff',
+      transition: 'all 0.2s',
+    },
+    testStatusBox: {
+      padding: '16px',
+      borderRadius: '8px',
+      display: 'flex' as const,
+      alignItems: 'center' as const,
+      gap: '12px',
+      marginBottom: '24px',
+      fontFamily: THEME.fontBody,
+    },
+    testStatusSuccess: {
+      background: 'rgba(46, 232, 156, 0.08)',
+      border: '1px solid rgba(46, 232, 156, 0.2)',
+      color: '#2EE89C',
+    },
+    testStatusError: {
+      background: 'rgba(255, 69, 96, 0.08)',
+      border: '1px solid rgba(255, 69, 96, 0.2)',
+      color: '#FF4560',
+    },
+    testStatusLoading: {
+      background: 'rgba(0, 212, 255, 0.08)',
+      border: '1px solid rgba(0, 212, 255, 0.2)',
+      color: '#00D4FF',
+    },
+    successScreen: {
+      textAlign: 'center' as const,
+    },
+    successIcon: {
+      fontSize: '56px',
+      marginBottom: '16px',
+      animation: 'pulse 2s ease-in-out infinite',
+    },
+    buttonsContainer: {
+      display: 'flex' as const,
+      gap: '12px',
+      justifyContent: 'space-between' as const,
+      marginTop: '32px',
+    },
+    button: {
+      padding: '10px 20px',
+      borderRadius: '8px',
+      border: 'none',
+      fontSize: '13px',
+      fontWeight: '600' as const,
+      cursor: 'pointer',
+      transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+      fontFamily: THEME.fontBody,
+      display: 'flex' as const,
+      alignItems: 'center' as const,
+      gap: '8px',
+    },
+    buttonSecondary: {
+      background: 'transparent',
+      border: '1px solid rgba(0, 212, 255, 0.2)',
+      color: THEME.textMuted,
+    },
+    buttonSecondaryHover: {
+      borderColor: 'rgba(0, 212, 255, 0.4)',
+      color: THEME.textMain,
+    },
+    buttonPrimary: {
+      background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(42, 255, 212, 0.1))',
+      border: '1px solid rgba(0, 212, 255, 0.4)',
+      color: '#00D4FF',
+    },
+    buttonPrimaryHover: {
+      background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.35), rgba(42, 255, 212, 0.2))',
+      borderColor: 'rgba(0, 212, 255, 0.6)',
+      boxShadow: '0 0 20px rgba(0, 212, 255, 0.2)',
+      transform: 'translateY(-2px)',
+    },
+  };
+
+  const [hoveredType, setHoveredType] = useState<string | null>(null);
+  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+
+  return (
+    <div style={styles.container}>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        .loading-spinner {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      <div style={styles.card}>
+        {/* Step Indicator */}
+        {step < 5 && (
+          <div style={styles.stepIndicator}>
+            <div style={styles.stepLine} />
+            {[1, 2, 3, 4].map(s => (
+              <div
+                key={s}
+                style={{
+                  ...styles.stepDot,
+                  ...(s === step
+                    ? styles.stepDotActive
+                    : s < step
+                    ? styles.stepDotCompleted
+                    : styles.stepDotInactive),
+                }}
+              >
+                {s < step ? '✓' : s}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* STEP 1: Choose DB Type */}
+        {step === 1 && (
+          <>
+            <h2 style={styles.title}>Choose Database Type</h2>
+            <p style={styles.description}>Select which database system you want to connect to.</p>
+
+            <div style={styles.typeGrid}>
+              {Object.entries(DB_TYPES).map(([key, db]) => (
+                <div
+                  key={key}
+                  onClick={() => handleSelectType(key)}
+                  onMouseEnter={() => setHoveredType(key)}
+                  onMouseLeave={() => setHoveredType(null)}
+                  style={{
+                    ...styles.typeCard,
+                    ...(hoveredType === key ? styles.typeCardHover : {}),
+                  }}
+                >
+                  <div style={styles.typeIcon}>{db.icon}</div>
+                  <div style={styles.typeLabel}>{db.label}</div>
+                  <div style={styles.typeDescription}>{db.description}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Provider Templates */}
+            <div style={{ marginTop: '32px' }}>
+              <label style={styles.formLabel}>Or use a provider template:</label>
+              <div style={styles.typeGrid}>
+                {Object.entries(PROVIDER_TEMPLATES).map(([key, provider]) => (
+                  <div
+                    key={key}
+                    style={{
+                      ...styles.typeCard,
+                      opacity: 0.7,
+                      cursor: 'help',
+                    }}
+                    title={provider.template.hint}
+                  >
+                    <div style={styles.typeIcon}>{provider.icon}</div>
+                    <div style={styles.typeLabel}>{provider.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* STEP 2: Enter Connection Details */}
+        {step === 2 && (
+          <>
+            <h2 style={styles.title}>Connection Details</h2>
+            <p style={styles.description}>
+              {selectedType && `Connect to your ${DB_TYPES[selectedType]?.label} database`}
+            </p>
+
+            {/* Connection String Option */}
+            <div style={styles.toggleSection}>
+              <label style={styles.toggleLabel}>
+                <span>Paste connection string instead?</span>
+                <button
+                  onClick={() => setUseConnectionString(!useConnectionString)}
+                  style={{
+                    ...styles.toggle,
+                    ...(useConnectionString ? styles.toggleActive : {}),
+                  }}
+                >
+                  <div style={styles.toggleDot} />
+                </button>
+              </label>
+            </div>
+
+            {useConnectionString ? (
+              <div style={{ marginBottom: '24px' }}>
+                <ConnectionStringParser onChange={handleParsedConnection} />
+              </div>
+            ) : (
+              <div>
+                <div style={styles.formGrid}>
+                  <div>
+                    <label style={styles.formLabel}>Host</label>
+                    <input
+                      type="text"
+                      placeholder="localhost"
+                      value={formData.host}
+                      onChange={(e) => handleFormChange('host', e.target.value)}
+                      onFocus={() => setFocusedInput('host')}
+                      onBlur={() => setFocusedInput(null)}
+                      style={{
+                        ...styles.formInput,
+                        ...(focusedInput === 'host' ? styles.formInputFocus : {}),
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={styles.formLabel}>Port</label>
+                    <input
+                      type="number"
+                      placeholder={selectedType ? String(DB_TYPES[selectedType]?.defaultPort) : ''}
+                      value={formData.port}
+                      onChange={(e) => handleFormChange('port', e.target.value)}
+                      onFocus={() => setFocusedInput('port')}
+                      onBlur={() => setFocusedInput(null)}
+                      style={{
+                        ...styles.formInput,
+                        ...(focusedInput === 'port' ? styles.formInputFocus : {}),
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={styles.formGrid}>
+                  <div>
+                    <label style={styles.formLabel}>Username</label>
+                    <input
+                      type="text"
+                      placeholder="user"
+                      value={formData.username}
+                      onChange={(e) => handleFormChange('username', e.target.value)}
+                      onFocus={() => setFocusedInput('username')}
+                      onBlur={() => setFocusedInput(null)}
+                      style={{
+                        ...styles.formInput,
+                        ...(focusedInput === 'username' ? styles.formInputFocus : {}),
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={styles.formLabel}>Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••"
+                      value={formData.password}
+                      onChange={(e) => handleFormChange('password', e.target.value)}
+                      onFocus={() => setFocusedInput('password')}
+                      onBlur={() => setFocusedInput(null)}
+                      style={{
+                        ...styles.formInput,
+                        ...(focusedInput === 'password' ? styles.formInputFocus : {}),
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ ...styles.formGrid, ...styles.formFull }}>
+                  <label style={styles.formLabel}>Database Name</label>
+                  <input
+                    type="text"
+                    placeholder="mydb"
+                    value={formData.database}
+                    onChange={(e) => handleFormChange('database', e.target.value)}
+                    onFocus={() => setFocusedInput('database')}
+                    onBlur={() => setFocusedInput(null)}
+                    style={{
+                      ...styles.formInput,
+                      ...(focusedInput === 'database' ? styles.formInputFocus : {}),
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div style={styles.buttonsContainer}>
+              <button
+                onClick={handleBackStep}
+                onMouseEnter={() => setHoveredButton('back')}
+                onMouseLeave={() => setHoveredButton(null)}
+                style={{
+                  ...styles.button,
+                  ...styles.buttonSecondary,
+                  ...(hoveredButton === 'back' ? styles.buttonSecondaryHover : {}),
+                }}
+              >
+                <ChevronLeft size={16} />
+                Back
+              </button>
+              <button
+                onClick={() => setStep(3)}
+                onMouseEnter={() => setHoveredButton('next')}
+                onMouseLeave={() => setHoveredButton(null)}
+                style={{
+                  ...styles.button,
+                  ...styles.buttonPrimary,
+                  ...(hoveredButton === 'next' ? styles.buttonPrimaryHover : {}),
+                }}
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* STEP 3: Configure Options */}
+        {step === 3 && (
+          <>
+            <h2 style={styles.title}>Connection Options</h2>
+            <p style={styles.description}>Configure SSL and advanced options (optional).</p>
+
+            <div style={styles.toggleSection}>
+              <label style={styles.toggleLabel}>
+                <Shield size={16} />
+                <span>Require SSL/TLS</span>
+                <button
+                  onClick={() => handleFormChange('ssl', !formData.ssl)}
+                  style={{
+                    ...styles.toggle,
+                    ...(formData.ssl ? styles.toggleActive : {}),
+                  }}
+                >
+                  <div style={styles.toggleDot} />
+                </button>
+              </label>
+            </div>
+
+            <div style={styles.toggleSection}>
+              <label style={styles.toggleLabel}>
+                <Wifi size={16} />
+                <span>Use SSH Tunnel</span>
+                <button
+                  onClick={() => handleFormChange('sshTunnel', !formData.sshTunnel)}
+                  style={{
+                    ...styles.toggle,
+                    ...(formData.sshTunnel ? styles.toggleActive : {}),
+                  }}
+                >
+                  <div style={styles.toggleDot} />
+                </button>
+              </label>
+            </div>
+
+            {formData.sshTunnel && (
+              <div style={{ ...styles.formSection, paddingLeft: '16px', borderLeft: '2px solid rgba(0, 212, 255, 0.2)' }}>
+                <div style={styles.formGrid}>
+                  <div>
+                    <label style={styles.formLabel}>SSH Host</label>
+                    <input
+                      type="text"
+                      placeholder="bastion.example.com"
+                      value={formData.sshHost}
+                      onChange={(e) => handleFormChange('sshHost', e.target.value)}
+                      style={styles.formInput}
+                    />
+                  </div>
+                  <div>
+                    <label style={styles.formLabel}>SSH Username</label>
+                    <input
+                      type="text"
+                      placeholder="ubuntu"
+                      value={formData.sshUsername}
+                      onChange={(e) => handleFormChange('sshUsername', e.target.value)}
+                      style={styles.formInput}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={styles.buttonsContainer}>
+              <button
+                onClick={handleBackStep}
+                onMouseEnter={() => setHoveredButton('back')}
+                onMouseLeave={() => setHoveredButton(null)}
+                style={{
+                  ...styles.button,
+                  ...styles.buttonSecondary,
+                  ...(hoveredButton === 'back' ? styles.buttonSecondaryHover : {}),
+                }}
+              >
+                <ChevronLeft size={16} />
+                Back
+              </button>
+              <button
+                onClick={handleProceedToTest}
+                onMouseEnter={() => setHoveredButton('test')}
+                onMouseLeave={() => setHoveredButton(null)}
+                style={{
+                  ...styles.button,
+                  ...styles.buttonPrimary,
+                  ...(hoveredButton === 'test' ? styles.buttonPrimaryHover : {}),
+                }}
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* STEP 4: Test Connection */}
+        {step === 4 && (
+          <>
+            <h2 style={styles.title}>Test Connection</h2>
+            <p style={styles.description}>Verify that VIGIL can connect to your database.</p>
+
+            <div style={{ marginBottom: '24px' }}>
+              <div
+                style={{
+                  ...styles.formSection,
+                  padding: '16px',
+                  background: 'rgba(0, 212, 255, 0.03)',
+                  border: '1px solid rgba(0, 212, 255, 0.1)',
+                  borderRadius: '8px',
+                }}
+              >
+                <div style={{ fontSize: '12px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                  <div>Type: <strong>{formData.type ? DB_TYPES[formData.type]?.label : 'Unknown'}</strong></div>
+                  <div>Host: <strong>{formData.host}</strong>:{formData.port}</div>
+                  <div>Database: <strong>{formData.database}</strong></div>
+                  <div>SSL: {formData.ssl ? 'Enabled' : 'Disabled'}</div>
+                </div>
+              </div>
+            </div>
+
+            {testStatus === 'loading' && (
+              <div style={{ ...styles.testStatusBox, ...styles.testStatusLoading }}>
+                <Loader className="loading-spinner" size={20} />
+                <span>Testing connection...</span>
+              </div>
+            )}
+
+            {testStatus === 'success' && (
+              <div style={{ ...styles.testStatusBox, ...styles.testStatusSuccess }}>
+                <CheckCircle size={20} />
+                <span>Connection successful! Creating connection...</span>
+              </div>
+            )}
+
+            {testStatus === 'error' && (
+              <div style={{ ...styles.testStatusBox, ...styles.testStatusError }}>
+                <AlertCircle size={20} />
+                <div>
+                  <div>Connection failed</div>
+                  <div style={{ fontSize: '11px', marginTop: '4px' }}>{testError}</div>
+                </div>
+              </div>
+            )}
+
+            <div style={styles.buttonsContainer}>
+              <button
+                onClick={handleBackStep}
+                disabled={testStatus === 'loading'}
+                onMouseEnter={() => setHoveredButton('back')}
+                onMouseLeave={() => setHoveredButton(null)}
+                style={{
+                  ...styles.button,
+                  ...styles.buttonSecondary,
+                  ...(hoveredButton === 'back' ? styles.buttonSecondaryHover : {}),
+                  opacity: testStatus === 'loading' ? 0.5 : 1,
+                  cursor: testStatus === 'loading' ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <ChevronLeft size={16} />
+                Back
+              </button>
+              <button
+                onClick={handleTestConnection}
+                disabled={testStatus === 'loading' || testStatus === 'success'}
+                onMouseEnter={() => setHoveredButton('test')}
+                onMouseLeave={() => setHoveredButton(null)}
+                style={{
+                  ...styles.button,
+                  ...styles.buttonPrimary,
+                  ...(hoveredButton === 'test' ? styles.buttonPrimaryHover : {}),
+                  opacity: (testStatus === 'loading' || testStatus === 'success') ? 0.6 : 1,
+                  cursor: (testStatus === 'loading' || testStatus === 'success') ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {testStatus === 'loading' ? (
+                  <>
+                    <Loader className="loading-spinner" size={16} />
+                    Testing...
+                  </>
+                ) : testStatus === 'success' ? (
+                  <>
+                    <CheckCircle size={16} />
+                    Success
+                  </>
+                ) : (
+                  <>
+                    <Zap size={16} />
+                    Test Connection
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* STEP 5: Success */}
+        {step === 5 && (
+          <div style={styles.successScreen}>
+            <div style={styles.successIcon}>✨</div>
+            <h2 style={styles.title}>Connection Established!</h2>
+            <p style={styles.description}>
+              Your database connection is ready. You can now start monitoring your database with VIGIL.
+            </p>
+
+            <button
+              onClick={handleGoToDashboard}
+              onMouseEnter={() => setHoveredButton('dashboard')}
+              onMouseLeave={() => setHoveredButton(null)}
+              style={{
+                ...styles.button,
+                ...styles.buttonPrimary,
+                ...(hoveredButton === 'dashboard' ? styles.buttonPrimaryHover : {}),
+                marginTop: '24px',
+                width: '100%',
+                justifyContent: 'center',
+              }}
+            >
+              <CheckCircle size={16} />
+              Go to Dashboard
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ConnectionWizard;

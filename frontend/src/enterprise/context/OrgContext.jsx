@@ -6,13 +6,10 @@
 //  Persists active org in localStorage as 'vigil_active_org'
 // ==========================================================================
 
-import React, {
-    createContext, useContext, useState, useEffect,
-    useCallback, useMemo
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchData, postData } from '../../utils/api';
 
-const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 const STORAGE_KEY = 'vigil_active_org';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -40,7 +37,7 @@ export const OrgProvider = ({ children }) => {
 
                 // Restore active org from localStorage or use first
                 const savedOrgId = localStorage.getItem(STORAGE_KEY);
-                const active = orgs.find(o => o.id === savedOrgId) || orgs[0] || null;
+                const active = orgs.find((o) => o.id === savedOrgId) || orgs[0] || null;
                 setCurrentOrg(active);
 
                 // Fetch members for current org
@@ -66,27 +63,30 @@ export const OrgProvider = ({ children }) => {
     }, []);
 
     // ── Switch organization ─────────────────────────────────────────────────
-    const switchOrg = useCallback(async (orgId) => {
-        try {
-            const org = organizations.find(o => o.id === orgId);
-            if (!org) throw new Error('Organization not found');
-
-            setCurrentOrg(org);
-            localStorage.setItem(STORAGE_KEY, orgId);
-
-            // Fetch members for new org
+    const switchOrg = useCallback(
+        async (orgId) => {
             try {
-                const membersData = await fetchData(`/api/organizations/${orgId}/members`);
-                setMembers(Array.isArray(membersData) ? membersData : membersData?.members || []);
+                const org = organizations.find((o) => o.id === orgId);
+                if (!org) throw new Error('Organization not found');
+
+                setCurrentOrg(org);
+                localStorage.setItem(STORAGE_KEY, orgId);
+
+                // Fetch members for new org
+                try {
+                    const membersData = await fetchData(`/api/organizations/${orgId}/members`);
+                    setMembers(Array.isArray(membersData) ? membersData : membersData?.members || []);
+                } catch (err) {
+                    console.error('Failed to fetch members:', err);
+                    setMembers([]);
+                }
             } catch (err) {
-                console.error('Failed to fetch members:', err);
-                setMembers([]);
+                console.error('Failed to switch organization:', err);
+                setError(err.message);
             }
-        } catch (err) {
-            console.error('Failed to switch organization:', err);
-            setError(err.message);
-        }
-    }, [organizations]);
+        },
+        [organizations],
+    );
 
     // ── Refresh organizations ───────────────────────────────────────────────
     const refreshOrgs = useCallback(async () => {
@@ -98,7 +98,7 @@ export const OrgProvider = ({ children }) => {
 
             // Refresh current org if still valid
             if (currentOrg?.id) {
-                const updated = orgs.find(o => o.id === currentOrg.id);
+                const updated = orgs.find((o) => o.id === currentOrg.id);
                 if (updated) {
                     setCurrentOrg(updated);
                     // Refresh members
@@ -126,23 +126,20 @@ export const OrgProvider = ({ children }) => {
     }, [currentOrg]);
 
     // ── Context value ──────────────────────────────────────────────────────
-    const value = useMemo(() => ({
-        currentOrg,
-        organizations,
-        switchOrg,
-        refreshOrgs,
-        members,
-        loading,
-        error,
-    }), [
-        currentOrg, organizations, switchOrg, refreshOrgs, members, loading, error,
-    ]);
-
-    return (
-        <OrgContext.Provider value={value}>
-            {children}
-        </OrgContext.Provider>
+    const value = useMemo(
+        () => ({
+            currentOrg,
+            organizations,
+            switchOrg,
+            refreshOrgs,
+            members,
+            loading,
+            error,
+        }),
+        [currentOrg, organizations, switchOrg, refreshOrgs, members, loading, error],
     );
+
+    return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
 };
 
 export const useOrg = () => {

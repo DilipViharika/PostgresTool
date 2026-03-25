@@ -6,13 +6,10 @@
 //  Caches in state, refreshes periodically (every 5 min)
 // ==========================================================================
 
-import React, {
-    createContext, useContext, useState, useEffect,
-    useCallback, useMemo
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchData } from '../../utils/api';
 
-const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  CONTEXT
@@ -83,24 +80,30 @@ export const LicenseProvider = ({ children }) => {
     // ── Periodic refresh (every 5 minutes) ───────────────────────────────────
     useEffect(() => {
         if (!license) return;
-        const interval = setInterval(async () => {
-            try {
-                const data = await fetchData('/api/license');
-                setLicense(data || { tier: 'community', features: [] });
-            } catch (err) {
-                console.error('Failed to refresh license:', err);
-            }
-        }, 5 * 60 * 1000); // 5 minutes
+        const interval = setInterval(
+            async () => {
+                try {
+                    const data = await fetchData('/api/license');
+                    setLicense(data || { tier: 'community', features: [] });
+                } catch (err) {
+                    console.error('Failed to refresh license:', err);
+                }
+            },
+            5 * 60 * 1000,
+        ); // 5 minutes
         return () => clearInterval(interval);
     }, [license]);
 
     // ── Helpers ─────────────────────────────────────────────────────────────
-    const isFeatureAvailable = useCallback((feature) => {
-        if (!license) return false;
-        const tier = license.tier || 'community';
-        const features = FEATURE_MATRIX[tier] || FEATURE_MATRIX.community;
-        return features[feature] === true;
-    }, [license]);
+    const isFeatureAvailable = useCallback(
+        (feature) => {
+            if (!license) return false;
+            const tier = license.tier || 'community';
+            const features = FEATURE_MATRIX[tier] || FEATURE_MATRIX.community;
+            return features[feature] === true;
+        },
+        [license],
+    );
 
     const refreshLicense = useCallback(async () => {
         try {
@@ -122,27 +125,23 @@ export const LicenseProvider = ({ children }) => {
     const isCommunity = tier === 'community';
 
     // ── Context value ──────────────────────────────────────────────────────
-    const value = useMemo(() => ({
-        license,
-        tier,
-        features: license?.features || [],
-        isEnterprise,
-        isPro,
-        isCommunity,
-        isFeatureAvailable,
-        refreshLicense,
-        loading,
-        error,
-    }), [
-        license, tier, isEnterprise, isPro, isCommunity,
-        isFeatureAvailable, refreshLicense, loading, error,
-    ]);
-
-    return (
-        <LicenseContext.Provider value={value}>
-            {children}
-        </LicenseContext.Provider>
+    const value = useMemo(
+        () => ({
+            license,
+            tier,
+            features: license?.features || [],
+            isEnterprise,
+            isPro,
+            isCommunity,
+            isFeatureAvailable,
+            refreshLicense,
+            loading,
+            error,
+        }),
+        [license, tier, isEnterprise, isPro, isCommunity, isFeatureAvailable, refreshLicense, loading, error],
     );
+
+    return <LicenseContext.Provider value={value}>{children}</LicenseContext.Provider>;
 };
 
 export const useLicense = () => {

@@ -1,6 +1,32 @@
 {
-  "name": "postgrestool-monorepo",
-  "version": "1.0.0",
-  "private": true,
-  "workspaces": ["frontend", "backend"]
+    "name": "postgrestool-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "packageManager": "npm@10.9.2",
+    "workspaces": [
+        "frontend",
+        "backend",
+        "shared/*"
+    ],
+    "scripts": {
+        "dev": "npm run dev --workspaces --if-present",
+        "build": "npm run build --workspaces --if-present",
+        "type-check": "npm run type-check --workspaces --if-present",
+        "test": "npm run test --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "prepare": "husky"
+    },
+    "devDependencies": {
+        "husky": "^9.1.0",
+        "lint-staged": "^15.3.0",
+        "prettier": "^3.4.0"
+    },
+    "lint-staged": {
+        "frontend/**/*.{js,jsx}": [
+            "prettier --write"
+        ],
+        "*.{json,md,css}": [
+            "prettier --write"
+        ]
+    }
 }

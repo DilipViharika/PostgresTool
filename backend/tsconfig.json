@@ -1,0 +1,37 @@
+{
+    "compilerOptions": {
+        /* ── Language & Output ─────────────────────────────────────────── */
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ES2022"],
+
+        /* ── Type Checking (strict but incremental-friendly) ───────────── */
+        "strict": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowJs": true,
+        "checkJs": false,
+
+        /* ── Module Interop ────────────────────────────────────────────── */
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+
+        /* ── Paths ─────────────────────────────────────────────────────── */
+        "baseUrl": ".",
+        "paths": {
+            "@vigil/types": ["../shared/types/index.ts"],
+            "@vigil/types/*": ["../shared/types/*"]
+        },
+
+        /* ── Output ────────────────────────────────────────────────────── */
+        "noEmit": true,
+        "skipLibCheck": true
+    },
+    "include": ["**/*.ts", "**/*.js", "../shared/types/**/*.ts"],
+    "exclude": ["node_modules", "dist", "tests", "db/schema.ts", "drizzle.config.ts"]
+}

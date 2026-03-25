@@ -1,0 +1,482 @@
+{
+    "files": {
+        "frontend/dist/assets/MongoStorageTab-B7rmIpMU.js": {
+            "size": 13514,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/SchemaVersioningTab-pdzL4cIU.js": {
+            "size": 62566,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/.turbo/turbo-build.log": {
+            "size": 8683,
+            "mtime_nanos": 1774453172170011600,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist": { "size": 0, "mtime_nanos": 0, "mode": 0, "is_dir": true },
+        "frontend/dist/assets/UserManagementTab-BirCaoPk.js": {
+            "size": 74845,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/FleetOverviewTab-CC3L33NK.js": {
+            "size": 14919,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/SqlConsoleTab-Cp3GsX6J.js": {
+            "size": 102308,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/CheckpointMonitorTab-3BwIi_9c.js": {
+            "size": 13816,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/StatusPageTab-CrQke_cp.js": {
+            "size": 10394,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/TableAnalytics-COpjYrBR.js": {
+            "size": 91254,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ReplicationWALTab-YUS_D2Zk.js": {
+            "size": 15881,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/KubernetesTab-Dw7g0IXL.js": {
+            "size": 11214,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/vendor-date-l0sNRNKZ.js": {
+            "size": 1,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/icons": { "size": 0, "mtime_nanos": 0, "mode": 0, "is_dir": true },
+        "frontend/dist/index.html": { "size": 1620, "mtime_nanos": 1774453171964495400, "mode": 420, "is_dir": false },
+        "frontend/dist/assets/PerformanceTab-DQ83YEac.js": {
+            "size": 107461,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/RepositoryTab-DyEjxY-x.js": {
+            "size": 47052,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/SchemaVisualizerTab-DQq2WEzT.js": {
+            "size": 9100,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ConnectionWizard-DNuFRa9v.js": {
+            "size": 21228,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/RetentionManagementTab-B1edrYXy.js": {
+            "size": 8779,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ConnectionSwitcher-yxwPWDS0.js": {
+            "size": 7732,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/OverviewTab-B-lIYzJV.js": {
+            "size": 63656,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/vendor-router-BEat3-SC.js": {
+            "size": 48716,
+            "mtime_nanos": 1774453171946846100,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/vendor-editor-C_q_lpGM.js": {
+            "size": 515,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/LicenseManagement-DhJb0GKB.js": {
+            "size": 8578,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/vendor-charts-C4t457-s.js": {
+            "size": 450506,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/vendor-ui-t1-Z-S1Z.js": {
+            "size": 56313,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/index-DCGcJr2i.css": {
+            "size": 1237,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/vendor-react-l0sNRNKZ.js": {
+            "size": 1,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/OrgManagement-Dd6Z_lel.js": {
+            "size": 8367,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/index-C0pXVth_.js": {
+            "size": 440918,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/SSOCallback-DAzdB7L2.js": {
+            "size": 2853,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ConnectionPoolTab-ByNigd_I.js": {
+            "size": 35338,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/CapacityPlanningTab-_xZlbChq.js": {
+            "size": 17171,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/MongoPerformanceTab-YEAHKGxf.js": {
+            "size": 13602,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets": { "size": 0, "mtime_nanos": 0, "mode": 0, "is_dir": true },
+        "frontend/dist/assets/SchemaTreeBrowser-BkVuAYsQ.js": {
+            "size": 8107,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/AlertRuleEditor-lVuY3c16.js": {
+            "size": 15939,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/DBATaskSchedulerTab-CtYknz3U.js": {
+            "size": 24418,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ChartBuilder-BlkR7z_k.js": {
+            "size": 9505,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/vite.svg": { "size": 1497, "mtime_nanos": 1765250368357962900, "mode": 420, "is_dir": false },
+        "frontend/dist/assets/QueryOptimizerTab-CI9BXM8p.js": {
+            "size": 111417,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/SecurityComplianceTab-CKan5w2G.js": {
+            "size": 44237,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/AIQueryAdvisorTab-DgOHueTS.js": {
+            "size": 9906,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/BackupRecoveryTab-B9GAOrQ6.js": {
+            "size": 11251,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/VacuumMaintenanceTab-DkP_ITDW.js": {
+            "size": 25901,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/AdminTab-DqGPMESf.js": {
+            "size": 97674,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ApiQueriesTab-BHjWR8yn.js": {
+            "size": 41610,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/MongoOverviewTab-Dl0k3DSC.js": {
+            "size": 13992,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/OpenTelemetryTab-DisMWTOH.js": {
+            "size": 8656,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/QueryPlanViewer-BZ3tbUnJ.js": {
+            "size": 8029,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/AlertCorrelationTab-Dlxx6Uns.js": {
+            "size": 26276,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/MongoShardingTab-DcJrJfyr.js": {
+            "size": 14356,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/PoolMetricsDashboard-BLAEot9S.js": {
+            "size": 13720,
+            "mtime_nanos": 1774453171964495400,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/BloatAnalysisTab-BCbmrPI_.js": {
+            "size": 30561,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ResourcesTab-Bu_O__jg.js": {
+            "size": 155734,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/sw.js": { "size": 1664, "mtime_nanos": 1774267364617086900, "mode": 420, "is_dir": false },
+        "frontend/dist/assets/AlertsTab-BCy_Z3Mf.js": {
+            "size": 56976,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/TableDependencyMindMap-BDbChl-t.js": {
+            "size": 12649,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/MongoReplicationTab-DORAhWsb.js": {
+            "size": 15493,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ReliabilityTab-DQ50PFGg.js": {
+            "size": 61008,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ObservabilityHub-BVYGO4sz.js": {
+            "size": 21184,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/QueryPlanRegressionTab-BjAzVH3t.js": {
+            "size": 36961,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/AIMonitoringTab-s23NGken.js": {
+            "size": 14902,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/TerraformExportTab-DhQz-nTc.js": {
+            "size": 8597,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/CloudWatchTab-DoBZYjYI.js": {
+            "size": 25588,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/CustomDashboardTab-BuCHvxCI.js": {
+            "size": 21020,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/IndexesTab-DFsPwVD0.js": {
+            "size": 54650,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/LogPatternAnalysisTab-CZHmu1OZ.js": {
+            "size": 18646,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/ReportBuilderTab-Bvi3KlIr.js": {
+            "size": 25152,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/assets/MongoDataToolsTab-pwOY_M7T.js": {
+            "size": 12908,
+            "mtime_nanos": 1774453171961536800,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/icons/icon-192.svg": {
+            "size": 339,
+            "mtime_nanos": 1774267393711055200,
+            "mode": 420,
+            "is_dir": false
+        },
+        "frontend/dist/manifest.json": { "size": 650, "mtime_nanos": 1774267353282190800, "mode": 420, "is_dir": false }
+    },
+    "order": [
+        "frontend/.turbo/turbo-build.log",
+        "frontend/dist",
+        "frontend/dist/assets",
+        "frontend/dist/assets/AIMonitoringTab-s23NGken.js",
+        "frontend/dist/assets/AIQueryAdvisorTab-DgOHueTS.js",
+        "frontend/dist/assets/AdminTab-DqGPMESf.js",
+        "frontend/dist/assets/AlertCorrelationTab-Dlxx6Uns.js",
+        "frontend/dist/assets/AlertRuleEditor-lVuY3c16.js",
+        "frontend/dist/assets/AlertsTab-BCy_Z3Mf.js",
+        "frontend/dist/assets/ApiQueriesTab-BHjWR8yn.js",
+        "frontend/dist/assets/BackupRecoveryTab-B9GAOrQ6.js",
+        "frontend/dist/assets/BloatAnalysisTab-BCbmrPI_.js",
+        "frontend/dist/assets/CapacityPlanningTab-_xZlbChq.js",
+        "frontend/dist/assets/ChartBuilder-BlkR7z_k.js",
+        "frontend/dist/assets/CheckpointMonitorTab-3BwIi_9c.js",
+        "frontend/dist/assets/CloudWatchTab-DoBZYjYI.js",
+        "frontend/dist/assets/ConnectionPoolTab-ByNigd_I.js",
+        "frontend/dist/assets/ConnectionSwitcher-yxwPWDS0.js",
+        "frontend/dist/assets/ConnectionWizard-DNuFRa9v.js",
+        "frontend/dist/assets/CustomDashboardTab-BuCHvxCI.js",
+        "frontend/dist/assets/DBATaskSchedulerTab-CtYknz3U.js",
+        "frontend/dist/assets/FleetOverviewTab-CC3L33NK.js",
+        "frontend/dist/assets/IndexesTab-DFsPwVD0.js",
+        "frontend/dist/assets/KubernetesTab-Dw7g0IXL.js",
+        "frontend/dist/assets/LicenseManagement-DhJb0GKB.js",
+        "frontend/dist/assets/LogPatternAnalysisTab-CZHmu1OZ.js",
+        "frontend/dist/assets/MongoDataToolsTab-pwOY_M7T.js",
+        "frontend/dist/assets/MongoOverviewTab-Dl0k3DSC.js",
+        "frontend/dist/assets/MongoPerformanceTab-YEAHKGxf.js",
+        "frontend/dist/assets/MongoReplicationTab-DORAhWsb.js",
+        "frontend/dist/assets/MongoShardingTab-DcJrJfyr.js",
+        "frontend/dist/assets/MongoStorageTab-B7rmIpMU.js",
+        "frontend/dist/assets/ObservabilityHub-BVYGO4sz.js",
+        "frontend/dist/assets/OpenTelemetryTab-DisMWTOH.js",
+        "frontend/dist/assets/OrgManagement-Dd6Z_lel.js",
+        "frontend/dist/assets/OverviewTab-B-lIYzJV.js",
+        "frontend/dist/assets/PerformanceTab-DQ83YEac.js",
+        "frontend/dist/assets/PoolMetricsDashboard-BLAEot9S.js",
+        "frontend/dist/assets/QueryOptimizerTab-CI9BXM8p.js",
+        "frontend/dist/assets/QueryPlanRegressionTab-BjAzVH3t.js",
+        "frontend/dist/assets/QueryPlanViewer-BZ3tbUnJ.js",
+        "frontend/dist/assets/ReliabilityTab-DQ50PFGg.js",
+        "frontend/dist/assets/ReplicationWALTab-YUS_D2Zk.js",
+        "frontend/dist/assets/ReportBuilderTab-Bvi3KlIr.js",
+        "frontend/dist/assets/RepositoryTab-DyEjxY-x.js",
+        "frontend/dist/assets/ResourcesTab-Bu_O__jg.js",
+        "frontend/dist/assets/RetentionManagementTab-B1edrYXy.js",
+        "frontend/dist/assets/SSOCallback-DAzdB7L2.js",
+        "frontend/dist/assets/SchemaTreeBrowser-BkVuAYsQ.js",
+        "frontend/dist/assets/SchemaVersioningTab-pdzL4cIU.js",
+        "frontend/dist/assets/SchemaVisualizerTab-DQq2WEzT.js",
+        "frontend/dist/assets/SecurityComplianceTab-CKan5w2G.js",
+        "frontend/dist/assets/SqlConsoleTab-Cp3GsX6J.js",
+        "frontend/dist/assets/StatusPageTab-CrQke_cp.js",
+        "frontend/dist/assets/TableAnalytics-COpjYrBR.js",
+        "frontend/dist/assets/TableDependencyMindMap-BDbChl-t.js",
+        "frontend/dist/assets/TerraformExportTab-DhQz-nTc.js",
+        "frontend/dist/assets/UserManagementTab-BirCaoPk.js",
+        "frontend/dist/assets/VacuumMaintenanceTab-DkP_ITDW.js",
+        "frontend/dist/assets/index-C0pXVth_.js",
+        "frontend/dist/assets/index-DCGcJr2i.css",
+        "frontend/dist/assets/vendor-charts-C4t457-s.js",
+        "frontend/dist/assets/vendor-date-l0sNRNKZ.js",
+        "frontend/dist/assets/vendor-editor-C_q_lpGM.js",
+        "frontend/dist/assets/vendor-react-l0sNRNKZ.js",
+        "frontend/dist/assets/vendor-router-BEat3-SC.js",
+        "frontend/dist/assets/vendor-ui-t1-Z-S1Z.js",
+        "frontend/dist/icons",
+        "frontend/dist/icons/icon-192.svg",
+        "frontend/dist/index.html",
+        "frontend/dist/manifest.json",
+        "frontend/dist/sw.js",
+        "frontend/dist/vite.svg"
+    ]
+}

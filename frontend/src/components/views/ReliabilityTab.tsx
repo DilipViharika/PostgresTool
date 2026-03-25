@@ -1,0 +1,1554 @@
+// @ts-nocheck
+// ==========================================================================
+//  VIGIL — ReliabilityTab  (v6 — Live API Integration) [TYPESCRIPT]
+// ==========================================================================
+import React, { useState, useEffect, useMemo, useCallback, useRef, ReactNode, FC, CSSProperties } from 'react';
+import { fetchData, postData } from '../../utils/api.js';
+import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+
+import {
+    AlertTriangle, AlertCircle, CheckCircle, Bell, BellRing, BellOff,
+    Shield, ShieldCheck, ShieldAlert, ShieldX,
+    Clock, Timer, TrendingUp, TrendingDown, Activity,
+    Eye, EyeOff, ChevronRight, ChevronDown, ChevronUp,
+    RefreshCw, Search, Filter, X, MoreHorizontal,
+    Zap, Server, Database, HardDrive, Cpu, Network,
+    ArrowUp, ArrowDown, ArrowUpRight, ArrowDownRight,
+    Calendar, BarChart3, Radio, History, Settings,
+    CheckCheck, XCircle, Info, Flame, Gauge, Wifi, WifiOff,
+    Link2, Users, BookOpen, Layers, TrendingDown as TrendD,
+    Snowflake, Target, Percent, AlertOctagon, Hash, LayoutGrid,
+    LucideIcon
+} from 'lucide-react';
+import {
+    ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line,
+    XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine
+} from 'recharts';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TYPE DEFINITIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+interface Alert {
+    id: number;
+    severity: 'critical' | 'warning' | 'info';
+    category: string;
+    title: string;
+    message: string;
+    created_at: string;
+    acknowledged: boolean;
+    source?: string;
+    metric_value?: string;
+    threshold?: string;
+    runbook?: string;
+    rootCauseGroup?: string;
+    autoResolved?: boolean;
+}
+
+interface Incident {
+    id: string;
+    title: string;
+    severity: 'critical' | 'warning' | 'info';
+    started: string;
+    resolved: string;
+    duration: string;
+    impact: string;
+    root_cause: string;
+    rca_tag: string;
+    runbook?: string;
+}
+
+interface OnCallMember {
+    name: string;
+    role: string;
+    avatar: string;
+    status: 'active' | 'standby' | 'off';
+    since: string;
+    until: string;
+    tz: string;
+    contact: string;
+}
+
+interface SLO {
+    name: string;
+    target: number;
+    current: number;
+    budgetRemaining: number;
+    window: string;
+    burnRate1h: number;
+    burnRate6h: number;
+    alert: boolean;
+}
+
+interface FreezeWindow {
+    id: number;
+    label: string;
+    start: string;
+    end: string;
+    reason: string;
+    active: boolean;
+    color: string;
+}
+
+interface UptimeDay {
+    date: string;
+    label: string;
+    status: 'up' | 'degraded' | 'outage';
+    uptime: number;
+}
+
+interface AlertTrendData {
+    h: string;
+    critical: number;
+    warning: number;
+    info: number;
+}
+
+interface MetricCardData {
+    label: string;
+    value: string;
+    sub: string;
+    color: string;
+    icon: LucideIcon;
+}
+
+interface PanelProps {
+    title?: string;
+    icon?: LucideIcon;
+    rightNode?: ReactNode;
+    noPad?: boolean;
+    children: ReactNode;
+    style?: CSSProperties;
+    refreshing?: boolean;
+    accent?: string;
+}
+
+interface StatusBadgeProps {
+    label: string;
+    color: string;
+    pulse?: boolean;
+}
+
+interface AlertCardProps {
+    alert: Alert;
+    onAcknowledge: (id: number) => void;
+    expanded: boolean;
+    onToggle: () => void;
+    isNew: boolean;
+}
+
+interface UptimeHeatmapProps {
+    days: UptimeDay[];
+}
+
+interface AlertGroupViewProps {
+    alerts: Alert[];
+}
+
+interface NoiseReductionPanelProps {
+    alerts: Alert[];
+}
+
+interface SloBurnRatePanelProps {
+    burnData: Array<{ day: string; consumed: number; budget: number }>;
+}
+
+interface ChangFreezePanelProps {}
+
+interface RefreshBarProps {
+    lastRefreshed: number | null;
+    isRefreshing: boolean;
+    intervalSec: number;
+    onIntervalChange: (sec: number) => void;
+    onRefresh: () => void;
+    error: boolean;
+}
+
+interface CountdownBarProps {
+    intervalSec: number;
+    lastRefreshed: number | null;
+}
+
+interface ChartTooltipProps {
+    active?: boolean;
+    payload?: Array<{ color: string; name: string; value: number }>;
+    label?: string;
+    unit?: string;
+}
+
+interface LiveDotProps {
+    color?: string;
+    size?: number;
+}
+
+interface TabBtnProps {
+    id: string;
+    label: string;
+    icon: LucideIcon;
+    count?: number;
+}
+
+interface FilterPillProps {
+    id: string;
+    label: string;
+    color: string;
+    count: number;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+const RelStyles: FC = () => (
+    <style>{`
+        @keyframes relFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes relPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        @keyframes relPulseRing { 0%{transform:scale(0.8);opacity:0.6} 100%{transform:scale(2.4);opacity:0} }
+        @keyframes relBarGrow { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+        @keyframes relFlash { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes relSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes relFlashBg { 0%{background:transparent} 30%{background:${THEME.primary}10} 100%{background:transparent} }
+        @keyframes relBurnPulse { 0%,100%{box-shadow:0 0 0 0 ${THEME.danger}40} 50%{box-shadow:0 0 0 6px ${THEME.danger}00} }
+        @keyframes relSlideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes relFrostIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+        .rel-stagger>*{animation:relFadeIn 0.4s ease-out both}
+        .rel-stagger>*:nth-child(1){animation-delay:0.00s}
+        .rel-stagger>*:nth-child(2){animation-delay:0.05s}
+        .rel-stagger>*:nth-child(3){animation-delay:0.10s}
+        .rel-stagger>*:nth-child(4){animation-delay:0.15s}
+        .rel-stagger>*:nth-child(5){animation-delay:0.20s}
+        .rel-stagger>*:nth-child(6){animation-delay:0.25s}
+        .rel-stagger>*:nth-child(7){animation-delay:0.30s}
+        .rel-stagger>*:nth-child(8){animation-delay:0.35s}
+        .rel-row-hover{transition:background 0.15s}
+        .rel-row-hover:hover{background:${THEME.primary}06!important}
+        .rel-bar-animate{transform-origin:left;animation:relBarGrow 0.8s cubic-bezier(0.22,1,0.36,1) both}
+        .rel-scrollbar::-webkit-scrollbar{width:4px}
+        .rel-scrollbar::-webkit-scrollbar-track{background:transparent}
+        .rel-scrollbar::-webkit-scrollbar-thumb{background:${THEME.grid};border-radius:2px}
+        .rel-refresh-spin{animation:relSpin 0.8s linear infinite}
+        .rel-metric-flash{animation:relFlashBg 1s ease-out}
+        .rel-burn-critical{animation:relBurnPulse 2s ease-in-out infinite}
+        .rel-slide-in{animation:relSlideIn 0.3s ease-out both}
+        .rel-frost{animation:relFrostIn 0.25s ease-out both}
+        .rel-link:hover{text-decoration:underline;opacity:0.9}
+        .rel-tab-btn{transition:all 0.2s}
+        .rel-tab-btn:hover{opacity:0.85}
+        * { font-family: ${THEME.fontBody}; }
+        code, .mono { font-family: ${THEME.fontMono} !important; }
+    `}</style>
+);
+
+/* ── Refresh intervals ── */
+const REFRESH_INTERVALS = [
+    { label: '10s', value: 10 },
+    { label: '30s', value: 30 },
+    { label: '1m',  value: 60 },
+    { label: '5m',  value: 300 },
+    { label: 'Off', value: 0 },
+];
+
+/* ─── Panel ─────────────────────────────────────────────────────────────── */
+const Panel: FC<PanelProps> = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing, accent }) => (
+    <div style={{
+        background: THEME.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: `1px solid ${accent ? `${accent}25` : refreshing ? `${THEME.primary}35` : THEME.glassBorder}`,
+        borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        transition: 'border-color 0.3s', ...style,
+    }}>
+        {title && (
+            <div style={{
+                padding: '13px 20px', borderBottom: `1px solid ${THEME.glassBorder}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                flexShrink: 0, minHeight: 46,
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {TIcon && <TIcon size={13} color={accent || (refreshing ? THEME.primary : THEME.textDim)} style={{ transition: 'color 0.3s' }} />}
+                    <span style={{ fontSize: 11, fontWeight: 800, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{title}</span>
+                    {refreshing && <span style={{ fontSize: 9, color: THEME.primary, fontWeight: 700, animation: 'relPulse 1s ease-in-out infinite' }}>LIVE</span>}
+                </div>
+                {rightNode}
+            </div>
+        )}
+        <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '16px 20px', position: 'relative' }}>
+            {children}
+        </div>
+    </div>
+);
+
+/* ─── Micro components ───────────────────────────────────────────────────── */
+const StatusBadge: FC<StatusBadgeProps> = ({ label, color, pulse }) => (
+    <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5,
+        fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5,
+        background: `${color}12`, color, border: `1px solid ${color}22`, lineHeight: 1.2, whiteSpace: 'nowrap',
+    }}>
+        <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}60`, flexShrink: 0, animation: pulse ? 'relFlash 1.5s ease-in-out infinite' : 'none' }} />
+        {label}
+    </span>
+);
+
+const LiveDot: FC<LiveDotProps> = ({ color = THEME.success, size = 7 }) => (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}80` }} />
+        <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${color}50`, animation: 'relPulseRing 2s ease-out infinite' }} />
+    </div>
+);
+
+const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, label, unit = '' }) => {
+    if (!active || !payload?.length) return null;
+    return (
+        <div style={{ background: THEME.glassHeavy, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
+            <div style={{ fontWeight: 800, color: THEME.textMain, marginBottom: 6, fontFamily: THEME.fontMono }}>{label}</div>
+            {payload.map((p, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <span style={{ width: 8, height: 3, borderRadius: 1, background: p.color }} />
+                    <span style={{ color: THEME.textMuted, flex: 1 }}>{p.name}:</span>
+                    <span style={{ fontWeight: 700, color: p.color, fontFamily: THEME.fontMono }}>{p.value}{unit}</span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const SEV = {
+    critical: { color: THEME.danger, icon: Flame, label: 'Critical', bg: `${THEME.danger}08`, border: `${THEME.danger}22` },
+    warning:  { color: THEME.warning, icon: AlertTriangle, label: 'Warning', bg: `${THEME.warning}06`, border: `${THEME.warning}18` },
+    info:     { color: THEME.info, icon: Info, label: 'Info', bg: `${THEME.info}05`, border: `${THEME.info}15` },
+};
+const getSev = (s: string) => SEV[s as keyof typeof SEV] || SEV.info;
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+    cpu: Cpu, memory: Server, disk: HardDrive, connection: Network,
+    replication: RefreshCw, query: Database, lock: ShieldAlert, vacuum: Activity,
+};
+
+const fmtTime = (ts: string): string => {
+    if (!ts) return '—';
+    const diff = (new Date() as any - new Date(ts) as any) / 1000;
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+};
+
+const fmtLastRefreshed = (ts: number | null): string => {
+    if (!ts) return 'Never';
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 5) return 'Just now';
+    if (diff < 60) return `${diff}s ago`;
+    return `${Math.floor(diff / 60)}m ago`;
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SYNTHETIC DATA GENERATORS
+   ═══════════════════════════════════════════════════════════════════════════ */
+const genAlertTrend = (): AlertTrendData[] => Array.from({ length: 24 }, (_, i) => ({
+    h: `${String(i).padStart(2, '0')}:00`,
+    critical: Math.round(Math.random() * 3),
+    warning: Math.round(Math.random() * 6 + 1),
+    info: Math.round(Math.random() * 8 + 2),
+}));
+
+const genUptimeDays = (): UptimeDay[] => Array.from({ length: 90 }, (_, idx) => {
+    const d = new Date(Date.now() - (89 - idx) * 86400000);
+    const r = Math.random();
+    return {
+        date: d.toISOString().split('T')[0],
+        label: `${d.getMonth() + 1}/${d.getDate()}`,
+        status: r < 0.02 ? 'outage' : r < 0.07 ? 'degraded' : 'up',
+        uptime: r < 0.02 ? 95 + Math.random() * 3 : r < 0.07 ? 99 + Math.random() * 0.8 : 99.9 + Math.random() * 0.1,
+    };
+});
+
+const genMttrTrend = () => Array.from({ length: 12 }, (_, i) => {
+    const wk = new Date(Date.now() - (11 - i) * 7 * 86400000);
+    return {
+        week: `W${String(wk.getMonth() + 1).padStart(2, '0')}/${String(wk.getDate()).padStart(2, '0')}`,
+        mttr: Math.round(8 + Math.random() * 20),
+        incidents: Math.round(1 + Math.random() * 5),
+    };
+});
+
+const genAlertFatigue = () => Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(Date.now() - (29 - i) * 86400000);
+    return {
+        day: `${d.getMonth() + 1}/${d.getDate()}`,
+        fired: Math.round(15 + Math.random() * 40),
+        actionable: Math.round(3 + Math.random() * 12),
+        noise: Math.round(10 + Math.random() * 30),
+    };
+});
+
+const genSloBurnRate = () => Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(Date.now() - (29 - i) * 86400000);
+    const consumed = Math.min(100, i * 1.2 + Math.random() * 4);
+    return {
+        day: `${d.getMonth() + 1}/${d.getDate()}`,
+        consumed: Math.round(consumed * 10) / 10,
+        budget: 100,
+    };
+});
+
+/* MOCK DATA */
+const MOCK_ALERTS: Alert[] = [
+    { id: 1, severity: 'critical', category: 'connection', title: 'Connection pool exhausted', message: 'Active connections reached 98/100 max limit. New connections are being rejected.', created_at: new Date(Date.now() - 180000).toISOString(), acknowledged: false, source: 'pg_stat_activity', metric_value: '98/100', threshold: '> 90', runbook: 'https://runbooks.internal/connection-pool-exhausted', rootCauseGroup: 'connection-saturation', autoResolved: false },
+    { id: 2, severity: 'critical', category: 'replication', title: 'Replication lag exceeding threshold', message: 'Replica lag is 45MB behind primary, exceeding 10MB threshold.', created_at: new Date(Date.now() - 600000).toISOString(), acknowledged: false, source: 'pg_stat_replication', metric_value: '45 MB', threshold: '> 10 MB', runbook: 'https://runbooks.internal/replication-lag', rootCauseGroup: 'replication-health', autoResolved: false },
+    { id: 3, severity: 'warning', category: 'disk', title: 'Disk usage above 80%', message: 'Storage volume /pgdata is at 84% capacity.', created_at: new Date(Date.now() - 1800000).toISOString(), acknowledged: false, source: 'system_monitor', metric_value: '84%', threshold: '> 80%', runbook: 'https://runbooks.internal/disk-cleanup', rootCauseGroup: 'storage-pressure', autoResolved: false },
+    { id: 4, severity: 'warning', category: 'vacuum', title: 'Autovacuum long-running on audit_events', message: 'Autovacuum has been running for 47 minutes on audit_events (12.8M dead tuples).', created_at: new Date(Date.now() - 2820000).toISOString(), acknowledged: true, source: 'pg_stat_activity', metric_value: '47m', threshold: '> 30m', runbook: 'https://runbooks.internal/vacuum-stuck', rootCauseGroup: 'vacuum-bloat', autoResolved: false },
+    { id: 5, severity: 'warning', category: 'query', title: 'Slow query spike detected', message: 'Average query time jumped from 12ms to 340ms in the last 5 minutes.', created_at: new Date(Date.now() - 3600000).toISOString(), acknowledged: false, source: 'pg_stat_statements', metric_value: '340ms avg', threshold: '> 100ms', runbook: 'https://runbooks.internal/slow-queries', rootCauseGroup: 'query-perf', autoResolved: false },
+    { id: 6, severity: 'warning', category: 'lock', title: 'Lock contention on user_sessions', message: '14 transactions waiting for locks on user_sessions table.', created_at: new Date(Date.now() - 5400000).toISOString(), acknowledged: true, source: 'pg_locks', metric_value: '14 waiting', threshold: '> 10', runbook: 'https://runbooks.internal/lock-contention', rootCauseGroup: 'connection-saturation', autoResolved: false },
+    { id: 7, severity: 'info', category: 'cpu', title: 'CPU usage elevated', message: 'System CPU at 72% — elevated but within acceptable range.', created_at: new Date(Date.now() - 7200000).toISOString(), acknowledged: true, source: 'system_monitor', metric_value: '72%', threshold: '> 70%', runbook: undefined, rootCauseGroup: 'resource-pressure', autoResolved: true },
+    { id: 8, severity: 'info', category: 'memory', title: 'Shared buffers cache miss rate increased', message: 'Cache hit ratio dropped to 97.2% from 99.8% in the last hour.', created_at: new Date(Date.now() - 10800000).toISOString(), acknowledged: true, source: 'pg_stat_bgwriter', metric_value: '97.2%', threshold: '< 98%', runbook: undefined, rootCauseGroup: 'resource-pressure', autoResolved: true },
+    { id: 9, severity: 'info', category: 'connection', title: 'New connection burst detected', message: '23 new connections opened within 10 seconds from app-server-03.', created_at: new Date(Date.now() - 14400000).toISOString(), acknowledged: true, source: 'pg_stat_activity', metric_value: '23 conns', threshold: '> 15/10s', runbook: 'https://runbooks.internal/connection-burst', rootCauseGroup: 'connection-saturation', autoResolved: true },
+];
+
+const MOCK_INCIDENTS: Incident[] = [
+    { id: 'INC-001', title: 'Database failover triggered', severity: 'critical', started: '2026-02-07T14:23:00Z', resolved: '2026-02-07T14:41:00Z', duration: '18m', impact: 'Full service interruption — writes unavailable for 18 minutes', root_cause: 'Primary node OOM kill due to runaway analytical query', rca_tag: 'resource-exhaustion', runbook: 'https://runbooks.internal/failover-playbook' },
+    { id: 'INC-002', title: 'Replication lag spike', severity: 'warning', started: '2026-02-05T08:10:00Z', resolved: '2026-02-05T08:34:00Z', duration: '24m', impact: 'Read replicas serving stale data — API latency +200ms', root_cause: 'VACUUM FULL on 14GB table blocking WAL sender', rca_tag: 'vacuum-bloat', runbook: 'https://runbooks.internal/replication-lag' },
+    { id: 'INC-003', title: 'Connection pool saturation', severity: 'critical', started: '2026-02-01T22:05:00Z', resolved: '2026-02-01T22:18:00Z', duration: '13m', impact: 'New connections rejected — 503 errors for 13 minutes', root_cause: 'Leaked connections from microservice deployment v2.4.1', rca_tag: 'connection-leak', runbook: 'https://runbooks.internal/connection-pool-exhausted' },
+    { id: 'INC-004', title: 'High lock contention', severity: 'warning', started: '2026-01-28T11:30:00Z', resolved: '2026-01-28T11:42:00Z', duration: '12m', impact: 'Write latency +5x on orders table', root_cause: 'Concurrent schema migration and bulk insert conflict', rca_tag: 'lock-contention', runbook: 'https://runbooks.internal/lock-contention' },
+];
+
+const MOCK_ONCALL: OnCallMember[] = [
+    { name: 'Maya Okonkwo', role: 'Primary', avatar: 'MO', status: 'active', since: '08:00', until: '20:00', tz: 'UTC', contact: '@maya-o' },
+    { name: 'Daniel Reyes', role: 'Secondary', avatar: 'DR', status: 'standby', since: '08:00', until: '20:00', tz: 'UTC', contact: '@d-reyes' },
+    { name: 'Priya Khatri', role: 'Escalation', avatar: 'PK', status: 'off', since: '20:00', until: '08:00', tz: 'UTC', contact: '@pkhatri' },
+];
+
+const MOCK_SLOs: SLO[] = [
+    { name: 'API Availability', target: 99.9, current: 99.92, budgetRemaining: 72, window: '30d', burnRate1h: 0.8, burnRate6h: 1.2, alert: false },
+    { name: 'Query P99 Latency', target: 99.5, current: 99.31, budgetRemaining: 28, window: '30d', burnRate1h: 3.4, burnRate6h: 2.1, alert: true },
+    { name: 'Write Durability', target: 99.99, current: 99.99, budgetRemaining: 91, window: '30d', burnRate1h: 0.2, burnRate6h: 0.4, alert: false },
+    { name: 'Replication Freshness', target: 99.5, current: 99.41, budgetRemaining: 44, window: '30d', burnRate1h: 1.8, burnRate6h: 2.8, alert: true },
+];
+
+const MOCK_FREEZE_WINDOWS: FreezeWindow[] = [
+    { id: 1, label: 'End-of-Month Freeze', start: '2026-02-28T00:00:00Z', end: '2026-03-01T06:00:00Z', reason: 'Month-end reporting — no schema changes', active: false, color: THEME.info },
+    { id: 2, label: 'Peak Traffic Window', start: '2026-02-24T18:00:00Z', end: '2026-02-24T23:59:00Z', reason: 'High user traffic expected — production freeze', active: true, color: THEME.danger },
+    { id: 3, label: 'Release Blackout', start: '2026-03-05T08:00:00Z', end: '2026-03-05T18:00:00Z', reason: 'Major v3.0 release — no infra changes during deploy', active: false, color: THEME.warning },
+];
+
+const RCA_TAGS = [
+    { tag: 'resource-exhaustion', color: THEME.danger },
+    { tag: 'vacuum-bloat', color: THEME.warning },
+    { tag: 'connection-leak', color: THEME.danger },
+    { tag: 'lock-contention', color: THEME.warning },
+    { tag: 'connection-saturation', color: THEME.danger },
+    { tag: 'query-perf', color: THEME.info },
+    { tag: 'storage-pressure', color: THEME.warning },
+    { tag: 'replication-health', color: THEME.danger },
+    { tag: 'resource-pressure', color: THEME.info },
+];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COUNTDOWN BAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+const CountdownBar: FC<CountdownBarProps> = ({ intervalSec, lastRefreshed }) => {
+    const [progress, setProgress] = useState(100);
+    useEffect(() => {
+        if (!intervalSec || !lastRefreshed) { setProgress(100); return; }
+        const tick = () => { const elapsed = (Date.now() - lastRefreshed) / 1000; setProgress(Math.max(0, 100 - (elapsed / intervalSec) * 100)); };
+        tick();
+        const id = setInterval(tick, 250);
+        return () => clearInterval(id);
+    }, [intervalSec, lastRefreshed]);
+    if (!intervalSec) return null;
+    return (
+        <div style={{ height: 2, background: `${THEME.primary}15`, borderRadius: 1, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${progress}%`, background: `linear-gradient(90deg, ${THEME.primary}, ${THEME.secondary})`, borderRadius: 1, transition: 'width 0.25s linear' }} />
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REFRESH BAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+const RefreshBar: FC<RefreshBarProps> = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange, onRefresh, error }) => {
+    const [, setTick] = useState(0);
+    useEffect(() => { const id = setInterval(() => setTick(t => t + 1), 1000); return () => clearInterval(id); }, []);
+    return (
+        <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '9px 16px', borderRadius: 10,
+            background: THEME.glass, backdropFilter: 'blur(12px)',
+            border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
+            fontSize: 11, flexWrap: 'wrap',
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {error ? <WifiOff size={11} color={THEME.danger} /> : <Wifi size={11} color={THEME.success} />}
+                <span style={{ color: error ? THEME.danger : THEME.success, fontWeight: 700 }}>{error ? 'Connection error' : 'Connected'}</span>
+            </div>
+            <div style={{ width: 1, height: 12, background: THEME.grid, flexShrink: 0 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: THEME.textDim }}>
+                <Clock size={10} />
+                <span>Last updated: <strong style={{ color: THEME.textMuted }}>{fmtLastRefreshed(lastRefreshed)}</strong></span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ color: THEME.textDim }}>Auto-refresh:</span>
+                <div style={{ display: 'flex', gap: 3 }}>
+                    {REFRESH_INTERVALS.map(opt => {
+                        const active = intervalSec === opt.value;
+                        return (
+                            <button key={opt.value} onClick={() => onIntervalChange(opt.value)} style={{
+                                padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                                fontSize: 10, fontWeight: 700, transition: 'all 0.15s',
+                                background: active ? `${THEME.primary}20` : 'transparent',
+                                color: active ? THEME.primary : THEME.textDim,
+                                outline: active ? `1px solid ${THEME.primary}30` : 'none',
+                            }}>{opt.label}</button>
+                        );
+                    })}
+                </div>
+            </div>
+            <div style={{ flex: 1 }} />
+            <button onClick={onRefresh} disabled={isRefreshing} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px',
+                borderRadius: 7, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
+                fontWeight: 700, fontSize: 11,
+                background: isRefreshing ? `${THEME.primary}10` : `${THEME.primary}18`,
+                color: THEME.primary, opacity: isRefreshing ? 0.7 : 1, transition: 'all 0.15s',
+            }}>
+                <RefreshCw size={11} className={isRefreshing ? 'rel-refresh-spin' : ''} />
+                {isRefreshing ? 'Refreshing…' : 'Refresh Now'}
+            </button>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ALERT CARD  (with Runbook link)
+   ═══════════════════════════════════════════════════════════════════════════ */
+const AlertCard: FC<AlertCardProps> = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
+    const sev = getSev(alert.severity);
+    const CatIcon = CATEGORY_ICONS[alert.category] || AlertCircle;
+    const isCritical = alert.severity === 'critical';
+    return (
+        <div className={isNew ? 'rel-metric-flash' : ''} style={{
+            borderRadius: 12, overflow: 'hidden',
+            background: alert.acknowledged ? THEME.surface : sev.bg,
+            border: `1px solid ${alert.acknowledged ? `${THEME.grid}55` : sev.border}`,
+            transition: 'all 0.2s', opacity: alert.acknowledged ? 0.65 : 1,
+        }}>
+            <div onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', cursor: 'pointer' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${sev.color}12`, border: `1px solid ${sev.color}20` }}>
+                    <sev.icon size={15} color={sev.color} style={{ animation: isCritical && !alert.acknowledged ? 'relFlash 1.5s ease-in-out infinite' : 'none' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alert.title}</span>
+                        {isNew && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: `${THEME.primary}18`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>NEW</span>}
+                        {alert.autoResolved && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${THEME.success}12`, color: THEME.success }}>AUTO-RESOLVED</span>}
+                        {alert.runbook && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><BookOpen size={8} />RUNBOOK</span>}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <StatusBadge label={sev.label} color={sev.color} pulse={isCritical && !alert.acknowledged} />
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}><CatIcon size={10} />{alert.category}</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}><Clock size={10} />{fmtTime(alert.created_at)}</span>
+                        {alert.acknowledged && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.success }}><CheckCheck size={10} />Acknowledged</span>}
+                    </div>
+                </div>
+                {alert.metric_value && (
+                    <div style={{ textAlign: 'right', flexShrink: 0, marginRight: 8 }}>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: sev.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{alert.metric_value}</div>
+                        {alert.threshold && <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 3 }}>threshold {alert.threshold}</div>}
+                    </div>
+                )}
+                <ChevronDown size={14} color={THEME.textDim} style={{ flexShrink: 0, transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'none' }} />
+            </div>
+            {expanded && (
+                <div style={{ padding: '0 16px 14px 64px', animation: 'relFadeIn 0.2s ease', borderTop: `1px solid ${THEME.grid}28` }}>
+                    <p style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6, margin: '12px 0 10px' }}>{alert.message}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        {alert.source && (
+                            <span className="mono" style={{ fontSize: 10, padding: '3px 9px', borderRadius: 5, background: `${THEME.primary}0a`, border: `1px solid ${THEME.primary}12`, color: THEME.primary }}>{alert.source}</span>
+                        )}
+                        {alert.rootCauseGroup && (
+                            <span style={{ fontSize: 10, padding: '3px 9px', borderRadius: 5, background: `${THEME.secondary}0a`, border: `1px solid ${THEME.secondary}15`, color: THEME.secondary, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <Layers size={9} />group: {alert.rootCauseGroup}
+                            </span>
+                        )}
+                        {alert.runbook && (
+                            <a href={alert.runbook} target="_blank" rel="noreferrer" className="rel-link" onClick={e => e.stopPropagation()} style={{
+                                fontSize: 10, padding: '3px 9px', borderRadius: 5,
+                                background: `${THEME.info}0a`, border: `1px solid ${THEME.info}15`, color: THEME.info,
+                                textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
+                            }}>
+                                <Link2 size={9} />Open Runbook
+                            </a>
+                        )}
+                        {!alert.acknowledged && (
+                            <button onClick={(e) => { e.stopPropagation(); onAcknowledge(alert.id); }} style={{
+                                padding: '5px 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                                fontSize: 11, fontWeight: 700, background: `${THEME.success}15`, color: THEME.success,
+                                display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'all 0.15s',
+                            }}
+                                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = `${THEME.success}25`}
+                                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = `${THEME.success}15`}
+                            >
+                                <CheckCheck size={12} />Acknowledge
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UPTIME HEATMAP
+   ═══════════════════════════════════════════════════════════════════════════ */
+const UptimeHeatmap: FC<UptimeHeatmapProps> = ({ days }) => {
+    const [hoveredDay, setHoveredDay] = useState<UptimeDay | null>(null);
+    const statusColor = (s: string) => s === 'outage' ? THEME.danger : s === 'degraded' ? THEME.warning : THEME.success;
+    const weeks = [];
+    for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+    return (
+        <div>
+            <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
+                {weeks.map((week, wi) => (
+                    <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {week.map((day, di) => (
+                            <div key={di} onMouseEnter={() => setHoveredDay(day)} onMouseLeave={() => setHoveredDay(null)} style={{
+                                width: 12, height: 12, borderRadius: 2, background: statusColor(day.status),
+                                opacity: day.status === 'up' ? 0.55 : 0.9, cursor: 'pointer', transition: 'all 0.15s',
+                                boxShadow: hoveredDay?.date === day.date ? `0 0 6px ${statusColor(day.status)}60` : 'none',
+                                transform: hoveredDay?.date === day.date ? 'scale(1.35)' : 'scale(1)',
+                            }} />
+                        ))}
+                    </div>
+                ))}
+            </div>
+            {hoveredDay && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}55`, fontSize: 11 }}>
+                    <span className="mono" style={{ color: THEME.textDim }}>{hoveredDay.date}</span>
+                    <StatusBadge label={hoveredDay.status === 'up' ? 'Operational' : hoveredDay.status === 'degraded' ? 'Degraded' : 'Outage'} color={statusColor(hoveredDay.status)} />
+                    <span style={{ fontWeight: 800, color: THEME.textMain, fontFamily: THEME.fontMono }}>{hoveredDay.uptime.toFixed(2)}%</span>
+                </div>
+            )}
+            <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim, marginTop: hoveredDay ? 8 : 0 }}>
+                {[{ l: 'Operational', c: THEME.success }, { l: 'Degraded', c: THEME.warning }, { l: 'Outage', c: THEME.danger }].map(x => (
+                    <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: 2, background: x.c, opacity: 0.7 }} />{x.l}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ON-CALL WIDGET
+   ═══════════════════════════════════════════════════════════════════════════ */
+const OnCallWidget: FC = () => {
+    const statusColor = (s: string) => s === 'active' ? THEME.success : s === 'standby' ? THEME.warning : THEME.textDim;
+    const statusLabel = (s: string) => s === 'active' ? 'On duty' : s === 'standby' ? 'Standby' : 'Off shift';
+    return (
+        <Panel title="On-Call Rotation" icon={Users} accent={THEME.primary}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {MOCK_ONCALL.map((p, i) => (
+                    <div key={i} style={{
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                        borderRadius: 10, background: i === 0 ? `${THEME.success}06` : THEME.surface,
+                        border: `1px solid ${i === 0 ? `${THEME.success}18` : `${THEME.grid}40`}`,
+                    }}>
+                        <div style={{
+                            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                            background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary}20)`,
+                            border: `1px solid ${THEME.primary}20`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 11, fontWeight: 800, color: THEME.primary, fontFamily: THEME.fontMono,
+                        }}>{p.avatar}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 2 }}>{p.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontSize: 10, color: THEME.textDim }}>{p.role}</span>
+                                <span style={{ fontSize: 9, color: THEME.textDim }}>·</span>
+                                <span className="mono" style={{ fontSize: 9, color: THEME.textDim }}>{p.since}–{p.until} {p.tz}</span>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                            <StatusBadge label={statusLabel(p.status)} color={statusColor(p.status)} pulse={p.status === 'active'} />
+                            <span className="mono" style={{ fontSize: 9, color: THEME.textDim }}>{p.contact}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NOISE REDUCTION SCORE
+   ═══════════════════════════════════════════════════════════════════════════ */
+const NoiseReductionPanel: FC<NoiseReductionPanelProps> = ({ alerts }) => {
+    const autoResolved = alerts.filter(a => a.autoResolved).length;
+    const total = alerts.length;
+    const score = total > 0 ? Math.round((autoResolved / total) * 100) : 0;
+    const scoreColor = score >= 60 ? THEME.success : score >= 35 ? THEME.warning : THEME.danger;
+    return (
+        <Panel title="Alert Noise Reduction" icon={Percent} accent={scoreColor}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
+                    <svg width="72" height="72" style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx="36" cy="36" r="28" fill="none" stroke={`${scoreColor}15`} strokeWidth="6" />
+                        <circle cx="36" cy="36" r="28" fill="none" stroke={scoreColor} strokeWidth="6"
+                                strokeDasharray={`${2 * Math.PI * 28}`}
+                                strokeDashoffset={`${2 * Math.PI * 28 * (1 - score / 100)}`}
+                                strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease' }}
+                        />
+                    </svg>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: scoreColor, fontFamily: THEME.fontMono }}>{score}%</span>
+                    </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, color: THEME.textDim, marginBottom: 8 }}>
+                        <strong style={{ color: scoreColor, fontFamily: THEME.fontMono }}>{autoResolved}</strong> of <strong style={{ color: THEME.textMuted, fontFamily: THEME.fontMono }}>{total}</strong> alerts auto-resolved
+                    </div>
+                    <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.5 }}>
+                        {score >= 60 ? '✓ Automation handling noise well — team is focused on real issues.' : score >= 35 ? '△ Some noise present — review auto-resolution rules.' : '✗ High manual burden — tune alert thresholds.'}
+                    </div>
+                </div>
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ALERT FATIGUE CHART
+   ═══════════════════════════════════════════════════════════════════════════ */
+const AlertFatiguePanel: FC<{ data: any[] }> = ({ data }) => (
+    <Panel title="Alert Fatigue Score (30d)" icon={Activity} rightNode={
+        <div style={{ display: 'flex', gap: 10, fontSize: 10, color: THEME.textDim }}>
+            {[{ l: 'Actionable', c: THEME.success }, { l: 'Noise', c: THEME.danger }].map(x => (
+                <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ width: 8, height: 3, borderRadius: 1, background: x.c }} />{x.l}
+                </span>
+            ))}
+        </div>
+    }>
+        <div style={{ height: 140 }}>
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                    <defs>
+                        <linearGradient id="fatGN" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={THEME.danger} stopOpacity={0.3} />
+                            <stop offset="100%" stopColor={THEME.danger} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="fatGA" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={THEME.success} stopOpacity={0.3} />
+                            <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke={`${THEME.grid}35`} strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={6} />
+                    <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} width={24} />
+                    <Tooltip content={<ChartTooltip />} />
+                    <Area type="monotone" dataKey="noise" name="Noise" stroke={THEME.danger} strokeWidth={1.5} fill="url(#fatGN)" />
+                    <Area type="monotone" dataKey="actionable" name="Actionable" stroke={THEME.success} strokeWidth={1.5} fill="url(#fatGA)" />
+                </AreaChart>
+            </ResponsiveContainer>
+        </div>
+    </Panel>
+);
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MTTR TREND CHART
+   ═══════════════════════════════════════════════════════════════════════════ */
+const MttrTrendPanel: FC<{ data: any[] }> = ({ data }) => (
+    <Panel title="MTTR Trend (12 Weeks)" icon={TrendingUp} rightNode={
+        <span style={{ fontSize: 10, color: THEME.textDim, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <Timer size={9} />avg time to resolve
+        </span>
+    }>
+        <div style={{ height: 160 }}>
+            <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: -16 }}>
+                    <defs>
+                        <linearGradient id="mttrGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor={THEME.primary} /><stop offset="100%" stopColor={THEME.secondary} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke={`${THEME.grid}35`} strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="week" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={2} />
+                    <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} width={28} unit="m" />
+                    <ReferenceLine y={16} stroke={`${THEME.warning}50`} strokeDasharray="4 4" />
+                    <Tooltip content={<ChartTooltip unit="m" />} />
+                    <Line type="monotone" dataKey="mttr" name="MTTR" stroke={THEME.primary} strokeWidth={2} dot={{ fill: THEME.primary, r: 3, strokeWidth: 0 }} activeDot={{ r: 5, fill: THEME.primary }} />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 10, color: THEME.textDim, alignItems: 'center' }}>
+            <span style={{ width: 20, height: 1, background: `${THEME.warning}60`, borderTop: '1px dashed', display: 'inline-block' }} />
+            <span>SLA target (16m)</span>
+        </div>
+    </Panel>
+);
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ALERT GROUPING VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+const AlertGroupView: FC<AlertGroupViewProps> = ({ alerts }) => {
+    const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+    const groups = useMemo(() => {
+        const map: Record<string, Alert[]> = {};
+        alerts.forEach(a => {
+            const g = a.rootCauseGroup || 'uncategorized';
+            if (!map[g]) map[g] = [];
+            map[g].push(a);
+        });
+        return Object.entries(map).map(([key, items]) => ({
+            key, items,
+            severity: items.some(i => i.severity === 'critical') ? 'critical' : items.some(i => i.severity === 'warning') ? 'warning' : 'info',
+            active: items.filter(i => !i.acknowledged).length,
+        })).sort((a, b) => { const o: Record<string, number> = { critical: 0, warning: 1, info: 2 }; return (o[a.severity] ?? 3) - (o[b.severity] ?? 3); });
+    }, [alerts]);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {groups.map((g) => {
+                const sev = getSev(g.severity);
+                const isExpanded = expandedGroup === g.key;
+                return (
+                    <div key={g.key} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${isExpanded ? sev.border : `${THEME.grid}45`}`, transition: 'all 0.2s' }}>
+                        <div onClick={() => setExpandedGroup(isExpanded ? null : g.key)} style={{
+                            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer',
+                            background: isExpanded ? sev.bg : THEME.surface,
+                        }}>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${sev.color}12` }}>
+                                <Layers size={13} color={sev.color} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 2 }}>{g.key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
+                                <div style={{ fontSize: 10, color: THEME.textDim }}>{g.items.length} alerts · {g.active} active</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                {g.active > 0 && <span style={{ fontSize: 11, fontWeight: 800, color: sev.color, fontFamily: THEME.fontMono }}>{g.active}</span>}
+                                <StatusBadge label={sev.label} color={sev.color} />
+                                <ChevronDown size={13} color={THEME.textDim} style={{ transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'none' }} />
+                            </div>
+                        </div>
+                        {isExpanded && (
+                            <div style={{ padding: '8px 12px', background: THEME.glass, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                {g.items.map(item => {
+                                    const is = getSev(item.severity);
+                                    return (
+                                        <div key={item.id} className="rel-slide-in" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}35` }}>
+                                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: is.color, flexShrink: 0 }} />
+                                            <span style={{ fontSize: 11, color: THEME.textMuted, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
+                                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{fmtTime(item.created_at)}</span>
+                                            {item.acknowledged && <CheckCheck size={10} color={THEME.success} />}
+                                            {item.runbook && <Link2 size={10} color={THEME.info} />}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SLO BURN-RATE PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SloBurnRatePanel: FC<SloBurnRatePanelProps> = ({ burnData }) => {
+    const [selectedSlo, setSelectedSlo] = useState(0);
+    const slo = MOCK_SLOs[selectedSlo];
+    const burnColor = slo.burnRate6h > 3 ? THEME.danger : slo.burnRate6h > 1.5 ? THEME.warning : THEME.success;
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* SLO selector row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {MOCK_SLOs.map((s, i) => {
+                    const bc = s.burnRate6h > 3 ? THEME.danger : s.burnRate6h > 1.5 ? THEME.warning : THEME.success;
+                    return (
+                        <div key={i} onClick={() => setSelectedSlo(i)} style={{
+                            padding: '12px 14px', borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s',
+                            background: selectedSlo === i ? `${bc}0a` : THEME.surface,
+                            border: `1px solid ${selectedSlo === i ? `${bc}30` : `${THEME.grid}45`}`,
+                        }}>
+                            <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600, marginBottom: 6, lineHeight: 1.3 }}>{s.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+                                <span style={{ fontSize: 16, fontWeight: 800, color: bc, fontFamily: THEME.fontMono }}>{s.current.toFixed(2)}%</span>
+                            </div>
+                            <div style={{ height: 3, borderRadius: 2, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                <div style={{ width: `${s.budgetRemaining}%`, height: '100%', background: bc, borderRadius: 2, transition: 'width 0.5s ease' }} />
+                            </div>
+                            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 4 }}>Budget: {s.budgetRemaining}% left</div>
+                            {s.alert && <div style={{ marginTop: 4 }}><StatusBadge label="Burning fast" color={THEME.danger} pulse /></div>}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Burn-rate detail */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Panel title={`Error Budget — ${slo.name}`} icon={Gauge} accent={burnColor}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                                    <span style={{ fontSize: 11, color: THEME.textDim }}>Budget Consumed</span>
+                                    <span style={{ fontSize: 11, fontWeight: 800, color: burnColor, fontFamily: THEME.fontMono }}>{100 - slo.budgetRemaining}%</span>
+                                </div>
+                                <div style={{ height: 8, borderRadius: 4, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                    <div className={slo.alert ? 'rel-burn-critical' : ''} style={{ width: `${100 - slo.budgetRemaining}%`, height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${burnColor}, ${burnColor}cc)`, transition: 'width 0.6s ease' }} />
+                                </div>
+                            </div>
+                        </div>
+                        {[
+                            { label: '1h burn rate', value: slo.burnRate1h, warn: 2 },
+                            { label: '6h burn rate', value: slo.burnRate6h, warn: 1.5 },
+                        ].map((r, i) => {
+                            const rc = r.value > r.warn * 2 ? THEME.danger : r.value > r.warn ? THEME.warning : THEME.success;
+                            return (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
+                                    <span style={{ fontSize: 11, color: THEME.textMuted }}>{r.label}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <span style={{ fontSize: 14, fontWeight: 800, color: rc, fontFamily: THEME.fontMono }}>{r.value}×</span>
+                                        <StatusBadge label={r.value > r.warn * 2 ? 'Critical' : r.value > r.warn ? 'Elevated' : 'Normal'} color={rc} pulse={r.value > r.warn * 2} />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div style={{ padding: '10px 12px', borderRadius: 8, background: `${burnColor}06`, border: `1px solid ${burnColor}15`, fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>
+                            {slo.alert ? `⚠ At current burn rate, error budget will be exhausted in ${Math.round(slo.budgetRemaining / slo.burnRate6h * 10)}h.` : `✓ Error budget on track. ${slo.budgetRemaining}% remaining for the window.`}
+                        </div>
+                    </div>
+                </Panel>
+
+                <Panel title="30-Day Budget Consumption" icon={BarChart3} accent={burnColor}>
+                    <div style={{ height: 180 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={burnData} margin={{ top: 8, right: 4, bottom: 0, left: -14 }}>
+                                <defs>
+                                    <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={burnColor} stopOpacity={0.4} />
+                                        <stop offset="100%" stopColor={burnColor} stopOpacity={0.02} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid stroke={`${THEME.grid}35`} strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="day" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={6} />
+                                <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} width={28} domain={[0, 100]} unit="%" />
+                                <ReferenceLine y={80} stroke={`${THEME.danger}45`} strokeDasharray="4 4" />
+                                <Tooltip content={<ChartTooltip unit="%" />} />
+                                <Area type="monotone" dataKey="consumed" name="Consumed" stroke={burnColor} strokeWidth={2} fill="url(#burnGrad)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, fontSize: 10, color: THEME.textDim, alignItems: 'center', marginTop: 4 }}>
+                        <span style={{ width: 20, borderTop: '1px dashed', borderColor: `${THEME.danger}45`, display: 'inline-block' }} />
+                        <span>80% budget threshold</span>
+                    </div>
+                </Panel>
+            </div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHANGE FREEZE WINDOWS
+   ═══════════════════════════════════════════════════════════════════════════ */
+const ChangeFreezePanel: FC<ChangFreezePanelProps> = () => {
+    const [showAdd, setShowAdd] = useState(false);
+    return (
+        <Panel title="Change Freeze Windows" icon={Snowflake} accent={THEME.info} rightNode={
+            <button onClick={() => setShowAdd(!showAdd)} style={{
+                padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                fontSize: 10, fontWeight: 700, background: `${THEME.primary}15`, color: THEME.primary,
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+            }}>+ Add Window</button>
+        }>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {MOCK_FREEZE_WINDOWS.map(fw => (
+                    <div key={fw.id} style={{
+                        padding: '12px 14px', borderRadius: 10,
+                        background: fw.active ? `${fw.color}08` : THEME.surface,
+                        border: `1px solid ${fw.active ? `${fw.color}28` : `${THEME.grid}40`}`,
+                        transition: 'all 0.2s',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Snowflake size={12} color={fw.color} style={{ flexShrink: 0 }} />
+                                <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{fw.label}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                {fw.active && <StatusBadge label="ACTIVE NOW" color={fw.color} pulse />}
+                                {!fw.active && <StatusBadge label="Scheduled" color={THEME.textDim} />}
+                            </div>
+                        </div>
+                        <div className="mono" style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>
+                            {new Date(fw.start).toLocaleString()} → {new Date(fw.end).toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>{fw.reason}</div>
+                    </div>
+                ))}
+                {showAdd && (
+                    <div className="rel-frost" style={{ padding: '12px 14px', borderRadius: 10, background: `${THEME.primary}06`, border: `1px dashed ${THEME.primary}30` }}>
+                        <div style={{ fontSize: 11, color: THEME.textDim, textAlign: 'center', padding: '8px 0' }}>
+                            Connect to your change management system to create freeze windows programmatically.
+                        </div>
+                    </div>
+                )}
+            </div>
+        </Panel>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+const ReliabilityTab: FC = () => {
+    useAdaptiveTheme();
+    const [alerts, setAlerts] = useState<Alert[]>([]);
+    const [uptimeDays, setUptimeDays] = useState<UptimeDay[]>(() => genUptimeDays());
+    const [alertTrend, setAlertTrend] = useState<AlertTrendData[]>(() => genAlertTrend());
+    const [incidents, setIncidents] = useState<Incident[]>(MOCK_INCIDENTS);
+    const [mttrData] = useState(() => genMttrTrend());
+    const [fatigueData] = useState(() => genAlertFatigue());
+    const [burnData] = useState(() => genSloBurnRate());
+
+    const [loading, setLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [lastRefreshed, setLastRefreshed] = useState<number | null>(null);
+    const [refreshInterval, setRefreshInterval] = useState(30);
+    const [refreshError, setRefreshError] = useState(false);
+    const [newAlertIds, setNewAlertIds] = useState<Set<string>>(new Set());
+    const [refreshingPanels, setRefreshingPanels] = useState<Set<string>>(new Set());
+
+    const [activeTab, setActiveTab] = useState<'alerts' | 'uptime' | 'slo' | 'incidents' | 'ops'>('alerts');
+    const [alertView, setAlertView] = useState<'feed' | 'grouped'>('feed');
+    const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'info'>('all');
+    const [showAcked, setShowAcked] = useState(true);
+    const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [sortBy, setSortBy] = useState<'time' | 'severity'>('time');
+
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const prevAlertIdsRef = useRef<Set<string>>(new Set());
+
+    const fetchAll = useCallback(async (isInitial = false) => {
+        if (!isInitial) setIsRefreshing(true);
+        setRefreshingPanels(new Set(['alerts', 'trend', 'uptime', 'incidents']));
+        setRefreshError(false);
+        try {
+            const [alertsData, statsData] = await Promise.all([
+                fetchData('/api/alerts?limit=50').catch(() => null),
+                fetchData('/api/alerts/statistics?timeRange=24h').catch(() => null),
+            ]);
+
+            if (alertsData?.alerts) {
+                const incoming = alertsData.alerts as Alert[];
+                const currentIds = new Set(incoming.map(a => String(a.id)));
+                const newIds = new Set([...currentIds].filter(id => !prevAlertIdsRef.current.has(id)));
+                if (newIds.size > 0) setNewAlertIds(newIds);
+                prevAlertIdsRef.current = currentIds;
+                setAlerts(incoming);
+            }
+
+            if (statsData?.hourlyBreakdown) {
+                setAlertTrend(statsData.hourlyBreakdown);
+            } else if (statsData) {
+                setAlertTrend(genAlertTrend());
+            }
+        } catch (e) {
+            setRefreshError(true);
+            if (isInitial && alerts.length === 0) {
+                setAlerts(MOCK_ALERTS);
+                setAlertTrend(genAlertTrend());
+            }
+        } finally {
+            setRefreshingPanels(new Set());
+            setLastRefreshed(Date.now());
+            setIsRefreshing(false);
+            if (isInitial) setLoading(false);
+        }
+    }, [alerts.length]);
+
+    useEffect(() => { fetchAll(true); }, [fetchAll]);
+
+    useEffect(() => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        if (refreshInterval > 0) intervalRef.current = setInterval(() => fetchAll(false), refreshInterval * 1000);
+        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    }, [refreshInterval, fetchAll]);
+
+    const handleAcknowledge = useCallback(async (id: number) => {
+        setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true } : a));
+        try { await postData(`/api/alerts/${id}/acknowledge`, {}); }
+        catch { setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: false } : a)); }
+    }, []);
+
+    const handleAcknowledgeAll = useCallback(async () => {
+        const unackedIds = alerts.filter(a => !a.acknowledged).map(a => a.id);
+        if (unackedIds.length === 0) return;
+        setAlerts(prev => prev.map(a => ({ ...a, acknowledged: true })));
+        try { await postData('/api/alerts/bulk-acknowledge', { alertIds: unackedIds }); }
+        catch { fetchAll(false); }
+    }, [alerts, fetchAll]);
+
+    const processedAlerts = useMemo(() => {
+        let list = [...alerts];
+        if (filter !== 'all') list = list.filter(a => a.severity === filter);
+        if (!showAcked) list = list.filter(a => !a.acknowledged);
+        if (sortBy === 'severity') {
+            const order: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+            list.sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+        } else {
+            list.sort((a, b) => new Date(b.created_at) as any - new Date(a.created_at) as any);
+        }
+        return list;
+    }, [alerts, filter, showAcked, sortBy]);
+
+    const counts = useMemo(() => ({
+        total: alerts.length,
+        critical: alerts.filter(a => a.severity === 'critical' && !a.acknowledged).length,
+        warning: alerts.filter(a => a.severity === 'warning' && !a.acknowledged).length,
+        info: alerts.filter(a => a.severity === 'info' && !a.acknowledged).length,
+        active: alerts.filter(a => !a.acknowledged).length,
+        acknowledged: alerts.filter(a => a.acknowledged).length,
+    }), [alerts]);
+
+    const uptimeStats = useMemo(() => ({
+        avg: uptimeDays.reduce((s, d) => s + d.uptime, 0) / uptimeDays.length,
+        outages: uptimeDays.filter(d => d.status === 'outage').length,
+        degraded: uptimeDays.filter(d => d.status === 'degraded').length,
+    }), [uptimeDays]);
+
+    const TabBtn: FC<TabBtnProps> = ({ id, label, icon: Icon, count }) => {
+        const active = activeTab === id;
+        return (
+            <button className="rel-tab-btn" onClick={() => setActiveTab(id as any)} style={{
+                padding: '9px 18px', borderRadius: 8, cursor: 'pointer', border: 'none',
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                fontWeight: 700, fontSize: 12, lineHeight: 1, whiteSpace: 'nowrap',
+                background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})` : THEME.surface,
+                color: active ? '#fff' : THEME.textMuted,
+                boxShadow: active ? `0 4px 16px ${THEME.primary}30` : 'none',
+                outline: active ? 'none' : `1px solid ${THEME.grid}60`,
+            }}>
+                <Icon size={13} />
+                {label}
+                {count != null && count > 0 && (
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.danger}20`, color: active ? '#fff' : THEME.danger }}>{count}</span>
+                )}
+            </button>
+        );
+    };
+
+    const FilterPill: FC<FilterPillProps> = ({ id, label, color, count }) => {
+        const active = filter === id;
+        return (
+            <button onClick={() => setFilter(id as any)} style={{
+                padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                fontSize: 11, fontWeight: 600, transition: 'all 0.15s',
+                background: active ? `${color}18` : 'transparent',
+                color: active ? color : THEME.textDim,
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+            }}>
+                {label}
+                {count > 0 && <span style={{ fontSize: 9, fontWeight: 800, fontFamily: THEME.fontMono, opacity: 0.8 }}>{count}</span>}
+            </button>
+        );
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 40px' }}>
+                <RelStyles />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                    {[0, 1, 2, 3].map(i => <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'relPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />)}
+                </div>
+            </div>
+        );
+    }
+
+    const metricCards: MetricCardData[] = [
+        { label: 'Active Alerts', value: String(counts.active), sub: `${counts.total} total`, color: counts.critical > 0 ? THEME.danger : THEME.success, icon: counts.critical > 0 ? BellRing : CheckCircle },
+        { label: 'Critical', value: String(counts.critical), sub: counts.critical > 0 ? 'Immediate attention' : 'All clear', color: counts.critical > 0 ? THEME.danger : THEME.success, icon: Flame },
+        { label: 'Uptime (90d)', value: `${uptimeStats.avg.toFixed(2)}%`, sub: `${uptimeStats.outages} outages`, color: uptimeStats.avg > 99.9 ? THEME.success : uptimeStats.avg > 99 ? THEME.warning : THEME.danger, icon: Shield },
+        { label: 'MTTR', value: '16m', sub: 'avg resolution', color: THEME.primary, icon: Timer },
+        { label: 'Noise Ratio', value: `${Math.round((alerts.filter(a => a.autoResolved).length / (alerts.length || 1)) * 100)}%`, sub: 'auto-resolved', color: THEME.info, icon: Activity },
+    ];
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '0 24px 40px 24px', background: THEME.bg, minHeight: '100vh' }}>
+            <RelStyles />
+
+            {/* Refresh bar */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <RefreshBar lastRefreshed={lastRefreshed} isRefreshing={isRefreshing} intervalSec={refreshInterval} onIntervalChange={setRefreshInterval} onRefresh={() => { if (!isRefreshing) fetchAll(false); }} error={refreshError} />
+                <CountdownBar intervalSec={refreshInterval} lastRefreshed={lastRefreshed} />
+            </div>
+
+            {/* Tab row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                    <TabBtn id="alerts" label="Alert Feed" icon={Bell} count={counts.active} />
+                    <TabBtn id="uptime" label="Uptime & SLA" icon={Shield} />
+                    <TabBtn id="slo" label="SLO Burn Rate" icon={Gauge} count={MOCK_SLOs.filter(s => s.alert).length} />
+                    <TabBtn id="incidents" label="Incidents" icon={History} count={incidents.length} />
+                    <TabBtn id="ops" label="Ops Center" icon={Settings} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
+                    <LiveDot color={counts.critical > 0 ? THEME.danger : THEME.success} size={6} />
+                    <span>{counts.critical > 0 ? `${counts.critical} critical` : 'All clear'}</span>
+                </div>
+            </div>
+
+            {/* Metric strip */}
+            <div className="rel-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+                {metricCards.map((m, i) => (
+                    <div key={i} className={isRefreshing ? 'rel-metric-flash' : ''} style={{
+                        display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 14,
+                        background: THEME.glass, backdropFilter: 'blur(12px)',
+                        border: `1px solid ${isRefreshing ? `${THEME.primary}22` : THEME.glassBorder}`, transition: 'border-color 0.3s',
+                    }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
+                            <m.icon size={16} color={m.color} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: m.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{m.value}</div>
+                            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 3, lineHeight: 1 }}>{m.sub}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* ══════════════════ ALERTS ══════════════════ */}
+            {activeTab === 'alerts' && (
+                <div className="rel-stagger" style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 18, alignItems: 'start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {/* Toolbar */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <FilterPill id="all" label="All" color={THEME.primary} count={counts.total} />
+                                <FilterPill id="critical" label="Critical" color={THEME.danger} count={counts.critical} />
+                                <FilterPill id="warning" label="Warning" color={THEME.warning} count={counts.warning} />
+                                <FilterPill id="info" label="Info" color={THEME.info} count={counts.info} />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                {/* View toggle */}
+                                <div style={{ display: 'flex', background: THEME.surface, borderRadius: 7, overflow: 'hidden', border: `1px solid ${THEME.grid}50` }}>
+                                    {[{ id: 'feed', icon: Bell, label: 'Feed' }, { id: 'grouped', icon: LayoutGrid, label: 'Grouped' }].map(v => (
+                                        <button key={v.id} onClick={() => setAlertView(v.id as any)} style={{
+                                            padding: '4px 10px', border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700,
+                                            background: alertView === v.id ? `${THEME.primary}20` : 'transparent',
+                                            color: alertView === v.id ? THEME.primary : THEME.textDim,
+                                            display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
+                                        }}>
+                                            <v.icon size={10} />{v.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button onClick={() => setShowAcked(!showAcked)} style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600, background: showAcked ? `${THEME.textDim}15` : 'transparent', color: THEME.textDim, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    {showAcked ? <Eye size={10} /> : <EyeOff size={10} />}Ack'd
+                                </button>
+                                <button onClick={() => setSortBy(s => s === 'time' ? 'severity' : 'time')} style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600, color: THEME.textDim, background: `${THEME.textDim}10`, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    <ArrowDown size={10} />{sortBy === 'time' ? 'Time' : 'Severity'}
+                                </button>
+                                {counts.active > 0 && (
+                                    <button onClick={handleAcknowledgeAll} style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, color: THEME.success, background: `${THEME.success}10`, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                        <CheckCheck size={10} />Ack All
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Feed or grouped */}
+                        <div className="rel-scrollbar" style={{ maxHeight: 640, overflowY: 'auto', paddingRight: 2 }}>
+                            {alertView === 'grouped'
+                                ? <AlertGroupView alerts={processedAlerts} />
+                                : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    {processedAlerts.length === 0
+                                        ? <div style={{ padding: '60px 20px', textAlign: 'center', color: THEME.textDim, fontSize: 12 }}>No alerts match your filters.</div>
+                                        : processedAlerts.map(alert => (
+                                            <AlertCard key={alert.id} alert={alert} onAcknowledge={handleAcknowledge}
+                                                       expanded={expandedId === alert.id}
+                                                       onToggle={() => setExpandedId(expandedId === alert.id ? null : alert.id)}
+                                                       isNew={newAlertIds.has(alert.id.toString())}
+                                            />
+                                        ))
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    {/* Right sidebar */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <OnCallWidget />
+                        <NoiseReductionPanel alerts={alerts} />
+
+                        {/* Alert trend */}
+                        <Panel title="Alert Trend (24h)" icon={BarChart3} refreshing={refreshingPanels.has('trend')} rightNode={
+                            <div style={{ display: 'flex', gap: 10, fontSize: 10, color: THEME.textDim }}>
+                                {[{ l: 'Critical', c: THEME.danger }, { l: 'Warning', c: THEME.warning }, { l: 'Info', c: THEME.info }].map(x => (
+                                    <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                        <span style={{ width: 8, height: 3, borderRadius: 1, background: x.c }} />{x.l}
+                                    </span>
+                                ))}
+                            </div>
+                        }>
+                            <div style={{ height: 150 }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={alertTrend} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                                        <defs>
+                                            <linearGradient id="relGC" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={THEME.danger} stopOpacity={0.3} /><stop offset="100%" stopColor={THEME.danger} stopOpacity={0} /></linearGradient>
+                                            <linearGradient id="relGW" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={THEME.warning} stopOpacity={0.2} /><stop offset="100%" stopColor={THEME.warning} stopOpacity={0} /></linearGradient>
+                                            <linearGradient id="relGI" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={THEME.info} stopOpacity={0.15} /><stop offset="100%" stopColor={THEME.info} stopOpacity={0} /></linearGradient>
+                                        </defs>
+                                        <CartesianGrid stroke={`${THEME.grid}35`} strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="h" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
+                                        <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} width={24} />
+                                        <Tooltip content={<ChartTooltip />} />
+                                        <Area type="monotone" dataKey="critical" name="Critical" stroke={THEME.danger} strokeWidth={1.5} fill="url(#relGC)" />
+                                        <Area type="monotone" dataKey="warning" name="Warning" stroke={THEME.warning} strokeWidth={1.5} fill="url(#relGW)" />
+                                        <Area type="monotone" dataKey="info" name="Info" stroke={THEME.info} strokeWidth={1} fill="url(#relGI)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </Panel>
+
+                        {/* Severity distribution */}
+                        <Panel title="Severity Distribution" icon={BarChart3} refreshing={refreshingPanels.has('severity')}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                {[
+                                    { label: 'Critical', count: alerts.filter(a => a.severity === 'critical').length, active: counts.critical, color: THEME.danger },
+                                    { label: 'Warning', count: alerts.filter(a => a.severity === 'warning').length, active: counts.warning, color: THEME.warning },
+                                    { label: 'Info', count: alerts.filter(a => a.severity === 'info').length, active: counts.info, color: THEME.info },
+                                ].map((s, i) => {
+                                    const maxC = Math.max(alerts.filter(a => a.severity === 'critical').length, alerts.filter(a => a.severity === 'warning').length, alerts.filter(a => a.severity === 'info').length, 1);
+                                    return (
+                                        <div key={i}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                                                <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted }}>{s.label}</span>
+                                                <div style={{ display: 'flex', gap: 8, fontSize: 10 }}>
+                                                    <span style={{ color: s.color, fontWeight: 800, fontFamily: THEME.fontMono }}>{s.active} active</span>
+                                                    <span style={{ color: THEME.textDim }}>{s.count} total</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 2, height: 5, borderRadius: 3, overflow: 'hidden', background: `${THEME.grid}40` }}>
+                                                <div className="rel-bar-animate" style={{ width: `${(s.active / maxC) * 100}%`, background: s.color, borderRadius: 3, animationDelay: `${i * 0.1}s` }} />
+                                                <div className="rel-bar-animate" style={{ width: `${((s.count - s.active) / maxC) * 100}%`, background: `${s.color}28`, borderRadius: 3, animationDelay: `${i * 0.1 + 0.1}s` }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </Panel>
+
+                        {/* Response targets */}
+                        <Panel title="Response Targets" icon={Timer}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {[
+                                    { sev: 'Critical', target: '5m', actual: '3m', met: true, color: THEME.danger },
+                                    { sev: 'Warning', target: '30m', actual: '22m', met: true, color: THEME.warning },
+                                    { sev: 'Info', target: '4h', actual: '1.5h', met: true, color: THEME.info },
+                                ].map((r, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain }}>{r.sev}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11 }}>
+                                            <span style={{ color: THEME.textDim }}>target: <strong style={{ color: THEME.textMuted, fontFamily: THEME.fontMono }}>{r.target}</strong></span>
+                                            <span style={{ color: THEME.textDim }}>actual: <strong style={{ color: r.met ? THEME.success : THEME.danger, fontFamily: THEME.fontMono }}>{r.actual}</strong></span>
+                                            {r.met ? <CheckCircle size={11} color={THEME.success} /> : <XCircle size={11} color={THEME.danger} />}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Panel>
+                    </div>
+                </div>
+            )}
+
+            {/* ══════════════════ UPTIME ══════════════════ */}
+            {activeTab === 'uptime' && (
+                <div className="rel-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+                        {[
+                            { label: '30-Day Uptime', value: `${(uptimeDays.slice(-30).reduce((s, d) => s + d.uptime, 0) / 30).toFixed(3)}%`, target: '99.95%', icon: Shield, color: THEME.success },
+                            { label: '90-Day Uptime', value: `${uptimeStats.avg.toFixed(3)}%`, target: '99.90%', icon: ShieldCheck, color: THEME.primary },
+                            { label: 'Error Budget', value: '63%', target: 'remaining this month', icon: Gauge, color: THEME.warning },
+                        ].map((s, i) => (
+                            <Panel key={i} refreshing={refreshingPanels.has('sla')}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '10px 0' }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: 13, background: `${s.color}10`, border: `1px solid ${s.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <s.icon size={20} color={s.color} />
+                                    </div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+                                    <div style={{ fontSize: 26, fontWeight: 800, color: s.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{s.value}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim }}>target: {s.target}</div>
+                                </div>
+                            </Panel>
+                        ))}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18 }}>
+                        <Panel title="90-Day Uptime Heatmap" icon={Calendar} refreshing={refreshingPanels.has('uptime')}>
+                            <UptimeHeatmap days={uptimeDays} />
+                        </Panel>
+                        <Panel title="Downtime Events" icon={XCircle} noPad refreshing={refreshingPanels.has('uptime')}>
+                            {(() => {
+                                const downtimeDays = uptimeDays.filter(d => d.status !== 'up');
+                                if (!downtimeDays.length) return (
+                                    <div style={{ padding: 40, textAlign: 'center' }}>
+                                        <CheckCircle size={26} color={THEME.success} style={{ opacity: 0.5, marginBottom: 8 }} />
+                                        <div style={{ fontSize: 12, color: THEME.textMuted }}>No downtime recorded</div>
+                                    </div>
+                                );
+                                return (
+                                    <div className="rel-scrollbar" style={{ maxHeight: 280, overflowY: 'auto' }}>
+                                        {downtimeDays.map((d, i) => {
+                                            const c = d.status === 'outage' ? THEME.danger : THEME.warning;
+                                            return (
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 18px', borderBottom: `1px solid ${THEME.grid}22` }}>
+                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: c, flexShrink: 0 }} />
+                                                    <span className="mono" style={{ fontSize: 10, color: THEME.textDim, width: 70, flexShrink: 0 }}>{d.date}</span>
+                                                    <StatusBadge label={d.status === 'outage' ? 'Outage' : 'Degraded'} color={c} />
+                                                    <span style={{ fontWeight: 800, color: THEME.textMain, fontFamily: THEME.fontMono, marginLeft: 'auto', fontSize: 12 }}>{d.uptime.toFixed(2)}%</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
+                        </Panel>
+                    </div>
+
+                    {/* MTTR trend */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18 }}>
+                        <MttrTrendPanel data={mttrData} />
+                        <AlertFatiguePanel data={fatigueData} />
+                    </div>
+                </div>
+            )}
+
+            {/* ══════════════════ SLO BURN RATE ══════════════════ */}
+            {activeTab === 'slo' && (
+                <div className="rel-stagger">
+                    <SloBurnRatePanel burnData={burnData} />
+                </div>
+            )}
+
+            {/* ══════════════════ INCIDENTS ══════════════════ */}
+            {activeTab === 'incidents' && (
+                <div className="rel-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {/* Summary strip */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderRadius: 12, background: THEME.glass, overflow: 'hidden', backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}` }}>
+                        {[
+                            { label: 'Total Incidents', value: String(incidents.length), color: THEME.primary, icon: AlertCircle },
+                            { label: 'Critical', value: String(incidents.filter(i => i.severity === 'critical').length), color: THEME.danger, icon: Flame },
+                            { label: 'Avg Duration', value: '16.8m', color: THEME.warning, icon: Timer },
+                            { label: 'Resolved', value: String(incidents.length), color: THEME.success, icon: CheckCircle },
+                        ].map((s, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 18px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
+                                <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
+                                    <s.icon size={12} color={s.color} />
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{s.label}</div>
+                                    <div style={{ fontSize: 14, fontWeight: 800, color: s.color, fontFamily: THEME.fontMono }}>{s.value}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Timeline */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                        {incidents.map((inc, i) => {
+                            const sev = getSev(inc.severity);
+                            const rcaTag = RCA_TAGS.find(t => t.tag === inc.rca_tag);
+                            return (
+                                <div key={inc.id} style={{ display: 'flex', gap: 14, position: 'relative' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 18, flexShrink: 0 }}>
+                                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: sev.color, border: `2px solid ${THEME.bg}`, boxShadow: `0 0 6px ${sev.color}40`, flexShrink: 0, zIndex: 1 }} />
+                                        {i < incidents.length - 1 && <div style={{ width: 2, flex: 1, background: `${THEME.grid}60`, minHeight: 20 }} />}
+                                    </div>
+                                    <div style={{ flex: 1, marginBottom: 14, padding: '14px 18px', borderRadius: 12, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}` }}>
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                                                    <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, background: `${THEME.primary}08`, padding: '2px 8px', borderRadius: 4, border: `1px solid ${THEME.primary}12` }}>{inc.id}</span>
+                                                    <StatusBadge label={sev.label} color={sev.color} />
+                                                    <StatusBadge label="Resolved" color={THEME.success} />
+                                                    {rcaTag && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: `${rcaTag.color}10`, color: rcaTag.color, border: `1px solid ${rcaTag.color}20`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Hash size={8} />{inc.rca_tag}</span>}
+                                                </div>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{inc.title}</div>
+                                            </div>
+                                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                                <div style={{ fontSize: 17, fontWeight: 800, color: THEME.warning, fontFamily: THEME.fontMono, lineHeight: 1 }}>{inc.duration}</div>
+                                                <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>duration</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                                            <div style={{ padding: '9px 12px', borderRadius: 8, background: `${sev.color}06`, border: `1px solid ${sev.color}12` }}>
+                                                <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Impact</div>
+                                                <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>{inc.impact}</div>
+                                            </div>
+                                            <div style={{ padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
+                                                <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Root Cause</div>
+                                                <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>{inc.root_cause}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                            <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim }}>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={9} color={sev.color} />Started: {new Date(inc.started).toLocaleString()}</span>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle size={9} color={THEME.success} />Resolved: {new Date(inc.resolved).toLocaleString()}</span>
+                                            </div>
+                                            {inc.runbook && (
+                                                <a href={inc.runbook} target="_blank" rel="noreferrer" className="rel-link" style={{ fontSize: 10, color: THEME.info, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                                    <BookOpen size={10} />View Runbook
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* ══════════════════ OPS CENTER ══════════════════ */}
+            {activeTab === 'ops' && (
+                <div className="rel-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                        <OnCallWidget />
+                        <AlertFatiguePanel data={fatigueData} />
+                        <MttrTrendPanel data={mttrData} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                        <ChangeFreezePanel />
+                        <NoiseReductionPanel alerts={alerts} />
+                        <Panel title="Alert Runbook Coverage" icon={BookOpen} accent={THEME.success}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {alerts.map(a => {
+                                    const sev = getSev(a.severity);
+                                    return (
+                                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}35` }}>
+                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: sev.color, flexShrink: 0 }} />
+                                            <span style={{ flex: 1, fontSize: 11, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</span>
+                                            {a.runbook
+                                                ? <a href={a.runbook} target="_blank" rel="noreferrer" style={{ fontSize: 9, color: THEME.success, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3, background: `${THEME.success}10`, padding: '2px 7px', borderRadius: 4 }}><Link2 size={8} />Runbook</a>
+                                                : <span style={{ fontSize: 9, color: THEME.danger, background: `${THEME.danger}10`, padding: '2px 7px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 3 }}><AlertOctagon size={8} />Missing</span>
+                                            }
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </Panel>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default ReliabilityTab;

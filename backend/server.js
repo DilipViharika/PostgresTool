@@ -788,6 +788,37 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
     }
 
     try {
+        // ── Fallback demo login when no admin database is configured ──
+        if (!pool && username === 'admin' && password === 'admin123') {
+            const NEW_SCREENS = [
+                'backup', 'checkpoint', 'maintenance',
+                'replication', 'bloat', 'regression', 'cloudwatch',
+                'tasks', 'log-patterns', 'alert-correlation', 'Table',
+                'table-indexes', 'table-sizes',
+                'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring',
+                'retention', 'terraform', 'custom-dashboard',
+                'schema-visualizer',
+                'mongo-overview', 'mongo-performance', 'mongo-storage',
+                'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
+                'demo-data', 'fleet-overview', 'alert-rules', 'schema-tree',
+                'query-plan', 'chart-builder', 'pool-metrics',
+            ];
+            const demoPayload = {
+                id:             1,
+                username:       'admin',
+                name:           'Demo Admin',
+                email:          'admin@vigil.local',
+                role:           'superadmin',
+                accessLevel:    'full',
+                allowedScreens: NEW_SCREENS,
+                sid:            `demo-${Date.now()}`,
+            };
+            const token = jwt.sign(demoPayload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
+            recordLoginAttempt(username, true);
+            log('INFO', 'Demo fallback login (no admin DB)', { username });
+            return res.json({ token, user: demoPayload });
+        }
+
         const user = await getUserByUsername(pool, username);
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {

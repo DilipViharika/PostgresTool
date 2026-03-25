@@ -1,0 +1,18 @@
+{
+    "files": {
+        "shared/types/dist": { "size": 0, "mtime_nanos": 0, "mode": 0, "is_dir": true },
+        "shared/types/.turbo/turbo-build.log": {
+            "size": 35,
+            "mtime_nanos": 1774453159237204100,
+            "mode": 420,
+            "is_dir": false
+        },
+        "shared/types/dist/tsconfig.tsbuildinfo": {
+            "size": 44378,
+            "mtime_nanos": 1774452042331233700,
+            "mode": 420,
+            "is_dir": false
+        }
+    },
+    "order": ["shared/types/.turbo/turbo-build.log", "shared/types/dist", "shared/types/dist/tsconfig.tsbuildinfo"]
+}

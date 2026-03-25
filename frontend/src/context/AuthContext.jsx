@@ -7,16 +7,13 @@
 //    • No /auth/me or /auth/refresh exist — session validated client-side
 // ==========================================================================
 
-import React, {
-    createContext, useContext, useState, useEffect,
-    useCallback, useRef, useMemo
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════════════════════════
 
-const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 const STORAGE_KEYS = { TOKEN: 'vigil_token', USER: 'vigil_user' };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -27,7 +24,9 @@ function parseJWT(token) {
     try {
         const base64 = token.split('.')[1];
         return JSON.parse(atob(base64.replace(/-/g, '+').replace(/_/g, '/')));
-    } catch { return null; }
+    } catch {
+        return null;
+    }
 }
 
 function isTokenExpired(token) {
@@ -48,9 +47,9 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading]         = useState(true);   // initial session restore
-    const [authLoading, setAuthLoading] = useState(false);  // login in progress
-    const [error, setError]             = useState(null);
+    const [loading, setLoading] = useState(true); // initial session restore
+    const [authLoading, setAuthLoading] = useState(false); // login in progress
+    const [error, setError] = useState(null);
 
     // ── Restore session from localStorage on mount (sync — no fetch) ───────
     useEffect(() => {
@@ -137,9 +136,7 @@ export const AuthProvider = ({ children }) => {
             setCurrentUser(data.user);
             return data.user;
         } catch (err) {
-            const msg = err instanceof TypeError
-                ? 'Unable to reach server. Check your connection.'
-                : err.message;
+            const msg = err instanceof TypeError ? 'Unable to reach server. Check your connection.' : err.message;
             setError(msg);
             throw err;
         } finally {
@@ -157,7 +154,15 @@ export const AuthProvider = ({ children }) => {
     const handleSSOCallback = useCallback((token, user) => {
         // Clear previous user's cached data before setting new SSO session
         const prevUser = localStorage.getItem(STORAGE_KEYS.USER);
-        const prevParsed = prevUser ? (() => { try { return JSON.parse(prevUser); } catch { return null; } })() : null;
+        const prevParsed = prevUser
+            ? (() => {
+                  try {
+                      return JSON.parse(prevUser);
+                  } catch {
+                      return null;
+                  }
+              })()
+            : null;
         if (!prevParsed || prevParsed.username !== user.username) {
             localStorage.removeItem('pg_monitor_active_tab');
             localStorage.removeItem('vigil_active_connection_id');
@@ -185,21 +190,16 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // ── RBAC helpers ───────────────────────────────────────────────────────
-    const hasRole = useCallback((...roles) =>
-        currentUser ? roles.includes(currentUser.role) : false, [currentUser]);
+    const hasRole = useCallback((...roles) => (currentUser ? roles.includes(currentUser.role) : false), [currentUser]);
 
-    const hasScreen = useCallback((screen) =>
-        currentUser?.allowedScreens?.includes(screen) ?? false, [currentUser]);
+    const hasScreen = useCallback((screen) => currentUser?.allowedScreens?.includes(screen) ?? false, [currentUser]);
 
-    const canWrite = useMemo(() =>
-        currentUser?.accessLevel === 'write', [currentUser]);
+    const canWrite = useMemo(() => currentUser?.accessLevel === 'write', [currentUser]);
 
-    const isAdmin = useMemo(() =>
-        currentUser?.role === 'super_admin', [currentUser]);
+    const isAdmin = useMemo(() => currentUser?.role === 'super_admin', [currentUser]);
 
     // ── Token accessors ────────────────────────────────────────────────────
-    const getToken = useCallback(() =>
-        localStorage.getItem(STORAGE_KEYS.TOKEN), []);
+    const getToken = useCallback(() => localStorage.getItem(STORAGE_KEYS.TOKEN), []);
 
     // Returns the base WS URL (no token in URL — client sends auth as first message)
     const getWSUrl = useCallback(() => {
@@ -220,35 +220,46 @@ export const AuthProvider = ({ children }) => {
     }, [currentUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Context value ──────────────────────────────────────────────────────
-    const value = useMemo(() => ({
-        currentUser,
-        loading,
-        authLoading,
-        error,
-        isAuthenticated: !!currentUser,
-        sessionInfo,
-        login,
-        loginWithSSO,
-        handleSSOCallback,
-        logout,
-        clearError: () => setError(null),
-        hasRole,
-        hasScreen,
-        canWrite,
-        isAdmin,
-        getToken,
-        getWSUrl,
-    }), [
-        currentUser, loading, authLoading, error, sessionInfo,
-        login, loginWithSSO, handleSSOCallback, logout, hasRole, hasScreen, canWrite, isAdmin,
-        getToken, getWSUrl,
-    ]);
-
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
+    const value = useMemo(
+        () => ({
+            currentUser,
+            loading,
+            authLoading,
+            error,
+            isAuthenticated: !!currentUser,
+            sessionInfo,
+            login,
+            loginWithSSO,
+            handleSSOCallback,
+            logout,
+            clearError: () => setError(null),
+            hasRole,
+            hasScreen,
+            canWrite,
+            isAdmin,
+            getToken,
+            getWSUrl,
+        }),
+        [
+            currentUser,
+            loading,
+            authLoading,
+            error,
+            sessionInfo,
+            login,
+            loginWithSSO,
+            handleSSOCallback,
+            logout,
+            hasRole,
+            hasScreen,
+            canWrite,
+            isAdmin,
+            getToken,
+            getWSUrl,
+        ],
     );
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

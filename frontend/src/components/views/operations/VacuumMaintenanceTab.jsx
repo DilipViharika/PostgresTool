@@ -2,8 +2,19 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { fetchData, postData } from '../../../utils/api';
 import {
-    Zap, RefreshCw, AlertTriangle, Clock, CheckCircle,
-    Database, Activity, Settings, AlertCircle, Play, Search, Filter, TrendingUp
+    Zap,
+    RefreshCw,
+    AlertTriangle,
+    Clock,
+    CheckCircle,
+    Database,
+    Activity,
+    Settings,
+    AlertCircle,
+    Play,
+    Search,
+    Filter,
+    TrendingUp,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -22,7 +33,11 @@ const VM_STYLE_ID = 'vm-adaptive-styles';
 function ensureVmStyles() {
     if (typeof document === 'undefined') return;
     let el = document.getElementById(VM_STYLE_ID);
-    if (!el) { el = document.createElement('style'); el.id = VM_STYLE_ID; document.head.appendChild(el); }
+    if (!el) {
+        el = document.createElement('style');
+        el.id = VM_STYLE_ID;
+        document.head.appendChild(el);
+    }
     el.textContent = [
         `@keyframes vmSpin    { to { transform: rotate(360deg) } }`,
         `@keyframes vmFadeUp  { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }`,
@@ -232,16 +247,24 @@ function ensureVmStyles() {
         `::-webkit-scrollbar-thumb:hover { background: ${THEME.grid}; }`,
     ].join('\n');
 }
-const Styles = () => { useAdaptiveTheme(); ensureVmStyles(); return null; };
+const Styles = () => {
+    useAdaptiveTheme();
+    ensureVmStyles();
+    return null;
+};
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
-const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
+const fmt = (n) => (n === null ? '—' : Number(n).toLocaleString());
 
 const fmtDate = (d) => {
     if (!d) return <span style={{ color: THEME.textDim, fontStyle: 'italic', fontSize: 11 }}>Never</span>;
     const ago = Math.floor((Date.now() - new Date(d)) / 86400000);
     const label = ago === 0 ? 'Today' : ago === 1 ? 'Yesterday' : `${ago}d ago`;
-    return <span title={new Date(d).toLocaleString()} style={{ color: THEME.textMuted }}>{label}</span>;
+    return (
+        <span title={new Date(d).toLocaleString()} style={{ color: THEME.textMuted }}>
+            {label}
+        </span>
+    );
 };
 
 const deadCol = (pct) => {
@@ -255,17 +278,23 @@ const deadCol = (pct) => {
 const DeadBar = ({ pct }) => {
     const p = Math.min(100, Number(pct) || 0);
     const c = deadCol(pct);
-    const grad = p > 20
-        ? `linear-gradient(90deg, ${THEME.danger}55, ${THEME.danger})`
-        : p > 10
-            ? `linear-gradient(90deg, ${THEME.warning}55, ${THEME.warning})`
-            : `linear-gradient(90deg, ${THEME.success}55, ${THEME.success})`;
+    const grad =
+        p > 20
+            ? `linear-gradient(90deg, ${THEME.danger}55, ${THEME.danger})`
+            : p > 10
+              ? `linear-gradient(90deg, ${THEME.warning}55, ${THEME.warning})`
+              : `linear-gradient(90deg, ${THEME.success}55, ${THEME.success})`;
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div className="vm-progress-track" style={{ flex: 1, minWidth: 50 }}>
                 <div className="vm-progress-fill" style={{ width: `${p}%`, background: grad }} />
             </div>
-            <span className="vm-mono" style={{ fontSize: 11, fontWeight: 700, color: c, minWidth: 34, textAlign: 'right' }}>{p.toFixed(1)}%</span>
+            <span
+                className="vm-mono"
+                style={{ fontSize: 11, fontWeight: 700, color: c, minWidth: 34, textAlign: 'right' }}
+            >
+                {p.toFixed(1)}%
+            </span>
         </div>
     );
 };
@@ -279,12 +308,18 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, war
             style={{ borderColor, animationDelay: `${delay}ms` }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{
-                    width: 38, height: 38, borderRadius: 10,
-                    background: `${accent}18`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: `1px solid ${accent}30`
-                }}>
+                <div
+                    style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 10,
+                        background: `${accent}18`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: `1px solid ${accent}30`,
+                    }}
+                >
                     <Icon size={18} color={accent} />
                 </div>
                 {(warn || critical) && (
@@ -292,9 +327,34 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, war
                 )}
             </div>
             <div>
-                <div style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
-                <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
-                {sub && <div style={{ fontSize: 11, color: critical ? THEME.danger : warn ? THEME.warning : THEME.textDim, marginTop: 3 }}>{sub}</div>}
+                <div
+                    style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, lineHeight: 1, letterSpacing: -0.5 }}
+                >
+                    {value}
+                </div>
+                <div
+                    style={{
+                        fontSize: 11,
+                        color: THEME.textDim,
+                        marginTop: 4,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.8,
+                    }}
+                >
+                    {label}
+                </div>
+                {sub && (
+                    <div
+                        style={{
+                            fontSize: 11,
+                            color: critical ? THEME.danger : warn ? THEME.warning : THEME.textDim,
+                            marginTop: 3,
+                        }}
+                    >
+                        {sub}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -307,20 +367,20 @@ const COLS = '2.2fr 1fr 1.4fr 1fr 1fr 100px';
 
 export default function VacuumMaintenanceTab() {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
-    const [data,       setData]       = useState(null);
-    const [loading,    setLoading]    = useState(true);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [error,      setError]      = useState(null);
-    const [lastAt,     setLastAt]     = useState(null);
-    const [autoRfsh,   setAutoRfsh]   = useState(30);
-    const [search,     setSearch]     = useState('');
+    const [error, setError] = useState(null);
+    const [lastAt, setLastAt] = useState(null);
+    const [autoRfsh, setAutoRfsh] = useState(30);
+    const [search, setSearch] = useState('');
     const [filterHigh, setFilterHigh] = useState(false);
-    const [activeTab,  setActiveTab]  = useState('tables');
-    const [vacuuming,  setVacuuming]  = useState({});
-    const [vacMsg,     setVacMsg]     = useState({});
+    const [activeTab, setActiveTab] = useState('tables');
+    const [vacuuming, setVacuuming] = useState({});
+    const [vacMsg, setVacMsg] = useState({});
     const [deadTupleData, setDeadTupleData] = React.useState([]);
     const [deadTupleLoading, setDeadTupleLoading] = React.useState(false);
-    const intervalRef                 = useRef(null);
+    const intervalRef = useRef(null);
 
     const load = useCallback(async (initial = false) => {
         if (!initial) setRefreshing(true);
@@ -341,9 +401,9 @@ export default function VacuumMaintenanceTab() {
         setDeadTupleLoading(true);
         try {
             const token = localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
-            const API_BASE = import.meta?.env?.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+            const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
             const res = await fetch(`${API_BASE}/api/vacuum/dead-tuple-rate`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             });
             if (res.ok) {
                 const json = await res.json();
@@ -353,9 +413,27 @@ export default function VacuumMaintenanceTab() {
             // Use sample data for demo when endpoint not available
             setDeadTupleData([
                 { relname: 'orders', n_dead_tup: 45200, n_live_tup: 892000, dead_pct: 4.8, last_autovacuum: '2h ago' },
-                { relname: 'events', n_dead_tup: 38100, n_live_tup: 1240000, dead_pct: 3.0, last_autovacuum: '45m ago' },
-                { relname: 'sessions', n_dead_tup: 29400, n_live_tup: 156000, dead_pct: 15.9, last_autovacuum: '6h ago' },
-                { relname: 'audit_log', n_dead_tup: 18900, n_live_tup: 440000, dead_pct: 4.1, last_autovacuum: '3h ago' },
+                {
+                    relname: 'events',
+                    n_dead_tup: 38100,
+                    n_live_tup: 1240000,
+                    dead_pct: 3.0,
+                    last_autovacuum: '45m ago',
+                },
+                {
+                    relname: 'sessions',
+                    n_dead_tup: 29400,
+                    n_live_tup: 156000,
+                    dead_pct: 15.9,
+                    last_autovacuum: '6h ago',
+                },
+                {
+                    relname: 'audit_log',
+                    n_dead_tup: 18900,
+                    n_live_tup: 440000,
+                    dead_pct: 4.1,
+                    last_autovacuum: '3h ago',
+                },
                 { relname: 'users', n_dead_tup: 6700, n_live_tup: 52000, dead_pct: 11.4, last_autovacuum: '1h ago' },
             ]);
         } finally {
@@ -363,51 +441,56 @@ export default function VacuumMaintenanceTab() {
         }
     }, []);
 
-    useEffect(() => { load(true); }, [load]);
+    useEffect(() => {
+        load(true);
+    }, [load]);
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         if (autoRfsh > 0) intervalRef.current = setInterval(() => load(false), autoRfsh * 1000);
-        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
     }, [autoRfsh, load]);
-    useEffect(() => { fetchDeadTupleRate(); }, [fetchDeadTupleRate]);
+    useEffect(() => {
+        fetchDeadTupleRate();
+    }, [fetchDeadTupleRate]);
 
     const runVacuum = async (schema, relname) => {
         const key = `${schema}.${relname}`;
-        setVacuuming(v => ({ ...v, [key]: true }));
-        setVacMsg(m => ({ ...m, [key]: null }));
+        setVacuuming((v) => ({ ...v, [key]: true }));
+        setVacMsg((m) => ({ ...m, [key]: null }));
         try {
             const r = await postData('/api/maintenance/vacuum', { schema, table: relname, analyze: true });
             if (r.success) {
-                setVacMsg(m => ({ ...m, [key]: '✓ Done' }));
+                setVacMsg((m) => ({ ...m, [key]: '✓ Done' }));
                 setTimeout(() => load(false), 2000);
             } else {
                 const errMsg = r.message || r.error || 'Vacuum failed';
-                setVacMsg(m => ({ ...m, [key]: `✗ ${errMsg.slice(0, 40)}` }));
+                setVacMsg((m) => ({ ...m, [key]: `✗ ${errMsg.slice(0, 40)}` }));
             }
         } catch (e) {
-            setVacMsg(m => ({ ...m, [key]: `✗ ${e.message?.slice(0, 40) || 'Error'}` }));
+            setVacMsg((m) => ({ ...m, [key]: `✗ ${e.message?.slice(0, 40) || 'Error'}` }));
         } finally {
-            setVacuuming(v => ({ ...v, [key]: false }));
+            setVacuuming((v) => ({ ...v, [key]: false }));
         }
     };
     /* ── Derived ── */
-    const tables   = data?.tables   || [];
-    const workers  = data?.workers  || [];
+    const tables = data?.tables || [];
+    const workers = data?.workers || [];
     const settings = data?.settings || [];
 
-    const filtered = tables.filter(t => {
+    const filtered = tables.filter((t) => {
         const matchSearch = !search || `${t.schemaname}.${t.relname}`.toLowerCase().includes(search.toLowerCase());
-        const matchHigh   = !filterHigh || Number(t.dead_pct) > 10;
+        const matchHigh = !filterHigh || Number(t.dead_pct) > 10;
         return matchSearch && matchHigh;
     });
 
-    const highBloat  = tables.filter(t => Number(t.dead_pct) > 10).length;
-    const critBloat  = tables.filter(t => Number(t.dead_pct) > 20).length;
-    const neverVac   = tables.filter(t => !t.last_autovacuum && !t.last_vacuum).length;
-    const totalDead  = tables.reduce((s, t) => s + (Number(t.n_dead_tup) || 0), 0);
-    const avgDeadPct = tables.length > 0
-        ? (tables.reduce((s, t) => s + (Number(t.dead_pct) || 0), 0) / tables.length).toFixed(1)
-        : 0;
+    const highBloat = tables.filter((t) => Number(t.dead_pct) > 10).length;
+    const critBloat = tables.filter((t) => Number(t.dead_pct) > 20).length;
+    const neverVac = tables.filter((t) => !t.last_autovacuum && !t.last_vacuum).length;
+    const totalDead = tables.reduce((s, t) => s + (Number(t.n_dead_tup) || 0), 0);
+    const avgDeadPct =
+        tables.length > 0 ? (tables.reduce((s, t) => s + (Number(t.dead_pct) || 0), 0) / tables.length).toFixed(1) : 0;
 
     const fmtRel = (d) => {
         if (!d) return '';
@@ -418,67 +501,129 @@ export default function VacuumMaintenanceTab() {
     };
 
     /* ── Loading ── */
-    if (loading) return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: THEME.textDim }}>
-            <Styles />
-            <div style={{ width: 48, height: 48, borderRadius: '50%', border: `2px solid ${THEME.primary}4D`, borderTopColor: THEME.primary, animation: 'vmSpin 1s linear infinite' }} />
-            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: .5, fontFamily: THEME.fontBody }}>Loading vacuum statistics…</span>
-        </div>
-    );
+    if (loading)
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 320,
+                    gap: 16,
+                    color: THEME.textDim,
+                }}
+            >
+                <Styles />
+                <div
+                    style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        border: `2px solid ${THEME.primary}4D`,
+                        borderTopColor: THEME.primary,
+                        animation: 'vmSpin 1s linear infinite',
+                    }}
+                />
+                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: 0.5, fontFamily: THEME.fontBody }}>
+                    Loading vacuum statistics…
+                </span>
+            </div>
+        );
 
     return (
         <div className="vm-wrap" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <Styles />
 
             {/* ── Toolbar ───────────────────────────────────────────────── */}
-            <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '14px 20px',
-                background: `linear-gradient(135deg, ${THEME.surfaceHover}, ${THEME.surface})`,
-                borderRadius: 14,
-                border: `1px solid ${THEME.grid}`,
-                backdropFilter: 'blur(8px)',
-            }}>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '14px 20px',
+                    background: `linear-gradient(135deg, ${THEME.surfaceHover}, ${THEME.surface})`,
+                    borderRadius: 14,
+                    border: `1px solid ${THEME.grid}`,
+                    backdropFilter: 'blur(8px)',
+                }}
+            >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{
-                        width: 36, height: 36, borderRadius: 10,
-                        background: `${THEME.primary}26`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: `1px solid ${THEME.primary}4D`
-                    }}>
+                    <div
+                        style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 10,
+                            background: `${THEME.primary}26`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: `1px solid ${THEME.primary}4D`,
+                        }}
+                    >
                         <Zap size={18} color={THEME.primary} />
                     </div>
                     <div>
-                        <div style={{ fontWeight: 800, fontSize: 16, color: THEME.textMain, letterSpacing: -.2 }}>Vacuum & Maintenance</div>
-                        <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 1 }}>{fmt(tables.length)} tables monitored</div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: THEME.textMain, letterSpacing: -0.2 }}>
+                            Vacuum & Maintenance
+                        </div>
+                        <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 1 }}>
+                            {fmt(tables.length)} tables monitored
+                        </div>
                     </div>
                     {workers.length > 0 && (
-                        <span className="vm-badge" style={{ background: `${THEME.success}1F`, color: THEME.success, border: `1px solid ${THEME.success}4D`, animation: 'vmPulse 2s infinite' }}>
+                        <span
+                            className="vm-badge"
+                            style={{
+                                background: `${THEME.success}1F`,
+                                color: THEME.success,
+                                border: `1px solid ${THEME.success}4D`,
+                                animation: 'vmPulse 2s infinite',
+                            }}
+                        >
                             <Activity size={10} /> {workers.length} worker{workers.length > 1 ? 's' : ''} active
                         </span>
                     )}
                     {critBloat > 0 && (
-                        <span className="vm-badge" style={{ background: `${THEME.danger}1F`, color: THEME.danger, border: `1px solid ${THEME.danger}4D` }}>
+                        <span
+                            className="vm-badge"
+                            style={{
+                                background: `${THEME.danger}1F`,
+                                color: THEME.danger,
+                                border: `1px solid ${THEME.danger}4D`,
+                            }}
+                        >
                             <AlertTriangle size={10} /> {critBloat} critical
                         </span>
                     )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {lastAt && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: THEME.textDim }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 5,
+                                fontSize: 11,
+                                color: THEME.textDim,
+                            }}
+                        >
                             <Clock size={11} /> {fmtRel(lastAt)}
                         </div>
                     )}
                     <select
                         value={autoRfsh}
-                        onChange={e => setAutoRfsh(+e.target.value)}
+                        onChange={(e) => setAutoRfsh(+e.target.value)}
                         style={{
                             background: THEME.surface,
                             border: `1px solid ${THEME.grid}`,
                             color: THEME.textMain,
-                            borderRadius: 8, padding: '5px 10px',
-                            fontSize: 12, outline: 'none', cursor: 'pointer',
-                            fontFamily: 'inherit'
+                            borderRadius: 8,
+                            padding: '5px 10px',
+                            fontSize: 12,
+                            outline: 'none',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
                         }}
                     >
                         <option value={10}>10s</option>
@@ -490,13 +635,19 @@ export default function VacuumMaintenanceTab() {
                         onClick={() => load(false)}
                         disabled={refreshing}
                         style={{
-                            display: 'flex', alignItems: 'center', gap: 7,
-                            padding: '7px 16px', borderRadius: 9,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 7,
+                            padding: '7px 16px',
+                            borderRadius: 9,
                             border: `1px solid ${THEME.primary}66`,
                             background: `${THEME.primary}1F`,
-                            color: THEME.primary, cursor: 'pointer',
-                            fontSize: 13, fontWeight: 700,
-                            fontFamily: 'inherit', transition: 'all .2s'
+                            color: THEME.primary,
+                            cursor: 'pointer',
+                            fontSize: 13,
+                            fontWeight: 700,
+                            fontFamily: 'inherit',
+                            transition: 'all .2s',
                         }}
                     >
                         <RefreshCw size={13} style={{ animation: refreshing ? 'vmSpin 1s linear infinite' : 'none' }} />
@@ -507,12 +658,19 @@ export default function VacuumMaintenanceTab() {
 
             {/* ── Error ─────────────────────────────────────────────────── */}
             {error && (
-                <div style={{
-                    padding: 14, background: `${THEME.danger}1A`,
-                    border: `1px solid ${THEME.danger}4D`,
-                    borderRadius: 12, color: THEME.danger,
-                    fontSize: 13, display: 'flex', alignItems: 'center', gap: 9
-                }}>
+                <div
+                    style={{
+                        padding: 14,
+                        background: `${THEME.danger}1A`,
+                        border: `1px solid ${THEME.danger}4D`,
+                        borderRadius: 12,
+                        color: THEME.danger,
+                        fontSize: 13,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 9,
+                    }}
+                >
                     <AlertCircle size={16} /> {error}
                 </div>
             )}
@@ -523,7 +681,14 @@ export default function VacuumMaintenanceTab() {
                     icon={Activity}
                     label="Active Workers"
                     value={workers.length}
-                    sub={workers.length === 0 ? 'All idle' : workers.map(w => w.table_name || w.datname).join(', ').slice(0, 28) + '…'}
+                    sub={
+                        workers.length === 0
+                            ? 'All idle'
+                            : workers
+                                  .map((w) => w.table_name || w.datname)
+                                  .join(', ')
+                                  .slice(0, 28) + '…'
+                    }
                     accent={workers.length > 0 ? THEME.success : THEME.primary}
                     delay={0}
                 />
@@ -559,10 +724,28 @@ export default function VacuumMaintenanceTab() {
             {/* ── Active autovacuum workers ─────────────────────────────── */}
             {workers.length > 0 && (
                 <div className="vm-card" style={{ borderColor: `${THEME.success}40` }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div
+                        style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: THEME.textMain,
+                            marginBottom: 14,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                        }}
+                    >
                         <Activity size={14} color={THEME.success} />
                         Active Autovacuum Workers
-                        <span className="vm-badge" style={{ background: `${THEME.success}1A`, color: THEME.success, border: `1px solid ${THEME.success}33`, marginLeft: 4 }}>
+                        <span
+                            className="vm-badge"
+                            style={{
+                                background: `${THEME.success}1A`,
+                                color: THEME.success,
+                                border: `1px solid ${THEME.success}33`,
+                                marginLeft: 4,
+                            }}
+                        >
                             {workers.length} running
                         </span>
                     </div>
@@ -572,11 +755,21 @@ export default function VacuumMaintenanceTab() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <span className="vm-dot active" />
                                     <div>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{w.table_name || w.datname}</div>
-                                        <div className="vm-mono" style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>PID {w.pid} · {w.datname}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>
+                                            {w.table_name || w.datname}
+                                        </div>
+                                        <div
+                                            className="vm-mono"
+                                            style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}
+                                        >
+                                            PID {w.pid} · {w.datname}
+                                        </div>
                                     </div>
                                 </div>
-                                <span className="vm-mono" style={{ fontSize: 12, color: THEME.success, fontWeight: 700 }}>
+                                <span
+                                    className="vm-mono"
+                                    style={{ fontSize: 12, color: THEME.success, fontWeight: 700 }}
+                                >
                                     {w.duration_sec ? `${w.duration_sec}s` : 'Running'}
                                 </span>
                             </div>
@@ -588,8 +781,8 @@ export default function VacuumMaintenanceTab() {
             {/* ── Sub-tabs ──────────────────────────────────────────────── */}
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 {[
-                    { id: 'tables',   label: 'Table Bloat',          icon: Database  },
-                    { id: 'settings', label: 'Autovacuum Settings',   icon: Settings  },
+                    { id: 'tables', label: 'Table Bloat', icon: Database },
+                    { id: 'settings', label: 'Autovacuum Settings', icon: Settings },
                 ].map(({ id, label, icon: Icon }) => (
                     <button
                         key={id}
@@ -600,7 +793,9 @@ export default function VacuumMaintenanceTab() {
                     </button>
                 ))}
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>
-                    {activeTab === 'tables' ? `${filtered.length} of ${tables.length} tables` : `${settings.length} settings`}
+                    {activeTab === 'tables'
+                        ? `${filtered.length} of ${tables.length} tables`
+                        : `${settings.length} settings`}
                 </span>
             </div>
 
@@ -608,27 +803,50 @@ export default function VacuumMaintenanceTab() {
             {activeTab === 'tables' && (
                 <div className="vm-card" style={{ padding: 0 }}>
                     {/* Filters */}
-                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: `1px solid ${THEME.grid}` }}>
+                    <div
+                        style={{
+                            padding: '12px 16px',
+                            display: 'flex',
+                            gap: 10,
+                            alignItems: 'center',
+                            borderBottom: `1px solid ${THEME.grid}`,
+                        }}
+                    >
                         <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
-                            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
+                            <Search
+                                size={13}
+                                style={{
+                                    position: 'absolute',
+                                    left: 11,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    color: THEME.textDim,
+                                }}
+                            />
                             <input
                                 className="vm-input"
                                 placeholder="Search tables…"
                                 value={search}
-                                onChange={e => setSearch(e.target.value)}
+                                onChange={(e) => setSearch(e.target.value)}
                                 style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }}
                             />
                         </div>
                         <button
-                            onClick={() => setFilterHigh(f => !f)}
+                            onClick={() => setFilterHigh((f) => !f)}
                             style={{
-                                display: 'flex', alignItems: 'center', gap: 6,
-                                padding: '8px 14px', borderRadius: 9,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '8px 14px',
+                                borderRadius: 9,
                                 border: `1px solid ${filterHigh ? `${THEME.warning}80` : THEME.grid}`,
                                 background: filterHigh ? `${THEME.warning}1A` : 'transparent',
                                 color: filterHigh ? THEME.warning : THEME.textDim,
-                                cursor: 'pointer', fontSize: 12, fontWeight: 700,
-                                fontFamily: 'inherit', transition: 'all .2s'
+                                cursor: 'pointer',
+                                fontSize: 12,
+                                fontWeight: 700,
+                                fontFamily: 'inherit',
+                                transition: 'all .2s',
                             }}
                         >
                             <Filter size={12} /> High Bloat Only
@@ -652,7 +870,7 @@ export default function VacuumMaintenanceTab() {
                                 No tables match the current filter.
                             </div>
                         ) : (
-                            filtered.map(t => {
+                            filtered.map((t) => {
                                 const dead = Number(t.dead_pct) || 0;
                                 const isCritical = dead > 20;
                                 const isHigh = dead > 10 && dead <= 20;
@@ -665,20 +883,48 @@ export default function VacuumMaintenanceTab() {
                                         className="vm-row"
                                         style={{
                                             gridTemplateColumns: COLS,
-                                            borderLeft: `3px solid ${isCritical ? THEME.danger : isHigh ? THEME.warning : 'transparent'}`
+                                            borderLeft: `3px solid ${isCritical ? THEME.danger : isHigh ? THEME.warning : 'transparent'}`,
                                         }}
                                     >
                                         {/* Table name */}
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                                <span className={`vm-dot ${isCritical ? 'critical' : isHigh ? 'high' : 'ok'}`} />
-                                                <span style={{ fontWeight: 700, color: THEME.textMain, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.relname}</span>
+                                                <span
+                                                    className={`vm-dot ${isCritical ? 'critical' : isHigh ? 'high' : 'ok'}`}
+                                                />
+                                                <span
+                                                    style={{
+                                                        fontWeight: 700,
+                                                        color: THEME.textMain,
+                                                        fontSize: 13,
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                    }}
+                                                >
+                                                    {t.relname}
+                                                </span>
                                             </div>
-                                            <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, marginLeft: 14 }}>{t.schemaname} · {t.total_size}</div>
+                                            <div
+                                                style={{
+                                                    fontSize: 10,
+                                                    color: THEME.textDim,
+                                                    marginTop: 2,
+                                                    marginLeft: 14,
+                                                }}
+                                            >
+                                                {t.schemaname} · {t.total_size}
+                                            </div>
                                         </div>
 
                                         {/* Dead tuples */}
-                                        <span className="vm-mono" style={{ fontSize: 12, color: Number(t.n_dead_tup) > 0 ? THEME.warning : THEME.textDim }}>
+                                        <span
+                                            className="vm-mono"
+                                            style={{
+                                                fontSize: 12,
+                                                color: Number(t.n_dead_tup) > 0 ? THEME.warning : THEME.textDim,
+                                            }}
+                                        >
                                             {fmt(t.n_dead_tup)}
                                         </span>
 
@@ -686,15 +932,26 @@ export default function VacuumMaintenanceTab() {
                                         <DeadBar pct={t.dead_pct} />
 
                                         {/* Last vacuum */}
-                                        <span style={{ fontSize: 12 }}>{fmtDate(t.last_autovacuum || t.last_vacuum)}</span>
+                                        <span style={{ fontSize: 12 }}>
+                                            {fmtDate(t.last_autovacuum || t.last_vacuum)}
+                                        </span>
 
                                         {/* Last analyze */}
-                                        <span style={{ fontSize: 12 }}>{fmtDate(t.last_autoanalyze || t.last_analyze)}</span>
+                                        <span style={{ fontSize: 12 }}>
+                                            {fmtDate(t.last_autoanalyze || t.last_analyze)}
+                                        </span>
 
                                         {/* Action */}
                                         <div>
                                             {msg ? (
-                                                <span className="vm-mono" style={{ fontSize: 11, fontWeight: 700, color: msg.startsWith('✓') ? THEME.success : THEME.danger }}>
+                                                <span
+                                                    className="vm-mono"
+                                                    style={{
+                                                        fontSize: 11,
+                                                        fontWeight: 700,
+                                                        color: msg.startsWith('✓') ? THEME.success : THEME.danger,
+                                                    }}
+                                                >
                                                     {msg}
                                                 </span>
                                             ) : (
@@ -703,9 +960,14 @@ export default function VacuumMaintenanceTab() {
                                                     onClick={() => runVacuum(t.schemaname, t.relname)}
                                                     disabled={isRunning}
                                                 >
-                                                    {isRunning
-                                                        ? <RefreshCw size={10} style={{ animation: 'vmSpin 1s linear infinite' }} />
-                                                        : <Play size={10} />}
+                                                    {isRunning ? (
+                                                        <RefreshCw
+                                                            size={10}
+                                                            style={{ animation: 'vmSpin 1s linear infinite' }}
+                                                        />
+                                                    ) : (
+                                                        <Play size={10} />
+                                                    )}
                                                     {isRunning ? 'Running…' : 'Vacuum'}
                                                 </button>
                                             )}
@@ -717,7 +979,15 @@ export default function VacuumMaintenanceTab() {
                     </div>
 
                     {/* Footer */}
-                    <div style={{ padding: '10px 16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div
+                        style={{
+                            padding: '10px 16px',
+                            borderTop: `1px solid ${THEME.grid}`,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}
+                    >
                         <span style={{ fontSize: 11, color: THEME.textDim }}>
                             {filtered.length} of {tables.length} tables
                         </span>
@@ -731,101 +1001,245 @@ export default function VacuumMaintenanceTab() {
             {/* ── Autovacuum settings ───────────────────────────────────── */}
             {activeTab === 'settings' && (
                 <div className="vm-card">
-                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div
+                        style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: THEME.textMain,
+                            marginBottom: 4,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                        }}
+                    >
                         <Settings size={14} color={THEME.textDim} />
                         Autovacuum Configuration
                     </div>
                     <div style={{ fontSize: 12, color: THEME.textDim, marginBottom: 20, lineHeight: 1.6 }}>
-                        Read from <span className="vm-mono" style={{ color: THEME.textMuted, fontSize: 11 }}>pg_settings</span>. To modify, edit <span className="vm-mono" style={{ color: THEME.textMuted, fontSize: 11 }}>postgresql.conf</span> or use <span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>ALTER SYSTEM</span> + <span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>SELECT pg_reload_conf()</span>.
+                        Read from{' '}
+                        <span className="vm-mono" style={{ color: THEME.textMuted, fontSize: 11 }}>
+                            pg_settings
+                        </span>
+                        . To modify, edit{' '}
+                        <span className="vm-mono" style={{ color: THEME.textMuted, fontSize: 11 }}>
+                            postgresql.conf
+                        </span>{' '}
+                        or use{' '}
+                        <span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>
+                            ALTER SYSTEM
+                        </span>{' '}
+                        +{' '}
+                        <span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>
+                            SELECT pg_reload_conf()
+                        </span>
+                        .
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 48px' }}>
-                        {settings.map(s => (
+                        {settings.map((s) => (
                             <div key={s.name} className="vm-setting-row">
                                 <div style={{ flex: 1 }}>
-                                    <div className="vm-mono" style={{ fontWeight: 600, color: THEME.textMain, fontSize: 12 }}>{s.name}</div>
-                                    {s.short_desc && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 3 }}>{s.short_desc}</div>}
+                                    <div
+                                        className="vm-mono"
+                                        style={{ fontWeight: 600, color: THEME.textMain, fontSize: 12 }}
+                                    >
+                                        {s.name}
+                                    </div>
+                                    {s.short_desc && (
+                                        <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 3 }}>
+                                            {s.short_desc}
+                                        </div>
+                                    )}
                                 </div>
-                                <span className="vm-mono" style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginLeft: 16, whiteSpace: 'nowrap' }}>
-                                    {s.setting}{s.unit ? ` ${s.unit}` : ''}
+                                <span
+                                    className="vm-mono"
+                                    style={{
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        color: THEME.primary,
+                                        marginLeft: 16,
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {s.setting}
+                                    {s.unit ? ` ${s.unit}` : ''}
                                 </span>
                             </div>
                         ))}
                     </div>
 
                     {/* Tuning tips */}
-                    <div style={{
-                        marginTop: 24, padding: '16px 18px',
-                        background: `${THEME.primary}12`,
-                        border: `1px solid ${THEME.primary}33`,
-                        borderRadius: 12
-                    }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <div
+                        style={{
+                            marginTop: 24,
+                            padding: '16px 18px',
+                            background: `${THEME.primary}12`,
+                            border: `1px solid ${THEME.primary}33`,
+                            borderRadius: 12,
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: THEME.primary,
+                                marginBottom: 10,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 7,
+                            }}
+                        >
                             <Zap size={12} color={THEME.primary} /> Tuning Tips
                         </div>
                         <div style={{ fontSize: 12, color: THEME.textDim, lineHeight: 1.8 }}>
-                            • Reduce <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>autovacuum_vacuum_scale_factor</span> (e.g. 0.01) for large tables to vacuum more aggressively.<br />
-                            • Increase <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>autovacuum_vacuum_cost_delay</span> to reduce I/O impact during business hours.<br />
-                            • Set <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>autovacuum_max_workers</span> higher if multiple large tables bloat simultaneously.<br />
-                            • Use per-table storage parameters (<span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>ALTER TABLE … SET autovacuum_…</span>) to override global settings.
+                            • Reduce{' '}
+                            <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>
+                                autovacuum_vacuum_scale_factor
+                            </span>{' '}
+                            (e.g. 0.01) for large tables to vacuum more aggressively.
+                            <br />• Increase{' '}
+                            <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>
+                                autovacuum_vacuum_cost_delay
+                            </span>{' '}
+                            to reduce I/O impact during business hours.
+                            <br />• Set{' '}
+                            <span className="vm-mono" style={{ color: THEME.textMain, fontSize: 11 }}>
+                                autovacuum_max_workers
+                            </span>{' '}
+                            higher if multiple large tables bloat simultaneously.
+                            <br />• Use per-table storage parameters (
+                            <span className="vm-mono" style={{ color: THEME.primary, fontSize: 11 }}>
+                                ALTER TABLE … SET autovacuum_…
+                            </span>
+                            ) to override global settings.
                         </div>
                     </div>
 
                     {/* ── Dead Tuple Accumulation Rate ── */}
                     <div style={{ marginTop: 32 }}>
-                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-                            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                                <span style={{ fontSize:20 }}>🗑️</span>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: 16,
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ fontSize: 20 }}>🗑️</span>
                                 <div>
-                                    <h3 style={{ color: THEME.textMain, margin:0, fontSize:15, fontWeight:700 }}>Dead Tuple Accumulation Rate</h3>
-                                    <p style={{ color: THEME.textMuted, margin:0, fontSize:12 }}>Tables with highest dead tuple counts — vacuum candidates</p>
+                                    <h3 style={{ color: THEME.textMain, margin: 0, fontSize: 15, fontWeight: 700 }}>
+                                        Dead Tuple Accumulation Rate
+                                    </h3>
+                                    <p style={{ color: THEME.textMuted, margin: 0, fontSize: 12 }}>
+                                        Tables with highest dead tuple counts — vacuum candidates
+                                    </p>
                                 </div>
                             </div>
-                            <button onClick={fetchDeadTupleRate} disabled={deadTupleLoading}
-                                    style={{ padding:'6px 14px', borderRadius:8, border:`1px solid ${THEME.border}`,
-                                        background:'transparent', color: THEME.textDim, cursor:'pointer', fontSize:12 }}>
+                            <button
+                                onClick={fetchDeadTupleRate}
+                                disabled={deadTupleLoading}
+                                style={{
+                                    padding: '6px 14px',
+                                    borderRadius: 8,
+                                    border: `1px solid ${THEME.border}`,
+                                    background: 'transparent',
+                                    color: THEME.textDim,
+                                    cursor: 'pointer',
+                                    fontSize: 12,
+                                }}
+                            >
                                 {deadTupleLoading ? '⟳ Loading…' : '↻ Refresh'}
                             </button>
                         </div>
 
                         {deadTupleData.length === 0 && !deadTupleLoading ? (
-                            <div style={{ textAlign:'center', color: THEME.textMuted, padding:40, fontSize:13,
-                                background: THEME.surface, borderRadius:12, border:`1px dashed ${THEME.border}` }}>
+                            <div
+                                style={{
+                                    textAlign: 'center',
+                                    color: THEME.textMuted,
+                                    padding: 40,
+                                    fontSize: 13,
+                                    background: THEME.surface,
+                                    borderRadius: 12,
+                                    border: `1px dashed ${THEME.border}`,
+                                }}
+                            >
                                 No dead tuple data available. Ensure pg_stat_user_tables is accessible.
                             </div>
                         ) : (
-                            <div style={{ display:'grid', gap:10 }}>
+                            <div style={{ display: 'grid', gap: 10 }}>
                                 {deadTupleData.map((t, i) => {
-                                    const pct = typeof t.dead_pct === 'number' ? t.dead_pct
-                                        : t.n_live_tup > 0 ? Math.round(t.n_dead_tup / (t.n_live_tup + t.n_dead_tup) * 1000) / 10 : 0;
+                                    const pct =
+                                        typeof t.dead_pct === 'number'
+                                            ? t.dead_pct
+                                            : t.n_live_tup > 0
+                                              ? Math.round((t.n_dead_tup / (t.n_live_tup + t.n_dead_tup)) * 1000) / 10
+                                              : 0;
                                     const urgent = pct > 10;
-                                    const warn   = pct > 5;
-                                    const color  = urgent ? '#ef4444' : warn ? '#f97316' : '#22c55e';
+                                    const warn = pct > 5;
+                                    const color = urgent ? '#ef4444' : warn ? '#f97316' : '#22c55e';
                                     return (
-                                        <div key={i} style={{ background: THEME.surface, borderRadius:10, padding:'14px 16px',
-                                            border:`1px solid ${urgent ? 'rgba(239,68,68,.3)' : THEME.border}`,
-                                            display:'grid', gridTemplateColumns:'1fr auto auto', alignItems:'center', gap:12 }}>
+                                        <div
+                                            key={i}
+                                            style={{
+                                                background: THEME.surface,
+                                                borderRadius: 10,
+                                                padding: '14px 16px',
+                                                border: `1px solid ${urgent ? 'rgba(239,68,68,.3)' : THEME.border}`,
+                                                display: 'grid',
+                                                gridTemplateColumns: '1fr auto auto',
+                                                alignItems: 'center',
+                                                gap: 12,
+                                            }}
+                                        >
                                             <div>
-                                                <div style={{ color: THEME.textMain, fontWeight:600, fontSize:13 }}>{t.relname}</div>
-                                                <div style={{ color: THEME.textMuted, fontSize:11, marginTop:3 }}>
-                                                    {(t.n_dead_tup || 0).toLocaleString()} dead · {(t.n_live_tup || 0).toLocaleString()} live
+                                                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 13 }}>
+                                                    {t.relname}
+                                                </div>
+                                                <div style={{ color: THEME.textMuted, fontSize: 11, marginTop: 3 }}>
+                                                    {(t.n_dead_tup || 0).toLocaleString()} dead ·{' '}
+                                                    {(t.n_live_tup || 0).toLocaleString()} live
                                                     {t.last_autovacuum ? ` · last vacuum ${t.last_autovacuum}` : ''}
                                                 </div>
                                             </div>
-                                            <div style={{ width:120, background: THEME.bg, borderRadius:4, height:8, overflow:'hidden' }}>
-                                                <div style={{ width:`${Math.min(pct, 100)}%`, height:'100%', background:color,
-                                                    borderRadius:4, transition:'width .4s' }} />
+                                            <div
+                                                style={{
+                                                    width: 120,
+                                                    background: THEME.bg,
+                                                    borderRadius: 4,
+                                                    height: 8,
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: `${Math.min(pct, 100)}%`,
+                                                        height: '100%',
+                                                        background: color,
+                                                        borderRadius: 4,
+                                                        transition: 'width .4s',
+                                                    }}
+                                                />
                                             </div>
-                                            <div style={{ fontSize:13, fontWeight:700, color, minWidth:50, textAlign:'right' }}>
+                                            <div
+                                                style={{
+                                                    fontSize: 13,
+                                                    fontWeight: 700,
+                                                    color,
+                                                    minWidth: 50,
+                                                    textAlign: 'right',
+                                                }}
+                                            >
                                                 {pct.toFixed(1)}%
-                                                {urgent && <span style={{ marginLeft:6, fontSize:10 }}>⚠️</span>}
+                                                {urgent && <span style={{ marginLeft: 6, fontSize: 10 }}>⚠️</span>}
                                             </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         )}
-                        <p style={{ color: THEME.textMuted, fontSize:11, marginTop:10, textAlign:'right' }}>
+                        <p style={{ color: THEME.textMuted, fontSize: 11, marginTop: 10, textAlign: 'right' }}>
                             ⚠️ Tables above 10% dead-tuple ratio are candidates for immediate VACUUM
                         </p>
                     </div>
