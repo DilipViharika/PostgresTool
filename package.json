@@ -14,7 +14,7 @@
         "type-check": "npm run type-check --workspaces --if-present",
         "test": "npm run test --workspaces --if-present",
         "lint": "npm run lint --workspaces --if-present",
-        "prepare": "husky"
+        "prepare": "node -e \"try{require('husky')()}catch(e){}\""
     },
     "devDependencies": {
         "husky": "^9.1.0",
