@@ -46,7 +46,6 @@ export const pool = new Pool({
     max:              10,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
-    options: '--search_path=pgmonitoringtool,public',
 });
 
 pool.on('error', (err) => {

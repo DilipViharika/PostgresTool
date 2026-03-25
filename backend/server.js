@@ -172,7 +172,6 @@ const pool = HAS_ADMIN_DB
           connectionTimeoutMillis: 15_000,
           statement_timeout:       30_000,
           ssl: { rejectUnauthorized: false },
-          options: '--search_path=pgmonitoringtool,public',
       })
     : null;
 
