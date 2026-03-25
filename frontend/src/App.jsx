@@ -128,7 +128,7 @@ import {
     MessageSquarePlus, Star, Send, Archive, RefreshCw, Radio, Cloud,
     CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
     ThumbsUp, Lightbulb, AlertTriangle, PlusCircle, Sun, Moon, Save, Edit2,
-    Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock
+    Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock, Search
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
