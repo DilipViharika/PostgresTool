@@ -2181,13 +2181,50 @@ function SubTabContent({ subTabId, section, db, widgets }) {
   const key = dbName === 'sqlserver' ? 'mssql' : dbName;
   const seed = `${key}-${subTabId}`;
 
-  /* ── Overview: full overview panels + core widgets ── */
+  /* ── Overview: high-level dashboard — throughput chart + health + activity ── */
   if (subTabId === 'overview' || !subTabId) {
+    const throughputData = gen24h(seed, 800, 600, 200, 300);
     return (
       <>
-        <OverviewPanels widgets={widgets} db={db} />
+        {/* Throughput trend chart — the primary overview visual */}
+        <Panel title="Throughput (24h)" icon={Activity} accentColor={db.color}
+          rightNode={<div style={{ display: 'flex', gap: 10 }}>
+            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />TPS</span>
+            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.success, borderRadius: 1 }} />Commits</span>
+          </div>}>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={throughputData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" name="TPS" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              <Area type="monotone" dataKey="secondary" name="Commits" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={1.5} strokeDasharray="4 2" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+
+        {/* Health + Backup + Maintenance row */}
         <div style={{ marginTop: 16 }}>
-          <SectionContent section={section} db={db} />
+          <OverviewPanels widgets={widgets} db={db} />
+        </div>
+
+        {/* Database health gauge + uptime + connections summary */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Database Health" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-dh`) * 5 + 94)} color={THEME.success} size={90} strokeWidth={7} label="HEALTH" />
+            </div>
+          </Panel>
+          <Panel title="Uptime" icon={Clock} accentColor={THEME.success}>
+            <StatCard label="Current" value={db.kpis.find(k => k.label === 'Uptime')?.value || '47d'} unit={db.kpis.find(k => k.label === 'Uptime')?.unit || ''} color={THEME.success} />
+          </Panel>
+          <Panel title="Cache Hit" icon={Zap} accentColor={db.color}>
+            <StatCard label="Ratio" value={db.kpis.find(k => k.label === 'Cache Hit' || k.label === 'Buffer Hit')?.value || '99.2'} unit="%" color={db.color} />
+          </Panel>
+          <Panel title="Active Connections" icon={Network} accentColor={db.color}>
+            <StatCard label="Current" value={db.kpis.find(k => k.label === 'Connections' || k.label === 'Threads')?.value || '42'} color={db.color} />
+          </Panel>
         </div>
       </>
     );
