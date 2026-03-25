@@ -160,6 +160,14 @@ const getSectionForTab = (tabId) => {
     return null;
 };
 
+/** For grouped (demo) sections, return the parent group name alongside the section name */
+const getGroupForTab = (tabId) => {
+    for (const g of SECTION_GROUPS) {
+        if (g.tabs.some(t => t.id === tabId)) return g.group || null;
+    }
+    return null;
+};
+
 const getSectionAccent = (tabId) => {
     for (const g of SECTION_GROUPS) {
         if (g.tabs.some(t => t.id === tabId)) return g.accent;
@@ -1453,12 +1461,23 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
     const { activeConnection } = useConnection();
     const [openSections, setOpenSections] = useState(() => {
         const active = getSectionForTab(activeTab);
-        return active ? new Set([active]) : new Set();
+        const parentGrp = getGroupForTab(activeTab);
+        const s = new Set();
+        if (active) s.add(active);
+        if (parentGrp) s.add(parentGrp);
+        return s;
     });
 
     useEffect(() => {
         const sec = getSectionForTab(activeTab);
-        if (sec) setOpenSections(prev => prev.has(sec) ? prev : new Set([...prev, sec]));
+        const parentGrp = getGroupForTab(activeTab);
+        setOpenSections(prev => {
+            const needs = [];
+            if (sec && !prev.has(sec)) needs.push(sec);
+            if (parentGrp && !prev.has(parentGrp)) needs.push(parentGrp);
+            if (needs.length === 0) return prev;
+            return new Set([...prev, ...needs]);
+        });
     }, [activeTab]);
 
     const toggleSection = useCallback((sec) => {
@@ -1482,6 +1501,26 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     return true;
                 }),
         [allowedTabIds, connDbType]);
+
+    /* Build three-level nav: regular sections stay flat, demo sections with
+       a `group` property get nested under a collapsible parent header.
+       Output: [{ type:'section', ...group }, { type:'parent', name, accent, children:[...groups] }, ...] */
+    const groupedNav = useMemo(() => {
+        const result = [];
+        const parentMap = new Map(); // group name → index in result
+        for (const g of visibleGroups) {
+            if (g.group) {
+                if (!parentMap.has(g.group)) {
+                    parentMap.set(g.group, result.length);
+                    result.push({ type: 'parent', name: g.group, accent: g.accent, children: [] });
+                }
+                result[parentMap.get(g.group)].children.push(g);
+            } else {
+                result.push({ type: 'section', ...g });
+            }
+        }
+        return result;
+    }, [visibleGroups]);
 
     const W = collapsed ? 64 : 252;
 
@@ -1551,174 +1590,252 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 overflowX: 'hidden',
                 padding: '8px 0',
             }}>
-                {visibleGroups.map((group, gi) => {
-                    const isOpen = collapsed || openSections.has(group.section);
-                    const hasActive = group.tabs.some(t => t.id === activeTab);
-
-                    return (
-                        <div key={group.section} style={{ marginBottom: 2 }}>
-
-                            {/* ── Section label / divider ── */}
-                            {collapsed ? (
-                                /* Icon-only mode: just a thin colored divider */
-                                gi > 0 && (
-                                    <div style={{
-                                        margin: '6px 16px',
-                                        height: '1px',
-                                        background: `linear-gradient(90deg, transparent, ${group.accent}40, transparent)`,
-                                    }} />
-                                )
-                            ) : (
-                                <button
-                                    className="section-btn"
-                                    onClick={() => toggleSection(group.section)}
-                                    role="group"
-                                    aria-label={group.section}
+                {/* ── Helper: render a single tab button ── */}
+                {(() => {
+                    const renderTab = (tab, accent, extraPadLeft = 0) => {
+                        const isActive = activeTab === tab.id;
+                        const basePadLeft = 16 + extraPadLeft;
+                        return (
+                            <button
+                                id={`${tab.id}-tab`}
+                                key={tab.id}
+                                className="nav-item"
+                                onClick={() => onTabChange(tab.id)}
+                                role="tab"
+                                aria-selected={isActive}
+                                aria-controls={`${tab.id}-panel`}
+                                aria-label={tab.label}
+                                aria-current={isActive ? 'page' : undefined}
+                                title={collapsed ? tab.label : undefined}
+                                style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: collapsed ? 'center' : 'flex-start',
+                                    gap: 10,
+                                    padding: collapsed
+                                        ? '9px 0'
+                                        : isActive
+                                            ? `8px 14px 8px ${basePadLeft - 3}px`
+                                            : `8px 14px 8px ${basePadLeft}px`,
+                                    background: isActive
+                                        ? `linear-gradient(90deg, ${accent}1a 0%, ${accent}08 100%)`
+                                        : 'transparent',
+                                    border: 'none',
+                                    borderLeft: isActive
+                                        ? `3px solid ${accent}`
+                                        : '3px solid transparent',
+                                    cursor: 'pointer',
+                                    color: isActive ? accent : DS.sidebarText,
+                                    fontWeight: isActive ? 600 : 400,
+                                    fontSize: 13,
+                                    textAlign: 'left',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    fontFamily: DS.fontUI,
+                                    transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                                    position: 'relative',
+                                }}
+                                onMouseEnter={e => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = DS.sidebarHover;
+                                        e.currentTarget.style.color = DS.textSub;
+                                    }
+                                }}
+                                onMouseLeave={e => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = 'transparent';
+                                        e.currentTarget.style.color = DS.sidebarText;
+                                    }
+                                }}
+                            >
+                                <tab.icon
+                                    size={15}
                                     style={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '7px 16px 5px',
-                                        background: 'transparent',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        borderRadius: 0,
-                                        marginTop: gi === 0 ? 2 : 8,
+                                        flexShrink: 0,
+                                        opacity: isActive ? 1 : 0.6,
+                                        filter: isActive ? `drop-shadow(0 0 4px ${accent}80)` : 'none',
                                     }}
-                                >
-                                    <span style={{
-                                        fontSize: 10,
-                                        fontWeight: 700,
-                                        letterSpacing: '0.1em',
-                                        textTransform: 'uppercase',
-                                        fontFamily: DS.fontMono,
-                                        color: hasActive ? group.accent : DS.sidebarText,
-                                    }}>
-                                        {group.section}
-                                    </span>
-                                    <ChevronDown
-                                        size={12}
-                                        color={hasActive ? group.accent : '#334155'}
-                                        style={{
-                                            transition: 'transform 0.2s ease',
-                                            transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                                            flexShrink: 0,
-                                        }}
-                                    />
-                                </button>
-                            )}
+                                />
+                                {!collapsed && (
+                                    <>
+                                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {tab.label}
+                                        </span>
+                                        {tab.badge && (
+                                            <span style={{
+                                                fontSize: 9, fontWeight: 700,
+                                                padding: '1px 6px', borderRadius: 10,
+                                                background: 'rgba(251,113,133,0.15)',
+                                                color: DS.rose,
+                                                border: '1px solid rgba(251,113,133,0.3)',
+                                                fontFamily: DS.fontMono,
+                                                lineHeight: '16px',
+                                                flexShrink: 0,
+                                            }}>
+                                                {tab.badge}
+                                            </span>
+                                        )}
+                                    </>
+                                )}
+                                {isActive && !collapsed && (
+                                    <div style={{
+                                        position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
+                                        background: `linear-gradient(270deg, ${accent}10, transparent)`,
+                                        pointerEvents: 'none',
+                                    }} />
+                                )}
+                            </button>
+                        );
+                    };
 
-                            {/* ── Tab items ── */}
-                            {isOpen && (
-                                <div className={collapsed ? '' : 'section-open'}>
-                                    {group.tabs.map(tab => {
-                                        const isActive = activeTab === tab.id;
-                                        const panelId = `${tab.id}-panel`;
+                    /* ── Helper: section header button ── */
+                    const renderSectionHeader = (label, sectionKey, accent, hasActive, marginTop, padLeft = 16) => (
+                        <button
+                            className="section-btn"
+                            onClick={() => toggleSection(sectionKey)}
+                            role="group"
+                            aria-label={label}
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: `7px ${16}px 5px ${padLeft}px`,
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                borderRadius: 0,
+                                marginTop,
+                            }}
+                        >
+                            <span style={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                letterSpacing: '0.1em',
+                                textTransform: 'uppercase',
+                                fontFamily: DS.fontMono,
+                                color: hasActive ? accent : DS.sidebarText,
+                            }}>
+                                {label}
+                            </span>
+                            <ChevronDown
+                                size={12}
+                                color={hasActive ? accent : '#334155'}
+                                style={{
+                                    transition: 'transform 0.2s ease',
+                                    transform: (collapsed || openSections.has(sectionKey)) ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                    flexShrink: 0,
+                                }}
+                            />
+                        </button>
+                    );
+
+                    /* ── Render all nav items ── */
+                    return groupedNav.map((item, gi) => {
+                        if (item.type === 'parent') {
+                            /* ═══ Three-level: Parent group → Sub-sections → Tabs ═══ */
+                            const parentOpen = collapsed || openSections.has(item.name);
+                            const hasActiveInParent = item.children.some(ch => ch.tabs.some(t => t.id === activeTab));
+
+                            return (
+                                <div key={item.name} style={{ marginBottom: 2 }}>
+                                    {collapsed ? (
+                                        gi > 0 && (
+                                            <div style={{
+                                                margin: '6px 16px', height: '1px',
+                                                background: `linear-gradient(90deg, transparent, ${item.accent}40, transparent)`,
+                                            }} />
+                                        )
+                                    ) : (
+                                        renderSectionHeader(item.name, item.name, item.accent, hasActiveInParent, gi === 0 ? 2 : 8)
+                                    )}
+
+                                    {parentOpen && item.children.map(sub => {
+                                        const subOpen = collapsed || openSections.has(sub.section);
+                                        const hasActiveSub = sub.tabs.some(t => t.id === activeTab);
+                                        /* Strip "Demo PG — " prefix to show just "Core Monitoring" */
+                                        const displayName = sub.section.replace(/^Demo\s+\S+\s*—\s*/, '');
+
                                         return (
-                                            <button
-                                                id={`${tab.id}-tab`}
-                                                key={tab.id}
-                                                onClick={() => onTabChange(tab.id)}
-                                                role="tab"
-                                                aria-selected={isActive}
-                                                aria-controls={panelId}
-                                                aria-label={tab.label}
-                                                aria-current={isActive ? 'page' : undefined}
-                                                title={collapsed ? tab.label : undefined}
-                                                style={{
-                                                    width: '100%',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: collapsed ? 'center' : 'flex-start',
-                                                    gap: 10,
-                                                    /* Left padding: 16px base + 4px for the active bar space */
-                                                    padding: collapsed
-                                                        ? '9px 0'
-                                                        : isActive
-                                                            ? '8px 14px 8px 13px'
-                                                            : '8px 14px 8px 16px',
-                                                    background: isActive
-                                                        ? `linear-gradient(90deg, ${group.accent}1a 0%, ${group.accent}08 100%)`
-                                                        : 'transparent',
-                                                    border: 'none',
-                                                    borderLeft: isActive
-                                                        ? `3px solid ${group.accent}`
-                                                        : '3px solid transparent',
-                                                    cursor: 'pointer',
-                                                    color: isActive ? group.accent : DS.sidebarText,
-                                                    fontWeight: isActive ? 600 : 400,
-                                                    fontSize: 13,
-                                                    textAlign: 'left',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    fontFamily: DS.fontUI,
-                                                    transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
-                                                    position: 'relative',
-                                                }}
-                                                onMouseEnter={e => {
-                                                    if (!isActive) {
-                                                        e.currentTarget.style.background = DS.sidebarHover;
-                                                        e.currentTarget.style.color = DS.textSub;
-                                                    }
-                                                }}
-                                                onMouseLeave={e => {
-                                                    if (!isActive) {
-                                                        e.currentTarget.style.background = 'transparent';
-                                                        e.currentTarget.style.color = DS.sidebarText;
-                                                    }
-                                                }}
-                                            >
-                                                {/* Icon */}
-                                                <tab.icon
-                                                    size={15}
-                                                    style={{
-                                                        flexShrink: 0,
-                                                        opacity: isActive ? 1 : 0.6,
-                                                        filter: isActive ? `drop-shadow(0 0 4px ${group.accent}80)` : 'none',
-                                                    }}
-                                                />
-
-                                                {/* Label + badge */}
+                                            <div key={sub.section}>
                                                 {!collapsed && (
-                                                    <>
-                                                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {tab.label}
+                                                    <button
+                                                        className="section-btn"
+                                                        onClick={() => toggleSection(sub.section)}
+                                                        style={{
+                                                            width: '100%',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            padding: '5px 16px 4px 28px',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            borderRadius: 0,
+                                                            marginTop: 2,
+                                                        }}
+                                                    >
+                                                        <span style={{
+                                                            fontSize: 9,
+                                                            fontWeight: 600,
+                                                            letterSpacing: '0.08em',
+                                                            textTransform: 'uppercase',
+                                                            fontFamily: DS.fontMono,
+                                                            color: hasActiveSub ? sub.accent : (DS.sidebarText + 'aa'),
+                                                        }}>
+                                                            {'— '}{displayName}
                                                         </span>
-                                                        {tab.badge && (
-                                                            <span style={{
-                                                                fontSize: 9, fontWeight: 700,
-                                                                padding: '1px 6px', borderRadius: 10,
-                                                                background: 'rgba(251,113,133,0.15)',
-                                                                color: DS.rose,
-                                                                border: '1px solid rgba(251,113,133,0.3)',
-                                                                fontFamily: DS.fontMono,
-                                                                lineHeight: '16px',
+                                                        <ChevronDown
+                                                            size={10}
+                                                            color={hasActiveSub ? sub.accent : '#334155'}
+                                                            style={{
+                                                                transition: 'transform 0.2s ease',
+                                                                transform: subOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
                                                                 flexShrink: 0,
-                                                            }}>
-                                                                {tab.badge}
-                                                            </span>
-                                                        )}
-                                                    </>
+                                                            }}
+                                                        />
+                                                    </button>
                                                 )}
-
-                                                {/* Active right-side glow smear */}
-                                                {isActive && !collapsed && (
-                                                    <div style={{
-                                                        position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
-                                                        background: `linear-gradient(270deg, ${group.accent}10, transparent)`,
-                                                        pointerEvents: 'none',
-                                                    }} />
+                                                {subOpen && (
+                                                    <div className={collapsed ? '' : 'section-open'}>
+                                                        {sub.tabs.map(tab => renderTab(tab, sub.accent, collapsed ? 0 : 12))}
+                                                    </div>
                                                 )}
-                                            </button>
+                                            </div>
                                         );
                                     })}
                                 </div>
-                            )}
-                        </div>
-                    );
-                })}
+                            );
+                        }
+
+                        /* ═══ Two-level: Section header → Tabs (normal sections) ═══ */
+                        const group = item;
+                        const isOpen = collapsed || openSections.has(group.section);
+                        const hasActive = group.tabs.some(t => t.id === activeTab);
+
+                        return (
+                            <div key={group.section} style={{ marginBottom: 2 }}>
+                                {collapsed ? (
+                                    gi > 0 && (
+                                        <div style={{
+                                            margin: '6px 16px', height: '1px',
+                                            background: `linear-gradient(90deg, transparent, ${group.accent}40, transparent)`,
+                                        }} />
+                                    )
+                                ) : (
+                                    renderSectionHeader(group.section, group.section, group.accent, hasActive, gi === 0 ? 2 : 8)
+                                )}
+                                {isOpen && (
+                                    <div className={collapsed ? '' : 'section-open'}>
+                                        {group.tabs.map(tab => renderTab(tab, group.accent))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    });
+                })()}
             </nav>
 
             {/* ── FOOTER ── */}

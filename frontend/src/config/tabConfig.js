@@ -25,25 +25,28 @@ export function registerComponents(components) {
     _components = components;
 }
 
-/** Helper: generate demo tabs for a SQL database with two-level hierarchy matching real sidebar */
+/** Helper: generate demo tabs for a SQL database with three-level hierarchy:
+ *  Parent group (e.g. "Demo PG") → Sub-sections (e.g. "Core Monitoring") → Individual tabs
+ */
 function buildDemoSqlTabs(dbShort, dbLabel, accent) {
     const D = _components.DemoSectionView;
+    const group = `Demo ${dbLabel}`;
     return [
-        { section: `Demo ${dbLabel} — Core Monitoring`, accent },
+        { section: `Demo ${dbLabel} — Core Monitoring`, accent, group },
         { id: `demo-${dbShort}-overview`,      icon: Activity,    label: 'Overview',          component: D, badge: null },
         { id: `demo-${dbShort}-performance`,   icon: Zap,         label: 'Performance',       component: D, badge: null },
         { id: `demo-${dbShort}-resources`,     icon: HardDrive,   label: 'Resources',         component: D, badge: null },
         { id: `demo-${dbShort}-reliability`,   icon: CheckCircle, label: 'Reliability',       component: D, badge: null },
         { id: `demo-${dbShort}-alerts`,        icon: Bell,        label: 'Alerts',            component: D, badge: '3' },
 
-        { section: `Demo ${dbLabel} — Query & Indexes`, accent },
+        { section: `Demo ${dbLabel} — Query & Indexes`, accent, group },
         { id: `demo-${dbShort}-optimizer`,     icon: Zap,         label: 'Query Optimizer',   component: D, badge: null },
         { id: `demo-${dbShort}-indexes`,       icon: Layers,      label: 'Indexes',           component: D, badge: null },
         { id: `demo-${dbShort}-regression`,    icon: TrendingUp,  label: 'Plan Regression',   component: D, badge: null },
         { id: `demo-${dbShort}-bloat`,         icon: Layers,      label: 'Bloat Analysis',    component: D, badge: null },
         { id: `demo-${dbShort}-table`,         icon: Layers,      label: 'Table Analysis',    component: D, badge: null },
 
-        { section: `Demo ${dbLabel} — Infrastructure`, accent },
+        { section: `Demo ${dbLabel} — Infrastructure`, accent, group },
         { id: `demo-${dbShort}-pool`,          icon: Network,     label: 'Connection Pool',      component: D, badge: null },
         { id: `demo-${dbShort}-replication`,   icon: Radio,       label: 'Replication & WAL',    component: D, badge: null },
         { id: `demo-${dbShort}-checkpoint`,    icon: CheckCircle, label: 'Checkpoint Monitor',   component: D, badge: null },
@@ -51,12 +54,12 @@ function buildDemoSqlTabs(dbShort, dbLabel, accent) {
         { id: `demo-${dbShort}-capacity`,      icon: BarChart2,   label: 'Capacity Planning',    component: D, badge: null },
         { id: `demo-${dbShort}-backup`,        icon: Archive,     label: 'Backup & Recovery',    component: D, badge: null },
 
-        { section: `Demo ${dbLabel} — Schema & Security`, accent },
+        { section: `Demo ${dbLabel} — Schema & Security`, accent, group },
         { id: `demo-${dbShort}-schema`,        icon: GitBranch,   label: 'Schema & Migrations',    component: D, badge: null },
         { id: `demo-${dbShort}-schema-viz`,    icon: GitBranch,   label: 'Schema Visualizer',      component: D, badge: null },
         { id: `demo-${dbShort}-security`,      icon: Lock,        label: 'Security & Compliance',  component: D, badge: null },
 
-        { section: `Demo ${dbLabel} — Observability`, accent },
+        { section: `Demo ${dbLabel} — Observability`, accent, group },
         { id: `demo-${dbShort}-cloudwatch`,       icon: Cloud,      label: 'CloudWatch',            component: D, badge: null },
         { id: `demo-${dbShort}-log-patterns`,     icon: FileSearch,  label: 'Log Pattern Analysis',  component: D, badge: null },
         { id: `demo-${dbShort}-alert-correlation`, icon: Link2,      label: 'Alert Correlation',     component: D, badge: null },
@@ -65,13 +68,13 @@ function buildDemoSqlTabs(dbShort, dbLabel, accent) {
         { id: `demo-${dbShort}-status-page`,      icon: Globe,       label: 'Status Page',           component: D, badge: null },
         { id: `demo-${dbShort}-ai-monitoring`,    icon: Brain,       label: 'AI Monitoring',         component: D, badge: null },
 
-        { section: `Demo ${dbLabel} — Developer Tools`, accent },
+        { section: `Demo ${dbLabel} — Developer Tools`, accent, group },
         { id: `demo-${dbShort}-sql`,           icon: Terminal,    label: 'SQL Console',        component: D, badge: null },
         { id: `demo-${dbShort}-api`,           icon: Cpu,         label: 'API Tracing',        component: D, badge: null },
         { id: `demo-${dbShort}-repository`,    icon: GitBranch,   label: 'Repository',         component: D, badge: null },
         { id: `demo-${dbShort}-ai-advisor`,    icon: Brain,       label: 'AI Query Advisor',   component: D, badge: null },
 
-        { section: `Demo ${dbLabel} — Admin`, accent },
+        { section: `Demo ${dbLabel} — Admin`, accent, group },
         { id: `demo-${dbShort}-tasks`,            icon: CalendarCheck,    label: 'DBA Task Scheduler', component: D, badge: null },
         { id: `demo-${dbShort}-users`,            icon: Users,            label: 'User Management',    component: D, badge: null },
         { id: `demo-${dbShort}-admin-panel`,      icon: Shield,           label: 'Admin',              component: D, badge: null },
@@ -152,16 +155,16 @@ export function buildTabConfig() {
         ...buildDemoSqlTabs('oracle', 'Oracle',     '#FF4560'),
 
         /* ── Demo: MongoDB (matches real MongoDB section structure) ── */
-        { section: 'Demo MongoDB — Core', accent: '#2EE89C' },
+        { section: 'Demo MongoDB — Core', accent: '#2EE89C', group: 'Demo MongoDB' },
         { id: 'demo-mongo-overview',     icon: Database,          label: 'Mongo Overview',    component: _components.DemoSectionView, badge: null },
         { id: 'demo-mongo-performance',  icon: Gauge,             label: 'Mongo Performance', component: _components.DemoSectionView, badge: null },
         { id: 'demo-mongo-storage',      icon: HardDriveDownload, label: 'Mongo Storage',     component: _components.DemoSectionView, badge: null },
 
-        { section: 'Demo MongoDB — Replication', accent: '#2EE89C' },
+        { section: 'Demo MongoDB — Replication', accent: '#2EE89C', group: 'Demo MongoDB' },
         { id: 'demo-mongo-replication',  icon: GitMerge,          label: 'Mongo Replication', component: _components.DemoSectionView, badge: null },
         { id: 'demo-mongo-sharding',     icon: Server,            label: 'Mongo Sharding',    component: _components.DemoSectionView, badge: null },
 
-        { section: 'Demo MongoDB — Data & Tools', accent: '#2EE89C' },
+        { section: 'Demo MongoDB — Data & Tools', accent: '#2EE89C', group: 'Demo MongoDB' },
         { id: 'demo-mongo-data-tools',   icon: Workflow,          label: 'Mongo Data Tools',  component: _components.DemoSectionView, badge: null },
     ];
 }
@@ -176,6 +179,7 @@ export function getSectionGroups(config) {
     for (const item of config) {
         if (item.section) {
             current = { section: item.section, tabs: [], accent: item.accent || getDS().cyan };
+            if (item.group) current.group = item.group;
             groups.push(current);
         } else if (current) {
             current.tabs.push(item);
