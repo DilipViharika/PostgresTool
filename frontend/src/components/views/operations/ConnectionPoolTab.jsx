@@ -26,22 +26,6 @@ const DB_TYPES = {
         icon: '🐬',
         fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
     },
-    mariadb: {
-        label: 'MariaDB',
-        defaultPort: 3306,
-        color: '#c0765a',
-        accent: '#e8956d',
-        icon: '🦭',
-        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
-    },
-    sqlite: {
-        label: 'SQLite',
-        defaultPort: null,
-        color: '#0f80cc',
-        accent: '#4da6ff',
-        icon: '📦',
-        fields: ['filePath'],
-    },
     mongodb: {
         label: 'MongoDB',
         defaultPort: 27017,
@@ -49,46 +33,6 @@ const DB_TYPES = {
         accent: '#00ed64',
         icon: '🍃',
         fields: ['host', 'port', 'database', 'username', 'password', 'ssl', 'authSource', 'replicaSet'],
-    },
-    redis: {
-        label: 'Redis',
-        defaultPort: 6379,
-        color: '#dc382c',
-        accent: '#ff6b6b',
-        icon: '⚡',
-        fields: ['host', 'port', 'password', 'database', 'ssl'],
-    },
-    cassandra: {
-        label: 'Cassandra',
-        defaultPort: 9042,
-        color: '#1287b1',
-        accent: '#1ab8f3',
-        icon: '💫',
-        fields: ['host', 'port', 'keyspace', 'username', 'password', 'ssl'],
-    },
-    bigquery: {
-        label: 'BigQuery',
-        defaultPort: null,
-        color: '#4285f4',
-        accent: '#66a3ff',
-        icon: '📊',
-        fields: ['projectId', 'dataset', 'keyFile'],
-    },
-    snowflake: {
-        label: 'Snowflake',
-        defaultPort: 443,
-        color: '#29b5e8',
-        accent: '#7fd8f5',
-        icon: '❄️',
-        fields: ['account', 'warehouse', 'database', 'schema', 'username', 'password', 'role'],
-    },
-    clickhouse: {
-        label: 'ClickHouse',
-        defaultPort: 8123,
-        color: '#ffcc01',
-        accent: '#ffe566',
-        icon: '🖱️',
-        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
     },
 };
 
@@ -99,19 +43,8 @@ const FIELD_META = {
     username:     { label: 'Username',          placeholder: 'admin',                   type: 'text' },
     password:     { label: 'Password',          placeholder: '••••••••',               type: 'password' },
     ssl:          { label: 'Enable SSL',        type: 'checkbox' },
-    filePath:     { label: 'File Path',         placeholder: '/path/to/db.sqlite',      type: 'text' },
-    instanceName: { label: 'Instance Name',     placeholder: 'MSSQLSERVER',             type: 'text', optional: true },
-    serviceName:  { label: 'Service Name',      placeholder: 'ORCLCDB',                 type: 'text' },
     authSource:   { label: 'Auth Source',       placeholder: 'admin',                   type: 'text', optional: true },
     replicaSet:   { label: 'Replica Set',       placeholder: 'rs0',                     type: 'text', optional: true },
-    keyspace:     { label: 'Keyspace',          placeholder: 'my_keyspace',             type: 'text' },
-    projectId:    { label: 'Project ID',        placeholder: 'my-gcp-project',          type: 'text' },
-    dataset:      { label: 'Dataset',           placeholder: 'my_dataset',              type: 'text' },
-    keyFile:      { label: 'Service Account JSON', placeholder: 'Paste JSON key here', type: 'textarea' },
-    account:      { label: 'Account',           placeholder: 'xy12345.us-east-1',       type: 'text' },
-    warehouse:    { label: 'Warehouse',         placeholder: 'COMPUTE_WH',              type: 'text' },
-    schema:       { label: 'Schema',            placeholder: 'PUBLIC',                  type: 'text', optional: true },
-    role:         { label: 'Role',              placeholder: 'SYSADMIN',                type: 'text', optional: true },
 };
 
 const defaultFormData = (dbType = 'postgresql') => {
@@ -126,19 +59,8 @@ const defaultFormData = (dbType = 'postgresql') => {
         password: '',
         ssl: false,
         isDefault: false,
-        filePath: '',
-        instanceName: '',
-        serviceName: '',
         authSource: '',
         replicaSet: '',
-        keyspace: '',
-        projectId: '',
-        dataset: '',
-        keyFile: '',
-        account: '',
-        warehouse: '',
-        schema: '',
-        role: '',
         // ── SSH Tunnel ───────────────────────────────────────────────
         sshEnabled:    false,
         sshHost:       '',
@@ -960,9 +882,7 @@ const ConnectionsTab = () => {
                                         <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 2 }}>
                                             <span style={{ color: dbMeta.accent }}>{dbMeta.label}</span>
                                             {conn.host && ` · ${conn.host}${conn.port ? `:${conn.port}` : ''}`}
-                                            {conn.filePath && ` · ${conn.filePath}`}
-                                            {conn.account && ` · ${conn.account}`}
-                                            {conn.projectId && ` · ${conn.projectId}`}
+                                            {conn.authSource && ` · auth:${conn.authSource}`}
                                         </div>
                                     </div>
                                 </div>
@@ -981,22 +901,10 @@ const ConnectionsTab = () => {
                                         <span style={{ color: THEME.textDim }}>{conn.username}</span>
                                     </div>
                                 )}
-                                {conn.keyspace && (
+                                {conn.replicaSet && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: THEME.textMuted }}>keyspace</span>
-                                        <span style={{ color: THEME.textDim }}>{conn.keyspace}</span>
-                                    </div>
-                                )}
-                                {conn.warehouse && (
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: THEME.textMuted }}>warehouse</span>
-                                        <span style={{ color: THEME.textDim }}>{conn.warehouse}</span>
-                                    </div>
-                                )}
-                                {conn.dataset && (
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <span style={{ color: THEME.textMuted }}>dataset</span>
-                                        <span style={{ color: THEME.textDim }}>{conn.dataset}</span>
+                                        <span style={{ color: THEME.textMuted }}>replica set</span>
+                                        <span style={{ color: THEME.textDim }}>{conn.replicaSet}</span>
                                     </div>
                                 )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
