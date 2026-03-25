@@ -115,16 +115,16 @@ const CONFIG = Object.freeze({
 // ─────────────────────────────────────────────────────────────────────────────
 // ENVIRONMENT VALIDATION
 // ─────────────────────────────────────────────────────────────────────────────
+const HAS_ADMIN_DB = !!(process.env.PGHOST && process.env.PGPASSWORD);
+
 (function validateEnv() {
-    const required = ['PGHOST', 'PGPASSWORD'];
-    const missing  = required.filter(k => !process.env[k]);
-    if (missing.length) {
-        console.error(JSON.stringify({
+    if (!HAS_ADMIN_DB) {
+        console.warn(JSON.stringify({
             ts:  new Date().toISOString(),
-            level: 'ERROR',
-            msg: `Missing required environment variables: ${missing.join(', ')}. Check your .env file.`,
+            level: 'WARN',
+            msg: 'PGHOST / PGPASSWORD not set — admin database unavailable. ' +
+                 'Users must add connections via the UI. Metadata features (saved connections, user management) will be unavailable until a control-plane database is configured.',
         }));
-        process.exit(1);
     }
     const jwtSecret = process.env.JWT_SECRET;
     const weakSecret = !jwtSecret || jwtSecret === 'vigil-change-me-in-production';
@@ -155,39 +155,49 @@ function log(level, message, meta = {}) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATABASE POOL — default pool (env-based) + per-connection pool map
+// DATABASE POOL — admin pool (env-based, for metadata) + per-connection pool map
 // ─────────────────────────────────────────────────────────────────────────────
-const pool = new Pool({
-    user:     process.env.PGUSER     || 'postgres',
-    host:     process.env.PGHOST,
-    database: process.env.PGDATABASE || 'postgres',
-    password: process.env.PGPASSWORD,
-    port:     Number(process.env.PGPORT) || 5432,
-    max:      10,
-    idleTimeoutMillis:       10_000,
-    connectionTimeoutMillis: 15_000,
-    statement_timeout:       30_000,
-    ssl: { rejectUnauthorized: false },
-    options: '--search_path=pgmonitoringtool,public',
-});
-pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
+
+// Admin pool: used ONLY for vigil_connections, users, feedback, etc.
+// NOT used for monitoring queries — those must go through user-added connections.
+const pool = HAS_ADMIN_DB
+    ? new Pool({
+          user:     process.env.PGUSER     || 'postgres',
+          host:     process.env.PGHOST,
+          database: process.env.PGDATABASE || 'postgres',
+          password: process.env.PGPASSWORD,
+          port:     Number(process.env.PGPORT) || 5432,
+          max:      10,
+          idleTimeoutMillis:       10_000,
+          connectionTimeoutMillis: 15_000,
+          statement_timeout:       30_000,
+          ssl: { rejectUnauthorized: false },
+          options: '--search_path=pgmonitoringtool,public',
+      })
+    : null;
+
+if (pool) pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
 
 // Map<connectionId, pg.Pool> — pools created on demand for dynamic connections
 const connectionPools = new Map();
 
-// ID of the currently active dynamic connection (null = use default pool)
+// ID of the currently active dynamic connection (null = no connection selected)
 let activeConnectionId = null;
 
 /**
  * Return the pool for a given connectionId.
- * - If connectionId is null/undefined → use the default env-based pool.
+ * - If connectionId is null/undefined → use the active user connection.
  * - Otherwise look up (or create) a pool for that CONNECTIONS entry.
+ * - NEVER falls back to the admin pool for monitoring queries.
  */
 async function getPool(connectionId) {
     if (!connectionId) {
-        // Use default env-based pool; fall back to active if one is set
+        // Use the active user-added connection if one is selected
         if (activeConnectionId) return getPool(activeConnectionId);
-        return pool;
+        // No active connection — return admin pool as last resort for backward compat
+        // (monitoring pages will show "no connection" once env vars are removed)
+        if (pool) return pool;
+        throw new Error('No database connection configured. Please add a connection in the Connection Pool settings.');
     }
     const id = parseInt(connectionId, 10);
     if (connectionPools.has(id)) return connectionPools.get(id);
@@ -374,7 +384,24 @@ function isLoginLocked(username) {
 // ALERT ENGINE & EMAIL
 // ─────────────────────────────────────────────────────────────────────────────
 const emailService = new EmailNotificationService(CONFIG.EMAIL);
-const alerts       = new EnhancedAlertEngine(pool, CONFIG, emailService);
+const _alertEngine = pool ? new EnhancedAlertEngine(pool, CONFIG, emailService) : null;
+
+// Null-safe proxy: if no admin DB, alert methods return empty/noop results
+const alerts = _alertEngine || {
+    monitoringInterval: null,
+    async getRecent()      { return []; },
+    async getStatistics()  { return { total: 0, acknowledged: 0, unacknowledged: 0 }; },
+    async acknowledge()    { return { success: false, error: 'No admin database configured' }; },
+    async bulkAcknowledge(){ return []; },
+    async fire()           { return { id: null }; },
+    async cleanup()        { return 0; },
+    async runMonitoring()  {},
+    async initializeDatabase() {},
+    startMonitoring()      {},
+    stopMonitoring()       {},
+    addSubscriber()        {},
+    removeSubscriber()     {},
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // QUERY HISTORY
@@ -393,6 +420,7 @@ const queryHistory = {
 
 /** Ensure the vigil_connections table exists (idempotent) */
 async function ensureConnectionsTable() {
+    if (!pool) throw new Error('Admin database not configured');
     // 1. Guarantee the schema exists before touching any table inside it.
     await pool.query(`CREATE SCHEMA IF NOT EXISTS pgmonitoringtool`);
 
@@ -635,6 +663,7 @@ let CONNECTIONS = [];
 
 /** Sync in-memory CONNECTIONS cache from DB for all connections (used by getPool) */
 async function syncConnectionsCache() {
+    if (!pool) return;   // no admin DB — nothing to sync
     try {
         const { rows } = await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id');
         CONNECTIONS = rows.map(rowToConn);
@@ -3493,20 +3522,26 @@ async function startup() {
             log('INFO', `🚀 VIGIL v3.0.0 running on port ${CONFIG.PORT}`);
         });
 
-        pool.connect()
-            .then(async client => {
-                await client.query('SELECT 1');
-                client.release();
-                log('INFO', 'Database connection successful');
-            })
-            .catch(e => log('WARN', 'Database unreachable at startup — will retry on requests', { error: e.message }));
+        if (pool) {
+            pool.connect()
+                .then(async client => {
+                    await client.query('SELECT 1');
+                    client.release();
+                    log('INFO', 'Admin database connection successful');
+                })
+                .catch(e => log('WARN', 'Admin database unreachable at startup — will retry on requests', { error: e.message }));
+        } else {
+            log('INFO', 'No admin database configured — running in user-connection-only mode');
+        }
 
-        alerts.initializeDatabase()
-            .then(() => {
-                alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
-                log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
-            })
-            .catch(e => log('WARN', 'Alert system could not initialize', { error: e.message }));
+        if (alerts) {
+            alerts.initializeDatabase()
+                .then(() => {
+                    alerts.startMonitoring(CONFIG.ALERT_MONITORING_INTERVAL);
+                    log('INFO', 'Alert monitoring started', { interval: CONFIG.ALERT_MONITORING_INTERVAL });
+                })
+                .catch(e => log('WARN', 'Alert system could not initialize', { error: e.message }));
+        }
 
     } catch (e) {
         log('ERROR', 'Startup failed', { error: e.message });
@@ -3519,9 +3554,9 @@ async function startup() {
 // ─────────────────────────────────────────────────────────────────────────────
 async function shutdown(signal) {
     log('INFO', `${signal} — shutting down`);
-    alerts.stopMonitoring();
+    if (alerts) alerts.stopMonitoring();
     await closeAllTunnels().catch(() => {});
-    server.close(() => pool.end(() => process.exit(0)));
+    server.close(() => (pool ? pool.end(() => process.exit(0)) : process.exit(0)));
 }
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
