@@ -118,30 +118,56 @@ const CONFIG = Object.freeze({
 const HAS_ADMIN_DB = !!(process.env.PGHOST && process.env.PGPASSWORD);
 
 (function validateEnv() {
+    const errors = [];
+    const warnings = [];
+
+    // ── Admin database ──────────────────────────────────────────────────
     if (!HAS_ADMIN_DB) {
-        console.warn(JSON.stringify({
-            ts:  new Date().toISOString(),
-            level: 'WARN',
-            msg: 'PGHOST / PGPASSWORD not set — admin database unavailable. ' +
-                 'Users must add connections via the UI. Metadata features (saved connections, user management) will be unavailable until a control-plane database is configured.',
-        }));
+        warnings.push(
+            'PGHOST / PGPASSWORD not set — admin database unavailable. ' +
+            'Users must add connections via the UI. Metadata features (saved connections, user management) will be unavailable until a control-plane database is configured.'
+        );
     }
+
+    // ── JWT secret ──────────────────────────────────────────────────────
     const jwtSecret = process.env.JWT_SECRET;
     const weakSecret = !jwtSecret || jwtSecret === 'vigil-change-me-in-production';
-    if (weakSecret) {
-        console.warn(JSON.stringify({
-            ts: new Date().toISOString(), level: 'WARN',
-            msg: IS_PROD
-                ? '⚠️  SECURITY: JWT_SECRET is missing or uses the default value in PRODUCTION. ' +
-                'Set a strong secret via the Vercel dashboard → Settings → Environment Variables. ' +
-                'All issued tokens are insecure until this is fixed.'
-                : 'JWT_SECRET is using the default insecure value. Set a strong secret before deploying.',
-        }));
+    if (weakSecret && IS_PROD) {
+        errors.push(
+            'FATAL: JWT_SECRET is missing or uses the default value in PRODUCTION. ' +
+            'Set a strong (32+ char) secret via the Vercel dashboard → Settings → Environment Variables. ' +
+            'Refusing to start with insecure tokens.'
+        );
+    } else if (weakSecret) {
+        warnings.push('JWT_SECRET is using the default insecure value. Set a strong secret before deploying.');
     } else if (jwtSecret.length < 32) {
-        console.warn(JSON.stringify({
-            ts: new Date().toISOString(), level: 'WARN',
-            msg: 'JWT_SECRET is shorter than 32 characters. Use a longer, random secret for better security.',
-        }));
+        warnings.push('JWT_SECRET is shorter than 32 characters. Use a longer, random secret for better security.');
+    }
+
+    // ── Required variables in production ────────────────────────────────
+    if (IS_PROD) {
+        const requiredProd = ['PGHOST', 'PGPASSWORD', 'CORS_ORIGIN'];
+        for (const key of requiredProd) {
+            if (!process.env[key]) {
+                errors.push(`Missing required environment variable in production: ${key}`);
+            }
+        }
+    }
+
+    // ── Emit warnings ───────────────────────────────────────────────────
+    for (const w of warnings) {
+        console.warn(JSON.stringify({ ts: new Date().toISOString(), level: 'WARN', msg: w }));
+    }
+
+    // ── Fail-fast on errors in production ───────────────────────────────
+    if (errors.length > 0) {
+        for (const e of errors) {
+            console.error(JSON.stringify({ ts: new Date().toISOString(), level: 'FATAL', msg: e }));
+        }
+        if (IS_PROD) {
+            console.error('Aborting startup due to configuration errors.');
+            process.exit(1);
+        }
     }
 })();
 
@@ -312,16 +338,23 @@ function strictRateLimiter(windowMs = 60_000, maxReqs = 10) {
 }
 
 function securityHeaders(_req, res, next) {
+    // ── Equivalent to helmet.js defaults + hardened extras ──────────────
+    res.removeHeader('X-Powered-By');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.removeHeader('X-Powered-By');
+    res.setHeader('X-XSS-Protection', '0');  // Modern best-practice: disable legacy XSS filter
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('X-DNS-Prefetch-Control', 'off');
+    res.setHeader('X-Download-Options', 'noopen');  // IE-specific download guard
+    res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+    res.setHeader('Origin-Agent-Cluster', '?1');
     res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
     if (IS_PROD) {
         res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
     }
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
     next();
 }
 
@@ -3959,16 +3992,36 @@ if (process.env.VERCEL !== '1') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ERROR HANDLING
+// CENTRALIZED ERROR HANDLING
 // ─────────────────────────────────────────────────────────────────────────────
-app.use((err, req, res, _next) => {
-    log('ERROR', 'Unhandled error', { error: err.message });
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
-});
 
+// 404 handler — must come BEFORE the error handler
 app.use((req, res) => {
     log('WARN', '404', { path: req.path, method: req.method });
-    res.status(404).json({ error: 'Endpoint not found' });
+    res.status(404).json({ error: 'Endpoint not found', path: req.path });
+});
+
+// Global error handler (4-arg signature required by Express)
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, _next) => {
+    // ── Determine status code ───────────────────────────────────────────
+    const status = err.status || err.statusCode || 500;
+
+    // ── Structured logging with request context ─────────────────────────
+    log('ERROR', 'Unhandled error', {
+        error:  err.message,
+        stack:  IS_PROD ? undefined : err.stack,
+        method: req.method,
+        path:   req.path,
+        ip:     req.ip,
+        userId: req.user?.id,
+    });
+
+    // ── Sanitized response (never leak stack traces in production) ──────
+    res.status(status).json({
+        error:   status >= 500 ? 'Internal Server Error' : err.message,
+        ...(IS_PROD ? {} : { message: err.message, stack: err.stack }),
+    });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

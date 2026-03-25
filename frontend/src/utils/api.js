@@ -2,6 +2,13 @@ import { isDemoMode, getDemoData } from './demoData.js';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
 
+// ── Request deduplication ──────────────────────────────────────────────────
+// Prevents duplicate GET requests to the same URL while one is in-flight.
+const inflightRequests = new Map();
+
+// ── Default request timeout (30 seconds) ───────────────────────────────────
+const DEFAULT_TIMEOUT_MS = 30_000;
+
 export const fetchMetrics = async () => {
     if (isDemoMode()) return getDemoData('/api/metrics');
     const res = await fetch(`${API_BASE}/api/metrics`, {
@@ -57,32 +64,59 @@ async function request(path, options = {}) {
         return getDemoData(path);
     }
 
-    const resolvedPath = (options.method === 'GET' || !options.method)
-        ? appendConnectionId(path)
-        : path;
+    const isGet = options.method === 'GET' || !options.method;
+    const resolvedPath = isGet ? appendConnectionId(path) : path;
     const url = resolvedPath.startsWith('http') ? resolvedPath : `${API_BASE}${resolvedPath}`;
 
-    const res = await fetch(url, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-            ...options.headers,
-        },
-    });
-
-    if (res.status === 401) {
-        window.dispatchEvent(new CustomEvent('auth:logout'));
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Session expired. Please sign in again.');
+    // ── Deduplicate identical in-flight GET requests ─────────────────────
+    if (isGet && inflightRequests.has(url)) {
+        return inflightRequests.get(url);
     }
 
-    if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Request failed (${res.status})`);
-    }
+    // ── AbortController with configurable timeout ───────────────────────
+    const controller = new AbortController();
+    const timeoutMs = options.timeout || DEFAULT_TIMEOUT_MS;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    return res.json();
+    const promise = (async () => {
+        try {
+            const res = await fetch(url, {
+                ...options,
+                signal: options.signal || controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders(),
+                    ...options.headers,
+                },
+            });
+
+            if (res.status === 401) {
+                window.dispatchEvent(new CustomEvent('auth:logout'));
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || 'Session expired. Please sign in again.');
+            }
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Request failed (${res.status})`);
+            }
+
+            return res.json();
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                throw new Error(`Request to ${path} timed out after ${timeoutMs}ms`);
+            }
+            throw err;
+        } finally {
+            clearTimeout(timeoutId);
+            if (isGet) inflightRequests.delete(url);
+        }
+    })();
+
+    // Store the promise so duplicate GET calls share the same in-flight request
+    if (isGet) inflightRequests.set(url, promise);
+
+    return promise;
 }
 
 // --- POLLING REPLACEMENT FOR WEBSOCKET ---

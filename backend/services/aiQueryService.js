@@ -29,7 +29,31 @@ export async function analyzeQuery(pool, queryText) {
     }
 
     try {
-        const res = await pool.query(`EXPLAIN (FORMAT JSON, ANALYZE false) ${queryText}`);
+        // ── SQL injection guard ─────────────────────────────────────────
+        // We cannot use a parameterized placeholder for the EXPLAIN target
+        // because PostgreSQL doesn't support `EXPLAIN $1`.  Instead we:
+        //   1. Strip comments (to defeat comment-hiding attacks)
+        //   2. Reject anything containing multiple statements (;)
+        //   3. Reject any DML / DDL keywords (only SELECT / WITH allowed)
+        const sanitized = queryText
+            .replace(/--[^\n]*/g, ' ')          // strip single-line comments
+            .replace(/\/\*[\s\S]*?\*\//g, ' ')  // strip block comments
+            .trim();
+
+        if (!sanitized) throw new Error('Query is empty after sanitization');
+
+        // Block multiple statements
+        if (/;/.test(sanitized.replace(/;$/, ''))) {
+            throw new Error('Multiple SQL statements are not allowed');
+        }
+
+        // Only allow SELECT / WITH ... SELECT queries
+        const DISALLOWED = /\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|CREATE|ALTER|GRANT|REVOKE|COPY|EXECUTE|DO\b|CALL|NOTIFY|LISTEN|LOAD|LOCK\s+TABLE|CHECKPOINT|SET\s+ROLE|RESET\s+ALL)\b/i;
+        if (DISALLOWED.test(sanitized)) {
+            throw new Error('Only SELECT queries are allowed for EXPLAIN analysis');
+        }
+
+        const res = await pool.query(`EXPLAIN (FORMAT JSON, ANALYZE false) ${sanitized}`);
         const plan = res.rows[0]['QUERY PLAN'][0];
 
         const suggestions = [];
