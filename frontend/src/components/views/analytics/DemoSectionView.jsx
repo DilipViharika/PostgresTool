@@ -73,5 +73,5 @@ export default function DemoSectionView() {
     ? subTabId
     : (SQL_TAB_TO_SECTION[subTabId] || subTabId);
 
-  return <DemoDataTab dbKey={dbKey} sectionId={sectionId} />;
+  return <DemoDataTab dbKey={dbKey} sectionId={sectionId} subTabId={subTabId} />;
 }

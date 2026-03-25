@@ -2138,7 +2138,310 @@ function OverviewPanels({ widgets, db }) {
   );
 }
 
-export default function DemoDataTab({ dbKey = 'postgresql', sectionId }) {
+/* ══════════════════════════════════════════════════════════════════════
+   SubTabContent — Renders tab-specific widgets that differ per sub-tab
+   so each tab (Overview, Performance, Resources, etc.) looks unique.
+   Falls back to the section-level SectionContent for tabs without
+   a custom layout.
+   ══════════════════════════════════════════════════════════════════════ */
+function SubTabContent({ subTabId, section, db, widgets }) {
+  const dbName = db.name.toLowerCase().replace(' ', '');
+  const key = dbName === 'sqlserver' ? 'mssql' : dbName;
+  const sw = getSectionWidgets(mapSectionToWidgetId(section.id), db);
+
+  /* ── Overview: full overview panels + core widgets ── */
+  if (subTabId === 'overview' || !subTabId) {
+    return (
+      <>
+        <OverviewPanels widgets={widgets} db={db} />
+        <div style={{ marginTop: 16 }}>
+          <SectionContent section={section} db={db} />
+        </div>
+      </>
+    );
+  }
+
+  /* ── Performance: session traffic + query analysis ── */
+  if (subTabId === 'performance') {
+    const sessionData = Array.from({ length: 24 }, (_, i) => ({
+      time: `${String(i).padStart(2, '0')}:00`,
+      active: Math.floor(hashSeed(`${key}-sess-a-${i}`) * 30 + 5),
+      idle: Math.floor(hashSeed(`${key}-sess-i-${i}`) * 15 + 2),
+    }));
+    return (
+      <>
+        <Panel title="Session Traffic" icon={Activity} accentColor={db.color}
+          rightNode={<div style={{ display: 'flex', gap: 10 }}>
+            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Active</span>
+            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.textDim, borderRadius: 1 }} />Idle</span>
+          </div>}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={sessionData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
+              <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
+              <Area type="monotone" dataKey="active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              <Area type="monotone" dataKey="idle" stroke={THEME.textDim} fill={`${THEME.textDim}10`} strokeWidth={1.5} strokeDasharray="4 2" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Slow Queries" icon={Clock} accentColor={THEME.warning}>
+            <DemoTable
+              columns={[
+                { key: 'query', label: 'Query', width: '50%' },
+                { key: 'avgDuration', label: 'Avg Duration', width: '15%' },
+                { key: 'calls', label: 'Calls', width: '15%' },
+                { key: 'impact', label: 'Impact', width: '20%' },
+              ]}
+              rows={(DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql).slice(0, 5).map((q, i) => ({
+                query: q.label,
+                avgDuration: q.display,
+                calls: Math.floor(hashSeed(`${key}-calls-${i}`) * 2000 + 100),
+                impact: ['High', 'Medium', 'Low'][i % 3],
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Resources: CPU / Memory / Disk gauges + connection pool ── */
+  if (subTabId === 'resources') {
+    const cpuVal = Math.floor(hashSeed(`${key}-cpu`) * 40 + 20);
+    const memVal = Math.floor(hashSeed(`${key}-mem`) * 30 + 45);
+    const diskVal = Math.floor(hashSeed(`${key}-disk`) * 25 + 10);
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="CPU Usage" icon={Cpu} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={cpuVal} color={db.color} size={100} strokeWidth={8} label="CPU" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10 }}>
+              <div><span style={{ color: THEME.textDim }}>Cores</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>8</span></div>
+              <div><span style={{ color: THEME.textDim }}>Load Avg</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>2.4</span></div>
+            </div>
+          </Panel>
+          <Panel title="Memory Usage" icon={MemoryStick} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={memVal} color={db.color} size={100} strokeWidth={8} label="RAM" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10 }}>
+              <div><span style={{ color: THEME.textDim }}>Used</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>12.4 GB</span></div>
+              <div><span style={{ color: THEME.textDim }}>Buffers</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>4 GB</span></div>
+            </div>
+          </Panel>
+          <Panel title="Connections" icon={Network} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${key}-conn`) * 30 + 15)} color={db.color} size={100} strokeWidth={8} label="POOL" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10 }}>
+              <div><span style={{ color: THEME.textDim }}>Active</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>25</span></div>
+              <div><span style={{ color: THEME.textDim }}>Max</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>100</span></div>
+            </div>
+          </Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Top Tables by I/O" icon={Database} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'table', label: 'Table', width: '30%' },
+                { key: 'reads', label: 'Reads', width: '17%' },
+                { key: 'writes', label: 'Writes', width: '17%' },
+                { key: 'hitRatio', label: 'Hit Ratio', width: '18%' },
+                { key: 'trend', label: 'Trend', width: '18%' },
+              ]}
+              rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
+                table: t,
+                reads: `${Math.floor(hashSeed(`${key}-trd-${i}`) * 50 + 10)}K ops`,
+                writes: `${Math.floor(hashSeed(`${key}-twr-${i}`) * 20 + 2)}K ops`,
+                hitRatio: `${Math.floor(hashSeed(`${key}-thr-${i}`) * 10 + 90)}%`,
+                trend: hashSeed(`${key}-ttr-${i}`) > 0.5 ? 'Increasing' : 'Stable',
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Replication Status" icon={Radio} accentColor={db.color}>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center', padding: '8px 0' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
+                <span style={{ color: THEME.textDim }}>WAL Generation</span>
+                <span style={{ color: THEME.textMain, fontWeight: 700, fontSize: 16 }}>12.4 MB/s</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
+                <span style={{ color: THEME.textDim }}>Replication Lag</span>
+                <span style={{ color: THEME.success, fontWeight: 700, fontSize: 16 }}>0.3 ms</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
+                <span style={{ color: THEME.textDim }}>Archiving</span>
+                <span style={{ color: THEME.success, fontWeight: 700, fontSize: 16 }}>Active</span>
+              </div>
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Reliability: error rates + availability ── */
+  if (subTabId === 'reliability') {
+    const reliData = Array.from({ length: 24 }, (_, i) => ({
+      time: `${String(i).padStart(2, '0')}:00`,
+      errors: Math.floor(hashSeed(`${key}-err-${i}`) * 5),
+      recoveryTime: +(hashSeed(`${key}-rec-${i}`) * 3 + 0.5).toFixed(1),
+    }));
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Error Trend (24h)" icon={AlertTriangle} accentColor={THEME.warning}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={reliData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
+                <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
+                <Bar dataKey="errors" fill={THEME.warning} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Recovery Time (24h)" icon={Clock} accentColor={THEME.success}>
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={reliData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} unit="s" />
+                <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
+                <Line type="monotone" dataKey="recoveryTime" stroke={THEME.success} strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="SLA Breach" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+              <RingGauge value={99} color={THEME.success} size={80} strokeWidth={6} label="SLA" />
+            </div>
+          </Panel>
+          <Panel title="Availability" icon={CheckCircle} accentColor={THEME.success}>
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: THEME.success, fontFamily: "'JetBrains Mono',monospace" }}>99.99%</span>
+              <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>30-day rolling</div>
+            </div>
+          </Panel>
+          <Panel title="Incidents" icon={AlertTriangle} accentColor={db.color}>
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>0</span>
+              <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>Last 7 days</div>
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Alerts: active alerts table + rules ── */
+  if (subTabId === 'alerts') {
+    const alertRows = [
+      { name: 'High CPU Usage', severity: 'Warning', status: 'Triggered', time: '5 min ago' },
+      { name: 'Replication Lag > 1s', severity: 'Critical', status: 'Resolved', time: '2 hours ago' },
+      { name: 'Disk Usage > 80%', severity: 'Warning', status: 'Active', time: '15 min ago' },
+      { name: 'Connection Pool Full', severity: 'Critical', status: 'Resolved', time: '1 day ago' },
+      { name: 'Slow Query > 10s', severity: 'Info', status: 'Active', time: '30 min ago' },
+    ];
+    return (
+      <>
+        <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
+          <DemoTable
+            columns={[
+              { key: 'name', label: 'Alert Rule', width: '35%' },
+              { key: 'severity', label: 'Severity', width: '20%' },
+              { key: 'status', label: 'Status', width: '20%' },
+              { key: 'time', label: 'Last Triggered', width: '25%' },
+            ]}
+            rows={alertRows}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Alert Rules Summary" icon={Shield} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <DonutWidget
+                data={[
+                  { name: 'Active', value: 28, color: THEME.success, display: '28' },
+                  { name: 'Disabled', value: 6, color: THEME.textDim, display: '6' },
+                ]}
+                centerValue="34"
+                centerLabel="RULES"
+                color={db.color} size={100} innerRadius={34} outerRadius={46}
+              />
+            </div>
+          </Panel>
+          <Panel title="Alert Frequency (7d)" icon={Activity} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={120}>
+              <BarChart data={[
+                { day: 'Mon', count: 3 }, { day: 'Tue', count: 1 }, { day: 'Wed', count: 0 },
+                { day: 'Thu', count: 2 }, { day: 'Fri', count: 1 }, { day: 'Sat', count: 0 }, { day: 'Sun', count: 0 },
+              ]}>
+                <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={20} />
+                <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
+                <Bar dataKey="count" fill={db.color} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Default fallback: section-level content + overview panels ── */
+  return (
+    <>
+      <OverviewPanels widgets={widgets} db={db} />
+      <div style={{ marginTop: 16 }}>
+        <SectionContent section={section} db={db} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+        <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+            <RingGauge value={92} color={db.color} size={100} strokeWidth={8} label="health" />
+          </div>
+        </Panel>
+      </div>
+    </>
+  );
+}
+
+/** Map subTabId to a human-readable tab name for breadcrumb matching */
+const SUB_TAB_DISPLAY_NAMES = {
+  overview: 'Overview', performance: 'Performance', resources: 'Resources',
+  reliability: 'Reliability', alerts: 'Alerts',
+  optimizer: 'Query Optimizer', indexes: 'Indexes', regression: 'Plan Regression',
+  bloat: 'Bloat Analysis', table: 'Table Analysis',
+  pool: 'Connection Pool', replication: 'Replication & WAL', checkpoint: 'Checkpoint Monitor',
+  maintenance: 'Vacuum & Maintenance', capacity: 'Capacity Planning', backup: 'Backup & Recovery',
+  schema: 'Schema & Migrations', 'schema-viz': 'Schema Visualizer', security: 'Security & Compliance',
+  cloudwatch: 'CloudWatch', 'log-patterns': 'Log Pattern Analysis', 'alert-correlation': 'Alert Correlation',
+  opentelemetry: 'OpenTelemetry', kubernetes: 'Kubernetes', 'status-page': 'Status Page', 'ai-monitoring': 'AI Monitoring',
+  sql: 'SQL Console', api: 'API Tracing', repository: 'Repository', 'ai-advisor': 'AI Query Advisor',
+  tasks: 'DBA Task Scheduler', users: 'User Management', 'admin-panel': 'Admin',
+  retention: 'Data Retention', terraform: 'Terraform Export', 'custom-dashboard': 'Custom Dashboards',
+};
+
+/** Find matching tab metrics within a section by display name */
+function findTabMetrics(section, subTabId) {
+  if (!section || !subTabId) return null;
+  const displayName = SUB_TAB_DISPLAY_NAMES[subTabId];
+  if (!displayName) return null;
+  return section.tabs.find(t => t.name === displayName) || section.tabs[0] || null;
+}
+
+export default function DemoDataTab({ dbKey = 'postgresql', sectionId, subTabId }) {
   const db = DATABASE_STRUCTURE[dbKey];
   const widgets = DETAIL_WIDGETS[dbKey] || DETAIL_WIDGETS.postgresql;
   if (!db) return null;
@@ -2149,6 +2452,10 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId }) {
   const filteredSection = sectionId
     ? db.sections.find((s) => s.id === sectionId)
     : null;
+
+  /* Find the specific tab within the section for tab-specific metrics */
+  const activeTab = findTabMetrics(filteredSection, subTabId);
+  const tabMetrics = activeTab?.metrics || null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '0 0 48px 0' }}>
@@ -2169,117 +2476,104 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId }) {
         <StatusBadge label="DEMO" color={db.color} pulse />
       </div>
 
-      <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
-        {db.kpis.map((kpi, i) => {
-          const Icon = kpiIcons[i] || Activity;
-          const trend = genTrend(kpi.label);
-          return (
-            <div
-              key={i}
-              className="demo-card-shine"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 10,
-                padding: '14px 16px',
-                borderRadius: 14,
-                background: THEME.glass,
-                backdropFilter: 'blur(14px)',
+      {/* ── KPI Cards: show tab-specific metrics when subTab is active, else DB-level KPIs ── */}
+      {tabMetrics ? (
+        <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${tabMetrics.length}, 1fr)`, gap: 12 }}>
+          {tabMetrics.map((m, i) => {
+            const Icon = kpiIcons[i] || Activity;
+            const trend = genTrend(m.label);
+            return (
+              <div key={i} className="demo-card-shine" style={{
+                display: 'flex', flexDirection: 'column', gap: 10,
+                padding: '14px 16px', borderRadius: 14,
+                background: THEME.glass, backdropFilter: 'blur(14px)',
                 border: `1px solid ${THEME.glassBorder}`,
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 8,
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: `${db.color}10`,
-                    border: `1px solid ${db.color}18`,
-                  }}
-                >
-                  <Icon size={14} color={db.color} />
+                position: 'relative', overflow: 'hidden',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{
+                    width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: `${db.color}10`, border: `1px solid ${db.color}18`,
+                  }}>
+                    <Icon size={14} color={db.color} />
+                  </div>
+                  <MiniSparkline data={genSparkData(m.label)} color={db.color} width={48} height={18} />
                 </div>
-                <MiniSparkline data={genSparkData(kpi.label)} color={db.color} width={48} height={18} />
-              </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: 9.5,
-                    color: THEME.textDim,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    lineHeight: 1,
-                    marginBottom: 5,
-                  }}
-                >
-                  {kpi.label}
+                <div>
+                  <div style={{ fontSize: 9.5, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1, marginBottom: 5 }}>
+                    {m.label}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: db.color, lineHeight: 1, letterSpacing: '-0.02em', fontFamily: "'JetBrains Mono',monospace" }}>
+                      {m.value}
+                    </span>
+                    <span style={{ fontSize: 10, color: THEME.textDim }}>{m.unit}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                  <span
-                    style={{
-                      fontSize: 22,
-                      fontWeight: 700,
-                      color: db.color,
-                      lineHeight: 1,
-                      letterSpacing: '-0.02em',
-                      fontFamily: "'JetBrains Mono',monospace",
-                    }}
-                  >
-                    {kpi.value}
-                  </span>
-                  <span style={{ fontSize: 10, color: THEME.textDim }}>{kpi.unit}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  {trend.up ? <ArrowUpRight size={10} color={THEME.success} /> : <ArrowDownRight size={10} color={THEME.warning} />}
+                  <span style={{ fontSize: 10, fontWeight: 700, color: trend.up ? THEME.success : THEME.warning, fontFamily: "'JetBrains Mono',monospace" }}>{trend.value}</span>
+                  <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                {trend.up ? (
-                  <ArrowUpRight size={10} color={THEME.success} />
-                ) : (
-                  <ArrowDownRight size={10} color={THEME.warning} />
-                )}
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: trend.up ? THEME.success : THEME.warning,
-                    fontFamily: "'JetBrains Mono',monospace",
-                  }}
-                >
-                  {trend.value}
-                </span>
-                <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          {db.kpis.map((kpi, i) => {
+            const Icon = kpiIcons[i] || Activity;
+            const trend = genTrend(kpi.label);
+            return (
+              <div key={i} className="demo-card-shine" style={{
+                display: 'flex', flexDirection: 'column', gap: 10,
+                padding: '14px 16px', borderRadius: 14,
+                background: THEME.glass, backdropFilter: 'blur(14px)',
+                border: `1px solid ${THEME.glassBorder}`,
+                position: 'relative', overflow: 'hidden',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{
+                    width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: `${db.color}10`, border: `1px solid ${db.color}18`,
+                  }}>
+                    <Icon size={14} color={db.color} />
+                  </div>
+                  <MiniSparkline data={genSparkData(kpi.label)} color={db.color} width={48} height={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 9.5, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1, marginBottom: 5 }}>
+                    {kpi.label}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: db.color, lineHeight: 1, letterSpacing: '-0.02em', fontFamily: "'JetBrains Mono',monospace" }}>
+                      {kpi.value}
+                    </span>
+                    <span style={{ fontSize: 10, color: THEME.textDim }}>{kpi.unit}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  {trend.up ? <ArrowUpRight size={10} color={THEME.success} /> : <ArrowDownRight size={10} color={THEME.warning} />}
+                  <span style={{ fontSize: 10, fontWeight: 700, color: trend.up ? THEME.success : THEME.warning, fontFamily: "'JetBrains Mono',monospace" }}>{trend.value}</span>
+                  <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      <OverviewPanels widgets={widgets} db={db} />
-
+      {/* ── Tab-specific content area ── */}
       {filteredSection ? (
-        /* ── Single section mode (sidebar subsection click) ── */
         <>
-          <div style={{ marginTop: 24 }}>
-            <SectionContent section={filteredSection} db={db} />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-            <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
-                <RingGauge value={92} color={db.color} size={100} strokeWidth={8} label="health" />
-              </div>
-            </Panel>
-          </div>
+          {/* Show tab-specific widget based on subTabId, falling back to section-level widgets */}
+          <SubTabContent subTabId={subTabId} section={filteredSection} db={db} widgets={widgets} />
         </>
       ) : (
-        /* ── All sections mode (no sectionId) ── */
         <>
+          <OverviewPanels widgets={widgets} db={db} />
           {db.sections.map((section) => (
             <div key={section.id} style={{ marginTop: 24 }}>
               <SectionContent section={section} db={db} />
