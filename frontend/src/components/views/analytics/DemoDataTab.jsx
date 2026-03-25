@@ -5,7 +5,10 @@ import {
   ArrowUpRight, ArrowDownRight, Leaf, Hourglass,
   CheckCircle, AlertTriangle, Server, Cpu, Network,
   BarChart3, Lock, Globe, ChevronDown, GitBranch,
-  Gauge, MemoryStick, Layers, Radio, Eye, Code
+  Gauge, MemoryStick, Layers, Radio, Eye, Code,
+  TrendingUp, RefreshCw, Archive, Users, Cloud, Bell,
+  FileSearch, Link2, Radar, Container, Brain, Terminal,
+  Star, CalendarCheck, LayoutDashboard
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
@@ -2139,15 +2142,44 @@ function OverviewPanels({ widgets, db }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   SubTabContent — Renders tab-specific widgets that differ per sub-tab
-   so each tab (Overview, Performance, Resources, etc.) looks unique.
-   Falls back to the section-level SectionContent for tabs without
-   a custom layout.
+   SubTabContent — Renders UNIQUE tab-specific widgets for every sub-tab.
+   Each tab gets a visually distinct layout so no two tabs within the
+   same section look the same.
    ══════════════════════════════════════════════════════════════════════ */
+
+/** Reusable tooltip style */
+const TT_STYLE = { background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain };
+
+/** Generate 24-hour time-series data with two metrics */
+function gen24h(seed, m1Base, m1Var, m2Base, m2Var) {
+  return Array.from({ length: 24 }, (_, i) => ({
+    time: `${String(i).padStart(2, '0')}:00`,
+    primary: Math.floor(hashSeed(`${seed}-p-${i}`) * m1Var + m1Base),
+    secondary: Math.floor(hashSeed(`${seed}-s-${i}`) * m2Var + m2Base),
+  }));
+}
+
+/** Generate a 7-day trend dataset */
+function gen7d(seed, base, variance) {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return days.map((d, i) => ({ day: d, value: Math.floor(hashSeed(`${seed}-${i}`) * variance + base) }));
+}
+
+/** Stat card mini-component used in many layouts */
+function StatCard({ label, value, unit, color }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '14px 8px' }}>
+      <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
+      <span style={{ fontSize: 22, fontWeight: 700, color: color || THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{value}</span>
+      {unit && <span style={{ fontSize: 10, color: THEME.textDim, marginLeft: 3 }}>{unit}</span>}
+    </div>
+  );
+}
+
 function SubTabContent({ subTabId, section, db, widgets }) {
   const dbName = db.name.toLowerCase().replace(' ', '');
   const key = dbName === 'sqlserver' ? 'mssql' : dbName;
-  const sw = getSectionWidgets(mapSectionToWidgetId(section.id), db);
+  const seed = `${key}-${subTabId}`;
 
   /* ── Overview: full overview panels + core widgets ── */
   if (subTabId === 'overview' || !subTabId) {
@@ -2161,13 +2193,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Performance: session traffic + query analysis ── */
+  /* ── Performance: session traffic + slow queries ── */
   if (subTabId === 'performance') {
-    const sessionData = Array.from({ length: 24 }, (_, i) => ({
-      time: `${String(i).padStart(2, '0')}:00`,
-      active: Math.floor(hashSeed(`${key}-sess-a-${i}`) * 30 + 5),
-      idle: Math.floor(hashSeed(`${key}-sess-i-${i}`) * 15 + 2),
-    }));
+    const sessionData = gen24h(seed, 5, 30, 2, 15);
     return (
       <>
         <Panel title="Session Traffic" icon={Activity} accentColor={db.color}
@@ -2180,9 +2208,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
               <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
               <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
-              <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
-              <Area type="monotone" dataKey="active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
-              <Area type="monotone" dataKey="idle" stroke={THEME.textDim} fill={`${THEME.textDim}10`} strokeWidth={1.5} strokeDasharray="4 2" />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" name="Active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              <Area type="monotone" dataKey="secondary" name="Idle" stroke={THEME.textDim} fill={`${THEME.textDim}10`} strokeWidth={1.5} strokeDasharray="4 2" />
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
@@ -2196,9 +2224,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                 { key: 'impact', label: 'Impact', width: '20%' },
               ]}
               rows={(DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql).slice(0, 5).map((q, i) => ({
-                query: q.label,
-                avgDuration: q.display,
-                calls: Math.floor(hashSeed(`${key}-calls-${i}`) * 2000 + 100),
+                query: q.label, avgDuration: q.display,
+                calls: Math.floor(hashSeed(`${seed}-calls-${i}`) * 2000 + 100),
                 impact: ['High', 'Medium', 'Low'][i % 3],
               }))}
               color={db.color}
@@ -2209,37 +2236,34 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Resources: CPU / Memory / Disk gauges + connection pool ── */
+  /* ── Resources: CPU / Memory / Connections gauges + table I/O ── */
   if (subTabId === 'resources') {
-    const cpuVal = Math.floor(hashSeed(`${key}-cpu`) * 40 + 20);
-    const memVal = Math.floor(hashSeed(`${key}-mem`) * 30 + 45);
-    const diskVal = Math.floor(hashSeed(`${key}-disk`) * 25 + 10);
     return (
       <>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <Panel title="CPU Usage" icon={Cpu} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={cpuVal} color={db.color} size={100} strokeWidth={8} label="CPU" />
+              <RingGauge value={Math.floor(hashSeed(`${seed}-cpu`) * 40 + 20)} color={db.color} size={100} strokeWidth={8} label="CPU" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
               <div><span style={{ color: THEME.textDim }}>Cores</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>8</span></div>
               <div><span style={{ color: THEME.textDim }}>Load Avg</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>2.4</span></div>
             </div>
           </Panel>
           <Panel title="Memory Usage" icon={MemoryStick} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={memVal} color={db.color} size={100} strokeWidth={8} label="RAM" />
+              <RingGauge value={Math.floor(hashSeed(`${seed}-mem`) * 30 + 45)} color={db.color} size={100} strokeWidth={8} label="RAM" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
               <div><span style={{ color: THEME.textDim }}>Used</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>12.4 GB</span></div>
               <div><span style={{ color: THEME.textDim }}>Buffers</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>4 GB</span></div>
             </div>
           </Panel>
           <Panel title="Connections" icon={Network} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${key}-conn`) * 30 + 15)} color={db.color} size={100} strokeWidth={8} label="POOL" />
+              <RingGauge value={Math.floor(hashSeed(`${seed}-conn`) * 30 + 15)} color={db.color} size={100} strokeWidth={8} label="POOL" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
               <div><span style={{ color: THEME.textDim }}>Active</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>25</span></div>
               <div><span style={{ color: THEME.textDim }}>Max</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>100</span></div>
             </div>
@@ -2257,44 +2281,22 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               ]}
               rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
                 table: t,
-                reads: `${Math.floor(hashSeed(`${key}-trd-${i}`) * 50 + 10)}K ops`,
-                writes: `${Math.floor(hashSeed(`${key}-twr-${i}`) * 20 + 2)}K ops`,
-                hitRatio: `${Math.floor(hashSeed(`${key}-thr-${i}`) * 10 + 90)}%`,
-                trend: hashSeed(`${key}-ttr-${i}`) > 0.5 ? 'Increasing' : 'Stable',
+                reads: `${Math.floor(hashSeed(`${seed}-trd-${i}`) * 50 + 10)}K`,
+                writes: `${Math.floor(hashSeed(`${seed}-twr-${i}`) * 20 + 2)}K`,
+                hitRatio: `${Math.floor(hashSeed(`${seed}-thr-${i}`) * 10 + 90)}%`,
+                trend: hashSeed(`${seed}-ttr-${i}`) > 0.5 ? 'Increasing' : 'Stable',
               }))}
               color={db.color}
             />
-          </Panel>
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <Panel title="Replication Status" icon={Radio} accentColor={db.color}>
-            <div style={{ display: 'flex', gap: 20, alignItems: 'center', padding: '8px 0' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
-                <span style={{ color: THEME.textDim }}>WAL Generation</span>
-                <span style={{ color: THEME.textMain, fontWeight: 700, fontSize: 16 }}>12.4 MB/s</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
-                <span style={{ color: THEME.textDim }}>Replication Lag</span>
-                <span style={{ color: THEME.success, fontWeight: 700, fontSize: 16 }}>0.3 ms</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
-                <span style={{ color: THEME.textDim }}>Archiving</span>
-                <span style={{ color: THEME.success, fontWeight: 700, fontSize: 16 }}>Active</span>
-              </div>
-            </div>
           </Panel>
         </div>
       </>
     );
   }
 
-  /* ── Reliability: error rates + availability ── */
+  /* ── Reliability: error rates + availability gauges ── */
   if (subTabId === 'reliability') {
-    const reliData = Array.from({ length: 24 }, (_, i) => ({
-      time: `${String(i).padStart(2, '0')}:00`,
-      errors: Math.floor(hashSeed(`${key}-err-${i}`) * 5),
-      recoveryTime: +(hashSeed(`${key}-rec-${i}`) * 3 + 0.5).toFixed(1),
-    }));
+    const reliData = gen24h(seed, 0, 5, 0.5, 3);
     return (
       <>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -2304,19 +2306,19 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
                 <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
                 <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
-                <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
-                <Bar dataKey="errors" fill={THEME.warning} radius={[2, 2, 0, 0]} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="primary" name="Errors" fill={THEME.warning} radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </Panel>
           <Panel title="Recovery Time (24h)" icon={Clock} accentColor={THEME.success}>
             <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={reliData}>
+              <LineChart data={reliData.map(d => ({ ...d, recovery: +(d.secondary + 0.5).toFixed(1) }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
                 <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
                 <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} unit="s" />
-                <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
-                <Line type="monotone" dataKey="recoveryTime" stroke={THEME.success} strokeWidth={2} dot={false} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Line type="monotone" dataKey="recovery" stroke={THEME.success} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </Panel>
@@ -2328,31 +2330,18 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             </div>
           </Panel>
           <Panel title="Availability" icon={CheckCircle} accentColor={THEME.success}>
-            <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <span style={{ fontSize: 28, fontWeight: 700, color: THEME.success, fontFamily: "'JetBrains Mono',monospace" }}>99.99%</span>
-              <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>30-day rolling</div>
-            </div>
+            <StatCard label="30-day rolling" value="99.99" unit="%" color={THEME.success} />
           </Panel>
           <Panel title="Incidents" icon={AlertTriangle} accentColor={db.color}>
-            <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <span style={{ fontSize: 28, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>0</span>
-              <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>Last 7 days</div>
-            </div>
+            <StatCard label="Last 7 days" value="0" color={db.color} />
           </Panel>
         </div>
       </>
     );
   }
 
-  /* ── Alerts: active alerts table + rules ── */
+  /* ── Alerts: active alerts table + rules donut + frequency ── */
   if (subTabId === 'alerts') {
-    const alertRows = [
-      { name: 'High CPU Usage', severity: 'Warning', status: 'Triggered', time: '5 min ago' },
-      { name: 'Replication Lag > 1s', severity: 'Critical', status: 'Resolved', time: '2 hours ago' },
-      { name: 'Disk Usage > 80%', severity: 'Warning', status: 'Active', time: '15 min ago' },
-      { name: 'Connection Pool Full', severity: 'Critical', status: 'Resolved', time: '1 day ago' },
-      { name: 'Slow Query > 10s', severity: 'Info', status: 'Active', time: '30 min ago' },
-    ];
     return (
       <>
         <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
@@ -2363,7 +2352,13 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               { key: 'status', label: 'Status', width: '20%' },
               { key: 'time', label: 'Last Triggered', width: '25%' },
             ]}
-            rows={alertRows}
+            rows={[
+              { name: 'High CPU Usage', severity: 'Warning', status: 'Triggered', time: '5 min ago' },
+              { name: 'Replication Lag > 1s', severity: 'Critical', status: 'Resolved', time: '2 hours ago' },
+              { name: 'Disk Usage > 80%', severity: 'Warning', status: 'Active', time: '15 min ago' },
+              { name: 'Connection Pool Full', severity: 'Critical', status: 'Resolved', time: '1 day ago' },
+              { name: 'Slow Query > 10s', severity: 'Info', status: 'Active', time: '30 min ago' },
+            ]}
             color={db.color}
           />
         </Panel>
@@ -2375,22 +2370,18 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                   { name: 'Active', value: 28, color: THEME.success, display: '28' },
                   { name: 'Disabled', value: 6, color: THEME.textDim, display: '6' },
                 ]}
-                centerValue="34"
-                centerLabel="RULES"
+                centerValue="34" centerLabel="RULES"
                 color={db.color} size={100} innerRadius={34} outerRadius={46}
               />
             </div>
           </Panel>
           <Panel title="Alert Frequency (7d)" icon={Activity} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={120}>
-              <BarChart data={[
-                { day: 'Mon', count: 3 }, { day: 'Tue', count: 1 }, { day: 'Wed', count: 0 },
-                { day: 'Thu', count: 2 }, { day: 'Fri', count: 1 }, { day: 'Sat', count: 0 }, { day: 'Sun', count: 0 },
-              ]}>
+              <BarChart data={gen7d(seed, 0, 4)}>
                 <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
                 <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={20} />
-                <Tooltip contentStyle={{ background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain }} />
-                <Bar dataKey="count" fill={db.color} radius={[3, 3, 0, 0]} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" name="Alerts" fill={db.color} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </Panel>
@@ -2399,18 +2390,1351 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Default fallback: section-level content + overview panels ── */
+  /* ══════════════════════════════════════════════════════════════════
+     QUERY & INDEXES section tabs
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* ── Query Optimizer: scan type distribution + plan cost trend ── */
+  if (subTabId === 'optimizer') {
+    const scanData = [
+      { name: 'Index Scan', value: Math.floor(hashSeed(`${seed}-idx`) * 15 + 75), color: db.color },
+      { name: 'Seq Scan', value: Math.floor(hashSeed(`${seed}-seq`) * 10 + 5), color: THEME.warning },
+      { name: 'Bitmap Scan', value: Math.floor(hashSeed(`${seed}-bmp`) * 8 + 3), color: THEME.success },
+    ];
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Scan Type Distribution" icon={Eye} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+              <DonutWidget
+                data={scanData.map(s => ({ ...s, display: `${s.value}%` }))}
+                centerValue={`${scanData[0].value}%`} centerLabel="INDEX"
+                color={db.color} size={120} innerRadius={40} outerRadius={54}
+              />
+            </div>
+          </Panel>
+          <Panel title="Query Plan Cost Trend" icon={Zap} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={gen24h(seed, 100, 200, 50, 100)}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={35} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Line type="monotone" dataKey="primary" name="Avg Cost" stroke={db.color} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="secondary" name="P95 Cost" stroke={THEME.warning} strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Top Expensive Queries" icon={Zap} accentColor={THEME.warning}>
+            <DemoTable
+              columns={[
+                { key: 'query', label: 'Query Pattern', width: '45%' },
+                { key: 'cost', label: 'Avg Cost', width: '15%' },
+                { key: 'calls', label: 'Calls/hr', width: '15%' },
+                { key: 'scanType', label: 'Scan Type', width: '25%' },
+              ]}
+              rows={(DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql).slice(0, 5).map((q, i) => ({
+                query: q.label, cost: Math.floor(hashSeed(`${seed}-c-${i}`) * 500 + 50),
+                calls: Math.floor(hashSeed(`${seed}-cl-${i}`) * 300 + 10),
+                scanType: ['Index Scan', 'Seq Scan', 'Bitmap Scan', 'Index Only', 'Seq Scan'][i % 5],
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Indexes: index usage table + bloat vs size chart ── */
+  if (subTabId === 'indexes') {
+    return (
+      <>
+        <Panel title="Index Usage Analysis" icon={Layers} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'index', label: 'Index Name', width: '30%' },
+              { key: 'table', label: 'Table', width: '20%' },
+              { key: 'scans', label: 'Scans', width: '12%' },
+              { key: 'size', label: 'Size', width: '12%' },
+              { key: 'usage', label: 'Usage', width: '13%' },
+              { key: 'status', label: 'Status', width: '13%' },
+            ]}
+            rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6).map((t, i) => ({
+              index: `idx_${t}_${['pkey', 'created', 'status', 'name', 'email', 'type'][i % 6]}`,
+              table: t, scans: Math.floor(hashSeed(`${seed}-sc-${i}`) * 5000 + 100),
+              size: `${Math.floor(hashSeed(`${seed}-sz-${i}`) * 50 + 1)} MB`,
+              usage: `${Math.floor(hashSeed(`${seed}-us-${i}`) * 40 + 60)}%`,
+              status: i < 4 ? 'Active' : 'Unused',
+            }))}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Index Size vs Bloat" icon={BarChart3} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={150}>
+              <BarChart data={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
+                name: t.substring(0, 10), size: Math.floor(hashSeed(`${seed}-is-${i}`) * 80 + 10),
+                bloat: Math.floor(hashSeed(`${seed}-ib-${i}`) * 15 + 1),
+              }))}>
+                <XAxis dataKey="name" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={28} unit="MB" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="size" name="Size" fill={db.color} radius={[2, 2, 0, 0]} />
+                <Bar dataKey="bloat" name="Bloat" fill={THEME.warning} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Index Health" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-ih`) * 10 + 88)} color={THEME.success} size={90} strokeWidth={7} label="HEALTH" />
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Plan Regression: timeline + regression events table ── */
+  if (subTabId === 'regression') {
+    return (
+      <>
+        <Panel title="Query Plan Changes (7d)" icon={TrendingUp} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen7d(seed, 0, 5).map(d => ({ ...d, regressions: Math.floor(hashSeed(`${seed}-r-${d.day}`) * 2) }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="value" name="Plan Changes" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              <Area type="monotone" dataKey="regressions" name="Regressions" stroke={THEME.warning} fill={`${THEME.warning}15`} strokeWidth={1.5} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Recent Regression Events" icon={AlertTriangle} accentColor={THEME.warning}>
+            <DemoTable
+              columns={[
+                { key: 'query', label: 'Query', width: '40%' },
+                { key: 'oldPlan', label: 'Old Plan', width: '15%' },
+                { key: 'newPlan', label: 'New Plan', width: '15%' },
+                { key: 'impact', label: 'Impact', width: '15%' },
+                { key: 'detected', label: 'Detected', width: '15%' },
+              ]}
+              rows={['SELECT users', 'JOIN orders', 'UPDATE inventory', 'SELECT products'].map((q, i) => ({
+                query: q, oldPlan: 'Index Scan', newPlan: i % 2 === 0 ? 'Seq Scan' : 'Hash Join',
+                impact: `+${Math.floor(hashSeed(`${seed}-ri-${i}`) * 200 + 10)}ms`,
+                detected: `${Math.floor(hashSeed(`${seed}-rd-${i}`) * 48 + 1)}h ago`,
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Bloat Analysis: bloat by table bar chart + vacuum suggestions ── */
+  if (subTabId === 'bloat') {
+    const tables = (DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6);
+    return (
+      <>
+        <Panel title="Table Bloat Distribution" icon={Layers} accentColor={THEME.warning}>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={tables.map((t, i) => ({
+              name: t.substring(0, 12), bloat: Math.floor(hashSeed(`${seed}-bl-${i}`) * 30 + 2),
+              actual: Math.floor(hashSeed(`${seed}-act-${i}`) * 200 + 50),
+            }))} layout="vertical">
+              <XAxis type="number" tick={{ fontSize: 9, fill: THEME.textDim }} unit="MB" />
+              <YAxis dataKey="name" type="category" tick={{ fontSize: 9, fill: THEME.textDim }} width={80} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Bar dataKey="actual" name="Table Size" fill={db.color} radius={[0, 2, 2, 0]} />
+              <Bar dataKey="bloat" name="Bloat" fill={THEME.warning} radius={[0, 2, 2, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Total Bloat" icon={Layers} accentColor={THEME.warning}>
+            <StatCard label="Across all tables" value={`${Math.floor(hashSeed(`${seed}-tb`) * 200 + 50)}`} unit="MB" color={THEME.warning} />
+          </Panel>
+          <Panel title="Bloat Ratio" icon={BarChart3} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-br`) * 15 + 5)} color={THEME.warning} size={80} strokeWidth={6} label="BLOAT" />
+            </div>
+          </Panel>
+          <Panel title="Vacuum Needed" icon={RefreshCw} accentColor={THEME.success}>
+            <StatCard label="Tables pending" value={`${Math.floor(hashSeed(`${seed}-vn`) * 5 + 1)}`} color={db.color} />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Table Analysis: table stats grid ── */
+  if (subTabId === 'table') {
+    return (
+      <>
+        <Panel title="Table Statistics" icon={Database} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'table', label: 'Table', width: '22%' },
+              { key: 'rows', label: 'Rows', width: '13%' },
+              { key: 'size', label: 'Size', width: '13%' },
+              { key: 'seqScans', label: 'Seq Scans', width: '13%' },
+              { key: 'idxScans', label: 'Idx Scans', width: '13%' },
+              { key: 'deadTuples', label: 'Dead Tuples', width: '13%' },
+              { key: 'lastVacuum', label: 'Last Vacuum', width: '13%' },
+            ]}
+            rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 8).map((t, i) => ({
+              table: t, rows: `${Math.floor(hashSeed(`${seed}-r-${i}`) * 500 + 10)}K`,
+              size: `${Math.floor(hashSeed(`${seed}-s-${i}`) * 100 + 5)} MB`,
+              seqScans: Math.floor(hashSeed(`${seed}-ss-${i}`) * 100),
+              idxScans: Math.floor(hashSeed(`${seed}-is-${i}`) * 5000 + 100),
+              deadTuples: Math.floor(hashSeed(`${seed}-dt-${i}`) * 1000),
+              lastVacuum: `${Math.floor(hashSeed(`${seed}-lv-${i}`) * 24 + 1)}h ago`,
+            }))}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Table I/O Distribution" icon={Activity} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
+                name: t.substring(0, 10),
+                reads: Math.floor(hashSeed(`${seed}-tr-${i}`) * 80 + 10),
+                writes: Math.floor(hashSeed(`${seed}-tw-${i}`) * 40 + 5),
+              }))}>
+                <XAxis dataKey="name" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={28} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="reads" name="Reads" fill={db.color} radius={[2, 2, 0, 0]} />
+                <Bar dataKey="writes" name="Writes" fill={`${db.color}80`} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     INFRASTRUCTURE section tabs
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* ── Connection Pool: pool gauge + connection history ── */
+  if (subTabId === 'pool') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
+          <Panel title="Pool Utilization" icon={Network} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-pu`) * 30 + 30)} color={db.color} size={110} strokeWidth={9} label="POOL" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 10, padding: '0 12px 10px' }}>
+              <div><span style={{ color: THEME.textDim }}>Active</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-ac`) * 30 + 10)}</span></div>
+              <div><span style={{ color: THEME.textDim }}>Idle</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-id`) * 15 + 2)}</span></div>
+              <div><span style={{ color: THEME.textDim }}>Waiting</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-wt`) * 3)}</span></div>
+              <div><span style={{ color: THEME.textDim }}>Max</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>100</span></div>
+            </div>
+          </Panel>
+          <Panel title="Connection History (24h)" icon={Activity} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={gen24h(seed, 10, 40, 2, 10)}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Area type="monotone" dataKey="primary" name="Active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+                <Area type="monotone" dataKey="secondary" name="Waiting" stroke={THEME.warning} fill={`${THEME.warning}10`} strokeWidth={1.5} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Replication & WAL: lag timeline + replica status cards ── */
+  if (subTabId === 'replication') {
+    return (
+      <>
+        <Panel title="Replication Lag (24h)" icon={Radio} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen24h(seed, 0, 2, 0, 1).map(d => ({ ...d, lag: +(d.primary * 0.3).toFixed(1) }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} unit="ms" />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="lag" name="Lag" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="WAL Rate" icon={Activity} accentColor={db.color}>
+            <StatCard label="Generation" value="12.4" unit="MB/s" color={db.color} />
+          </Panel>
+          <Panel title="Replicas" icon={Server} accentColor={THEME.success}>
+            <StatCard label="Active" value="3" color={THEME.success} />
+          </Panel>
+          <Panel title="Archiving" icon={Archive} accentColor={THEME.success}>
+            <StatCard label="Status" value="Active" color={THEME.success} />
+          </Panel>
+          <Panel title="WAL Files" icon={Database} accentColor={db.color}>
+            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-wf`) * 30 + 20)}`} color={db.color} />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Checkpoint Monitor: checkpoint timeline + duration ── */
+  if (subTabId === 'checkpoint') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Checkpoint Frequency (24h)" icon={CheckCircle} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={gen24h(seed, 8, 6, 5, 10)}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="primary" name="Checkpoints" fill={db.color} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Checkpoint Duration Trend" icon={Clock} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={gen24h(seed + 'dur', 5, 15, 2, 8)}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} unit="s" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Line type="monotone" dataKey="primary" name="Duration" stroke={db.color} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="secondary" name="Write Time" stroke={THEME.warning} strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Per Day" icon={Activity} accentColor={db.color}>
+            <StatCard label="Checkpoints" value="288" color={db.color} />
+          </Panel>
+          <Panel title="Avg Duration" icon={Clock} accentColor={db.color}>
+            <StatCard label="Seconds" value="12.5" unit="s" color={db.color} />
+          </Panel>
+          <Panel title="Last Checkpoint" icon={CheckCircle} accentColor={THEME.success}>
+            <StatCard label="Ago" value="45" unit="s" color={THEME.success} />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Vacuum & Maintenance: vacuum schedule + dead tuple trend ── */
+  if (subTabId === 'maintenance') {
+    return (
+      <>
+        <Panel title="Dead Tuple Accumulation (24h)" icon={RefreshCw} accentColor={THEME.warning}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen24h(seed, 1000, 5000, 200, 1000)}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" name="Dead Tuples" stroke={THEME.warning} fill={`${THEME.warning}15`} strokeWidth={2} />
+              <Area type="monotone" dataKey="secondary" name="Removed" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={1.5} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Recent Vacuum Activity" icon={RefreshCw} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'table', label: 'Table', width: '25%' },
+                { key: 'type', label: 'Type', width: '15%' },
+                { key: 'duration', label: 'Duration', width: '15%' },
+                { key: 'removed', label: 'Tuples Removed', width: '20%' },
+                { key: 'ago', label: 'Completed', width: '25%' },
+              ]}
+              rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
+                table: t, type: i % 2 === 0 ? 'Auto' : 'Manual',
+                duration: `${+(hashSeed(`${seed}-vd-${i}`) * 5 + 0.5).toFixed(1)}s`,
+                removed: `${Math.floor(hashSeed(`${seed}-vr-${i}`) * 50000 + 1000)}`,
+                ago: `${Math.floor(hashSeed(`${seed}-va-${i}`) * 60 + 5)} min ago`,
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Capacity Planning: storage projection + growth rate ── */
+  if (subTabId === 'capacity') {
+    const projData = Array.from({ length: 12 }, (_, i) => ({
+      month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
+      actual: i < 4 ? Math.floor(hashSeed(`${seed}-ca-${i}`) * 5 + 10 + i * 2) : null,
+      projected: Math.floor(hashSeed(`${seed}-cp-${i}`) * 3 + 10 + i * 2.5),
+    }));
+    return (
+      <>
+        <Panel title="Storage Growth Projection (12 months)" icon={BarChart3} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={projData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="month" tick={{ fontSize: 9, fill: THEME.textDim }} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} unit="GB" />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="actual" name="Actual" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} connectNulls={false} />
+              <Area type="monotone" dataKey="projected" name="Projected" stroke={THEME.textDim} fill="none" strokeWidth={1.5} strokeDasharray="6 3" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Current Size" icon={Database} accentColor={db.color}>
+            <StatCard label="Database" value="14.8" unit="GB" color={db.color} />
+          </Panel>
+          <Panel title="Growth Rate" icon={TrendingUp} accentColor={db.color}>
+            <StatCard label="Weekly" value="2.1" unit="GB/w" color={db.color} />
+          </Panel>
+          <Panel title="Tablespace" icon={HardDrive} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={62} color={db.color} size={70} strokeWidth={6} label="USED" />
+            </div>
+          </Panel>
+          <Panel title="Time to Full" icon={Clock} accentColor={THEME.success}>
+            <StatCard label="Estimated" value="180" unit="days" color={THEME.success} />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Backup & Recovery: backup timeline + status ── */
+  if (subTabId === 'backup') {
+    return (
+      <>
+        <Panel title="Backup History (7d)" icon={Archive} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={gen7d(seed, 5, 5).map(d => ({ ...d, size: Math.floor(hashSeed(`${seed}-bs-${d.day}`) * 3 + 7) }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} unit="GB" />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Bar dataKey="size" name="Backup Size" fill={db.color} radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Last Backup" icon={CheckCircle} accentColor={THEME.success}>
+            <StatCard label="Ago" value="1" unit="hour" color={THEME.success} />
+          </Panel>
+          <Panel title="Backup Size" icon={Database} accentColor={db.color}>
+            <StatCard label="Latest" value="8.9" unit="GB" color={db.color} />
+          </Panel>
+          <Panel title="Restore Time" icon={Clock} accentColor={db.color}>
+            <StatCard label="Estimated" value="12" unit="min" color={db.color} />
+          </Panel>
+          <Panel title="Status" icon={Shield} accentColor={THEME.success}>
+            <StatCard label="Health" value="OK" color={THEME.success} />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     SCHEMA & SECURITY section tabs
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* ── Schema & Migrations: migration timeline + entity counts ── */
+  if (subTabId === 'schema') {
+    return (
+      <>
+        <Panel title="Migration History" icon={GitBranch} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'version', label: 'Version', width: '15%' },
+              { key: 'name', label: 'Migration', width: '35%' },
+              { key: 'type', label: 'Type', width: '15%' },
+              { key: 'duration', label: 'Duration', width: '15%' },
+              { key: 'date', label: 'Applied', width: '20%' },
+            ]}
+            rows={[
+              { version: 'v2.4.1', name: 'add_user_preferences_table', type: 'CREATE', duration: '0.8s', date: '3 days ago' },
+              { version: 'v2.4.0', name: 'alter_orders_add_status_idx', type: 'ALTER', duration: '2.1s', date: '1 week ago' },
+              { version: 'v2.3.9', name: 'create_audit_log_partition', type: 'CREATE', duration: '1.5s', date: '2 weeks ago' },
+              { version: 'v2.3.8', name: 'drop_legacy_sessions', type: 'DROP', duration: '0.3s', date: '3 weeks ago' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Tables" icon={Database} accentColor={db.color}><StatCard label="Total" value="234" color={db.color} /></Panel>
+          <Panel title="Views" icon={Eye} accentColor={db.color}><StatCard label="Total" value="89" color={db.color} /></Panel>
+          <Panel title="Pending" icon={Clock} accentColor={THEME.success}><StatCard label="Migrations" value="0" color={THEME.success} /></Panel>
+          <Panel title="Last Run" icon={CheckCircle} accentColor={THEME.success}><StatCard label="Ago" value="3" unit="days" color={THEME.success} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Schema Visualizer: relationship stats + entity donut ── */
+  if (subTabId === 'schema-viz') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Entity Relationships" icon={GitBranch} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <DonutWidget
+                data={[
+                  { name: 'One-to-Many', value: 65, color: db.color, display: '65' },
+                  { name: 'Many-to-Many', value: 25, color: THEME.warning, display: '25' },
+                  { name: 'One-to-One', value: 10, color: THEME.success, display: '10' },
+                ]}
+                centerValue="456" centerLabel="RELS"
+                color={db.color} size={120} innerRadius={40} outerRadius={54}
+              />
+            </div>
+          </Panel>
+          <Panel title="Schema Complexity" icon={Layers} accentColor={db.color}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '12px 0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>178</div>
+                <div style={{ fontSize: 9, color: THEME.textDim }}>Foreign Keys</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>234</div>
+                <div style={{ fontSize: 9, color: THEME.textDim }}>Constraints</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>42</div>
+                <div style={{ fontSize: 9, color: THEME.textDim }}>Triggers</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>89</div>
+                <div style={{ fontSize: 9, color: THEME.textDim }}>Functions</div>
+              </div>
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Security & Compliance: audit trend + policy gauge ── */
+  if (subTabId === 'security') {
+    return (
+      <>
+        <Panel title="Audit Events (7d)" icon={Lock} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen7d(seed, 8000, 5000)}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="value" name="Events" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Compliance" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={98} color={THEME.success} size={80} strokeWidth={6} label="SCORE" />
+            </div>
+          </Panel>
+          <Panel title="Roles" icon={Users} accentColor={db.color}>
+            <StatCard label="Active" value="18" color={db.color} />
+          </Panel>
+          <Panel title="Failed Auth" icon={AlertTriangle} accentColor={THEME.success}>
+            <StatCard label="Today" value="0" color={THEME.success} />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     OBSERVABILITY section tabs
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* ── CloudWatch: metric stream + alarm status ── */
+  if (subTabId === 'cloudwatch') {
+    return (
+      <>
+        <Panel title="CloudWatch Metric Stream" icon={Cloud} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen24h(seed, 50, 80, 20, 40)}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" name="Data Points" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              <Area type="monotone" dataKey="secondary" name="Alarms Checked" stroke={THEME.warning} fill="none" strokeWidth={1.5} strokeDasharray="4 2" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Metrics" icon={Activity} accentColor={db.color}><StatCard label="Active" value="124" color={db.color} /></Panel>
+          <Panel title="Alarms" icon={Bell} accentColor={THEME.success}><StatCard label="Active" value="0" color={THEME.success} /></Panel>
+          <Panel title="Data Points" icon={Database} accentColor={db.color}><StatCard label="Total" value="98.2M" color={db.color} /></Panel>
+          <Panel title="Last Sync" icon={Clock} accentColor={THEME.success}><StatCard label="Ago" value="30" unit="s" color={THEME.success} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Log Pattern Analysis: pattern distribution + volume trend ── */
+  if (subTabId === 'log-patterns') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Log Level Distribution" icon={FileSearch} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+              <DonutWidget
+                data={[
+                  { name: 'INFO', value: 72, color: db.color, display: '72%' },
+                  { name: 'WARNING', value: 18, color: THEME.warning, display: '18%' },
+                  { name: 'ERROR', value: 8, color: '#FF4560', display: '8%' },
+                  { name: 'DEBUG', value: 2, color: THEME.textDim, display: '2%' },
+                ]}
+                centerValue="2.3" centerLabel="GB/DAY"
+                color={db.color} size={120} innerRadius={40} outerRadius={54}
+              />
+            </div>
+          </Panel>
+          <Panel title="Log Volume Trend (7d)" icon={BarChart3} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={gen7d(seed, 1500, 1000)}>
+                <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={35} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" name="Log Entries (K)" fill={db.color} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Top Log Patterns" icon={FileSearch} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'pattern', label: 'Pattern', width: '45%' },
+                { key: 'count', label: 'Count', width: '15%' },
+                { key: 'level', label: 'Level', width: '15%' },
+                { key: 'trend', label: 'Trend', width: '25%' },
+              ]}
+              rows={[
+                { pattern: 'connection authorized: user=*', count: '45.2K', level: 'INFO', trend: 'Stable' },
+                { pattern: 'checkpoint starting: *', count: '12.1K', level: 'INFO', trend: 'Stable' },
+                { pattern: 'duration: * ms statement: SELECT', count: '8.4K', level: 'WARNING', trend: 'Increasing' },
+                { pattern: 'temporary file: path *', count: '2.1K', level: 'WARNING', trend: 'Decreasing' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Alert Correlation: correlation matrix + root cause ── */
+  if (subTabId === 'alert-correlation') {
+    return (
+      <>
+        <Panel title="Correlated Alert Groups" icon={Link2} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'group', label: 'Correlation Group', width: '30%' },
+              { key: 'alerts', label: 'Alerts', width: '10%' },
+              { key: 'rootCause', label: 'Root Cause', width: '30%' },
+              { key: 'confidence', label: 'Confidence', width: '15%' },
+              { key: 'status', label: 'Status', width: '15%' },
+            ]}
+            rows={[
+              { group: 'CPU Spike Cascade', alerts: 4, rootCause: 'Long-running query', confidence: '94%', status: 'Resolved' },
+              { group: 'Disk I/O Bottleneck', alerts: 3, rootCause: 'Table bloat', confidence: '87%', status: 'Active' },
+              { group: 'Connection Surge', alerts: 2, rootCause: 'App deployment', confidence: '91%', status: 'Resolved' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Root Cause Accuracy" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={89} color={THEME.success} size={90} strokeWidth={7} label="ACC" />
+            </div>
+          </Panel>
+          <Panel title="Correlation Stats" icon={Activity} accentColor={db.color}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '16px 0' }}>
+              <div style={{ textAlign: 'center' }}><div style={{ fontSize: 20, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>12</div><div style={{ fontSize: 9, color: THEME.textDim }}>Correlations</div></div>
+              <div style={{ textAlign: 'center' }}><div style={{ fontSize: 20, fontWeight: 700, color: THEME.success, fontFamily: "'JetBrains Mono',monospace" }}>2</div><div style={{ fontSize: 9, color: THEME.textDim }}>False Positives</div></div>
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── OpenTelemetry: trace waterfall + span distribution ── */
+  if (subTabId === 'opentelemetry') {
+    return (
+      <>
+        <Panel title="Trace Volume (24h)" icon={Radar} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen24h(seed, 2000, 3000, 500, 1500)}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" name="Traces/sec" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              <Area type="monotone" dataKey="secondary" name="Errors" stroke={THEME.warning} fill="none" strokeWidth={1.5} strokeDasharray="4 2" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Traces/sec" icon={Activity} accentColor={db.color}><StatCard label="Current" value="4,500" color={db.color} /></Panel>
+          <Panel title="Spans" icon={Layers} accentColor={db.color}><StatCard label="Per day" value="234M" color={db.color} /></Panel>
+          <Panel title="Sampling" icon={Eye} accentColor={THEME.success}><StatCard label="Rate" value="100" unit="%" color={THEME.success} /></Panel>
+          <Panel title="P99 Latency" icon={Clock} accentColor={db.color}><StatCard label="Current" value="12.3" unit="ms" color={db.color} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Kubernetes: pod status + resource util ── */
+  if (subTabId === 'kubernetes') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Pod Status" icon={Container} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+              <DonutWidget
+                data={[
+                  { name: 'Running', value: 42, color: THEME.success, display: '42' },
+                  { name: 'Pending', value: 2, color: THEME.warning, display: '2' },
+                  { name: 'Failed', value: 1, color: '#FF4560', display: '1' },
+                ]}
+                centerValue="45" centerLabel="PODS"
+                color={db.color} size={120} innerRadius={40} outerRadius={54}
+              />
+            </div>
+          </Panel>
+          <Panel title="Resource Utilization" icon={Cpu} accentColor={db.color}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '12px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'center' }}><RingGauge value={62} color={db.color} size={70} strokeWidth={5} label="CPU" /></div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}><RingGauge value={71} color={THEME.warning} size={70} strokeWidth={5} label="MEM" /></div>
+            </div>
+          </Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Node Status" icon={Server} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'node', label: 'Node', width: '25%' },
+                { key: 'status', label: 'Status', width: '15%' },
+                { key: 'cpu', label: 'CPU', width: '15%' },
+                { key: 'memory', label: 'Memory', width: '15%' },
+                { key: 'pods', label: 'Pods', width: '15%' },
+                { key: 'age', label: 'Age', width: '15%' },
+              ]}
+              rows={Array.from({ length: 4 }, (_, i) => ({
+                node: `node-${i + 1}`, status: 'Ready',
+                cpu: `${Math.floor(hashSeed(`${seed}-nc-${i}`) * 30 + 40)}%`,
+                memory: `${Math.floor(hashSeed(`${seed}-nm-${i}`) * 20 + 55)}%`,
+                pods: Math.floor(hashSeed(`${seed}-np-${i}`) * 8 + 8),
+                age: `${Math.floor(hashSeed(`${seed}-na-${i}`) * 60 + 30)}d`,
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Status Page: component status + incident timeline ── */
+  if (subTabId === 'status-page') {
+    return (
+      <>
+        <Panel title="System Components" icon={Globe} accentColor={THEME.success}>
+          <DemoTable
+            columns={[
+              { key: 'component', label: 'Component', width: '30%' },
+              { key: 'status', label: 'Status', width: '20%' },
+              { key: 'uptime', label: 'Uptime', width: '20%' },
+              { key: 'lastIncident', label: 'Last Incident', width: '30%' },
+            ]}
+            rows={[
+              { component: 'API Gateway', status: 'Operational', uptime: '99.99%', lastIncident: '45 days ago' },
+              { component: 'Database Cluster', status: 'Operational', uptime: '99.99%', lastIncident: '15 days ago' },
+              { component: 'Cache Layer', status: 'Operational', uptime: '99.98%', lastIncident: '30 days ago' },
+              { component: 'Worker Queue', status: 'Operational', uptime: '99.95%', lastIncident: '7 days ago' },
+              { component: 'CDN', status: 'Operational', uptime: '100%', lastIncident: 'Never' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Overall Uptime" icon={CheckCircle} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={99} color={THEME.success} size={80} strokeWidth={6} label="SLA" />
+            </div>
+          </Panel>
+          <Panel title="Subscribers" icon={Users} accentColor={db.color}><StatCard label="Watching" value="234" color={db.color} /></Panel>
+          <Panel title="Last Incident" icon={Clock} accentColor={THEME.success}><StatCard label="Ago" value="15" unit="days" color={THEME.success} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── AI Monitoring: anomaly trend + model accuracy ── */
+  if (subTabId === 'ai-monitoring') {
+    return (
+      <>
+        <Panel title="Anomaly Detection (7d)" icon={Brain} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen7d(seed, 0, 5).map(d => ({ ...d, confidence: Math.floor(hashSeed(`${seed}-conf-${d.day}`) * 5 + 93) }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="value" name="Anomalies" stroke={THEME.warning} fill={`${THEME.warning}15`} strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="AI Accuracy" icon={Brain} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={96} color={THEME.success} size={80} strokeWidth={6} label="ACC" />
+            </div>
+          </Panel>
+          <Panel title="Training" icon={Activity} accentColor={db.color}><StatCard label="Frequency" value="Daily" color={db.color} /></Panel>
+          <Panel title="Forecast" icon={Clock} accentColor={db.color}><StatCard label="Horizon" value="30" unit="days" color={db.color} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     DEVELOPER TOOLS section tabs
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* ── SQL Console: query stats + recent queries ── */
+  if (subTabId === 'sql') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Queries Run" icon={Terminal} accentColor={db.color}><StatCard label="Today" value="1,245" color={db.color} /></Panel>
+          <Panel title="Avg Time" icon={Clock} accentColor={db.color}><StatCard label="Execution" value="3.2" unit="ms" color={db.color} /></Panel>
+          <Panel title="Favorites" icon={Star} accentColor={db.color}><StatCard label="Saved" value="34" color={db.color} /></Panel>
+          <Panel title="Recent" icon={Activity} accentColor={db.color}><StatCard label="Queries" value="12" color={db.color} /></Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Recent Query History" icon={Terminal} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'query', label: 'Query', width: '50%' },
+                { key: 'duration', label: 'Duration', width: '15%' },
+                { key: 'rows', label: 'Rows', width: '15%' },
+                { key: 'time', label: 'Executed', width: '20%' },
+              ]}
+              rows={[
+                { query: 'SELECT * FROM users WHERE active = true', duration: '2.1ms', rows: '1,245', time: '2 min ago' },
+                { query: 'UPDATE orders SET status = shipped', duration: '5.4ms', rows: '89', time: '15 min ago' },
+                { query: 'INSERT INTO audit_log VALUES ...', duration: '1.2ms', rows: '1', time: '30 min ago' },
+                { query: 'SELECT count(*) FROM sessions', duration: '0.8ms', rows: '1', time: '1 hour ago' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── API Tracing: endpoint latency + call trend ── */
+  if (subTabId === 'api') {
+    return (
+      <>
+        <Panel title="API Call Volume (24h)" icon={Cpu} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={gen24h(seed, 200, 300, 5, 15)}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={35} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" name="Calls/sec" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              <Area type="monotone" dataKey="secondary" name="Errors" stroke={THEME.warning} fill="none" strokeWidth={1.5} strokeDasharray="4 2" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Top Endpoints by Latency" icon={Clock} accentColor={THEME.warning}>
+            <DemoTable
+              columns={[
+                { key: 'endpoint', label: 'Endpoint', width: '35%' },
+                { key: 'method', label: 'Method', width: '12%' },
+                { key: 'p50', label: 'P50', width: '13%' },
+                { key: 'p99', label: 'P99', width: '13%' },
+                { key: 'calls', label: 'Calls/hr', width: '14%' },
+                { key: 'errors', label: 'Errors', width: '13%' },
+              ]}
+              rows={[
+                { endpoint: '/api/v1/users', method: 'GET', p50: '12ms', p99: '89ms', calls: '4.5K', errors: '0.01%' },
+                { endpoint: '/api/v1/orders', method: 'POST', p50: '45ms', p99: '234ms', calls: '2.1K', errors: '0.1%' },
+                { endpoint: '/api/v1/search', method: 'GET', p50: '34ms', p99: '156ms', calls: '8.9K', errors: '0.02%' },
+                { endpoint: '/api/v1/analytics', method: 'GET', p50: '78ms', p99: '345ms', calls: '1.2K', errors: '0.05%' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Repository: commit history + branch activity ── */
+  if (subTabId === 'repository') {
+    return (
+      <>
+        <Panel title="Commit Activity (7d)" icon={GitBranch} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={gen7d(seed, 5, 15)}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Bar dataKey="value" name="Commits" fill={db.color} radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Total Commits" icon={GitBranch} accentColor={db.color}><StatCard label="All time" value="3,456" color={db.color} /></Panel>
+          <Panel title="Branches" icon={GitBranch} accentColor={db.color}><StatCard label="Active" value="24" color={db.color} /></Panel>
+          <Panel title="Pull Requests" icon={Code} accentColor={THEME.warning}><StatCard label="Open" value="12" color={THEME.warning} /></Panel>
+          <Panel title="Deployments" icon={Globe} accentColor={THEME.success}><StatCard label="Per week" value="45" color={THEME.success} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── AI Query Advisor: recommendation cards + performance delta ── */
+  if (subTabId === 'ai-advisor') {
+    return (
+      <>
+        <Panel title="AI Recommendations" icon={Brain} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'query', label: 'Query Pattern', width: '35%' },
+              { key: 'suggestion', label: 'Suggestion', width: '30%' },
+              { key: 'improvement', label: 'Est. Improvement', width: '15%' },
+              { key: 'confidence', label: 'Confidence', width: '20%' },
+            ]}
+            rows={[
+              { query: 'SELECT * FROM orders WHERE...', suggestion: 'Add composite index', improvement: '+34%', confidence: '96%' },
+              { query: 'JOIN users ON users.id...', suggestion: 'Rewrite as subquery', improvement: '+18%', confidence: '89%' },
+              { query: 'UPDATE inventory SET qty...', suggestion: 'Batch operations', improvement: '+45%', confidence: '93%' },
+              { query: 'SELECT count(*) FROM logs', suggestion: 'Use materialized view', improvement: '+67%', confidence: '91%' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Adoption Rate" icon={Activity} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={76} color={db.color} size={80} strokeWidth={6} label="ADOPT" />
+            </div>
+          </Panel>
+          <Panel title="Avg Improvement" icon={TrendingUp} accentColor={THEME.success}><StatCard label="Performance" value="+23.4" unit="%" color={THEME.success} /></Panel>
+          <Panel title="Queries Analyzed" icon={Database} accentColor={db.color}><StatCard label="Total" value="234K" color={db.color} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     ADMIN section tabs
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* ── DBA Task Scheduler: schedule table + status donut ── */
+  if (subTabId === 'tasks') {
+    return (
+      <>
+        <Panel title="Scheduled Tasks" icon={CalendarCheck} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'task', label: 'Task', width: '30%' },
+              { key: 'schedule', label: 'Schedule', width: '20%' },
+              { key: 'lastRun', label: 'Last Run', width: '15%' },
+              { key: 'duration', label: 'Duration', width: '15%' },
+              { key: 'status', label: 'Status', width: '20%' },
+            ]}
+            rows={[
+              { task: 'VACUUM ANALYZE', schedule: 'Every 5 min', lastRun: '2 min ago', duration: '1.2s', status: 'Success' },
+              { task: 'Backup Full', schedule: 'Daily 2:00 AM', lastRun: '6h ago', duration: '12m', status: 'Success' },
+              { task: 'Stats Collection', schedule: 'Hourly', lastRun: '45m ago', duration: '3.4s', status: 'Success' },
+              { task: 'Log Rotation', schedule: 'Daily 00:00', lastRun: '12h ago', duration: '0.5s', status: 'Success' },
+              { task: 'Index Rebuild', schedule: 'Weekly Sun', lastRun: '3d ago', duration: '45m', status: 'Success' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Task Status" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <DonutWidget
+                data={[
+                  { name: 'Success', value: 34, color: THEME.success, display: '34' },
+                  { name: 'Running', value: 2, color: db.color, display: '2' },
+                  { name: 'Failed', value: 0, color: THEME.warning, display: '0' },
+                ]}
+                centerValue="36" centerLabel="TASKS"
+                color={db.color} size={100} innerRadius={34} outerRadius={46}
+              />
+            </div>
+          </Panel>
+          <Panel title="Success Rate" icon={CheckCircle} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={99} color={THEME.success} size={90} strokeWidth={7} label="RATE" />
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── User Management: user list + role distribution ── */
+  if (subTabId === 'users') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
+          <Panel title="Active Users" icon={Users} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'user', label: 'User', width: '25%' },
+                { key: 'role', label: 'Role', width: '20%' },
+                { key: 'sessions', label: 'Sessions', width: '15%' },
+                { key: 'lastActive', label: 'Last Active', width: '20%' },
+                { key: 'status', label: 'Status', width: '20%' },
+              ]}
+              rows={[
+                { user: 'admin@company.com', role: 'Superadmin', sessions: 3, lastActive: 'Now', status: 'Online' },
+                { user: 'dba@company.com', role: 'DBA', sessions: 1, lastActive: '5 min ago', status: 'Online' },
+                { user: 'dev@company.com', role: 'Developer', sessions: 2, lastActive: '1h ago', status: 'Away' },
+                { user: 'viewer@company.com', role: 'Viewer', sessions: 0, lastActive: '2d ago', status: 'Offline' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+          <Panel title="Role Distribution" icon={Shield} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <DonutWidget
+                data={[
+                  { name: 'Admins', value: 5, color: db.color, display: '5' },
+                  { name: 'DBAs', value: 8, color: THEME.warning, display: '8' },
+                  { name: 'Devs', value: 15, color: THEME.success, display: '15' },
+                  { name: 'Viewers', value: 6, color: THEME.textDim, display: '6' },
+                ]}
+                centerValue="34" centerLabel="USERS"
+                color={db.color} size={110} innerRadius={36} outerRadius={50}
+              />
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Admin Panel: config + system health ── */
+  if (subTabId === 'admin-panel') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="System Health" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={97} color={THEME.success} size={90} strokeWidth={7} label="HEALTH" />
+            </div>
+          </Panel>
+          <Panel title="Config Changes" icon={Activity} accentColor={db.color}><StatCard label="Today" value="23" color={db.color} /></Panel>
+          <Panel title="Restarts" icon={RefreshCw} accentColor={THEME.success}><StatCard label="This week" value="0" color={THEME.success} /></Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Recent Configuration Changes" icon={Shield} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'param', label: 'Parameter', width: '30%' },
+                { key: 'oldVal', label: 'Old Value', width: '20%' },
+                { key: 'newVal', label: 'New Value', width: '20%' },
+                { key: 'user', label: 'Changed By', width: '15%' },
+                { key: 'time', label: 'When', width: '15%' },
+              ]}
+              rows={[
+                { param: 'max_connections', oldVal: '80', newVal: '100', user: 'admin', time: '2h ago' },
+                { param: 'shared_buffers', oldVal: '4 GB', newVal: '8 GB', user: 'dba', time: '1d ago' },
+                { param: 'work_mem', oldVal: '64 MB', newVal: '128 MB', user: 'admin', time: '3d ago' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Data Retention: policy table + storage usage trend ── */
+  if (subTabId === 'retention') {
+    return (
+      <>
+        <Panel title="Retention Policies" icon={Clock} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'policy', label: 'Policy', width: '25%' },
+              { key: 'table', label: 'Target Table', width: '20%' },
+              { key: 'retention', label: 'Retention', width: '15%' },
+              { key: 'purged', label: 'Last Purged', width: '20%' },
+              { key: 'status', label: 'Status', width: '20%' },
+            ]}
+            rows={[
+              { policy: 'Audit Log Cleanup', table: 'audit_log', retention: '90 days', purged: '234 GB/week', status: 'Active' },
+              { policy: 'Session Archive', table: 'sessions', retention: '30 days', purged: '45 GB/week', status: 'Active' },
+              { policy: 'Metric Downsampling', table: 'metrics', retention: '1 year', purged: '12 GB/week', status: 'Active' },
+              { policy: 'Log Rotation', table: 'app_logs', retention: '14 days', purged: '89 GB/week', status: 'Active' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Storage Freed (7d)" icon={HardDrive} accentColor={THEME.success}>
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart data={gen7d(seed, 20, 30)}>
+                <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={28} unit="GB" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" name="Freed" fill={THEME.success} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Compliance" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={100} color={THEME.success} size={80} strokeWidth={6} label="OK" />
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Terraform Export: resource inventory + drift ── */
+  if (subTabId === 'terraform') {
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Resources" icon={Database} accentColor={db.color}><StatCard label="Managed" value="456" color={db.color} /></Panel>
+          <Panel title="Modules" icon={Layers} accentColor={db.color}><StatCard label="Total" value="23" color={db.color} /></Panel>
+          <Panel title="Last Export" icon={Clock} accentColor={db.color}><StatCard label="Ago" value="2" unit="hours" color={db.color} /></Panel>
+          <Panel title="Drift" icon={AlertTriangle} accentColor={THEME.warning}><StatCard label="Detected" value="1" color={THEME.warning} /></Panel>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Terraform Resource Inventory" icon={Code} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'resource', label: 'Resource', width: '30%' },
+                { key: 'type', label: 'Type', width: '20%' },
+                { key: 'provider', label: 'Provider', width: '15%' },
+                { key: 'state', label: 'State', width: '15%' },
+                { key: 'drift', label: 'Drift', width: '20%' },
+              ]}
+              rows={[
+                { resource: 'aws_db_instance.primary', type: 'db_instance', provider: 'AWS', state: 'Synced', drift: 'None' },
+                { resource: 'aws_security_group.db', type: 'security_group', provider: 'AWS', state: 'Synced', drift: 'None' },
+                { resource: 'aws_db_subnet_group.main', type: 'subnet_group', provider: 'AWS', state: 'Drifted', drift: 'CIDR changed' },
+                { resource: 'aws_iam_role.rds_monitor', type: 'iam_role', provider: 'AWS', state: 'Synced', drift: 'None' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Custom Dashboards: gallery + usage stats ── */
+  if (subTabId === 'custom-dashboard') {
+    return (
+      <>
+        <Panel title="Dashboard Gallery" icon={LayoutDashboard} accentColor={db.color}>
+          <DemoTable
+            columns={[
+              { key: 'name', label: 'Dashboard', width: '30%' },
+              { key: 'panels', label: 'Panels', width: '12%' },
+              { key: 'owner', label: 'Owner', width: '18%' },
+              { key: 'shared', label: 'Shared With', width: '15%' },
+              { key: 'views', label: 'Views/Week', width: '12%' },
+              { key: 'updated', label: 'Updated', width: '13%' },
+            ]}
+            rows={[
+              { name: 'Production Overview', panels: 12, owner: 'admin', shared: 'Everyone', views: 234, updated: '1h ago' },
+              { name: 'Query Performance', panels: 8, owner: 'dba', shared: 'DBA Team', views: 89, updated: '3h ago' },
+              { name: 'Capacity Planning', panels: 6, owner: 'ops', shared: '5 users', views: 45, updated: '1d ago' },
+              { name: 'Security Audit', panels: 10, owner: 'security', shared: 'Admins', views: 23, updated: '2d ago' },
+            ]}
+            color={db.color}
+          />
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Dashboards" icon={LayoutDashboard} accentColor={db.color}><StatCard label="Total" value="18" color={db.color} /></Panel>
+          <Panel title="Total Panels" icon={Layers} accentColor={db.color}><StatCard label="Across all" value="567" color={db.color} /></Panel>
+          <Panel title="Active Users" icon={Users} accentColor={db.color}><StatCard label="This week" value="89" color={db.color} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     GENERIC FALLBACK: uses tab metrics to build a unique layout
+     based on the subTabId hash — ensures no two tabs look identical
+     ══════════════════════════════════════════════════════════════════ */
+  const tabSeed = hashSeed(seed);
+  const layoutType = tabSeed % 4;
+  const trendData = gen24h(seed, 50, 100, 20, 50);
+  const weekData = gen7d(seed, 10, 30);
+
+  if (layoutType === 0) {
+    /* Layout A: area chart + stat cards */
+    return (
+      <>
+        <Panel title={`${SUB_TAB_DISPLAY_NAMES[subTabId] || subTabId} Trend (24h)`} icon={Activity} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={35} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Health" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-h`) * 10 + 88)} color={THEME.success} size={80} strokeWidth={6} label="OK" />
+            </div>
+          </Panel>
+          <Panel title="Primary" icon={Activity} accentColor={db.color}><StatCard label="Value" value={`${Math.floor(hashSeed(`${seed}-pv`) * 500 + 100)}`} color={db.color} /></Panel>
+          <Panel title="Secondary" icon={Clock} accentColor={db.color}><StatCard label="Value" value={`${Math.floor(hashSeed(`${seed}-sv`) * 100 + 10)}`} color={db.color} /></Panel>
+        </div>
+      </>
+    );
+  }
+
+  if (layoutType === 1) {
+    /* Layout B: bar chart + donut + stats */
+    return (
+      <>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
+          <Panel title={`${SUB_TAB_DISPLAY_NAMES[subTabId] || subTabId} Activity (7d)`} icon={BarChart3} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={170}>
+              <BarChart data={weekData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={28} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" fill={db.color} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Distribution" icon={Eye} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+              <DonutWidget
+                data={[
+                  { name: 'Active', value: 70, color: db.color, display: '70%' },
+                  { name: 'Idle', value: 20, color: THEME.textDim, display: '20%' },
+                  { name: 'Error', value: 10, color: THEME.warning, display: '10%' },
+                ]}
+                centerValue={`${Math.floor(hashSeed(`${seed}-dv`) * 500 + 50)}`} centerLabel="TOTAL"
+                color={db.color} size={110} innerRadius={36} outerRadius={50}
+              />
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  if (layoutType === 2) {
+    /* Layout C: dual line chart + table */
+    return (
+      <>
+        <Panel title={`${SUB_TAB_DISPLAY_NAMES[subTabId] || subTabId} Metrics (24h)`} icon={Activity} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={180}>
+            <LineChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={35} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Line type="monotone" dataKey="primary" stroke={db.color} strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="secondary" stroke={THEME.warning} strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
+            </LineChart>
+          </ResponsiveContainer>
+        </Panel>
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Details" icon={Database} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'item', label: 'Item', width: '35%' },
+                { key: 'value', label: 'Value', width: '20%' },
+                { key: 'status', label: 'Status', width: '20%' },
+                { key: 'trend', label: 'Trend', width: '25%' },
+              ]}
+              rows={Array.from({ length: 4 }, (_, i) => ({
+                item: `${SUB_TAB_DISPLAY_NAMES[subTabId] || subTabId} #${i + 1}`,
+                value: Math.floor(hashSeed(`${seed}-v-${i}`) * 500 + 50),
+                status: i < 3 ? 'Healthy' : 'Warning',
+                trend: hashSeed(`${seed}-t-${i}`) > 0.5 ? 'Increasing' : 'Stable',
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* Layout D: 3 gauges + area chart */
   return (
     <>
-      <OverviewPanels widgets={widgets} db={db} />
-      <div style={{ marginTop: 16 }}>
-        <SectionContent section={section} db={db} />
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-        <Panel title="Overall Health" icon={Shield} accentColor={db.color} style={{ maxWidth: 300 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
-            <RingGauge value={92} color={db.color} size={100} strokeWidth={8} label="health" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <Panel title="Primary" icon={Activity} accentColor={db.color}>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+            <RingGauge value={Math.floor(hashSeed(`${seed}-g1`) * 30 + 60)} color={db.color} size={80} strokeWidth={6} label="P1" />
           </div>
+        </Panel>
+        <Panel title="Secondary" icon={Shield} accentColor={THEME.success}>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+            <RingGauge value={Math.floor(hashSeed(`${seed}-g2`) * 15 + 80)} color={THEME.success} size={80} strokeWidth={6} label="P2" />
+          </div>
+        </Panel>
+        <Panel title="Tertiary" icon={Clock} accentColor={db.color}>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+            <RingGauge value={Math.floor(hashSeed(`${seed}-g3`) * 20 + 40)} color={db.color} size={80} strokeWidth={6} label="P3" />
+          </div>
+        </Panel>
+      </div>
+      <div style={{ marginTop: 16 }}>
+        <Panel title={`${SUB_TAB_DISPLAY_NAMES[subTabId] || subTabId} Trend`} icon={Activity} accentColor={db.color}>
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Area type="monotone" dataKey="primary" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
         </Panel>
       </div>
     </>
