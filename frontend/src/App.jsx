@@ -126,7 +126,7 @@ import {
     MessageSquarePlus, Star, Send, Archive, RefreshCw, Radio, Cloud,
     CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
     ThumbsUp, Lightbulb, AlertTriangle, PlusCircle, Sun, Moon, Save, Edit2,
-    Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock, Search
+    Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
@@ -1609,16 +1609,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
         return s;
     });
 
-    /* Sidebar search and recently viewed */
-    const [searchQuery, setSearchQuery] = useState('');
-    const [recentlyViewed, setRecentlyViewed] = useState(() => {
-        try {
-            const stored = localStorage.getItem('vigil_recent_tabs');
-            return stored ? JSON.parse(stored) : [];
-        } catch {
-            return [];
-        }
-    });
+    /* Sidebar state */
 
     useEffect(() => {
         const sec = getSectionForTab(activeTab);
@@ -1631,14 +1622,6 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
             return new Set([...prev, ...needs]);
         });
 
-        /* Track recently viewed tabs */
-        setRecentlyViewed(prev => {
-            const updated = [activeTab, ...prev.filter(t => t !== activeTab)].slice(0, 5);
-            try {
-                localStorage.setItem('vigil_recent_tabs', JSON.stringify(updated));
-            } catch {}
-            return updated;
-        });
     }, [activeTab]);
 
     const toggleSection = useCallback((sec) => {
@@ -1744,134 +1727,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 )}
             </div>
 
-            {/* ── SEARCH BAR ── */}
-            {!collapsed && (
-                <div style={{
-                    padding: '12px 12px',
-                    borderBottom: `1px solid ${DS.border}`,
-                    flexShrink: 0,
-                }}>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '6px 10px',
-                        borderRadius: 8,
-                        background: DS.surfaceHover,
-                        border: `1px solid ${DS.border}`,
-                        transition: 'border-color 0.15s',
-                    }}>
-                        <Search size={13} color={DS.textMuted} />
-                        <input
-                            type="text"
-                            placeholder="Find tabs..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-                            style={{
-                                flex: 1,
-                                background: 'none',
-                                border: 'none',
-                                color: DS.textPrimary,
-                                fontSize: 12,
-                                fontFamily: DS.fontUI,
-                                outline: 'none',
-                            }}
-                            onFocus={(e) => {
-                                e.currentTarget.parentElement.style.borderColor = DS.cyan;
-                                e.currentTarget.parentElement.style.background = DS.surface;
-                            }}
-                            onBlur={(e) => {
-                                e.currentTarget.parentElement.style.borderColor = DS.border;
-                                e.currentTarget.parentElement.style.background = DS.surfaceHover;
-                            }}
-                            aria-label="Search tabs"
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    color: DS.textMuted,
-                                    padding: 2,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}
-                                aria-label="Clear search"
-                            >
-                                <X size={12} />
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* ── RECENTLY VIEWED ── */}
-            {!collapsed && recentlyViewed.length > 0 && !searchQuery && (
-                <div style={{
-                    padding: '8px 12px',
-                    borderBottom: `1px solid ${DS.border}`,
-                    flexShrink: 0,
-                }}>
-                    <div style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        fontFamily: DS.fontMono,
-                        color: DS.textMuted,
-                        padding: '4px 8px',
-                        marginBottom: 4,
-                    }}>
-                        Recently Viewed
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {recentlyViewed.slice(1, 4).map((tabId) => {
-                            const tab = TABS_ONLY.find(t => t.id === tabId);
-                            if (!tab) return null;
-                            const accent = tab.accent || DS.cyan;
-                            return (
-                                <button
-                                    key={tabId}
-                                    onClick={() => onTabChange(tabId)}
-                                    style={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 8,
-                                        padding: '6px 8px',
-                                        background: 'transparent',
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: 6,
-                                        cursor: 'pointer',
-                                        color: DS.textSub,
-                                        fontSize: 11,
-                                        transition: 'all 0.15s',
-                                        fontFamily: DS.fontUI,
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.background = `${accent}12`;
-                                        e.currentTarget.style.borderColor = accent;
-                                        e.currentTarget.style.color = accent;
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.background = 'transparent';
-                                        e.currentTarget.style.borderColor = DS.border;
-                                        e.currentTarget.style.color = DS.textSub;
-                                    }}
-                                >
-                                    <tab.icon size={12} />
-                                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {tab.label}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
+            {/* Search bar and recently viewed removed */}
 
             {/* ── NAV ── */}
             <nav className="sidebar-nav" role="navigation" aria-label="Main navigation" style={{
@@ -2023,28 +1879,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     );
 
                     /* ── Render all nav items ── */
-                    /* Filter tabs based on search query */
-                    const filteredGroupedNav = searchQuery ? groupedNav.map(item => {
-                        if (item.type === 'parent') {
-                            return {
-                                ...item,
-                                children: item.children.map(ch => ({
-                                    ...ch,
-                                    tabs: ch.tabs.filter(t => t.label.toLowerCase().includes(searchQuery))
-                                })).filter(ch => ch.tabs.length > 0)
-                            };
-                        } else {
-                            return {
-                                ...item,
-                                tabs: item.tabs.filter(t => t.label.toLowerCase().includes(searchQuery))
-                            };
-                        }
-                    }).filter(item => {
-                        if (item.type === 'parent') return item.children.length > 0;
-                        return item.tabs.length > 0;
-                    }) : groupedNav;
-
-                    return filteredGroupedNav.map((item, gi) => {
+                    return groupedNav.map((item, gi) => {
                         if (item.type === 'parent') {
                             /* ═══ Three-level: Parent group → Sub-sections → Tabs ═══ */
                             const parentOpen = collapsed || openSections.has(item.name);
@@ -2585,15 +2420,6 @@ const DashboardInner = ({ onLogout }) => {
             if (isMod && e.key === 'b') {
                 e.preventDefault();
                 handleToggleCollapse();
-            }
-            // Ctrl+K: Focus sidebar search (if visible)
-            else if (isMod && e.key === 'k') {
-                e.preventDefault();
-                const searchInput = document.querySelector('input[placeholder="Find tabs..."]');
-                if (searchInput) {
-                    searchInput.focus();
-                    searchInput.select();
-                }
             }
             // Ctrl+?: Show keyboard help
             else if (isMod && (e.key === '?' || (e.shiftKey && e.key === '/'))) {

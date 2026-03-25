@@ -118,6 +118,20 @@ export const AuthProvider = ({ children }) => {
                 throw new Error('Invalid server response');
             }
 
+            // Clear previous user's cached data before setting new session
+            // This prevents stale data from a different user leaking into the new session
+            const prevUser = localStorage.getItem(STORAGE_KEYS.USER);
+            const prevParsed = prevUser ? JSON.parse(prevUser) : null;
+            if (!prevParsed || prevParsed.username !== data.user.username) {
+                localStorage.removeItem('pg_monitor_active_tab');
+                localStorage.removeItem('vigil_active_connection_id');
+                localStorage.removeItem('vigil_custom_dashboards');
+                localStorage.removeItem('vigil_active_dashboard');
+                localStorage.removeItem('vigil_repos_v10');
+                localStorage.removeItem('vigil_recent_tabs');
+                localStorage.removeItem('vigil_last_feedback');
+            }
+
             localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
             localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
             setCurrentUser(data.user);
@@ -141,7 +155,18 @@ export const AuthProvider = ({ children }) => {
 
     // ── SSO Callback Handler ───────────────────────────────────────────────
     const handleSSOCallback = useCallback((token, user) => {
-        // Used by your callback route after a successful SSO redirect from the backend
+        // Clear previous user's cached data before setting new SSO session
+        const prevUser = localStorage.getItem(STORAGE_KEYS.USER);
+        const prevParsed = prevUser ? (() => { try { return JSON.parse(prevUser); } catch { return null; } })() : null;
+        if (!prevParsed || prevParsed.username !== user.username) {
+            localStorage.removeItem('pg_monitor_active_tab');
+            localStorage.removeItem('vigil_active_connection_id');
+            localStorage.removeItem('vigil_custom_dashboards');
+            localStorage.removeItem('vigil_active_dashboard');
+            localStorage.removeItem('vigil_repos_v10');
+            localStorage.removeItem('vigil_recent_tabs');
+            localStorage.removeItem('vigil_last_feedback');
+        }
         localStorage.setItem(STORAGE_KEYS.TOKEN, token);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
         setCurrentUser(user);

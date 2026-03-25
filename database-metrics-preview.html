@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Metrics Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #6495ED, #00ED64, #00B4D8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #9999bb;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: 2px solid;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+        }
+
+        .tab-btn.postgres {
+            border-color: #6495ED;
+            color: #6495ED;
+        }
+
+        .tab-btn.postgres.active {
+            background: #6495ED;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(100, 149, 237, 0.5);
+        }
+
+        .tab-btn.mongo {
+            border-color: #00ED64;
+            color: #00ED64;
+        }
+
+        .tab-btn.mongo.active {
+            background: #00ED64;
+            color: #0a0e1a;
+            box-shadow: 0 0 20px rgba(0, 237, 100, 0.5);
+        }
+
+        .tab-btn.mysql {
+            border-color: #00B4D8;
+            color: #00B4D8;
+        }
+
+        .tab-btn.mysql.active {
+            background: #00B4D8;
+            color: #0a0e1a;
+            box-shadow: 0 0 20px rgba(0, 180, 216, 0.5);
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #9999bb;
+        }
+
+        .content-area {
+            display: none;
+        }
+
+        .content-area.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .categories {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .category {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .category:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .category-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .category-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chevron {
+            transition: transform 0.3s ease;
+            font-size: 1.2em;
+        }
+
+        .category.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .category.collapsed .metrics {
+            display: none;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .metric:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .metric-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #00ED64, #00d656);
+            color: #0a0e1a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(0, 237, 100, 0.4);
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #9999bb;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+        }
+
+        .metric-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .metric-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .postgres-fill { background: linear-gradient(90deg, #6495ED, #7fa8ff); }
+        .mongo-fill { background: linear-gradient(90deg, #00ED64, #00ff77); }
+        .mysql-fill { background: linear-gradient(90deg, #00B4D8, #00d4ff); }
+
+        .metric-unit {
+            font-size: 0.8em;
+            color: #7777aa;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #555599;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8em; }
+            .metrics { grid-template-columns: 1fr; }
+            .tabs { flex-direction: column; }
+            .tab-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Database Metrics Preview</h1>
+            <p class="subtitle">Real-time monitoring across PostgreSQL, MongoDB, and MySQL</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn postgres active" data-db="postgres">PostgreSQL</button>
+            <button class="tab-btn mongo" data-db="mongo">MongoDB</button>
+            <button class="tab-btn mysql" data-db="mysql">MySQL</button>
+        </div>
+
+        <!-- POSTGRESQL -->
+        <div id="postgres" class="content-area active">
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-value">136</div>
+                    <div class="stat-label">Total Metrics</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">Active Alerts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">99.99%</div>
+                    <div class="stat-label">Availability</div>
+                </div>
+            </div>
+
+            <div class="categories" id="postgres-categories"></div>
+        </div>
+
+        <!-- MONGODB -->
+        <div id="mongo" class="content-area">
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-value">145</div>
+                    <div class="stat-label">Total Metrics</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">12,450</div>
+                    <div class="stat-label">Ops/sec</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">99.98%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+
+            <div class="categories" id="mongo-categories"></div>
+        </div>
+
+        <!-- MYSQL -->
+        <div id="mysql" class="content-area">
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-value">128</div>
+                    <div class="stat-label">Total Metrics</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2,840</div>
+                    <div class="stat-label">QPS</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">99.99%</div>
+                    <div class="stat-label">Availability</div>
+                </div>
+            </div>
+
+            <div class="categories" id="mysql-categories"></div>
+        </div>
+
+        <footer>
+            <p>Real-time Database Metrics Dashboard • Last updated: <span id="timestamp"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        const postgresData = {
+            "Engine Health": [
+                { label: "QPS", value: "1,247", unit: "/s", percent: 62 },
+                { label: "Commits", value: "98.5", unit: "%", percent: 98 },
+                { label: "Rollbacks", value: "0.2", unit: "%", percent: 2 },
+                { label: "Uptime", value: "47", unit: "days", percent: 85 },
+                { label: "Avg Query Time", value: "2.3", unit: "ms", percent: 35 },
+                { label: "Slow Queries", value: "12", unit: "/day", percent: 20 },
+                { label: "Query Count", value: "18,450", unit: "/hour", percent: 75 },
+                { label: "P95 Latency", value: "5.8", unit: "ms", percent: 42 },
+                { label: "CPU Usage", value: "34", unit: "%", percent: 34 },
+                { label: "Memory Usage", value: "62", unit: "%", percent: 62 },
+                { label: "Disk I/O", value: "245", unit: "MB/s", percent: 55 },
+                { label: "Swap Usage", value: "0", unit: "MB", percent: 0 },
+                { label: "Error Rate", value: "0.01", unit: "%", percent: 1 },
+                { label: "Failed Transactions", value: "0", unit: "/hour", percent: 0 },
+                { label: "Recovery Time", value: "2.1", unit: "s", percent: 30 },
+                { label: "Availability", value: "99.99", unit: "%", percent: 100 },
+                { label: "Active Alerts", value: "0", unit: "", percent: 0 },
+                { label: "Total Rules", value: "34", unit: "", percent: 70 },
+                { label: "Triggered Today", value: "2", unit: "", percent: 15 },
+                { label: "Avg Response", value: "5", unit: "mins", percent: 40 },
+                { label: "WAL Generation Rate", value: "45", unit: "MB/s", percent: 45, isNew: true },
+                { label: "Temp Files Created", value: "23", unit: "/hour", percent: 25, isNew: true },
+                { label: "Deadlocks", value: "0", unit: "/day", percent: 0, isNew: true },
+                { label: "Tuple Insert Rate", value: "12,450", unit: "/s", percent: 62, isNew: true },
+                { label: "Tuple Update Rate", value: "3,200", unit: "/s", percent: 40, isNew: true },
+                { label: "Tuple Delete Rate", value: "890", unit: "/s", percent: 22, isNew: true },
+                { label: "Live Tuples", value: "45.2", unit: "M", percent: 80, isNew: true },
+                { label: "Dead Tuples", value: "23", unit: "K", percent: 30, isNew: true }
+            ],
+            "Query Intelligence": [
+                { label: "Index Scans", value: "89", unit: "%", percent: 89 },
+                { label: "Sequential Scans", value: "11", unit: "%", percent: 11 },
+                { label: "Avg Cost", value: "245.7", unit: "units", percent: 60 },
+                { label: "Plans Cached", value: "8,234", unit: "", percent: 75 },
+                { label: "Total Indexes", value: "342", unit: "", percent: 70 },
+                { label: "Unused Indexes", value: "23", unit: "", percent: 35 },
+                { label: "Bloated Indexes", value: "5", unit: "", percent: 10 },
+                { label: "Index Hit Ratio", value: "94.2", unit: "%", percent: 94 },
+                { label: "Plan Changes", value: "3", unit: "/day", percent: 15 },
+                { label: "Regressions", value: "0", unit: "", percent: 0 },
+                { label: "Performance Delta", value: "+2.1", unit: "%", percent: 75 },
+                { label: "Last Analyzed", value: "15", unit: "mins ago", percent: 95 },
+                { label: "Bloated Tables", value: "8", unit: "", percent: 20 },
+                { label: "Total Bloat", value: "234", unit: "MB", percent: 45 },
+                { label: "Bloat Ratio", value: "12.3", unit: "%", percent: 30 },
+                { label: "Vacuum Needed", value: "3", unit: "", percent: 20 },
+                { label: "Total Tables", value: "567", unit: "", percent: 85 },
+                { label: "Analyzed", value: "98.2", unit: "%", percent: 98 },
+                { label: "Autovacuum Runs", value: "456", unit: "/day", percent: 70 },
+                { label: "Last Analyze", value: "2", unit: "hours ago", percent: 90 },
+                { label: "Query Plan Cache Hit", value: "87.3", unit: "%", percent: 87, isNew: true },
+                { label: "Parallel Query Workers", value: "4", unit: "", percent: 50, isNew: true },
+                { label: "Hash Join Efficiency", value: "92.1", unit: "%", percent: 92, isNew: true },
+                { label: "Sort Operations", value: "1,234", unit: "/hour", percent: 60, isNew: true }
+            ],
+            "Infrastructure & HA": [
+                { label: "Active Conn", value: "42", unit: "", percent: 42 },
+                { label: "Idle Conn", value: "8", unit: "", percent: 8 },
+                { label: "Max Pool Size", value: "100", unit: "", percent: 100 },
+                { label: "Pool Efficiency", value: "95.3", unit: "%", percent: 95 },
+                { label: "WAL Level", value: "replica", unit: "", percent: 80 },
+                { label: "Replication Lag", value: "0.3", unit: "ms", percent: 5 },
+                { label: "WAL Files", value: "42", unit: "", percent: 55 },
+                { label: "Archiving Status", value: "active", unit: "", percent: 100 },
+                { label: "Checkpoints/Day", value: "288", unit: "", percent: 60 },
+                { label: "Checkpoint Duration", value: "12.5", unit: "s", percent: 40 },
+                { label: "Avg Interval", value: "300", unit: "s", percent: 75 },
+                { label: "Last Checkpoint", value: "45", unit: "s ago", percent: 90 },
+                { label: "Vacuum Runs/Day", value: "576", unit: "", percent: 85 },
+                { label: "Analyze Runs", value: "288", unit: "/day", percent: 75 },
+                { label: "Dead Tuples Removed", value: "234", unit: "K/day", percent: 70 },
+                { label: "Avg Runtime", value: "2.3", unit: "s", percent: 35 },
+                { label: "DB Size Growth", value: "2.1", unit: "GB/week", percent: 45 },
+                { label: "Projected Size", value: "45.2", unit: "GB/90d", percent: 60 },
+                { label: "Tablespace Util", value: "62.1", unit: "%", percent: 62 },
+                { label: "Estimated Time Full", value: "180", unit: "days", percent: 90 },
+                { label: "Last Backup", value: "1", unit: "hour ago", percent: 95 },
+                { label: "Backup Size", value: "8.9", unit: "GB", percent: 65 },
+                { label: "Restore Time Est", value: "12", unit: "mins", percent: 50 },
+                { label: "Backup Status", value: "healthy", unit: "", percent: 100 },
+                { label: "Streaming Replicas", value: "2", unit: "", percent: 50, isNew: true },
+                { label: "Logical Slots", value: "3", unit: "", percent: 30, isNew: true },
+                { label: "WAL Retention", value: "2", unit: "GB", percent: 40, isNew: true },
+                { label: "Connection Wait Time", value: "0.5", unit: "ms", percent: 10, isNew: true },
+                { label: "pgBouncer Queue", value: "0", unit: "", percent: 0, isNew: true }
+            ],
+            "Data Governance": [
+                { label: "Tables", value: "234", unit: "", percent: 70 },
+                { label: "Views", value: "89", unit: "", percent: 50 },
+                { label: "Pending Migrations", value: "0", unit: "", percent: 0 },
+                { label: "Last Migration", value: "3", unit: "days ago", percent: 85 },
+                { label: "Relations", value: "456", unit: "", percent: 80 },
+                { label: "Foreign Keys", value: "178", unit: "", percent: 70 },
+                { label: "Constraints", value: "234", unit: "", percent: 75 },
+                { label: "Triggers", value: "42", unit: "", percent: 50 },
+                { label: "Roles", value: "18", unit: "", percent: 40 },
+                { label: "Policies", value: "23", unit: "", percent: 55 },
+                { label: "Audit Events", value: "12,450", unit: "/day", percent: 70 },
+                { label: "Failed Auth", value: "0", unit: "", percent: 0 },
+                { label: "Row-Level Security Policies", value: "12", unit: "", percent: 60, isNew: true },
+                { label: "Column Encryption", value: "8", unit: "tables", percent: 80, isNew: true },
+                { label: "SSL Connections", value: "100", unit: "%", percent: 100, isNew: true },
+                { label: "pg_audit Events", value: "5,600", unit: "/day", percent: 75, isNew: true }
+            ],
+            "Platform Observability": [
+                { label: "CloudWatch Metrics", value: "124", unit: "", percent: 75 },
+                { label: "Alarms Active", value: "0", unit: "", percent: 0 },
+                { label: "Data Points", value: "98.2", unit: "M", percent: 90 },
+                { label: "Last Sync", value: "30", unit: "s ago", percent: 95 },
+                { label: "Log Patterns", value: "34", unit: "", percent: 60 },
+                { label: "Anomalies", value: "0", unit: "", percent: 0 },
+                { label: "Log Volume", value: "2.3", unit: "GB/day", percent: 50 },
+                { label: "Error Rate", value: "0.02", unit: "%", percent: 2 },
+                { label: "Correlations", value: "12", unit: "", percent: 35 },
+                { label: "Root Cause ID", value: "89", unit: "%", percent: 89 },
+                { label: "False Positives", value: "2", unit: "", percent: 10 },
+                { label: "Accuracy", value: "94.5", unit: "%", percent: 95 },
+                { label: "Traces/sec", value: "4,500", unit: "", percent: 65 },
+                { label: "Spans Collected", value: "234", unit: "M/day", percent: 85 },
+                { label: "Trace Sampling", value: "100", unit: "%", percent: 100 },
+                { label: "Latency P99", value: "12.3", unit: "ms", percent: 50 },
+                { label: "Kubernetes Nodes", value: "12", unit: "", percent: 60 },
+                { label: "Pods Running", value: "45", unit: "", percent: 75 },
+                { label: "CPU Util", value: "62.3", unit: "%", percent: 62 },
+                { label: "Memory Util", value: "71.2", unit: "%", percent: 71 },
+                { label: "Component Status", value: "operational", unit: "", percent: 100 },
+                { label: "Last Incident", value: "15", unit: "days ago", percent: 95 },
+                { label: "Uptime SLA", value: "99.99", unit: "%", percent: 100 },
+                { label: "Subscriber Count", value: "234", unit: "", percent: 65 },
+                { label: "Anomalies Detected", value: "2", unit: "/day", percent: 20 },
+                { label: "AI Accuracy", value: "96.2", unit: "%", percent: 96 },
+                { label: "Model Training", value: "daily", unit: "", percent: 100 },
+                { label: "Forecast Horizon", value: "30", unit: "days", percent: 75 }
+            ],
+            "DevOps Tooling": [
+                { label: "Queries Run", value: "1,245", unit: "/day", percent: 70 },
+                { label: "Avg Time", value: "3.2", unit: "ms", percent: 40 },
+                { label: "Favorites", value: "34", unit: "", percent: 60 },
+                { label: "Recent", value: "12", unit: "", percent: 50 },
+                { label: "Traces", value: "456", unit: "K/hour", percent: 75 },
+                { label: "Span Count", value: "2.1", unit: "M", percent: 85 },
+                { label: "Error Rate", value: "0.1", unit: "%", percent: 5 },
+                { label: "P99 Latency", value: "234", unit: "ms", percent: 60 },
+                { label: "Commits", value: "3,456", unit: "", percent: 85 },
+                { label: "Branches", value: "24", unit: "", percent: 55 },
+                { label: "Pull Requests", value: "12", unit: "open", percent: 45 },
+                { label: "Deployments", value: "45", unit: "/week", percent: 70 },
+                { label: "Queries Analyzed", value: "234", unit: "K", percent: 75 },
+                { label: "Optimizations", value: "89", unit: "/week", percent: 65 },
+                { label: "Avg Improvement", value: "23.4", unit: "%", percent: 80 },
+                { label: "Adoption Rate", value: "76.2", unit: "%", percent: 76 },
+                { label: "CI/CD Pipeline Status", value: "green", unit: "", percent: 100, isNew: true },
+                { label: "Migration Dry Runs", value: "12", unit: "/week", percent: 70, isNew: true },
+                { label: "Schema Diff Count", value: "3", unit: "", percent: 25, isNew: true },
+                { label: "API Response Time", value: "45", unit: "ms", percent: 50, isNew: true }
+            ],
+            "Administration": [
+                { label: "Scheduled Tasks", value: "34", unit: "", percent: 75 },
+                { label: "Running", value: "2", unit: "", percent: 20 },
+                { label: "Failed", value: "0", unit: "", percent: 0 },
+                { label: "Success Rate", value: "99.8", unit: "%", percent: 100 },
+                { label: "Users", value: "234", unit: "", percent: 80 },
+                { label: "Roles", value: "18", unit: "", percent: 55 },
+                { label: "Active Sessions", value: "42", unit: "", percent: 42 },
+                { label: "Failed Logins", value: "0", unit: "/day", percent: 0 },
+                { label: "Config Changes", value: "23", unit: "/day", percent: 55 },
+                { label: "Restarts", value: "0", unit: "/week", percent: 0 },
+                { label: "Maintenance", value: "scheduled", unit: "", percent: 100 },
+                { label: "Last Backup", value: "2", unit: "hours ago", percent: 95 },
+                { label: "Retention Policies", value: "12", unit: "", percent: 60 },
+                { label: "Data Purged", value: "234", unit: "GB/week", percent: 75 },
+                { label: "Compliance Status", value: "compliant", unit: "", percent: 100 },
+                { label: "Archive Rate", value: "98.5", unit: "%", percent: 98 },
+                { label: "Resources", value: "456", unit: "", percent: 85 },
+                { label: "Modules", value: "23", unit: "", percent: 60 },
+                { label: "Last Export", value: "2", unit: "hours ago", percent: 95 },
+                { label: "Drift Detected", value: "1", unit: "", percent: 15 },
+                { label: "Dashboards", value: "18", unit: "", percent: 60 },
+                { label: "Shared", value: "12", unit: "", percent: 50 },
+                { label: "Total Panels", value: "567", unit: "", percent: 90 },
+                { label: "Users With Access", value: "89", unit: "", percent: 85 }
+            ]
+        };
+
+        const mongoData = {
+            "Cluster Overview": [
+                { label: "Ops/sec", value: "12,450", unit: "/s", percent: 85 },
+                { label: "Uptime", value: "99.98", unit: "%", percent: 100 },
+                { label: "Replica Set", value: "healthy", unit: "", percent: 100 },
+                { label: "Sharding", value: "8", unit: "shards", percent: 80 },
+                { label: "Active Conn", value: "234", unit: "", percent: 47 },
+                { label: "Idle Conn", value: "45", unit: "", percent: 45 },
+                { label: "Max Conn Pool", value: "500", unit: "", percent: 47 },
+                { label: "Conn Efficiency", value: "96.2", unit: "%", percent: 96 },
+                { label: "Version", value: "7.0.0", unit: "", percent: 100 },
+                { label: "Storage Engine", value: "WiredTiger", unit: "", percent: 100 },
+                { label: "CPU Cores", value: "16", unit: "", percent: 80 },
+                { label: "Memory", value: "128", unit: "GB", percent: 85 },
+                { label: "Total Databases", value: "45", unit: "", percent: 75 },
+                { label: "Largest DB", value: "234", unit: "GB", percent: 65 },
+                { label: "Database Count Growth", value: "+3", unit: "/week", percent: 30 },
+                { label: "Total Size", value: "1.2", unit: "TB", percent: 75 },
+                { label: "Total Collections", value: "567", unit: "", percent: 85 },
+                { label: "Relationships", value: "234", unit: "", percent: 70 },
+                { label: "Foreign Keys", value: "456", unit: "", percent: 80 },
+                { label: "Cross-DB Refs", value: "89", unit: "", percent: 50 },
+                { label: "Mongos Instances", value: "3", unit: "", percent: 75, isNew: true },
+                { label: "Config Servers", value: "3", unit: "", percent: 75, isNew: true },
+                { label: "Authentication", value: "SCRAM-SHA-256", unit: "", percent: 100, isNew: true },
+                { label: "TLS", value: "enabled", unit: "", percent: 100, isNew: true }
+            ],
+            "Operations & Latency": [
+                { label: "TPS", value: "12,450", unit: "/s", percent: 85 },
+                { label: "Index Hits", value: "99.2", unit: "%", percent: 99 },
+                { label: "Page Faults", value: "0", unit: "/s", percent: 0 },
+                { label: "Uptime", value: "45", unit: "days", percent: 80 },
+                { label: "Read Ops", value: "7,800", unit: "/s", percent: 80 },
+                { label: "Write Ops", value: "3,200", unit: "/s", percent: 75 },
+                { label: "Command Ops", value: "1,450", unit: "/s", percent: 60 },
+                { label: "Queue Depth", value: "0", unit: "", percent: 0 },
+                { label: "P50", value: "0.8", unit: "ms", percent: 10 },
+                { label: "P95", value: "2.1", unit: "ms", percent: 25 },
+                { label: "P99", value: "5.3", unit: "ms", percent: 40 },
+                { label: "Max", value: "23.4", unit: "ms", percent: 60 },
+                { label: "Active Namespaces", value: "234", unit: "", percent: 70 },
+                { label: "Top Namespace Ops", value: "8,450", unit: "/s", percent: 85 },
+                { label: "Namespace Growth", value: "+12", unit: "/week", percent: 35 },
+                { label: "Avg Document Size", value: "4.2", unit: "KB", percent: 55 },
+                { label: "Plans Analyzed", value: "456", unit: "K", percent: 75 },
+                { label: "Slow Plans", value: "23", unit: "", percent: 20 },
+                { label: "Index Coverage", value: "96.2", unit: "%", percent: 96 },
+                { label: "Execution Time", value: "1.2", unit: "ms", percent: 20 },
+                { label: "Active Ops", value: "45", unit: "", percent: 45 },
+                { label: "Longest Op", value: "234", unit: "s", percent: 70 },
+                { label: "Op Lock Waits", value: "0", unit: "", percent: 0 },
+                { label: "Killed Ops", value: "2", unit: "/hour", percent: 15 },
+                { label: "Slow Queries", value: "12", unit: "/hour", percent: 20 },
+                { label: "Avg Time", value: "2.3", unit: "s", percent: 45 },
+                { label: "Slowest Query", value: "45.6", unit: "s", percent: 80 },
+                { label: "Trending", value: "stable", unit: "", percent: 100 },
+                { label: "Profile Level", value: "1", unit: "", percent: 50 },
+                { label: "Sample Size", value: "98.2", unit: "M/day", percent: 90 },
+                { label: "Cache Hit", value: "87.3", unit: "%", percent: 87 },
+                { label: "Data Retention", value: "7", unit: "days", percent: 60 },
+                { label: "Est Accuracy", value: "94.2", unit: "%", percent: 94 },
+                { label: "Queries Estimated", value: "567", unit: "K", percent: 75 },
+                { label: "Cost Variance", value: "2.3", unit: "%", percent: 20 },
+                { label: "Model Accuracy", value: "96.1", unit: "%", percent: 96 },
+                { label: "Lock Contention", value: "0.1", unit: "%", percent: 5 },
+                { label: "Read Locks", value: "78.5", unit: "%", percent: 78 },
+                { label: "Write Locks", value: "21.5", unit: "%", percent: 22 },
+                { label: "Avg Hold Time", value: "2.3", unit: "ms", percent: 25 },
+                { label: "Anomalies", value: "2", unit: "/day", percent: 20 },
+                { label: "Detection Accuracy", value: "98.3", unit: "%", percent: 98 },
+                { label: "False Positives", value: "1", unit: "/week", percent: 10 },
+                { label: "Severity High", value: "0", unit: "", percent: 0 },
+                { label: "Metrics Count", value: "1,234", unit: "", percent: 85 },
+                { label: "Update Frequency", value: "1", unit: "s", percent: 100 },
+                { label: "Data Points", value: "234", unit: "M/day", percent: 85 },
+                { label: "Retention", value: "30", unit: "days", percent: 85 },
+                { label: "Agent Status", value: "connected", unit: "", percent: 100 },
+                { label: "Messages/sec", value: "450", unit: "", percent: 70 },
+                { label: "Latency", value: "12.3", unit: "ms", percent: 40 },
+                { label: "Uptime", value: "99.99", unit: "%", percent: 100 },
+                { label: "Ticket Acquisitions", value: "45", unit: "K/s", percent: 75, isNew: true },
+                { label: "Global Lock Queue", value: "0", unit: "", percent: 0, isNew: true },
+                { label: "Cursor Timeouts", value: "3", unit: "/hour", percent: 15, isNew: true },
+                { label: "getMore Operations", value: "2,300", unit: "/s", percent: 65, isNew: true }
+            ],
+            "Storage Engine": [
+                { label: "Missing Indexes", value: "12", unit: "", percent: 25 },
+                { label: "Unused Indexes", value: "3", unit: "", percent: 15 },
+                { label: "Bloated Indexes", value: "1", unit: "", percent: 10 },
+                { label: "Index Efficiency", value: "94.3", unit: "%", percent: 94 },
+                { label: "Collections", value: "456", unit: "", percent: 80 },
+                { label: "Avg Doc Size", value: "4.2", unit: "KB", percent: 55 },
+                { label: "Total Size", value: "234", unit: "GB", percent: 65 },
+                { label: "Data Compression", value: "62", unit: "%", percent: 62 },
+                { label: "Top Collection", value: "users", unit: "", percent: 100 },
+                { label: "Largest Size", value: "45.2", unit: "GB", percent: 75 },
+                { label: "Document Count", value: "23.4", unit: "M", percent: 85 },
+                { label: "Avg Queries", value: "1,250", unit: "/s", percent: 70 },
+                { label: "Cache Size", value: "64", unit: "GB", percent: 85 },
+                { label: "Cache Util", value: "78.3", unit: "%", percent: 78 },
+                { label: "Evictions/sec", value: "234", unit: "", percent: 50 },
+                { label: "Cache Hit Rate", value: "94.2", unit: "%", percent: 94 },
+                { label: "Last Backup", value: "1", unit: "hour ago", percent: 95 },
+                { label: "Backup Size", value: "234", unit: "GB", percent: 70 },
+                { label: "Backup Duration", value: "15", unit: "mins", percent: 50 },
+                { label: "Backup Status", value: "healthy", unit: "", percent: 100 },
+                { label: "Growth Rate", value: "2.3", unit: "GB/week", percent: 45 },
+                { label: "Storage Util", value: "67.2", unit: "%", percent: 67 },
+                { label: "Projected 90d", value: "456", unit: "GB", percent: 65 },
+                { label: "Days Until Full", value: "180", unit: "", percent: 85 },
+                { label: "Bytes In/sec", value: "234", unit: "MB/s", percent: 60 },
+                { label: "Bytes Out/sec", value: "156", unit: "MB/s", percent: 50 },
+                { label: "Network Util", value: "45.2", unit: "%", percent: 45 },
+                { label: "Latency", value: "0.5", unit: "ms", percent: 10 },
+                { label: "WiredTiger Checkpoint Duration", value: "3.2", unit: "s", percent: 40, isNew: true },
+                { label: "Journal Commits", value: "45", unit: "/s", percent: 70, isNew: true },
+                { label: "Compression Ratio", value: "3.2", unit: "x", percent: 85, isNew: true },
+                { label: "Dirty Pages", value: "2.1", unit: "%", percent: 20, isNew: true }
+            ],
+            "Data Pipeline": [
+                { label: "Documents Edited", value: "2,345", unit: "/day", percent: 70 },
+                { label: "Failed Updates", value: "0", unit: "", percent: 0 },
+                { label: "Validation Errors", value: "12", unit: "", percent: 15 },
+                { label: "Bulk Ops", value: "45", unit: "/hour", percent: 50 },
+                { label: "Pipelines", value: "234", unit: "", percent: 75 },
+                { label: "Avg Stages", value: "4.2", unit: "", percent: 55 },
+                { label: "Cache Hit Rate", value: "78.3", unit: "%", percent: 78 },
+                { label: "Execution Time", value: "1.2", unit: "s", percent: 35 },
+                { label: "Imports", value: "12", unit: "/day", percent: 45 },
+                { label: "Exports", value: "34", unit: "/day", percent: 60 },
+                { label: "Total Transferred", value: "12.4", unit: "GB", percent: 50 },
+                { label: "Transfer Rate", value: "45", unit: "MB/s", percent: 60 },
+                { label: "Queries Generated", value: "456", unit: "/day", percent: 70 },
+                { label: "Conversion Rate", value: "87.2", unit: "%", percent: 87 },
+                { label: "Avg Accuracy", value: "92.3", unit: "%", percent: 92 },
+                { label: "Execution Time", value: "0.8", unit: "s", percent: 20 },
+                { label: "Translations", value: "234", unit: "/day", percent: 75 },
+                { label: "Success Rate", value: "94.1", unit: "%", percent: 94 },
+                { label: "Avg Convert Time", value: "2.1", unit: "ms", percent: 25 },
+                { label: "Supported Syntax", value: "98.5", unit: "%", percent: 98 },
+                { label: "Schema Versions", value: "45", unit: "", percent: 70 },
+                { label: "Differences", value: "12", unit: "", percent: 35 },
+                { label: "Compatibility", value: "98.3", unit: "%", percent: 98 },
+                { label: "Last Compare", value: "5", unit: "mins ago", percent: 95 },
+                { label: "Geo Queries", value: "234", unit: "K/day", percent: 75 },
+                { label: "Geo Indexes", value: "34", unit: "", percent: 60 },
+                { label: "Avg Query Time", value: "3.4", unit: "ms", percent: 40 },
+                { label: "Coverage", value: "98.7", unit: "%", percent: 98 },
+                { label: "Change Streams", value: "12", unit: "active", percent: 60, isNew: true },
+                { label: "TTL Deletions", value: "45", unit: "K/day", percent: 70, isNew: true },
+                { label: "Atlas Data Lake Queries", value: "234", unit: "/day", percent: 60, isNew: true },
+                { label: "Time Series Collections", value: "8", unit: "", percent: 40, isNew: true }
+            ],
+            "AI & Analytics": [
+                { label: "Suggestions", value: "23", unit: "", percent: 55 },
+                { label: "Implemented", value: "18", unit: "", percent: 65 },
+                { label: "Performance Gain", value: "12.5", unit: "%", percent: 50 },
+                { label: "Accuracy", value: "94.2", unit: "%", percent: 94 },
+                { label: "Clusters", value: "3", unit: "", percent: 30 },
+                { label: "Differences", value: "5", unit: "", percent: 40 },
+                { label: "Performance Ratio", value: "1.23", unit: "x", percent: 65 },
+                { label: "Last Sync", value: "5", unit: "mins ago", percent: 95 },
+                { label: "Data Points", value: "98.2", unit: "M", percent: 90 },
+                { label: "Trend Accuracy", value: "92.1", unit: "%", percent: 92 },
+                { label: "Anomalies", value: "0", unit: "", percent: 0 },
+                { label: "Forecast Days", value: "30", unit: "", percent: 75 },
+                { label: "Recommendations", value: "45", unit: "", percent: 70 },
+                { label: "Impl Rate", value: "78.2", unit: "%", percent: 78 },
+                { label: "Avg Improvement", value: "18.3", unit: "%", percent: 65 },
+                { label: "Confidence", value: "96.1", unit: "%", percent: 96 },
+                { label: "Traces Correlated", value: "234", unit: "K/day", percent: 75 },
+                { label: "Correlation Accuracy", value: "96.2", unit: "%", percent: 96 },
+                { label: "Latency P99", value: "2.3", unit: "ms", percent: 30 },
+                { label: "Root Cause ID Rate", value: "89.3", unit: "%", percent: 89 },
+                { label: "Predictive Scaling Score", value: "87", unit: "%", percent: 87, isNew: true },
+                { label: "Workload Classification", value: "OLTP", unit: "", percent: 100, isNew: true },
+                { label: "Auto-Index Suggestions", value: "5", unit: "", percent: 40, isNew: true },
+                { label: "Cost Optimization", value: "$234", unit: "/mo saved", percent: 75, isNew: true }
+            ],
+            "Replica & Shard": [
+                { label: "Members", value: "3", unit: "", percent: 75 },
+                { label: "Primary", value: "healthy", unit: "", percent: 100 },
+                { label: "Replication Lag", value: "0.2", unit: "ms", percent: 5 },
+                { label: "Last Sync", value: "0.1", unit: "s ago", percent: 95 },
+                { label: "Shards", value: "8", unit: "", percent: 80 },
+                { label: "Chunks", value: "1,024", unit: "", percent: 85 },
+                { label: "Balancer", value: "active", unit: "", percent: 100 },
+                { label: "Migration Queue", value: "0", unit: "", percent: 0 },
+                { label: "Oplog Size", value: "50", unit: "GB", percent: 75 },
+                { label: "Oplog Window", value: "24", unit: "hours", percent: 85 },
+                { label: "Current Lag", value: "0.3", unit: "ms", percent: 10 },
+                { label: "Entries/sec", value: "12,450", unit: "", percent: 85 },
+                { label: "Elections", value: "0", unit: "/month", percent: 0, isNew: true },
+                { label: "Write Concern", value: "majority", unit: "", percent: 100, isNew: true },
+                { label: "Read Preference", value: "secondaryPreferred", unit: "", percent: 100, isNew: true },
+                { label: "Chunk Migrations", value: "3", unit: "/day", percent: 25, isNew: true }
+            ],
+            "Operations Center": [
+                { label: "Active Alerts", value: "0", unit: "", percent: 0 },
+                { label: "Total Rules", value: "45", unit: "", percent: 75 },
+                { label: "Fired/Hour", value: "2", unit: "", percent: 15 },
+                { label: "False Positives", value: "1", unit: "%", percent: 5 },
+                { label: "Prometheus Metrics", value: "567", unit: "", percent: 85 },
+                { label: "Series", value: "234", unit: "K", percent: 75 },
+                { label: "Scrape Rate", value: "15", unit: "s", percent: 100 },
+                { label: "Last Scrape", value: "2", unit: "s ago", percent: 100 },
+                { label: "Custom Dashboards", value: "12", unit: "", percent: 55 },
+                { label: "Shared", value: "8", unit: "", percent: 45 },
+                { label: "Total Panels", value: "234", unit: "", percent: 75 },
+                { label: "Total Viewers", value: "45", unit: "", percent: 60 },
+                { label: "SSO Users", value: "456", unit: "", percent: 80 },
+                { label: "Auth Failures", value: "1", unit: "/day", percent: 5 },
+                { label: "Avg Auth Time", value: "0.8", unit: "s", percent: 20 },
+                { label: "Session Duration", value: "8", unit: "hours", percent: 70 },
+                { label: "Atlas API Calls", value: "234", unit: "K/day", percent: 75 },
+                { label: "Success Rate", value: "99.9", unit: "%", percent: 100 },
+                { label: "Avg Response", value: "45", unit: "ms", percent: 50 },
+                { label: "Rate Limit Hit", value: "0", unit: "/day", percent: 0 },
+                { label: "Generated Reports", value: "23", unit: "/week", percent: 65 },
+                { label: "Scheduled Reports", value: "12", unit: "", percent: 60 },
+                { label: "Email Sent", value: "234", unit: "/week", percent: 75 },
+                { label: "Open Rate", value: "67.2", unit: "%", percent: 67 },
+                { label: "Log Entries", value: "234", unit: "K/day", percent: 75 },
+                { label: "Changes Made", value: "456", unit: "/day", percent: 80 },
+                { label: "Users Modified", value: "45", unit: "", percent: 60 },
+                { label: "Retention Days", value: "90", unit: "", percent: 85 },
+                { label: "Total Users", value: "234", unit: "", percent: 80 },
+                { label: "Active Users", value: "189", unit: "", percent: 75 },
+                { label: "Admin Users", value: "8", unit: "", percent: 40 },
+                { label: "Last Activity", value: "5", unit: "mins ago", percent: 100 }
+            ]
+        };
+
+        const mysqlData = {
+            "System Vitals": [
+                { label: "QPS", value: "2,840", unit: "/s", percent: 75 },
+                { label: "TPS", value: "1,234", unit: "/s", percent: 65 },
+                { label: "Connections", value: "156", unit: "", percent: 78 },
+                { label: "Uptime", value: "92", unit: "days", percent: 90 },
+                { label: "Avg Query Time", value: "1.8", unit: "ms", percent: 30 },
+                { label: "Slow Queries", value: "3", unit: "", percent: 10 },
+                { label: "Query Count", value: "245", unit: "M/day", percent: 85 },
+                { label: "P95 Latency", value: "4.2", unit: "ms", percent: 35 },
+                { label: "CPU Usage", value: "28", unit: "%", percent: 28 },
+                { label: "Memory Usage", value: "71", unit: "%", percent: 71 },
+                { label: "Disk I/O", value: "156", unit: "MB/s", percent: 45 },
+                { label: "Swap Usage", value: "0", unit: "MB", percent: 0 },
+                { label: "Error Rate", value: "0.01", unit: "%", percent: 1 },
+                { label: "Failed Transactions", value: "0", unit: "/hour", percent: 0 },
+                { label: "Recovery Time", value: "1.8", unit: "s", percent: 30 },
+                { label: "Availability", value: "99.99", unit: "%", percent: 100 },
+                { label: "Active Alerts", value: "0", unit: "", percent: 0 },
+                { label: "Total Rules", value: "28", unit: "", percent: 65 },
+                { label: "Triggered Today", value: "1", unit: "", percent: 8 },
+                { label: "Avg Response", value: "6", unit: "mins", percent: 45 },
+                { label: "Handler Read Rate", value: "45", unit: "K/s", percent: 70, isNew: true },
+                { label: "Handler Write Rate", value: "12", unit: "K/s", percent: 50, isNew: true },
+                { label: "Table Open Cache Hit", value: "98.2", unit: "%", percent: 98, isNew: true },
+                { label: "Thread Cache Hit", value: "99.1", unit: "%", percent: 99, isNew: true },
+                { label: "Created Tmp Tables", value: "234", unit: "/hour", percent: 50, isNew: true },
+                { label: "Created Tmp Disk Tables", value: "12", unit: "/hour", percent: 20, isNew: true },
+                { label: "Aborted Clients", value: "0", unit: "/hour", percent: 0, isNew: true },
+                { label: "Com_select", value: "2,100", unit: "/s", percent: 70, isNew: true },
+                { label: "Com_insert", value: "450", unit: "/s", percent: 50, isNew: true },
+                { label: "Com_update", value: "200", unit: "/s", percent: 40, isNew: true },
+                { label: "Com_delete", value: "90", unit: "/s", percent: 30, isNew: true }
+            ],
+            "Query Optimization": [
+                { label: "Full Scans", value: "2.3", unit: "%", percent: 10 },
+                { label: "Index Scans", value: "97.7", unit: "%", percent: 97 },
+                { label: "Avg Cost", value: "156.3", unit: "units", percent: 55 },
+                { label: "Query Cache Hit", value: "78.5", unit: "%", percent: 78 },
+                { label: "Slow Queries", value: "3", unit: "/hour", percent: 15 },
+                { label: "Avg Time", value: "2.3", unit: "s", percent: 45 },
+                { label: "Lock Waits", value: "0", unit: "", percent: 0 },
+                { label: "Rows Examined", value: "234", unit: "K/hour", percent: 70 },
+                { label: "Indexes", value: "245", unit: "", percent: 75 },
+                { label: "Unused", value: "12", unit: "", percent: 25 },
+                { label: "Duplicate", value: "3", unit: "", percent: 15 },
+                { label: "Hit Ratio", value: "96.2", unit: "%", percent: 96 },
+                { label: "Cache Enabled", value: "true", unit: "", percent: 100 },
+                { label: "Cache Size", value: "256", unit: "MB", percent: 60 },
+                { label: "Hit Rate", value: "78.5", unit: "%", percent: 78 },
+                { label: "Efficiency", value: "92.1", unit: "%", percent: 92 },
+                { label: "Select Full Join", value: "23", unit: "/hour", percent: 25, isNew: true },
+                { label: "Select Range Check", value: "0", unit: "/hour", percent: 0, isNew: true },
+                { label: "Sort Merge Passes", value: "5", unit: "/hour", percent: 20, isNew: true },
+                { label: "Filesort Operations", value: "123", unit: "/hour", percent: 40, isNew: true },
+                { label: "Adaptive Hash Index Hit", value: "97.3", unit: "%", percent: 97, isNew: true }
+            ],
+            "Engine & Replication": [
+                { label: "Active Conn", value: "156", unit: "", percent: 78 },
+                { label: "Max Conn", value: "200", unit: "", percent: 100 },
+                { label: "Aborted Conn", value: "0", unit: "", percent: 0 },
+                { label: "Conn Efficiency", value: "98.1", unit: "%", percent: 98 },
+                { label: "InnoDB Pool Usage", value: "71", unit: "%", percent: 71 },
+                { label: "Log Writes", value: "1,234", unit: "/s", percent: 70 },
+                { label: "Page Reads", value: "23", unit: "/s", percent: 25 },
+                { label: "Page Writes", value: "45", unit: "/s", percent: 35 },
+                { label: "Lag Seconds", value: "0", unit: "", percent: 0 },
+                { label: "Relay Log Size", value: "234", unit: "MB", percent: 50 },
+                { label: "Worker Threads", value: "4", unit: "", percent: 50 },
+                { label: "Last Error", value: "none", unit: "", percent: 100 },
+                { label: "Binlog Position", value: "1,234,567", unit: "", percent: 85 },
+                { label: "Binlog Size", value: "512", unit: "MB", percent: 70 },
+                { label: "Purge Age", value: "7", unit: "days", percent: 85 },
+                { label: "Format", value: "ROW", unit: "", percent: 100 },
+                { label: "Pool Size", value: "8.0", unit: "GB", percent: 80 },
+                { label: "Pool Util", value: "71.2", unit: "%", percent: 71 },
+                { label: "Reads/sec", value: "234", unit: "", percent: 60 },
+                { label: "Hit Ratio", value: "98.7", unit: "%", percent: 98 },
+                { label: "InnoDB Redo Log Size", value: "2", unit: "GB", percent: 70, isNew: true },
+                { label: "InnoDB Undo Tablespaces", value: "2", unit: "", percent: 50, isNew: true },
+                { label: "GTID Mode", value: "ON", unit: "", percent: 100, isNew: true },
+                { label: "Semi-Sync Replication", value: "enabled", unit: "", percent: 100, isNew: true },
+                { label: "Relay Log Recovery", value: "ON", unit: "", percent: 100, isNew: true },
+                { label: "Group Replication Members", value: "3", unit: "", percent: 75, isNew: true }
+            ],
+            "Schema Management": [
+                { label: "Databases", value: "23", unit: "", percent: 60 },
+                { label: "Tables", value: "456", unit: "", percent: 80 },
+                { label: "Views", value: "78", unit: "", percent: 55 },
+                { label: "Procedures", value: "45", unit: "", percent: 65 },
+                { label: "Users", value: "34", unit: "", percent: 70 },
+                { label: "Roles", value: "8", unit: "", percent: 40 },
+                { label: "Grants", value: "234", unit: "", percent: 75 },
+                { label: "Host Restrictions", value: "18", unit: "", percent: 55 },
+                { label: "Log Entries", value: "234", unit: "K/day", percent: 75 },
+                { label: "Failed Logins", value: "0", unit: "", percent: 0 },
+                { label: "Privilege Changes", value: "3", unit: "/day", percent: 20 },
+                { label: "DDL Changes", value: "5", unit: "/day", percent: 30 },
+                { label: "Triggers", value: "12", unit: "", percent: 50, isNew: true },
+                { label: "Events", value: "8", unit: "", percent: 40, isNew: true },
+                { label: "Functions", value: "34", unit: "", percent: 65, isNew: true },
+                { label: "Foreign Keys", value: "156", unit: "", percent: 70, isNew: true },
+                { label: "Partitioned Tables", value: "23", unit: "", percent: 55, isNew: true },
+                { label: "Generated Columns", value: "45", unit: "", percent: 60, isNew: true }
+            ],
+            "Deep Diagnostics": [
+                { label: "Events", value: "89.3", unit: "M/day", percent: 90 },
+                { label: "Table I/O", value: "234", unit: "K/s", percent: 75 },
+                { label: "Statements", value: "12.4", unit: "K/s", percent: 70 },
+                { label: "Errors", value: "0", unit: "", percent: 0 },
+                { label: "Queries", value: "456", unit: "K/hour", percent: 80 },
+                { label: "Table Count", value: "456", unit: "", percent: 80 },
+                { label: "Column Count", value: "3,456", unit: "", percent: 90 },
+                { label: "Key Count", value: "1,234", unit: "", percent: 85 },
+                { label: "Active Processes", value: "156", unit: "", percent: 78 },
+                { label: "Sleeping Processes", value: "45", unit: "", percent: 45 },
+                { label: "Avg Query Time", value: "1.8", unit: "ms", percent: 30 },
+                { label: "Longest Query", value: "234", unit: "s", percent: 70 },
+                { label: "Log Entries", value: "234", unit: "K/day", percent: 75 },
+                { label: "Errors", value: "12", unit: "/day", percent: 20 },
+                { label: "Warnings", value: "45", unit: "/day", percent: 50 },
+                { label: "Critical", value: "0", unit: "", percent: 0 },
+                { label: "sys Schema Diagnostics", value: "enabled", unit: "", percent: 100, isNew: true },
+                { label: "Wait Event Analysis", value: "45", unit: "events", percent: 55, isNew: true },
+                { label: "Memory Instruments", value: "234", unit: "", percent: 75, isNew: true },
+                { label: "Stage Instruments", value: "89", unit: "", percent: 65, isNew: true }
+            ],
+            "Server Administration": [
+                { label: "Total Vars", value: "456", unit: "", percent: 80 },
+                { label: "Modified", value: "23", unit: "", percent: 35 },
+                { label: "Dynamic", value: "234", unit: "", percent: 75 },
+                { label: "Last Change", value: "2", unit: "days ago", percent: 90 },
+                { label: "Last Backup", value: "2", unit: "hours ago", percent: 95 },
+                { label: "Backup Size", value: "12.3", unit: "GB", percent: 70 },
+                { label: "Restore Time", value: "15", unit: "mins", percent: 50 },
+                { label: "Backup Success", value: "100", unit: "%", percent: 100 },
+                { label: "Imports", value: "8", unit: "/week", percent: 45 },
+                { label: "Exports", value: "12", unit: "/week", percent: 55 },
+                { label: "Data Transferred", value: "45.2", unit: "GB", percent: 75 },
+                { label: "Avg Speed", value: "45", unit: "MB/s", percent: 60 },
+                { label: "Users", value: "34", unit: "", percent: 70 },
+                { label: "Active Sessions", value: "156", unit: "", percent: 78 },
+                { label: "Failed Auth", value: "0", unit: "/day", percent: 0 },
+                { label: "Password Age", value: "45", unit: "days", percent: 70 },
+                { label: "Tablespace Usage", value: "78", unit: "%", percent: 78, isNew: true },
+                { label: "Undo Log Size", value: "512", unit: "MB", percent: 65, isNew: true },
+                { label: "Clone Plugin Status", value: "active", unit: "", percent: 100, isNew: true },
+                { label: "MySQL Router Instances", value: "2", unit: "", percent: 50, isNew: true },
+                { label: "Enterprise Firewall Rules", value: "45", unit: "", percent: 70, isNew: true }
+            ]
+        };
+
+        function createMetricHTML(metric, dbType) {
+            const fillClass = dbType === 'postgres' ? 'postgres-fill' : dbType === 'mongo' ? 'mongo-fill' : 'mysql-fill';
+            const badgeHTML = metric.isNew ? '<div class="metric-badge">NEW</div>' : '';
+            return `
+                <div class="metric">
+                    ${badgeHTML}
+                    <div class="metric-label">${metric.label}</div>
+                    <div class="metric-value">${metric.value}</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill ${fillClass}" style="width: ${metric.percent}%"></div>
+                    </div>
+                    <div class="metric-unit">${metric.unit}</div>
+                </div>
+            `;
+        }
+
+        function createCategoryHTML(categoryName, metrics, dbType) {
+            const metricsHTML = metrics.map(m => createMetricHTML(m, dbType)).join('');
+            return `
+                <div class="category">
+                    <div class="category-header">
+                        <div class="category-title">
+                            <span class="chevron">❯</span>
+                            ${categoryName}
+                        </div>
+                    </div>
+                    <div class="metrics">${metricsHTML}</div>
+                </div>
+            `;
+        }
+
+        function renderDatabase(dbName, data) {
+            const container = document.getElementById(dbName + '-categories');
+            let html = '';
+            for (const [category, metrics] of Object.entries(data)) {
+                html += createCategoryHTML(category, metrics, dbName);
+            }
+            container.innerHTML = html;
+
+            // Add collapse functionality
+            document.querySelectorAll('.category-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    header.closest('.category').classList.toggle('collapsed');
+                });
+            });
+        }
+
+        // Initialize
+        renderDatabase('postgres', postgresData);
+        renderDatabase('mongo', mongoData);
+        renderDatabase('mysql', mysqlData);
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.content-area').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.db).classList.add('active');
+            });
+        });
+
+        // Update timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>

@@ -37,32 +37,32 @@ const DATABASE_STRUCTURE = {
     sections: [
       {
         id: 'core',
-        name: 'Core Monitoring',
+        name: 'Engine Health',
         tabs: [
-          { name: 'Overview', metrics: [{ label: 'QPS', value: '1,247', unit: '/s' }, { label: 'Commits', value: '98.5', unit: '%' }, { label: 'Rollbacks', value: '0.2', unit: '%' }, { label: 'Uptime', value: '47', unit: 'days' }] },
-          { name: 'Performance', metrics: [{ label: 'Avg Query Time', value: '2.3', unit: 'ms' }, { label: 'Slow Queries', value: '12', unit: '' }, { label: 'Query Count', value: '18,450', unit: '/hour' }, { label: 'P95 Latency', value: '5.8', unit: 'ms' }] },
-          { name: 'Resources', metrics: [{ label: 'CPU Usage', value: '34', unit: '%' }, { label: 'Memory Usage', value: '62', unit: '%' }, { label: 'Disk I/O', value: '245', unit: 'MB/s' }, { label: 'Swap Usage', value: '0', unit: 'MB' }] },
+          { name: 'Overview', metrics: [{ label: 'QPS', value: '1,247', unit: '/s' }, { label: 'Commits', value: '98.5', unit: '%' }, { label: 'Rollbacks', value: '0.2', unit: '%' }, { label: 'Uptime', value: '47', unit: 'days' }, { label: 'WAL Generation Rate', value: '45', unit: 'MB/s' }, { label: 'Temp Files Created', value: '23', unit: '/hour' }, { label: 'Deadlocks', value: '0', unit: '/day' }, { label: 'Tuple Insert Rate', value: '12,450', unit: '/s' }] },
+          { name: 'Performance', metrics: [{ label: 'Avg Query Time', value: '2.3', unit: 'ms' }, { label: 'Slow Queries', value: '12', unit: '' }, { label: 'Query Count', value: '18,450', unit: '/hour' }, { label: 'P95 Latency', value: '5.8', unit: 'ms' }, { label: 'Tuple Update Rate', value: '3,200', unit: '/s' }, { label: 'Tuple Delete Rate', value: '890', unit: '/s' }] },
+          { name: 'Resources', metrics: [{ label: 'CPU Usage', value: '34', unit: '%' }, { label: 'Memory Usage', value: '62', unit: '%' }, { label: 'Disk I/O', value: '245', unit: 'MB/s' }, { label: 'Swap Usage', value: '0', unit: 'MB' }, { label: 'Live Tuples', value: '45.2M', unit: '' }, { label: 'Dead Tuples', value: '23K', unit: '' }] },
           { name: 'Reliability', metrics: [{ label: 'Error Rate', value: '0.01', unit: '%' }, { label: 'Failed Transactions', value: '0', unit: '/hour' }, { label: 'Recovery Time', value: '2.1', unit: 's' }, { label: 'Availability', value: '99.99', unit: '%' }] },
           { name: 'Alerts', metrics: [{ label: 'Active Alerts', value: '0', unit: '' }, { label: 'Total Rules', value: '34', unit: '' }, { label: 'Triggered Today', value: '2', unit: '' }, { label: 'Avg Response', value: '5', unit: 'mins' }] },
         ]
       },
       {
         id: 'query',
-        name: 'Query & Indexes',
+        name: 'Query Intelligence',
         tabs: [
-          { name: 'Query Optimizer', metrics: [{ label: 'Index Scans', value: '89', unit: '%' }, { label: 'Sequential Scans', value: '11', unit: '%' }, { label: 'Avg Cost', value: '245.7', unit: 'units' }, { label: 'Plans Cached', value: '8,234', unit: '' }] },
+          { name: 'Query Optimizer', metrics: [{ label: 'Index Scans', value: '89', unit: '%' }, { label: 'Sequential Scans', value: '11', unit: '%' }, { label: 'Avg Cost', value: '245.7', unit: 'units' }, { label: 'Plans Cached', value: '8,234', unit: '' }, { label: 'Query Plan Cache Hit', value: '87.3', unit: '%' }, { label: 'Parallel Query Workers', value: '4', unit: '' }] },
           { name: 'Indexes', metrics: [{ label: 'Total Indexes', value: '342', unit: '' }, { label: 'Unused Indexes', value: '23', unit: '' }, { label: 'Bloated Indexes', value: '5', unit: '' }, { label: 'Index Hit Ratio', value: '94.2', unit: '%' }] },
           { name: 'Plan Regression', metrics: [{ label: 'Plan Changes', value: '3', unit: '' }, { label: 'Regressions', value: '0', unit: '' }, { label: 'Performance Delta', value: '+2.1', unit: '%' }, { label: 'Last Analyzed', value: '15', unit: 'mins' }] },
           { name: 'Bloat Analysis', metrics: [{ label: 'Bloated Tables', value: '8', unit: '' }, { label: 'Total Bloat', value: '234', unit: 'MB' }, { label: 'Bloat Ratio', value: '12.3', unit: '%' }, { label: 'Vacuum Needed', value: '3', unit: '' }] },
-          { name: 'Table Analysis', metrics: [{ label: 'Total Tables', value: '567', unit: '' }, { label: 'Analyzed', value: '98.2', unit: '%' }, { label: 'Autovacuum Runs', value: '456', unit: '/day' }, { label: 'Last Analyze', value: '2', unit: 'hours' }] },
+          { name: 'Table Analysis', metrics: [{ label: 'Total Tables', value: '567', unit: '' }, { label: 'Analyzed', value: '98.2', unit: '%' }, { label: 'Autovacuum Runs', value: '456', unit: '/day' }, { label: 'Last Analyze', value: '2', unit: 'hours' }, { label: 'Hash Join Efficiency', value: '92.1', unit: '%' }, { label: 'Sort Operations', value: '1,234', unit: '/hour' }] },
         ]
       },
       {
         id: 'infra',
-        name: 'Infrastructure',
+        name: 'Infrastructure & HA',
         tabs: [
-          { name: 'Connection Pool', metrics: [{ label: 'Active Conn', value: '42', unit: '' }, { label: 'Idle Conn', value: '8', unit: '' }, { label: 'Max Pool Size', value: '100', unit: '' }, { label: 'Pool Efficiency', value: '95.3', unit: '%' }] },
-          { name: 'Replication & WAL', metrics: [{ label: 'WAL Level', value: 'replica', unit: '' }, { label: 'Replication Lag', value: '0.3', unit: 'ms' }, { label: 'WAL Files', value: '42', unit: '' }, { label: 'Archiving Status', value: 'active', unit: '' }] },
+          { name: 'Connection Pool', metrics: [{ label: 'Active Conn', value: '42', unit: '' }, { label: 'Idle Conn', value: '8', unit: '' }, { label: 'Max Pool Size', value: '100', unit: '' }, { label: 'Pool Efficiency', value: '95.3', unit: '%' }, { label: 'Connection Wait Time', value: '0.5', unit: 'ms' }, { label: 'pgBouncer Queue', value: '0', unit: '' }] },
+          { name: 'Replication & WAL', metrics: [{ label: 'WAL Level', value: 'replica', unit: '' }, { label: 'Replication Lag', value: '0.3', unit: 'ms' }, { label: 'WAL Files', value: '42', unit: '' }, { label: 'Archiving Status', value: 'active', unit: '' }, { label: 'Streaming Replicas', value: '2', unit: '' }, { label: 'Logical Slots', value: '3', unit: '' }, { label: 'WAL Retention', value: '2', unit: 'GB' }] },
           { name: 'Checkpoint Monitor', metrics: [{ label: 'Checkpoints/Day', value: '288', unit: '' }, { label: 'Checkpoint Duration', value: '12.5', unit: 's' }, { label: 'Avg Interval', value: '300', unit: 's' }, { label: 'Last Checkpoint', value: '45', unit: 's ago' }] },
           { name: 'Vacuum & Maintenance', metrics: [{ label: 'Vacuum Runs/Day', value: '576', unit: '' }, { label: 'Analyze Runs', value: '288', unit: '/day' }, { label: 'Dead Tuples Removed', value: '234K', unit: '/day' }, { label: 'Avg Runtime', value: '2.3', unit: 's' }] },
           { name: 'Capacity Planning', metrics: [{ label: 'DB Size Growth', value: '2.1', unit: 'GB/week' }, { label: 'Projected Size', value: '45.2', unit: 'GB/90d' }, { label: 'Tablespace Util', value: '62.1', unit: '%' }, { label: 'Estimated Time Full', value: '180', unit: 'days' }] },
@@ -71,16 +71,16 @@ const DATABASE_STRUCTURE = {
       },
       {
         id: 'schema',
-        name: 'Schema & Security',
+        name: 'Data Governance',
         tabs: [
           { name: 'Schema & Migrations', metrics: [{ label: 'Tables', value: '234', unit: '' }, { label: 'Views', value: '89', unit: '' }, { label: 'Pending Migrations', value: '0', unit: '' }, { label: 'Last Migration', value: '3', unit: 'days' }] },
           { name: 'Schema Visualizer', metrics: [{ label: 'Relations', value: '456', unit: '' }, { label: 'Foreign Keys', value: '178', unit: '' }, { label: 'Constraints', value: '234', unit: '' }, { label: 'Triggers', value: '42', unit: '' }] },
-          { name: 'Security & Compliance', metrics: [{ label: 'Roles', value: '18', unit: '' }, { label: 'Policies', value: '23', unit: '' }, { label: 'Audit Events', value: '12,450', unit: '/day' }, { label: 'Failed Auth', value: '0', unit: '' }] },
+          { name: 'Security & Compliance', metrics: [{ label: 'Roles', value: '18', unit: '' }, { label: 'Policies', value: '23', unit: '' }, { label: 'Audit Events', value: '12,450', unit: '/day' }, { label: 'Failed Auth', value: '0', unit: '' }, { label: 'RLS Policies', value: '12', unit: '' }, { label: 'Column Encryption', value: '8', unit: 'tables' }, { label: 'SSL Connections', value: '100', unit: '%' }, { label: 'pg_audit Events', value: '5,600', unit: '/day' }] },
         ]
       },
       {
         id: 'observability',
-        name: 'Observability',
+        name: 'Platform Observability',
         tabs: [
           { name: 'CloudWatch', metrics: [{ label: 'Metrics', value: '124', unit: '' }, { label: 'Alarms Active', value: '0', unit: '' }, { label: 'Data Points', value: '98.2M', unit: '' }, { label: 'Last Sync', value: '30', unit: 's' }] },
           { name: 'Log Pattern Analysis', metrics: [{ label: 'Patterns', value: '34', unit: '' }, { label: 'Anomalies', value: '0', unit: '' }, { label: 'Log Volume', value: '2.3', unit: 'GB/day' }, { label: 'Error Rate', value: '0.02', unit: '%' }] },
@@ -93,17 +93,17 @@ const DATABASE_STRUCTURE = {
       },
       {
         id: 'dev',
-        name: 'Developer Tools',
+        name: 'DevOps Tooling',
         tabs: [
           { name: 'SQL Console', metrics: [{ label: 'Queries Run', value: '1,245', unit: '/day' }, { label: 'Avg Time', value: '3.2', unit: 'ms' }, { label: 'Favorites', value: '34', unit: '' }, { label: 'Recent', value: '12', unit: '' }] },
           { name: 'API Tracing', metrics: [{ label: 'Traces', value: '456K', unit: '/hour' }, { label: 'Span Count', value: '2.1M', unit: '' }, { label: 'Error Rate', value: '0.1', unit: '%' }, { label: 'P99 Latency', value: '234', unit: 'ms' }] },
-          { name: 'Repository', metrics: [{ label: 'Commits', value: '3,456', unit: '' }, { label: 'Branches', value: '24', unit: '' }, { label: 'Pull Requests', value: '12', unit: 'open' }, { label: 'Deployments', value: '45', unit: '/week' }] },
+          { name: 'Repository', metrics: [{ label: 'Commits', value: '3,456', unit: '' }, { label: 'Branches', value: '24', unit: '' }, { label: 'Pull Requests', value: '12', unit: 'open' }, { label: 'Deployments', value: '45', unit: '/week' }, { label: 'CI/CD Status', value: 'green', unit: '' }, { label: 'Migration Dry Runs', value: '12', unit: '/week' }] },
           { name: 'AI Query Advisor', metrics: [{ label: 'Queries Analyzed', value: '234K', unit: '' }, { label: 'Optimizations', value: '89', unit: '/week' }, { label: 'Avg Improvement', value: '23.4', unit: '%' }, { label: 'Adoption Rate', value: '76.2', unit: '%' }] },
         ]
       },
       {
         id: 'admin',
-        name: 'Admin',
+        name: 'Administration',
         tabs: [
           { name: 'DBA Task Scheduler', metrics: [{ label: 'Scheduled Tasks', value: '34', unit: '' }, { label: 'Running', value: '2', unit: '' }, { label: 'Failed', value: '0', unit: '' }, { label: 'Success Rate', value: '99.8', unit: '%' }] },
           { name: 'User Management', metrics: [{ label: 'Users', value: '234', unit: '' }, { label: 'Roles', value: '18', unit: '' }, { label: 'Active Sessions', value: '42', unit: '' }, { label: 'Failed Logins', value: '0', unit: '/day' }] },
@@ -129,18 +129,18 @@ const DATABASE_STRUCTURE = {
     sections: [
       {
         id: 'overview',
-        name: 'Overview',
+        name: 'Cluster Overview',
         tabs: [
           { name: 'Executive Dashboard', metrics: [{ label: 'Ops/sec', value: '12,450', unit: '/s' }, { label: 'Uptime', value: '99.98', unit: '%' }, { label: 'Replica Set', value: 'healthy', unit: '' }, { label: 'Sharding', value: '8 shards', unit: '' }] },
           { name: 'Connection', metrics: [{ label: 'Active Conn', value: '234', unit: '' }, { label: 'Idle Conn', value: '45', unit: '' }, { label: 'Max Conn Pool', value: '500', unit: '' }, { label: 'Conn Efficiency', value: '96.2', unit: '%' }] },
           { name: 'Server Info', metrics: [{ label: 'Version', value: '7.0.0', unit: '' }, { label: 'Storage Engine', value: 'WiredTiger', unit: '' }, { label: 'CPU Cores', value: '16', unit: '' }, { label: 'Memory', value: '128', unit: 'GB' }] },
           { name: 'Databases', metrics: [{ label: 'Total Databases', value: '45', unit: '' }, { label: 'Largest DB', value: '234', unit: 'GB' }, { label: 'Database Count Growth', value: '+3', unit: '/week' }, { label: 'Total Size', value: '1.2', unit: 'TB' }] },
-          { name: 'Collection Relationships', metrics: [{ label: 'Total Collections', value: '567', unit: '' }, { label: 'Relationships', value: '234', unit: '' }, { label: 'Foreign Keys', value: '456', unit: '' }, { label: 'Cross-DB Refs', value: '89', unit: '' }] },
+          { name: 'Collection Relationships', metrics: [{ label: 'Total Collections', value: '567', unit: '' }, { label: 'Relationships', value: '234', unit: '' }, { label: 'Foreign Keys', value: '456', unit: '' }, { label: 'Cross-DB Refs', value: '89', unit: '' }, { label: 'Mongos Instances', value: '3', unit: '' }, { label: 'Config Servers', value: '3', unit: '' }, { label: 'Authentication', value: 'SCRAM-SHA-256', unit: '' }, { label: 'TLS', value: 'enabled', unit: '' }] },
         ]
       },
       {
         id: 'performance',
-        name: 'Performance',
+        name: 'Operations & Latency',
         tabs: [
           { name: 'Server Status', metrics: [{ label: 'TPS', value: '12,450', unit: '/s' }, { label: 'Index Hits', value: '99.2', unit: '%' }, { label: 'Page Faults', value: '0', unit: '/s' }, { label: 'Uptime', value: '45', unit: 'days' }] },
           { name: 'Real-time Ops', metrics: [{ label: 'Read Ops', value: '7,800', unit: '/s' }, { label: 'Write Ops', value: '3,200', unit: '/s' }, { label: 'Command Ops', value: '1,450', unit: '/s' }, { label: 'Queue Depth', value: '0', unit: '' }] },
@@ -154,12 +154,12 @@ const DATABASE_STRUCTURE = {
           { name: 'Lock Analysis', metrics: [{ label: 'Lock Contention', value: '0.1', unit: '%' }, { label: 'Read Locks', value: '78.5', unit: '%' }, { label: 'Write Locks', value: '21.5', unit: '%' }, { label: 'Avg Hold Time', value: '2.3', unit: 'ms' }] },
           { name: 'Anomaly Detection', metrics: [{ label: 'Anomalies', value: '2', unit: '/day' }, { label: 'Detection Accuracy', value: '98.3', unit: '%' }, { label: 'False Positives', value: '1', unit: '/week' }, { label: 'Severity High', value: '0', unit: '' }] },
           { name: 'Metrics Preview', metrics: [{ label: 'Metrics Count', value: '1,234', unit: '' }, { label: 'Update Frequency', value: '1', unit: 's' }, { label: 'Data Points', value: '234M', unit: '/day' }, { label: 'Retention', value: '30', unit: 'days' }] },
-          { name: 'Live Agent', metrics: [{ label: 'Agent Status', value: 'connected', unit: '' }, { label: 'Messages/sec', value: '450', unit: '' }, { label: 'Latency', value: '12.3', unit: 'ms' }, { label: 'Uptime', value: '99.99', unit: '%' }] },
+          { name: 'Live Agent', metrics: [{ label: 'Agent Status', value: 'connected', unit: '' }, { label: 'Messages/sec', value: '450', unit: '' }, { label: 'Latency', value: '12.3', unit: 'ms' }, { label: 'Uptime', value: '99.99', unit: '%' }, { label: 'Ticket Acquisitions', value: '45K', unit: '/s' }, { label: 'Global Lock Queue', value: '0', unit: '' }, { label: 'Cursor Timeouts', value: '3', unit: '/hour' }, { label: 'getMore Ops', value: '2,300', unit: '/s' }] },
         ]
       },
       {
         id: 'storage',
-        name: 'Storage',
+        name: 'Storage Engine',
         tabs: [
           { name: 'Index Advisor', metrics: [{ label: 'Missing Indexes', value: '12', unit: '' }, { label: 'Unused Indexes', value: '3', unit: '' }, { label: 'Bloated Indexes', value: '1', unit: '' }, { label: 'Index Efficiency', value: '94.3', unit: '%' }] },
           { name: 'Schema Analyzer', metrics: [{ label: 'Collections', value: '456', unit: '' }, { label: 'Avg Doc Size', value: '4.2', unit: 'KB' }, { label: 'Total Size', value: '234', unit: 'GB' }, { label: 'Data Compression', value: '62', unit: '%' }] },
@@ -167,12 +167,12 @@ const DATABASE_STRUCTURE = {
           { name: 'WiredTiger Cache', metrics: [{ label: 'Cache Size', value: '64', unit: 'GB' }, { label: 'Cache Util', value: '78.3', unit: '%' }, { label: 'Evictions/sec', value: '234', unit: '' }, { label: 'Cache Hit Rate', value: '94.2', unit: '%' }] },
           { name: 'Backup Monitor', metrics: [{ label: 'Last Backup', value: '1', unit: 'hour' }, { label: 'Backup Size', value: '234', unit: 'GB' }, { label: 'Backup Duration', value: '15', unit: 'mins' }, { label: 'Backup Status', value: 'healthy', unit: '' }] },
           { name: 'Capacity Planning', metrics: [{ label: 'Growth Rate', value: '2.3', unit: 'GB/week' }, { label: 'Storage Util', value: '67.2', unit: '%' }, { label: 'Projected 90d', value: '456', unit: 'GB' }, { label: 'Days Until Full', value: '180', unit: '' }] },
-          { name: 'Network', metrics: [{ label: 'Bytes In/sec', value: '234', unit: 'MB/s' }, { label: 'Bytes Out/sec', value: '156', unit: 'MB/s' }, { label: 'Network Util', value: '45.2', unit: '%' }, { label: 'Latency', value: '0.5', unit: 'ms' }] },
+          { name: 'Network', metrics: [{ label: 'Bytes In/sec', value: '234', unit: 'MB/s' }, { label: 'Bytes Out/sec', value: '156', unit: 'MB/s' }, { label: 'Network Util', value: '45.2', unit: '%' }, { label: 'Latency', value: '0.5', unit: 'ms' }, { label: 'WT Checkpoint Duration', value: '3.2', unit: 's' }, { label: 'Journal Commits', value: '45', unit: '/s' }, { label: 'Compression Ratio', value: '3.2x', unit: '' }, { label: 'Dirty Pages', value: '2.1', unit: '%' }] },
         ]
       },
       {
         id: 'data',
-        name: 'Data',
+        name: 'Data Pipeline',
         tabs: [
           { name: 'Document Editor', metrics: [{ label: 'Documents Edited', value: '2,345', unit: '/day' }, { label: 'Failed Updates', value: '0', unit: '' }, { label: 'Validation Errors', value: '12', unit: '' }, { label: 'Bulk Ops', value: '45', unit: '/hour' }] },
           { name: 'Aggregation Builder', metrics: [{ label: 'Pipelines', value: '234', unit: '' }, { label: 'Avg Stages', value: '4.2', unit: '' }, { label: 'Cache Hit Rate', value: '78.3', unit: '%' }, { label: 'Execution Time', value: '1.2', unit: 's' }] },
@@ -180,32 +180,32 @@ const DATABASE_STRUCTURE = {
           { name: 'NL Query Generator', metrics: [{ label: 'Queries Generated', value: '456', unit: '/day' }, { label: 'Conversion Rate', value: '87.2', unit: '%' }, { label: 'Avg Accuracy', value: '92.3', unit: '%' }, { label: 'Execution Time', value: '0.8', unit: 's' }] },
           { name: 'SQL Translator', metrics: [{ label: 'Translations', value: '234', unit: '/day' }, { label: 'Success Rate', value: '94.1', unit: '%' }, { label: 'Avg Convert Time', value: '2.1', unit: 'ms' }, { label: 'Supported Syntax', value: '98.5', unit: '%' }] },
           { name: 'Schema Compare', metrics: [{ label: 'Schema Versions', value: '45', unit: '' }, { label: 'Differences', value: '12', unit: '' }, { label: 'Compatibility', value: '98.3', unit: '%' }, { label: 'Last Compare', value: '5', unit: 'mins' }] },
-          { name: 'Geo-spatial', metrics: [{ label: 'Geo Queries', value: '234K', unit: '/day' }, { label: 'Geo Indexes', value: '34', unit: '' }, { label: 'Avg Query Time', value: '3.4', unit: 'ms' }, { label: 'Coverage', value: '98.7', unit: '%' }] },
+          { name: 'Geo-spatial', metrics: [{ label: 'Geo Queries', value: '234K', unit: '/day' }, { label: 'Geo Indexes', value: '34', unit: '' }, { label: 'Avg Query Time', value: '3.4', unit: 'ms' }, { label: 'Coverage', value: '98.7', unit: '%' }, { label: 'Change Streams', value: '12', unit: 'active' }, { label: 'TTL Deletions', value: '45K', unit: '/day' }, { label: 'Atlas Data Lake', value: '234', unit: '/day' }, { label: 'Time Series Collections', value: '8', unit: '' }] },
         ]
       },
       {
         id: 'intelligence',
-        name: 'Intelligence',
+        name: 'AI & Analytics',
         tabs: [
           { name: 'AI Hints', metrics: [{ label: 'Suggestions', value: '23', unit: '' }, { label: 'Implemented', value: '18', unit: '' }, { label: 'Performance Gain', value: '12.5', unit: '%' }, { label: 'Accuracy', value: '94.2', unit: '%' }] },
           { name: 'Compare Clusters', metrics: [{ label: 'Clusters', value: '3', unit: '' }, { label: 'Differences', value: '5', unit: '' }, { label: 'Performance Ratio', value: '1.23x', unit: '' }, { label: 'Last Sync', value: '5', unit: 'mins' }] },
           { name: 'Historical Trends', metrics: [{ label: 'Data Points', value: '98.2M', unit: '' }, { label: 'Trend Accuracy', value: '92.1', unit: '%' }, { label: 'Anomalies', value: '0', unit: '' }, { label: 'Forecast Days', value: '30', unit: '' }] },
           { name: 'Perf Advisor v2', metrics: [{ label: 'Recommendations', value: '45', unit: '' }, { label: 'Impl Rate', value: '78.2', unit: '%' }, { label: 'Avg Improvement', value: '18.3', unit: '%' }, { label: 'Confidence', value: '96.1', unit: '%' }] },
-          { name: 'Trace Correlator', metrics: [{ label: 'Traces Correlated', value: '234K', unit: '/day' }, { label: 'Correlation Accuracy', value: '96.2', unit: '%' }, { label: 'Latency P99', value: '2.3', unit: 'ms' }, { label: 'Root Cause ID Rate', value: '89.3', unit: '%' }] },
+          { name: 'Trace Correlator', metrics: [{ label: 'Traces Correlated', value: '234K', unit: '/day' }, { label: 'Correlation Accuracy', value: '96.2', unit: '%' }, { label: 'Latency P99', value: '2.3', unit: 'ms' }, { label: 'Root Cause ID Rate', value: '89.3', unit: '%' }, { label: 'Predictive Scaling', value: '87', unit: '%' }, { label: 'Workload Class', value: 'OLTP', unit: '' }, { label: 'Auto-Index Suggestions', value: '5', unit: '' }, { label: 'Cost Optimization', value: '$234', unit: '/mo saved' }] },
         ]
       },
       {
         id: 'replication',
-        name: 'Replication',
+        name: 'Replica & Shard',
         tabs: [
           { name: 'Replica Set + Failover', metrics: [{ label: 'Members', value: '3', unit: '' }, { label: 'Primary', value: 'healthy', unit: '' }, { label: 'Replication Lag', value: '0.2', unit: 'ms' }, { label: 'Last Sync', value: '0.1', unit: 's' }] },
           { name: 'Sharding', metrics: [{ label: 'Shards', value: '8', unit: '' }, { label: 'Chunks', value: '1,024', unit: '' }, { label: 'Balancer', value: 'active', unit: '' }, { label: 'Migration Queue', value: '0', unit: '' }] },
-          { name: 'Oplog Tail', metrics: [{ label: 'Oplog Size', value: '50', unit: 'GB' }, { label: 'Oplog Window', value: '24', unit: 'hours' }, { label: 'Current Lag', value: '0.3', unit: 'ms' }, { label: 'Entries/sec', value: '12,450', unit: '' }] },
+          { name: 'Oplog Tail', metrics: [{ label: 'Oplog Size', value: '50', unit: 'GB' }, { label: 'Oplog Window', value: '24', unit: 'hours' }, { label: 'Current Lag', value: '0.3', unit: 'ms' }, { label: 'Entries/sec', value: '12,450', unit: '' }, { label: 'Elections', value: '0', unit: '/month' }, { label: 'Write Concern', value: 'majority', unit: '' }, { label: 'Read Preference', value: 'secondaryPreferred', unit: '' }, { label: 'Chunk Migrations', value: '3', unit: '/day' }] },
         ]
       },
       {
         id: 'management',
-        name: 'Management',
+        name: 'Operations Center',
         tabs: [
           { name: 'Alert Manager', metrics: [{ label: 'Active Alerts', value: '0', unit: '' }, { label: 'Total Rules', value: '45', unit: '' }, { label: 'Fired/Hour', value: '2', unit: '' }, { label: 'False Positives', value: '1', unit: '%' }] },
           { name: 'Prometheus Export', metrics: [{ label: 'Metrics', value: '567', unit: '' }, { label: 'Series', value: '234K', unit: '' }, { label: 'Scrape Rate', value: '15', unit: 's' }, { label: 'Last Scrape', value: '2', unit: 's ago' }] },
@@ -233,63 +233,63 @@ const DATABASE_STRUCTURE = {
     sections: [
       {
         id: 'core',
-        name: 'Core Monitoring',
+        name: 'System Vitals',
         tabs: [
-          { name: 'Overview', metrics: [{ label: 'QPS', value: '2,840', unit: '/s' }, { label: 'TPS', value: '1,234', unit: '/s' }, { label: 'Connections', value: '156', unit: '' }, { label: 'Uptime', value: '92', unit: 'days' }] },
-          { name: 'Performance', metrics: [{ label: 'Avg Query Time', value: '1.8', unit: 'ms' }, { label: 'Slow Queries', value: '3', unit: '' }, { label: 'Query Count', value: '245M', unit: '/day' }, { label: 'P95 Latency', value: '4.2', unit: 'ms' }] },
-          { name: 'Resources', metrics: [{ label: 'CPU Usage', value: '28', unit: '%' }, { label: 'Memory Usage', value: '71', unit: '%' }, { label: 'Disk I/O', value: '156', unit: 'MB/s' }, { label: 'Swap Usage', value: '0', unit: 'MB' }] },
-          { name: 'Reliability', metrics: [{ label: 'Error Rate', value: '0.01', unit: '%' }, { label: 'Failed Transactions', value: '0', unit: '/hour' }, { label: 'Recovery Time', value: '1.8', unit: 's' }, { label: 'Availability', value: '99.99', unit: '%' }] },
+          { name: 'Overview', metrics: [{ label: 'QPS', value: '2,840', unit: '/s' }, { label: 'TPS', value: '1,234', unit: '/s' }, { label: 'Connections', value: '156', unit: '' }, { label: 'Uptime', value: '92', unit: 'days' }, { label: 'Handler Read Rate', value: '45K', unit: '/s' }, { label: 'Handler Write Rate', value: '12K', unit: '/s' }, { label: 'Table Open Cache Hit', value: '98.2', unit: '%' }, { label: 'Thread Cache Hit', value: '99.1', unit: '%' }] },
+          { name: 'Performance', metrics: [{ label: 'Avg Query Time', value: '1.8', unit: 'ms' }, { label: 'Slow Queries', value: '3', unit: '' }, { label: 'Query Count', value: '245M', unit: '/day' }, { label: 'P95 Latency', value: '4.2', unit: 'ms' }, { label: 'Com_select', value: '2,100', unit: '/s' }, { label: 'Com_insert', value: '450', unit: '/s' }] },
+          { name: 'Resources', metrics: [{ label: 'CPU Usage', value: '28', unit: '%' }, { label: 'Memory Usage', value: '71', unit: '%' }, { label: 'Disk I/O', value: '156', unit: 'MB/s' }, { label: 'Swap Usage', value: '0', unit: 'MB' }, { label: 'Created Tmp Tables', value: '234', unit: '/hour' }, { label: 'Created Tmp Disk Tables', value: '12', unit: '/hour' }] },
+          { name: 'Reliability', metrics: [{ label: 'Error Rate', value: '0.01', unit: '%' }, { label: 'Failed Transactions', value: '0', unit: '/hour' }, { label: 'Recovery Time', value: '1.8', unit: 's' }, { label: 'Availability', value: '99.99', unit: '%' }, { label: 'Aborted Clients', value: '0', unit: '/hour' }] },
           { name: 'Alerts', metrics: [{ label: 'Active Alerts', value: '0', unit: '' }, { label: 'Total Rules', value: '28', unit: '' }, { label: 'Triggered Today', value: '1', unit: '' }, { label: 'Avg Response', value: '6', unit: 'mins' }] },
         ]
       },
       {
         id: 'query',
-        name: 'Query & Indexes',
+        name: 'Query Optimization',
         tabs: [
-          { name: 'Query Optimizer', metrics: [{ label: 'Full Scans', value: '2.3', unit: '%' }, { label: 'Index Scans', value: '97.7', unit: '%' }, { label: 'Avg Cost', value: '156.3', unit: 'units' }, { label: 'Query Cache Hit', value: '78.5', unit: '%' }] },
-          { name: 'Slow Query Log', metrics: [{ label: 'Slow Queries', value: '3', unit: '/hour' }, { label: 'Avg Time', value: '2.3', unit: 's' }, { label: 'Lock Waits', value: '0', unit: '' }, { label: 'Rows Examined', value: '234K', unit: '/hour' }] },
+          { name: 'Query Optimizer', metrics: [{ label: 'Full Scans', value: '2.3', unit: '%' }, { label: 'Index Scans', value: '97.7', unit: '%' }, { label: 'Avg Cost', value: '156.3', unit: 'units' }, { label: 'Query Cache Hit', value: '78.5', unit: '%' }, { label: 'Select Full Join', value: '23', unit: '/hour' }, { label: 'Adaptive Hash Index Hit', value: '97.3', unit: '%' }] },
+          { name: 'Slow Query Log', metrics: [{ label: 'Slow Queries', value: '3', unit: '/hour' }, { label: 'Avg Time', value: '2.3', unit: 's' }, { label: 'Lock Waits', value: '0', unit: '' }, { label: 'Rows Examined', value: '234K', unit: '/hour' }, { label: 'Sort Merge Passes', value: '5', unit: '/hour' }, { label: 'Filesort Ops', value: '123', unit: '/hour' }] },
           { name: 'Index Statistics', metrics: [{ label: 'Indexes', value: '245', unit: '' }, { label: 'Unused', value: '12', unit: '' }, { label: 'Duplicate', value: '3', unit: '' }, { label: 'Hit Ratio', value: '96.2', unit: '%' }] },
           { name: 'Query Cache Analysis', metrics: [{ label: 'Cache Enabled', value: 'true', unit: '' }, { label: 'Cache Size', value: '256', unit: 'MB' }, { label: 'Hit Rate', value: '78.5', unit: '%' }, { label: 'Efficiency', value: '92.1', unit: '%' }] },
         ]
       },
       {
         id: 'infra',
-        name: 'Infrastructure',
+        name: 'Engine & Replication',
         tabs: [
           { name: 'Connection Pool', metrics: [{ label: 'Active Conn', value: '156', unit: '' }, { label: 'Max Conn', value: '200', unit: '' }, { label: 'Aborted Conn', value: '0', unit: '' }, { label: 'Conn Efficiency', value: '98.1', unit: '%' }] },
-          { name: 'InnoDB Engine', metrics: [{ label: 'Pool Usage', value: '71', unit: '%' }, { label: 'Log Writes', value: '1,234', unit: '/s' }, { label: 'Page Reads', value: '23', unit: '/s' }, { label: 'Page Writes', value: '45', unit: '/s' }] },
-          { name: 'Replication Status', metrics: [{ label: 'Lag Seconds', value: '0', unit: '' }, { label: 'Relay Log Size', value: '234', unit: 'MB' }, { label: 'Worker Threads', value: '4', unit: '' }, { label: 'Last Error', value: 'none', unit: '' }] },
-          { name: 'Binary Log', metrics: [{ label: 'Binlog Position', value: '1,234,567', unit: '' }, { label: 'Binlog Size', value: '512', unit: 'MB' }, { label: 'Purge Age', value: '7', unit: 'days' }, { label: 'Format', value: 'ROW', unit: '' }] },
+          { name: 'InnoDB Engine', metrics: [{ label: 'Pool Usage', value: '71', unit: '%' }, { label: 'Log Writes', value: '1,234', unit: '/s' }, { label: 'Page Reads', value: '23', unit: '/s' }, { label: 'Page Writes', value: '45', unit: '/s' }, { label: 'Redo Log Size', value: '2', unit: 'GB' }, { label: 'Undo Tablespaces', value: '2', unit: '' }] },
+          { name: 'Replication Status', metrics: [{ label: 'Lag Seconds', value: '0', unit: '' }, { label: 'Relay Log Size', value: '234', unit: 'MB' }, { label: 'Worker Threads', value: '4', unit: '' }, { label: 'Last Error', value: 'none', unit: '' }, { label: 'GTID Mode', value: 'ON', unit: '' }, { label: 'Semi-Sync', value: 'enabled', unit: '' }, { label: 'Group Replication', value: '3', unit: 'members' }] },
+          { name: 'Binary Log', metrics: [{ label: 'Binlog Position', value: '1,234,567', unit: '' }, { label: 'Binlog Size', value: '512', unit: 'MB' }, { label: 'Purge Age', value: '7', unit: 'days' }, { label: 'Format', value: 'ROW', unit: '' }, { label: 'Relay Log Recovery', value: 'ON', unit: '' }] },
           { name: 'Buffer Pool', metrics: [{ label: 'Pool Size', value: '8.0', unit: 'GB' }, { label: 'Pool Util', value: '71.2', unit: '%' }, { label: 'Reads/sec', value: '234', unit: '' }, { label: 'Hit Ratio', value: '98.7', unit: '%' }] },
         ]
       },
       {
         id: 'schema',
-        name: 'Schema & Security',
+        name: 'Schema Management',
         tabs: [
-          { name: 'Schema Browser', metrics: [{ label: 'Databases', value: '23', unit: '' }, { label: 'Tables', value: '456', unit: '' }, { label: 'Views', value: '78', unit: '' }, { label: 'Procedures', value: '45', unit: '' }] },
+          { name: 'Schema Browser', metrics: [{ label: 'Databases', value: '23', unit: '' }, { label: 'Tables', value: '456', unit: '' }, { label: 'Views', value: '78', unit: '' }, { label: 'Procedures', value: '45', unit: '' }, { label: 'Triggers', value: '12', unit: '' }, { label: 'Events', value: '8', unit: '' }, { label: 'Functions', value: '34', unit: '' }, { label: 'Partitioned Tables', value: '23', unit: '' }] },
           { name: 'User Privileges', metrics: [{ label: 'Users', value: '34', unit: '' }, { label: 'Roles', value: '8', unit: '' }, { label: 'Grants', value: '234', unit: '' }, { label: 'Host Restrictions', value: '18', unit: '' }] },
-          { name: 'Audit Log', metrics: [{ label: 'Log Entries', value: '234K', unit: '/day' }, { label: 'Failed Logins', value: '0', unit: '' }, { label: 'Privilege Changes', value: '3', unit: '/day' }, { label: 'DDL Changes', value: '5', unit: '/day' }] },
+          { name: 'Audit Log', metrics: [{ label: 'Log Entries', value: '234K', unit: '/day' }, { label: 'Failed Logins', value: '0', unit: '' }, { label: 'Privilege Changes', value: '3', unit: '/day' }, { label: 'DDL Changes', value: '5', unit: '/day' }, { label: 'Foreign Keys', value: '156', unit: '' }, { label: 'Generated Columns', value: '45', unit: '' }] },
         ]
       },
       {
         id: 'observability',
-        name: 'Observability',
+        name: 'Deep Diagnostics',
         tabs: [
-          { name: 'Performance Schema', metrics: [{ label: 'Events', value: '89.3M', unit: '/day' }, { label: 'Table I/O', value: '234K', unit: '/s' }, { label: 'Statements', value: '12.4K', unit: '/s' }, { label: 'Errors', value: '0', unit: '' }] },
-          { name: 'Information Schema', metrics: [{ label: 'Queries', value: '456K', unit: '/hour' }, { label: 'Table Count', value: '456', unit: '' }, { label: 'Column Count', value: '3,456', unit: '' }, { label: 'Key Count', value: '1,234', unit: '' }] },
+          { name: 'Performance Schema', metrics: [{ label: 'Events', value: '89.3M', unit: '/day' }, { label: 'Table I/O', value: '234K', unit: '/s' }, { label: 'Statements', value: '12.4K', unit: '/s' }, { label: 'Errors', value: '0', unit: '' }, { label: 'sys Schema', value: 'enabled', unit: '' }, { label: 'Wait Events', value: '45', unit: '' }] },
+          { name: 'Information Schema', metrics: [{ label: 'Queries', value: '456K', unit: '/hour' }, { label: 'Table Count', value: '456', unit: '' }, { label: 'Column Count', value: '3,456', unit: '' }, { label: 'Key Count', value: '1,234', unit: '' }, { label: 'Memory Instruments', value: '234', unit: '' }, { label: 'Stage Instruments', value: '89', unit: '' }] },
           { name: 'Process List', metrics: [{ label: 'Active Processes', value: '156', unit: '' }, { label: 'Sleeping Processes', value: '45', unit: '' }, { label: 'Avg Query Time', value: '1.8', unit: 'ms' }, { label: 'Longest Query', value: '234', unit: 's' }] },
           { name: 'Error Log Analysis', metrics: [{ label: 'Log Entries', value: '234K', unit: '/day' }, { label: 'Errors', value: '12', unit: '/day' }, { label: 'Warnings', value: '45', unit: '/day' }, { label: 'Critical', value: '0', unit: '' }] },
         ]
       },
       {
         id: 'admin',
-        name: 'Admin',
+        name: 'Server Administration',
         tabs: [
           { name: 'Server Variables', metrics: [{ label: 'Total Vars', value: '456', unit: '' }, { label: 'Modified', value: '23', unit: '' }, { label: 'Dynamic', value: '234', unit: '' }, { label: 'Last Change', value: '2', unit: 'days' }] },
-          { name: 'Backup & Recovery', metrics: [{ label: 'Last Backup', value: '2', unit: 'hours' }, { label: 'Backup Size', value: '12.3', unit: 'GB' }, { label: 'Restore Time', value: '15', unit: 'mins' }, { label: 'Backup Success', value: '100', unit: '%' }] },
+          { name: 'Backup & Recovery', metrics: [{ label: 'Last Backup', value: '2', unit: 'hours' }, { label: 'Backup Size', value: '12.3', unit: 'GB' }, { label: 'Restore Time', value: '15', unit: 'mins' }, { label: 'Backup Success', value: '100', unit: '%' }, { label: 'Clone Plugin', value: 'active', unit: '' }, { label: 'MySQL Router', value: '2', unit: 'instances' }] },
           { name: 'Import/Export', metrics: [{ label: 'Imports', value: '8', unit: '/week' }, { label: 'Exports', value: '12', unit: '/week' }, { label: 'Data Transferred', value: '45.2', unit: 'GB' }, { label: 'Avg Speed', value: '45', unit: 'MB/s' }] },
-          { name: 'User Management', metrics: [{ label: 'Users', value: '34', unit: '' }, { label: 'Active Sessions', value: '156', unit: '' }, { label: 'Failed Auth', value: '0', unit: '/day' }, { label: 'Password Age', value: '45', unit: 'days' }] },
+          { name: 'User Management', metrics: [{ label: 'Users', value: '34', unit: '' }, { label: 'Active Sessions', value: '156', unit: '' }, { label: 'Failed Auth', value: '0', unit: '/day' }, { label: 'Password Age', value: '45', unit: 'days' }, { label: 'Tablespace Usage', value: '78', unit: '%' }, { label: 'Enterprise Firewall', value: '45', unit: 'rules' }] },
         ]
       }
     ]
