@@ -504,6 +504,10 @@ function hashSeed(str) {
   return Math.abs(h);
 }
 
+function hashNorm(str) {
+  return (hashSeed(str) % 10000) / 10000;
+}
+
 function genSparkData(label, n = 10, base = 40, variance = 30) {
   let s = hashSeed(label);
   return Array.from({ length: n }, () => {
@@ -2154,15 +2158,15 @@ const TT_STYLE = { background: THEME.tooltipBg, border: `1px solid ${THEME.glass
 function gen24h(seed, m1Base, m1Var, m2Base, m2Var) {
   return Array.from({ length: 24 }, (_, i) => ({
     time: `${String(i).padStart(2, '0')}:00`,
-    primary: Math.floor(hashSeed(`${seed}-p-${i}`) * m1Var + m1Base),
-    secondary: Math.floor(hashSeed(`${seed}-s-${i}`) * m2Var + m2Base),
+    primary: Math.floor(hashNorm(`${seed}-p-${i}`) * m1Var + m1Base),
+    secondary: Math.floor(hashNorm(`${seed}-s-${i}`) * m2Var + m2Base),
   }));
 }
 
 /** Generate a 7-day trend dataset */
 function gen7d(seed, base, variance) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days.map((d, i) => ({ day: d, value: Math.floor(hashSeed(`${seed}-${i}`) * variance + base) }));
+  return days.map((d, i) => ({ day: d, value: Math.floor(hashNorm(`${seed}-${i}`) * variance + base) }));
 }
 
 /** Stat card mini-component used in many layouts */
@@ -2193,57 +2197,68 @@ function SubTabContent({ subTabId, section, db, widgets }) {
       p99: 8 + Math.sin(i / 3) * 2.5,
     }));
     const workloadData = [
-      { name: 'SELECTs', value: Math.floor(hashSeed(`${seed}-ws`) * 30 + 40), color: db.color },
-      { name: 'INSERTs', value: Math.floor(hashSeed(`${seed}-wi`) * 15 + 10), color: THEME.success },
-      { name: 'UPDATEs', value: Math.floor(hashSeed(`${seed}-wu`) * 10 + 8), color: THEME.warning },
-      { name: 'DELETEs', value: Math.floor(hashSeed(`${seed}-wd`) * 5 + 2), color: THEME.danger },
+      { name: 'SELECTs', value: Math.floor(hashNorm(`${seed}-ws`) * 30 + 40), color: db.color },
+      { name: 'INSERTs', value: Math.floor(hashNorm(`${seed}-wi`) * 15 + 10), color: THEME.success },
+      { name: 'UPDATEs', value: Math.floor(hashNorm(`${seed}-wu`) * 10 + 8), color: THEME.warning },
+      { name: 'DELETEs', value: Math.floor(hashNorm(`${seed}-wd`) * 5 + 2), color: THEME.danger },
     ];
     const impactedTables = (DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
       name: t.substring(0, 12),
-      impact: Math.floor(hashSeed(`${seed}-ti-${i}`) * 1000 + 100),
+      impact: Math.floor(hashNorm(`${seed}-ti-${i}`) * 1000 + 100),
     })).sort((a, b) => b.impact - a.impact);
 
     return (
       <>
-        {/* Row 1: 6 Hero KPI Cards */}
+        {/* Row 1: 6 Hero KPI Cards with trend arrows and vs last hr text */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
-          {db.kpis && db.kpis.slice(0, 6).map((kpi, i) => (
-            <Panel key={i} title={kpi.label} icon={Zap} accentColor={db.color}>
-              <StatCard label="" value={kpi.value} unit={kpi.unit} color={db.color} />
-              {kpi.sparkline && <MiniSparkline data={kpi.sparkline.map(v => ({ value: v }))} color={db.color} width={100} height={18} />}
-            </Panel>
-          ))}
+          {db.kpis && db.kpis.slice(0, 6).map((kpi, i) => {
+            const trendUp = hashNorm(`${seed}-kpi-trend-${i}`) > 0.5;
+            const trendPct = Math.floor(hashNorm(`${seed}-kpi-pct-${i}`) * 25 + 2);
+            return (
+              <Panel key={i} title={kpi.label} icon={Zap} accentColor={db.color}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
+                  <span style={{ fontSize: 22, fontWeight: 700, color: db.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: 10, color: THEME.textDim }}>{kpi.unit}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: trendUp ? THEME.success : THEME.danger }}>
+                    {trendUp ? '▲' : '▼'} {trendPct}%
+                  </span>
+                </div>
+                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 8 }}>vs last hr</div>
+                {kpi.sparkline && <MiniSparkline data={kpi.sparkline.map(v => ({ value: v }))} color={db.color} width={100} height={18} />}
+              </Panel>
+            );
+          })}
         </div>
 
         {/* Row 2: 3 Cards (Last Backup, Long-Running Txns, Vacuum Health) */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
           <Panel title="Last Backup" icon={Archive} accentColor={THEME.success}>
-            <StatCard label="Time" value={`${Math.floor(hashSeed(`${seed}-lb`) * 6 + 1)}`} unit="hours ago" color={THEME.success} />
+            <StatCard label="Time" value={`${Math.floor(hashNorm(`${seed}-lb`) * 6 + 1)}`} unit="hours ago" color={THEME.success} />
             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 8 }}>
-              Size: {Math.floor(hashSeed(`${seed}-lbs`) * 10 + 5)} GB
+              Size: {Math.floor(hashNorm(`${seed}-lbs`) * 10 + 5)} GB
             </div>
           </Panel>
           <Panel title="Long-Running Txns" icon={Hourglass} accentColor={THEME.warning}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-lrt`) * 5)}`} unit="" color={THEME.warning} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-lrt`) * 5)}`} unit="" color={THEME.warning} />
             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 8 }}>
-              Max: {Math.floor(hashSeed(`${seed}-lrtm`) * 30 + 5)}s
+              Max: {Math.floor(hashNorm(`${seed}-lrtm`) * 30 + 5)}s
             </div>
           </Panel>
           <Panel title="Vacuum Health" icon={RefreshCw} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-vh`) * 10 + 85)} color={THEME.success} size={70} strokeWidth={5} label="HEALTH" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-vh`) * 10 + 85)} color={THEME.success} size={70} strokeWidth={5} label="HEALTH" />
             </div>
           </Panel>
         </div>
 
-        {/* Row 3: 2-col — Cluster Velocity AreaChart | Database Health + Connection Pool Gauges */}
+        {/* Row 3: 2-col — Cluster Velocity AreaChart with stats footer | Database Health + Connection Pool with progress bars */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
           <Panel title="Cluster Velocity (24h)" icon={TrendingUp} accentColor={db.color}
             rightNode={<div style={{ display: 'flex', gap: 10 }}>
               <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />QPS</span>
               <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.success, borderRadius: 1 }} />TPS</span>
             </div>}>
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={160}>
               <AreaChart data={clusterVelData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
                 <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
@@ -2253,22 +2268,63 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                 <Area type="monotone" dataKey="secondary" name="TPS" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={1.5} />
               </AreaChart>
             </ResponsiveContainer>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, borderTop: `1px solid ${THEME.gridLine}`, paddingTop: 12, marginTop: 12, fontSize: 9 }}>
+              <div><span style={{ color: THEME.textDim }}>Peak QPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-pqps`) * 2000 + 500)}</div></div>
+              <div><span style={{ color: THEME.textDim }}>Avg QPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-aqps`) * 1500 + 300)}</div></div>
+              <div><span style={{ color: THEME.textDim }}>Peak TPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-ptps`) * 1200 + 200)}</div></div>
+              <div><span style={{ color: THEME.textDim }}>Avg TPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-atps`) * 800 + 100)}</div></div>
+            </div>
           </Panel>
           <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 14 }}>
             <Panel title="Database Health" icon={Shield} accentColor={THEME.success}>
               <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-                <RingGauge value={Math.floor(hashSeed(`${seed}-dh`) * 5 + 94)} color={THEME.success} size={70} strokeWidth={5} label="HEALTH" />
+                <RingGauge value={Math.floor(hashNorm(`${seed}-dh`) * 5 + 94)} color={THEME.success} size={70} strokeWidth={5} label="HEALTH" />
+              </div>
+              <div style={{ display: 'grid', gap: 8, fontSize: 9, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${THEME.gridLine}` }}>
+                <div>
+                  <div style={{ color: THEME.textDim, marginBottom: 3 }}>Cache Hit %</div>
+                  <div style={{ height: 4, background: THEME.gridLine, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${Math.floor(hashNorm(`${seed}-dhc`) * 30 + 85)}%`, background: THEME.success }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: THEME.textDim, marginBottom: 3 }}>Conn Usage %</div>
+                  <div style={{ height: 4, background: THEME.gridLine, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${Math.floor(hashNorm(`${seed}-dhcu`) * 50 + 40)}%`, background: db.color }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: THEME.textDim, marginBottom: 3 }}>Disk Usage %</div>
+                  <div style={{ height: 4, background: THEME.gridLine, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${Math.floor(hashNorm(`${seed}-dhdu`) * 60 + 30)}%`, background: THEME.warning }}></div>
+                  </div>
+                </div>
               </div>
             </Panel>
             <Panel title="Connection Pool" icon={Network} accentColor={db.color}>
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-                <RingGauge value={Math.floor(hashSeed(`${seed}-cp`) * 40 + 30)} color={db.color} size={70} strokeWidth={5} label="POOL" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 10 }}>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: db.color }}>{Math.floor(hashNorm(`${seed}-cpactive`) * 20 + 5)}</div>
+                  <div style={{ fontSize: 9, color: THEME.textDim }}>Active</div>
+                </div>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: THEME.success }}>{Math.floor(hashNorm(`${seed}-cpidle`) * 15 + 3)}</div>
+                  <div style={{ fontSize: 9, color: THEME.textDim }}>Idle</div>
+                </div>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: THEME.warning }}>{Math.floor(hashNorm(`${seed}-cpwait`) * 3)}</div>
+                  <div style={{ fontSize: 9, color: THEME.textDim }}>Waiting</div>
+                </div>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textDim }}>32</div>
+                  <div style={{ fontSize: 9, color: THEME.textDim }}>Max</div>
+                </div>
               </div>
             </Panel>
           </div>
         </div>
 
-        {/* Row 4: Transaction Latency Percentiles LineChart with SLA reference */}
+        {/* Row 4: Transaction Latency Percentiles LineChart with stats footer and SLA reference */}
         <div style={{ marginTop: 16 }}>
           <Panel title="Transaction Latency Percentiles (24h)" icon={Activity} accentColor={db.color}
             rightNode={<div style={{ display: 'flex', gap: 10 }}>
@@ -2276,7 +2332,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.warning, borderRadius: 1 }} />P95</span>
               <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />P99</span>
             </div>}>
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={160}>
               <LineChart data={latencyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
                 <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
@@ -2288,6 +2344,12 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                 <Line type="monotone" dataKey="p99" name="P99" stroke={THEME.danger} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, borderTop: `1px solid ${THEME.gridLine}`, paddingTop: 12, marginTop: 12, fontSize: 9 }}>
+              <div><span style={{ color: THEME.textDim }}>P50 avg</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(2 + Math.random() * 2).toFixed(2)}ms</div></div>
+              <div><span style={{ color: THEME.textDim }}>P95 avg</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(5 + Math.random() * 3).toFixed(2)}ms</div></div>
+              <div><span style={{ color: THEME.textDim }}>P99 avg</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(8 + Math.random() * 4).toFixed(2)}ms</div></div>
+              <div><span style={{ color: THEME.textDim }}>SLA breaches</span> <div style={{ color: THEME.danger, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-sla-breach`) * 5)}</div></div>
+            </div>
           </Panel>
         </div>
 
@@ -2349,7 +2411,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <Panel title="CPU Load" icon={Cpu} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-cpu`) * 40 + 20)} color={db.color} size={90} strokeWidth={7} label="CPU" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-cpu`) * 40 + 20)} color={db.color} size={90} strokeWidth={7} label="CPU" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
               <div><span style={{ color: THEME.textDim }}>Cores</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>8</span></div>
@@ -2358,7 +2420,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
           </Panel>
           <Panel title="Memory Usage" icon={MemoryStick} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-mem`) * 30 + 45)} color={db.color} size={90} strokeWidth={7} label="RAM" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-mem`) * 30 + 45)} color={db.color} size={90} strokeWidth={7} label="RAM" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
               <div><span style={{ color: THEME.textDim }}>Used</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>12.4G</span></div>
@@ -2367,7 +2429,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
           </Panel>
           <Panel title="Disk I/O" icon={HardDrive} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-disk`) * 50 + 30)} color={db.color} size={90} strokeWidth={7} label="I/O" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-disk`) * 50 + 30)} color={db.color} size={90} strokeWidth={7} label="I/O" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
               <div><span style={{ color: THEME.textDim }}>Read</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>245MB</span></div>
@@ -2376,47 +2438,61 @@ function SubTabContent({ subTabId, section, db, widgets }) {
           </Panel>
         </div>
 
-        {/* Row 7: 3-col — Replication & Locks | Top Impacted Tables | WAL & Checkpoints */}
+        {/* Row 7: 3-col — Replication with lag badges | Top Impacted Tables with reads/writes | WAL with sparkline & checkpoint stats */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-          <Panel title="Replication & Locks" icon={Lock} accentColor={db.color}>
+          <Panel title="Replication" icon={Lock} accentColor={db.color}>
             <div style={{ fontSize: 10, padding: '8px 12px' }}>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Replicas:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-rep`) * 4 + 1)}</div>
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Replication Lag:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(hashSeed(`${seed}-lag`) * 2).toFixed(2)}ms</div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ color: THEME.textDim, marginBottom: 6 }}>Primary Server</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600 }}>db-prod-01.aws</div>
               </div>
               <div>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Lock Wait Evts:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-lwe`) * 20)}</div>
+                <div style={{ color: THEME.textDim, marginBottom: 6 }}>Replicas</div>
+                {Array.from({ length: Math.floor(hashNorm(`${seed}-rep-count`) * 3 + 1) }, (_, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span>Replica-{i + 1}</span>
+                    <span style={{ fontSize: 8, background: THEME.gridLine, color: THEME.textDim, padding: '2px 6px', borderRadius: 3 }}>
+                      {Math.floor(hashNorm(`${seed}-lag-${i}`) * 2 + 0.5)}ms
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </Panel>
           <Panel title="Top Impacted Tables" icon={Database} accentColor={THEME.warning}>
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={impactedTables} layout="vertical">
-                <XAxis type="number" tick={{ fontSize: 8, fill: THEME.textDim }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 8, fill: THEME.textDim }} width={80} />
-                <Tooltip contentStyle={TT_STYLE} />
-                <Bar dataKey="impact" fill={THEME.warning} radius={[0, 3, 3, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <DemoTable
+              columns={[
+                { key: 'table', label: 'Table', width: '40%' },
+                { key: 'reads', label: 'Reads', width: '30%' },
+                { key: 'writes', label: 'Writes', width: '30%' },
+              ]}
+              rows={impactedTables.slice(0, 4).map((t) => ({
+                table: t.name,
+                reads: Math.floor(hashNorm(`${seed}-${t.name}-reads`) * 50000 + 1000),
+                writes: Math.floor(hashNorm(`${seed}-${t.name}-writes`) * 10000 + 500),
+              }))}
+              color={db.color}
+            />
           </Panel>
           <Panel title="WAL & Checkpoints" icon={Archive} accentColor={db.color}>
             <div style={{ fontSize: 10, padding: '8px 12px' }}>
               <div style={{ marginBottom: 10 }}>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>WAL Files:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-wal`) * 100 + 20)}</div>
+                <div style={{ color: THEME.textDim, marginBottom: 4 }}>24h WAL Activity</div>
+                <MiniSparkline data={gen24h(seed, 50, 30, 40, 20).map(d => ({ value: d.primary }))} color={db.color} width={100} height={30} />
               </div>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Checkpoints/Day:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-ckpt`) * 100 + 200)}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, borderTop: `1px solid ${THEME.gridLine}`, paddingTop: 8, marginTop: 8, fontSize: 9 }}>
+                <div>
+                  <span style={{ color: THEME.textDim }}>Checkpoint Avg</span>
+                  <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-ckpt-avg`) * 15 + 5)}s</div>
+                </div>
+                <div>
+                  <span style={{ color: THEME.textDim }}>WAL Archived</span>
+                  <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-wal-arch`) * 120 + 20)} files</div>
+                </div>
               </div>
-              <div>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Avg Duration:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-ckptd`) * 20 + 5)}s</div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 8, background: THEME.success, color: '#000', padding: '2px 6px', borderRadius: 2 }}>Healthy</span>
+                {hashNorm(`${seed}-wal-critical`) > 0.7 && <span style={{ fontSize: 8, background: THEME.danger, color: '#fff', padding: '2px 6px', borderRadius: 2 }}>Alert</span>}
               </div>
             </div>
           </Panel>
@@ -2435,16 +2511,16 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         {/* Row 1: 4-col session stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           <Panel title="Active Sessions" icon={Activity} accentColor={db.color}>
-            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-as`) * 30 + 5)}`} unit="" color={db.color} />
+            <StatCard label="Current" value={`${Math.floor(hashNorm(`${seed}-as`) * 30 + 5)}`} unit="" color={db.color} />
           </Panel>
           <Panel title="Long Running" icon={Clock} accentColor={THEME.warning}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-lr`) * 10)}`} unit="" color={THEME.warning} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-lr`) * 10)}`} unit="" color={THEME.warning} />
           </Panel>
           <Panel title="Idle Sessions" icon={Clock} accentColor={THEME.textDim}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-idle`) * 15)}`} unit="" color={THEME.textDim} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-idle`) * 15)}`} unit="" color={THEME.textDim} />
           </Panel>
           <Panel title="Blocked" icon={Lock} accentColor={THEME.danger}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-blk`) * 3)}`} unit="" color={THEME.danger} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-blk`) * 3)}`} unit="" color={THEME.danger} />
           </Panel>
         </div>
 
@@ -2480,7 +2556,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               ]}
               rows={(DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql).slice(0, 5).map((q, i) => ({
                 query: q.label, avgDuration: q.display,
-                calls: Math.floor(hashSeed(`${seed}-calls-${i}`) * 2000 + 100),
+                calls: Math.floor(hashNorm(`${seed}-calls-${i}`) * 2000 + 100),
                 impact: ['High', 'Medium', 'Low'][i % 3],
               }))}
               color={db.color}
@@ -2494,15 +2570,15 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             <div style={{ fontSize: 10, padding: '8px 12px' }}>
               <div style={{ marginBottom: 12 }}>
                 <div style={{ color: THEME.textDim, marginBottom: 2 }}>Current Wait Events:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashSeed(`${seed}-lwev`) * 20)}</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashNorm(`${seed}-lwev`) * 20)}</div>
               </div>
               <div style={{ marginBottom: 12 }}>
                 <div style={{ color: THEME.textDim, marginBottom: 2 }}>Avg Wait Time:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{(hashSeed(`${seed}-lwt`) * 500).toFixed(0)}ms</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{(hashNorm(`${seed}-lwt`) * 500).toFixed(0)}ms</div>
               </div>
               <div>
                 <div style={{ color: THEME.textDim, marginBottom: 2 }}>Max Wait:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashSeed(`${seed}-lwmax`) * 5000 + 100)}ms</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashNorm(`${seed}-lwmax`) * 5000 + 100)}ms</div>
               </div>
             </div>
           </Panel>
@@ -2514,9 +2590,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                 { key: 'risk', label: 'Risk', width: '35%' },
               ]}
               rows={[
-                { pattern: 'SELECT in loop', count: Math.floor(hashSeed(`${seed}-n1-0`) * 50 + 10), risk: 'High' },
-                { pattern: 'Missing JOIN', count: Math.floor(hashSeed(`${seed}-n1-1`) * 30 + 5), risk: 'Medium' },
-                { pattern: 'Nested subquery', count: Math.floor(hashSeed(`${seed}-n1-2`) * 20 + 3), risk: 'Low' },
+                { pattern: 'SELECT in loop', count: Math.floor(hashNorm(`${seed}-n1-0`) * 50 + 10), risk: 'High' },
+                { pattern: 'Missing JOIN', count: Math.floor(hashNorm(`${seed}-n1-1`) * 30 + 5), risk: 'Medium' },
+                { pattern: 'Nested subquery', count: Math.floor(hashNorm(`${seed}-n1-2`) * 20 + 3), risk: 'Low' },
               ]}
               color={db.color}
             />
@@ -2530,93 +2606,97 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      RESOURCES: CPU/Memory/Disk RingGauges + Table Inventory + Bloat/Growth
      ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'resources') {
+    const tableData = (DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 8);
     return (
       <>
-        {/* Row 1: 3-col RingGauges with detail text */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-          <Panel title="CPU Usage" icon={Cpu} accentColor={db.color}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-cpu`) * 40 + 20)} color={db.color} size={100} strokeWidth={8} label="CPU" />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
-              <div><span style={{ color: THEME.textDim }}>Cores</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>8</span></div>
-              <div><span style={{ color: THEME.textDim }}>Load Avg</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>2.4</span></div>
-            </div>
+        {/* Row 1: Quick Metric Strip (4 columns) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          <Panel title="Total Storage" icon={HardDrive} accentColor={db.color}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: db.color, marginBottom: 4 }}>485 GB</div>
+            <div style={{ fontSize: 10, color: THEME.textDim }}>of 1.2 TB capacity</div>
           </Panel>
-          <Panel title="Memory Usage" icon={MemoryStick} accentColor={db.color}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-mem`) * 30 + 45)} color={db.color} size={100} strokeWidth={8} label="RAM" />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
-              <div><span style={{ color: THEME.textDim }}>Used</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>12.4G</span></div>
-              <div><span style={{ color: THEME.textDim }}>Buffers</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>4.0G</span></div>
-            </div>
+          <Panel title="Total Rows" icon={Database} accentColor={db.color}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: db.color, marginBottom: 4 }}>2.4B</div>
+            <div style={{ fontSize: 10, color: THEME.textDim }}>across 47 tables tracked</div>
           </Panel>
-          <Panel title="Disk I/O" icon={HardDrive} accentColor={db.color}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-disk`) * 50 + 30)} color={db.color} size={100} strokeWidth={8} label="I/O" />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
-              <div><span style={{ color: THEME.textDim }}>Read</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>245MB</span></div>
-              <div><span style={{ color: THEME.textDim }}>Write</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>128MB</span></div>
-            </div>
+          <Panel title="Avg Bloat" icon={AlertTriangle} accentColor={THEME.warning}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: THEME.warning, marginBottom: 4 }}>{Math.floor(hashNorm(`${seed}-bloat`) * 15 + 8)}%</div>
+            <div style={{ fontSize: 10, color: THEME.textDim }}>{Math.floor(hashNorm(`${seed}-bloat-tables`) * 8 + 2)} tables need attention</div>
+          </Panel>
+          <Panel title="Dead Code" icon={Zap} accentColor={THEME.success}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: THEME.success, marginBottom: 4 }}>{Math.floor(hashNorm(`${seed}-dead`) * 45 + 12)} GB</div>
+            <div style={{ fontSize: 10, color: THEME.textDim }}>reclaimable</div>
           </Panel>
         </div>
 
-        {/* Row 2: Table Inventory DemoTable */}
+        {/* Row 2: Table Inventory (full width) */}
         <div style={{ marginTop: 16 }}>
           <Panel title="Table Inventory" icon={Database} accentColor={db.color}>
             <DemoTable
               columns={[
-                { key: 'table', label: 'Table', width: '18%' },
+                { key: 'table', label: 'Table', width: '20%' },
+                { key: 'size', label: 'Size (GB)', width: '10%' },
                 { key: 'rows', label: 'Rows', width: '12%' },
-                { key: 'size', label: 'Size', width: '12%' },
-                { key: 'seqScans', label: 'Seq Scans', width: '12%' },
-                { key: 'idxScans', label: 'Idx Scans', width: '12%' },
-                { key: 'deadTuples', label: 'Dead Tuples', width: '12%' },
-                { key: 'lastVacuum', label: 'Last Vacuum', width: '22%' },
+                { key: 'growth', label: 'Growth', width: '13%' },
+                { key: 'composition', label: 'Composition', width: '20%' },
+                { key: 'trend', label: 'Trend', width: '12%' },
+                { key: 'scans', label: 'Scans', width: '13%' },
               ]}
-              rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6).map((t, i) => ({
-                table: t,
-                rows: `${Math.floor(hashSeed(`${seed}-r-${i}`) * 500 + 10)}K`,
-                size: `${Math.floor(hashSeed(`${seed}-s-${i}`) * 100 + 5)} MB`,
-                seqScans: Math.floor(hashSeed(`${seed}-ss-${i}`) * 100),
-                idxScans: Math.floor(hashSeed(`${seed}-is-${i}`) * 5000 + 100),
-                deadTuples: Math.floor(hashSeed(`${seed}-dt-${i}`) * 1000),
-                lastVacuum: `${Math.floor(hashSeed(`${seed}-lv-${i}`) * 24 + 1)}h ago`,
-              }))}
+              rows={tableData.map((t, i) => {
+                const size = Math.floor(hashNorm(`${seed}-ts-${i}`) * 120 + 5);
+                const rows = Math.floor(hashNorm(`${seed}-tr-${i}`) * 500 + 50);
+                const growth = Math.floor(hashNorm(`${seed}-tg-${i}`) * 25 + 5);
+                const dataComp = Math.floor(hashNorm(`${seed}-tdc-${i}`) * 70 + 20);
+                const indexComp = Math.floor(hashNorm(`${seed}-tic-${i}`) * 40 + 10);
+                const toastComp = 100 - dataComp - indexComp;
+                const scanRatio = Math.floor(hashNorm(`${seed}-tsr-${i}`) * 80 + 10);
+                return {
+                  table: t,
+                  size: `${size}`,
+                  rows: `${rows}K`,
+                  growth: `${growth}% ▲`,
+                  composition: `${dataComp}% data, ${indexComp}% idx, ${Math.max(toastComp, 0)}% TOAST`,
+                  trend: '▄▅▆▇▆▅▄',
+                  scans: `${scanRatio}% idx / ${100-scanRatio}% seq`,
+                };
+              })}
               color={db.color}
             />
           </Panel>
         </div>
 
-        {/* Row 3: 2-col — Bloat Analysis BarChart | Table Growth Rate LineChart */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Panel title="Bloat Analysis" icon={Layers} accentColor={THEME.warning}>
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
-                name: t.substring(0, 10),
-                size: Math.floor(hashSeed(`${seed}-ba-s-${i}`) * 200 + 50),
-                bloat: Math.floor(hashSeed(`${seed}-ba-b-${i}`) * 30 + 2),
-              }))}>
-                <XAxis dataKey="name" tick={{ fontSize: 8, fill: THEME.textDim }} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="MB" />
-                <Tooltip contentStyle={TT_STYLE} />
-                <Bar dataKey="size" name="Table Size" fill={db.color} radius={[2, 2, 0, 0]} />
-                <Bar dataKey="bloat" name="Bloat" fill={THEME.warning} radius={[2, 2, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
-          <Panel title="Table Growth Rate (24h)" icon={TrendingUp} accentColor={db.color}>
-            <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={gen24h(seed, 100, 80, 50, 30)}>
-                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
-                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="MB" />
-                <Tooltip contentStyle={TT_STYLE} />
-                <Line type="monotone" dataKey="primary" name="Growth" stroke={db.color} strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+        {/* Row 3: Bloat & Auto-Vacuum */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Bloat & Auto-Vacuum" icon={Layers} accentColor={THEME.warning}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              {['All', 'High', 'Medium', 'Low'].map(level => (
+                <button key={level} style={{
+                  padding: '6px 12px', fontSize: 10, fontWeight: 600, border: 'none',
+                  background: level === 'All' ? db.color : THEME.glassBorder, color: THEME.textMain,
+                  borderRadius: 4, cursor: 'pointer', transition: 'all 0.2s',
+                }}>
+                  {level}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {tableData.slice(0, 5).map((t, i) => {
+                const bloatPct = Math.floor(hashNorm(`${seed}-tb-${i}`) * 35 + 5);
+                const severity = bloatPct > 25 ? 'critical' : bloatPct > 15 ? 'high' : 'medium';
+                const severityColor = severity === 'critical' ? THEME.danger : severity === 'high' ? THEME.warning : db.color;
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0' }}>
+                    <span style={{ fontSize: 10, color: THEME.textDim, width: 120 }}>{t}</span>
+                    <div style={{ flex: 1, height: 6, background: THEME.gridLine, borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${bloatPct}%`, background: severityColor }}></div>
+                    </div>
+                    <span style={{ fontSize: 10, color: THEME.textMain, fontWeight: 600, width: 40 }}>{bloatPct}%</span>
+                    {severity === 'critical' && <span style={{ fontSize: 8, color: THEME.danger, fontWeight: 700 }}>CRITICAL</span>}
+                    {severity === 'high' && <span style={{ fontSize: 8, color: THEME.warning, fontWeight: 700 }}>HIGH</span>}
+                  </div>
+                );
+              })}
+            </div>
           </Panel>
         </div>
       </>
@@ -2629,13 +2709,13 @@ function SubTabContent({ subTabId, section, db, widgets }) {
   if (subTabId === 'reliability') {
     const errorBudgetData = gen24h(seed, 0, 0.5, 0.1, 0.2).map((d, i) => ({
       ...d,
-      burned: Math.min((i / 24) * 15 + hashSeed(`${seed}-eb-${i}`) * 5, 100),
+      burned: Math.min((i / 24) * 15 + hashNorm(`${seed}-eb-${i}`) * 5, 100),
     }));
     const mttrData = gen7d(seed, 100, 50);
     const incidentData = [
-      { severity: 'Critical', value: Math.floor(hashSeed(`${seed}-ic`) * 3), color: THEME.danger },
-      { severity: 'High', value: Math.floor(hashSeed(`${seed}-ih`) * 8 + 2), color: THEME.warning },
-      { severity: 'Medium', value: Math.floor(hashSeed(`${seed}-im`) * 12 + 5), color: db.color },
+      { severity: 'Critical', value: Math.floor(hashNorm(`${seed}-ic`) * 3), color: THEME.danger },
+      { severity: 'High', value: Math.floor(hashNorm(`${seed}-ih`) * 8 + 2), color: THEME.warning },
+      { severity: 'Medium', value: Math.floor(hashNorm(`${seed}-im`) * 12 + 5), color: db.color },
     ];
 
     return (
@@ -2646,16 +2726,16 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             <StatCard label="Days" value="47" unit="" color={THEME.success} />
           </Panel>
           <Panel title="MTTR" icon={Clock} accentColor={db.color}>
-            <StatCard label="Avg" value={`${Math.floor(hashSeed(`${seed}-mttr`) * 20 + 5)}`} unit="min" color={db.color} />
+            <StatCard label="Avg" value={`${Math.floor(hashNorm(`${seed}-mttr`) * 20 + 5)}`} unit="min" color={db.color} />
           </Panel>
           <Panel title="SLO Budget" icon={Shield} accentColor={THEME.success}>
-            <StatCard label="Remaining" value={`${Math.floor(hashSeed(`${seed}-slo`) * 10 + 85)}`} unit="%" color={THEME.success} />
+            <StatCard label="Remaining" value={`${Math.floor(hashNorm(`${seed}-slo`) * 10 + 85)}`} unit="%" color={THEME.success} />
           </Panel>
           <Panel title="Failed Deploys" icon={AlertTriangle} accentColor={THEME.warning}>
-            <StatCard label="This month" value={`${Math.floor(hashSeed(`${seed}-fd`) * 3)}`} unit="" color={THEME.warning} />
+            <StatCard label="This month" value={`${Math.floor(hashNorm(`${seed}-fd`) * 3)}`} unit="" color={THEME.warning} />
           </Panel>
           <Panel title="Total Incidents" icon={AlertTriangle} accentColor={db.color}>
-            <StatCard label="30 days" value={`${Math.floor(hashSeed(`${seed}-ti`) * 8 + 2)}`} unit="" color={db.color} />
+            <StatCard label="30 days" value={`${Math.floor(hashNorm(`${seed}-ti`) * 8 + 2)}`} unit="" color={db.color} />
           </Panel>
         </div>
 
@@ -2663,7 +2743,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Panel title="Error Budget Status" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-ebs`) * 30 + 60)} color={THEME.success} size={100} strokeWidth={8} label="BUDGET" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-ebs`) * 30 + 60)} color={THEME.success} size={100} strokeWidth={8} label="BUDGET" />
             </div>
             <div style={{ fontSize: 10, padding: '8px 12px', borderTop: `1px solid ${THEME.gridLine}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -2672,7 +2752,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: THEME.textDim }}>Remaining</span>
-                <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-budg`) * 30 + 10)} min</span>
+                <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-budg`) * 30 + 10)} min</span>
               </div>
             </div>
           </Panel>
@@ -2748,16 +2828,16 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         {/* Row 1: 4 stat cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
-            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-aa`) * 10 + 2)}`} unit="" color={THEME.warning} />
+            <StatCard label="Current" value={`${Math.floor(hashNorm(`${seed}-aa`) * 10 + 2)}`} unit="" color={THEME.warning} />
           </Panel>
           <Panel title="Acknowledged" icon={CheckCircle} accentColor={THEME.success}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-ack`) * 5)}`} unit="" color={THEME.success} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-ack`) * 5)}`} unit="" color={THEME.success} />
           </Panel>
           <Panel title="Unacknowledged" icon={Bell} accentColor={THEME.danger}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-uack`) * 15 + 3)}`} unit="" color={THEME.danger} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-uack`) * 15 + 3)}`} unit="" color={THEME.danger} />
           </Panel>
           <Panel title="Resolved Today" icon={CheckCircle} accentColor={THEME.success}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-res`) * 8 + 1)}`} unit="" color={THEME.success} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-res`) * 8 + 1)}`} unit="" color={THEME.success} />
           </Panel>
         </div>
 
@@ -2815,10 +2895,10 @@ function SubTabContent({ subTabId, section, db, widgets }) {
           <Panel title="Alert Severity Distribution" icon={BarChart3} accentColor={THEME.warning}>
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={[
-                { name: 'Critical', value: Math.floor(hashSeed(`${seed}-as-c`) * 5 + 2), color: THEME.danger },
-                { name: 'High', value: Math.floor(hashSeed(`${seed}-as-h`) * 15 + 8), color: THEME.warning },
-                { name: 'Medium', value: Math.floor(hashSeed(`${seed}-as-m`) * 25 + 15), color: db.color },
-                { name: 'Low', value: Math.floor(hashSeed(`${seed}-as-l`) * 20 + 10), color: THEME.success },
+                { name: 'Critical', value: Math.floor(hashNorm(`${seed}-as-c`) * 5 + 2), color: THEME.danger },
+                { name: 'High', value: Math.floor(hashNorm(`${seed}-as-h`) * 15 + 8), color: THEME.warning },
+                { name: 'Medium', value: Math.floor(hashNorm(`${seed}-as-m`) * 25 + 15), color: db.color },
+                { name: 'Low', value: Math.floor(hashNorm(`${seed}-as-l`) * 20 + 10), color: THEME.success },
               ]} layout="vertical">
                 <XAxis type="number" tick={{ fontSize: 8, fill: THEME.textDim }} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 9, fill: THEME.textDim }} width={70} />
@@ -2841,28 +2921,28 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'optimizer') {
     const scanData = [
-      { name: 'Index Scan', value: Math.floor(hashSeed(`${seed}-idx`) * 15 + 75), color: db.color },
-      { name: 'Seq Scan', value: Math.floor(hashSeed(`${seed}-seq`) * 10 + 5), color: THEME.warning },
-      { name: 'Bitmap Scan', value: Math.floor(hashSeed(`${seed}-bmp`) * 8 + 3), color: THEME.success },
+      { name: 'Index Scan', value: Math.floor(hashNorm(`${seed}-idx`) * 15 + 75), color: db.color },
+      { name: 'Seq Scan', value: Math.floor(hashNorm(`${seed}-seq`) * 10 + 5), color: THEME.warning },
+      { name: 'Bitmap Scan', value: Math.floor(hashNorm(`${seed}-bmp`) * 8 + 3), color: THEME.success },
     ];
     return (
       <>
         {/* Row 1: 5 KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
           <Panel title="Total Cost" icon={Zap} accentColor={db.color}>
-            <StatCard label="Avg" value={`${Math.floor(hashSeed(`${seed}-tc`) * 500 + 100)}`} unit="" color={db.color} />
+            <StatCard label="Avg" value={`${Math.floor(hashNorm(`${seed}-tc`) * 500 + 100)}`} unit="" color={db.color} />
           </Panel>
           <Panel title="Planning Time" icon={Clock} accentColor={db.color}>
-            <StatCard label="Avg" value={`${(hashSeed(`${seed}-pt`) * 50 + 10).toFixed(1)}`} unit="ms" color={db.color} />
+            <StatCard label="Avg" value={`${(hashNorm(`${seed}-pt`) * 50 + 10).toFixed(1)}`} unit="ms" color={db.color} />
           </Panel>
           <Panel title="Execution Time" icon={Clock} accentColor={db.color}>
-            <StatCard label="Avg" value={`${(hashSeed(`${seed}-et`) * 100 + 20).toFixed(1)}`} unit="ms" color={db.color} />
+            <StatCard label="Avg" value={`${(hashNorm(`${seed}-et`) * 100 + 20).toFixed(1)}`} unit="ms" color={db.color} />
           </Panel>
           <Panel title="Buffer Hit" icon={Zap} accentColor={THEME.success}>
-            <StatCard label="Ratio" value={`${Math.floor(hashSeed(`${seed}-bh`) * 10 + 85)}`} unit="%" color={THEME.success} />
+            <StatCard label="Ratio" value={`${Math.floor(hashNorm(`${seed}-bh`) * 10 + 85)}`} unit="%" color={THEME.success} />
           </Panel>
           <Panel title="Rows Out" icon={Database} accentColor={db.color}>
-            <StatCard label="Avg" value={`${Math.floor(hashSeed(`${seed}-ro`) * 10000 + 100)}`} unit="" color={db.color} />
+            <StatCard label="Avg" value={`${Math.floor(hashNorm(`${seed}-ro`) * 10000 + 100)}`} unit="" color={db.color} />
           </Panel>
         </div>
 
@@ -2902,8 +2982,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                 { key: 'scanType', label: 'Scan Type', width: '25%' },
               ]}
               rows={(DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql).slice(0, 5).map((q, i) => ({
-                query: q.label, cost: Math.floor(hashSeed(`${seed}-c-${i}`) * 500 + 50),
-                calls: Math.floor(hashSeed(`${seed}-cl-${i}`) * 300 + 10),
+                query: q.label, cost: Math.floor(hashNorm(`${seed}-c-${i}`) * 500 + 50),
+                calls: Math.floor(hashNorm(`${seed}-cl-${i}`) * 300 + 10),
                 scanType: ['Index Scan', 'Seq Scan', 'Bitmap Scan', 'Index Only', 'Seq Scan'][i % 5],
               }))}
               color={db.color}
@@ -2923,19 +3003,19 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         {/* Row 1: 5 KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
           <Panel title="Hit Ratio" icon={Zap} accentColor={THEME.success}>
-            <StatCard label="Ratio" value={`${Math.floor(hashSeed(`${seed}-ihr`) * 10 + 85)}`} unit="%" color={THEME.success} />
+            <StatCard label="Ratio" value={`${Math.floor(hashNorm(`${seed}-ihr`) * 10 + 85)}`} unit="%" color={THEME.success} />
           </Panel>
           <Panel title="Open Issues" icon={AlertTriangle} accentColor={THEME.warning}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-oi`) * 15 + 3)}`} unit="" color={THEME.warning} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-oi`) * 15 + 3)}`} unit="" color={THEME.warning} />
           </Panel>
           <Panel title="Total Indexes" icon={Layers} accentColor={db.color}>
-            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-ti`) * 200 + 100)}`} unit="" color={db.color} />
+            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-ti`) * 200 + 100)}`} unit="" color={db.color} />
           </Panel>
           <Panel title="Index Storage" icon={HardDrive} accentColor={db.color}>
-            <StatCard label="Used" value={`${Math.floor(hashSeed(`${seed}-is`) * 500 + 100)}`} unit="MB" color={db.color} />
+            <StatCard label="Used" value={`${Math.floor(hashNorm(`${seed}-is`) * 500 + 100)}`} unit="MB" color={db.color} />
           </Panel>
           <Panel title="Seq Scan Rate" icon={Activity} accentColor={THEME.warning}>
-            <StatCard label="Per Min" value={`${Math.floor(hashSeed(`${seed}-ssr`) * 50 + 10)}`} unit="" color={THEME.warning} />
+            <StatCard label="Per Min" value={`${Math.floor(hashNorm(`${seed}-ssr`) * 50 + 10)}`} unit="" color={THEME.warning} />
           </Panel>
         </div>
 
@@ -2953,9 +3033,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               ]}
               rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6).map((t, i) => ({
                 index: `idx_${t}_${['pkey', 'created', 'status', 'name', 'email', 'type'][i % 6]}`,
-                table: t, scans: Math.floor(hashSeed(`${seed}-sc-${i}`) * 5000 + 100),
-                size: `${Math.floor(hashSeed(`${seed}-sz-${i}`) * 50 + 1)} MB`,
-                usage: `${Math.floor(hashSeed(`${seed}-us-${i}`) * 40 + 60)}%`,
+                table: t, scans: Math.floor(hashNorm(`${seed}-sc-${i}`) * 5000 + 100),
+                size: `${Math.floor(hashNorm(`${seed}-sz-${i}`) * 50 + 1)} MB`,
+                usage: `${Math.floor(hashNorm(`${seed}-us-${i}`) * 40 + 60)}%`,
                 status: i < 4 ? 'Active' : 'Unused',
               }))}
               color={db.color}
@@ -2968,8 +3048,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
           <Panel title="Index Size vs Bloat" icon={BarChart3} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={150}>
               <BarChart data={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
-                name: t.substring(0, 10), size: Math.floor(hashSeed(`${seed}-is-${i}`) * 80 + 10),
-                bloat: Math.floor(hashSeed(`${seed}-ib-${i}`) * 15 + 1),
+                name: t.substring(0, 10), size: Math.floor(hashNorm(`${seed}-is-${i}`) * 80 + 10),
+                bloat: Math.floor(hashNorm(`${seed}-ib-${i}`) * 15 + 1),
               }))}>
                 <XAxis dataKey="name" tick={{ fontSize: 8, fill: THEME.textDim }} />
                 <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={28} unit="MB" />
@@ -2981,7 +3061,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
           </Panel>
           <Panel title="Index Health" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-ih`) * 10 + 88)} color={THEME.success} size={90} strokeWidth={7} label="HEALTH" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-ih`) * 10 + 88)} color={THEME.success} size={90} strokeWidth={7} label="HEALTH" />
             </div>
           </Panel>
         </div>
@@ -2998,7 +3078,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         {/* Row 1: Plan Changes AreaChart (7d) */}
         <Panel title="Query Plan Changes (7d)" icon={TrendingUp} accentColor={db.color}>
           <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={gen7d(seed, 0, 5).map(d => ({ ...d, regressions: Math.floor(hashSeed(`${seed}-r-${d.day}`) * 2) }))}>
+            <AreaChart data={gen7d(seed, 0, 5).map(d => ({ ...d, regressions: Math.floor(hashNorm(`${seed}-r-${d.day}`) * 2) }))}>
               <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
               <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
               <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
@@ -3022,8 +3102,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               ]}
               rows={['SELECT users', 'JOIN orders', 'UPDATE inventory', 'SELECT products'].map((q, i) => ({
                 query: q, oldPlan: 'Index Scan', newPlan: i % 2 === 0 ? 'Seq Scan' : 'Hash Join',
-                impact: `+${Math.floor(hashSeed(`${seed}-ri-${i}`) * 200 + 10)}ms`,
-                detected: `${Math.floor(hashSeed(`${seed}-rd-${i}`) * 48 + 1)}h ago`,
+                impact: `+${Math.floor(hashNorm(`${seed}-ri-${i}`) * 200 + 10)}ms`,
+                detected: `${Math.floor(hashNorm(`${seed}-rd-${i}`) * 48 + 1)}h ago`,
               }))}
               color={db.color}
             />
@@ -3044,8 +3124,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         <Panel title="Table Bloat Distribution" icon={Layers} accentColor={THEME.warning}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={tables.map((t, i) => ({
-              name: t.substring(0, 12), bloat: Math.floor(hashSeed(`${seed}-bl-${i}`) * 30 + 2),
-              actual: Math.floor(hashSeed(`${seed}-act-${i}`) * 200 + 50),
+              name: t.substring(0, 12), bloat: Math.floor(hashNorm(`${seed}-bl-${i}`) * 30 + 2),
+              actual: Math.floor(hashNorm(`${seed}-act-${i}`) * 200 + 50),
             }))} layout="vertical">
               <XAxis type="number" tick={{ fontSize: 9, fill: THEME.textDim }} unit="MB" />
               <YAxis dataKey="name" type="category" tick={{ fontSize: 9, fill: THEME.textDim }} width={80} />
@@ -3059,15 +3139,15 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         {/* Row 2: 3 stat cards */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <Panel title="Total Bloat" icon={Layers} accentColor={THEME.warning}>
-            <StatCard label="Across all tables" value={`${Math.floor(hashSeed(`${seed}-tb`) * 200 + 50)}`} unit="MB" color={THEME.warning} />
+            <StatCard label="Across all tables" value={`${Math.floor(hashNorm(`${seed}-tb`) * 200 + 50)}`} unit="MB" color={THEME.warning} />
           </Panel>
           <Panel title="Bloat Ratio" icon={BarChart3} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-br`) * 15 + 5)} color={THEME.warning} size={80} strokeWidth={6} label="BLOAT" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-br`) * 15 + 5)} color={THEME.warning} size={80} strokeWidth={6} label="BLOAT" />
             </div>
           </Panel>
           <Panel title="Vacuum Needed" icon={RefreshCw} accentColor={THEME.success}>
-            <StatCard label="Tables pending" value={`${Math.floor(hashSeed(`${seed}-vn`) * 5 + 1)}`} color={db.color} />
+            <StatCard label="Tables pending" value={`${Math.floor(hashNorm(`${seed}-vn`) * 5 + 1)}`} color={db.color} />
           </Panel>
         </div>
       </>
@@ -3093,12 +3173,12 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               { key: 'lastVacuum', label: 'Last Vacuum', width: '13%' },
             ]}
             rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 8).map((t, i) => ({
-              table: t, rows: `${Math.floor(hashSeed(`${seed}-r-${i}`) * 500 + 10)}K`,
-              size: `${Math.floor(hashSeed(`${seed}-s-${i}`) * 100 + 5)} MB`,
-              seqScans: Math.floor(hashSeed(`${seed}-ss-${i}`) * 100),
-              idxScans: Math.floor(hashSeed(`${seed}-is-${i}`) * 5000 + 100),
-              deadTuples: Math.floor(hashSeed(`${seed}-dt-${i}`) * 1000),
-              lastVacuum: `${Math.floor(hashSeed(`${seed}-lv-${i}`) * 24 + 1)}h ago`,
+              table: t, rows: `${Math.floor(hashNorm(`${seed}-r-${i}`) * 500 + 10)}K`,
+              size: `${Math.floor(hashNorm(`${seed}-s-${i}`) * 100 + 5)} MB`,
+              seqScans: Math.floor(hashNorm(`${seed}-ss-${i}`) * 100),
+              idxScans: Math.floor(hashNorm(`${seed}-is-${i}`) * 5000 + 100),
+              deadTuples: Math.floor(hashNorm(`${seed}-dt-${i}`) * 1000),
+              lastVacuum: `${Math.floor(hashNorm(`${seed}-lv-${i}`) * 24 + 1)}h ago`,
             }))}
             color={db.color}
           />
@@ -3110,8 +3190,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
                 name: t.substring(0, 10),
-                reads: Math.floor(hashSeed(`${seed}-tr-${i}`) * 80 + 10),
-                writes: Math.floor(hashSeed(`${seed}-tw-${i}`) * 40 + 5),
+                reads: Math.floor(hashNorm(`${seed}-tr-${i}`) * 80 + 10),
+                writes: Math.floor(hashNorm(`${seed}-tw-${i}`) * 40 + 5),
               }))}>
                 <XAxis dataKey="name" tick={{ fontSize: 8, fill: THEME.textDim }} />
                 <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={28} />
@@ -3141,12 +3221,12 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
           <Panel title="Pool Utilization" icon={Network} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-pu`) * 30 + 30)} color={db.color} size={110} strokeWidth={9} label="POOL" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-pu`) * 30 + 30)} color={db.color} size={110} strokeWidth={9} label="POOL" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 10, padding: '0 12px 10px' }}>
-              <div><span style={{ color: THEME.textDim }}>Active</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-ac`) * 30 + 10)}</span></div>
-              <div><span style={{ color: THEME.textDim }}>Idle</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-id`) * 15 + 2)}</span></div>
-              <div><span style={{ color: THEME.textDim }}>Waiting</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-wt`) * 3)}</span></div>
+              <div><span style={{ color: THEME.textDim }}>Active</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-ac`) * 30 + 10)}</span></div>
+              <div><span style={{ color: THEME.textDim }}>Idle</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-id`) * 15 + 2)}</span></div>
+              <div><span style={{ color: THEME.textDim }}>Waiting</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-wt`) * 3)}</span></div>
               <div><span style={{ color: THEME.textDim }}>Max</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>100</span></div>
             </div>
           </Panel>
@@ -3199,16 +3279,16 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         {/* Row 1: 4 KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           <Panel title="Streaming Replicas" icon={Radio} accentColor={THEME.success}>
-            <StatCard label="Active" value={`${Math.floor(hashSeed(`${seed}-sr`) * 4 + 1)}`} unit="" color={THEME.success} />
+            <StatCard label="Active" value={`${Math.floor(hashNorm(`${seed}-sr`) * 4 + 1)}`} unit="" color={THEME.success} />
           </Panel>
           <Panel title="Max Replay Lag" icon={Clock} accentColor={db.color}>
-            <StatCard label="Max" value={`${(hashSeed(`${seed}-mrl`) * 5).toFixed(2)}`} unit="ms" color={db.color} />
+            <StatCard label="Max" value={`${(hashNorm(`${seed}-mrl`) * 5).toFixed(2)}`} unit="ms" color={db.color} />
           </Panel>
           <Panel title="Replication Slots" icon={Database} accentColor={db.color}>
-            <StatCard label="Active" value={`${Math.floor(hashSeed(`${seed}-rs`) * 3 + 1)}`} unit="" color={db.color} />
+            <StatCard label="Active" value={`${Math.floor(hashNorm(`${seed}-rs`) * 3 + 1)}`} unit="" color={db.color} />
           </Panel>
           <Panel title="Current WAL" icon={Archive} accentColor={db.color}>
-            <StatCard label="Position" value={`${Math.floor(hashSeed(`${seed}-cwal`) * 100)}`} unit="" color={db.color} />
+            <StatCard label="Position" value={`${Math.floor(hashNorm(`${seed}-cwal`) * 100)}`} unit="" color={db.color} />
           </Panel>
         </div>
 
@@ -3241,9 +3321,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               rows={['standby-1', 'standby-2', 'standby-3'].map((name, i) => ({
                 replica: name,
                 state: 'Streaming',
-                lag: `${(hashSeed(`${seed}-lag-${i}`) * 2).toFixed(2)}ms`,
-                sentLsn: `0/${Math.floor(hashSeed(`${seed}-sent-${i}`) * 1000000000).toString(16).padStart(8, '0')}`,
-                flushLsn: `0/${Math.floor(hashSeed(`${seed}-flush-${i}`) * 1000000000).toString(16).padStart(8, '0')}`,
+                lag: `${(hashNorm(`${seed}-lag-${i}`) * 2).toFixed(2)}ms`,
+                sentLsn: `0/${Math.floor(hashNorm(`${seed}-sent-${i}`) * 1000000000).toString(16).padStart(8, '0')}`,
+                flushLsn: `0/${Math.floor(hashNorm(`${seed}-flush-${i}`) * 1000000000).toString(16).padStart(8, '0')}`,
               }))}
               color={db.color}
             />
@@ -3262,7 +3342,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             <StatCard label="Status" value="Active" unit="" color={THEME.success} />
           </Panel>
           <Panel title="WAL Files" icon={Database} accentColor={db.color}>
-            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-wf`) * 30 + 20)}`} unit="" color={db.color} />
+            <StatCard label="Current" value={`${Math.floor(hashNorm(`${seed}-wf`) * 30 + 20)}`} unit="" color={db.color} />
           </Panel>
         </div>
       </>
@@ -3348,9 +3428,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               ]}
               rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
                 table: t, type: i % 2 === 0 ? 'Auto' : 'Manual',
-                duration: `${+(hashSeed(`${seed}-vd-${i}`) * 5 + 0.5).toFixed(1)}s`,
-                removed: `${Math.floor(hashSeed(`${seed}-vr-${i}`) * 50000 + 1000)}`,
-                ago: `${Math.floor(hashSeed(`${seed}-va-${i}`) * 60 + 5)} min ago`,
+                duration: `${+(hashNorm(`${seed}-vd-${i}`) * 5 + 0.5).toFixed(1)}s`,
+                removed: `${Math.floor(hashNorm(`${seed}-vr-${i}`) * 50000 + 1000)}`,
+                ago: `${Math.floor(hashNorm(`${seed}-va-${i}`) * 60 + 5)} min ago`,
               }))}
               color={db.color}
             />
@@ -3366,8 +3446,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
   if (subTabId === 'capacity') {
     const projData = Array.from({ length: 12 }, (_, i) => ({
       month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-      actual: i < 4 ? Math.floor(hashSeed(`${seed}-ca-${i}`) * 5 + 10 + i * 2) : null,
-      projected: Math.floor(hashSeed(`${seed}-cp-${i}`) * 3 + 10 + i * 2.5),
+      actual: i < 4 ? Math.floor(hashNorm(`${seed}-ca-${i}`) * 5 + 10 + i * 2) : null,
+      projected: Math.floor(hashNorm(`${seed}-cp-${i}`) * 3 + 10 + i * 2.5),
     }));
     return (
       <>
@@ -3411,7 +3491,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
       <>
         <Panel title="Backup History (7d)" icon={Archive} accentColor={db.color}>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={gen7d(seed, 5, 5).map(d => ({ ...d, size: Math.floor(hashSeed(`${seed}-bs-${d.day}`) * 3 + 7) }))}>
+            <BarChart data={gen7d(seed, 5, 5).map(d => ({ ...d, size: Math.floor(hashNorm(`${seed}-bs-${d.day}`) * 3 + 7) }))}>
               <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
               <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
               <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} unit="GB" />
@@ -3750,10 +3830,10 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               ]}
               rows={Array.from({ length: 4 }, (_, i) => ({
                 node: `node-${i + 1}`, status: 'Ready',
-                cpu: `${Math.floor(hashSeed(`${seed}-nc-${i}`) * 30 + 40)}%`,
-                memory: `${Math.floor(hashSeed(`${seed}-nm-${i}`) * 20 + 55)}%`,
-                pods: Math.floor(hashSeed(`${seed}-np-${i}`) * 8 + 8),
-                age: `${Math.floor(hashSeed(`${seed}-na-${i}`) * 60 + 30)}d`,
+                cpu: `${Math.floor(hashNorm(`${seed}-nc-${i}`) * 30 + 40)}%`,
+                memory: `${Math.floor(hashNorm(`${seed}-nm-${i}`) * 20 + 55)}%`,
+                pods: Math.floor(hashNorm(`${seed}-np-${i}`) * 8 + 8),
+                age: `${Math.floor(hashNorm(`${seed}-na-${i}`) * 60 + 30)}d`,
               }))}
               color={db.color}
             />
@@ -3808,7 +3888,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
       <>
         <Panel title="Anomaly Detection (7d)" icon={Brain} accentColor={db.color}>
           <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={gen7d(seed, 0, 5).map(d => ({ ...d, confidence: Math.floor(hashSeed(`${seed}-conf-${d.day}`) * 5 + 93) }))}>
+            <AreaChart data={gen7d(seed, 0, 5).map(d => ({ ...d, confidence: Math.floor(hashNorm(`${seed}-conf-${d.day}`) * 5 + 93) }))}>
               <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
               <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
               <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
@@ -4229,7 +4309,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      GENERIC FALLBACK: uses tab metrics to build a unique layout
      based on the subTabId hash — ensures no two tabs look identical
      ══════════════════════════════════════════════════════════════════ */
-  const tabSeed = hashSeed(seed);
+  const tabSeed = hashNorm(seed);
   const layoutType = tabSeed % 4;
   const trendData = gen24h(seed, 50, 100, 20, 50);
   const weekData = gen7d(seed, 10, 30);
@@ -4252,11 +4332,11 @@ function SubTabContent({ subTabId, section, db, widgets }) {
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <Panel title="Health" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-h`) * 10 + 88)} color={THEME.success} size={80} strokeWidth={6} label="OK" />
+              <RingGauge value={Math.floor(hashNorm(`${seed}-h`) * 10 + 88)} color={THEME.success} size={80} strokeWidth={6} label="OK" />
             </div>
           </Panel>
-          <Panel title="Primary" icon={Activity} accentColor={db.color}><StatCard label="Value" value={`${Math.floor(hashSeed(`${seed}-pv`) * 500 + 100)}`} color={db.color} /></Panel>
-          <Panel title="Secondary" icon={Clock} accentColor={db.color}><StatCard label="Value" value={`${Math.floor(hashSeed(`${seed}-sv`) * 100 + 10)}`} color={db.color} /></Panel>
+          <Panel title="Primary" icon={Activity} accentColor={db.color}><StatCard label="Value" value={`${Math.floor(hashNorm(`${seed}-pv`) * 500 + 100)}`} color={db.color} /></Panel>
+          <Panel title="Secondary" icon={Clock} accentColor={db.color}><StatCard label="Value" value={`${Math.floor(hashNorm(`${seed}-sv`) * 100 + 10)}`} color={db.color} /></Panel>
         </div>
       </>
     );
@@ -4286,7 +4366,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                   { name: 'Idle', value: 20, color: THEME.textDim, display: '20%' },
                   { name: 'Error', value: 10, color: THEME.warning, display: '10%' },
                 ]}
-                centerValue={`${Math.floor(hashSeed(`${seed}-dv`) * 500 + 50)}`} centerLabel="TOTAL"
+                centerValue={`${Math.floor(hashNorm(`${seed}-dv`) * 500 + 50)}`} centerLabel="TOTAL"
                 color={db.color} size={110} innerRadius={36} outerRadius={50}
               />
             </div>
@@ -4323,9 +4403,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               ]}
               rows={Array.from({ length: 4 }, (_, i) => ({
                 item: `${SUB_TAB_DISPLAY_NAMES[subTabId] || subTabId} #${i + 1}`,
-                value: Math.floor(hashSeed(`${seed}-v-${i}`) * 500 + 50),
+                value: Math.floor(hashNorm(`${seed}-v-${i}`) * 500 + 50),
                 status: i < 3 ? 'Healthy' : 'Warning',
-                trend: hashSeed(`${seed}-t-${i}`) > 0.5 ? 'Increasing' : 'Stable',
+                trend: hashNorm(`${seed}-t-${i}`) > 0.5 ? 'Increasing' : 'Stable',
               }))}
               color={db.color}
             />
@@ -4341,17 +4421,17 @@ function SubTabContent({ subTabId, section, db, widgets }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
         <Panel title="Primary" icon={Activity} accentColor={db.color}>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-            <RingGauge value={Math.floor(hashSeed(`${seed}-g1`) * 30 + 60)} color={db.color} size={80} strokeWidth={6} label="P1" />
+            <RingGauge value={Math.floor(hashNorm(`${seed}-g1`) * 30 + 60)} color={db.color} size={80} strokeWidth={6} label="P1" />
           </div>
         </Panel>
         <Panel title="Secondary" icon={Shield} accentColor={THEME.success}>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-            <RingGauge value={Math.floor(hashSeed(`${seed}-g2`) * 15 + 80)} color={THEME.success} size={80} strokeWidth={6} label="P2" />
+            <RingGauge value={Math.floor(hashNorm(`${seed}-g2`) * 15 + 80)} color={THEME.success} size={80} strokeWidth={6} label="P2" />
           </div>
         </Panel>
         <Panel title="Tertiary" icon={Clock} accentColor={db.color}>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-            <RingGauge value={Math.floor(hashSeed(`${seed}-g3`) * 20 + 40)} color={db.color} size={80} strokeWidth={6} label="P3" />
+            <RingGauge value={Math.floor(hashNorm(`${seed}-g3`) * 20 + 40)} color={db.color} size={80} strokeWidth={6} label="P3" />
           </div>
         </Panel>
       </div>
