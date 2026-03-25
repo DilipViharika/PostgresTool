@@ -806,6 +806,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api',
             'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard',
             'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools',
+            'fleet-overview', 'alert-rules', 'schema-tree', 'query-plan', 'chart-builder', 'pool-metrics',
         ];
         const baseScreens    = user.allowed_screens ?? [];
         const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
@@ -886,7 +887,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             location:    null,
         });
 
-        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring', 'retention', 'terraform', 'custom-dashboard', 'schema-visualizer', 'mongo-overview', 'mongo-performance', 'mongo-storage', 'mongo-replication', 'mongo-data-tools', 'mongo-sharding', 'demo-data', 'demo-pg-overview', 'demo-pg-performance', 'demo-pg-resources', 'demo-pg-reliability', 'demo-pg-alerts', 'demo-pg-optimizer', 'demo-pg-indexes', 'demo-pg-regression', 'demo-pg-bloat', 'demo-pg-table', 'demo-pg-pool', 'demo-pg-replication', 'demo-pg-checkpoint', 'demo-pg-maintenance', 'demo-pg-capacity', 'demo-pg-backup', 'demo-pg-schema', 'demo-pg-schema-viz', 'demo-pg-security', 'demo-pg-cloudwatch', 'demo-pg-log-patterns', 'demo-pg-alert-correlation', 'demo-pg-opentelemetry', 'demo-pg-kubernetes', 'demo-pg-status-page', 'demo-pg-ai-monitoring', 'demo-pg-sql', 'demo-pg-api', 'demo-pg-repository', 'demo-pg-ai-advisor', 'demo-pg-tasks', 'demo-pg-users', 'demo-pg-admin-panel', 'demo-pg-retention', 'demo-pg-terraform', 'demo-pg-custom-dashboard', 'demo-mysql-overview', 'demo-mysql-performance', 'demo-mysql-resources', 'demo-mysql-reliability', 'demo-mysql-alerts', 'demo-mysql-optimizer', 'demo-mysql-indexes', 'demo-mysql-regression', 'demo-mysql-bloat', 'demo-mysql-table', 'demo-mysql-pool', 'demo-mysql-replication', 'demo-mysql-checkpoint', 'demo-mysql-maintenance', 'demo-mysql-capacity', 'demo-mysql-backup', 'demo-mysql-schema', 'demo-mysql-schema-viz', 'demo-mysql-security', 'demo-mysql-cloudwatch', 'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api', 'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard', 'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools'];
+        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring', 'retention', 'terraform', 'custom-dashboard', 'schema-visualizer', 'mongo-overview', 'mongo-performance', 'mongo-storage', 'mongo-replication', 'mongo-data-tools', 'mongo-sharding', 'demo-data', 'demo-pg-overview', 'demo-pg-performance', 'demo-pg-resources', 'demo-pg-reliability', 'demo-pg-alerts', 'demo-pg-optimizer', 'demo-pg-indexes', 'demo-pg-regression', 'demo-pg-bloat', 'demo-pg-table', 'demo-pg-pool', 'demo-pg-replication', 'demo-pg-checkpoint', 'demo-pg-maintenance', 'demo-pg-capacity', 'demo-pg-backup', 'demo-pg-schema', 'demo-pg-schema-viz', 'demo-pg-security', 'demo-pg-cloudwatch', 'demo-pg-log-patterns', 'demo-pg-alert-correlation', 'demo-pg-opentelemetry', 'demo-pg-kubernetes', 'demo-pg-status-page', 'demo-pg-ai-monitoring', 'demo-pg-sql', 'demo-pg-api', 'demo-pg-repository', 'demo-pg-ai-advisor', 'demo-pg-tasks', 'demo-pg-users', 'demo-pg-admin-panel', 'demo-pg-retention', 'demo-pg-terraform', 'demo-pg-custom-dashboard', 'demo-mysql-overview', 'demo-mysql-performance', 'demo-mysql-resources', 'demo-mysql-reliability', 'demo-mysql-alerts', 'demo-mysql-optimizer', 'demo-mysql-indexes', 'demo-mysql-regression', 'demo-mysql-bloat', 'demo-mysql-table', 'demo-mysql-pool', 'demo-mysql-replication', 'demo-mysql-checkpoint', 'demo-mysql-maintenance', 'demo-mysql-capacity', 'demo-mysql-backup', 'demo-mysql-schema', 'demo-mysql-schema-viz', 'demo-mysql-security', 'demo-mysql-cloudwatch', 'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api', 'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard', 'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools', 'fleet-overview', 'alert-rules', 'schema-tree', 'query-plan', 'chart-builder', 'pool-metrics'];
         const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
 
         const payload = {
@@ -1626,6 +1627,150 @@ app.get('/api/connections/active', authenticate, async (req, res) => {
                     || null;
         res.json({ connectionId: active?.id ?? null, connection: active ? sanitizeConn(active) : null });
     } catch (e) { res.json({}); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PHASE 2: FLEET HEALTH & MONITORING ENDPOINTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/connections/health
+ * Health check all saved connections. Loops through each connection, tests with SELECT 1,
+ * measures latency, and returns array of { id, name, dbType, status, latencyMs, lastChecked }
+ */
+app.get('/api/connections/health', authenticate, async (req, res) => {
+    try {
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        const healthResults = [];
+
+        for (const conn of conns) {
+            try {
+                const poolCfg = await resolvePoolConfig(conn);
+                const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 5000 });
+
+                const startTime = Date.now();
+                const client = await testPool.connect();
+                await client.query('SELECT 1');
+                client.release();
+                await testPool.end();
+
+                const latencyMs = Date.now() - startTime;
+
+                healthResults.push({
+                    id: conn.id,
+                    name: conn.name,
+                    dbType: conn.dbType || 'postgresql',
+                    status: 'ok',
+                    latencyMs,
+                    lastChecked: new Date().toISOString(),
+                });
+            } catch (err) {
+                // Connection failed
+                healthResults.push({
+                    id: conn.id,
+                    name: conn.name,
+                    dbType: conn.dbType || 'postgresql',
+                    status: 'error',
+                    latencyMs: null,
+                    lastChecked: new Date().toISOString(),
+                    error: err.message,
+                });
+            }
+        }
+
+        res.json(healthResults);
+    } catch (e) {
+        log('ERROR', `[/api/connections/health] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/connections/count
+ * Connection count for first-run detection. Returns { count: N }
+ */
+app.get('/api/connections/count', authenticate, async (req, res) => {
+    try {
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
+        res.json({ count: conns.length });
+    } catch (e) {
+        log('ERROR', `[/api/connections/count] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/connections/parse-url
+ * Parse connection string (postgresql://, mysql://, mongodb://) into structured fields.
+ * Request body: { url: "postgresql://user:pass@host:5432/dbname" }
+ */
+app.post('/api/connections/parse-url', authenticate, async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url || typeof url !== 'string') {
+            return res.status(400).json({ error: 'url field is required and must be a string' });
+        }
+
+        let parsed = {};
+
+        try {
+            const urlObj = new URL(url);
+            const protocol = urlObj.protocol.replace(':', '');
+
+            // Determine database type from protocol
+            let dbType = 'postgresql';
+            if (protocol.includes('mysql')) dbType = 'mysql';
+            else if (protocol.includes('mongo')) dbType = 'mongodb';
+
+            parsed = {
+                dbType,
+                host: urlObj.hostname || '',
+                port: urlObj.port ? parseInt(urlObj.port) : (
+                    dbType === 'mysql' ? 3306 :
+                    dbType === 'mongodb' ? 27017 :
+                    5432
+                ),
+                database: urlObj.pathname.replace(/^\//, '') || 'postgres',
+                username: urlObj.username || '',
+                password: urlObj.password || '',
+            };
+        } catch (parseErr) {
+            return res.status(400).json({ error: `Invalid connection URL: ${parseErr.message}` });
+        }
+
+        res.json(parsed);
+    } catch (e) {
+        log('ERROR', `[/api/connections/parse-url] ${e.message}`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/health
+ * System health check. Returns control plane status, active connection count, uptime, memory usage.
+ * Response: { controlPlane: 'ok'|'error', activeConnections: N, uptime: seconds, memoryMB: number }
+ */
+app.get('/api/health', async (req, res) => {
+    try {
+        const uptime = process.uptime();
+        const memUsage = process.memoryUsage();
+        const memoryMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+
+        res.json({
+            controlPlane: 'ok',
+            activeConnections: Object.keys(poolCache).length,
+            uptime: Math.round(uptime),
+            memoryMB,
+            timestamp: new Date().toISOString(),
+        });
+    } catch (e) {
+        log('ERROR', `[/api/health] ${e.message}`);
+        res.status(500).json({
+            controlPlane: 'error',
+            error: e.message,
+            timestamp: new Date().toISOString(),
+        });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

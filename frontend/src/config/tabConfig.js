@@ -14,6 +14,7 @@ import {
     Radio, Cloud, Archive, RefreshCw,
     Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock, CheckCircle,
     Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge, Eye, FileText,
+    TreePine, BarChart3, AlertOctagon, Droplets, PanelTop,
 } from 'lucide-react';
 
 import { getDS } from './designTokens.js';
@@ -28,12 +29,16 @@ export function registerComponents(components) {
 export function buildTabConfig() {
     const DS = getDS();
     return [
+        { section: 'Fleet', accent: DS.cyan },
+        { id: 'fleet-overview',    icon: PanelTop,      label: 'Fleet Overview',        component: _components.FleetOverviewTab,        badge: null },
+
         { section: 'Core Monitoring', accent: DS.cyan },
         { id: 'overview',          icon: Activity,      label: 'Overview',              component: _components.OverviewTab,             badge: null },
         { id: 'performance',       icon: Zap,           label: 'Performance',           component: _components.PerformanceTab,          badge: null },
         { id: 'resources',         icon: HardDrive,     label: 'Resources',             component: _components.ResourcesTab,            badge: null },
         { id: 'reliability',       icon: CheckCircle,   label: 'Reliability',           component: _components.ReliabilityTab,          badge: null },
         { id: 'alerts',            icon: Bell,          label: 'Alerts',                component: _components.AlertsComponent,         badge: '3' },
+        { id: 'alert-rules',       icon: AlertOctagon,  label: 'Alert Rules',           component: _components.AlertRuleEditor,         badge: null },
 
         { section: 'Query & Indexes', accent: DS.violet },
         { id: 'optimizer',         icon: Zap,           label: 'Query Optimizer',       component: _components.QueryOptimizerTab,       badge: null },
@@ -41,9 +46,13 @@ export function buildTabConfig() {
         { id: 'regression',        icon: TrendingUp,    label: 'Plan Regression',       component: _components.QueryPlanRegressionTab,  badge: null },
         { id: 'bloat',             icon: Layers,        label: 'Bloat Analysis',        component: _components.BloatAnalysisTab,        badge: null },
         { id: 'Table',             icon: Layers,        label: 'Table Analysis',        component: _components.TableAnalytics,          badge: null },
+        { id: 'schema-tree',       icon: TreePine,      label: 'Schema Browser',        component: _components.SchemaTreeBrowser,       badge: null },
+        { id: 'query-plan',        icon: Workflow,       label: 'Query Plan Viewer',     component: _components.QueryPlanViewer,         badge: null },
+        { id: 'chart-builder',     icon: BarChart3,     label: 'Chart Builder',         component: _components.ChartBuilder,            badge: null },
 
         { section: 'Infrastructure', accent: DS.emerald },
         { id: 'pool',              icon: Network,       label: 'Connection Pool',       component: _components.ConnectionPoolTab,       badge: null },
+        { id: 'pool-metrics',      icon: Droplets,      label: 'Pool Metrics',          component: _components.PoolMetricsDashboard,    badge: null },
         { id: 'replication',       icon: Radio,         label: 'Replication & WAL',     component: _components.ReplicationWALTab,       badge: null },
         { id: 'checkpoint',        icon: CheckCircle,   label: 'Checkpoint Monitor',    component: _components.CheckpointMonitorTab,    badge: null },
         { id: 'maintenance',       icon: RefreshCw,     label: 'Vacuum & Maintenance',  component: _components.VacuumMaintenanceTab,    badge: null },

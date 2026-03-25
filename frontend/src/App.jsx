@@ -111,6 +111,27 @@ const MongoShardingTab     = lazyRetry(() => import('./components/views/mongodb/
 const ReliabilityTab       = lazyRetry(() => import('./components/views/ReliabilityTab.jsx'));
 const UserManagementTab    = lazyRetry(() => import('./usermanagement/UserManagementTab.jsx'));
 
+// Phase 1 — Connection Onboarding
+const ConnectionWizard     = lazyRetry(() => import('./components/views/onboarding/ConnectionWizard.jsx'));
+
+// Phase 2 — Multi-DB Fleet Dashboard
+const FleetOverviewTab     = lazyRetry(() => import('./components/views/monitoring/FleetOverviewTab.jsx'));
+
+// Phase 3 — Visualization Layer
+const SchemaTreeBrowser    = lazyRetry(() => import('./components/views/database/SchemaTreeBrowser.jsx'));
+const QueryPlanViewer      = lazyRetry(() => import('./components/views/database/QueryPlanViewer.jsx'));
+const ChartBuilder         = lazyRetry(() => import('./components/views/database/ChartBuilder.jsx'));
+
+// Phase 4 — Monitoring & Reliability
+const AlertRuleEditor      = lazyRetry(() => import('./components/views/monitoring/AlertRuleEditor.jsx'));
+const PoolMetricsDashboard = lazyRetry(() => import('./components/views/monitoring/PoolMetricsDashboard.jsx'));
+
+// Layout — Enhanced Connection Switcher (replaces inline ConnectionSelector)
+const ConnectionSwitcherLazy = lazyRetry(() => import('./components/layout/ConnectionSwitcher.jsx'));
+
+// Shared — Per-section error boundary for graceful tab-level recovery (eager — must be class component)
+import SectionErrorBoundary from './components/shared/SectionErrorBoundary.jsx';
+
 // Enterprise edition
 const LicenseManagement = lazyRetry(() => import('./enterprise/views/LicenseManagement.jsx'));
 const OrgManagement = lazyRetry(() => import('./enterprise/views/OrgManagement.jsx'));
@@ -143,6 +164,10 @@ registerComponents({
     TerraformExportTab, ReportBuilderTab, CustomDashboardTab,
     MongoOverviewTab, MongoPerformanceTab, MongoStorageTab,
     MongoReplicationTab, MongoDataToolsTab, MongoShardingTab,
+    // Phase 1–4 new components
+    FleetOverviewTab, ConnectionWizard,
+    SchemaTreeBrowser, QueryPlanViewer, ChartBuilder,
+    AlertRuleEditor, PoolMetricsDashboard,
     // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,
 });
 
@@ -2423,7 +2448,9 @@ const DashboardInner = ({ onLogout }) => {
                             <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>CPU</span>
                         </div>
                         <div style={{ width: 1, height: 24, background: DS.border }} />
-                        <ConnectionSelector />
+                        <Suspense fallback={<ConnectionSelector />}>
+                            <ConnectionSwitcherLazy />
+                        </Suspense>
                         <div style={{ width: 1, height: 24, background: DS.border }} />
                         <ThemeToggle />
                         <StatusPill connected={connected} />
@@ -2517,7 +2544,9 @@ const DashboardInner = ({ onLogout }) => {
                                 </div>
                             }>
                                 <div key={activeTab} className="tab-mount" role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
-                                    {ActiveComponent && <ActiveComponent tabId={activeTab} />}
+                                    <SectionErrorBoundary sectionName={activeTabMeta?.label || activeTab} key={activeTab}>
+                                        {ActiveComponent && <ActiveComponent tabId={activeTab} />}
+                                    </SectionErrorBoundary>
                                 </div>
                             </Suspense>
                         </ErrorBoundary>
@@ -2729,7 +2758,17 @@ const AuthConsumer = () => {
                         element={<SSOCallback />}
                     />
 
-                    {/* 3. Protected Dashboard Route */}
+                    {/* 3. Connection Onboarding Wizard */}
+                    <Route
+                        path="/onboarding"
+                        element={
+                            (currentUser || isDemo)
+                                ? <ConnectionWizard />
+                                : <Navigate to="/login" replace />
+                        }
+                    />
+
+                    {/* 4. Protected Dashboard Route */}
                     <Route
                         path="/*"
                         element={
