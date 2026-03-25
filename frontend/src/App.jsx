@@ -11,6 +11,7 @@ import { DS_DARK, DS_LIGHT, DS_ACCENTS, setDS, getDS } from './config/designToke
 import { registerComponents, buildTabConfig, getTabsOnly, getSectionGroups, STORAGE_KEYS } from './config/tabConfig.js';
 
 import LoginPage from './components/auth/LoginPage.jsx';
+import { ToastProvider, useToast, Breadcrumbs, ProgressBar } from './components/ui/SharedComponents.jsx';
 
 // Enterprise context providers and components
 import { LicenseProvider } from './enterprise/context/LicenseContext.jsx';
@@ -65,6 +66,7 @@ const QueryOptimizerTab    = lazyRetry(() => import('./components/views/database
 const QueryPlanRegressionTab = lazyRetry(() => import('./components/views/database/QueryPlanRegressionTab.jsx'));
 const SchemaVersioningTab  = lazyRetry(() => import('./components/views/database/SchemaVersioningTab.jsx'));
 const SchemaVisualizerTab  = lazyRetry(() => import('./components/views/database/SchemaVisualizerTab.jsx'));
+const TableDependencyMindMap = lazyRetry(() => import('./components/views/database/TableDependencyMindMap.jsx'));
 
 // Operations features
 const BackupRecoveryTab    = lazyRetry(() => import('./components/views/operations/BackupRecoveryTab.jsx'));
@@ -91,12 +93,14 @@ const RepositoryTab        = lazyRetry(() => import('./components/views/admin/Re
 const ApiQueriesTab        = lazyRetry(() => import('./components/views/admin/ApiQueriesTab.jsx'));
 const RetentionManagementTab = lazyRetry(() => import('./components/views/admin/RetentionManagementTab.jsx'));
 const TerraformExportTab   = lazyRetry(() => import('./components/views/admin/TerraformExportTab.jsx'));
+const ReportBuilderTab     = lazyRetry(() => import('./components/views/admin/ReportBuilderTab.jsx'));
 
 // Gap features — Monitoring
 const OpenTelemetryTab     = lazyRetry(() => import('./components/views/monitoring/OpenTelemetryTab.jsx'));
 const KubernetesTab        = lazyRetry(() => import('./components/views/monitoring/KubernetesTab.jsx'));
 const StatusPageTab        = lazyRetry(() => import('./components/views/monitoring/StatusPageTab.jsx'));
 const AIMonitoringTab      = lazyRetry(() => import('./components/views/monitoring/AIMonitoringTab.jsx'));
+const ObservabilityHub     = lazyRetry(() => import('./components/views/monitoring/ObservabilityHub.jsx'));
 
 // Gap features — Database
 const AIQueryAdvisorTab    = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
@@ -137,12 +141,12 @@ registerComponents({
     QueryOptimizerTab, IndexesTab, QueryPlanRegressionTab, BloatAnalysisTab, TableAnalytics,
     ConnectionPoolTab, ReplicationWALTab, CheckpointMonitorTab, VacuumMaintenanceTab,
     CapacityPlanningTab, BackupRecoveryTab,
-    SchemaVersioningTab, SchemaVisualizerTab, SecurityComplianceTab,
+    SchemaVersioningTab, SchemaVisualizerTab, TableDependencyMindMap, SecurityComplianceTab,
     CloudWatchTab, LogPatternAnalysisTab, AlertCorrelationTab, OpenTelemetryTab,
-    KubernetesTab, StatusPageTab, AIMonitoringTab,
+    KubernetesTab, StatusPageTab, AIMonitoringTab, ObservabilityHub,
     SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
     DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
-    TerraformExportTab, CustomDashboardTab, DemoDataTab,
+    TerraformExportTab, ReportBuilderTab, CustomDashboardTab, DemoDataTab,
     DemoPostgresTab, DemoMySQLTab, DemoSQLServerTab, DemoOracleTab, DemoMongoDBTab, DemoSectionView,
     MongoOverviewTab, MongoPerformanceTab, MongoStorageTab,
     MongoReplicationTab, MongoDataToolsTab, MongoShardingTab,
@@ -275,6 +279,55 @@ const AppStyles = () => (
         ::-webkit-scrollbar-track { background: ${DS.bgDeep}; }
         ::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.3); }
+
+        /* ── Responsive Design Improvements ── */
+        @media (max-width: 768px) {
+            /* Force sidebar collapse on tablets */
+            body { --sidebar-collapsed: true; }
+
+            /* Adjust header padding on smaller screens */
+            header { padding: 0 16px !important; }
+
+            /* Stack breadcrumb items on mobile */
+            @media (max-width: 640px) {
+                header { height: auto; flex-wrap: wrap; gap: 8px; }
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* Reduce padding on very small screens */
+            .tab-mount { padding: 16px 12px !important; }
+
+            /* Stack everything on mobile */
+            main > div { flex-direction: column !important; }
+
+            /* Make buttons full-width on mobile */
+            button { min-width: 100%; }
+        }
+
+        /* ── Chart responsiveness ── */
+        @media (max-width: 900px) {
+            /* Reduce chart container heights */
+            [class*="chart"], [class*="graph"] { min-height: 200px !important; }
+        }
+
+        /* ── Improved touch targets for mobile ── */
+        @media (hover: none) and (pointer: coarse) {
+            button, [role="button"], .nav-item, .section-btn {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 12px !important;
+            }
+        }
+
+        /* ── Accessibility: Reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     `}</style>
 );
 
@@ -1123,14 +1176,22 @@ const FeedbackModal = ({ onClose, initialSection }) => {
    ERROR BOUNDARY
    ───────────────────────────────────────────────────────────────── */
 class ErrorBoundary extends React.Component {
-    constructor(props) { super(props); this.state = { hasError: false, error: null }; }
-    static getDerivedStateFromError(error) { return { hasError: true, error }; }
-    componentDidCatch(error, info) { console.error('Error Boundary caught:', error, info); }
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null, showStackTrace: false, errorInfo: null };
+    }
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.error('Error Boundary caught:', error, errorInfo);
+        this.setState({ errorInfo });
+    }
     render() {
         if (this.state.hasError) return (
             <div style={{
                 height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexDirection: 'column', gap: 20, padding: 40, color: DS.textPrimary,
+                flexDirection: 'column', gap: 20, padding: 40, color: DS.textPrimary, background: DS.bg,
             }}>
                 <div style={{
                     width: 72, height: 72, borderRadius: 18, background: 'rgba(251,113,133,0.1)',
@@ -1138,16 +1199,98 @@ class ErrorBoundary extends React.Component {
                 }}>
                     <AlertCircle size={36} color={DS.rose} />
                 </div>
-                <div style={{ textAlign: 'center', maxWidth: 440 }}>
-                    <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px' }}>Component Error</h2>
-                    <p style={{ color: DS.textSub, margin: '0 0 20px', lineHeight: 1.6, fontSize: 13 }}>
+                <div style={{ textAlign: 'center', maxWidth: 520 }}>
+                    <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 12px', letterSpacing: '-0.02em' }}>
+                        Something went wrong
+                    </h2>
+                    <p style={{ color: DS.textSub, margin: '0 0 24px', lineHeight: 1.6, fontSize: 14 }}>
                         {this.state.error?.message || 'An unexpected error occurred in this view.'}
                     </p>
-                    <button onClick={() => window.location.reload()} style={{
-                        padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                        background: `linear-gradient(135deg, ${DS.rose}, ${DS.violet})`,
-                        color: '#fff', fontWeight: 700, fontSize: 13, fontFamily: DS.fontUI,
-                    }}>Reload Page</button>
+
+                    {/* Stack trace section (collapsible) */}
+                    {this.state.errorInfo && (
+                        <div style={{
+                            textAlign: 'left',
+                            background: `${DS.surface}dd`,
+                            border: `1px solid ${DS.border}`,
+                            borderRadius: 8,
+                            padding: '12px 16px',
+                            marginBottom: 20,
+                            maxHeight: this.state.showStackTrace ? 200 : 0,
+                            overflow: 'hidden',
+                            transition: 'max-height 0.3s ease',
+                        }}>
+                            <button
+                                onClick={() => this.setState(s => ({ showStackTrace: !s.showStackTrace }))}
+                                style={{
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    color: DS.cyan, fontWeight: 600, fontSize: 12,
+                                    marginBottom: this.state.showStackTrace ? 12 : 0,
+                                    fontFamily: DS.fontMono, letterSpacing: '0.05em',
+                                }}
+                            >
+                                {this.state.showStackTrace ? '▼ Hide' : '▶ Show'} Developer Info
+                            </button>
+                            {this.state.showStackTrace && (
+                                <pre style={{
+                                    margin: 0, fontSize: 10, color: DS.textMuted,
+                                    fontFamily: DS.fontMono, overflow: 'auto', maxHeight: 160,
+                                }}>
+                                    {this.state.errorInfo.componentStack}
+                                </pre>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button
+                            onClick={() => {
+                                try {
+                                    localStorage.removeItem('vigil_active_tab');
+                                    localStorage.removeItem('vigil_sidebar_collapsed');
+                                } catch {}
+                                window.location.href = '/';
+                            }}
+                            style={{
+                                padding: '11px 24px', borderRadius: 8, border: `1px solid ${DS.cyan}`,
+                                cursor: 'pointer',
+                                background: `${DS.cyan}15`,
+                                color: DS.cyan, fontWeight: 600, fontSize: 13, fontFamily: DS.fontUI,
+                                transition: 'all 0.15s',
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.background = `${DS.cyan}25`;
+                                e.currentTarget.style.boxShadow = `0 0 12px ${DS.cyan}40`;
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.background = `${DS.cyan}15`;
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}
+                        >
+                            Go to Overview
+                        </button>
+                        <button
+                            onClick={() => window.location.reload()}
+                            style={{
+                                padding: '11px 24px', borderRadius: 8, border: 'none',
+                                cursor: 'pointer',
+                                background: `linear-gradient(135deg, ${DS.rose}, ${DS.violet})`,
+                                color: '#fff', fontWeight: 600, fontSize: 13, fontFamily: DS.fontUI,
+                                transition: 'all 0.15s',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                        >
+                            Reload Page
+                        </button>
+                    </div>
+
+                    {/* Help text */}
+                    <p style={{ color: DS.textMuted, margin: '20px 0 0', fontSize: 11, lineHeight: 1.5 }}>
+                        If this error persists, please <a href="mailto:support@vigil.io" style={{ color: DS.cyan, textDecoration: 'none', fontWeight: 600 }}>contact support</a> or
+                        check the browser console for more details.
+                    </p>
                 </div>
             </div>
         );
@@ -1468,6 +1611,17 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
         return s;
     });
 
+    /* Sidebar search and recently viewed */
+    const [searchQuery, setSearchQuery] = useState('');
+    const [recentlyViewed, setRecentlyViewed] = useState(() => {
+        try {
+            const stored = localStorage.getItem('vigil_recent_tabs');
+            return stored ? JSON.parse(stored) : [];
+        } catch {
+            return [];
+        }
+    });
+
     useEffect(() => {
         const sec = getSectionForTab(activeTab);
         const parentGrp = getGroupForTab(activeTab);
@@ -1477,6 +1631,15 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
             if (parentGrp && !prev.has(parentGrp)) needs.push(parentGrp);
             if (needs.length === 0) return prev;
             return new Set([...prev, ...needs]);
+        });
+
+        /* Track recently viewed tabs */
+        setRecentlyViewed(prev => {
+            const updated = [activeTab, ...prev.filter(t => t !== activeTab)].slice(0, 5);
+            try {
+                localStorage.setItem('vigil_recent_tabs', JSON.stringify(updated));
+            } catch {}
+            return updated;
         });
     }, [activeTab]);
 
@@ -1582,6 +1745,136 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     </div>
                 )}
             </div>
+
+            {/* ── SEARCH BAR ── */}
+            {!collapsed && (
+                <div style={{
+                    padding: '12px 12px',
+                    borderBottom: `1px solid ${DS.border}`,
+                    flexShrink: 0,
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '6px 10px',
+                        borderRadius: 8,
+                        background: DS.surfaceHover,
+                        border: `1px solid ${DS.border}`,
+                        transition: 'border-color 0.15s',
+                    }}>
+                        <Search size={13} color={DS.textMuted} />
+                        <input
+                            type="text"
+                            placeholder="Find tabs..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+                            style={{
+                                flex: 1,
+                                background: 'none',
+                                border: 'none',
+                                color: DS.textPrimary,
+                                fontSize: 12,
+                                fontFamily: DS.fontUI,
+                                outline: 'none',
+                            }}
+                            onFocus={(e) => {
+                                e.currentTarget.parentElement.style.borderColor = DS.cyan;
+                                e.currentTarget.parentElement.style.background = DS.surface;
+                            }}
+                            onBlur={(e) => {
+                                e.currentTarget.parentElement.style.borderColor = DS.border;
+                                e.currentTarget.parentElement.style.background = DS.surfaceHover;
+                            }}
+                            aria-label="Search tabs"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: DS.textMuted,
+                                    padding: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                aria-label="Clear search"
+                            >
+                                <X size={12} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ── RECENTLY VIEWED ── */}
+            {!collapsed && recentlyViewed.length > 0 && !searchQuery && (
+                <div style={{
+                    padding: '8px 12px',
+                    borderBottom: `1px solid ${DS.border}`,
+                    flexShrink: 0,
+                }}>
+                    <div style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        fontFamily: DS.fontMono,
+                        color: DS.textMuted,
+                        padding: '4px 8px',
+                        marginBottom: 4,
+                    }}>
+                        Recently Viewed
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {recentlyViewed.slice(1, 4).map((tabId) => {
+                            const allTabs = getTabsOnly();
+                            const tab = allTabs.find(t => t.id === tabId);
+                            if (!tab) return null;
+                            const accent = tab.accent || DS.cyan;
+                            return (
+                                <button
+                                    key={tabId}
+                                    onClick={() => onTabChange(tabId)}
+                                    style={{
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                        padding: '6px 8px',
+                                        background: 'transparent',
+                                        border: `1px solid ${DS.border}`,
+                                        borderRadius: 6,
+                                        cursor: 'pointer',
+                                        color: DS.textSub,
+                                        fontSize: 11,
+                                        transition: 'all 0.15s',
+                                        fontFamily: DS.fontUI,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = `${accent}12`;
+                                        e.currentTarget.style.borderColor = accent;
+                                        e.currentTarget.style.color = accent;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'transparent';
+                                        e.currentTarget.style.borderColor = DS.border;
+                                        e.currentTarget.style.color = DS.textSub;
+                                    }}
+                                >
+                                    <tab.icon size={12} />
+                                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {tab.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* ── NAV ── */}
             <nav className="sidebar-nav" role="navigation" aria-label="Main navigation" style={{
@@ -1733,7 +2026,28 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     );
 
                     /* ── Render all nav items ── */
-                    return groupedNav.map((item, gi) => {
+                    /* Filter tabs based on search query */
+                    const filteredGroupedNav = searchQuery ? groupedNav.map(item => {
+                        if (item.type === 'parent') {
+                            return {
+                                ...item,
+                                children: item.children.map(ch => ({
+                                    ...ch,
+                                    tabs: ch.tabs.filter(t => t.label.toLowerCase().includes(searchQuery))
+                                })).filter(ch => ch.tabs.length > 0)
+                            };
+                        } else {
+                            return {
+                                ...item,
+                                tabs: item.tabs.filter(t => t.label.toLowerCase().includes(searchQuery))
+                            };
+                        }
+                    }).filter(item => {
+                        if (item.type === 'parent') return item.children.length > 0;
+                        return item.tabs.length > 0;
+                    }) : groupedNav;
+
+                    return filteredGroupedNav.map((item, gi) => {
                         if (item.type === 'parent') {
                             /* ═══ Three-level: Parent group → Sub-sections → Tabs ═══ */
                             const parentOpen = collapsed || openSections.has(item.name);
@@ -2256,12 +2570,54 @@ const DashboardInner = ({ onLogout }) => {
     const handleDismissNotification = useCallback((id) => setNotifications(p => p.filter(n => n.id !== id)), []);
     const handleClearAllNotifications = useCallback(() => setNotifications([]), []);
 
-    // Keyboard shortcut Ctrl+B
+    const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+
+    /* Keyboard shortcuts: Ctrl+B (sidebar), Ctrl+K (search), Ctrl+? (help), etc. */
     useEffect(() => {
-        const handler = e => { if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); handleToggleCollapse(); } };
+        const handler = e => {
+            const isMod = e.ctrlKey || e.metaKey;
+
+            // Escape: Close help dialog if open
+            if (e.key === 'Escape' && showKeyboardHelp) {
+                e.preventDefault();
+                setShowKeyboardHelp(false);
+                return;
+            }
+
+            // Ctrl+B: Toggle sidebar
+            if (isMod && e.key === 'b') {
+                e.preventDefault();
+                handleToggleCollapse();
+            }
+            // Ctrl+K: Focus sidebar search (if visible)
+            else if (isMod && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.querySelector('input[placeholder="Find tabs..."]');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
+            // Ctrl+?: Show keyboard help
+            else if (isMod && (e.key === '?' || (e.shiftKey && e.key === '/'))) {
+                e.preventDefault();
+                setShowKeyboardHelp(prev => !prev);
+            }
+            // Ctrl+O: Go to overview
+            else if (isMod && e.key === 'o') {
+                e.preventDefault();
+                handleTabChange('overview');
+            }
+            // Ctrl+Shift+D: Toggle demo mode
+            else if (isMod && e.shiftKey && e.key === 'd') {
+                e.preventDefault();
+                // Demo mode toggle would be handled by DemoContext
+            }
+        };
+
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [handleToggleCollapse]);
+    }, [handleToggleCollapse, handleTabChange, showKeyboardHelp]);
 
     return (
         <NavigationContext.Provider value={{ goToTab: handleTabChange }}>
@@ -2303,15 +2659,24 @@ const DashboardInner = ({ onLogout }) => {
 
                     {/* Left: breadcrumb + reconnecting */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        {/* Section crumb */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.06em' }}>
-                                {getSectionForTab(activeTab)?.toUpperCase() || 'CORE'}
+                        {/* Enhanced breadcrumb navigation */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.06em' }}>
+                                    {getSectionForTab(activeTab)?.toUpperCase() || 'CORE'}
+                                </span>
+                                <span style={{ color: DS.textMuted, fontSize: 13 }}>/</span>
+                                <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: DS.textPrimary, letterSpacing: '-0.01em', cursor: 'pointer', transition: 'color 0.15s' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = DS.cyan}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = DS.textPrimary}
+                                    title="Current tab"
+                                >
+                                    {activeTabMeta?.label || ''}
+                                </h2>
+                            </div>
+                            <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono, padding: '2px 8px', borderRadius: 4, background: `${DS.cyan}10` }}>
+                                Tab {getTabsOnly().findIndex(t => t.id === activeTab) + 1} of {getTabsOnly().length}
                             </span>
-                            <span style={{ color: DS.textMuted, fontSize: 13 }}>/</span>
-                            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: DS.textPrimary, letterSpacing: '-0.01em' }}>
-                                {activeTabMeta?.label || ''}
-                            </h2>
                         </div>
 
                         {reconnecting && (
@@ -2401,12 +2766,35 @@ const DashboardInner = ({ onLogout }) => {
                         </div>
                     )}
 
-                    <div style={{ padding: '28px 32px', width: '100%', minHeight: '100%' }}>
+                    <div style={{ padding: '28px 32px', width: '100%', minHeight: '100%', position: 'relative' }}>
                         <ErrorBoundary key={activeTab}>
                             <Suspense fallback={
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, gap: 12, color: DS.textMuted, fontFamily: DS.fontUI }}>
-                                    <div style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${DS.border}`, borderTopColor: DS.cyan, animation: 'rotate 0.9s linear infinite' }} />
-                                    <span style={{ fontSize: 13 }}>Loading…</span>
+                                <div style={{ animation: 'fadeUp 0.3s ease-out' }}>
+                                    {/* Enhanced loading state with skeleton cards */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 24 }}>
+                                        {Array.from({ length: 3 }).map((_, i) => (
+                                            <div key={i} style={{
+                                                height: 160,
+                                                borderRadius: 12,
+                                                background: `linear-gradient(90deg, ${DS.surface} 0%, ${DS.surfaceHover} 50%, ${DS.surface} 100%)`,
+                                                backgroundSize: '200% 100%',
+                                                animation: 'shimmer 2s infinite',
+                                                border: `1px solid ${DS.border}`,
+                                            }} />
+                                        ))}
+                                    </div>
+                                    <div style={{
+                                        height: 300,
+                                        borderRadius: 12,
+                                        background: `linear-gradient(90deg, ${DS.surface} 0%, ${DS.surfaceHover} 50%, ${DS.surface} 100%)`,
+                                        backgroundSize: '200% 100%',
+                                        animation: 'shimmer 2s infinite',
+                                        border: `1px solid ${DS.border}`,
+                                    }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 24, gap: 12, color: DS.textMuted, fontFamily: DS.fontUI }}>
+                                        <div style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${DS.border}`, borderTopColor: DS.cyan, animation: 'rotate 0.9s linear infinite' }} />
+                                        <span style={{ fontSize: 13 }}>Loading tab…</span>
+                                    </div>
                                 </div>
                             }>
                                 <div key={activeTab} className="tab-mount" role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
@@ -2420,6 +2808,99 @@ const DashboardInner = ({ onLogout }) => {
 
             {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} initialSection={activeTab} />}
             {showProfile && <ProfileModal user={profileUser} onClose={() => setShowProfile(false)} onSave={u => setProfileUser(u)} />}
+
+            {/* Keyboard Shortcuts Help Modal */}
+            {showKeyboardHelp && (
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+                    backdropFilter: 'blur(8px)', zIndex: 2000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'fadeIn 0.2s ease-out',
+                }} onClick={e => e.target === e.currentTarget && setShowKeyboardHelp(false)}>
+                    <div style={{
+                        background: DS.surface, border: `1px solid ${DS.borderAccent}`,
+                        borderRadius: 16, width: 520, maxWidth: '90vw', maxHeight: '80vh',
+                        boxShadow: `${DS.shadowDeep}`,
+                        overflow: 'hidden', display: 'flex', flexDirection: 'column',
+                        animation: 'slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both',
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            padding: '20px 26px 18px', borderBottom: `1px solid ${DS.border}`,
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        }}>
+                            <div>
+                                <h3 style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 700, color: DS.textPrimary, letterSpacing: '-0.02em' }}>
+                                    Keyboard Shortcuts
+                                </h3>
+                                <p style={{ margin: 0, fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.05em' }}>
+                                    Press Ctrl+? anytime to toggle this dialog
+                                </p>
+                            </div>
+                            <button onClick={() => setShowKeyboardHelp(false)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${DS.border}`,
+                                        color: DS.textSub, cursor: 'pointer', width: 32, height: 32, borderRadius: 8,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,113,133,0.12)'; e.currentTarget.style.color = DS.rose; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = DS.textSub; }}
+                            >
+                                <X size={15} strokeWidth={2} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 26px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                                {/* Navigation */}
+                                <div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: DS.cyan, marginBottom: 12 }}>
+                                        Navigation
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+B</kbd>
+                                            <span style={{ fontSize: 12, color: DS.textSub }}>Toggle sidebar</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+K</kbd>
+                                            <span style={{ fontSize: 12, color: DS.textSub }}>Focus search</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+O</kbd>
+                                            <span style={{ fontSize: 12, color: DS.textSub }}>Go to Overview</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Info */}
+                                <div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: DS.emerald, marginBottom: 12 }}>
+                                        Other
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+?</kbd>
+                                            <span style={{ fontSize: 12, color: DS.textSub }}>Show this help</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Esc</kbd>
+                                            <span style={{ fontSize: 12, color: DS.textSub }}>Close this dialog</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: 20, padding: '12px 14px', background: `${DS.cyan}10`, border: `1px solid ${DS.cyan}30`, borderRadius: 8 }}>
+                                <p style={{ margin: 0, fontSize: 12, color: DS.textSub, lineHeight: 1.5 }}>
+                                    Tip: Use the search bar (Ctrl+K) to quickly find tabs by name.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
         </NavigationContext.Provider>
     );
@@ -2573,7 +3054,9 @@ export default function App() {
         <ErrorBoundary>
             <DemoProvider>
                 <AuthProvider>
-                    <AuthConsumer />
+                    <ToastProvider>
+                        <AuthConsumer />
+                    </ToastProvider>
                 </AuthProvider>
             </DemoProvider>
         </ErrorBoundary>

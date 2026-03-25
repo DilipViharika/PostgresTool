@@ -13,7 +13,7 @@ import {
     CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
     Radio, Cloud, Archive, RefreshCw, Star,
     Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock, CheckCircle,
-    Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge, FlaskConical,
+    Database, Gauge, Server, HardDriveDownload, Workflow, GitMerge, FlaskConical, Eye, FileText,
 } from 'lucide-react';
 
 import { getDS } from './designTokens.js';
@@ -57,6 +57,7 @@ function buildDemoSqlTabs(dbShort, dbLabel, accent) {
         { section: `Demo ${dbLabel} — Schema & Security`, accent, group },
         { id: `demo-${dbShort}-schema`,        icon: GitBranch,   label: 'Schema & Migrations',    component: D, badge: null },
         { id: `demo-${dbShort}-schema-viz`,    icon: GitBranch,   label: 'Schema Visualizer',      component: D, badge: null },
+        { id: `demo-${dbShort}-table-deps`,    icon: GitBranch,   label: 'Table Dependencies',     component: D, badge: null },
         { id: `demo-${dbShort}-security`,      icon: Lock,        label: 'Security & Compliance',  component: D, badge: null },
 
         { section: `Demo ${dbLabel} — Observability`, accent, group },
@@ -112,9 +113,11 @@ export function buildTabConfig() {
         { section: 'Schema & Security', accent: DS.rose },
         { id: 'schema',            icon: GitBranch,     label: 'Schema & Migrations',   component: _components.SchemaVersioningTab,     badge: null },
         { id: 'schema-visualizer', icon: GitBranch,     label: 'Schema Visualizer',     component: _components.SchemaVisualizerTab,     badge: null },
+        { id: 'table-dependencies', icon: GitBranch,    label: 'Table Dependencies',    component: _components.TableDependencyMindMap,  badge: null },
         { id: 'security',          icon: Lock,          label: 'Security & Compliance', component: _components.SecurityComplianceTab,   badge: null },
 
         { section: 'Observability', accent: DS.amber },
+        { id: 'observability-hub', icon: Eye,           label: 'Observability Hub',     component: _components.ObservabilityHub,        badge: null },
         { id: 'cloudwatch',        icon: Cloud,         label: 'CloudWatch',            component: _components.CloudWatchTab,           badge: null },
         { id: 'log-patterns',      icon: FileSearch,    label: 'Log Pattern Analysis',  component: _components.LogPatternAnalysisTab,   badge: null },
         { id: 'alert-correlation', icon: Link2,         label: 'Alert Correlation',     component: _components.AlertCorrelationTab,     badge: null },
@@ -142,6 +145,7 @@ export function buildTabConfig() {
         { id: 'UserManagement',    icon: Users,         label: 'User Management',       component: _components.UserManagementTab,       badge: null },
         { id: 'admin',             icon: Shield,        label: 'Admin',                 component: _components.AdminTab,                badge: null },
         { id: 'retention',         icon: Clock,         label: 'Data Retention',        component: _components.RetentionManagementTab,  badge: null },
+        { id: 'report-builder',    icon: FileText,      label: 'Report Builder',        component: _components.ReportBuilderTab,        badge: null },
         { id: 'terraform',         icon: Download,      label: 'Terraform Export',      component: _components.TerraformExportTab,      badge: null },
         { id: 'custom-dashboard',  icon: LayoutDashboard, label: 'Custom Dashboards',   component: _components.CustomDashboardTab,      badge: null },
         /* ══════════════════════════════════════════════════════════════════

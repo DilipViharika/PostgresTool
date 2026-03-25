@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { THEME } from '../../../utils/theme.jsx';
 import {
   Database, Activity, Zap, Clock, HardDrive, Shield,
@@ -13,7 +13,7 @@ import {
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   Tooltip, CartesianGrid, PieChart, Pie, Cell,
-  BarChart, Bar, LineChart, Line
+  BarChart, Bar, LineChart, Line, ReferenceLine, Legend
 } from 'recharts';
 
 const DB_COLORS = {
@@ -2180,7 +2180,7 @@ function StatCard({ label, value, unit, color }) {
   );
 }
 
-function SubTabContent({ subTabId, section, db, widgets }) {
+function SubTabContent({ subTabId, _section, db, _widgets }) {
   const dbName = db.name.toLowerCase().replace(' ', '');
   const key = dbName === 'sqlserver' ? 'mssql' : dbName;
   const seed = `${key}-${subTabId}`;
@@ -2506,96 +2506,184 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'performance') {
     const sessionData = gen24h(seed, 5, 30, 2, 15);
+    const waitEventData = [
+      { name: 'CPU', value: Math.floor(hashNorm(`${seed}-we-cpu`) * 35 + 20), color: THEME.primary },
+      { name: 'IO', value: Math.floor(hashNorm(`${seed}-we-io`) * 28 + 15), color: THEME.warning },
+      { name: 'Lock', value: Math.floor(hashNorm(`${seed}-we-lock`) * 18 + 8), color: THEME.danger },
+      { name: 'Client', value: Math.floor(hashNorm(`${seed}-we-client`) * 12 + 5), color: THEME.success },
+    ];
+    const cacheHitData = gen24h(seed, 95, 4, 90, 5);
+
     return (
       <>
-        {/* Row 1: 4-col session stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-          <Panel title="Active Sessions" icon={Activity} accentColor={db.color}>
-            <StatCard label="Current" value={`${Math.floor(hashNorm(`${seed}-as`) * 30 + 5)}`} unit="" color={db.color} />
+        {/* ACTIVE SESSIONS VIEW */}
+        {/* Row 1: Session KPI Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          <Panel title="Active" icon={Activity} accentColor={THEME.success}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.success, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-act`) * 30 + 8)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, opacity: 0.7 }} />
+                Running queries
+              </div>
+              <MiniSparkline data={sessionData.map(d => ({ value: d.primary }))} color={THEME.success} width={100} height={20} />
+            </div>
           </Panel>
           <Panel title="Long Running" icon={Clock} accentColor={THEME.warning}>
-            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-lr`) * 10)}`} unit="" color={THEME.warning} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.warning, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-lr`) * 12 + 3)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Queries &gt; 10s</div>
+              <div style={{ width: '100%', height: 4, background: `${THEME.warning}20`, borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ width: `${Math.floor(hashNorm(`${seed}-lr-pct`) * 80 + 20)}%`, height: '100%', background: THEME.warning }} />
+              </div>
+            </div>
           </Panel>
-          <Panel title="Idle Sessions" icon={Clock} accentColor={THEME.textDim}>
-            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-idle`) * 15)}`} unit="" color={THEME.textDim} />
+          <Panel title="Idle Sessions" icon={Eye} accentColor={THEME.textDim}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.textDim, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-idle`) * 20 + 5)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Waiting for query</div>
+              <MiniSparkline data={sessionData.map(d => ({ value: d.secondary }))} color={THEME.textDim} width={100} height={20} />
+            </div>
           </Panel>
           <Panel title="Blocked" icon={Lock} accentColor={THEME.danger}>
-            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-blk`) * 3)}`} unit="" color={THEME.danger} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.danger, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-blk`) * 5 + 1)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>By locks</div>
+              <div style={{ fontSize: 10, color: THEME.danger, fontWeight: 600 }}>⚠ Review locks</div>
+            </div>
+          </Panel>
+          <Panel title="Sessions/min" icon={Zap} accentColor={db.color}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: db.color, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-spm`) * 45 + 12)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Connection rate</div>
+              <div style={{ fontSize: 10, color: THEME.success, fontWeight: 600 }}>↑ {Math.floor(hashNorm(`${seed}-spm-trend`) * 20 + 5)}%</div>
+            </div>
           </Panel>
         </div>
 
-        {/* Row 2: Session Traffic AreaChart */}
-        <div style={{ marginTop: 16 }}>
-          <Panel title="Session Traffic (24h)" icon={Activity} accentColor={db.color}
-            rightNode={<div style={{ display: 'flex', gap: 10 }}>
-              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Active</span>
-              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.textDim, borderRadius: 1 }} />Idle</span>
-            </div>}>
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={sessionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
-                <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
-                <Tooltip contentStyle={TT_STYLE} />
-                <Area type="monotone" dataKey="primary" name="Active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
-                <Area type="monotone" dataKey="secondary" name="Idle" stroke={THEME.textDim} fill={`${THEME.textDim}10`} strokeWidth={1.5} strokeDasharray="4 2" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Panel>
-        </div>
-
-        {/* Row 3: Slow Queries DemoTable */}
-        <div style={{ marginTop: 16 }}>
-          <Panel title="Slow Queries" icon={Clock} accentColor={THEME.warning}>
+        {/* Row 2: Slow Queries Table + Wait Events */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 14 }}>
+          <Panel title="Slow Queries (5 Most Recent)" icon={Clock} accentColor={THEME.warning}>
             <DemoTable
               columns={[
-                { key: 'query', label: 'Query', width: '50%' },
-                { key: 'avgDuration', label: 'Avg Duration', width: '15%' },
-                { key: 'calls', label: 'Calls', width: '15%' },
-                { key: 'impact', label: 'Impact', width: '20%' },
+                { key: 'query', label: 'Query', width: '45%' },
+                { key: 'avgDuration', label: 'Avg Time', width: '18%' },
+                { key: 'calls', label: 'Calls', width: '18%' },
+                { key: 'impact', label: 'Impact', width: '19%' },
               ]}
               rows={(DB_SLOW_QUERIES[key] || DB_SLOW_QUERIES.postgresql).slice(0, 5).map((q, i) => ({
-                query: q.label, avgDuration: q.display,
-                calls: Math.floor(hashNorm(`${seed}-calls-${i}`) * 2000 + 100),
-                impact: ['High', 'Medium', 'Low'][i % 3],
+                query: q.label.substring(0, 40),
+                avgDuration: q.display,
+                calls: Math.floor(hashNorm(`${seed}-calls-${i}`) * 2000 + 100).toLocaleString(),
+                impact: ['🔴 High', '🟡 Med', '🟢 Low'][i % 3],
               }))}
               color={db.color}
             />
           </Panel>
+          <Panel title="Wait Events (24h)" icon={Activity} accentColor={db.color}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
+              {waitEventData.map((evt, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{evt.name}</div>
+                    <div style={{ width: '100%', height: 6, background: `${evt.color}15`, borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ width: `${(evt.value / 100) * 100}%`, height: '100%', background: evt.color, borderRadius: 3 }} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: evt.color, minWidth: 30, textAlign: 'right' }}>{evt.value}%</div>
+                </div>
+              ))}
+            </div>
+          </Panel>
         </div>
 
-        {/* Row 4: Lock Waits stats + N+1 Query Patterns table */}
+        {/* HEALTH VIEW */}
+        {/* Row 3: Cache Hit Ratio + Lock Monitor */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Panel title="Lock Waits" icon={Lock} accentColor={THEME.warning}>
-            <div style={{ fontSize: 10, padding: '8px 12px' }}>
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Current Wait Events:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashNorm(`${seed}-lwev`) * 20)}</div>
+          <Panel title="Cache Hit Ratio (24h)" icon={Zap} accentColor={THEME.success}>
+            <ResponsiveContainer width="100%" height={160}>
+              <AreaChart data={cacheHitData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} opacity={0.3} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} width={35} domain={[80, 100]} unit="%" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Area type="monotone" dataKey="primary" stroke={THEME.success} fill={`${THEME.success}15`} strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.gridLine}`, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Current: <span style={{ color: THEME.success, fontWeight: 600 }}>98.2%</span></span>
+              <span>Avg: <span style={{ color: THEME.success, fontWeight: 600 }}>97.1%</span></span>
+            </div>
+          </Panel>
+          <Panel title="Lock Monitor" icon={Lock} accentColor={THEME.danger}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Locks</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: THEME.danger, letterSpacing: '-0.02em' }}>
+                    {Math.floor(hashNorm(`${seed}-locks-curr`) * 5)}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Max Wait</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: THEME.warning, letterSpacing: '-0.02em' }}>
+                    {Math.floor(hashNorm(`${seed}-locks-wait`) * 2000 + 500)}ms
+                  </div>
+                </div>
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Avg Wait Time:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{(hashNorm(`${seed}-lwt`) * 500).toFixed(0)}ms</div>
-              </div>
-              <div>
-                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Max Wait:</div>
-                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashNorm(`${seed}-lwmax`) * 5000 + 100)}ms</div>
+              <div style={{ padding: '10px 12px', borderRadius: 8, background: `${THEME.success}10`, border: `1px solid ${THEME.success}25` }}>
+                <div style={{ fontSize: 10, color: THEME.success, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success }} />
+                  Lock contention: Normal
+                </div>
               </div>
             </div>
           </Panel>
+        </div>
+
+        {/* INSIGHTS VIEW */}
+        {/* Row 4: N+1 Patterns + Session Timeline */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Panel title="N+1 Query Patterns" icon={Eye} accentColor={db.color}>
             <DemoTable
               columns={[
-                { key: 'pattern', label: 'Pattern', width: '40%' },
-                { key: 'count', label: 'Count', width: '25%' },
-                { key: 'risk', label: 'Risk', width: '35%' },
+                { key: 'pattern', label: 'Pattern', width: '50%' },
+                { key: 'count', label: 'Count', width: '30%' },
+                { key: 'risk', label: 'Risk Level', width: '20%' },
               ]}
               rows={[
-                { pattern: 'SELECT in loop', count: Math.floor(hashNorm(`${seed}-n1-0`) * 50 + 10), risk: 'High' },
-                { pattern: 'Missing JOIN', count: Math.floor(hashNorm(`${seed}-n1-1`) * 30 + 5), risk: 'Medium' },
-                { pattern: 'Nested subquery', count: Math.floor(hashNorm(`${seed}-n1-2`) * 20 + 3), risk: 'Low' },
+                { pattern: 'SELECT in loop', count: Math.floor(hashNorm(`${seed}-n1-0`) * 50 + 15).toString(), risk: '🔴 High' },
+                { pattern: 'Missing JOIN', count: Math.floor(hashNorm(`${seed}-n1-1`) * 30 + 8).toString(), risk: '🟡 Med' },
+                { pattern: 'Nested subquery', count: Math.floor(hashNorm(`${seed}-n1-2`) * 20 + 5).toString(), risk: '🟢 Low' },
               ]}
               color={db.color}
             />
+          </Panel>
+          <Panel title="Session Timeline (24h)" icon={Activity} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <AreaChart data={sessionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} opacity={0.3} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} width={35} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Area type="monotone" dataKey="primary" name="Active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+                <Area type="monotone" dataKey="secondary" name="Idle" stroke={THEME.textDim} fill={`${THEME.textDim}08`} strokeWidth={1.5} />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.gridLine}`, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Peak Active: <span style={{ color: db.color, fontWeight: 600 }}>42 sessions</span></span>
+              <span>Avg: <span style={{ color: db.color, fontWeight: 600 }}>28 sessions</span></span>
+            </div>
           </Panel>
         </div>
       </>
@@ -2712,6 +2800,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
       burned: Math.min((i / 24) * 15 + hashNorm(`${seed}-eb-${i}`) * 5, 100),
     }));
     const mttrData = gen7d(seed, 100, 50);
+    const sloRateTrendData = gen24h(seed, 99.95, 0.08, 99.92, 0.05);
     const incidentData = [
       { severity: 'Critical', value: Math.floor(hashNorm(`${seed}-ic`) * 3), color: THEME.danger },
       { severity: 'High', value: Math.floor(hashNorm(`${seed}-ih`) * 8 + 2), color: THEME.warning },
@@ -2720,96 +2809,136 @@ function SubTabContent({ subTabId, section, db, widgets }) {
 
     return (
       <>
-        {/* Row 1: 5 KPI cards */}
+        {/* Row 1: 5 KPI cards with visual enhancements */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
           <Panel title="Uptime Days" icon={CheckCircle} accentColor={THEME.success}>
-            <StatCard label="Days" value="47" unit="" color={THEME.success} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: THEME.success, letterSpacing: '-0.02em' }}>47</div>
+              <div style={{ fontSize: 10, color: THEME.textDim }}>Days since last outage</div>
+              <div style={{ padding: '6px 10px', background: `${THEME.success}15`, border: `1px solid ${THEME.success}30`, borderRadius: 6, fontSize: 9, color: THEME.success, fontWeight: 600, textAlign: 'center' }}>
+                99.99% SLA
+              </div>
+            </div>
           </Panel>
           <Panel title="MTTR" icon={Clock} accentColor={db.color}>
-            <StatCard label="Avg" value={`${Math.floor(hashNorm(`${seed}-mttr`) * 20 + 5)}`} unit="min" color={db.color} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: db.color, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-mttr`) * 20 + 5)}m
+              </div>
+              <div style={{ fontSize: 10, color: THEME.textDim }}>Mean Time To Recover</div>
+              <MiniSparkline data={mttrData} color={db.color} width={100} height={20} />
+            </div>
           </Panel>
           <Panel title="SLO Budget" icon={Shield} accentColor={THEME.success}>
-            <StatCard label="Remaining" value={`${Math.floor(hashNorm(`${seed}-slo`) * 10 + 85)}`} unit="%" color={THEME.success} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: THEME.success, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-slo`) * 10 + 85)}%
+              </div>
+              <div style={{ fontSize: 10, color: THEME.textDim }}>Remaining budget</div>
+              <div style={{ width: '100%', height: 4, background: `${THEME.success}20`, borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ width: `${Math.floor(hashNorm(`${seed}-slo`) * 10 + 85)}%`, height: '100%', background: THEME.success }} />
+              </div>
+            </div>
           </Panel>
           <Panel title="Failed Deploys" icon={AlertTriangle} accentColor={THEME.warning}>
-            <StatCard label="This month" value={`${Math.floor(hashNorm(`${seed}-fd`) * 3)}`} unit="" color={THEME.warning} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: THEME.warning, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-fd`) * 3)}
+              </div>
+              <div style={{ fontSize: 10, color: THEME.textDim }}>This month</div>
+              <div style={{ fontSize: 10, color: THEME.success, fontWeight: 600 }}>↓ Improving</div>
+            </div>
           </Panel>
           <Panel title="Total Incidents" icon={AlertTriangle} accentColor={db.color}>
-            <StatCard label="30 days" value={`${Math.floor(hashNorm(`${seed}-ti`) * 8 + 2)}`} unit="" color={db.color} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: db.color, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-ti`) * 8 + 2)}
+              </div>
+              <div style={{ fontSize: 10, color: THEME.textDim }}>Last 30 days</div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Avg: 1.2/day</div>
+            </div>
           </Panel>
         </div>
 
-        {/* Row 2: 2-col — Error Budget RingGauge + details | 30-Day Error Budget Burn LineChart */}
+        {/* Row 2: Alert trend + SLO burn rate */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Panel title="Error Budget Status" icon={Shield} accentColor={THEME.success}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashNorm(`${seed}-ebs`) * 30 + 60)} color={THEME.success} size={100} strokeWidth={8} label="BUDGET" />
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+              <RingGauge value={Math.floor(hashNorm(`${seed}-ebs`) * 30 + 60)} color={THEME.success} size={110} strokeWidth={9} label="BUDGET %" />
             </div>
-            <div style={{ fontSize: 10, padding: '8px 12px', borderTop: `1px solid ${THEME.gridLine}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ color: THEME.textDim }}>Monthly Budget</span>
-                <span style={{ color: THEME.textMain, fontWeight: 600 }}>43.2 minutes</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}` }}>
+              <div>
+                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Monthly Budget</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>43.2 min</div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: THEME.textDim }}>Remaining</span>
-                <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-budg`) * 30 + 10)} min</span>
+              <div>
+                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Remaining</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: THEME.success }}>{Math.floor(hashNorm(`${seed}-budg`) * 30 + 10)} min</div>
               </div>
             </div>
           </Panel>
-          <Panel title="30-Day Error Budget Burn" icon={TrendingUp} accentColor={db.color}>
+          <Panel title="SLO Burn Rate (24h)" icon={TrendingUp} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={errorBudgetData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+              <AreaChart data={sloRateTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} opacity={0.3} />
                 <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="%" />
+                <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} width={40} domain={[99.8, 100]} unit="%" />
                 <Tooltip contentStyle={TT_STYLE} />
-                <ReferenceLine y={100} stroke={THEME.danger} strokeDasharray="3 3" label={{ value: 'Exhausted', fontSize: 8, fill: THEME.danger }} />
-                <Line type="monotone" dataKey="burned" name="Burned" stroke={db.color} strokeWidth={2} dot={false} />
-              </LineChart>
+                <ReferenceLine y={99.9} stroke={THEME.success} strokeDasharray="2 2" label={{ value: 'Target', fontSize: 7, fill: THEME.success, offset: 5 }} />
+                <Area type="monotone" dataKey="primary" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              </AreaChart>
             </ResponsiveContainer>
           </Panel>
         </div>
 
-        {/* Row 3: 2-col — MTTR Trend LineChart | Incident Severity BarChart */}
+        {/* Row 3: MTTR Trend + Incident Severity */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Panel title="MTTR Trend (7d)" icon={Clock} accentColor={db.color}>
+          <Panel title="MTTR Trend (7 Days)" icon={Clock} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={mttrData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} opacity={0.3} />
                 <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="min" />
+                <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} width={40} />
                 <Tooltip contentStyle={TT_STYLE} />
-                <Line type="monotone" dataKey="value" name="MTTR" stroke={db.color} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="value" name="MTTR (min)" stroke={db.color} strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.gridLine}`, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Avg: <span style={{ color: db.color, fontWeight: 600 }}>12.4 min</span></span>
+              <span>Best: <span style={{ color: THEME.success, fontWeight: 600 }}>3.2 min</span></span>
+            </div>
           </Panel>
-          <Panel title="Incident Severity" icon={AlertTriangle} accentColor={THEME.warning}>
+          <Panel title="Incident Severity Distribution" icon={AlertTriangle} accentColor={THEME.warning}>
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={incidentData}>
-                <XAxis dataKey="severity" tick={{ fontSize: 9, fill: THEME.textDim }} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
+              <BarChart data={incidentData} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis dataKey="severity" type="category" tick={{ fontSize: 9, fill: THEME.textDim }} width={70} />
                 <Tooltip contentStyle={TT_STYLE} />
-                <Bar dataKey="value" fill={db.color} radius={[2, 2, 0, 0]} />
+                <Bar dataKey="value" radius={[0, 3, 3, 0]}>
+                  {incidentData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </Panel>
         </div>
 
-        {/* Row 4: Incident Feed DemoTable */}
+        {/* Row 4: Incident Feed with enhanced styling */}
         <div style={{ marginTop: 16 }}>
-          <Panel title="Incident Feed" icon={AlertTriangle} accentColor={THEME.warning}>
+          <Panel title="Recent Incident Timeline" icon={AlertTriangle} accentColor={THEME.warning}>
             <DemoTable
               columns={[
-                { key: 'incident', label: 'Incident', width: '25%' },
+                { key: 'incident', label: 'Incident', width: '30%' },
                 { key: 'severity', label: 'Severity', width: '15%' },
                 { key: 'status', label: 'Status', width: '15%' },
-                { key: 'duration', label: 'Duration', width: '20%' },
-                { key: 'resolved', label: 'Resolved', width: '25%' },
+                { key: 'duration', label: 'Duration', width: '18%' },
+                { key: 'resolved', label: 'Resolved', width: '22%' },
               ]}
               rows={[
-                { incident: 'High CPU Usage', severity: 'Critical', status: 'Resolved', duration: '2h 15m', resolved: '1d ago' },
-                { incident: 'Memory Leak Detected', severity: 'High', status: 'Resolved', duration: '45m', resolved: '3d ago' },
-                { incident: 'Disk Space Warning', severity: 'Medium', status: 'Resolved', duration: '30m', resolved: '1w ago' },
+                { incident: 'High CPU Usage', severity: '🔴 Critical', status: '✓ Resolved', duration: '2h 15m', resolved: '1d ago' },
+                { incident: 'Memory Leak Detected', severity: '🟡 High', status: '✓ Resolved', duration: '45m', resolved: '3d ago' },
+                { incident: 'Disk Space Warning', severity: '🟢 Medium', status: '✓ Resolved', duration: '30m', resolved: '1w ago' },
               ]}
               color={db.color}
             />
@@ -2823,89 +2952,172 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      ALERTS: KPI cards + Alert Feed + Alert Rules DonutWidget + Frequency chart
      ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'alerts') {
+    const alertFreqData = gen7d(seed, 4, 2);
+    const severityDistData = [
+      { name: 'Critical', value: Math.floor(hashNorm(`${seed}-as-c`) * 5 + 2), color: THEME.danger },
+      { name: 'High', value: Math.floor(hashNorm(`${seed}-as-h`) * 15 + 8), color: THEME.warning },
+      { name: 'Medium', value: Math.floor(hashNorm(`${seed}-as-m`) * 25 + 15), color: db.color },
+      { name: 'Low', value: Math.floor(hashNorm(`${seed}-as-l`) * 20 + 10), color: THEME.success },
+    ];
+
     return (
       <>
-        {/* Row 1: 4 stat cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {/* Row 1: 6 Enhanced KPI cards with status indicators */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
           <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
-            <StatCard label="Current" value={`${Math.floor(hashNorm(`${seed}-aa`) * 10 + 2)}`} unit="" color={THEME.warning} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.warning, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-aa`) * 10 + 2)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Currently active</div>
+              <div style={{ fontSize: 8, color: THEME.warning, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: THEME.warning }} />
+                Needs attention
+              </div>
+            </div>
           </Panel>
           <Panel title="Acknowledged" icon={CheckCircle} accentColor={THEME.success}>
-            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-ack`) * 5)}`} unit="" color={THEME.success} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.success, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-ack`) * 8 + 5)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Being handled</div>
+              <div style={{ fontSize: 8, color: THEME.success, fontWeight: 600 }}>✓ In progress</div>
+            </div>
           </Panel>
           <Panel title="Unacknowledged" icon={Bell} accentColor={THEME.danger}>
-            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-uack`) * 15 + 3)}`} unit="" color={THEME.danger} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.danger, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-uack`) * 15 + 3)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Not yet seen</div>
+              <div style={{ fontSize: 8, color: THEME.danger, fontWeight: 600 }}>⚠ Action needed</div>
+            </div>
           </Panel>
           <Panel title="Resolved Today" icon={CheckCircle} accentColor={THEME.success}>
-            <StatCard label="Count" value={`${Math.floor(hashNorm(`${seed}-res`) * 8 + 1)}`} unit="" color={THEME.success} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: THEME.success, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-res`) * 8 + 2)}
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Fixed today</div>
+              <MiniSparkline data={alertFreqData.map(d => ({ value: d.value }))} color={THEME.success} width={80} height={16} />
+            </div>
+          </Panel>
+          <Panel title="Alert Rules" icon={Shield} accentColor={db.color}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: db.color, letterSpacing: '-0.02em' }}>34</div>
+              <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 2 }}>Total configured</div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <div style={{ flex: 1, height: 4, background: `${THEME.success}30`, borderRadius: 2, overflow: 'hidden' }}>
+                  <div style={{ width: '82%', height: '100%', background: THEME.success }} />
+                </div>
+                <span style={{ fontSize: 8, color: THEME.success, fontWeight: 600 }}>28</span>
+              </div>
+            </div>
+          </Panel>
+          <Panel title="MTTA" icon={Clock} accentColor={db.color}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: db.color, letterSpacing: '-0.02em' }}>
+                {Math.floor(hashNorm(`${seed}-mtta`) * 8 + 3)}m
+              </div>
+              <div style={{ fontSize: 9, color: THEME.textDim }}>Mean time to ack</div>
+              <div style={{ fontSize: 8, color: THEME.success, fontWeight: 600 }}>↓ Improved</div>
+            </div>
           </Panel>
         </div>
 
-        {/* Row 2: Alert Feed DemoTable */}
+        {/* Row 2: Active Alerts List */}
         <div style={{ marginTop: 16 }}>
-          <Panel title="Alert Feed" icon={AlertTriangle} accentColor={THEME.warning}>
+          <Panel title="Active Alerts List" icon={AlertTriangle} accentColor={THEME.warning}>
             <DemoTable
               columns={[
-                { key: 'alert', label: 'Alert', width: '30%' },
+                { key: 'alert', label: 'Alert Message', width: '35%' },
                 { key: 'severity', label: 'Severity', width: '15%' },
                 { key: 'status', label: 'Status', width: '15%' },
-                { key: 'source', label: 'Source', width: '20%' },
-                { key: 'time', label: 'Time', width: '20%' },
+                { key: 'source', label: 'Source', width: '18%' },
+                { key: 'time', label: 'Time', width: '17%' },
               ]}
               rows={[
-                { alert: 'High CPU Usage', severity: 'Warning', status: 'Active', source: 'System', time: '5 min ago' },
-                { alert: 'Replication Lag > 1s', severity: 'Critical', status: 'Resolved', source: 'Replication', time: '2 hours ago' },
-                { alert: 'Disk Usage > 80%', severity: 'Warning', status: 'Active', source: 'Storage', time: '15 min ago' },
-                { alert: 'Connection Pool Full', severity: 'Critical', status: 'Resolved', source: 'Connections', time: '1 day ago' },
-                { alert: 'Slow Query > 10s', severity: 'Info', status: 'Active', source: 'Query', time: '30 min ago' },
+                { alert: 'High CPU Usage', severity: '🟡 Warning', status: 'Active', source: 'System', time: '5 min' },
+                { alert: 'Replication Lag > 1s', severity: '🔴 Critical', status: 'Resolved', source: 'Replication', time: '2 hrs' },
+                { alert: 'Disk Usage > 80%', severity: '🟡 Warning', status: 'Active', source: 'Storage', time: '15 min' },
+                { alert: 'Connection Pool Full', severity: '🔴 Critical', status: 'Resolved', source: 'Connections', time: '1 day' },
+                { alert: 'Slow Query > 10s', severity: '🟢 Info', status: 'Active', source: 'Query', time: '30 min' },
               ]}
               color={db.color}
             />
           </Panel>
         </div>
 
-        {/* Row 3: 2-col — Alert Rules Summary DonutWidget | Alert Frequency BarChart */}
+        {/* Row 3: Alert Trend + Rules Configuration */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Alert Frequency (7 Days)" icon={Activity} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart data={alertFreqData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} opacity={0.3} />
+                <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 8, fill: THEME.textDim }} width={30} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" fill={db.color} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${THEME.gridLine}` }}>
+              <span>Avg: </span>
+              <span style={{ color: db.color, fontWeight: 600 }}>{Math.ceil((alertFreqData.reduce((s, d) => s + d.value, 0)) / alertFreqData.length)} alerts/day</span>
+            </div>
+          </Panel>
           <Panel title="Alert Rules Summary" icon={Shield} accentColor={db.color}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
               <DonutWidget
                 data={[
                   { name: 'Active', value: 28, color: THEME.success, display: '28' },
                   { name: 'Disabled', value: 6, color: THEME.textDim, display: '6' },
                 ]}
                 centerValue="34" centerLabel="RULES"
-                color={db.color} size={100} innerRadius={34} outerRadius={46}
+                color={db.color} size={120} innerRadius={40} outerRadius={55}
               />
             </div>
-          </Panel>
-          <Panel title="Alert Frequency (7d)" icon={Activity} accentColor={db.color}>
-            <ResponsiveContainer width="100%" height={120}>
-              <BarChart data={gen7d(seed, 0, 4)}>
-                <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={20} />
-                <Tooltip contentStyle={TT_STYLE} />
-                <Bar dataKey="value" name="Alerts" fill={db.color} radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}`, fontSize: 9 }}>
+              <div>
+                <span style={{ color: THEME.textDim }}>Active: </span>
+                <span style={{ color: THEME.success, fontWeight: 600 }}>28</span>
+              </div>
+              <div>
+                <span style={{ color: THEME.textDim }}>Disabled: </span>
+                <span style={{ color: THEME.textDim, fontWeight: 600 }}>6</span>
+              </div>
+            </div>
           </Panel>
         </div>
 
-        {/* Row 4: Alert Severity Distribution horizontal bars */}
+        {/* Row 4: Severity Distribution with color-coded bars */}
         <div style={{ marginTop: 16 }}>
           <Panel title="Alert Severity Distribution" icon={BarChart3} accentColor={THEME.warning}>
-            <ResponsiveContainer width="100%" height={140}>
-              <BarChart data={[
-                { name: 'Critical', value: Math.floor(hashNorm(`${seed}-as-c`) * 5 + 2), color: THEME.danger },
-                { name: 'High', value: Math.floor(hashNorm(`${seed}-as-h`) * 15 + 8), color: THEME.warning },
-                { name: 'Medium', value: Math.floor(hashNorm(`${seed}-as-m`) * 25 + 15), color: db.color },
-                { name: 'Low', value: Math.floor(hashNorm(`${seed}-as-l`) * 20 + 10), color: THEME.success },
-              ]} layout="vertical">
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={severityDistData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} opacity={0.3} />
                 <XAxis type="number" tick={{ fontSize: 8, fill: THEME.textDim }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 9, fill: THEME.textDim }} width={70} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: THEME.textDim }} width={75} />
                 <Tooltip contentStyle={TT_STYLE} />
-                <Bar dataKey="value" fill={db.color} radius={[0, 3, 3, 0]} />
+                <Bar dataKey="value" radius={[0, 3, 3, 0]}>
+                  {severityDistData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}` }}>
+              {severityDistData.map((item, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ fontSize: 8, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {item.name}
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: item.color }}>
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
           </Panel>
         </div>
       </>
@@ -3594,6 +3806,67 @@ function SubTabContent({ subTabId, section, db, widgets }) {
                 <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>89</div>
                 <div style={{ fontSize: 9, color: THEME.textDim }}>Functions</div>
               </div>
+            </div>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     TABLE DEPENDENCIES: Demo mind map visualization with sample data
+     ══════════════════════════════════════════════════════════════════════ */
+  if (subTabId === 'table-dependencies' || subTabId === 'table-deps') {
+    // Create a simple demo mind map by rendering a message about the component
+    return (
+      <>
+        <Panel title="Table Dependency Mind Map" icon={GitBranch} accentColor={db.color}>
+          <div style={{ padding: '16px', textAlign: 'center' }}>
+            <div style={{ fontSize: '13px', color: THEME.textMain, marginBottom: '12px' }}>
+              Interactive mind map visualization showing table dependencies with:
+            </div>
+            <ul style={{ textAlign: 'left', display: 'inline-block', fontSize: '12px', color: THEME.textMuted, lineHeight: '1.8' }}>
+              <li>Central table with outgoing/incoming relationships</li>
+              <li>First ring: direct dependencies (1 hop)</li>
+              <li>Second ring: indirect relationships (2 hops)</li>
+              <li>Color-coded by depth and relationship type</li>
+              <li>Hover for column details and row counts</li>
+            </ul>
+            <div style={{ marginTop: '16px', fontSize: '11px', color: THEME.textDim }}>
+              Select a table to view its dependency tree in the mind map visualization
+            </div>
+          </div>
+        </Panel>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Sample Schema" icon={Database} accentColor={db.color}>
+            <div style={{ fontSize: '12px', color: THEME.textMain, marginBottom: '12px' }}>
+              <strong>PostgreSQL E-Commerce:</strong>
+            </div>
+            <div style={{ fontSize: '11px', color: THEME.textDim, lineHeight: '1.6' }}>
+              users → orders → products<br/>
+              orders → payments<br/>
+              products → inventory<br/>
+              users → addresses
+            </div>
+          </Panel>
+          <Panel title="Relationship Stats" icon={Layers} accentColor={THEME.primary}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '8px 0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: THEME.primary }}>18</div>
+                <div style={{ fontSize: '10px', color: THEME.textDim }}>Foreign Keys</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: db.color }}>12</div>
+                <div style={{ fontSize: '10px', color: THEME.textDim }}>Tables</div>
+              </div>
+            </div>
+          </Panel>
+          <Panel title="Key Tables" icon={GitBranch} accentColor={THEME.secondary}>
+            <div style={{ fontSize: '11px', color: THEME.textMuted, lineHeight: '1.7' }}>
+              <div style={{ color: THEME.secondary, fontWeight: '600', marginBottom: '4px' }}>Hub Tables:</div>
+              orders (4 refs)<br/>
+              users (3 refs)<br/>
+              products (2 refs)
             </div>
           </Panel>
         </div>

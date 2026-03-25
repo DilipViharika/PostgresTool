@@ -2482,6 +2482,233 @@ export const CommandPaletteItem = ({ icon: Icon, label, description, shortcut, c
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  TOAST NOTIFICATION SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+
+/* Toast context for app-wide notifications */
+const ToastContext = createContext({});
+export const useToast = () => {
+    const ctx = useContext(ToastContext);
+    if (!ctx) throw new Error('useToast must be used within ToastProvider');
+    return ctx;
+};
+
+export const ToastProvider = ({ children }) => {
+    const [toasts, setToasts] = useState([]);
+
+    const addToast = useCallback((message, type = 'info', duration = 3000) => {
+        const id = Date.now() + Math.random();
+        const toast = {
+            id,
+            message,
+            type, // 'success' | 'error' | 'warning' | 'info'
+            duration,
+            timestamp: Date.now(),
+        };
+
+        setToasts(prev => [...prev, toast]);
+
+        if (duration > 0) {
+            const timer = setTimeout(() => {
+                setToasts(prev => prev.filter(t => t.id !== id));
+            }, duration);
+            return { id, clear: () => clearTimeout(timer) };
+        }
+        return { id, clear: () => setToasts(prev => prev.filter(t => t.id !== id)) };
+    }, []);
+
+    const removeToast = useCallback((id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    }, []);
+
+    return (
+        <ToastContext.Provider value={{ addToast, removeToast }}>
+            {children}
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
+        </ToastContext.Provider>
+    );
+};
+
+const ToastContainer = ({ toasts, onRemove }) => {
+    injectKeyframes();
+
+    const getToastStyle = (type) => {
+        const baseStyles = {
+            success: { bg: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', icon: CheckCircle, color: '#10b981' },
+            error: { bg: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', icon: XCircle, color: '#ef4444' },
+            warning: { bg: 'rgba(251, 146, 60, 0.1)', border: '1px solid rgba(251, 146, 60, 0.3)', icon: AlertTriangle, color: '#fb923c' },
+            info: { bg: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', icon: Info, color: '#3b82f6' },
+        };
+        return baseStyles[type] || baseStyles.info;
+    };
+
+    return (
+        <div style={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            pointerEvents: 'none',
+            maxWidth: 400,
+        }}>
+            {toasts.map((toast, idx) => {
+                const style = getToastStyle(toast.type);
+                const Icon = style.icon;
+                return (
+                    <div
+                        key={toast.id}
+                        style={{
+                            animation: 'fadeUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                            animationDelay: `${idx * 0.05}s`,
+                            marginBottom: 12,
+                            pointerEvents: 'auto',
+                        }}
+                    >
+                        <div
+                            style={{
+                                background: style.bg,
+                                border: style.border,
+                                borderRadius: 8,
+                                padding: '12px 16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                backdropFilter: 'blur(10px)',
+                                fontFamily: _AT.fontBody,
+                                fontSize: 13,
+                                color: _AT.textMain,
+                            }}
+                        >
+                            <Icon size={18} color={style.color} strokeWidth={2} style={{ flexShrink: 0 }} />
+                            <span style={{ flex: 1 }}>{toast.message}</span>
+                            <button
+                                onClick={() => onRemove(toast.id)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: _AT.textMuted,
+                                    padding: 4,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                }}
+                                aria-label="Close notification"
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  BREADCRUMB NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+export const Breadcrumbs = ({ items, onNavigate }) => {
+    injectKeyframes();
+
+    return (
+        <nav aria-label="Breadcrumb" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 16px',
+            fontSize: 12,
+            color: _AT.textMuted,
+            borderBottom: `1px solid ${_AT.grid}`,
+            background: 'rgba(0, 0, 0, 0.2)',
+            fontFamily: _AT.fontMono,
+        }}>
+            {items.map((item, idx) => (
+                <div key={item.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {idx > 0 && <ChevronRight size={12} style={{ opacity: 0.4 }} />}
+                    <button
+                        onClick={() => onNavigate && onNavigate(item.id)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: onNavigate ? 'pointer' : 'default',
+                            color: idx === items.length - 1 ? _AT.primary : _AT.textMuted,
+                            fontWeight: idx === items.length - 1 ? 600 : 400,
+                            transition: 'color 0.15s ease',
+                            textDecoration: 'none',
+                            fontFamily: _AT.fontMono,
+                            fontSize: 12,
+                            padding: '2px 4px',
+                            borderRadius: 4,
+                        }}
+                        onMouseEnter={e => {
+                            if (idx !== items.length - 1 && onNavigate) {
+                                e.currentTarget.style.color = _AT.primary;
+                                e.currentTarget.style.background = `${_AT.primary}10`;
+                            }
+                        }}
+                        onMouseLeave={e => {
+                            if (idx !== items.length - 1) {
+                                e.currentTarget.style.color = _AT.textMuted;
+                                e.currentTarget.style.background = 'none';
+                            }
+                        }}
+                    >
+                        {item.label}
+                    </button>
+                </div>
+            ))}
+        </nav>
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SKELETON LOADING PLACEHOLDER
+// ═══════════════════════════════════════════════════════════════════════════
+export const SkeletonCard = ({ width = '100%', height = 200 }) => {
+    injectKeyframes();
+
+    return (
+        <div style={{
+            width,
+            height,
+            borderRadius: 8,
+            background: 'linear-gradient(90deg, rgba(0, 245, 255, 0.05) 0%, rgba(123, 47, 255, 0.05) 50%, rgba(0, 245, 255, 0.05) 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 2s infinite',
+            border: `1px solid ${_AT.grid}`,
+        }} />
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PROGRESS INDICATOR (for data fetches)
+// ═══════════════════════════════════════════════════════════════════════════
+export const ProgressBar = ({ progress = 0, isVisible = true }) => {
+    injectKeyframes();
+
+    if (!isVisible) return null;
+
+    return (
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            height: 2,
+            width: `${progress * 100}%`,
+            background: `linear-gradient(90deg, #00f5ff, #7b2fff, #ff2d78)`,
+            backgroundSize: '200% 100%',
+            animation: 'waveFlow 2s ease-in-out infinite',
+            zIndex: 10000,
+            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 0 10px rgba(0, 245, 255, 0.6)',
+        }} />
+    );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  EXPORT MANIFEST
 // ═══════════════════════════════════════════════════════════════════════════
 export default {
@@ -2509,4 +2736,6 @@ export default {
     LoadingOverlay, SkeletonLoader, EmptyState,
     // Advanced
     AIAgentView, QueryHistoryItem, CommandPalette, CommandPaletteItem, NodeLink, SequenceUsageBar, SettingRow,
+    // UX Improvements
+    ToastProvider, useToast, ToastContainer, Breadcrumbs, SkeletonCard, ProgressBar,
 };

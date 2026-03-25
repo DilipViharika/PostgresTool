@@ -42,6 +42,8 @@ import terraformRoutes from './routes/terraformRoutes.js';
 import aiMonitoringRoutes from './routes/aiMonitoringRoutes.js';
 import schemaRoutes    from './routes/schemaRoutes.js';
 import metricsRoutes   from './routes/metricsRoutes.js';
+import observabilityRoutes from './routes/observabilityRoutes.js';
+import reportRoutes    from './routes/reportRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -932,6 +934,8 @@ for (const prefix of modularMounts) {
     app.use(prefix, aiMonitoringRoutes(pool, authenticate));
     app.use(prefix, metricsRoutes(pool, authenticate));
     app.use(prefix, schemaRoutes(pool, authenticate));
+    app.use(prefix, observabilityRoutes(pool, authenticate, requireScreen));
+    app.use(prefix, reportRoutes(pool, authenticate, requireScreen));
 }
 
 // ── Enterprise routes (hidden — uncomment when ready) ────────────────────────

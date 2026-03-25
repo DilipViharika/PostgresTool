@@ -35,7 +35,7 @@ const SQL_TAB_TO_SECTION = {
   'pool': 'infra', 'replication': 'infra', 'checkpoint': 'infra',
   'maintenance': 'infra', 'capacity': 'infra', 'backup': 'infra',
   // Schema & Security
-  'schema': 'schema', 'schema-viz': 'schema', 'security': 'schema',
+  'schema': 'schema', 'schema-viz': 'schema', 'table-deps': 'schema', 'security': 'schema',
   // Observability
   'cloudwatch': 'observability', 'log-patterns': 'observability',
   'alert-correlation': 'observability', 'opentelemetry': 'observability',
