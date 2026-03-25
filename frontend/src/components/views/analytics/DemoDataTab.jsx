@@ -2181,76 +2181,294 @@ function SubTabContent({ subTabId, section, db, widgets }) {
   const key = dbName === 'sqlserver' ? 'mssql' : dbName;
   const seed = `${key}-${subTabId}`;
 
-  /* ── Overview: high-level dashboard — throughput chart + health + activity ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     OVERVIEW: Full 7-row dashboard matching real monitoring layout
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'overview' || !subTabId) {
-    const throughputData = gen24h(seed, 800, 600, 200, 300);
+    const clusterVelData = gen24h(seed, 1200, 400, 900, 300); // QPS + TPS
+    const latencyData = gen24h(seed, 5, 3, 8, 4).map((d, i) => ({
+      ...d,
+      p50: 2 + Math.sin(i / 4) * 1.5,
+      p95: 5 + Math.cos(i / 5) * 2,
+      p99: 8 + Math.sin(i / 3) * 2.5,
+    }));
+    const workloadData = [
+      { name: 'SELECTs', value: Math.floor(hashSeed(`${seed}-ws`) * 30 + 40), color: db.color },
+      { name: 'INSERTs', value: Math.floor(hashSeed(`${seed}-wi`) * 15 + 10), color: THEME.success },
+      { name: 'UPDATEs', value: Math.floor(hashSeed(`${seed}-wu`) * 10 + 8), color: THEME.warning },
+      { name: 'DELETEs', value: Math.floor(hashSeed(`${seed}-wd`) * 5 + 2), color: THEME.danger },
+    ];
+    const impactedTables = (DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
+      name: t.substring(0, 12),
+      impact: Math.floor(hashSeed(`${seed}-ti-${i}`) * 1000 + 100),
+    })).sort((a, b) => b.impact - a.impact);
+
     return (
       <>
-        {/* Throughput trend chart — the primary overview visual */}
-        <Panel title="Throughput (24h)" icon={Activity} accentColor={db.color}
-          rightNode={<div style={{ display: 'flex', gap: 10 }}>
-            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />TPS</span>
-            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.success, borderRadius: 1 }} />Commits</span>
-          </div>}>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={throughputData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
-              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
-              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} />
-              <Tooltip contentStyle={TT_STYLE} />
-              <Area type="monotone" dataKey="primary" name="TPS" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
-              <Area type="monotone" dataKey="secondary" name="Commits" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={1.5} strokeDasharray="4 2" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Panel>
-
-        {/* Health + Backup + Maintenance row */}
-        <div style={{ marginTop: 16 }}>
-          <OverviewPanels widgets={widgets} db={db} />
+        {/* Row 1: 6 Hero KPI Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
+          {db.kpis && db.kpis.slice(0, 6).map((kpi, i) => (
+            <Panel key={i} title={kpi.label} icon={Zap} accentColor={db.color}>
+              <StatCard label="" value={kpi.value} unit={kpi.unit} color={db.color} />
+              {kpi.sparkline && <MiniSparkline data={kpi.sparkline.map(v => ({ value: v }))} color={db.color} width={100} height={18} />}
+            </Panel>
+          ))}
         </div>
 
-        {/* Database health gauge + uptime + connections summary */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
-          <Panel title="Database Health" icon={Shield} accentColor={THEME.success}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-dh`) * 5 + 94)} color={THEME.success} size={90} strokeWidth={7} label="HEALTH" />
+        {/* Row 2: 3 Cards (Last Backup, Long-Running Txns, Vacuum Health) */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+          <Panel title="Last Backup" icon={Archive} accentColor={THEME.success}>
+            <StatCard label="Time" value={`${Math.floor(hashSeed(`${seed}-lb`) * 6 + 1)}`} unit="hours ago" color={THEME.success} />
+            <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 8 }}>
+              Size: {Math.floor(hashSeed(`${seed}-lbs`) * 10 + 5)} GB
             </div>
           </Panel>
-          <Panel title="Uptime" icon={Clock} accentColor={THEME.success}>
-            <StatCard label="Current" value={db.kpis.find(k => k.label === 'Uptime')?.value || '47d'} unit={db.kpis.find(k => k.label === 'Uptime')?.unit || ''} color={THEME.success} />
+          <Panel title="Long-Running Txns" icon={Hourglass} accentColor={THEME.warning}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-lrt`) * 5)}`} unit="" color={THEME.warning} />
+            <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 8 }}>
+              Max: {Math.floor(hashSeed(`${seed}-lrtm`) * 30 + 5)}s
+            </div>
           </Panel>
-          <Panel title="Cache Hit" icon={Zap} accentColor={db.color}>
-            <StatCard label="Ratio" value={db.kpis.find(k => k.label === 'Cache Hit' || k.label === 'Buffer Hit')?.value || '99.2'} unit="%" color={db.color} />
+          <Panel title="Vacuum Health" icon={RefreshCw} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-vh`) * 10 + 85)} color={THEME.success} size={70} strokeWidth={5} label="HEALTH" />
+            </div>
           </Panel>
-          <Panel title="Active Connections" icon={Network} accentColor={db.color}>
-            <StatCard label="Current" value={db.kpis.find(k => k.label === 'Connections' || k.label === 'Threads')?.value || '42'} color={db.color} />
+        </div>
+
+        {/* Row 3: 2-col — Cluster Velocity AreaChart | Database Health + Connection Pool Gauges */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
+          <Panel title="Cluster Velocity (24h)" icon={TrendingUp} accentColor={db.color}
+            rightNode={<div style={{ display: 'flex', gap: 10 }}>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />QPS</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.success, borderRadius: 1 }} />TPS</span>
+            </div>}>
+            <ResponsiveContainer width="100%" height={180}>
+              <AreaChart data={clusterVelData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Area type="monotone" dataKey="primary" name="QPS" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+                <Area type="monotone" dataKey="secondary" name="TPS" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={1.5} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Panel>
+          <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 14 }}>
+            <Panel title="Database Health" icon={Shield} accentColor={THEME.success}>
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+                <RingGauge value={Math.floor(hashSeed(`${seed}-dh`) * 5 + 94)} color={THEME.success} size={70} strokeWidth={5} label="HEALTH" />
+              </div>
+            </Panel>
+            <Panel title="Connection Pool" icon={Network} accentColor={db.color}>
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+                <RingGauge value={Math.floor(hashSeed(`${seed}-cp`) * 40 + 30)} color={db.color} size={70} strokeWidth={5} label="POOL" />
+              </div>
+            </Panel>
+          </div>
+        </div>
+
+        {/* Row 4: Transaction Latency Percentiles LineChart with SLA reference */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Transaction Latency Percentiles (24h)" icon={Activity} accentColor={db.color}
+            rightNode={<div style={{ display: 'flex', gap: 10 }}>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />P50</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.warning, borderRadius: 1 }} />P95</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.danger, borderRadius: 1 }} />P99</span>
+            </div>}>
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={latencyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="ms" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <ReferenceLine y={10} stroke={THEME.success} strokeDasharray="5 5" label={{ value: 'SLA (10ms)', fontSize: 8, fill: THEME.textDim, position: 'right' }} />
+                <Line type="monotone" dataKey="p50" name="P50" stroke={db.color} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="p95" name="P95" stroke={THEME.warning} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="p99" name="P99" stroke={THEME.danger} strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+
+        {/* Row 5: 3-col — Workload Split PieChart | Throughput Breakdown | Ops/Second BarChart */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Workload Split" icon={PieChart} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+              <ResponsiveContainer width="100%" height={140}>
+                <PieChart>
+                  <Pie
+                    data={workloadData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={30}
+                    outerRadius={50}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {workloadData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ fontSize: 10, padding: '8px 12px 0', borderTop: `1px solid ${THEME.gridLine}` }}>
+              {workloadData.map((w, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  <span style={{ color: THEME.textDim }}>{w.name}</span>
+                  <span style={{ color: THEME.textMain, fontWeight: 600 }}>{w.value}%</span>
+                </div>
+              ))}
+            </div>
+          </Panel>
+          <Panel title="Throughput Breakdown" icon={BarChart3} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={workloadData} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 9, fill: THEME.textDim }} width={70} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" fill={db.color} radius={[0, 3, 3, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Ops/Second" icon={Zap} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={gen24h(seed, 50, 30, 30, 15).slice(0, 6)}>
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={35} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="primary" name="Ops" fill={db.color} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+
+        {/* Row 6: 3-col — CPU Load | Memory Usage | Disk I/O RingGauges with secondary values */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="CPU Load" icon={Cpu} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-cpu`) * 40 + 20)} color={db.color} size={90} strokeWidth={7} label="CPU" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
+              <div><span style={{ color: THEME.textDim }}>Cores</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>8</span></div>
+              <div><span style={{ color: THEME.textDim }}>Avg</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>2.4</span></div>
+            </div>
+          </Panel>
+          <Panel title="Memory Usage" icon={MemoryStick} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-mem`) * 30 + 45)} color={db.color} size={90} strokeWidth={7} label="RAM" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
+              <div><span style={{ color: THEME.textDim }}>Used</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>12.4G</span></div>
+              <div><span style={{ color: THEME.textDim }}>Cache</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>4.0G</span></div>
+            </div>
+          </Panel>
+          <Panel title="Disk I/O" icon={HardDrive} accentColor={db.color}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-disk`) * 50 + 30)} color={db.color} size={90} strokeWidth={7} label="I/O" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
+              <div><span style={{ color: THEME.textDim }}>Read</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>245MB</span></div>
+              <div><span style={{ color: THEME.textDim }}>Write</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>128MB</span></div>
+            </div>
+          </Panel>
+        </div>
+
+        {/* Row 7: 3-col — Replication & Locks | Top Impacted Tables | WAL & Checkpoints */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="Replication & Locks" icon={Lock} accentColor={db.color}>
+            <div style={{ fontSize: 10, padding: '8px 12px' }}>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Replicas:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-rep`) * 4 + 1)}</div>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Replication Lag:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(hashSeed(`${seed}-lag`) * 2).toFixed(2)}ms</div>
+              </div>
+              <div>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Lock Wait Evts:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-lwe`) * 20)}</div>
+              </div>
+            </div>
+          </Panel>
+          <Panel title="Top Impacted Tables" icon={Database} accentColor={THEME.warning}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={impactedTables} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 8, fill: THEME.textDim }} width={80} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="impact" fill={THEME.warning} radius={[0, 3, 3, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="WAL & Checkpoints" icon={Archive} accentColor={db.color}>
+            <div style={{ fontSize: 10, padding: '8px 12px' }}>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>WAL Files:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-wal`) * 100 + 20)}</div>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Checkpoints/Day:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-ckpt`) * 100 + 200)}</div>
+              </div>
+              <div>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Avg Duration:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-ckptd`) * 20 + 5)}s</div>
+              </div>
+            </div>
           </Panel>
         </div>
       </>
     );
   }
 
-  /* ── Performance: session traffic + slow queries ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     PERFORMANCE: Session stats + Session Traffic chart + Slow Queries table
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'performance') {
     const sessionData = gen24h(seed, 5, 30, 2, 15);
     return (
       <>
-        <Panel title="Session Traffic" icon={Activity} accentColor={db.color}
-          rightNode={<div style={{ display: 'flex', gap: 10 }}>
-            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Active</span>
-            <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.textDim, borderRadius: 1 }} />Idle</span>
-          </div>}>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={sessionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
-              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
-              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
-              <Tooltip contentStyle={TT_STYLE} />
-              <Area type="monotone" dataKey="primary" name="Active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
-              <Area type="monotone" dataKey="secondary" name="Idle" stroke={THEME.textDim} fill={`${THEME.textDim}10`} strokeWidth={1.5} strokeDasharray="4 2" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Panel>
+        {/* Row 1: 4-col session stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <Panel title="Active Sessions" icon={Activity} accentColor={db.color}>
+            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-as`) * 30 + 5)}`} unit="" color={db.color} />
+          </Panel>
+          <Panel title="Long Running" icon={Clock} accentColor={THEME.warning}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-lr`) * 10)}`} unit="" color={THEME.warning} />
+          </Panel>
+          <Panel title="Idle Sessions" icon={Clock} accentColor={THEME.textDim}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-idle`) * 15)}`} unit="" color={THEME.textDim} />
+          </Panel>
+          <Panel title="Blocked" icon={Lock} accentColor={THEME.danger}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-blk`) * 3)}`} unit="" color={THEME.danger} />
+          </Panel>
+        </div>
+
+        {/* Row 2: Session Traffic AreaChart */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Session Traffic (24h)" icon={Activity} accentColor={db.color}
+            rightNode={<div style={{ display: 'flex', gap: 10 }}>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />Active</span>
+              <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: THEME.textDim, borderRadius: 1 }} />Idle</span>
+            </div>}>
+            <ResponsiveContainer width="100%" height={180}>
+              <AreaChart data={sessionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Area type="monotone" dataKey="primary" name="Active" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+                <Area type="monotone" dataKey="secondary" name="Idle" stroke={THEME.textDim} fill={`${THEME.textDim}10`} strokeWidth={1.5} strokeDasharray="4 2" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+
+        {/* Row 3: Slow Queries DemoTable */}
         <div style={{ marginTop: 16 }}>
           <Panel title="Slow Queries" icon={Clock} accentColor={THEME.warning}>
             <DemoTable
@@ -2269,14 +2487,52 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             />
           </Panel>
         </div>
+
+        {/* Row 4: Lock Waits stats + N+1 Query Patterns table */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Lock Waits" icon={Lock} accentColor={THEME.warning}>
+            <div style={{ fontSize: 10, padding: '8px 12px' }}>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Current Wait Events:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashSeed(`${seed}-lwev`) * 20)}</div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Avg Wait Time:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{(hashSeed(`${seed}-lwt`) * 500).toFixed(0)}ms</div>
+              </div>
+              <div>
+                <div style={{ color: THEME.textDim, marginBottom: 2 }}>Max Wait:</div>
+                <div style={{ color: THEME.textMain, fontWeight: 600, fontSize: 14 }}>{Math.floor(hashSeed(`${seed}-lwmax`) * 5000 + 100)}ms</div>
+              </div>
+            </div>
+          </Panel>
+          <Panel title="N+1 Query Patterns" icon={Eye} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'pattern', label: 'Pattern', width: '40%' },
+                { key: 'count', label: 'Count', width: '25%' },
+                { key: 'risk', label: 'Risk', width: '35%' },
+              ]}
+              rows={[
+                { pattern: 'SELECT in loop', count: Math.floor(hashSeed(`${seed}-n1-0`) * 50 + 10), risk: 'High' },
+                { pattern: 'Missing JOIN', count: Math.floor(hashSeed(`${seed}-n1-1`) * 30 + 5), risk: 'Medium' },
+                { pattern: 'Nested subquery', count: Math.floor(hashSeed(`${seed}-n1-2`) * 20 + 3), risk: 'Low' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+        </div>
       </>
     );
   }
 
-  /* ── Resources: CPU / Memory / Connections gauges + table I/O ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     RESOURCES: CPU/Memory/Disk RingGauges + Table Inventory + Bloat/Growth
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'resources') {
     return (
       <>
+        {/* Row 1: 3-col RingGauges with detail text */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <Panel title="CPU Usage" icon={Cpu} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
@@ -2292,37 +2548,189 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               <RingGauge value={Math.floor(hashSeed(`${seed}-mem`) * 30 + 45)} color={db.color} size={100} strokeWidth={8} label="RAM" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
-              <div><span style={{ color: THEME.textDim }}>Used</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>12.4 GB</span></div>
-              <div><span style={{ color: THEME.textDim }}>Buffers</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>4 GB</span></div>
+              <div><span style={{ color: THEME.textDim }}>Used</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>12.4G</span></div>
+              <div><span style={{ color: THEME.textDim }}>Buffers</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>4.0G</span></div>
             </div>
           </Panel>
-          <Panel title="Connections" icon={Network} accentColor={db.color}>
+          <Panel title="Disk I/O" icon={HardDrive} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RingGauge value={Math.floor(hashSeed(`${seed}-conn`) * 30 + 15)} color={db.color} size={100} strokeWidth={8} label="POOL" />
+              <RingGauge value={Math.floor(hashSeed(`${seed}-disk`) * 50 + 30)} color={db.color} size={100} strokeWidth={8} label="I/O" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, padding: '0 12px 8px' }}>
-              <div><span style={{ color: THEME.textDim }}>Active</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>25</span></div>
-              <div><span style={{ color: THEME.textDim }}>Max</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>100</span></div>
+              <div><span style={{ color: THEME.textDim }}>Read</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>245MB</span></div>
+              <div><span style={{ color: THEME.textDim }}>Write</span> <span style={{ color: THEME.textMain, fontWeight: 600 }}>128MB</span></div>
             </div>
           </Panel>
         </div>
+
+        {/* Row 2: Table Inventory DemoTable */}
         <div style={{ marginTop: 16 }}>
-          <Panel title="Top Tables by I/O" icon={Database} accentColor={db.color}>
+          <Panel title="Table Inventory" icon={Database} accentColor={db.color}>
             <DemoTable
               columns={[
-                { key: 'table', label: 'Table', width: '30%' },
-                { key: 'reads', label: 'Reads', width: '17%' },
-                { key: 'writes', label: 'Writes', width: '17%' },
-                { key: 'hitRatio', label: 'Hit Ratio', width: '18%' },
-                { key: 'trend', label: 'Trend', width: '18%' },
+                { key: 'table', label: 'Table', width: '18%' },
+                { key: 'rows', label: 'Rows', width: '12%' },
+                { key: 'size', label: 'Size', width: '12%' },
+                { key: 'seqScans', label: 'Seq Scans', width: '12%' },
+                { key: 'idxScans', label: 'Idx Scans', width: '12%' },
+                { key: 'deadTuples', label: 'Dead Tuples', width: '12%' },
+                { key: 'lastVacuum', label: 'Last Vacuum', width: '22%' },
               ]}
-              rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
+              rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6).map((t, i) => ({
                 table: t,
-                reads: `${Math.floor(hashSeed(`${seed}-trd-${i}`) * 50 + 10)}K`,
-                writes: `${Math.floor(hashSeed(`${seed}-twr-${i}`) * 20 + 2)}K`,
-                hitRatio: `${Math.floor(hashSeed(`${seed}-thr-${i}`) * 10 + 90)}%`,
-                trend: hashSeed(`${seed}-ttr-${i}`) > 0.5 ? 'Increasing' : 'Stable',
+                rows: `${Math.floor(hashSeed(`${seed}-r-${i}`) * 500 + 10)}K`,
+                size: `${Math.floor(hashSeed(`${seed}-s-${i}`) * 100 + 5)} MB`,
+                seqScans: Math.floor(hashSeed(`${seed}-ss-${i}`) * 100),
+                idxScans: Math.floor(hashSeed(`${seed}-is-${i}`) * 5000 + 100),
+                deadTuples: Math.floor(hashSeed(`${seed}-dt-${i}`) * 1000),
+                lastVacuum: `${Math.floor(hashSeed(`${seed}-lv-${i}`) * 24 + 1)}h ago`,
               }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+
+        {/* Row 3: 2-col — Bloat Analysis BarChart | Table Growth Rate LineChart */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Bloat Analysis" icon={Layers} accentColor={THEME.warning}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
+                name: t.substring(0, 10),
+                size: Math.floor(hashSeed(`${seed}-ba-s-${i}`) * 200 + 50),
+                bloat: Math.floor(hashSeed(`${seed}-ba-b-${i}`) * 30 + 2),
+              }))}>
+                <XAxis dataKey="name" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="MB" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="size" name="Table Size" fill={db.color} radius={[2, 2, 0, 0]} />
+                <Bar dataKey="bloat" name="Bloat" fill={THEME.warning} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Table Growth Rate (24h)" icon={TrendingUp} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={gen24h(seed, 100, 80, 50, 30)}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="MB" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Line type="monotone" dataKey="primary" name="Growth" stroke={db.color} strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     RELIABILITY: Uptime/MTTR/SLO + Error Budget + MTTR Trend + Incidents table
+     ══════════════════════════════════════════════════════════════════════ */
+  if (subTabId === 'reliability') {
+    const errorBudgetData = gen24h(seed, 0, 0.5, 0.1, 0.2).map((d, i) => ({
+      ...d,
+      burned: Math.min((i / 24) * 15 + hashSeed(`${seed}-eb-${i}`) * 5, 100),
+    }));
+    const mttrData = gen7d(seed, 100, 50);
+    const incidentData = [
+      { severity: 'Critical', value: Math.floor(hashSeed(`${seed}-ic`) * 3), color: THEME.danger },
+      { severity: 'High', value: Math.floor(hashSeed(`${seed}-ih`) * 8 + 2), color: THEME.warning },
+      { severity: 'Medium', value: Math.floor(hashSeed(`${seed}-im`) * 12 + 5), color: db.color },
+    ];
+
+    return (
+      <>
+        {/* Row 1: 5 KPI cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          <Panel title="Uptime Days" icon={CheckCircle} accentColor={THEME.success}>
+            <StatCard label="Days" value="47" unit="" color={THEME.success} />
+          </Panel>
+          <Panel title="MTTR" icon={Clock} accentColor={db.color}>
+            <StatCard label="Avg" value={`${Math.floor(hashSeed(`${seed}-mttr`) * 20 + 5)}`} unit="min" color={db.color} />
+          </Panel>
+          <Panel title="SLO Budget" icon={Shield} accentColor={THEME.success}>
+            <StatCard label="Remaining" value={`${Math.floor(hashSeed(`${seed}-slo`) * 10 + 85)}`} unit="%" color={THEME.success} />
+          </Panel>
+          <Panel title="Failed Deploys" icon={AlertTriangle} accentColor={THEME.warning}>
+            <StatCard label="This month" value={`${Math.floor(hashSeed(`${seed}-fd`) * 3)}`} unit="" color={THEME.warning} />
+          </Panel>
+          <Panel title="Total Incidents" icon={AlertTriangle} accentColor={db.color}>
+            <StatCard label="30 days" value={`${Math.floor(hashSeed(`${seed}-ti`) * 8 + 2)}`} unit="" color={db.color} />
+          </Panel>
+        </div>
+
+        {/* Row 2: 2-col — Error Budget RingGauge + details | 30-Day Error Budget Burn LineChart */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="Error Budget Status" icon={Shield} accentColor={THEME.success}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+              <RingGauge value={Math.floor(hashSeed(`${seed}-ebs`) * 30 + 60)} color={THEME.success} size={100} strokeWidth={8} label="BUDGET" />
+            </div>
+            <div style={{ fontSize: 10, padding: '8px 12px', borderTop: `1px solid ${THEME.gridLine}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ color: THEME.textDim }}>Monthly Budget</span>
+                <span style={{ color: THEME.textMain, fontWeight: 600 }}>43.2 minutes</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: THEME.textDim }}>Remaining</span>
+                <span style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashSeed(`${seed}-budg`) * 30 + 10)} min</span>
+              </div>
+            </div>
+          </Panel>
+          <Panel title="30-Day Error Budget Burn" icon={TrendingUp} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={errorBudgetData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="%" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <ReferenceLine y={100} stroke={THEME.danger} strokeDasharray="3 3" label={{ value: 'Exhausted', fontSize: 8, fill: THEME.danger }} />
+                <Line type="monotone" dataKey="burned" name="Burned" stroke={db.color} strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+
+        {/* Row 3: 2-col — MTTR Trend LineChart | Incident Severity BarChart */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Panel title="MTTR Trend (7d)" icon={Clock} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={mttrData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="day" tick={{ fontSize: 9, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={40} unit="min" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Line type="monotone" dataKey="value" name="MTTR" stroke={db.color} strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="Incident Severity" icon={AlertTriangle} accentColor={THEME.warning}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={incidentData}>
+                <XAxis dataKey="severity" tick={{ fontSize: 9, fill: THEME.textDim }} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" fill={db.color} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+
+        {/* Row 4: Incident Feed DemoTable */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Incident Feed" icon={AlertTriangle} accentColor={THEME.warning}>
+            <DemoTable
+              columns={[
+                { key: 'incident', label: 'Incident', width: '25%' },
+                { key: 'severity', label: 'Severity', width: '15%' },
+                { key: 'status', label: 'Status', width: '15%' },
+                { key: 'duration', label: 'Duration', width: '20%' },
+                { key: 'resolved', label: 'Resolved', width: '25%' },
+              ]}
+              rows={[
+                { incident: 'High CPU Usage', severity: 'Critical', status: 'Resolved', duration: '2h 15m', resolved: '1d ago' },
+                { incident: 'Memory Leak Detected', severity: 'High', status: 'Resolved', duration: '45m', resolved: '3d ago' },
+                { incident: 'Disk Space Warning', severity: 'Medium', status: 'Resolved', duration: '30m', resolved: '1w ago' },
+              ]}
               color={db.color}
             />
           </Panel>
@@ -2331,74 +2739,52 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Reliability: error rates + availability gauges ── */
-  if (subTabId === 'reliability') {
-    const reliData = gen24h(seed, 0, 5, 0.5, 3);
-    return (
-      <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Panel title="Error Trend (24h)" icon={AlertTriangle} accentColor={THEME.warning}>
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={reliData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
-                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} />
-                <Tooltip contentStyle={TT_STYLE} />
-                <Bar dataKey="primary" name="Errors" fill={THEME.warning} radius={[2, 2, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
-          <Panel title="Recovery Time (24h)" icon={Clock} accentColor={THEME.success}>
-            <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={reliData.map(d => ({ ...d, recovery: +(d.secondary + 0.5).toFixed(1) }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
-                <XAxis dataKey="time" tick={{ fontSize: 8, fill: THEME.textDim }} interval={5} />
-                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={24} unit="s" />
-                <Tooltip contentStyle={TT_STYLE} />
-                <Line type="monotone" dataKey="recovery" stroke={THEME.success} strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </Panel>
-        </div>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-          <Panel title="SLA Breach" icon={Shield} accentColor={THEME.success}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
-              <RingGauge value={99} color={THEME.success} size={80} strokeWidth={6} label="SLA" />
-            </div>
-          </Panel>
-          <Panel title="Availability" icon={CheckCircle} accentColor={THEME.success}>
-            <StatCard label="30-day rolling" value="99.99" unit="%" color={THEME.success} />
-          </Panel>
-          <Panel title="Incidents" icon={AlertTriangle} accentColor={db.color}>
-            <StatCard label="Last 7 days" value="0" color={db.color} />
-          </Panel>
-        </div>
-      </>
-    );
-  }
-
-  /* ── Alerts: active alerts table + rules donut + frequency ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     ALERTS: KPI cards + Alert Feed + Alert Rules DonutWidget + Frequency chart
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'alerts') {
     return (
       <>
-        <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
-          <DemoTable
-            columns={[
-              { key: 'name', label: 'Alert Rule', width: '35%' },
-              { key: 'severity', label: 'Severity', width: '20%' },
-              { key: 'status', label: 'Status', width: '20%' },
-              { key: 'time', label: 'Last Triggered', width: '25%' },
-            ]}
-            rows={[
-              { name: 'High CPU Usage', severity: 'Warning', status: 'Triggered', time: '5 min ago' },
-              { name: 'Replication Lag > 1s', severity: 'Critical', status: 'Resolved', time: '2 hours ago' },
-              { name: 'Disk Usage > 80%', severity: 'Warning', status: 'Active', time: '15 min ago' },
-              { name: 'Connection Pool Full', severity: 'Critical', status: 'Resolved', time: '1 day ago' },
-              { name: 'Slow Query > 10s', severity: 'Info', status: 'Active', time: '30 min ago' },
-            ]}
-            color={db.color}
-          />
-        </Panel>
+        {/* Row 1: 4 stat cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
+            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-aa`) * 10 + 2)}`} unit="" color={THEME.warning} />
+          </Panel>
+          <Panel title="Acknowledged" icon={CheckCircle} accentColor={THEME.success}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-ack`) * 5)}`} unit="" color={THEME.success} />
+          </Panel>
+          <Panel title="Unacknowledged" icon={Bell} accentColor={THEME.danger}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-uack`) * 15 + 3)}`} unit="" color={THEME.danger} />
+          </Panel>
+          <Panel title="Resolved Today" icon={CheckCircle} accentColor={THEME.success}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-res`) * 8 + 1)}`} unit="" color={THEME.success} />
+          </Panel>
+        </div>
+
+        {/* Row 2: Alert Feed DemoTable */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Alert Feed" icon={AlertTriangle} accentColor={THEME.warning}>
+            <DemoTable
+              columns={[
+                { key: 'alert', label: 'Alert', width: '30%' },
+                { key: 'severity', label: 'Severity', width: '15%' },
+                { key: 'status', label: 'Status', width: '15%' },
+                { key: 'source', label: 'Source', width: '20%' },
+                { key: 'time', label: 'Time', width: '20%' },
+              ]}
+              rows={[
+                { alert: 'High CPU Usage', severity: 'Warning', status: 'Active', source: 'System', time: '5 min ago' },
+                { alert: 'Replication Lag > 1s', severity: 'Critical', status: 'Resolved', source: 'Replication', time: '2 hours ago' },
+                { alert: 'Disk Usage > 80%', severity: 'Warning', status: 'Active', source: 'Storage', time: '15 min ago' },
+                { alert: 'Connection Pool Full', severity: 'Critical', status: 'Resolved', source: 'Connections', time: '1 day ago' },
+                { alert: 'Slow Query > 10s', severity: 'Info', status: 'Active', source: 'Query', time: '30 min ago' },
+              ]}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+
+        {/* Row 3: 2-col — Alert Rules Summary DonutWidget | Alert Frequency BarChart */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Panel title="Alert Rules Summary" icon={Shield} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
@@ -2423,6 +2809,25 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             </ResponsiveContainer>
           </Panel>
         </div>
+
+        {/* Row 4: Alert Severity Distribution horizontal bars */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Alert Severity Distribution" icon={BarChart3} accentColor={THEME.warning}>
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart data={[
+                { name: 'Critical', value: Math.floor(hashSeed(`${seed}-as-c`) * 5 + 2), color: THEME.danger },
+                { name: 'High', value: Math.floor(hashSeed(`${seed}-as-h`) * 15 + 8), color: THEME.warning },
+                { name: 'Medium', value: Math.floor(hashSeed(`${seed}-as-m`) * 25 + 15), color: db.color },
+                { name: 'Low', value: Math.floor(hashSeed(`${seed}-as-l`) * 20 + 10), color: THEME.success },
+              ]} layout="vertical">
+                <XAxis type="number" tick={{ fontSize: 8, fill: THEME.textDim }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 9, fill: THEME.textDim }} width={70} />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Bar dataKey="value" fill={db.color} radius={[0, 3, 3, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
       </>
     );
   }
@@ -2431,7 +2836,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      QUERY & INDEXES section tabs
      ══════════════════════════════════════════════════════════════════ */
 
-  /* ── Query Optimizer: scan type distribution + plan cost trend ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     QUERY OPTIMIZER: KPI cards + Scan Distribution + Plan Cost + Expensive Queries
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'optimizer') {
     const scanData = [
       { name: 'Index Scan', value: Math.floor(hashSeed(`${seed}-idx`) * 15 + 75), color: db.color },
@@ -2440,7 +2847,27 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     ];
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        {/* Row 1: 5 KPI cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          <Panel title="Total Cost" icon={Zap} accentColor={db.color}>
+            <StatCard label="Avg" value={`${Math.floor(hashSeed(`${seed}-tc`) * 500 + 100)}`} unit="" color={db.color} />
+          </Panel>
+          <Panel title="Planning Time" icon={Clock} accentColor={db.color}>
+            <StatCard label="Avg" value={`${(hashSeed(`${seed}-pt`) * 50 + 10).toFixed(1)}`} unit="ms" color={db.color} />
+          </Panel>
+          <Panel title="Execution Time" icon={Clock} accentColor={db.color}>
+            <StatCard label="Avg" value={`${(hashSeed(`${seed}-et`) * 100 + 20).toFixed(1)}`} unit="ms" color={db.color} />
+          </Panel>
+          <Panel title="Buffer Hit" icon={Zap} accentColor={THEME.success}>
+            <StatCard label="Ratio" value={`${Math.floor(hashSeed(`${seed}-bh`) * 10 + 85)}`} unit="%" color={THEME.success} />
+          </Panel>
+          <Panel title="Rows Out" icon={Database} accentColor={db.color}>
+            <StatCard label="Avg" value={`${Math.floor(hashSeed(`${seed}-ro`) * 10000 + 100)}`} unit="" color={db.color} />
+          </Panel>
+        </div>
+
+        {/* Row 2: Scan Type Distribution DonutWidget + Query Plan Cost Trend LineChart */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Panel title="Scan Type Distribution" icon={Eye} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
               <DonutWidget
@@ -2450,7 +2877,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               />
             </div>
           </Panel>
-          <Panel title="Query Plan Cost Trend" icon={Zap} accentColor={db.color}>
+          <Panel title="Query Plan Cost Trend (24h)" icon={Zap} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={gen24h(seed, 100, 200, 50, 100)}>
                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
@@ -2463,6 +2890,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             </ResponsiveContainer>
           </Panel>
         </div>
+
+        {/* Row 3: Top Expensive Queries DemoTable */}
         <div style={{ marginTop: 16 }}>
           <Panel title="Top Expensive Queries" icon={Zap} accentColor={THEME.warning}>
             <DemoTable
@@ -2485,30 +2914,56 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Indexes: index usage table + bloat vs size chart ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     INDEXES: KPI cards + Index Usage Analysis + Size vs Bloat + Health
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'indexes') {
     return (
       <>
-        <Panel title="Index Usage Analysis" icon={Layers} accentColor={db.color}>
-          <DemoTable
-            columns={[
-              { key: 'index', label: 'Index Name', width: '30%' },
-              { key: 'table', label: 'Table', width: '20%' },
-              { key: 'scans', label: 'Scans', width: '12%' },
-              { key: 'size', label: 'Size', width: '12%' },
-              { key: 'usage', label: 'Usage', width: '13%' },
-              { key: 'status', label: 'Status', width: '13%' },
-            ]}
-            rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6).map((t, i) => ({
-              index: `idx_${t}_${['pkey', 'created', 'status', 'name', 'email', 'type'][i % 6]}`,
-              table: t, scans: Math.floor(hashSeed(`${seed}-sc-${i}`) * 5000 + 100),
-              size: `${Math.floor(hashSeed(`${seed}-sz-${i}`) * 50 + 1)} MB`,
-              usage: `${Math.floor(hashSeed(`${seed}-us-${i}`) * 40 + 60)}%`,
-              status: i < 4 ? 'Active' : 'Unused',
-            }))}
-            color={db.color}
-          />
-        </Panel>
+        {/* Row 1: 5 KPI cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          <Panel title="Hit Ratio" icon={Zap} accentColor={THEME.success}>
+            <StatCard label="Ratio" value={`${Math.floor(hashSeed(`${seed}-ihr`) * 10 + 85)}`} unit="%" color={THEME.success} />
+          </Panel>
+          <Panel title="Open Issues" icon={AlertTriangle} accentColor={THEME.warning}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-oi`) * 15 + 3)}`} unit="" color={THEME.warning} />
+          </Panel>
+          <Panel title="Total Indexes" icon={Layers} accentColor={db.color}>
+            <StatCard label="Count" value={`${Math.floor(hashSeed(`${seed}-ti`) * 200 + 100)}`} unit="" color={db.color} />
+          </Panel>
+          <Panel title="Index Storage" icon={HardDrive} accentColor={db.color}>
+            <StatCard label="Used" value={`${Math.floor(hashSeed(`${seed}-is`) * 500 + 100)}`} unit="MB" color={db.color} />
+          </Panel>
+          <Panel title="Seq Scan Rate" icon={Activity} accentColor={THEME.warning}>
+            <StatCard label="Per Min" value={`${Math.floor(hashSeed(`${seed}-ssr`) * 50 + 10)}`} unit="" color={THEME.warning} />
+          </Panel>
+        </div>
+
+        {/* Row 2: Index Usage Analysis DemoTable */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Index Usage Analysis" icon={Layers} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'index', label: 'Index Name', width: '30%' },
+                { key: 'table', label: 'Table', width: '20%' },
+                { key: 'scans', label: 'Scans', width: '12%' },
+                { key: 'size', label: 'Size', width: '12%' },
+                { key: 'usage', label: 'Usage', width: '13%' },
+                { key: 'status', label: 'Status', width: '13%' },
+              ]}
+              rows={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6).map((t, i) => ({
+                index: `idx_${t}_${['pkey', 'created', 'status', 'name', 'email', 'type'][i % 6]}`,
+                table: t, scans: Math.floor(hashSeed(`${seed}-sc-${i}`) * 5000 + 100),
+                size: `${Math.floor(hashSeed(`${seed}-sz-${i}`) * 50 + 1)} MB`,
+                usage: `${Math.floor(hashSeed(`${seed}-us-${i}`) * 40 + 60)}%`,
+                status: i < 4 ? 'Active' : 'Unused',
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+
+        {/* Row 3: 2-col — Index Size vs Bloat BarChart | Index Health RingGauge */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Panel title="Index Size vs Bloat" icon={BarChart3} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={150}>
@@ -2534,10 +2989,13 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Plan Regression: timeline + regression events table ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     PLAN REGRESSION: Plan Changes AreaChart (7d) + Regression Events table
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'regression') {
     return (
       <>
+        {/* Row 1: Plan Changes AreaChart (7d) */}
         <Panel title="Query Plan Changes (7d)" icon={TrendingUp} accentColor={db.color}>
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={gen7d(seed, 0, 5).map(d => ({ ...d, regressions: Math.floor(hashSeed(`${seed}-r-${d.day}`) * 2) }))}>
@@ -2550,6 +3008,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
+
+        {/* Row 2: Recent Regression Events DemoTable */}
         <div style={{ marginTop: 16 }}>
           <Panel title="Recent Regression Events" icon={AlertTriangle} accentColor={THEME.warning}>
             <DemoTable
@@ -2573,11 +3033,14 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Bloat Analysis: bloat by table bar chart + vacuum suggestions ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     BLOAT ANALYSIS: Bloat Distribution BarChart + 3 KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'bloat') {
     const tables = (DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 6);
     return (
       <>
+        {/* Row 1: Table Bloat Distribution horizontal BarChart */}
         <Panel title="Table Bloat Distribution" icon={Layers} accentColor={THEME.warning}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={tables.map((t, i) => ({
@@ -2592,6 +3055,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             </BarChart>
           </ResponsiveContainer>
         </Panel>
+
+        {/* Row 2: 3 stat cards */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <Panel title="Total Bloat" icon={Layers} accentColor={THEME.warning}>
             <StatCard label="Across all tables" value={`${Math.floor(hashSeed(`${seed}-tb`) * 200 + 50)}`} unit="MB" color={THEME.warning} />
@@ -2609,10 +3074,13 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Table Analysis: table stats grid ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     TABLE ANALYSIS: Table Statistics DemoTable + Table I/O Distribution BarChart
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'table') {
     return (
       <>
+        {/* Row 1: Table Statistics DemoTable */}
         <Panel title="Table Statistics" icon={Database} accentColor={db.color}>
           <DemoTable
             columns={[
@@ -2635,6 +3103,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             color={db.color}
           />
         </Panel>
+
+        {/* Row 2: Table I/O Distribution BarChart */}
         <div style={{ marginTop: 16 }}>
           <Panel title="Table I/O Distribution" icon={Activity} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
@@ -2661,9 +3131,13 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      ══════════════════════════════════════════════════════════════════ */
 
   /* ── Connection Pool: pool gauge + connection history ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     CONNECTION POOL: Pool Utilization RingGauge + Connection History chart + DemoTable
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'pool') {
     return (
       <>
+        {/* Row 1: 2-col — Pool Utilization RingGauge + stats | Connection History AreaChart */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
           <Panel title="Pool Utilization" icon={Network} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
@@ -2689,47 +3163,119 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             </ResponsiveContainer>
           </Panel>
         </div>
-      </>
-    );
-  }
 
-  /* ── Replication & WAL: lag timeline + replica status cards ── */
-  if (subTabId === 'replication') {
-    return (
-      <>
-        <Panel title="Replication Lag (24h)" icon={Radio} accentColor={db.color}>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={gen24h(seed, 0, 2, 0, 1).map(d => ({ ...d, lag: +(d.primary * 0.3).toFixed(1) }))}>
-              <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
-              <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
-              <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} unit="ms" />
-              <Tooltip contentStyle={TT_STYLE} />
-              <Area type="monotone" dataKey="lag" name="Lag" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
-          <Panel title="WAL Rate" icon={Activity} accentColor={db.color}>
-            <StatCard label="Generation" value="12.4" unit="MB/s" color={db.color} />
-          </Panel>
-          <Panel title="Replicas" icon={Server} accentColor={THEME.success}>
-            <StatCard label="Active" value="3" color={THEME.success} />
-          </Panel>
-          <Panel title="Archiving" icon={Archive} accentColor={THEME.success}>
-            <StatCard label="Status" value="Active" color={THEME.success} />
-          </Panel>
-          <Panel title="WAL Files" icon={Database} accentColor={db.color}>
-            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-wf`) * 30 + 20)}`} color={db.color} />
+        {/* Row 2: Connection List DemoTable */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Connection List" icon={Network} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'name', label: 'Connection', width: '20%' },
+                { key: 'host', label: 'Host', width: '20%' },
+                { key: 'status', label: 'Status', width: '15%' },
+                { key: 'poolSize', label: 'Pool Size', width: '15%' },
+                { key: 'active', label: 'Active', width: '15%' },
+              ]}
+              rows={['App Server 1', 'App Server 2', 'Analytics', 'Reports', 'Backup'].map((name, i) => ({
+                name: name,
+                host: `192.168.1.${100 + i}`,
+                status: 'Active',
+                poolSize: `${50 + i * 10}`,
+                active: `${10 + i * 3}`,
+              }))}
+              color={db.color}
+            />
           </Panel>
         </div>
       </>
     );
   }
 
-  /* ── Checkpoint Monitor: checkpoint timeline + duration ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     REPLICATION & WAL: Streaming Replicas + Replication Lag + Replica Details
+     ══════════════════════════════════════════════════════════════════════ */
+  if (subTabId === 'replication') {
+    return (
+      <>
+        {/* Row 1: 4 KPI cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <Panel title="Streaming Replicas" icon={Radio} accentColor={THEME.success}>
+            <StatCard label="Active" value={`${Math.floor(hashSeed(`${seed}-sr`) * 4 + 1)}`} unit="" color={THEME.success} />
+          </Panel>
+          <Panel title="Max Replay Lag" icon={Clock} accentColor={db.color}>
+            <StatCard label="Max" value={`${(hashSeed(`${seed}-mrl`) * 5).toFixed(2)}`} unit="ms" color={db.color} />
+          </Panel>
+          <Panel title="Replication Slots" icon={Database} accentColor={db.color}>
+            <StatCard label="Active" value={`${Math.floor(hashSeed(`${seed}-rs`) * 3 + 1)}`} unit="" color={db.color} />
+          </Panel>
+          <Panel title="Current WAL" icon={Archive} accentColor={db.color}>
+            <StatCard label="Position" value={`${Math.floor(hashSeed(`${seed}-cwal`) * 100)}`} unit="" color={db.color} />
+          </Panel>
+        </div>
+
+        {/* Row 2: Replication Lag AreaChart (24h) */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Replication Lag (24h)" icon={Radio} accentColor={db.color}>
+            <ResponsiveContainer width="100%" height={180}>
+              <AreaChart data={gen24h(seed, 0, 2, 0, 1).map(d => ({ ...d, lag: +(d.primary * 0.3).toFixed(1) }))}>
+                <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
+                <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} width={30} unit="ms" />
+                <Tooltip contentStyle={TT_STYLE} />
+                <Area type="monotone" dataKey="lag" name="Lag" stroke={db.color} fill={`${db.color}20`} strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+
+        {/* Row 3: Replica Details DemoTable */}
+        <div style={{ marginTop: 16 }}>
+          <Panel title="Replica Details" icon={Radio} accentColor={db.color}>
+            <DemoTable
+              columns={[
+                { key: 'replica', label: 'Replica', width: '20%' },
+                { key: 'state', label: 'State', width: '15%' },
+                { key: 'lag', label: 'Lag', width: '15%' },
+                { key: 'sentLsn', label: 'Sent LSN', width: '25%' },
+                { key: 'flushLsn', label: 'Flush LSN', width: '25%' },
+              ]}
+              rows={['standby-1', 'standby-2', 'standby-3'].map((name, i) => ({
+                replica: name,
+                state: 'Streaming',
+                lag: `${(hashSeed(`${seed}-lag-${i}`) * 2).toFixed(2)}ms`,
+                sentLsn: `0/${Math.floor(hashSeed(`${seed}-sent-${i}`) * 1000000000).toString(16).padStart(8, '0')}`,
+                flushLsn: `0/${Math.floor(hashSeed(`${seed}-flush-${i}`) * 1000000000).toString(16).padStart(8, '0')}`,
+              }))}
+              color={db.color}
+            />
+          </Panel>
+        </div>
+
+        {/* Row 4: WAL Configuration stats cards */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+          <Panel title="WAL Level" icon={Activity} accentColor={db.color}>
+            <StatCard label="Setting" value="replica" unit="" color={db.color} />
+          </Panel>
+          <Panel title="Checkpoint Duration" icon={Clock} accentColor={db.color}>
+            <StatCard label="Avg" value="12" unit="sec" color={db.color} />
+          </Panel>
+          <Panel title="Archiving" icon={Archive} accentColor={THEME.success}>
+            <StatCard label="Status" value="Active" unit="" color={THEME.success} />
+          </Panel>
+          <Panel title="WAL Files" icon={Database} accentColor={db.color}>
+            <StatCard label="Current" value={`${Math.floor(hashSeed(`${seed}-wf`) * 30 + 20)}`} unit="" color={db.color} />
+          </Panel>
+        </div>
+      </>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     CHECKPOINT MONITOR: Checkpoint Frequency + Duration Trend + KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'checkpoint') {
     return (
       <>
+        {/* Row 1: 2-col — Checkpoint Frequency BarChart | Duration Trend LineChart */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Panel title="Checkpoint Frequency (24h)" icon={CheckCircle} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
@@ -2742,7 +3288,7 @@ function SubTabContent({ subTabId, section, db, widgets }) {
               </BarChart>
             </ResponsiveContainer>
           </Panel>
-          <Panel title="Checkpoint Duration Trend" icon={Clock} accentColor={db.color}>
+          <Panel title="Duration Trend (24h)" icon={Clock} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={gen24h(seed + 'dur', 5, 15, 2, 8)}>
                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.gridLine} />
@@ -2755,6 +3301,8 @@ function SubTabContent({ subTabId, section, db, widgets }) {
             </ResponsiveContainer>
           </Panel>
         </div>
+
+        {/* Row 2: 3 stat cards */}
         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <Panel title="Per Day" icon={Activity} accentColor={db.color}>
             <StatCard label="Checkpoints" value="288" color={db.color} />
@@ -2770,7 +3318,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Vacuum & Maintenance: vacuum schedule + dead tuple trend ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     VACUUM & MAINTENANCE: Dead Tuple Accumulation AreaChart + Vacuum Activity table
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'maintenance') {
     return (
       <>
@@ -2810,7 +3360,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Capacity Planning: storage projection + growth rate ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     CAPACITY PLANNING: Storage Growth Projection AreaChart + KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'capacity') {
     const projData = Array.from({ length: 12 }, (_, i) => ({
       month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
@@ -2851,7 +3403,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Backup & Recovery: backup timeline + status ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     BACKUP & RECOVERY: Backup History BarChart (7d) + KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'backup') {
     return (
       <>
@@ -2888,7 +3442,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      SCHEMA & SECURITY section tabs
      ══════════════════════════════════════════════════════════════════ */
 
-  /* ── Schema & Migrations: migration timeline + entity counts ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     SCHEMA & MIGRATIONS: Migration History DemoTable + KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'schema') {
     return (
       <>
@@ -2920,7 +3476,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Schema Visualizer: relationship stats + entity donut ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     SCHEMA VISUALIZER: Entity Relationships DonutWidget + Schema Complexity stats
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'schema-viz') {
     return (
       <>
@@ -2963,7 +3521,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Security & Compliance: audit trend + policy gauge ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     SECURITY & COMPLIANCE: Audit Events AreaChart + Compliance RingGauge + stats
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'security') {
     return (
       <>
@@ -2999,7 +3559,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      OBSERVABILITY section tabs
      ══════════════════════════════════════════════════════════════════ */
 
-  /* ── CloudWatch: metric stream + alarm status ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     CLOUDWATCH: CloudWatch Metric Stream AreaChart (24h) + KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'cloudwatch') {
     return (
       <>
@@ -3025,7 +3587,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Log Pattern Analysis: pattern distribution + volume trend ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     LOG PATTERN ANALYSIS: Log Level DonutWidget + Log Volume Trend BarChart + table
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'log-patterns') {
     return (
       <>
@@ -3078,7 +3642,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Alert Correlation: correlation matrix + root cause ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     ALERT CORRELATION: Correlated Alert Groups DemoTable + Root Cause Accuracy
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'alert-correlation') {
     return (
       <>
@@ -3116,7 +3682,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── OpenTelemetry: trace waterfall + span distribution ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     OPENTELEMETRY: Trace Volume AreaChart (24h) + KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'opentelemetry') {
     return (
       <>
@@ -3142,7 +3710,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Kubernetes: pod status + resource util ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     KUBERNETES: Pod Status DonutWidget + Resource Utilization RingGauges + Node table
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'kubernetes') {
     return (
       <>
@@ -3193,7 +3763,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Status Page: component status + incident timeline ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     STATUS PAGE: System Components DemoTable + Uptime/Subscribers/Incident stats
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'status-page') {
     return (
       <>
@@ -3228,7 +3800,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── AI Monitoring: anomaly trend + model accuracy ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     AI MONITORING: Anomaly Detection AreaChart (7d) + AI Accuracy/Training/Forecast
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'ai-monitoring') {
     return (
       <>
@@ -3260,7 +3834,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      DEVELOPER TOOLS section tabs
      ══════════════════════════════════════════════════════════════════ */
 
-  /* ── SQL Console: query stats + recent queries ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     SQL CONSOLE: Query Stats KPI cards + Recent Query History DemoTable
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'sql') {
     return (
       <>
@@ -3293,7 +3869,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── API Tracing: endpoint latency + call trend ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     API TRACING: API Call Volume AreaChart (24h) + Top Endpoints by Latency table
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'api') {
     return (
       <>
@@ -3334,7 +3912,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Repository: commit history + branch activity ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     REPOSITORY: Commit Activity BarChart (7d) + KPI cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'repository') {
     return (
       <>
@@ -3359,7 +3939,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── AI Query Advisor: recommendation cards + performance delta ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     AI QUERY ADVISOR: AI Recommendations DemoTable + Adoption/Improvement/Analyzed stats
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'ai-advisor') {
     return (
       <>
@@ -3397,7 +3979,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
      ADMIN section tabs
      ══════════════════════════════════════════════════════════════════ */
 
-  /* ── DBA Task Scheduler: schedule table + status donut ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     DBA TASK SCHEDULER: Scheduled Tasks DemoTable + Task Status DonutWidget + Success
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'tasks') {
     return (
       <>
@@ -3444,7 +4028,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── User Management: user list + role distribution ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     USER MANAGEMENT: Active Users DemoTable + Role Distribution DonutWidget
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'users') {
     return (
       <>
@@ -3486,7 +4072,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Admin Panel: config + system health ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     ADMIN PANEL: System Health RingGauge + Config Changes + Recent Changes table
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'admin-panel') {
     return (
       <>
@@ -3522,7 +4110,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Data Retention: policy table + storage usage trend ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     DATA RETENTION: Retention Policies DemoTable + Storage Freed + Compliance RingGauge
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'retention') {
     return (
       <>
@@ -3565,7 +4155,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Terraform Export: resource inventory + drift ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     TERRAFORM EXPORT: KPI cards + Terraform Resource Inventory DemoTable
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'terraform') {
     return (
       <>
@@ -3599,7 +4191,9 @@ function SubTabContent({ subTabId, section, db, widgets }) {
     );
   }
 
-  /* ── Custom Dashboards: gallery + usage stats ── */
+  /* ══════════════════════════════════════════════════════════════════════
+     CUSTOM DASHBOARDS: Dashboard Gallery DemoTable + KPI stat cards
+     ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'custom-dashboard') {
     return (
       <>
