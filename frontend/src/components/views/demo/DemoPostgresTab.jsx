@@ -56,6 +56,12 @@ import {
     ShieldCheck,
     TableProperties,
     LayoutDashboard,
+    Users,
+    FileText,
+    Settings,
+    Calendar,
+    Code,
+    Download,
 } from 'lucide-react';
 import {
     AreaChart,
@@ -246,6 +252,21 @@ function DemoPostgresTab({ tabId }) {
                 { key: 'api-tracing', label: 'API Tracing' },
                 { key: 'repository', label: 'Repository' },
                 { key: 'ai-advisor', label: 'AI Query Advisor' },
+            ],
+        },
+        {
+            key: 'admin',
+            label: 'Admin',
+            icon: Shield,
+            accent: THEME.danger,
+            items: [
+                { key: 'dba-tasks', label: 'DBA Task Scheduler' },
+                { key: 'user-management', label: 'User Management' },
+                { key: 'admin-panel', label: 'Admin Panel' },
+                { key: 'data-retention', label: 'Data Retention' },
+                { key: 'report-builder', label: 'Report Builder' },
+                { key: 'terraform-export', label: 'Terraform Export' },
+                { key: 'custom-dashboards', label: 'Custom Dashboards' },
             ],
         },
     ];
@@ -3741,6 +3762,873 @@ function DemoPostgresTab({ tabId }) {
                                 </div>
                             ))}
                         </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // ADMIN SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'admin' && itemKey === 'dba-tasks') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
+                        DBA Task Scheduler
+                    </h1>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+                        <MetricCard
+                            icon={Calendar}
+                            label="Scheduled Tasks"
+                            value="14"
+                            sub="8 active"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => Math.random() * 100)}
+                            trend="+2"
+                            trendUp
+                        />
+                        <MetricCard
+                            icon={CheckCircle}
+                            label="Completed Today"
+                            value="23"
+                            sub="0 failed"
+                            color={THEME.success}
+                            spark={Array.from({ length: 12 }, () => Math.random() * 30)}
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Next Scheduled"
+                            value="2m 14s"
+                            sub="VACUUM ANALYZE"
+                            color={THEME.warning}
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Failed (7d)"
+                            value="1"
+                            sub="Retry scheduled"
+                            color={THEME.danger}
+                        />
+                    </div>
+                    <Panel title="ACTIVE TASKS" icon={Calendar} accentColor={THEME.primary}>
+                        <DataTable
+                            columns={[
+                                { key: 'name', label: 'Task Name' },
+                                { key: 'schedule', label: 'Schedule' },
+                                { key: 'last', label: 'Last Run' },
+                                { key: 'status', label: 'Status' },
+                            ]}
+                            rows={[
+                                { name: 'VACUUM ANALYZE', schedule: 'Every 4h', last: '1h 46m ago', status: 'Active' },
+                                { name: 'pg_dump backup', schedule: 'Daily 02:00', last: '14h ago', status: 'Active' },
+                                {
+                                    name: 'Reindex large tables',
+                                    schedule: 'Weekly Sun 03:00',
+                                    last: '3d ago',
+                                    status: 'Active',
+                                },
+                                { name: 'Stats reset', schedule: 'Monthly 1st', last: '22d ago', status: 'Active' },
+                                {
+                                    name: 'Archive old logs',
+                                    schedule: 'Daily 04:00',
+                                    last: '10h ago',
+                                    status: 'Active',
+                                },
+                            ]}
+                        />
+                    </Panel>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <Panel title="TASK EXECUTION HISTORY" icon={BarChart3} accentColor={THEME.success}>
+                            <ResponsiveContainer width="100%" height={180}>
+                                <BarChart
+                                    data={[
+                                        { name: 'Mon', success: 22, failed: 0 },
+                                        { name: 'Tue', success: 24, failed: 1 },
+                                        { name: 'Wed', success: 23, failed: 0 },
+                                        { name: 'Thu', success: 21, failed: 0 },
+                                        { name: 'Fri', success: 25, failed: 0 },
+                                        { name: 'Sat', success: 18, failed: 0 },
+                                        { name: 'Sun', success: 16, failed: 0 },
+                                    ]}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke={`${THEME.grid}40`} />
+                                    <XAxis dataKey="name" stroke={THEME.textDim} style={{ fontSize: 10 }} />
+                                    <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
+                                    <Tooltip
+                                        contentStyle={{
+                                            background: THEME.glass,
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            borderRadius: 8,
+                                        }}
+                                    />
+                                    <Bar dataKey="success" fill={THEME.success} radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="failed" fill={THEME.danger} radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </Panel>
+                        <Panel title="UPCOMING SCHEDULE" icon={Clock} accentColor={THEME.warning}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {[
+                                    { task: 'VACUUM ANALYZE public.orders', time: 'In 2m 14s', color: THEME.primary },
+                                    { task: 'pg_dump full backup', time: 'In 8h 12m', color: THEME.success },
+                                    { task: 'Reindex idx_orders_date', time: 'In 2d 14h', color: THEME.ai },
+                                    { task: 'Monthly stats reset', time: 'In 5d', color: THEME.warning },
+                                ].map((t, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '8px 0',
+                                            borderBottom: i < 3 ? `1px solid ${THEME.gridDark}` : 'none',
+                                            fontSize: 11,
+                                        }}
+                                    >
+                                        <span style={{ color: THEME.textMuted }}>{t.task}</span>
+                                        <StatusBadge label={t.time} color={t.color} />
+                                    </div>
+                                ))}
+                            </div>
+                        </Panel>
+                    </div>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'admin' && itemKey === 'user-management') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
+                        User Management
+                    </h1>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+                        <MetricCard
+                            icon={Users}
+                            label="Total Users"
+                            value="18"
+                            sub="12 active"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => Math.random() * 20)}
+                        />
+                        <MetricCard
+                            icon={Shield}
+                            label="Admin Users"
+                            value="3"
+                            sub="2 super-admin"
+                            color={THEME.danger}
+                        />
+                        <MetricCard
+                            icon={Lock}
+                            label="2FA Enabled"
+                            value="14"
+                            sub="78% coverage"
+                            color={THEME.success}
+                            trend="+12%"
+                            trendUp
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Avg Session"
+                            value="4.2h"
+                            sub="Peak: 12h"
+                            color={THEME.warning}
+                        />
+                    </div>
+                    <Panel title="USER ACCOUNTS" icon={Users} accentColor={THEME.primary}>
+                        <DataTable
+                            columns={[
+                                { key: 'user', label: 'User' },
+                                { key: 'role', label: 'Role' },
+                                { key: 'lastLogin', label: 'Last Login' },
+                                { key: 'status', label: 'Status' },
+                                { key: 'twofa', label: '2FA' },
+                            ]}
+                            rows={[
+                                {
+                                    user: 'admin@vigil.io',
+                                    role: 'Super Admin',
+                                    lastLogin: '2m ago',
+                                    status: 'Online',
+                                    twofa: 'Enabled',
+                                },
+                                {
+                                    user: 'dba@company.com',
+                                    role: 'DBA',
+                                    lastLogin: '1h ago',
+                                    status: 'Online',
+                                    twofa: 'Enabled',
+                                },
+                                {
+                                    user: 'dev.lead@company.com',
+                                    role: 'Developer',
+                                    lastLogin: '3h ago',
+                                    status: 'Offline',
+                                    twofa: 'Enabled',
+                                },
+                                {
+                                    user: 'analyst@company.com',
+                                    role: 'Read Only',
+                                    lastLogin: '1d ago',
+                                    status: 'Offline',
+                                    twofa: 'Disabled',
+                                },
+                                {
+                                    user: 'monitoring@ops.io',
+                                    role: 'Monitor',
+                                    lastLogin: '5m ago',
+                                    status: 'Online',
+                                    twofa: 'Enabled',
+                                },
+                            ]}
+                        />
+                    </Panel>
+                    <Panel title="ROLE PERMISSIONS" icon={Shield} accentColor={THEME.danger}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                            {[
+                                {
+                                    role: 'Super Admin',
+                                    perms: 'Full access to all features',
+                                    count: 2,
+                                    color: THEME.danger,
+                                },
+                                {
+                                    role: 'DBA',
+                                    perms: 'Database management, backups, queries',
+                                    count: 4,
+                                    color: THEME.warning,
+                                },
+                                {
+                                    role: 'Developer',
+                                    perms: 'Query analysis, schema browser, read-only',
+                                    count: 6,
+                                    color: THEME.primary,
+                                },
+                                { role: 'Read Only', perms: 'Dashboard viewing only', count: 4, color: THEME.textDim },
+                                {
+                                    role: 'Monitor',
+                                    perms: 'Alerts, observability, status page',
+                                    count: 2,
+                                    color: THEME.success,
+                                },
+                            ].map((r, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: 12,
+                                        borderRadius: 8,
+                                        background: `${r.color}08`,
+                                        border: `1px solid ${r.color}18`,
+                                    }}
+                                >
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: r.color, marginBottom: 4 }}>
+                                        {r.role}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>{r.perms}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textMuted }}>{r.count} users</div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'admin' && itemKey === 'admin-panel') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
+                        Admin Panel
+                    </h1>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+                        <MetricCard
+                            icon={Server}
+                            label="Server Uptime"
+                            value="99.97%"
+                            sub="42d 6h 14m"
+                            color={THEME.success}
+                            spark={Array.from({ length: 12 }, () => 99 + Math.random())}
+                        />
+                        <MetricCard
+                            icon={Database}
+                            label="DB Connections"
+                            value="152"
+                            sub="Max: 500"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => 100 + Math.random() * 80)}
+                        />
+                        <MetricCard
+                            icon={HardDrive}
+                            label="Storage Used"
+                            value="234 GB"
+                            sub="of 500 GB (47%)"
+                            color={THEME.warning}
+                            trend="+3.2%"
+                            trendUp
+                        />
+                        <MetricCard
+                            icon={Cpu}
+                            label="Avg CPU"
+                            value="38%"
+                            sub="8 cores"
+                            color={THEME.ai}
+                            spark={Array.from({ length: 12 }, () => 20 + Math.random() * 40)}
+                        />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <Panel title="SYSTEM CONFIGURATION" icon={Settings} accentColor={THEME.primary}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {[
+                                    { key: 'max_connections', val: '500', def: '100' },
+                                    { key: 'shared_buffers', val: '4GB', def: '128MB' },
+                                    { key: 'work_mem', val: '256MB', def: '4MB' },
+                                    { key: 'maintenance_work_mem', val: '1GB', def: '64MB' },
+                                    { key: 'effective_cache_size', val: '12GB', def: '4GB' },
+                                    { key: 'wal_level', val: 'replica', def: 'replica' },
+                                ].map((c, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            fontSize: 11,
+                                            padding: '6px 0',
+                                            borderBottom: i < 5 ? `1px solid ${THEME.gridDark}` : 'none',
+                                        }}
+                                    >
+                                        <span style={{ fontFamily: THEME.fontMono, color: THEME.primary }}>
+                                            {c.key}
+                                        </span>
+                                        <div>
+                                            <span style={{ fontWeight: 600, color: THEME.textMain }}>{c.val}</span>
+                                            <span style={{ color: THEME.textDim, marginLeft: 8, fontSize: 9 }}>
+                                                default: {c.def}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Panel>
+                        <Panel title="RECENT ADMIN ACTIONS" icon={FileText} accentColor={THEME.warning}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {[
+                                    {
+                                        action: 'Updated max_connections to 500',
+                                        user: 'admin',
+                                        time: '2h ago',
+                                        color: THEME.primary,
+                                    },
+                                    {
+                                        action: 'Added new user dev.lead@company.com',
+                                        user: 'admin',
+                                        time: '1d ago',
+                                        color: THEME.success,
+                                    },
+                                    {
+                                        action: 'Enabled pg_stat_statements',
+                                        user: 'dba',
+                                        time: '2d ago',
+                                        color: THEME.ai,
+                                    },
+                                    {
+                                        action: 'Rotated SSL certificates',
+                                        user: 'admin',
+                                        time: '5d ago',
+                                        color: THEME.warning,
+                                    },
+                                    {
+                                        action: 'Upgraded to PostgreSQL 16.2',
+                                        user: 'admin',
+                                        time: '14d ago',
+                                        color: THEME.danger,
+                                    },
+                                ].map((a, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            padding: '8px 0',
+                                            borderBottom: i < 4 ? `1px solid ${THEME.gridDark}` : 'none',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 2 }}>
+                                            {a.action}
+                                        </div>
+                                        <div style={{ fontSize: 9, color: THEME.textDim }}>
+                                            {a.user} • {a.time}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Panel>
+                    </div>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'admin' && itemKey === 'data-retention') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
+                        Data Retention
+                    </h1>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+                        <MetricCard
+                            icon={Archive}
+                            label="Retention Policies"
+                            value="6"
+                            sub="All active"
+                            color={THEME.primary}
+                        />
+                        <MetricCard
+                            icon={HardDrive}
+                            label="Space Reclaimed"
+                            value="48 GB"
+                            sub="Last 30 days"
+                            color={THEME.success}
+                            trend="+12.4%"
+                            trendUp
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Oldest Data"
+                            value="365d"
+                            sub="query_logs"
+                            color={THEME.warning}
+                        />
+                        <MetricCard
+                            icon={Database}
+                            label="Tables Managed"
+                            value="12"
+                            sub="of 127 total"
+                            color={THEME.ai}
+                        />
+                    </div>
+                    <Panel title="RETENTION POLICIES" icon={Archive} accentColor={THEME.primary}>
+                        <DataTable
+                            columns={[
+                                { key: 'table', label: 'Table' },
+                                { key: 'policy', label: 'Retention' },
+                                { key: 'rows', label: 'Rows Managed' },
+                                { key: 'lastPurge', label: 'Last Purge' },
+                                { key: 'nextPurge', label: 'Next Purge' },
+                            ]}
+                            rows={[
+                                {
+                                    table: 'query_logs',
+                                    policy: '90 days',
+                                    rows: '24.5M',
+                                    lastPurge: '1d ago',
+                                    nextPurge: 'Tomorrow 02:00',
+                                },
+                                {
+                                    table: 'audit_trail',
+                                    policy: '365 days',
+                                    rows: '8.2M',
+                                    lastPurge: '7d ago',
+                                    nextPurge: 'In 7d',
+                                },
+                                {
+                                    table: 'session_data',
+                                    policy: '30 days',
+                                    rows: '1.8M',
+                                    lastPurge: '1d ago',
+                                    nextPurge: 'Tomorrow 03:00',
+                                },
+                                {
+                                    table: 'metrics_raw',
+                                    policy: '14 days',
+                                    rows: '45.6M',
+                                    lastPurge: '12h ago',
+                                    nextPurge: 'Tonight 01:00',
+                                },
+                                {
+                                    table: 'error_logs',
+                                    policy: '180 days',
+                                    rows: '3.1M',
+                                    lastPurge: '3d ago',
+                                    nextPurge: 'In 4d',
+                                },
+                            ]}
+                        />
+                    </Panel>
+                    <Panel title="STORAGE TREND" icon={TrendingUp} accentColor={THEME.success}>
+                        <ResponsiveContainer width="100%" height={180}>
+                            <AreaChart
+                                data={[
+                                    { name: 'Jan', total: 280, retained: 210 },
+                                    { name: 'Feb', total: 300, retained: 220 },
+                                    { name: 'Mar', total: 320, retained: 225 },
+                                    { name: 'Apr', total: 340, retained: 230 },
+                                    { name: 'May', total: 350, retained: 234 },
+                                    { name: 'Jun', total: 360, retained: 234 },
+                                ]}
+                            >
+                                <defs>
+                                    <linearGradient id="pg-ret-total" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={THEME.warning} stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="pg-ret-kept" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={`${THEME.grid}40`} />
+                                <XAxis dataKey="name" stroke={THEME.textDim} style={{ fontSize: 10 }} />
+                                <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
+                                <Tooltip
+                                    contentStyle={{
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="total"
+                                    stroke={THEME.warning}
+                                    fillOpacity={1}
+                                    fill="url(#pg-ret-total)"
+                                    name="Total GB"
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="retained"
+                                    stroke={THEME.success}
+                                    fillOpacity={1}
+                                    fill="url(#pg-ret-kept)"
+                                    name="Retained GB"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'admin' && itemKey === 'report-builder') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
+                        Report Builder
+                    </h1>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <Panel title="REPORT CONFIGURATION" icon={Settings} accentColor={THEME.primary}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <div>
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            color: THEME.textDim,
+                                            textTransform: 'uppercase',
+                                            fontWeight: 600,
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        Report Name
+                                    </div>
+                                    <div
+                                        style={{
+                                            padding: '8px 12px',
+                                            borderRadius: 6,
+                                            background: THEME.glass,
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            fontSize: 12,
+                                            color: THEME.textMain,
+                                        }}
+                                    >
+                                        VIGIL Report
+                                    </div>
+                                </div>
+                                <div>
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            color: THEME.textDim,
+                                            textTransform: 'uppercase',
+                                            fontWeight: 600,
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        Date Range
+                                    </div>
+                                    <div
+                                        style={{
+                                            padding: '8px 12px',
+                                            borderRadius: 6,
+                                            background: THEME.glass,
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            fontSize: 12,
+                                            color: THEME.textMain,
+                                        }}
+                                    >
+                                        Last 7 Days
+                                    </div>
+                                </div>
+                                <div>
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            color: THEME.textDim,
+                                            textTransform: 'uppercase',
+                                            fontWeight: 600,
+                                            marginBottom: 8,
+                                        }}
+                                    >
+                                        Templates
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                        {[
+                                            { name: 'Executive Summary', desc: 'High-level KPIs and trends' },
+                                            {
+                                                name: 'DBA Daily Report',
+                                                desc: 'Full technical metrics and diagnostics',
+                                                active: true,
+                                            },
+                                            { name: 'Security Audit', desc: 'Compliance and access logs' },
+                                            { name: 'Capacity Report', desc: 'Storage and growth projections' },
+                                        ].map((t, i) => (
+                                            <div
+                                                key={i}
+                                                style={{
+                                                    padding: '10px 12px',
+                                                    borderRadius: 6,
+                                                    background: t.active ? `${THEME.primary}15` : THEME.glass,
+                                                    border: `1px solid ${t.active ? THEME.primary : THEME.glassBorder}`,
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        fontSize: 12,
+                                                        fontWeight: 600,
+                                                        color: t.active ? THEME.primary : THEME.textMain,
+                                                    }}
+                                                >
+                                                    {t.name}
+                                                </div>
+                                                <div style={{ fontSize: 10, color: THEME.textDim }}>{t.desc}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </Panel>
+                        <Panel title="REPORT PREVIEW" icon={FileText} accentColor={THEME.success}>
+                            <div style={{ padding: 20, textAlign: 'center', color: THEME.textDim }}>
+                                <FileText size={40} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
+                                <div style={{ fontSize: 13, marginBottom: 6 }}>
+                                    Select sections and click &quot;Preview Report&quot; to see the report
+                                </div>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        gap: 8,
+                                        justifyContent: 'center',
+                                        marginTop: 16,
+                                        flexWrap: 'wrap',
+                                    }}
+                                >
+                                    {['Performance', 'Security', 'Capacity', 'Alerts'].map((s, i) => (
+                                        <StatusBadge
+                                            key={i}
+                                            label={s}
+                                            color={[THEME.primary, THEME.danger, THEME.success, THEME.warning][i]}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </Panel>
+                    </div>
+                    <Panel title="RECENT REPORTS" icon={Archive} accentColor={THEME.ai}>
+                        <DataTable
+                            columns={[
+                                { key: 'name', label: 'Report' },
+                                { key: 'type', label: 'Template' },
+                                { key: 'date', label: 'Generated' },
+                                { key: 'size', label: 'Size' },
+                            ]}
+                            rows={[
+                                { name: 'Weekly DBA Report', type: 'DBA Daily', date: '1d ago', size: '2.4 MB' },
+                                { name: 'Q1 Security Audit', type: 'Security Audit', date: '3d ago', size: '5.1 MB' },
+                                { name: 'Executive Summary Mar', type: 'Executive', date: '7d ago', size: '1.8 MB' },
+                            ]}
+                        />
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'admin' && itemKey === 'terraform-export') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
+                        Terraform Export
+                    </h1>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                        <MetricCard icon={Code} label="Resources" value="24" sub="Exportable" color={THEME.primary} />
+                        <MetricCard
+                            icon={Download}
+                            label="Last Export"
+                            value="2d ago"
+                            sub="v1.4.2"
+                            color={THEME.success}
+                        />
+                        <MetricCard
+                            icon={GitBranch}
+                            label="State Version"
+                            value="4.2"
+                            sub="Terraform"
+                            color={THEME.ai}
+                        />
+                    </div>
+                    <Panel title="TERRAFORM CONFIGURATION" icon={Code} accentColor={THEME.primary}>
+                        <div
+                            style={{
+                                background: THEME.glass,
+                                border: `1px solid ${THEME.glassBorder}`,
+                                borderRadius: 6,
+                                padding: 12,
+                                fontFamily: THEME.fontMono,
+                                fontSize: 10,
+                                color: THEME.textDim,
+                                whiteSpace: 'pre-wrap',
+                                maxHeight: 200,
+                                overflow: 'auto',
+                            }}
+                        >
+                            {`resource "postgresql_database" "production" {\n  name     = "production"\n  owner    = "app_user"\n  encoding = "UTF8"\n  lc_collate = "en_US.UTF-8"\n}\n\nresource "postgresql_role" "app_user" {\n  name     = "app_user"\n  login    = true\n  password = var.db_password\n  connection_limit = 100\n}`}
+                        </div>
+                    </Panel>
+                    <Panel title="EXPORTABLE RESOURCES" icon={Database} accentColor={THEME.success}>
+                        <DataTable
+                            columns={[
+                                { key: 'type', label: 'Resource Type' },
+                                { key: 'count', label: 'Count' },
+                                { key: 'status', label: 'Status' },
+                            ]}
+                            rows={[
+                                { type: 'postgresql_database', count: '4', status: 'Ready' },
+                                { type: 'postgresql_role', count: '8', status: 'Ready' },
+                                { type: 'postgresql_grant', count: '6', status: 'Ready' },
+                                { type: 'postgresql_extension', count: '3', status: 'Ready' },
+                                { type: 'postgresql_schema', count: '3', status: 'Ready' },
+                            ]}
+                        />
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'admin' && itemKey === 'custom-dashboards') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
+                        Custom Dashboards
+                    </h1>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+                        <MetricCard
+                            icon={LayoutDashboard}
+                            label="Dashboards"
+                            value="5"
+                            sub="3 shared"
+                            color={THEME.primary}
+                        />
+                        <MetricCard
+                            icon={BarChart3}
+                            label="Total Widgets"
+                            value="32"
+                            sub="Across all"
+                            color={THEME.ai}
+                        />
+                        <MetricCard icon={Users} label="Viewers" value="12" sub="Active today" color={THEME.success} />
+                        <MetricCard
+                            icon={Clock}
+                            label="Refresh Rate"
+                            value="30s"
+                            sub="Auto-refresh"
+                            color={THEME.warning}
+                        />
+                    </div>
+                    <Panel title="MY DASHBOARDS" icon={LayoutDashboard} accentColor={THEME.primary}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                            {[
+                                { name: 'Production Overview', widgets: 8, shared: true, color: THEME.primary },
+                                { name: 'Performance Deep Dive', widgets: 6, shared: true, color: THEME.ai },
+                                { name: 'Alert Dashboard', widgets: 5, shared: false, color: THEME.danger },
+                                { name: 'Replication Monitor', widgets: 4, shared: true, color: THEME.success },
+                                { name: 'Dev Team View', widgets: 9, shared: false, color: THEME.warning },
+                            ].map((d, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: 14,
+                                        borderRadius: 10,
+                                        background: THEME.glass,
+                                        border: `1px solid ${d.color}18`,
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            height: 3,
+                                            background: `linear-gradient(90deg, ${d.color}, transparent)`,
+                                        }}
+                                    />
+                                    <div
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: 700,
+                                            color: THEME.textMain,
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        {d.name}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 8, fontSize: 10 }}>
+                                        <span style={{ color: THEME.textDim }}>{d.widgets} widgets</span>
+                                        {d.shared && <StatusBadge label="Shared" color={THEME.success} />}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                    <Panel title="WIDGET TYPES IN USE" icon={BarChart3} accentColor={THEME.ai}>
+                        <ResponsiveContainer width="100%" height={180}>
+                            <BarChart
+                                data={[
+                                    { type: 'Line Charts', count: 10 },
+                                    { type: 'Metric Cards', count: 8 },
+                                    { type: 'Tables', count: 6 },
+                                    { type: 'Ring Gauges', count: 4 },
+                                    { type: 'Bar Charts', count: 4 },
+                                ]}
+                                layout="vertical"
+                            >
+                                <CartesianGrid strokeDasharray="3 3" stroke={`${THEME.grid}40`} />
+                                <XAxis type="number" stroke={THEME.textDim} style={{ fontSize: 10 }} />
+                                <YAxis
+                                    dataKey="type"
+                                    type="category"
+                                    stroke={THEME.textDim}
+                                    style={{ fontSize: 10 }}
+                                    width={90}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                />
+                                <Bar dataKey="count" fill={THEME.ai} radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </Panel>
                 </div>
             );
