@@ -355,94 +355,110 @@ function DemoMySQLTab({ tabId }) {
         };
     }, []);
 
-    const sections = {
-        overview: {
+    const sections = [
+        {
+            key: 'overview',
             label: 'Overview',
             icon: TrendingUp,
-            items: {
-                executiveDashboard: 'Executive Dashboard',
-                innodbStatus: 'InnoDB Status',
-                serverVariables: 'Server Variables',
-                databases: 'Databases',
-                performanceSchema: 'Performance Schema',
-            },
+            accent: THEME.primary,
+            items: [
+                { key: 'executiveDashboard', label: 'Executive Dashboard' },
+                { key: 'innodbStatus', label: 'InnoDB Status' },
+                { key: 'serverVariables', label: 'Server Variables' },
+                { key: 'databases', label: 'Databases' },
+                { key: 'performanceSchema', label: 'Performance Schema' },
+            ],
         },
-        alerts: {
+        {
+            key: 'alerts',
             label: 'Alerts & Rules',
             icon: AlertCircle,
-            items: {
-                activeAlerts: 'Active Alerts',
-                alertRules: 'Alert Rules',
-                alertHistory: 'Alert History',
-            },
+            accent: THEME.danger,
+            items: [
+                { key: 'activeAlerts', label: 'Active Alerts' },
+                { key: 'alertRules', label: 'Alert Rules' },
+                { key: 'alertHistory', label: 'Alert History' },
+            ],
         },
-        queryAnalysis: {
+        {
+            key: 'queryAnalysis',
             label: 'Query Analysis',
             icon: Eye,
-            items: {
-                slowQueries: 'Slow Query Log',
-                queryDigest: 'Query Digest',
-                explainAnalyzer: 'EXPLAIN Analyzer',
-                indexStats: 'Index Statistics',
-                tableStats: 'Table Statistics',
-                queryProfiler: 'Query Profiler',
-            },
+            accent: THEME.warning,
+            items: [
+                { key: 'slowQueries', label: 'Slow Query Log' },
+                { key: 'queryDigest', label: 'Query Digest' },
+                { key: 'explainAnalyzer', label: 'EXPLAIN Analyzer' },
+                { key: 'indexStats', label: 'Index Statistics' },
+                { key: 'tableStats', label: 'Table Statistics' },
+                { key: 'queryProfiler', label: 'Query Profiler' },
+            ],
         },
-        schemaData: {
+        {
+            key: 'schemaData',
             label: 'Schema & Data',
             icon: Database,
-            items: {
-                schemaBrowser: 'Schema Browser',
-                tableInspector: 'Table Inspector',
-                foreignKeys: 'Foreign Keys',
-                storedPrograms: 'Stored Programs',
-            },
+            accent: THEME.secondary,
+            items: [
+                { key: 'schemaBrowser', label: 'Schema Browser' },
+                { key: 'tableInspector', label: 'Table Inspector' },
+                { key: 'foreignKeys', label: 'Foreign Keys' },
+                { key: 'storedPrograms', label: 'Stored Programs' },
+            ],
         },
-        infrastructure: {
+        {
+            key: 'infrastructure',
             label: 'Infrastructure',
             icon: Server,
-            items: {
-                connectionPool: 'Connection Pool',
-                replication: 'Replication',
-                binlogs: 'Binary Logs',
-                threadPool: 'Thread Pool',
-                bufferPool: 'Buffer Pool',
-                tablespaces: 'Tablespaces',
-                backups: 'Backups',
-            },
+            accent: THEME.ai,
+            items: [
+                { key: 'connectionPool', label: 'Connection Pool' },
+                { key: 'replication', label: 'Replication' },
+                { key: 'binlogs', label: 'Binary Logs' },
+                { key: 'threadPool', label: 'Thread Pool' },
+                { key: 'bufferPool', label: 'Buffer Pool' },
+                { key: 'tablespaces', label: 'Tablespaces' },
+                { key: 'backups', label: 'Backups' },
+            ],
         },
-        security: {
+        {
+            key: 'security',
             label: 'Security',
             icon: Shield,
-            items: {
-                userAccounts: 'User Accounts',
-                privileges: 'Privileges',
-                sslStatus: 'SSL Status',
-                auditLog: 'Audit Log',
-            },
+            accent: THEME.success,
+            items: [
+                { key: 'userAccounts', label: 'User Accounts' },
+                { key: 'privileges', label: 'Privileges' },
+                { key: 'sslStatus', label: 'SSL Status' },
+                { key: 'auditLog', label: 'Audit Log' },
+            ],
         },
-        observability: {
+        {
+            key: 'observability',
             label: 'Observability',
             icon: Gauge,
-            items: {
-                metricsHub: 'Metrics Hub',
-                errorLog: 'Error Log',
-                generalLog: 'General Log',
-                performanceInsights: 'Performance Insights',
-                statusPage: 'Status Page',
-            },
+            accent: THEME.primary,
+            items: [
+                { key: 'metricsHub', label: 'Metrics Hub' },
+                { key: 'errorLog', label: 'Error Log' },
+                { key: 'generalLog', label: 'General Log' },
+                { key: 'performanceInsights', label: 'Performance Insights' },
+                { key: 'statusPage', label: 'Status Page' },
+            ],
         },
-        developerTools: {
+        {
+            key: 'developerTools',
             label: 'Developer Tools',
             icon: Code,
-            items: {
-                sqlEditor: 'SQL Editor',
-                migrationTool: 'Migration Tool',
-                importExport: 'Import/Export',
-                aiTuningAdvisor: 'AI Tuning Advisor',
-            },
+            accent: THEME.warning,
+            items: [
+                { key: 'sqlEditor', label: 'SQL Editor' },
+                { key: 'migrationTool', label: 'Migration Tool' },
+                { key: 'importExport', label: 'Import/Export' },
+                { key: 'aiTuningAdvisor', label: 'AI Tuning Advisor' },
+            ],
         },
-    };
+    ];
 
     const renderContent = (sectionKey, itemKey) => {
         if (sectionKey === 'overview' && itemKey === 'executiveDashboard') {

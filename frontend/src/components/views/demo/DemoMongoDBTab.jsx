@@ -277,7 +277,10 @@ function DemoMongoDBTab({ tabId }) {
 
     const sections = [
         {
-            title: 'OVERVIEW',
+            key: 'OVERVIEW',
+            label: 'Overview',
+            icon: Activity,
+            accent: THEME.primary,
             items: [
                 { key: 'executive', label: 'Executive Dashboard' },
                 { key: 'connstatus', label: 'Connection Status' },
@@ -287,7 +290,10 @@ function DemoMongoDBTab({ tabId }) {
             ],
         },
         {
-            title: 'PERFORMANCE',
+            key: 'PERFORMANCE',
+            label: 'Performance',
+            icon: Zap,
+            accent: THEME.warning,
             items: [
                 { key: 'server-status', label: 'Server Status' },
                 { key: 'realtime-ops', label: 'Real-time Ops' },
@@ -305,7 +311,10 @@ function DemoMongoDBTab({ tabId }) {
             ],
         },
         {
-            title: 'STORAGE',
+            key: 'STORAGE',
+            label: 'Storage',
+            icon: HardDrive,
+            accent: THEME.secondary,
             items: [
                 { key: 'index-advisor', label: 'Index Advisor' },
                 { key: 'schema-analyzer', label: 'Schema Analyzer' },
@@ -317,7 +326,10 @@ function DemoMongoDBTab({ tabId }) {
             ],
         },
         {
-            title: 'DATA',
+            key: 'DATA',
+            label: 'Data',
+            icon: Database,
+            accent: THEME.ai,
             items: [
                 { key: 'doc-editor', label: 'Document Editor' },
                 { key: 'agg-builder', label: 'Aggregation Builder' },
@@ -329,7 +341,10 @@ function DemoMongoDBTab({ tabId }) {
             ],
         },
         {
-            title: 'INTELLIGENCE',
+            key: 'INTELLIGENCE',
+            label: 'Intelligence',
+            icon: Brain,
+            accent: THEME.success,
             items: [
                 { key: 'ai-hints', label: 'AI Hints' },
                 { key: 'compare-clusters', label: 'Compare Clusters' },
@@ -339,7 +354,10 @@ function DemoMongoDBTab({ tabId }) {
             ],
         },
         {
-            title: 'REPLICATION',
+            key: 'REPLICATION',
+            label: 'Replication',
+            icon: RefreshCw,
+            accent: THEME.primary,
             items: [
                 { key: 'replica-status', label: 'Replica Set Status' },
                 { key: 'failover', label: 'Failover Monitor' },
@@ -348,7 +366,10 @@ function DemoMongoDBTab({ tabId }) {
             ],
         },
         {
-            title: 'MANAGEMENT',
+            key: 'MANAGEMENT',
+            label: 'Management',
+            icon: Settings,
+            accent: THEME.danger,
             items: [
                 { key: 'alerts', label: 'Alert Manager' },
                 { key: 'prometheus', label: 'Prometheus Export' },
