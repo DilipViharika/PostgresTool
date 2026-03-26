@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    DemoLayout — shared sidebar + content wrapper for all demo tabs.
@@ -286,6 +286,10 @@ const DemoStyles = () => (
         .dpg-table-row { border-bottom: 1px solid ${THEME.glassBorder}; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .dpg-table-row:last-child { border-bottom: none; }
         .demo-nav-item::-webkit-scrollbar { display: none; }
+        .dpg-glow { animation: dpgGlowPulse 3.5s ease-in-out infinite; }
+        .dpg-glow-warn { animation: dpgGlowPulseWarn 2.8s ease-in-out infinite; }
+        @keyframes dpgGlowPulse { 0%,100%{box-shadow:0 0 0px rgba(14,165,233,0)} 50%{box-shadow:0 0 22px rgba(14,165,233,0.18)} }
+        @keyframes dpgGlowPulseWarn { 0%,100%{box-shadow:0 0 0px rgba(251,146,60,0)} 50%{box-shadow:0 0 20px rgba(251,146,60,0.2)} }
     `}</style>
 );
 
@@ -600,6 +604,365 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
                 {sparkData && <MiniSparkline data={sparkData} color={color} width={48} height={16} />}
             </div>
         </div>
+    </div>
+);
+
+/* ── MetricCard — matches the actual app's KPI card design exactly ── */
+export const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend, trendUp = true, warn }) => (
+    <div
+        className={`dpg-metric ${warn ? 'dpg-glow-warn' : 'dpg-glow'}`}
+        style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+            padding: '14px 16px',
+            borderRadius: 14,
+            background: THEME.glass,
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            border: `1px solid ${warn ? `${color}28` : THEME.glassBorder}`,
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+        }}
+        onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = THEME.glassBorderHover || 'rgba(0,212,255,0.32)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = warn ? `${color}28` : THEME.glassBorder;
+            e.currentTarget.style.transform = 'translateY(0)';
+        }}
+    >
+        <div className="dpg-card-shine" />
+        {/* Icon + Sparkline Row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div
+                style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `${color}10`,
+                    border: `1px solid ${color}18`,
+                }}
+            >
+                {Icon && <Icon size={14} color={color} />}
+            </div>
+            {spark && <MiniSparkline data={spark} color={color} width={48} height={18} />}
+        </div>
+        {/* Label + Value + Sub */}
+        <div>
+            <div
+                style={{
+                    fontSize: 9.5,
+                    color: THEME.textDim,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    lineHeight: 1,
+                    marginBottom: 5,
+                }}
+            >
+                {label}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span
+                    style={{
+                        fontSize: 22,
+                        fontWeight: 700,
+                        color: color,
+                        lineHeight: 1,
+                        letterSpacing: '-0.02em',
+                        fontFamily: THEME.fontMono,
+                    }}
+                >
+                    {value}
+                </span>
+                {sub && <span style={{ fontSize: 10, color: THEME.textDim }}>{sub}</span>}
+            </div>
+        </div>
+        {/* Trend Indicator */}
+        {trend && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                {trendUp ? (
+                    <ArrowUpRight size={10} color={THEME.success} />
+                ) : (
+                    <ArrowDownRight size={10} color={THEME.danger} />
+                )}
+                <span
+                    style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        fontFamily: THEME.fontMono,
+                        color: trendUp ? THEME.success : THEME.danger,
+                    }}
+                >
+                    {trend}
+                </span>
+                <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
+            </div>
+        )}
+    </div>
+);
+
+/* ── LiveMetric — compact metric with sparkline + progress bar (like Alerts page) ── */
+export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progress }) => (
+    <div
+        style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: THEME.glass,
+            backdropFilter: 'blur(12px)',
+            border: `1px solid ${THEME.glassBorder}`,
+            position: 'relative',
+            overflow: 'hidden',
+            flex: 1,
+            minWidth: 120,
+        }}
+    >
+        <div className="dpg-card-shine" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {Icon && (
+                    <div
+                        style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: 6,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: `${color}12`,
+                        }}
+                    >
+                        <Icon size={11} color={color} />
+                    </div>
+                )}
+                <span
+                    style={{
+                        fontSize: 9.5,
+                        fontWeight: 700,
+                        color: THEME.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                    }}
+                >
+                    {label}
+                </span>
+            </div>
+            {spark && <MiniSparkline data={spark} color={color} width={40} height={14} />}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+            <span
+                style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    fontFamily: THEME.fontMono,
+                    color: THEME.textMain,
+                    lineHeight: 1,
+                }}
+            >
+                {value}
+            </span>
+            {unit && <span style={{ fontSize: 10, color: THEME.textDim }}>{unit}</span>}
+        </div>
+        {progress != null && (
+            <div
+                style={{
+                    height: 3,
+                    borderRadius: 2,
+                    background: `${color}15`,
+                    overflow: 'hidden',
+                }}
+            >
+                <div
+                    style={{
+                        height: '100%',
+                        width: `${Math.min(progress, 100)}%`,
+                        borderRadius: 2,
+                        background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+                        transition: 'width 1s ease',
+                    }}
+                />
+            </div>
+        )}
+    </div>
+);
+
+/* ── TabPills — sub-navigation pills like the actual app ── */
+export const TabPills = ({ tabs, active, onChange, accentColor }) => (
+    <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+        {tabs.map((t) => {
+            const isActive = t.key === active;
+            const ac = accentColor || THEME.primary;
+            return (
+                <button
+                    key={t.key}
+                    onClick={() => onChange(t.key)}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: 11,
+                        fontWeight: isActive ? 700 : 500,
+                        padding: '6px 14px',
+                        borderRadius: 20,
+                        background: isActive ? `${ac}20` : 'transparent',
+                        color: isActive ? ac : THEME.textMuted,
+                        border: `1px solid ${isActive ? `${ac}40` : THEME.glassBorder}`,
+                        cursor: 'pointer',
+                        fontFamily: THEME.fontBody,
+                        transition: 'all 0.15s ease',
+                        letterSpacing: '0.02em',
+                    }}
+                >
+                    {t.icon && <t.icon size={12} />}
+                    {t.label}
+                    {t.badge && (
+                        <span
+                            style={{
+                                fontSize: 9,
+                                fontWeight: 700,
+                                padding: '1px 5px',
+                                borderRadius: 8,
+                                background: `${t.badgeColor || ac}25`,
+                                color: t.badgeColor || ac,
+                            }}
+                        >
+                            {t.badge}
+                        </span>
+                    )}
+                </button>
+            );
+        })}
+    </div>
+);
+
+/* ── AlertRow — an alert list item matching the actual app ── */
+export const AlertRow = ({ severity, title, time, source, color }) => (
+    <div
+        style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 10,
+            padding: '11px 14px',
+            background: `${color}06`,
+            borderBottom: `1px solid ${THEME.glassBorder}20`,
+            borderLeft: `2px solid ${color}`,
+            borderRadius: '0 8px 8px 0',
+            marginBottom: 4,
+        }}
+    >
+        <div
+            style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: color,
+                boxShadow: `0 0 6px ${color}80`,
+                flexShrink: 0,
+                marginTop: 4,
+            }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, color: THEME.textMain, fontWeight: 600, lineHeight: 1.35 }}>{title}</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
+                <span
+                    style={{
+                        fontSize: 9.5,
+                        fontFamily: THEME.fontMono,
+                        color: THEME.textDim,
+                    }}
+                >
+                    {time}
+                </span>
+                {source && <span style={{ fontSize: 9.5, color: THEME.textDim }}>{source}</span>}
+            </div>
+        </div>
+        <span
+            style={{
+                fontSize: 9,
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: 8,
+                background: `${color}18`,
+                color,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                fontFamily: THEME.fontMono,
+                flexShrink: 0,
+            }}
+        >
+            {severity}
+        </span>
+    </div>
+);
+
+/* ── TableRow — consistent table row style ── */
+export const DataTable = ({ columns, rows, accentColor }) => (
+    <div style={{ fontSize: 12, color: THEME.textMuted }}>
+        {/* header */}
+        <div
+            style={{
+                display: 'grid',
+                gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
+                gap: 8,
+                padding: '8px 14px',
+                borderBottom: `1px solid ${THEME.glassBorder}`,
+                fontWeight: 700,
+                fontSize: 9.5,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: THEME.textDim,
+            }}
+        >
+            {columns.map((c, i) => (
+                <span key={i} style={{ textAlign: c.align || 'left' }}>
+                    {c.label}
+                </span>
+            ))}
+        </div>
+        {/* rows */}
+        {rows.map((row, ri) => (
+            <div
+                key={ri}
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
+                    gap: 8,
+                    padding: '10px 14px',
+                    borderBottom: `1px solid ${THEME.glassBorder}30`,
+                    transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = `${THEME.glassBorder}20`)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+                {columns.map((c, ci) => (
+                    <span
+                        key={ci}
+                        style={{
+                            textAlign: c.align || 'left',
+                            fontFamily: c.mono ? THEME.fontMono : 'inherit',
+                            color: row[c.key + 'Color'] || (c.mono ? THEME.textMain : THEME.textMuted),
+                            fontWeight: ci === 0 ? 600 : 400,
+                            fontSize: 12,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                    >
+                        {row[c.key]}
+                    </span>
+                ))}
+            </div>
+        ))}
     </div>
 );
 
