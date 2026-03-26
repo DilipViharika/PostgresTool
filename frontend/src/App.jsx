@@ -102,6 +102,11 @@ const ObservabilityHub = lazyRetry(() => import('./components/views/monitoring/O
 // Gap features — Database
 const AIQueryAdvisorTab = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
 
+// Demo dashboards
+const DemoPostgresTab = lazyRetry(() => import('./components/views/demo/DemoPostgresTab.jsx'));
+const DemoMySQLTab = lazyRetry(() => import('./components/views/demo/DemoMySQLTab.jsx'));
+const DemoMongoDBTab = lazyRetry(() => import('./components/views/demo/DemoMongoDBTab.jsx'));
+
 // MongoDB features
 const MongoOverviewTab = lazyRetry(() => import('./components/views/mongodb/MongoOverviewTab.jsx'));
 const MongoPerformanceTab = lazyRetry(() => import('./components/views/mongodb/MongoPerformanceTab.jsx'));
@@ -242,6 +247,10 @@ registerComponents({
     MongoReplicationTab,
     MongoDataToolsTab,
     MongoShardingTab,
+    // Demo dashboards
+    DemoPostgresTab,
+    DemoMySQLTab,
+    DemoMongoDBTab,
     // Phase 1–4 new components
     FleetOverviewTab,
     ConnectionWizard,
@@ -512,9 +521,10 @@ const AppStyles = () => (
         [style*="cursor: pointer"][style*="border-radius"]:hover,
         [style*="cursor:pointer"][style*="borderRadius"]:hover {
             transform: translateY(-2px) !important;
-            box-shadow: ${DS._dark
-                ? '0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,189,248,0.1)'
-                : '0 8px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(14,165,233,0.08)'
+            box-shadow: ${
+                DS._dark
+                    ? '0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,189,248,0.1)'
+                    : '0 8px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(14,165,233,0.08)'
             } !important;
         }
 
