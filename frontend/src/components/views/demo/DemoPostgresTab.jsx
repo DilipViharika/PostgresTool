@@ -1840,130 +1840,170 @@ function DemoPostgresTab({ tabId }) {
         // ACTIVE ALERTS
         if (sectionKey === 'alerts' && itemKey === 'active-alerts') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
-                        }}
-                        className="dpg-stagger"
-                    >
-                        <Panel noPad title="Total Alerts" accentColor={THEME.warning}>
-                            <div
-                                style={{
-                                    padding: '16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minHeight: 90,
-                                }}
-                            >
-                                <div
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {/* ── VIGIL Header ── */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                                <Terminal size={16} color={THEME.ai} />
+                                <span
                                     style={{
-                                        fontSize: 28,
+                                        fontSize: 16,
                                         fontWeight: 700,
-                                        color: THEME.warning,
-                                        fontFamily: THEME.fontMono,
+                                        color: THEME.textMain,
+                                        letterSpacing: '0.06em',
                                     }}
                                 >
-                                    7
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    ACTIVE
-                                </div>
-                            </div>
-                        </Panel>
-                        <Panel noPad title="Critical" accentColor={THEME.danger}>
-                            <div
-                                style={{
-                                    padding: '16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minHeight: 90,
-                                }}
-                            >
-                                <div
+                                    VIGIL
+                                </span>
+                                <span
                                     style={{
-                                        fontSize: 28,
-                                        fontWeight: 700,
-                                        color: THEME.danger,
-                                        fontFamily: THEME.fontMono,
+                                        fontSize: 9,
+                                        color: THEME.textDim,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 10,
+                                        padding: '2px 6px',
+                                        letterSpacing: '0.1em',
                                     }}
                                 >
-                                    2
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    CRITICAL
-                                </div>
+                                    v3.0
+                                </span>
                             </div>
-                        </Panel>
-                        <Panel noPad title="Warning" accentColor={THEME.warning}>
                             <div
                                 style={{
-                                    padding: '16px',
+                                    fontSize: 10,
+                                    color: THEME.textDim,
                                     display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minHeight: 90,
+                                    gap: 12,
                                 }}
                             >
-                                <div
-                                    style={{
-                                        fontSize: 28,
-                                        fontWeight: 700,
-                                        color: THEME.warning,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    3
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    WARNING
-                                </div>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <span
+                                        style={{
+                                            width: 6,
+                                            height: 6,
+                                            borderRadius: '50%',
+                                            background: THEME.success,
+                                            display: 'inline-block',
+                                        }}
+                                    />
+                                    Connected · Last sync 8s ago
+                                </span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <Users size={9} /> 3/5 online
+                                    {['#6366f1', '#22d3a5', '#38bdf8'].map((c, i) => (
+                                        <span
+                                            key={i}
+                                            style={{
+                                                width: 18,
+                                                height: 18,
+                                                borderRadius: '50%',
+                                                background: `${c}30`,
+                                                border: `1px solid ${c}50`,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: 8,
+                                                fontWeight: 700,
+                                                color: c,
+                                            }}
+                                        >
+                                            {['RB', 'JS', 'AK'][i]}
+                                        </span>
+                                    ))}
+                                </span>
                             </div>
-                        </Panel>
-                        <Panel noPad title="Active Rules" accentColor={THEME.success}>
-                            <div
-                                style={{
-                                    padding: '16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minHeight: 90,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 28,
-                                        fontWeight: 700,
-                                        color: THEME.success,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    6/7
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    ENABLED
-                                </div>
-                            </div>
-                        </Panel>
+                        </div>
+                        <div
+                            style={{
+                                padding: '6px 14px',
+                                borderRadius: 6,
+                                background: THEME.glass,
+                                border: `1px solid ${THEME.glassBorder}`,
+                                fontSize: 11,
+                                color: THEME.textMuted,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <RefreshCw size={12} /> Refresh
+                        </div>
                     </div>
 
+                    {/* ── Stats Cards ── */}
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                            gap: '12px',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                            gap: 12,
+                        }}
+                    >
+                        {[
+                            { label: 'TOTAL ALERTS', val: '7', sub: '5 unacknowledged', color: THEME.textMain },
+                            { label: 'CRITICAL', val: '2', sub: 'requires attention', color: THEME.danger },
+                            { label: 'WARNING', val: '3', sub: 'monitor closely', color: THEME.warning },
+                            { label: 'ACTIVE RULES', val: '6/7', sub: 'rules enabled', color: THEME.ai },
+                        ].map((s, i) => (
+                            <div
+                                key={i}
+                                style={{
+                                    padding: '14px 16px',
+                                    background: THEME.glass,
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                    borderRadius: 8,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        right: 0,
+                                        width: 60,
+                                        height: 60,
+                                        borderRadius: '50%',
+                                        background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)`,
+                                    }}
+                                />
+                                <div
+                                    style={{
+                                        fontSize: 10,
+                                        color: THEME.textDim,
+                                        letterSpacing: '0.08em',
+                                        textTransform: 'uppercase',
+                                        marginBottom: 6,
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {s.label}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: 28,
+                                        fontWeight: 700,
+                                        color: s.color,
+                                        lineHeight: 1,
+                                        marginBottom: 4,
+                                        fontFamily: THEME.fontMono,
+                                    }}
+                                >
+                                    {s.val}
+                                </div>
+                                <div style={{ fontSize: 10, color: THEME.textDim }}>{s.sub}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* ── Live Metrics ── */}
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                            gap: 12,
                         }}
                     >
                         <LiveMetric
@@ -1980,7 +2020,7 @@ function DemoPostgresTab({ tabId }) {
                             label="Memory"
                             value="61"
                             unit="%"
-                            color={THEME.warning}
+                            color={THEME.primary}
                             progress={61}
                             spark={Array.from({ length: 12 }, () => 50 + Math.random() * 20)}
                         />
@@ -1998,17 +2038,18 @@ function DemoPostgresTab({ tabId }) {
                             label="API Latency"
                             value="187"
                             unit="ms"
-                            color={THEME.warning}
+                            color={THEME.ai}
                             progress={56}
                             spark={Array.from({ length: 12 }, () => 100 + Math.random() * 150)}
                         />
                     </div>
 
+                    {/* ── Tabs with badges ── */}
                     <TabPills
                         tabs={[
-                            { key: 'active', label: 'Active' },
-                            { key: 'config', label: 'Config' },
-                            { key: 'history', label: 'History', icon: Clock },
+                            { key: 'active', label: 'Active', icon: Bell, badge: '5', badgeColor: THEME.danger },
+                            { key: 'config', label: 'Config', icon: Settings },
+                            { key: 'history', label: 'History', icon: Clock, badge: '⚠', badgeColor: THEME.warning },
                         ]}
                         active={alertsTab}
                         onChange={setAlertsTab}
@@ -2018,136 +2059,577 @@ function DemoPostgresTab({ tabId }) {
                     {/* ── TAB 1: Active ── */}
                     {alertsTab === 'active' && (
                         <>
-                            <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.danger}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    <AlertRow
-                                        severity="critical"
-                                        title="High Database Load"
-                                        time="5m ago"
-                                        source="prod_main"
-                                        color={THEME.danger}
+                            {/* Search & Filter Bar */}
+                            <div
+                                style={{
+                                    padding: '10px 14px',
+                                    background: THEME.glass,
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                    borderRadius: 8,
+                                    display: 'flex',
+                                    gap: 10,
+                                    flexWrap: 'wrap',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+                                    <FileSearch
+                                        size={12}
+                                        style={{
+                                            position: 'absolute',
+                                            left: 10,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            color: THEME.textDim,
+                                        }}
                                     />
-                                    <AlertRow
-                                        severity="critical"
-                                        title="Replication Lag Exceeded"
-                                        time="12m ago"
-                                        source="replica-01"
-                                        color={THEME.danger}
-                                    />
-                                    <AlertRow
-                                        severity="warning"
-                                        title="Connection Pool Usage"
-                                        time="23m ago"
-                                        source="app-pool"
-                                        color={THEME.warning}
-                                    />
-                                    <AlertRow
-                                        severity="warning"
-                                        title="Slow Query Detected"
-                                        time="31m ago"
-                                        source="query-monitor"
-                                        color={THEME.warning}
-                                    />
-                                    <AlertRow
-                                        severity="warning"
-                                        title="WAL Segment Backlog"
-                                        time="45m ago"
-                                        source="wal-manager"
-                                        color={THEME.warning}
-                                    />
+                                    <div
+                                        style={{
+                                            paddingLeft: 30,
+                                            padding: '7px 10px 7px 30px',
+                                            background: THEME.glass,
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            borderRadius: 5,
+                                            fontSize: 12,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        Search alerts, sources...
+                                    </div>
                                 </div>
-                            </Panel>
-
-                            <Panel title="Alert Trend (24h)" icon={TrendingUp} accentColor={THEME.ai}>
-                                <ResponsiveContainer width="100%" height={220}>
-                                    <AreaChart data={demoData.clusterVelocity}>
-                                        <defs>
-                                            <linearGradient id="alert-grad" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor={THEME.danger} stopOpacity={0.3} />
-                                                <stop offset="100%" stopColor={THEME.danger} stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                        <YAxis stroke={THEME.textDim} fontSize={10} />
-                                        <Tooltip content={<ChartTip />} />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="qps"
-                                            stroke={THEME.danger}
-                                            fill="url(#alert-grad)"
-                                            name="Alert Count"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </Panel>
-
-                            <Panel title="Notification Channels" icon={Bell} accentColor={THEME.primary}>
+                                {['All Severities', 'All Categories', 'All Status'].map((f, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            padding: '7px 12px',
+                                            background: THEME.glass,
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            borderRadius: 5,
+                                            fontSize: 11,
+                                            color: THEME.textMuted,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        {f} <span style={{ fontSize: 8, color: THEME.textDim }}>▼</span>
+                                    </div>
+                                ))}
                                 <div
                                     style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                                        gap: '10px',
+                                        marginLeft: 'auto',
+                                        padding: '6px 12px',
+                                        borderRadius: 5,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        fontSize: 11,
+                                        color: THEME.textDim,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 5,
+                                        cursor: 'pointer',
                                     }}
                                 >
-                                    {[
-                                        { channel: 'Email', status: 'Active', count: '12' },
-                                        { channel: 'Slack', status: 'Active', count: '28' },
-                                        { channel: 'PagerDuty', status: 'Active', count: '5' },
-                                        { channel: 'SMS', status: 'Inactive', count: '0' },
-                                    ].map((ch, i) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                padding: '10px 12px',
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
-                                            }}
-                                        >
-                                            <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMain }}>
-                                                {ch.channel}
-                                            </div>
-                                            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
-                                                {ch.status} {ch.status === 'Active' && `(${ch.count})`}
-                                            </div>
-                                        </div>
-                                    ))}
+                                    <Shield size={12} /> MAINTENANCE
                                 </div>
-                            </Panel>
+                            </div>
+
+                            {/* Approval Banner */}
+                            <div
+                                style={{
+                                    padding: '10px 14px',
+                                    background: `${THEME.warning}08`,
+                                    border: `1px solid ${THEME.warning}30`,
+                                    borderRadius: 6,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                }}
+                            >
+                                <Lock size={13} color={THEME.warning} />
+                                <div style={{ flex: 1 }}>
+                                    <div
+                                        style={{ fontSize: 11, color: THEME.warning, fontWeight: 700, marginBottom: 2 }}
+                                    >
+                                        Approval Required
+                                    </div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                        Ack requested by <span style={{ color: THEME.textMuted }}>john.smith</span>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                    <div
+                                        style={{
+                                            padding: '5px 12px',
+                                            borderRadius: 5,
+                                            background: `${THEME.success}15`,
+                                            border: `1px solid ${THEME.success}30`,
+                                            color: THEME.success,
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <CheckCircle size={11} /> Approve
+                                    </div>
+                                    <div
+                                        style={{
+                                            padding: '5px 12px',
+                                            borderRadius: 5,
+                                            background: `${THEME.danger}15`,
+                                            border: `1px solid ${THEME.danger}30`,
+                                            color: THEME.danger,
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <AlertTriangle size={11} /> Reject
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Alert Count Header */}
+                            <div
+                                style={{
+                                    fontSize: 10,
+                                    color: THEME.textDim,
+                                    letterSpacing: '0.06em',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        width: 14,
+                                        height: 14,
+                                        borderRadius: 3,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        display: 'inline-block',
+                                    }}
+                                />
+                                7 ALERTS
+                            </div>
+
+                            {/* Alert List with rich detail */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                                {[
+                                    {
+                                        severity: 'CRIT',
+                                        title: 'Unauthorized root access attempt detected on prod-auth-02',
+                                        time: '2m ago',
+                                        source: 'security_monitor',
+                                        count: 7,
+                                        color: THEME.danger,
+                                        category: 'security',
+                                    },
+                                    {
+                                        severity: 'CRIT',
+                                        title: 'Replication Lag Exceeded 30s threshold',
+                                        time: '5m ago',
+                                        source: 'replica-01',
+                                        count: 3,
+                                        color: THEME.danger,
+                                        category: 'replication',
+                                    },
+                                    {
+                                        severity: 'WARN',
+                                        title: 'Connection Pool Usage at 85%',
+                                        time: '12m ago',
+                                        source: 'app-pool',
+                                        count: null,
+                                        color: THEME.warning,
+                                        category: 'connections',
+                                    },
+                                    {
+                                        severity: 'WARN',
+                                        title: 'Slow Query Detected (avg 4.2s)',
+                                        time: '23m ago',
+                                        source: 'query-monitor',
+                                        count: null,
+                                        color: THEME.warning,
+                                        category: 'performance',
+                                    },
+                                    {
+                                        severity: 'WARN',
+                                        title: 'WAL Segment Backlog growing',
+                                        time: '31m ago',
+                                        source: 'wal-manager',
+                                        count: null,
+                                        color: THEME.warning,
+                                        category: 'storage',
+                                    },
+                                    {
+                                        severity: 'INFO',
+                                        title: 'Automated vacuum completed on public.orders',
+                                        time: '45m ago',
+                                        source: 'maintenance',
+                                        count: null,
+                                        color: THEME.primary,
+                                        category: 'maintenance',
+                                    },
+                                    {
+                                        severity: 'INFO',
+                                        title: 'Certificate renewal scheduled in 7 days',
+                                        time: '1h ago',
+                                        source: 'cert-monitor',
+                                        count: null,
+                                        color: THEME.primary,
+                                        category: 'security',
+                                    },
+                                ].map((a, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            padding: '12px 16px',
+                                            borderBottom: `1px solid ${THEME.glassBorder}`,
+                                            display: 'flex',
+                                            gap: 12,
+                                            alignItems: 'flex-start',
+                                            borderLeft: `2px solid ${a.color}`,
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                width: 14,
+                                                height: 14,
+                                                borderRadius: 3,
+                                                border: `1px solid ${THEME.glassBorder}`,
+                                                display: 'inline-block',
+                                                flexShrink: 0,
+                                                marginTop: 2,
+                                            }}
+                                        />
+                                        {a.severity === 'CRIT' && (
+                                            <span
+                                                style={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: '50%',
+                                                    background: a.color,
+                                                    flexShrink: 0,
+                                                    marginTop: 5,
+                                                    boxShadow: `0 0 6px ${a.color}60`,
+                                                }}
+                                            />
+                                        )}
+                                        {a.severity !== 'CRIT' && (
+                                            <span
+                                                style={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: '50%',
+                                                    background: a.color,
+                                                    flexShrink: 0,
+                                                    marginTop: 5,
+                                                }}
+                                            />
+                                        )}
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'flex-start',
+                                                    gap: 12,
+                                                    marginBottom: 4,
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                        flexWrap: 'wrap',
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontSize: 9,
+                                                            fontWeight: 700,
+                                                            padding: '1px 6px',
+                                                            borderRadius: 3,
+                                                            background: `${a.color}15`,
+                                                            border: `1px solid ${a.color}30`,
+                                                            color: a.color,
+                                                        }}
+                                                    >
+                                                        {a.severity}
+                                                    </span>
+                                                    <span
+                                                        style={{ fontSize: 12, color: THEME.textMain, fontWeight: 500 }}
+                                                    >
+                                                        {a.title}
+                                                    </span>
+                                                    {a.count && (
+                                                        <span
+                                                            style={{
+                                                                background: `${THEME.ai}15`,
+                                                                border: `1px solid ${THEME.ai}25`,
+                                                                color: THEME.ai,
+                                                                borderRadius: 10,
+                                                                padding: '1px 6px',
+                                                                fontSize: 10,
+                                                                fontWeight: 700,
+                                                            }}
+                                                        >
+                                                            ×{a.count}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span
+                                                    style={{
+                                                        fontSize: 10,
+                                                        color: THEME.textDim,
+                                                        whiteSpace: 'nowrap',
+                                                        flexShrink: 0,
+                                                    }}
+                                                >
+                                                    {a.time}
+                                                </span>
+                                            </div>
+                                            <div
+                                                style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 10 }}
+                                            >
+                                                <span
+                                                    style={{
+                                                        background: THEME.glass,
+                                                        border: `1px solid ${THEME.glassBorder}`,
+                                                        borderRadius: 10,
+                                                        padding: '1px 7px',
+                                                        color: THEME.textMuted,
+                                                        fontFamily: THEME.fontMono,
+                                                    }}
+                                                >
+                                                    {a.source}
+                                                </span>
+                                                <span
+                                                    style={{
+                                                        color: THEME.textDim,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.04em',
+                                                    }}
+                                                >
+                                                    {a.category}
+                                                </span>
+                                            </div>
+                                            {i < 2 && (
+                                                <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 10 }}>
+                                                    <span
+                                                        style={{
+                                                            color: THEME.success,
+                                                            cursor: 'pointer',
+                                                            fontWeight: 600,
+                                                        }}
+                                                    >
+                                                        ✓ Acknowledge
+                                                    </span>
+                                                    <span style={{ color: THEME.textDim, cursor: 'pointer' }}>
+                                                        ⏱ Snooze 1h
+                                                    </span>
+                                                    <span style={{ color: THEME.danger, cursor: 'pointer' }}>
+                                                        ↑ Escalate
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </>
                     )}
 
                     {/* ── TAB 2: Config ── */}
                     {alertsTab === 'config' && (
                         <>
-                            <Panel title="Alert Rule Simulator" icon={Radar} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    <div style={{ fontSize: 12, color: THEME.textDim }}>
-                                        Test alert rules with sample data to verify threshold settings
+                            {/* Alert Rule Simulator */}
+                            <div
+                                style={{
+                                    padding: 16,
+                                    background: THEME.glass,
+                                    border: `1px solid ${THEME.ai}20`,
+                                    borderRadius: 8,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: 14,
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <Zap size={14} color={THEME.ai} />
+                                        <div>
+                                            <div style={{ fontSize: 12, color: THEME.textMain, fontWeight: 700 }}>
+                                                Alert Rule Simulator
+                                            </div>
+                                            <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                                Fire a test alert without affecting production
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span
+                                        style={{
+                                            fontSize: 9,
+                                            background: `${THEME.ai}10`,
+                                            border: `1px solid ${THEME.ai}20`,
+                                            color: THEME.ai,
+                                            borderRadius: 10,
+                                            padding: '2px 8px',
+                                            letterSpacing: '0.08em',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        SANDBOX
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                    <div style={{ flex: 1, minWidth: 180 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 10,
+                                                color: THEME.textDim,
+                                                marginBottom: 5,
+                                                fontWeight: 600,
+                                                letterSpacing: '0.08em',
+                                                textTransform: 'uppercase',
+                                            }}
+                                        >
+                                            SELECT RULE TO TEST
+                                        </div>
+                                        <div
+                                            style={{
+                                                padding: '8px 12px',
+                                                background: THEME.glass,
+                                                border: `1px solid ${THEME.glassBorder}`,
+                                                borderRadius: 5,
+                                                fontSize: 12,
+                                                color: THEME.textMuted,
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            Security Breach Detector{' '}
+                                            <span style={{ fontSize: 8, color: THEME.textDim }}>▼</span>
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            padding: '8px 16px',
+                                            borderRadius: 6,
+                                            background: `${THEME.success}15`,
+                                            border: `1px solid ${THEME.success}30`,
+                                            color: THEME.success,
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <Zap size={12} /> Run Simulation
                                     </div>
                                 </div>
-                            </Panel>
-                            <Panel title="Alert Configuration" icon={Bell} accentColor={THEME.danger}>
+                            </div>
+
+                            {/* Alert Rules Table */}
+                            <div
+                                style={{
+                                    fontSize: 10,
+                                    color: THEME.textDim,
+                                    letterSpacing: '0.06em',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <span>Alert Rules — 6 active / 7 total</span>
+                                <div
+                                    style={{
+                                        padding: '5px 12px',
+                                        borderRadius: 5,
+                                        background: `${THEME.primary}15`,
+                                        border: `1px solid ${THEME.primary}30`,
+                                        color: THEME.primary,
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    + New Rule
+                                </div>
+                            </div>
+                            <Panel title="ALERT RULES" icon={Bell} accentColor={THEME.danger}>
                                 <DataTable
                                     columns={[
-                                        { key: 'rule', label: 'Rule' },
+                                        { key: 'name', label: 'Rule Name' },
                                         { key: 'condition', label: 'Condition' },
                                         { key: 'severity', label: 'Severity' },
+                                        { key: 'channels', label: 'Channels' },
                                         { key: 'enabled', label: 'Enabled' },
                                     ]}
                                     rows={[
                                         {
-                                            rule: 'High CPU Usage',
-                                            condition: 'cpu > 80%',
-                                            severity: 'Critical',
-                                            enabled: 'Yes',
+                                            name: 'Security Breach Detector',
+                                            condition: 'auth_failures > 5/min',
+                                            severity: 'CRIT',
+                                            channels: 'PagerDuty, Slack',
+                                            enabled: '✓',
                                         },
                                         {
-                                            rule: 'Memory Alert',
-                                            condition: 'memory > 85%',
-                                            severity: 'Warning',
-                                            enabled: 'Yes',
+                                            name: 'High CPU Alert',
+                                            condition: 'cpu > 80% for 5m',
+                                            severity: 'CRIT',
+                                            channels: 'PagerDuty, Email',
+                                            enabled: '✓',
+                                        },
+                                        {
+                                            name: 'Replication Lag',
+                                            condition: 'lag > 30s',
+                                            severity: 'CRIT',
+                                            channels: 'Slack, Email',
+                                            enabled: '✓',
+                                        },
+                                        {
+                                            name: 'Connection Pool',
+                                            condition: 'usage > 80%',
+                                            severity: 'WARN',
+                                            channels: 'Slack',
+                                            enabled: '✓',
+                                        },
+                                        {
+                                            name: 'Slow Query Rate',
+                                            condition: 'slow_qps > 10',
+                                            severity: 'WARN',
+                                            channels: 'Slack',
+                                            enabled: '✓',
+                                        },
+                                        {
+                                            name: 'WAL Backlog',
+                                            condition: 'wal_size > 2GB',
+                                            severity: 'WARN',
+                                            channels: 'Email',
+                                            enabled: '✓',
+                                        },
+                                        {
+                                            name: 'Disk Space',
+                                            condition: 'disk > 90%',
+                                            severity: 'INFO',
+                                            channels: 'Email',
+                                            enabled: '✗',
                                         },
                                     ]}
                                 />
@@ -2158,32 +2640,62 @@ function DemoPostgresTab({ tabId }) {
                     {/* ── TAB 3: History ── */}
                     {alertsTab === 'history' && (
                         <>
-                            <Panel title="Historical Alerts" icon={Clock} accentColor={THEME.warning}>
+                            <Panel title="HISTORICAL ALERTS" icon={Clock} accentColor={THEME.warning}>
                                 <DataTable
                                     columns={[
                                         { key: 'alert', label: 'Alert' },
+                                        { key: 'severity', label: 'Severity' },
                                         { key: 'triggered', label: 'Triggered' },
                                         { key: 'resolved', label: 'Resolved' },
                                         { key: 'duration', label: 'Duration' },
+                                        { key: 'acked', label: 'Acked By' },
                                     ]}
                                     rows={[
                                         {
                                             alert: 'High Database Load',
+                                            severity: 'CRIT',
                                             triggered: '2h ago',
                                             resolved: '1h ago',
                                             duration: '1h 23m',
+                                            acked: 'admin',
+                                        },
+                                        {
+                                            alert: 'Unauthorized Access',
+                                            severity: 'CRIT',
+                                            triggered: '6h ago',
+                                            resolved: '5h 30m ago',
+                                            duration: '30m',
+                                            acked: 'security-team',
                                         },
                                         {
                                             alert: 'Connection Pool Usage',
+                                            severity: 'WARN',
                                             triggered: '4h ago',
                                             resolved: '3h 45m ago',
                                             duration: '15m',
+                                            acked: 'auto-resolve',
+                                        },
+                                        {
+                                            alert: 'Slow Query Spike',
+                                            severity: 'WARN',
+                                            triggered: '8h ago',
+                                            resolved: '7h 20m ago',
+                                            duration: '40m',
+                                            acked: 'dba',
+                                        },
+                                        {
+                                            alert: 'WAL Backlog',
+                                            severity: 'WARN',
+                                            triggered: '12h ago',
+                                            resolved: '11h 50m ago',
+                                            duration: '10m',
+                                            acked: 'auto-resolve',
                                         },
                                     ]}
                                 />
                             </Panel>
-                            <Panel title="Resolution Time Trend" icon={TrendingUp} accentColor={THEME.primary}>
-                                <ResponsiveContainer width="100%" height={220}>
+                            <Panel title="RESOLUTION TIME TREND" icon={TrendingUp} accentColor={THEME.primary}>
+                                <ResponsiveContainer width="100%" height={200}>
                                     <LineChart data={demoData.cpuMemory}>
                                         <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
@@ -2194,10 +2706,54 @@ function DemoPostgresTab({ tabId }) {
                                             dataKey="cpu"
                                             stroke={THEME.success}
                                             strokeWidth={2}
-                                            name="Avg Resolution Time (min)"
+                                            name="Avg Resolution (min)"
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
+                            </Panel>
+                            <Panel title="NOTIFICATION CHANNELS" icon={Network} accentColor={THEME.primary}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                                        gap: 10,
+                                    }}
+                                >
+                                    {[
+                                        { channel: 'Email', status: 'operational', sent: 142 },
+                                        { channel: 'Slack', status: 'operational', sent: 284 },
+                                        { channel: 'PagerDuty', status: 'operational', sent: 38 },
+                                        { channel: 'SMS', status: 'degraded', sent: 0 },
+                                    ].map((ch, i) => (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                padding: '10px 12px',
+                                                background: THEME.glass,
+                                                border: `1px solid ${THEME.glassBorder}`,
+                                                borderRadius: 8,
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontSize: 11,
+                                                    fontWeight: 600,
+                                                    color: THEME.textMain,
+                                                    marginBottom: 4,
+                                                }}
+                                            >
+                                                {ch.channel}
+                                            </div>
+                                            <StatusBadge
+                                                label={ch.status}
+                                                color={ch.status === 'operational' ? THEME.success : THEME.warning}
+                                            />
+                                            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 4 }}>
+                                                {ch.sent} sent (7d)
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </Panel>
                         </>
                     )}
