@@ -3774,7 +3774,10 @@ const DashboardInner = ({ onLogout }) => {
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
 
     const allowedTabIds = useMemo(
-        () => TABS_ONLY.filter((t) => (currentUser?.allowedScreens || []).includes(t.id)).map((t) => t.id),
+        () =>
+            TABS_ONLY.filter((t) => (currentUser?.allowedScreens || []).includes(t.id) || t.id.startsWith('demo-')).map(
+                (t) => t.id,
+            ),
         [currentUser?.allowedScreens],
     );
 
