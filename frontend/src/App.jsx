@@ -3775,10 +3775,15 @@ const DashboardInner = ({ onLogout }) => {
 
     const allowedTabIds = useMemo(
         () =>
-            TABS_ONLY.filter((t) => (currentUser?.allowedScreens || []).includes(t.id) || t.id.startsWith('demo-')).map(
-                (t) => t.id,
-            ),
-        [currentUser?.allowedScreens],
+            TABS_ONLY.filter((t) => {
+                // Demo tabs are always visible
+                if (t.id.startsWith('demo-')) return true;
+                // If user is logged in, show all tabs (no screen-level restriction)
+                if (currentUser) return true;
+                // Fallback: check allowedScreens
+                return (currentUser?.allowedScreens || []).includes(t.id);
+            }).map((t) => t.id),
+        [currentUser],
     );
 
     const ActiveComponent = useMemo(() => {
