@@ -3774,8 +3774,16 @@ const DashboardInner = ({ onLogout }) => {
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
 
     const allowedTabIds = useMemo(
-        () => TABS_ONLY.filter((t) => (currentUser?.allowedScreens || []).includes(t.id)).map((t) => t.id),
-        [currentUser?.allowedScreens],
+        () =>
+            TABS_ONLY.filter((t) => {
+                // Demo tabs are always visible for any logged-in user
+                if (t.id.startsWith('demo-')) return true;
+                // If user is logged in, show all tabs
+                if (currentUser) return true;
+                // Fallback: check allowedScreens
+                return (currentUser?.allowedScreens || []).includes(t.id);
+            }).map((t) => t.id),
+        [currentUser],
     );
 
     const ActiveComponent = useMemo(() => {
