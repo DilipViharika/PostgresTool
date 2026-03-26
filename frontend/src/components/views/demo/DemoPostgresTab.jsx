@@ -56,6 +56,7 @@ import {
     ShieldCheck,
     TableProperties,
     LayoutDashboard,
+    Gauge,
     Users,
     FileText,
     Settings,
@@ -789,296 +790,432 @@ function DemoPostgresTab({ tabId }) {
 
         // PERFORMANCE
         if (sectionKey === 'overview' && itemKey === 'performance') {
+            const perfTabKey = perfTab || 'activity';
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <TabPills
-                        tabs={['Activity & Queries', 'Deep Insights', 'Resources & Health']}
-                        active={perfTab}
+                        tabs={[
+                            { key: 'activity', label: 'Activity & Queries', icon: Zap },
+                            { key: 'deep', label: 'Deep Insights', badge: 'NEW' },
+                            { key: 'resources', label: 'Resources & Health' },
+                        ]}
+                        active={perfTabKey}
                         onChange={setPerfTab}
                         accentColor={THEME.primary}
                     />
 
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                            gap: '12px',
-                        }}
-                    >
-                        <Panel noPad title="Active" accentColor={THEME.success} style={{ minHeight: 100 }}>
-                            <div
-                                style={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '20px 16px',
-                                    gap: 8,
-                                }}
-                            >
+                    {/* ── TAB 1: Activity & Queries ── */}
+                    {perfTabKey === 'activity' && (
+                        <>
+                            <Panel title="LIVE SESSIONS" icon={Activity} accentColor={THEME.success}>
                                 <div
                                     style={{
-                                        fontSize: 32,
-                                        fontWeight: 700,
-                                        color: THEME.success,
-                                        fontFamily: THEME.fontMono,
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                                        gap: 12,
                                     }}
                                 >
-                                    42
+                                    {[
+                                        { label: 'ACTIVE', value: '42', icon: Activity, color: THEME.success },
+                                        { label: 'LONG RUNNING', value: '7', icon: Clock, color: THEME.warning },
+                                        { label: 'IDLE', value: '31', icon: Server, color: THEME.textMuted },
+                                        { label: 'BLOCKED', value: '2', icon: Lock, color: THEME.danger },
+                                    ].map((s, i) => (
+                                        <div key={i} style={{ textAlign: 'center', padding: '16px 8px' }}>
+                                            <div
+                                                style={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    borderRadius: '50%',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: `${s.color}15`,
+                                                    border: `1px solid ${s.color}25`,
+                                                    marginBottom: 8,
+                                                }}
+                                            >
+                                                <s.icon size={16} color={s.color} />
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 9,
+                                                    color: THEME.textDim,
+                                                    textTransform: 'uppercase',
+                                                    marginBottom: 4,
+                                                }}
+                                            >
+                                                {s.label}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 28,
+                                                    fontWeight: 700,
+                                                    color: s.color,
+                                                    fontFamily: THEME.fontMono,
+                                                }}
+                                            >
+                                                {s.value}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    SESSIONS
-                                </div>
-                            </div>
-                        </Panel>
-                        <Panel noPad title="Long Running" accentColor={THEME.warning} style={{ minHeight: 100 }}>
-                            <div
-                                style={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '20px 16px',
-                                    gap: 8,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 32,
-                                        fontWeight: 700,
-                                        color: THEME.warning,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    7
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    SESSIONS
-                                </div>
-                            </div>
-                        </Panel>
-                        <Panel noPad title="Idle" accentColor={THEME.textMuted} style={{ minHeight: 100 }}>
-                            <div
-                                style={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '20px 16px',
-                                    gap: 8,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 32,
-                                        fontWeight: 700,
-                                        color: THEME.textMuted,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    31
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    SESSIONS
-                                </div>
-                            </div>
-                        </Panel>
-                        <Panel noPad title="Blocked" accentColor={THEME.danger} style={{ minHeight: 100 }}>
-                            <div
-                                style={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '20px 16px',
-                                    gap: 8,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 32,
-                                        fontWeight: 700,
-                                        color: THEME.danger,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    2
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>
-                                    SESSIONS
-                                </div>
-                            </div>
-                        </Panel>
-                    </div>
+                            </Panel>
 
-                    <Panel title="Session Traffic" icon={Network} accentColor={THEME.primary}>
-                        <ResponsiveContainer width="100%" height={240}>
-                            <LineChart data={demoData.connectionTrends}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                <Tooltip content={<ChartTip />} />
-                                <Legend />
-                                <Line
-                                    type="monotone"
-                                    dataKey="active"
-                                    stroke={THEME.success}
-                                    strokeWidth={2.5}
-                                    name="Active"
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="idle"
-                                    stroke={THEME.textMuted}
-                                    strokeWidth={2}
-                                    name="Idle"
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Panel>
+                            <Panel title="SESSION TRAFFIC" icon={Network} accentColor={THEME.primary}>
+                                <ResponsiveContainer width="100%" height={240}>
+                                    <LineChart data={demoData.connectionTrends}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Legend />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="active"
+                                            stroke={THEME.success}
+                                            strokeWidth={2.5}
+                                            name="Active"
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="idle"
+                                            stroke={THEME.textMuted}
+                                            strokeWidth={2}
+                                            name="Idle"
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </Panel>
 
-                    <Panel title="Transaction Latency Percentiles" icon={Clock} accentColor={THEME.ai}>
-                        <ResponsiveContainer width="100%" height={240}>
-                            <LineChart data={demoData.iopsLatency}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                <Tooltip content={<ChartTip />} />
-                                <Legend />
-                                <Line
-                                    type="monotone"
-                                    dataKey="latency"
-                                    stroke={THEME.ai}
-                                    strokeWidth={2.5}
-                                    name="P99"
+                            <Panel title="SLOW QUERY TRENDS" icon={Zap} accentColor={THEME.warning}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'query', label: 'QUERY', width: '55%' },
+                                        { key: 'duration', label: 'AVG DURATION', width: '25%' },
+                                        { key: 'calls', label: 'CALLS', width: '20%' },
+                                    ]}
+                                    rows={demoData.slowQueries.map((q) => ({
+                                        query: q.query,
+                                        duration: `${(q.duration / 1000).toFixed(2)}s`,
+                                        calls: q.calls.toLocaleString(),
+                                    }))}
                                 />
-                                <Line
-                                    type="monotone"
-                                    dataKey="iops"
-                                    stroke={THEME.success}
-                                    strokeWidth={2}
-                                    name="P95"
-                                    dot={false}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Panel>
+                            </Panel>
+                        </>
+                    )}
 
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
-                        }}
-                    >
-                        <Panel noPad title="P50 AVG" accentColor={THEME.primary}>
-                            <div
-                                style={{
-                                    padding: '14px 16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 18,
-                                        fontWeight: 700,
-                                        color: THEME.primary,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    2.3ms
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim }}>↓ 0.2ms vs 1h</div>
+                    {/* ── TAB 2: Deep Insights ── */}
+                    {perfTabKey === 'deep' && (
+                        <>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 11 }}>
+                                {[
+                                    'Wait Events',
+                                    'Slow Query Trend',
+                                    'JIT Compilation',
+                                    'Parallel Workers',
+                                    'Blocking Tree',
+                                    'Deadlock History',
+                                    'Plan Cache',
+                                    'Temp Files',
+                                ].map((sub, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            padding: '6px 14px',
+                                            borderRadius: 20,
+                                            background: i === 3 ? THEME.primary : THEME.glass,
+                                            color: i === 3 ? THEME.bg : THEME.textMuted,
+                                            border: `1px solid ${i === 3 ? THEME.primary : THEME.glassBorder}`,
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {sub}
+                                    </div>
+                                ))}
                             </div>
-                        </Panel>
-                        <Panel noPad title="P95 AVG" accentColor={THEME.ai}>
-                            <div
-                                style={{
-                                    padding: '14px 16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 18,
-                                        fontWeight: 700,
-                                        color: THEME.ai,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    8.7ms
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim }}>↑ 1.2ms vs 1h</div>
-                            </div>
-                        </Panel>
-                        <Panel noPad title="P99 AVG" accentColor={THEME.warning}>
-                            <div
-                                style={{
-                                    padding: '14px 16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 18,
-                                        fontWeight: 700,
-                                        color: THEME.warning,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    31ms
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim }}>↑ 4.1ms vs 1h</div>
-                            </div>
-                        </Panel>
-                        <Panel noPad title="SLA Breach" accentColor={THEME.danger}>
-                            <div
-                                style={{
-                                    padding: '14px 16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: 18,
-                                        fontWeight: 700,
-                                        color: THEME.danger,
-                                        fontFamily: THEME.fontMono,
-                                    }}
-                                >
-                                    0.2%
-                                </div>
-                                <div style={{ fontSize: 9, color: THEME.textDim }}>Target: 0.1%</div>
-                            </div>
-                        </Panel>
-                    </div>
 
-                    <Panel title="Slow Query Trends" icon={Zap} accentColor={THEME.warning}>
-                        <DataTable
-                            columns={[
-                                { key: 'query', label: 'QUERY', width: '55%' },
-                                { key: 'duration', label: 'AVG DURATION', width: '25%' },
-                                { key: 'calls', label: 'CALLS', width: '20%' },
-                            ]}
-                            rows={demoData.slowQueries.map((q) => ({
-                                query: q.query,
-                                duration: `${(q.duration / 1000).toFixed(2)}s`,
-                                calls: q.calls.toLocaleString(),
-                            }))}
-                        />
-                    </Panel>
+                            <Panel title="PARALLEL QUERY UTILIZATION" icon={Cpu} accentColor={THEME.primary}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                        gap: 12,
+                                        marginBottom: 16,
+                                    }}
+                                >
+                                    <LiveMetric label="MAX WORKERS" value="8" icon={Server} color={THEME.primary} />
+                                    <LiveMetric label="PER GATHER" value="4" icon={Activity} color={THEME.success} />
+                                    <LiveMetric label="AVG ACTIVE" value="3.5" icon={TrendingUp} color={THEME.ai} />
+                                    <LiveMetric label="UTILIZATION" value="44%" icon={Gauge} color={THEME.warning} />
+                                </div>
+                            </Panel>
+
+                            <Panel title="WORKER UTILIZATION OVER TIME" icon={BarChart2} accentColor={THEME.ai}>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <AreaChart
+                                        data={demoData.connectionTrends.map((d, i) => ({
+                                            ...d,
+                                            workers: Math.floor(2 + Math.sin(i / 4) * 3 + Math.random() * 2),
+                                        }))}
+                                    >
+                                        <defs>
+                                            <linearGradient id="pg-workers-grad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="workers"
+                                            stroke={THEME.primary}
+                                            fillOpacity={1}
+                                            fill="url(#pg-workers-grad)"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </Panel>
+
+                            <Panel title="ACTIVE PARALLEL QUERIES" icon={Zap} accentColor={THEME.success}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {[
+                                        {
+                                            name: 'Parallel Seq Scan',
+                                            query: 'SELECT COUNT(*) FROM large_table WHERE...',
+                                            speedup: '68% faster',
+                                            workers: '5/4 workers',
+                                            color: THEME.success,
+                                        },
+                                        {
+                                            name: 'Parallel Hash Join',
+                                            query: 'SELECT o.* FROM orders o JOIN products p...',
+                                            speedup: '52% faster',
+                                            workers: '3/4 workers',
+                                            color: THEME.primary,
+                                        },
+                                    ].map((pq, i) => (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                padding: 12,
+                                                background: THEME.glass,
+                                                borderRadius: 8,
+                                                border: `1px solid ${THEME.glassBorder}`,
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    marginBottom: 6,
+                                                }}
+                                            >
+                                                <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>
+                                                    {pq.name}
+                                                </span>
+                                                <span style={{ fontSize: 11, fontWeight: 700, color: pq.color }}>
+                                                    {pq.speedup}
+                                                </span>
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 10,
+                                                    fontFamily: THEME.fontMono,
+                                                    color: THEME.textDim,
+                                                    marginBottom: 8,
+                                                }}
+                                            >
+                                                {pq.query}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    background: THEME.gridDark,
+                                                    borderRadius: 4,
+                                                    height: 8,
+                                                    overflow: 'hidden',
+                                                    display: 'flex',
+                                                    gap: 2,
+                                                }}
+                                            >
+                                                {Array.from({ length: 8 }, (_, j) => (
+                                                    <div
+                                                        key={j}
+                                                        style={{
+                                                            flex: 1,
+                                                            height: '100%',
+                                                            background:
+                                                                j < (i === 0 ? 5 : 3) ? pq.color : 'transparent',
+                                                            borderRadius: 2,
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 9,
+                                                    color: THEME.textDim,
+                                                    marginTop: 4,
+                                                    textAlign: 'right',
+                                                }}
+                                            >
+                                                {pq.workers}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 3: Resources & Health ── */}
+                    {perfTabKey === 'resources' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: 12,
+                                }}
+                            >
+                                {[
+                                    { label: 'P50 AVG', value: '2.3ms', sub: '↓ 0.2ms vs 1h', color: THEME.primary },
+                                    { label: 'P95 AVG', value: '8.7ms', sub: '↑ 1.2ms vs 1h', color: THEME.ai },
+                                    { label: 'P99 AVG', value: '31ms', sub: '↑ 4.1ms vs 1h', color: THEME.warning },
+                                    { label: 'SLA BREACH', value: '0.2%', sub: 'Target: 0.1%', color: THEME.danger },
+                                ].map((p, i) => (
+                                    <Panel key={i} noPad title={p.label} accentColor={p.color}>
+                                        <div
+                                            style={{
+                                                padding: '14px 16px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 6,
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontSize: 18,
+                                                    fontWeight: 700,
+                                                    color: p.color,
+                                                    fontFamily: THEME.fontMono,
+                                                }}
+                                            >
+                                                {p.value}
+                                            </div>
+                                            <div style={{ fontSize: 9, color: THEME.textDim }}>{p.sub}</div>
+                                        </div>
+                                    </Panel>
+                                ))}
+                            </div>
+
+                            <Panel title="TRANSACTION LATENCY PERCENTILES" icon={Clock} accentColor={THEME.ai}>
+                                <ResponsiveContainer width="100%" height={240}>
+                                    <LineChart data={demoData.iopsLatency}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Legend />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="latency"
+                                            stroke={THEME.ai}
+                                            strokeWidth={2.5}
+                                            name="P99"
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="iops"
+                                            stroke={THEME.success}
+                                            strokeWidth={2}
+                                            name="P95"
+                                            dot={false}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </Panel>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+                                <Panel title="CPU Load" icon={Cpu} accentColor={THEME.primary}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 12,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <RingGauge value={38} color={THEME.primary} size={100} label="Usage" />
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                fontSize: 9,
+                                                color: THEME.textDim,
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            <div>4 cores active</div>
+                                            <div>Load avg: 1.8</div>
+                                            <div>I/O Wait: 22%</div>
+                                        </div>
+                                    </div>
+                                </Panel>
+                                <Panel title="Memory Usage" icon={HardDrive} accentColor={THEME.warning}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 12,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <RingGauge value={72} color={THEME.warning} size={100} label="Allocated" />
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                fontSize: 9,
+                                                color: THEME.textDim,
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            <div>12 GB / 16 GB</div>
+                                            <div>Shared Buf: 55%</div>
+                                            <div>Swap: 0 GB</div>
+                                        </div>
+                                    </div>
+                                </Panel>
+                                <Panel title="Disk I/O" icon={HardDrive} accentColor={THEME.ai}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 12,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <RingGauge value={44} color={THEME.ai} size={100} label="Utilization" />
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                fontSize: 9,
+                                                color: THEME.textDim,
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            <div>0 GB / 200 GB SSD</div>
+                                            <div>Write Amp: 30%</div>
+                                            <div>IOPS: 2,847</div>
+                                        </div>
+                                    </div>
+                                </Panel>
+                            </div>
+                        </>
+                    )}
                 </div>
             );
         }
