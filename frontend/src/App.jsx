@@ -268,12 +268,20 @@ const SECTION_GROUPS = getSectionGroups(TAB_CONFIG);
 
 const getSectionForTab = (tabId) => {
     for (const g of SECTION_GROUPS) {
-        if (g.tabs.some((t) => t.id === tabId)) return g.section;
+        if (g.tabs.some((t) => t.id === tabId)) {
+            // For grouped sections, return the namespaced key used by sidebar
+            return g.group ? `${g.group}::${g.section}` : g.section;
+        }
     }
     return null;
 };
 
-const getGroupForTab = () => null;
+const getGroupForTab = (tabId) => {
+    for (const g of SECTION_GROUPS) {
+        if (g.group && g.tabs.some((t) => t.id === tabId)) return g.group;
+    }
+    return null;
+};
 
 const getSectionAccent = (tabId) => {
     for (const g of SECTION_GROUPS) {
@@ -2784,9 +2792,23 @@ const Sidebar = ({
         [allowedTabIds, connDbType],
     );
 
-    /* Build flat nav: each section becomes a { type:'section', ... } entry */
+    /* Build nav tree: sections with a `group` key are nested under a parent container */
     const groupedNav = useMemo(() => {
-        return visibleGroups.map((g) => ({ type: 'section', ...g }));
+        const result = [];
+        const groupMap = new Map(); // group name → { type:'group', label, children:[] }
+        for (const g of visibleGroups) {
+            if (g.group) {
+                if (!groupMap.has(g.group)) {
+                    const entry = { type: 'group', label: g.group, children: [] };
+                    groupMap.set(g.group, entry);
+                    result.push(entry);
+                }
+                groupMap.get(g.group).children.push({ type: 'section', ...g });
+            } else {
+                result.push({ type: 'section', ...g });
+            }
+        }
+        return result;
     }, [visibleGroups]);
 
     const W = collapsed ? 64 : 252;
@@ -3051,6 +3073,62 @@ const Sidebar = ({
 
                     /* ── Render all nav items ── */
                     return groupedNav.map((item, gi) => {
+                        /* ═══ Three-level: Group → Section → Tabs ═══ */
+                        if (item.type === 'group') {
+                            const grp = item;
+                            const allGroupTabs = grp.children.flatMap((s) => s.tabs);
+                            const hasActive = allGroupTabs.some((t) => t.id === activeTab);
+                            const isGroupOpen = collapsed || openSections.has(grp.label);
+                            // Derive a display label: strip "Demo " prefix for cleaner look
+                            const displayLabel = grp.label.replace(/^Demo\s+/i, '') + ' Demo';
+
+                            return (
+                                <div key={grp.label} style={{ marginBottom: 2 }}>
+                                    {collapsed
+                                        ? gi > 0 && (
+                                              <div
+                                                  style={{
+                                                      margin: '6px 16px',
+                                                      height: '1px',
+                                                      background: `linear-gradient(90deg, transparent, ${DS.amber}40, transparent)`,
+                                                  }}
+                                              />
+                                          )
+                                        : renderSectionHeader(
+                                              displayLabel,
+                                              grp.label,
+                                              DS.amber,
+                                              hasActive,
+                                              gi === 0 ? 2 : 8,
+                                          )}
+                                    {isGroupOpen &&
+                                        grp.children.map((child) => {
+                                            const secKey = `${grp.label}::${child.section}`;
+                                            const isSecOpen = collapsed || openSections.has(secKey);
+                                            const secHasActive = child.tabs.some((t) => t.id === activeTab);
+                                            return (
+                                                <div key={secKey} style={{ marginBottom: 1 }}>
+                                                    {!collapsed &&
+                                                        renderSectionHeader(
+                                                            child.section,
+                                                            secKey,
+                                                            child.accent,
+                                                            secHasActive,
+                                                            0,
+                                                            28,
+                                                        )}
+                                                    {isSecOpen && (
+                                                        <div className={collapsed ? '' : 'section-open'}>
+                                                            {child.tabs.map((tab) => renderTab(tab, child.accent))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            );
+                        }
+
                         /* ═══ Two-level: Section header → Tabs ═══ */
                         const group = item;
                         const isOpen = collapsed || openSections.has(group.section);
