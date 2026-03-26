@@ -93,6 +93,7 @@ function DemoPostgresTab({ tabId }) {
     const [logTab, setLogTab] = useState('wait-events');
     const [repoTab, setRepoTab] = useState('code');
     const [tableTab, setTableTab] = useState('findings');
+    const [deepTab, setDeepTab] = useState('wait-events');
 
     const demoData = useMemo(() => {
         const base24h = generateChartData(24);
@@ -913,171 +914,342 @@ function DemoPostgresTab({ tabId }) {
                     )}
 
                     {/* ── TAB 2: Deep Insights ── */}
-                    {perfTabKey === 'deep' && (
+                    {perfTabKey === 'deep' && (() => {
+                        const deepTabs = [
+                            { key: 'wait-events', label: 'Wait Events' },
+                            { key: 'slow-query', label: 'Slow Query Trend' },
+                            { key: 'jit', label: 'JIT Compilation' },
+                            { key: 'parallel', label: 'Parallel Workers' },
+                            { key: 'blocking', label: 'Blocking Tree' },
+                            { key: 'deadlock', label: 'Deadlock History' },
+                            { key: 'plan-cache', label: 'Plan Cache' },
+                            { key: 'temp-files', label: 'Temp Files' },
+                        ];
+                        const dt = deepTab || 'wait-events';
+                        return (
                         <>
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 11 }}>
-                                {[
-                                    'Wait Events',
-                                    'Slow Query Trend',
-                                    'JIT Compilation',
-                                    'Parallel Workers',
-                                    'Blocking Tree',
-                                    'Deadlock History',
-                                    'Plan Cache',
-                                    'Temp Files',
-                                ].map((sub, i) => (
-                                    <div
-                                        key={i}
-                                        style={{
-                                            padding: '6px 14px',
-                                            borderRadius: 20,
-                                            background: i === 3 ? THEME.primary : THEME.glass,
-                                            color: i === 3 ? THEME.bg : THEME.textMuted,
-                                            border: `1px solid ${i === 3 ? THEME.primary : THEME.glassBorder}`,
-                                            cursor: 'pointer',
-                                            fontWeight: 600,
-                                        }}
-                                    >
-                                        {sub}
-                                    </div>
-                                ))}
-                            </div>
+                            <TabPills tabs={deepTabs} active={dt} onChange={setDeepTab} accentColor={THEME.primary} />
 
-                            <Panel title="PARALLEL QUERY UTILIZATION" icon={Cpu} accentColor={THEME.primary}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                        gap: 12,
-                                        marginBottom: 16,
-                                    }}
-                                >
-                                    <LiveMetric label="MAX WORKERS" value="8" icon={Server} color={THEME.primary} />
-                                    <LiveMetric label="PER GATHER" value="4" icon={Activity} color={THEME.success} />
-                                    <LiveMetric label="AVG ACTIVE" value="3.5" icon={TrendingUp} color={THEME.ai} />
-                                    <LiveMetric label="UTILIZATION" value="44%" icon={Gauge} color={THEME.warning} />
-                                </div>
-                            </Panel>
-
-                            <Panel title="WORKER UTILIZATION OVER TIME" icon={BarChart2} accentColor={THEME.ai}>
-                                <ResponsiveContainer width="100%" height={200}>
-                                    <AreaChart
-                                        data={demoData.connectionTrends.map((d, i) => ({
-                                            ...d,
-                                            workers: Math.floor(2 + Math.sin(i / 4) * 3 + Math.random() * 2),
-                                        }))}
-                                    >
-                                        <defs>
-                                            <linearGradient id="pg-workers-grad" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
-                                                <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                        <YAxis stroke={THEME.textDim} fontSize={10} />
-                                        <Tooltip content={<ChartTip />} />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="workers"
-                                            stroke={THEME.primary}
-                                            fillOpacity={1}
-                                            fill="url(#pg-workers-grad)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </Panel>
-
-                            <Panel title="ACTIVE PARALLEL QUERIES" icon={Zap} accentColor={THEME.success}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    {[
-                                        {
-                                            name: 'Parallel Seq Scan',
-                                            query: 'SELECT COUNT(*) FROM large_table WHERE...',
-                                            speedup: '68% faster',
-                                            workers: '5/4 workers',
-                                            color: THEME.success,
-                                        },
-                                        {
-                                            name: 'Parallel Hash Join',
-                                            query: 'SELECT o.* FROM orders o JOIN products p...',
-                                            speedup: '52% faster',
-                                            workers: '3/4 workers',
-                                            color: THEME.primary,
-                                        },
-                                    ].map((pq, i) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                padding: 12,
-                                                background: THEME.glass,
-                                                borderRadius: 8,
-                                                border: `1px solid ${THEME.glassBorder}`,
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    marginBottom: 6,
-                                                }}
-                                            >
-                                                <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>
-                                                    {pq.name}
-                                                </span>
-                                                <span style={{ fontSize: 11, fontWeight: 700, color: pq.color }}>
-                                                    {pq.speedup}
-                                                </span>
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 10,
-                                                    fontFamily: THEME.fontMono,
-                                                    color: THEME.textDim,
-                                                    marginBottom: 8,
-                                                }}
-                                            >
-                                                {pq.query}
-                                            </div>
-                                            <div
-                                                style={{
-                                                    background: THEME.gridDark,
-                                                    borderRadius: 4,
-                                                    height: 8,
-                                                    overflow: 'hidden',
-                                                    display: 'flex',
-                                                    gap: 2,
-                                                }}
-                                            >
-                                                {Array.from({ length: 8 }, (_, j) => (
-                                                    <div
-                                                        key={j}
-                                                        style={{
-                                                            flex: 1,
-                                                            height: '100%',
-                                                            background:
-                                                                j < (i === 0 ? 5 : 3) ? pq.color : 'transparent',
-                                                            borderRadius: 2,
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 9,
-                                                    color: THEME.textDim,
-                                                    marginTop: 4,
-                                                    textAlign: 'right',
-                                                }}
-                                            >
-                                                {pq.workers}
-                                            </div>
+                            {/* ── Wait Events ── */}
+                            {dt === 'wait-events' && (
+                                <>
+                                    <Panel title="WAIT EVENT SUMMARY" icon={Clock} accentColor={THEME.warning}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="TOTAL WAITS" value="1,245" icon={Clock} color={THEME.warning} />
+                                            <LiveMetric label="LOCK WAITS" value="89" icon={Lock} color={THEME.danger} />
+                                            <LiveMetric label="I/O WAITS" value="342" icon={HardDrive} color={THEME.primary} />
+                                            <LiveMetric label="CPU WAITS" value="814" icon={Cpu} color={THEME.success} />
                                         </div>
-                                    ))}
-                                </div>
-                            </Panel>
+                                    </Panel>
+                                    <Panel title="WAIT EVENTS OVER TIME" icon={BarChart2} accentColor={THEME.warning}>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <AreaChart data={demoData.cpuMemory}>
+                                                <defs>
+                                                    <linearGradient id="deep-wait-grad" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.3} />
+                                                        <stop offset="95%" stopColor={THEME.warning} stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Area type="monotone" dataKey="cpu" stroke={THEME.warning} fill="url(#deep-wait-grad)" name="Wait Events" />
+                                                <Area type="monotone" dataKey="memory" stroke={THEME.danger} fill={`${THEME.danger}10`} name="Lock Waits" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                    <Panel title="TOP WAIT EVENTS" icon={AlertTriangle} accentColor={THEME.danger}>
+                                        <DataTable
+                                            columns={[
+                                                { key: 'event', label: 'Wait Event' },
+                                                { key: 'type', label: 'Type' },
+                                                { key: 'count', label: 'Count' },
+                                                { key: 'avgWait', label: 'Avg Wait' },
+                                                { key: 'pct', label: '% Total' },
+                                            ]}
+                                            rows={[
+                                                { event: 'LWLock:BufferMapping', type: <StatusBadge label="LWLock" color={THEME.warning} />, count: '456', avgWait: '0.8ms', pct: '36.6%' },
+                                                { event: 'Lock:transactionid', type: <StatusBadge label="Lock" color={THEME.danger} />, count: '89', avgWait: '12.3ms', pct: '7.1%' },
+                                                { event: 'IO:DataFileRead', type: <StatusBadge label="I/O" color={THEME.primary} />, count: '342', avgWait: '2.1ms', pct: '27.5%' },
+                                                { event: 'CPU:Sort', type: <StatusBadge label="CPU" color={THEME.success} />, count: '234', avgWait: '0.3ms', pct: '18.8%' },
+                                                { event: 'IO:WALWrite', type: <StatusBadge label="I/O" color={THEME.primary} />, count: '124', avgWait: '1.5ms', pct: '10.0%' },
+                                            ]}
+                                        />
+                                    </Panel>
+                                </>
+                            )}
+
+                            {/* ── Slow Query Trend ── */}
+                            {dt === 'slow-query' && (
+                                <>
+                                    <Panel title="SLOW QUERY SUMMARY" icon={Clock} accentColor={THEME.danger}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="SLOW QUERIES" value="23" icon={Clock} color={THEME.danger} />
+                                            <LiveMetric label="AVG DURATION" value="4.2s" icon={TrendingUp} color={THEME.warning} />
+                                            <LiveMetric label="P99 LATENCY" value="12.4s" icon={Gauge} color={THEME.ai} />
+                                            <LiveMetric label="IMPROVED" value="5" icon={CheckCircle} color={THEME.success} />
+                                        </div>
+                                    </Panel>
+                                    <Panel title="SLOW QUERY TREND (24H)" icon={TrendingUp} accentColor={THEME.danger}>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <LineChart data={demoData.clusterVelocity.slice(0, 12)}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Line type="monotone" dataKey="tps" stroke={THEME.danger} strokeWidth={2} name="Slow Queries" dot={{ r: 3 }} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                    <Panel title="TOP SLOW QUERIES" icon={Zap} accentColor={THEME.warning}>
+                                        <DataTable
+                                            columns={[
+                                                { key: 'query', label: 'Query', width: '45%' },
+                                                { key: 'calls', label: 'Calls' },
+                                                { key: 'avg', label: 'Avg (ms)' },
+                                                { key: 'max', label: 'Max (ms)' },
+                                                { key: 'trend', label: 'Trend' },
+                                            ]}
+                                            rows={[
+                                                { query: 'SELECT * FROM orders WHERE...', calls: '1,245', avg: '3,240', max: '12,400', trend: <StatusBadge label="↑ Worse" color={THEME.danger} /> },
+                                                { query: 'UPDATE users SET last_login...', calls: '890', avg: '2,100', max: '8,900', trend: <StatusBadge label="↓ Better" color={THEME.success} /> },
+                                                { query: 'INSERT INTO audit_log...', calls: '2,340', avg: '1,800', max: '5,600', trend: <StatusBadge label="→ Stable" color={THEME.textMuted} /> },
+                                                { query: 'DELETE FROM sessions WHERE...', calls: '456', avg: '4,500', max: '15,200', trend: <StatusBadge label="↑ Worse" color={THEME.danger} /> },
+                                            ]}
+                                        />
+                                    </Panel>
+                                </>
+                            )}
+
+                            {/* ── JIT Compilation ── */}
+                            {dt === 'jit' && (
+                                <>
+                                    <Panel title="JIT COMPILATION STATUS" icon={Zap} accentColor={THEME.ai}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="JIT FUNCTIONS" value="156" icon={Code} color={THEME.ai} />
+                                            <LiveMetric label="COMPILE TIME" value="234ms" icon={Clock} color={THEME.warning} />
+                                            <LiveMetric label="INLINING" value="ON" icon={CheckCircle} color={THEME.success} />
+                                            <LiveMetric label="OPTIMIZATION" value="ON" icon={Zap} color={THEME.success} />
+                                        </div>
+                                    </Panel>
+                                    <Panel title="JIT COMPILATION OVER TIME" icon={BarChart2} accentColor={THEME.ai}>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <BarChart data={[
+                                                { hour: '00:00', compiled: 12, time: 45 },
+                                                { hour: '04:00', compiled: 8, time: 32 },
+                                                { hour: '08:00', compiled: 24, time: 89 },
+                                                { hour: '12:00', compiled: 34, time: 156 },
+                                                { hour: '16:00', compiled: 28, time: 120 },
+                                                { hour: '20:00', compiled: 18, time: 67 },
+                                            ]}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                                <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Bar dataKey="compiled" fill={THEME.ai} name="Functions Compiled" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                    <Panel title="JIT-COMPILED QUERIES" icon={Terminal} accentColor={THEME.primary}>
+                                        <DataTable
+                                            columns={[
+                                                { key: 'query', label: 'Query', width: '40%' },
+                                                { key: 'functions', label: 'Functions' },
+                                                { key: 'compTime', label: 'Compile' },
+                                                { key: 'execTime', label: 'Exec Time' },
+                                                { key: 'speedup', label: 'Speedup' },
+                                            ]}
+                                            rows={[
+                                                { query: 'Aggregate on orders...', functions: '12', compTime: '45ms', execTime: '123ms', speedup: <StatusBadge label="3.2x" color={THEME.success} /> },
+                                                { query: 'Hash Join users + orders...', functions: '8', compTime: '32ms', execTime: '89ms', speedup: <StatusBadge label="2.1x" color={THEME.success} /> },
+                                                { query: 'Sort + Limit products...', functions: '5', compTime: '18ms', execTime: '45ms', speedup: <StatusBadge label="1.8x" color={THEME.primary} /> },
+                                            ]}
+                                        />
+                                    </Panel>
+                                </>
+                            )}
+
+                            {/* ── Parallel Workers ── */}
+                            {dt === 'parallel' && (
+                                <>
+                                    <Panel title="PARALLEL QUERY UTILIZATION" icon={Cpu} accentColor={THEME.primary}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="MAX WORKERS" value="8" icon={Server} color={THEME.primary} />
+                                            <LiveMetric label="PER GATHER" value="4" icon={Activity} color={THEME.success} />
+                                            <LiveMetric label="AVG ACTIVE" value="3.5" icon={TrendingUp} color={THEME.ai} />
+                                            <LiveMetric label="UTILIZATION" value="44%" icon={Gauge} color={THEME.warning} />
+                                        </div>
+                                    </Panel>
+                                    <Panel title="WORKER UTILIZATION OVER TIME" icon={BarChart2} accentColor={THEME.ai}>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <AreaChart data={demoData.connectionTrends.map((d, idx) => ({ ...d, workers: Math.floor(2 + Math.sin(idx / 4) * 3 + Math.random() * 2) }))}>
+                                                <defs>
+                                                    <linearGradient id="pg-workers-grad" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
+                                                        <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Area type="monotone" dataKey="workers" stroke={THEME.primary} fillOpacity={1} fill="url(#pg-workers-grad)" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                    <Panel title="ACTIVE PARALLEL QUERIES" icon={Zap} accentColor={THEME.success}>
+                                        <DataTable
+                                            columns={[
+                                                { key: 'query', label: 'Query', width: '40%' },
+                                                { key: 'type', label: 'Type' },
+                                                { key: 'workers', label: 'Workers' },
+                                                { key: 'speedup', label: 'Speedup' },
+                                            ]}
+                                            rows={[
+                                                { query: 'SELECT COUNT(*) FROM large_table...', type: <StatusBadge label="Seq Scan" color={THEME.success} />, workers: '5/8', speedup: '68% faster' },
+                                                { query: 'SELECT o.* FROM orders o JOIN...', type: <StatusBadge label="Hash Join" color={THEME.primary} />, workers: '3/8', speedup: '52% faster' },
+                                                { query: 'CREATE INDEX CONCURRENTLY...', type: <StatusBadge label="Index Build" color={THEME.ai} />, workers: '8/8', speedup: '4.2x faster' },
+                                            ]}
+                                        />
+                                    </Panel>
+                                </>
+                            )}
+
+                            {/* ── Blocking Tree ── */}
+                            {dt === 'blocking' && (
+                                <>
+                                    <Panel title="BLOCKING TREE SUMMARY" icon={Lock} accentColor={THEME.danger}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="BLOCKED" value="3" icon={Lock} color={THEME.danger} />
+                                            <LiveMetric label="BLOCKERS" value="2" icon={AlertTriangle} color={THEME.warning} />
+                                            <LiveMetric label="MAX WAIT" value="45s" icon={Clock} color={THEME.ai} />
+                                            <LiveMetric label="AVG WAIT" value="12s" icon={TrendingUp} color={THEME.primary} />
+                                        </div>
+                                    </Panel>
+                                    <Panel title="BLOCKING CHAIN" icon={Lock} accentColor={THEME.danger}>
+                                        <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textDim, lineHeight: 2 }}>
+                                            <div><span style={{ color: THEME.danger, fontWeight: 700 }}>PID 54231</span> — UPDATE public.orders SET status = ... <StatusBadge label="BLOCKER" color={THEME.danger} /></div>
+                                            <div style={{ marginLeft: 24 }}>├─ <span style={{ color: THEME.warning }}>PID 54289</span> — SELECT * FROM orders WHERE id = 1234 <StatusBadge label="45s" color={THEME.warning} /></div>
+                                            <div style={{ marginLeft: 24 }}>├─ <span style={{ color: THEME.warning }}>PID 54301</span> — UPDATE orders SET amount = ... <StatusBadge label="32s" color={THEME.warning} /></div>
+                                            <div style={{ marginLeft: 48 }}>└─ <span style={{ color: THEME.primary }}>PID 54315</span> — SELECT FOR UPDATE ... <StatusBadge label="18s" color={THEME.primary} /></div>
+                                            <div style={{ marginTop: 12 }}><span style={{ color: THEME.danger, fontWeight: 700 }}>PID 54245</span> — ALTER TABLE users ADD COLUMN ... <StatusBadge label="BLOCKER" color={THEME.danger} /></div>
+                                            <div style={{ marginLeft: 24 }}>└─ <span style={{ color: THEME.warning }}>PID 54298</span> — INSERT INTO users VALUES ... <StatusBadge label="12s" color={THEME.warning} /></div>
+                                        </div>
+                                    </Panel>
+                                </>
+                            )}
+
+                            {/* ── Deadlock History ── */}
+                            {dt === 'deadlock' && (
+                                <>
+                                    <Panel title="DEADLOCK SUMMARY" icon={AlertOctagon} accentColor={THEME.danger}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="DEADLOCKS (24H)" value="3" icon={AlertOctagon} color={THEME.danger} />
+                                            <LiveMetric label="DEADLOCKS (7D)" value="12" icon={Calendar} color={THEME.warning} />
+                                            <LiveMetric label="RESOLVED" value="3" icon={CheckCircle} color={THEME.success} />
+                                            <LiveMetric label="LAST OCCURRED" value="2h ago" icon={Clock} color={THEME.primary} />
+                                        </div>
+                                    </Panel>
+                                    <Panel title="DEADLOCK HISTORY" icon={AlertOctagon} accentColor={THEME.danger}>
+                                        <DataTable
+                                            columns={[
+                                                { key: 'time', label: 'Time' },
+                                                { key: 'pid1', label: 'PID 1' },
+                                                { key: 'pid2', label: 'PID 2' },
+                                                { key: 'table', label: 'Table' },
+                                                { key: 'resolved', label: 'Resolved By' },
+                                            ]}
+                                            rows={[
+                                                { time: '2h ago', pid1: '54231', pid2: '54289', table: 'orders', resolved: <StatusBadge label="Rollback PID 54289" color={THEME.warning} /> },
+                                                { time: '8h ago', pid1: '54102', pid2: '54156', table: 'users', resolved: <StatusBadge label="Rollback PID 54156" color={THEME.warning} /> },
+                                                { time: '1d ago', pid1: '53890', pid2: '53912', table: 'inventory', resolved: <StatusBadge label="Rollback PID 53912" color={THEME.warning} /> },
+                                            ]}
+                                        />
+                                    </Panel>
+                                </>
+                            )}
+
+                            {/* ── Plan Cache ── */}
+                            {dt === 'plan-cache' && (
+                                <>
+                                    <Panel title="PLAN CACHE STATISTICS" icon={Archive} accentColor={THEME.ai}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="CACHED PLANS" value="1,456" icon={Archive} color={THEME.ai} />
+                                            <LiveMetric label="HIT RATIO" value="94.2%" icon={CheckCircle} color={THEME.success} />
+                                            <LiveMetric label="EVICTIONS" value="23" icon={RefreshCw} color={THEME.warning} />
+                                            <LiveMetric label="MEMORY" value="128 MB" icon={HardDrive} color={THEME.primary} />
+                                        </div>
+                                    </Panel>
+                                    <Panel title="CACHE HIT RATIO OVER TIME" icon={TrendingUp} accentColor={THEME.success}>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <AreaChart data={demoData.cpuMemory}>
+                                                <defs>
+                                                    <linearGradient id="deep-cache-grad" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
+                                                        <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} domain={[80, 100]} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Area type="monotone" dataKey="memory" stroke={THEME.success} fill="url(#deep-cache-grad)" name="Hit Ratio %" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                </>
+                            )}
+
+                            {/* ── Temp Files ── */}
+                            {dt === 'temp-files' && (
+                                <>
+                                    <Panel title="TEMP FILE USAGE" icon={FileText} accentColor={THEME.warning}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            <LiveMetric label="TEMP FILES" value="45" icon={FileText} color={THEME.warning} />
+                                            <LiveMetric label="TOTAL SIZE" value="2.3 GB" icon={HardDrive} color={THEME.danger} />
+                                            <LiveMetric label="AVG SIZE" value="52 MB" icon={BarChart2} color={THEME.primary} />
+                                            <LiveMetric label="WORK MEM" value="256 MB" icon={Server} color={THEME.success} />
+                                        </div>
+                                    </Panel>
+                                    <Panel title="TEMP FILE CREATION OVER TIME" icon={TrendingUp} accentColor={THEME.warning}>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <BarChart data={[
+                                                { hour: '00:00', files: 3, size: 120 },
+                                                { hour: '04:00', files: 1, size: 45 },
+                                                { hour: '08:00', files: 8, size: 340 },
+                                                { hour: '12:00', files: 12, size: 890 },
+                                                { hour: '16:00', files: 10, size: 560 },
+                                                { hour: '20:00', files: 6, size: 230 },
+                                            ]}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                                <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Bar dataKey="files" fill={THEME.warning} name="Temp Files" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                    <Panel title="QUERIES USING TEMP FILES" icon={Terminal} accentColor={THEME.danger}>
+                                        <DataTable
+                                            columns={[
+                                                { key: 'query', label: 'Query', width: '40%' },
+                                                { key: 'size', label: 'Temp Size' },
+                                                { key: 'sortMethod', label: 'Sort Method' },
+                                                { key: 'suggestion', label: 'Suggestion' },
+                                            ]}
+                                            rows={[
+                                                { query: 'SELECT * FROM orders ORDER BY...', size: '340 MB', sortMethod: 'External Merge', suggestion: <StatusBadge label="Increase work_mem" color={THEME.warning} /> },
+                                                { query: 'SELECT DISTINCT category FROM...', size: '120 MB', sortMethod: 'External Sort', suggestion: <StatusBadge label="Add index" color={THEME.primary} /> },
+                                                { query: 'GROUP BY user_id, product_id...', size: '89 MB', sortMethod: 'Hash Batch', suggestion: <StatusBadge label="Reduce grouping" color={THEME.ai} /> },
+                                            ]}
+                                        />
+                                    </Panel>
+                                </>
+                            )}
                         </>
-                    )}
+                        );
+                    })()}
 
                     {/* ── TAB 3: Resources & Health ── */}
                     {perfTabKey === 'resources' && (
