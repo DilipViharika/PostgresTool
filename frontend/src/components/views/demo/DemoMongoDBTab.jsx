@@ -1,4 +1,22 @@
 import React, { useState, useMemo } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { GlassCard } from '../../ui/SharedComponents.jsx';
+import {
+    Database,
+    Activity,
+    HardDrive,
+    Gauge,
+    Radio,
+    Clock,
+    Zap,
+    Server,
+    TrendingUp,
+    AlertTriangle,
+    Layers,
+    Cpu,
+    MemoryStick,
+    GitMerge,
+} from 'lucide-react';
 import {
     LineChart,
     Line,
@@ -14,175 +32,187 @@ import {
     ResponsiveContainer,
     Legend,
 } from 'recharts';
-import { getDS } from '../../../config/designTokens.js';
 
-/* ── Inject keyframes once ───────────────────────────────────────── */
-const STYLE_ID = '__demo_mongo_styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-    const s = document.createElement('style');
-    s.id = STYLE_ID;
-    s.textContent = `
-      @keyframes demoMongoFadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-      .demo-mongo-stagger > * { animation: demoMongoFadeUp 0.5s ease-out both; }
-      .demo-mongo-stagger > *:nth-child(1){animation-delay:0s}
-      .demo-mongo-stagger > *:nth-child(2){animation-delay:.07s}
-      .demo-mongo-stagger > *:nth-child(3){animation-delay:.14s}
-      .demo-mongo-stagger > *:nth-child(4){animation-delay:.21s}
-      .demo-mongo-stagger > *:nth-child(5){animation-delay:.28s}
-      .demo-mongo-stagger > *:nth-child(6){animation-delay:.35s}
-    `;
-    document.head.appendChild(s);
-}
+/* ── Styles ──────────────────────────────────────────────────────── */
+const DemoStyles = () => (
+    <style>{`
+        @keyframes dmgFadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        .dmg-stagger > * { animation: dmgFadeIn 0.45s ease-out both; }
+        .dmg-stagger > *:nth-child(1){animation-delay:0s}
+        .dmg-stagger > *:nth-child(2){animation-delay:.07s}
+        .dmg-stagger > *:nth-child(3){animation-delay:.14s}
+        .dmg-stagger > *:nth-child(4){animation-delay:.21s}
+        .dmg-stagger > *:nth-child(5){animation-delay:.28s}
+        .dmg-stagger > *:nth-child(6){animation-delay:.35s}
+        .dmg-card-shine { position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%); pointer-events:none; border-radius:inherit; }
+        .dmg-metric:hover { border-color: ${THEME.glassBorderHover} !important; transform: translateY(-2px); }
+        .dmg-metric { transition: transform 0.2s ease, border-color 0.2s ease; }
+    `}</style>
+);
 
-/* ── GlassCard ───────────────────────────────────────────────────── */
-const GlassCard = ({ children, accent, style, noPad }) => {
-    const [hov, setHov] = useState(false);
-    const DS = getDS();
-    const c = accent || DS.emerald;
-    return (
-        <div
-            onMouseEnter={() => setHov(true)}
-            onMouseLeave={() => setHov(false)}
-            style={{
-                position: 'relative',
-                overflow: 'hidden',
-                background: hov ? `linear-gradient(145deg, ${c}0c 0%, rgba(10,15,30,0.85) 100%)` : 'rgba(10,15,30,0.7)',
-                backdropFilter: 'blur(24px) saturate(180%)',
-                borderRadius: 16,
-                border: `1px solid ${hov ? c + '40' : 'rgba(255,255,255,0.06)'}`,
-                boxShadow: hov
-                    ? `0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px ${c}25, 0 0 30px ${c}10`
-                    : '0 4px 24px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
-                transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                transform: hov ? 'translateY(-2px)' : 'translateY(0)',
-                padding: noPad ? 0 : 20,
-                ...style,
-            }}
-        >
+const Panel = ({ title, icon: TIcon, children, noPad, accentColor, style = {} }) => (
+    <div
+        style={{
+            background: THEME.glass,
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
+            borderRadius: 12,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            position: 'relative',
+            boxShadow: accentColor
+                ? `0 0 0 1px ${accentColor}12, 0 4px 16px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.08)`
+                : `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+            ...style,
+        }}
+    >
+        <div className="dmg-card-shine" />
+        {title && (
             <div
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 2,
-                    background: `linear-gradient(90deg, ${c}, ${c}80, transparent)`,
-                    opacity: hov ? 1 : 0.5,
-                    transition: 'opacity 0.3s',
-                }}
-            />
-            {children}
-        </div>
-    );
-};
-
-/* ── BentoMetric ─────────────────────────────────────────────────── */
-const BentoMetric = ({ label, value, sub, color }) => {
-    const [hov, setHov] = useState(false);
-    const c = color || getDS().emerald;
-    return (
-        <div
-            onMouseEnter={() => setHov(true)}
-            onMouseLeave={() => setHov(false)}
-            style={{
-                position: 'relative',
-                overflow: 'hidden',
-                background: hov
-                    ? `linear-gradient(145deg, rgba(7,15,36,0.9) 0%, ${c}08 50%, rgba(2,6,20,0.97) 100%)`
-                    : 'linear-gradient(145deg, rgba(7,15,36,0.82) 0%, rgba(2,6,20,0.97) 100%)',
-                borderRadius: 16,
-                padding: 22,
-                minHeight: 120,
-                border: `1px solid ${hov ? c + '50' : 'rgba(255,255,255,0.06)'}`,
-                backdropFilter: 'blur(20px) saturate(160%)',
-                transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                transform: hov ? 'translateY(-4px) scale(1.01)' : 'none',
-                boxShadow: hov
-                    ? `0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px ${c}20, 0 0 40px ${c}12`
-                    : '0 4px 16px rgba(0,0,0,0.3)',
-            }}
-        >
-            <div
-                style={{
-                    position: 'absolute',
-                    top: -30,
-                    right: -30,
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    background: `radial-gradient(circle, ${c}${hov ? '18' : '08'} 0%, transparent 70%)`,
-                    transition: 'background 0.35s',
-                }}
-            />
-            <div
-                style={{
-                    color: '#475569',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '1.5px',
-                    marginBottom: 10,
+                    padding: '14px 20px',
+                    borderBottom: `1px solid ${accentColor ? `${accentColor}18` : THEME.glassBorder}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    minHeight: 44,
+                    background: accentColor ? `${accentColor}06` : 'rgba(255,255,255,0.02)',
                 }}
             >
-                {label}
+                {TIcon && (
+                    <div
+                        style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: accentColor ? `${accentColor}16` : `${THEME.textDim}12`,
+                            boxShadow: accentColor ? `0 0 8px ${accentColor}20` : 'none',
+                        }}
+                    >
+                        <TIcon size={13} color={accentColor || THEME.textDim} />
+                    </div>
+                )}
+                <span
+                    style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: THEME.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        fontFamily: THEME.fontBody,
+                    }}
+                >
+                    {title}
+                </span>
+            </div>
+        )}
+        <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '16px 18px' }}>{children}</div>
+    </div>
+);
+
+const HeroMetric = ({ icon: Icon, label, value, sub, color }) => (
+    <div
+        className="dmg-metric"
+        style={{
+            background: THEME.glass,
+            backdropFilter: 'blur(16px)',
+            borderRadius: 12,
+            border: `1px solid ${THEME.glassBorder}`,
+            padding: '16px 18px',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08)`,
+        }}
+    >
+        <div className="dmg-card-shine" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div
+                style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `linear-gradient(135deg, ${color}18, ${color}08)`,
+                    border: `1px solid ${color}30`,
+                    boxShadow: `0 0 16px ${color}15`,
+                }}
+            >
+                <Icon size={18} color={color} />
             </div>
             <span
                 style={{
-                    fontSize: 34,
-                    fontWeight: 800,
-                    fontFamily: "'JetBrains Mono', monospace",
-                    background: hov ? `linear-gradient(135deg, #fff, ${c})` : 'none',
-                    WebkitBackgroundClip: hov ? 'text' : 'unset',
-                    WebkitTextFillColor: hov ? 'transparent' : '#fff',
-                    textShadow: hov ? `0 0 32px ${c}80` : `0 0 12px ${c}20`,
-                    transition: 'text-shadow 0.35s',
-                }}
-            >
-                {value}
-            </span>
-            {sub && <div style={{ color: '#94a3b8', fontSize: 12, marginTop: 6 }}>{sub}</div>}
-        </div>
-    );
-};
-
-const SectionHeader = ({ children, color }) => {
-    const c = color || getDS().emerald;
-    return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '32px 0 14px' }}>
-            <div style={{ width: 4, height: 20, borderRadius: 2, background: c, boxShadow: `0 0 8px ${c}40` }} />
-            <h3
-                style={{
                     fontSize: 11,
                     fontWeight: 700,
-                    color: c,
+                    color: THEME.textMuted,
                     textTransform: 'uppercase',
-                    letterSpacing: '1.8px',
-                    fontFamily: "'DM Sans', system-ui",
+                    letterSpacing: '0.1em',
+                    fontFamily: THEME.fontBody,
                 }}
             >
-                {children}
-            </h3>
+                {label}
+            </span>
         </div>
-    );
-};
+        <div
+            style={{
+                fontSize: 28,
+                fontWeight: 800,
+                fontFamily: THEME.fontMono,
+                color: THEME.textMain,
+                textShadow: `0 0 20px ${color}20`,
+            }}
+        >
+            {value}
+        </div>
+        {sub && <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4 }}>{sub}</div>}
+        <div
+            style={{
+                position: 'absolute',
+                top: -20,
+                right: -20,
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${color}10 0%, transparent 70%)`,
+            }}
+        />
+    </div>
+);
 
-const ChartTooltip = ({ active, payload, label }) => {
+const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div
             style={{
-                background: 'rgba(10,15,30,0.95)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: THEME.glassHeavy,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: 12,
                 padding: '10px 14px',
                 fontSize: 12,
                 backdropFilter: 'blur(12px)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+                boxShadow: THEME.shadowMd,
             }}
         >
-            <div style={{ color: '#94a3b8', marginBottom: 6, fontSize: 11 }}>{label}</div>
+            <div
+                style={{
+                    color: THEME.textDim,
+                    marginBottom: 5,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                }}
+            >
+                {label}
+            </div>
             {payload.map((p, i) => (
-                <div key={i} style={{ color: p.color, fontFamily: "'JetBrains Mono', monospace" }}>
+                <div key={i} style={{ color: p.color, fontFamily: THEME.fontMono, fontSize: 12 }}>
                     {p.name}: <strong>{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</strong>
                 </div>
             ))}
@@ -239,208 +269,170 @@ const slowOps = [
     { op: 'find', ns: 'ecommerce.users', duration: '1.4s', plan: 'COLLSCAN', docs: '890K' },
     { op: 'mapReduce', ns: 'ecommerce.logs', duration: '1.1s', plan: 'COLLSCAN', docs: '5.6M' },
 ];
-const PIE_COLORS = ['#38bdf8', '#818cf8', '#fbbf24', '#34d399', '#fb7185'];
+const PIE_COLORS = [THEME.primary, THEME.ai, THEME.warning, THEME.secondary, THEME.danger];
 
-/* ── Main Component ──────────────────────────────────────────────── */
+/* ── Main ────────────────────────────────────────────────────────── */
 export default function DemoMongoDBTab() {
-    const DS = useMemo(() => getDS(), []);
+    useAdaptiveTheme();
 
     return (
-        <div
-            style={{
-                padding: 28,
-                color: DS.textPrimary || '#f0f4ff',
-                minHeight: '100vh',
-                fontFamily: "'DM Sans', system-ui",
-            }}
-        >
-            {/* Hero Metrics */}
+        <div style={{ padding: '24px 28px', minHeight: '100vh' }}>
+            <DemoStyles />
+
             <div
-                className="demo-mongo-stagger"
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16, marginBottom: 8 }}
+                className="dmg-stagger"
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16, marginBottom: 24 }}
             >
-                <BentoMetric label="Uptime" value="89d" sub="Since restart" color={DS.emerald} />
-                <BentoMetric label="Ops/sec" value="4,820" sub="All operations" color={DS.cyan} />
-                <BentoMetric label="Connections" value="182" sub="of 800 max" color={DS.amber} />
-                <BentoMetric label="Resident Mem" value="4.6 GB" sub="WiredTiger cache" color={DS.violet} />
-                <BentoMetric label="Repl Lag" value="0.3s" sub="Max secondary" color={DS.emerald} />
-                <BentoMetric label="Slow Ops" value="8" sub="Last 24 h" color={DS.rose} />
+                <HeroMetric icon={Clock} label="Uptime" value="89d" sub="Since restart" color={THEME.secondary} />
+                <HeroMetric icon={Zap} label="Ops/sec" value="4,820" sub="All operations" color={THEME.primary} />
+                <HeroMetric icon={Activity} label="Connections" value="182" sub="of 800 max" color={THEME.warning} />
+                <HeroMetric
+                    icon={MemoryStick}
+                    label="Resident Mem"
+                    value="4.6 GB"
+                    sub="WiredTiger cache"
+                    color={THEME.ai}
+                />
+                <HeroMetric icon={Radio} label="Repl Lag" value="0.3s" sub="Max secondary" color={THEME.secondary} />
+                <HeroMetric icon={AlertTriangle} label="Slow Ops" value="8" sub="Last 24 h" color={THEME.danger} />
             </div>
 
-            {/* Operations */}
-            <SectionHeader color={DS.violet}>Operations / sec (24h)</SectionHeader>
-            <GlassCard accent={DS.violet}>
-                <ResponsiveContainer width="100%" height={260}>
-                    <AreaChart data={opsData}>
-                        <defs>
-                            <linearGradient id="mgQueries" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={DS.cyan} stopOpacity={0.4} />
-                                <stop offset="100%" stopColor={DS.cyan} stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="mgInserts" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={DS.emerald} stopOpacity={0.4} />
-                                <stop offset="100%" stopColor={DS.emerald} stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                        <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                        <YAxis stroke="#475569" fontSize={10} />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Legend />
-                        <Area
-                            type="monotone"
-                            dataKey="queries"
-                            stackId="1"
-                            stroke={DS.cyan}
-                            fill="url(#mgQueries)"
-                            strokeWidth={1.5}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="inserts"
-                            stackId="1"
-                            stroke={DS.emerald}
-                            fill="url(#mgInserts)"
-                            strokeWidth={1.5}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="updates"
-                            stackId="1"
-                            stroke={DS.amber}
-                            fill={DS.amber}
-                            fillOpacity={0.2}
-                            strokeWidth={1.5}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="deletes"
-                            stackId="1"
-                            stroke={DS.rose}
-                            fill={DS.rose}
-                            fillOpacity={0.15}
-                            strokeWidth={1.5}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </GlassCard>
-
-            {/* Latency */}
-            <SectionHeader color={DS.amber}>Read / Write Latency</SectionHeader>
-            <GlassCard accent={DS.amber}>
-                <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={latencyData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                        <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                        <YAxis stroke="#475569" fontSize={10} unit=" ms" />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Legend />
-                        <Line
-                            type="monotone"
-                            dataKey="read"
-                            stroke={DS.cyan}
-                            strokeWidth={2}
-                            dot={false}
-                            name="Read (ms)"
-                        />
-                        <Line
-                            type="monotone"
-                            dataKey="write"
-                            stroke={DS.rose}
-                            strokeWidth={2}
-                            dot={false}
-                            name="Write (ms)"
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </GlassCard>
-
-            {/* Connections & Memory */}
-            <SectionHeader color={DS.emerald}>Connections & Memory</SectionHeader>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-                <GlassCard accent={DS.cyan}>
-                    <div
-                        style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: '#475569',
-                            textTransform: 'uppercase',
-                            letterSpacing: 1.5,
-                            marginBottom: 12,
-                        }}
-                    >
-                        Active Connections
-                    </div>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <AreaChart data={connData}>
+            <div style={{ marginBottom: 18 }}>
+                <Panel title="Operations / sec (24h)" icon={TrendingUp} accentColor={THEME.ai}>
+                    <ResponsiveContainer width="100%" height={260}>
+                        <AreaChart data={opsData}>
                             <defs>
-                                <linearGradient id="mgConn" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={DS.cyan} stopOpacity={0.4} />
-                                    <stop offset="100%" stopColor={DS.cyan} stopOpacity={0} />
+                                <linearGradient id="dmgQ" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.4} />
+                                    <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="dmgI" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.secondary} stopOpacity={0.4} />
+                                    <stop offset="100%" stopColor={THEME.secondary} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                            <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                            <YAxis stroke="#475569" fontSize={10} />
-                            <Tooltip content={<ChartTooltip />} />
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Area
+                                type="monotone"
+                                dataKey="queries"
+                                stackId="1"
+                                stroke={THEME.primary}
+                                fill="url(#dmgQ)"
+                                strokeWidth={1.5}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="inserts"
+                                stackId="1"
+                                stroke={THEME.secondary}
+                                fill="url(#dmgI)"
+                                strokeWidth={1.5}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="updates"
+                                stackId="1"
+                                stroke={THEME.warning}
+                                fill={THEME.warning}
+                                fillOpacity={0.15}
+                                strokeWidth={1.5}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="deletes"
+                                stackId="1"
+                                stroke={THEME.danger}
+                                fill={THEME.danger}
+                                fillOpacity={0.1}
+                                strokeWidth={1.5}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Panel>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 18 }}>
+                <Panel title="Read / Write Latency" icon={Gauge} accentColor={THEME.warning}>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <LineChart data={latencyData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} unit=" ms" />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Line
+                                type="monotone"
+                                dataKey="read"
+                                stroke={THEME.primary}
+                                strokeWidth={2}
+                                dot={false}
+                                name="Read (ms)"
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="write"
+                                stroke={THEME.danger}
+                                strokeWidth={2}
+                                dot={false}
+                                name="Write (ms)"
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Panel>
+                <Panel title="Active Connections" icon={Activity} accentColor={THEME.primary}>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <AreaChart data={connData}>
+                            <defs>
+                                <linearGradient id="dmgConn" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.4} />
+                                    <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} />
+                            <Tooltip content={<ChartTip />} />
                             <Area
                                 type="monotone"
                                 dataKey="current"
-                                stroke={DS.cyan}
-                                fill="url(#mgConn)"
+                                stroke={THEME.primary}
+                                fill="url(#dmgConn)"
                                 strokeWidth={2}
                                 dot={false}
                                 name="Current"
                             />
                         </AreaChart>
                     </ResponsiveContainer>
-                </GlassCard>
-                <GlassCard accent={DS.violet}>
-                    <div
-                        style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: '#475569',
-                            textTransform: 'uppercase',
-                            letterSpacing: 1.5,
-                            marginBottom: 12,
-                        }}
-                    >
-                        Memory Usage (GB)
-                    </div>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={memoryData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                            <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                            <YAxis stroke="#475569" fontSize={10} />
-                            <Tooltip content={<ChartTooltip />} />
-                            <Legend />
-                            <Line type="monotone" dataKey="resident" stroke={DS.cyan} strokeWidth={2} dot={false} />
-                            <Line type="monotone" dataKey="virtual" stroke={DS.violet} strokeWidth={2} dot={false} />
-                            <Line type="monotone" dataKey="mapped" stroke={DS.amber} strokeWidth={2} dot={false} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </GlassCard>
+                </Panel>
             </div>
 
-            {/* Storage & Sharding */}
-            <SectionHeader color={DS.amber}>Collection Storage & Sharding</SectionHeader>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 18 }}>
-                <GlassCard accent={DS.amber}>
-                    <div
-                        style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: '#475569',
-                            textTransform: 'uppercase',
-                            letterSpacing: 1.5,
-                            marginBottom: 12,
-                            textAlign: 'center',
-                        }}
-                    >
-                        Collection Sizes
-                    </div>
-                    <ResponsiveContainer width="100%" height={230}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 18 }}>
+                <Panel title="Memory Usage (GB)" icon={MemoryStick} accentColor={THEME.ai}>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <LineChart data={memoryData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Line
+                                type="monotone"
+                                dataKey="resident"
+                                stroke={THEME.primary}
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line type="monotone" dataKey="virtual" stroke={THEME.ai} strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="mapped" stroke={THEME.warning} strokeWidth={2} dot={false} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Panel>
+                <Panel title="Collection Sizes" icon={Database} accentColor={THEME.warning}>
+                    <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie
                                 data={collectionSizes}
@@ -456,171 +448,29 @@ export default function DemoMongoDBTab() {
                                     <Cell key={i} fill={PIE_COLORS[i]} />
                                 ))}
                             </Pie>
-                            <Tooltip content={<ChartTooltip />} />
+                            <Tooltip content={<ChartTip />} />
                         </PieChart>
                     </ResponsiveContainer>
-                </GlassCard>
-                <GlassCard accent={DS.emerald} noPad>
-                    <div
-                        style={{
-                            padding: '16px 20px 0',
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: '#475569',
-                            textTransform: 'uppercase',
-                            letterSpacing: 1.5,
-                        }}
-                    >
-                        Shard Distribution
-                    </div>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                            <thead>
-                                <tr>
-                                    {['Shard', 'Chunks', 'Documents', 'Storage', 'Role'].map((h) => (
-                                        <th
-                                            key={h}
-                                            style={{
-                                                padding: '12px 14px',
-                                                textAlign: 'left',
-                                                fontSize: 9,
-                                                fontWeight: 800,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '1.5px',
-                                                color: '#475569',
-                                                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                                            }}
-                                        >
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {shardData.map((s, i) => (
-                                    <tr
-                                        key={i}
-                                        style={{
-                                            borderBottom: '1px solid rgba(255,255,255,0.03)',
-                                            transition: 'background 0.15s',
-                                        }}
-                                        onMouseEnter={(e) =>
-                                            (e.currentTarget.style.background = 'rgba(52,211,153,0.04)')
-                                        }
-                                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                                    >
-                                        <td
-                                            style={{
-                                                padding: '10px 14px',
-                                                color: DS.cyan,
-                                                fontFamily: "'JetBrains Mono', monospace",
-                                                fontWeight: 600,
-                                            }}
-                                        >
-                                            {s.shard}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 14px',
-                                                color: '#94a3b8',
-                                                fontFamily: "'JetBrains Mono', monospace",
-                                            }}
-                                        >
-                                            {s.chunks}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 14px',
-                                                color: DS.amber,
-                                                fontFamily: "'JetBrains Mono', monospace",
-                                            }}
-                                        >
-                                            {s.docs}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 14px',
-                                                color: '#94a3b8',
-                                                fontFamily: "'JetBrains Mono', monospace",
-                                            }}
-                                        >
-                                            {s.storage}
-                                        </td>
-                                        <td style={{ padding: '10px 14px' }}>
-                                            <span
-                                                style={{
-                                                    padding: '3px 10px',
-                                                    borderRadius: 8,
-                                                    fontSize: 10,
-                                                    fontWeight: 700,
-                                                    background: `${DS.emerald}15`,
-                                                    color: DS.emerald,
-                                                    border: `1px solid ${DS.emerald}30`,
-                                                }}
-                                            >
-                                                {s.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </GlassCard>
+                </Panel>
             </div>
 
-            {/* Replication */}
-            <SectionHeader color={DS.rose}>Replication Lag & Oplog</SectionHeader>
-            <GlassCard accent={DS.rose}>
-                <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={replData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                        <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                        <YAxis yAxisId="left" stroke="#475569" fontSize={10} />
-                        <YAxis yAxisId="right" orientation="right" stroke="#475569" fontSize={10} />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Legend />
-                        <Line
-                            yAxisId="left"
-                            type="monotone"
-                            dataKey="lag"
-                            stroke={DS.rose}
-                            strokeWidth={2}
-                            dot={false}
-                            name="Lag (s)"
-                        />
-                        <Line
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey="oplogWindow"
-                            stroke={DS.violet}
-                            strokeWidth={2}
-                            dot={false}
-                            name="Oplog Window (h)"
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </GlassCard>
-
-            {/* Slow Operations */}
-            <SectionHeader color={DS.rose}>Top Slow Operations</SectionHeader>
-            <GlassCard accent={DS.rose} noPad>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <div style={{ marginBottom: 18 }}>
+                <Panel title="Shard Distribution" icon={Server} accentColor={THEME.secondary} noPad>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr>
-                                {['Operation', 'Namespace', 'Duration', 'Plan', 'Docs Examined'].map((h) => (
+                                {['Shard', 'Chunks', 'Documents', 'Storage', 'Role'].map((h) => (
                                     <th
                                         key={h}
                                         style={{
-                                            padding: '12px 14px',
+                                            padding: '10px 14px',
                                             textAlign: 'left',
                                             fontSize: 9,
                                             fontWeight: 800,
                                             textTransform: 'uppercase',
                                             letterSpacing: '1.5px',
-                                            color: '#475569',
-                                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                            color: THEME.textDim,
+                                            borderBottom: `1px solid ${THEME.glassBorder}`,
                                         }}
                                     >
                                         {h}
@@ -629,76 +479,209 @@ export default function DemoMongoDBTab() {
                             </tr>
                         </thead>
                         <tbody>
-                            {slowOps.map((q, i) => (
+                            {shardData.map((s, i) => (
                                 <tr
                                     key={i}
-                                    style={{
-                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
-                                        transition: 'background 0.15s',
-                                    }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(52,211,153,0.04)')}
+                                    style={{ borderBottom: `1px solid ${THEME.grid}`, transition: 'background 0.15s' }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = `${THEME.secondaryFaint}`)}
                                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                                 >
                                     <td
                                         style={{
                                             padding: '10px 14px',
-                                            color: DS.cyan,
-                                            fontWeight: 700,
-                                            fontFamily: "'JetBrains Mono', monospace",
+                                            color: THEME.primary,
+                                            fontFamily: THEME.fontMono,
+                                            fontWeight: 600,
+                                            fontSize: 12,
                                         }}
                                     >
-                                        {q.op}
+                                        {s.shard}
                                     </td>
                                     <td
                                         style={{
                                             padding: '10px 14px',
-                                            fontFamily: "'JetBrains Mono', monospace",
-                                            color: '#94a3b8',
+                                            color: THEME.textMuted,
+                                            fontFamily: THEME.fontMono,
+                                            fontSize: 12,
                                         }}
                                     >
-                                        {q.ns}
+                                        {s.chunks}
                                     </td>
                                     <td
                                         style={{
                                             padding: '10px 14px',
-                                            color: DS.rose,
-                                            fontWeight: 700,
-                                            fontFamily: "'JetBrains Mono', monospace",
+                                            color: THEME.warning,
+                                            fontFamily: THEME.fontMono,
+                                            fontSize: 12,
                                         }}
                                     >
-                                        {q.duration}
+                                        {s.docs}
+                                    </td>
+                                    <td
+                                        style={{
+                                            padding: '10px 14px',
+                                            color: THEME.textMuted,
+                                            fontFamily: THEME.fontMono,
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        {s.storage}
                                     </td>
                                     <td style={{ padding: '10px 14px' }}>
                                         <span
                                             style={{
-                                                padding: '3px 10px',
-                                                borderRadius: 8,
-                                                fontSize: 10,
+                                                fontSize: 9.5,
                                                 fontWeight: 700,
-                                                letterSpacing: 0.5,
-                                                background: q.plan === 'COLLSCAN' ? `${DS.rose}15` : `${DS.emerald}15`,
-                                                color: q.plan === 'COLLSCAN' ? DS.rose : DS.emerald,
-                                                border: `1px solid ${q.plan === 'COLLSCAN' ? DS.rose + '30' : DS.emerald + '30'}`,
+                                                padding: '4px 11px',
+                                                borderRadius: 12,
+                                                background: `${THEME.success}12`,
+                                                color: THEME.success,
+                                                border: `1px solid ${THEME.success}28`,
+                                                fontFamily: THEME.fontMono,
                                             }}
                                         >
-                                            {q.plan}
+                                            {s.status}
                                         </span>
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '10px 14px',
-                                            color: DS.amber,
-                                            fontFamily: "'JetBrains Mono', monospace",
-                                        }}
-                                    >
-                                        {q.docs}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>
-            </GlassCard>
+                </Panel>
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+                <Panel title="Replication Lag & Oplog" icon={GitMerge} accentColor={THEME.danger}>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <LineChart data={replData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis yAxisId="left" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis yAxisId="right" orientation="right" stroke={THEME.textDim} fontSize={10} />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Line
+                                yAxisId="left"
+                                type="monotone"
+                                dataKey="lag"
+                                stroke={THEME.danger}
+                                strokeWidth={2}
+                                dot={false}
+                                name="Lag (s)"
+                            />
+                            <Line
+                                yAxisId="right"
+                                type="monotone"
+                                dataKey="oplogWindow"
+                                stroke={THEME.ai}
+                                strokeWidth={2}
+                                dot={false}
+                                name="Oplog Window (h)"
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Panel>
+            </div>
+
+            <Panel title="Top Slow Operations" icon={AlertTriangle} accentColor={THEME.danger} noPad>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr>
+                            {['Operation', 'Namespace', 'Duration', 'Plan', 'Docs Examined'].map((h) => (
+                                <th
+                                    key={h}
+                                    style={{
+                                        padding: '10px 14px',
+                                        textAlign: 'left',
+                                        fontSize: 9,
+                                        fontWeight: 800,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1.5px',
+                                        color: THEME.textDim,
+                                        borderBottom: `1px solid ${THEME.glassBorder}`,
+                                    }}
+                                >
+                                    {h}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {slowOps.map((q, i) => (
+                            <tr
+                                key={i}
+                                style={{
+                                    borderBottom: `1px solid ${THEME.grid}`,
+                                    transition: 'background 0.15s',
+                                    cursor: 'pointer',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = `${THEME.primaryFaint}`)}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                            >
+                                <td
+                                    style={{
+                                        padding: '10px 14px',
+                                        color: THEME.primary,
+                                        fontWeight: 700,
+                                        fontFamily: THEME.fontMono,
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    {q.op}
+                                </td>
+                                <td
+                                    style={{
+                                        padding: '10px 14px',
+                                        fontFamily: THEME.fontMono,
+                                        color: THEME.textMuted,
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    {q.ns}
+                                </td>
+                                <td
+                                    style={{
+                                        padding: '10px 14px',
+                                        color: THEME.danger,
+                                        fontWeight: 700,
+                                        fontFamily: THEME.fontMono,
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    {q.duration}
+                                </td>
+                                <td style={{ padding: '10px 14px' }}>
+                                    <span
+                                        style={{
+                                            fontSize: 9.5,
+                                            fontWeight: 700,
+                                            padding: '4px 11px',
+                                            borderRadius: 12,
+                                            background:
+                                                q.plan === 'COLLSCAN' ? `${THEME.danger}12` : `${THEME.success}12`,
+                                            color: q.plan === 'COLLSCAN' ? THEME.danger : THEME.success,
+                                            border: `1px solid ${q.plan === 'COLLSCAN' ? THEME.danger : THEME.success}28`,
+                                            fontFamily: THEME.fontMono,
+                                        }}
+                                    >
+                                        {q.plan}
+                                    </span>
+                                </td>
+                                <td
+                                    style={{
+                                        padding: '10px 14px',
+                                        color: THEME.warning,
+                                        fontFamily: THEME.fontMono,
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    {q.docs}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Panel>
 
             <div style={{ height: 40 }} />
         </div>

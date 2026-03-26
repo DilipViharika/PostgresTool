@@ -1,4 +1,21 @@
 import React, { useState, useMemo } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { GlassCard } from '../../ui/SharedComponents.jsx';
+import {
+    Database,
+    Activity,
+    HardDrive,
+    Gauge,
+    Radio,
+    Clock,
+    Zap,
+    Server,
+    TrendingUp,
+    AlertTriangle,
+    Layers,
+    Cpu,
+    MemoryStick,
+} from 'lucide-react';
 import {
     LineChart,
     Line,
@@ -14,182 +31,192 @@ import {
     ResponsiveContainer,
     Legend,
 } from 'recharts';
-import { getDS } from '../../../config/designTokens.js';
 
-/* ── Inject keyframes once ───────────────────────────────────────── */
-const STYLE_ID = '__demo_pg_styles';
-if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
-    const s = document.createElement('style');
-    s.id = STYLE_ID;
-    s.textContent = `
-      @keyframes demoPgFadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-      .demo-pg-stagger > * { animation: demoPgFadeUp 0.5s ease-out both; }
-      .demo-pg-stagger > *:nth-child(1){animation-delay:0s}
-      .demo-pg-stagger > *:nth-child(2){animation-delay:.07s}
-      .demo-pg-stagger > *:nth-child(3){animation-delay:.14s}
-      .demo-pg-stagger > *:nth-child(4){animation-delay:.21s}
-      .demo-pg-stagger > *:nth-child(5){animation-delay:.28s}
-      .demo-pg-stagger > *:nth-child(6){animation-delay:.35s}
-    `;
-    document.head.appendChild(s);
-}
+/* ── Styles ──────────────────────────────────────────────────────── */
+const DemoStyles = () => (
+    <style>{`
+        @keyframes dpgFadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        .dpg-stagger > * { animation: dpgFadeIn 0.45s ease-out both; }
+        .dpg-stagger > *:nth-child(1){animation-delay:0s}
+        .dpg-stagger > *:nth-child(2){animation-delay:.07s}
+        .dpg-stagger > *:nth-child(3){animation-delay:.14s}
+        .dpg-stagger > *:nth-child(4){animation-delay:.21s}
+        .dpg-stagger > *:nth-child(5){animation-delay:.28s}
+        .dpg-stagger > *:nth-child(6){animation-delay:.35s}
+        .dpg-card-shine { position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%); pointer-events:none; border-radius:inherit; }
+        .dpg-metric:hover { border-color: ${THEME.glassBorderHover} !important; transform: translateY(-2px); }
+        .dpg-metric { transition: transform 0.2s ease, border-color 0.2s ease; }
+    `}</style>
+);
 
-/* ── GlassCard ───────────────────────────────────────────────────── */
-const GlassCard = ({ children, accent, style, noPad }) => {
-    const [hov, setHov] = useState(false);
-    const DS = getDS();
-    const c = accent || DS.cyan;
-    return (
-        <div
-            onMouseEnter={() => setHov(true)}
-            onMouseLeave={() => setHov(false)}
-            style={{
-                position: 'relative',
-                overflow: 'hidden',
-                background: hov ? `linear-gradient(145deg, ${c}0c 0%, rgba(10,15,30,0.85) 100%)` : 'rgba(10,15,30,0.7)',
-                backdropFilter: 'blur(24px) saturate(180%)',
-                borderRadius: 16,
-                border: `1px solid ${hov ? c + '40' : 'rgba(255,255,255,0.06)'}`,
-                boxShadow: hov
-                    ? `0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px ${c}25, 0 0 30px ${c}10`
-                    : '0 4px 24px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
-                transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                transform: hov ? 'translateY(-2px)' : 'translateY(0)',
-                padding: noPad ? 0 : 20,
-                ...style,
-            }}
-        >
-            {/* accent bar */}
+/* ── Panel (matches OverviewTab) ─────────────────────────────────── */
+const Panel = ({ title, icon: TIcon, children, noPad, accentColor, style = {} }) => (
+    <div
+        style={{
+            background: THEME.glass,
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
+            borderRadius: 12,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            position: 'relative',
+            boxShadow: accentColor
+                ? `0 0 0 1px ${accentColor}12, 0 4px 16px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.08)`
+                : `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+            ...style,
+        }}
+    >
+        <div className="dpg-card-shine" />
+        {title && (
             <div
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 2,
-                    background: `linear-gradient(90deg, ${c}, ${c}80, transparent)`,
-                    opacity: hov ? 1 : 0.5,
-                    transition: 'opacity 0.3s',
-                }}
-            />
-            {children}
-        </div>
-    );
-};
-
-/* ── BentoMetric ─────────────────────────────────────────────────── */
-const BentoMetric = ({ label, value, sub, color, icon }) => {
-    const [hov, setHov] = useState(false);
-    const DS = getDS();
-    const c = color || DS.cyan;
-    return (
-        <div
-            onMouseEnter={() => setHov(true)}
-            onMouseLeave={() => setHov(false)}
-            style={{
-                position: 'relative',
-                overflow: 'hidden',
-                background: hov
-                    ? `linear-gradient(145deg, rgba(7,15,36,0.9) 0%, ${c}08 50%, rgba(2,6,20,0.97) 100%)`
-                    : 'linear-gradient(145deg, rgba(7,15,36,0.82) 0%, rgba(2,6,20,0.97) 100%)',
-                borderRadius: 16,
-                padding: 22,
-                minHeight: 120,
-                border: `1px solid ${hov ? c + '50' : 'rgba(255,255,255,0.06)'}`,
-                backdropFilter: 'blur(20px) saturate(160%)',
-                transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                transform: hov ? 'translateY(-4px) scale(1.01)' : 'none',
-                boxShadow: hov
-                    ? `0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px ${c}20, 0 0 40px ${c}12`
-                    : '0 4px 16px rgba(0,0,0,0.3)',
-            }}
-        >
-            {/* corner glow */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: -30,
-                    right: -30,
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    background: `radial-gradient(circle, ${c}${hov ? '18' : '08'} 0%, transparent 70%)`,
-                    transition: 'background 0.35s',
-                }}
-            />
-            <div
-                style={{
-                    color: DS.textMuted || '#475569',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '1.5px',
-                    marginBottom: 10,
+                    padding: '14px 20px',
+                    borderBottom: `1px solid ${accentColor ? `${accentColor}18` : THEME.glassBorder}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    minHeight: 44,
+                    background: accentColor ? `${accentColor}06` : 'rgba(255,255,255,0.02)',
                 }}
             >
-                {label}
+                {TIcon && (
+                    <div
+                        style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: accentColor ? `${accentColor}16` : `${THEME.textDim}12`,
+                            boxShadow: accentColor ? `0 0 8px ${accentColor}20` : 'none',
+                        }}
+                    >
+                        <TIcon size={13} color={accentColor || THEME.textDim} />
+                    </div>
+                )}
+                <span
+                    style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: THEME.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        fontFamily: THEME.fontBody,
+                    }}
+                >
+                    {title}
+                </span>
+            </div>
+        )}
+        <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '16px 18px' }}>{children}</div>
+    </div>
+);
+
+/* ── Hero Metric Card ────────────────────────────────────────────── */
+const HeroMetric = ({ icon: Icon, label, value, sub, color }) => (
+    <div
+        className="dpg-metric"
+        style={{
+            background: THEME.glass,
+            backdropFilter: 'blur(16px)',
+            borderRadius: 12,
+            border: `1px solid ${THEME.glassBorder}`,
+            padding: '16px 18px',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08)`,
+        }}
+    >
+        <div className="dpg-card-shine" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div
+                style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `linear-gradient(135deg, ${color}18, ${color}08)`,
+                    border: `1px solid ${color}30`,
+                    boxShadow: `0 0 16px ${color}15`,
+                }}
+            >
+                <Icon size={18} color={color} />
             </div>
             <span
                 style={{
-                    fontSize: 34,
-                    fontWeight: 800,
-                    fontFamily: "'JetBrains Mono', monospace",
-                    background: hov ? `linear-gradient(135deg, #fff, ${c})` : 'none',
-                    WebkitBackgroundClip: hov ? 'text' : 'unset',
-                    WebkitTextFillColor: hov ? 'transparent' : '#fff',
-                    textShadow: hov ? `0 0 32px ${c}80` : `0 0 12px ${c}20`,
-                    transition: 'text-shadow 0.35s',
-                }}
-            >
-                {value}
-            </span>
-            {sub && <div style={{ color: DS.textSub || '#94a3b8', fontSize: 12, marginTop: 6 }}>{sub}</div>}
-        </div>
-    );
-};
-
-/* ── SectionHeader ───────────────────────────────────────────────── */
-const SectionHeader = ({ children, color }) => {
-    const DS = getDS();
-    const c = color || DS.cyan;
-    return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '32px 0 14px' }}>
-            <div style={{ width: 4, height: 20, borderRadius: 2, background: c, boxShadow: `0 0 8px ${c}40` }} />
-            <h3
-                style={{
                     fontSize: 11,
                     fontWeight: 700,
-                    color: c,
+                    color: THEME.textMuted,
                     textTransform: 'uppercase',
-                    letterSpacing: '1.8px',
-                    fontFamily: "'DM Sans', system-ui",
+                    letterSpacing: '0.1em',
+                    fontFamily: THEME.fontBody,
                 }}
             >
-                {children}
-            </h3>
+                {label}
+            </span>
         </div>
-    );
-};
+        <div
+            style={{
+                fontSize: 28,
+                fontWeight: 800,
+                fontFamily: THEME.fontMono,
+                color: THEME.textMain,
+                textShadow: `0 0 20px ${color}20`,
+            }}
+        >
+            {value}
+        </div>
+        {sub && (
+            <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4, fontFamily: THEME.fontBody }}>{sub}</div>
+        )}
+        <div
+            style={{
+                position: 'absolute',
+                top: -20,
+                right: -20,
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${color}10 0%, transparent 70%)`,
+            }}
+        />
+    </div>
+);
 
-/* ── ChartTooltip ────────────────────────────────────────────────── */
-const ChartTooltip = ({ active, payload, label }) => {
-    const DS = getDS();
+/* ── Chart Tooltip ───────────────────────────────────────────────── */
+const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div
             style={{
-                background: 'rgba(10,15,30,0.95)',
-                border: `1px solid rgba(255,255,255,0.08)`,
+                background: THEME.glassHeavy,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: 12,
                 padding: '10px 14px',
                 fontSize: 12,
                 backdropFilter: 'blur(12px)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+                boxShadow: THEME.shadowMd,
             }}
         >
-            <div style={{ color: '#94a3b8', marginBottom: 6, fontSize: 11 }}>{label}</div>
+            <div
+                style={{
+                    color: THEME.textDim,
+                    marginBottom: 5,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                }}
+            >
+                {label}
+            </div>
             {payload.map((p, i) => (
-                <div key={i} style={{ color: p.color, fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>
+                <div key={i} style={{ color: p.color, fontFamily: THEME.fontMono, fontSize: 12 }}>
                     {p.name}: <strong>{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</strong>
                 </div>
             ))}
@@ -238,233 +265,210 @@ const slowQueries = [
     { query: 'INSERT INTO audit_log SELECT * FROM staging ...', ms: 318, calls: '960', rows: '890K' },
     { query: 'DELETE FROM sessions WHERE expires_at < NOW()', ms: 289, calls: '480', rows: '2.1M' },
 ];
-const PIE_COLORS = ['#38bdf8', '#818cf8', '#fbbf24', '#34d399'];
+const PIE_COLORS = [THEME.primary, THEME.ai, THEME.warning, THEME.secondary];
 
-/* ── Main Component ──────────────────────────────────────────────── */
+/* ── Main ────────────────────────────────────────────────────────── */
 function DemoPostgresTab() {
-    const DS = useMemo(() => getDS(), []);
+    useAdaptiveTheme();
 
     return (
-        <div
-            style={{
-                padding: 28,
-                color: DS.textPrimary || '#f0f4ff',
-                minHeight: '100vh',
-                fontFamily: "'DM Sans', system-ui",
-            }}
-        >
-            {/* Hero Metrics */}
+        <div style={{ padding: '24px 28px', minHeight: '100vh' }}>
+            <DemoStyles />
+
+            {/* Hero row */}
             <div
-                className="demo-pg-stagger"
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16, marginBottom: 8 }}
+                className="dpg-stagger"
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16, marginBottom: 24 }}
             >
-                <BentoMetric label="Uptime" value="63d" sub="Since restart" color={DS.emerald} />
-                <BentoMetric label="TPS" value="612" sub="Commits / sec" color={DS.cyan} />
-                <BentoMetric label="Connections" value="52" sub="of 100 max" color={DS.amber} />
-                <BentoMetric label="Cache Hit" value="99.4%" sub="Buffer cache" color={DS.emerald} />
-                <BentoMetric label="DB Size" value="148 GB" sub="All databases" color={DS.violet} />
-                <BentoMetric label="Repl Lag" value="0.2s" sub="Standby avg" color={DS.cyan} />
+                <HeroMetric icon={Clock} label="Uptime" value="63d" sub="Since restart" color={THEME.secondary} />
+                <HeroMetric icon={Zap} label="TPS" value="612" sub="Commits / sec" color={THEME.primary} />
+                <HeroMetric
+                    icon={Activity}
+                    label="Connections"
+                    value="52/100"
+                    sub="Active / max"
+                    color={THEME.warning}
+                />
+                <HeroMetric icon={Gauge} label="Cache Hit" value="99.4%" sub="Buffer cache" color={THEME.success} />
+                <HeroMetric icon={Database} label="DB Size" value="148 GB" sub="All databases" color={THEME.ai} />
+                <HeroMetric icon={Radio} label="Repl Lag" value="0.2s" sub="Standby avg" color={THEME.primary} />
             </div>
 
             {/* Connections & TPS */}
-            <SectionHeader color={DS.violet}>Connections & TPS</SectionHeader>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-                <GlassCard accent={DS.cyan}>
-                    <div
-                        style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: DS.textMuted || '#475569',
-                            textTransform: 'uppercase',
-                            letterSpacing: 1.5,
-                            marginBottom: 12,
-                        }}
-                    >
-                        Active / Idle Connections
-                    </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 18 }}>
+                <Panel title="Active / Idle Connections" icon={Activity} accentColor={THEME.primary}>
                     <ResponsiveContainer width="100%" height={220}>
                         <AreaChart data={connData}>
                             <defs>
-                                <linearGradient id="pgConnActive" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={DS.cyan} stopOpacity={0.4} />
-                                    <stop offset="100%" stopColor={DS.cyan} stopOpacity={0} />
+                                <linearGradient id="dpgConnA" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.4} />
+                                    <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
                                 </linearGradient>
-                                <linearGradient id="pgConnIdle" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={DS.amber} stopOpacity={0.3} />
-                                    <stop offset="100%" stopColor={DS.amber} stopOpacity={0} />
+                                <linearGradient id="dpgConnI" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.warning} stopOpacity={0.3} />
+                                    <stop offset="100%" stopColor={THEME.warning} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                            <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                            <YAxis stroke="#475569" fontSize={10} />
-                            <Tooltip content={<ChartTooltip />} />
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} />
+                            <Tooltip content={<ChartTip />} />
                             <Legend />
                             <Area
                                 type="monotone"
                                 dataKey="active"
-                                stroke={DS.cyan}
-                                fill="url(#pgConnActive)"
-                                strokeWidth={2}
+                                stroke={THEME.primary}
+                                fill="url(#dpgConnA)"
+                                strokeWidth={1.5}
                                 dot={false}
                             />
                             <Area
                                 type="monotone"
                                 dataKey="idle"
-                                stroke={DS.amber}
-                                fill="url(#pgConnIdle)"
-                                strokeWidth={2}
-                                dot={false}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </GlassCard>
-                <GlassCard accent={DS.emerald}>
-                    <div
-                        style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: DS.textMuted || '#475569',
-                            textTransform: 'uppercase',
-                            letterSpacing: 1.5,
-                            marginBottom: 12,
-                        }}
-                    >
-                        Transactions / sec
-                    </div>
-                    <ResponsiveContainer width="100%" height={220}>
-                        <AreaChart data={tpsData}>
-                            <defs>
-                                <linearGradient id="pgTpsCommit" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={DS.emerald} stopOpacity={0.4} />
-                                    <stop offset="100%" stopColor={DS.emerald} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                            <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                            <YAxis stroke="#475569" fontSize={10} />
-                            <Tooltip content={<ChartTooltip />} />
-                            <Legend />
-                            <Area
-                                type="monotone"
-                                dataKey="commits"
-                                stroke={DS.emerald}
-                                fill="url(#pgTpsCommit)"
-                                strokeWidth={2}
-                                dot={false}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="rollbacks"
-                                stroke={DS.rose}
-                                fill={DS.rose}
-                                fillOpacity={0.15}
+                                stroke={THEME.warning}
+                                fill="url(#dpgConnI)"
                                 strokeWidth={1.5}
                                 dot={false}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
-                </GlassCard>
+                </Panel>
+                <Panel title="Transactions / sec" icon={Zap} accentColor={THEME.secondary}>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <AreaChart data={tpsData}>
+                            <defs>
+                                <linearGradient id="dpgTps" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.secondary} stopOpacity={0.4} />
+                                    <stop offset="100%" stopColor={THEME.secondary} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Area
+                                type="monotone"
+                                dataKey="commits"
+                                stroke={THEME.secondary}
+                                fill="url(#dpgTps)"
+                                strokeWidth={1.5}
+                                dot={false}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="rollbacks"
+                                stroke={THEME.danger}
+                                fill={THEME.danger}
+                                fillOpacity={0.12}
+                                strokeWidth={1.5}
+                                dot={false}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Panel>
             </div>
 
             {/* Latency */}
-            <SectionHeader color={DS.amber}>Query Latency Percentiles</SectionHeader>
-            <GlassCard accent={DS.amber}>
-                <ResponsiveContainer width="100%" height={240}>
-                    <LineChart data={latencyData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                        <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                        <YAxis stroke="#475569" fontSize={10} unit=" ms" />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Legend />
-                        <Line
-                            type="monotone"
-                            dataKey="p50"
-                            stroke={DS.emerald}
-                            strokeWidth={2}
-                            dot={false}
-                            name="p50 (ms)"
-                        />
-                        <Line
-                            type="monotone"
-                            dataKey="p95"
-                            stroke={DS.amber}
-                            strokeWidth={2}
-                            dot={false}
-                            name="p95 (ms)"
-                        />
-                        <Line
-                            type="monotone"
-                            dataKey="p99"
-                            stroke={DS.rose}
-                            strokeWidth={2}
-                            dot={false}
-                            name="p99 (ms)"
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </GlassCard>
+            <div style={{ marginBottom: 18 }}>
+                <Panel title="Query Latency Percentiles" icon={TrendingUp} accentColor={THEME.warning}>
+                    <ResponsiveContainer width="100%" height={240}>
+                        <LineChart data={latencyData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} unit=" ms" />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Line
+                                type="monotone"
+                                dataKey="p50"
+                                stroke={THEME.secondary}
+                                strokeWidth={2}
+                                dot={false}
+                                name="p50 (ms)"
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="p95"
+                                stroke={THEME.warning}
+                                strokeWidth={2}
+                                dot={false}
+                                name="p95 (ms)"
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="p99"
+                                stroke={THEME.danger}
+                                strokeWidth={2}
+                                dot={false}
+                                name="p99 (ms)"
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Panel>
+            </div>
 
-            {/* System Resources */}
-            <SectionHeader color={DS.emerald}>System Resources</SectionHeader>
-            <GlassCard accent={DS.violet}>
-                <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={cpuMem}>
-                        <defs>
-                            <linearGradient id="pgCpu" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={DS.cyan} stopOpacity={0.35} />
-                                <stop offset="100%" stopColor={DS.cyan} stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="pgMem" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={DS.violet} stopOpacity={0.35} />
-                                <stop offset="100%" stopColor={DS.violet} stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                        <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                        <YAxis stroke="#475569" fontSize={10} domain={[0, 100]} unit="%" />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Legend />
-                        <Area
-                            type="monotone"
-                            dataKey="cpu"
-                            stroke={DS.cyan}
-                            fill="url(#pgCpu)"
-                            strokeWidth={2}
-                            dot={false}
-                            name="CPU %"
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="mem"
-                            stroke={DS.violet}
-                            fill="url(#pgMem)"
-                            strokeWidth={2}
-                            dot={false}
-                            name="Memory %"
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </GlassCard>
+            {/* Resources */}
+            <div style={{ marginBottom: 18 }}>
+                <Panel title="System Resources" icon={Cpu} accentColor={THEME.ai}>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <AreaChart data={cpuMem}>
+                            <defs>
+                                <linearGradient id="dpgCpu" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.35} />
+                                    <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="dpgMem" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={THEME.ai} stopOpacity={0.35} />
+                                    <stop offset="100%" stopColor={THEME.ai} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis stroke={THEME.textDim} fontSize={10} domain={[0, 100]} unit="%" />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Area
+                                type="monotone"
+                                dataKey="cpu"
+                                stroke={THEME.primary}
+                                fill="url(#dpgCpu)"
+                                strokeWidth={2}
+                                dot={false}
+                                name="CPU %"
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="mem"
+                                stroke={THEME.ai}
+                                fill="url(#dpgMem)"
+                                strokeWidth={2}
+                                dot={false}
+                                name="Memory %"
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Panel>
+            </div>
 
             {/* Slow Queries */}
-            <SectionHeader color={DS.rose}>Top Slow Queries</SectionHeader>
-            <GlassCard accent={DS.rose} noPad>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <div style={{ marginBottom: 18 }}>
+                <Panel title="Top Slow Queries" icon={AlertTriangle} accentColor={THEME.danger} noPad>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr>
                                 {['Query', 'Avg (ms)', 'Calls', 'Rows'].map((h) => (
                                     <th
                                         key={h}
                                         style={{
-                                            padding: '12px 14px',
+                                            padding: '10px 14px',
                                             textAlign: 'left',
                                             fontSize: 9,
                                             fontWeight: 800,
                                             textTransform: 'uppercase',
                                             letterSpacing: '1.5px',
-                                            color: '#475569',
-                                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                            color: THEME.textDim,
+                                            borderBottom: `1px solid ${THEME.glassBorder}`,
                                         }}
                                     >
                                         {h}
@@ -477,17 +481,19 @@ function DemoPostgresTab() {
                                 <tr
                                     key={i}
                                     style={{
-                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                        borderBottom: `1px solid ${THEME.grid}`,
                                         transition: 'background 0.15s',
+                                        cursor: 'pointer',
                                     }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(56,189,248,0.04)')}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = `${THEME.primaryFaint}`)}
                                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                                 >
                                     <td
                                         style={{
                                             padding: '10px 14px',
-                                            fontFamily: "'JetBrains Mono', monospace",
-                                            color: '#94a3b8',
+                                            fontFamily: THEME.fontMono,
+                                            color: THEME.textMuted,
+                                            fontSize: 12,
                                             maxWidth: 400,
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
@@ -499,9 +505,11 @@ function DemoPostgresTab() {
                                     <td
                                         style={{
                                             padding: '10px 14px',
-                                            color: q.ms > 500 ? DS.rose : q.ms > 100 ? DS.amber : DS.emerald,
+                                            color:
+                                                q.ms > 500 ? THEME.danger : q.ms > 100 ? THEME.warning : THEME.success,
                                             fontWeight: 700,
-                                            fontFamily: "'JetBrains Mono', monospace",
+                                            fontFamily: THEME.fontMono,
+                                            fontSize: 12,
                                         }}
                                     >
                                         {q.ms}
@@ -509,8 +517,9 @@ function DemoPostgresTab() {
                                     <td
                                         style={{
                                             padding: '10px 14px',
-                                            color: '#475569',
-                                            fontFamily: "'JetBrains Mono', monospace",
+                                            color: THEME.textDim,
+                                            fontFamily: THEME.fontMono,
+                                            fontSize: 12,
                                         }}
                                     >
                                         {q.calls}
@@ -518,8 +527,9 @@ function DemoPostgresTab() {
                                     <td
                                         style={{
                                             padding: '10px 14px',
-                                            color: '#475569',
-                                            fontFamily: "'JetBrains Mono', monospace",
+                                            color: THEME.textDim,
+                                            fontFamily: THEME.fontMono,
+                                            fontSize: 12,
                                         }}
                                     >
                                         {q.rows}
@@ -528,13 +538,12 @@ function DemoPostgresTab() {
                             ))}
                         </tbody>
                     </table>
-                </div>
-            </GlassCard>
+                </Panel>
+            </div>
 
-            {/* Storage */}
-            <SectionHeader color={DS.violet}>Storage Breakdown</SectionHeader>
+            {/* Storage & Replication */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-                <GlassCard accent={DS.violet}>
+                <Panel title="Storage Breakdown" icon={HardDrive} accentColor={THEME.ai}>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie
@@ -551,107 +560,41 @@ function DemoPostgresTab() {
                                     <Cell key={i} fill={PIE_COLORS[i]} />
                                 ))}
                             </Pie>
-                            <Tooltip content={<ChartTooltip />} />
+                            <Tooltip content={<ChartTip />} />
                         </PieChart>
                     </ResponsiveContainer>
-                </GlassCard>
-                <GlassCard accent={DS.cyan}>
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            gap: 20,
-                            height: '100%',
-                        }}
-                    >
-                        <BentoMetric label="Total Size" value="148 GB" color={DS.cyan} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <div
-                                    style={{
-                                        color: '#475569',
-                                        fontSize: 10,
-                                        fontWeight: 700,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: 1,
-                                    }}
-                                >
-                                    Table Bloat
-                                </div>
-                                <div
-                                    style={{
-                                        color: DS.amber,
-                                        fontSize: 22,
-                                        fontWeight: 800,
-                                        fontFamily: "'JetBrains Mono', monospace",
-                                    }}
-                                >
-                                    3.2%
-                                </div>
-                                <div style={{ color: '#64748b', fontSize: 11 }}>2.1 GB reclaimable</div>
-                            </div>
-                            <div style={{ textAlign: 'center' }}>
-                                <div
-                                    style={{
-                                        color: '#475569',
-                                        fontSize: 10,
-                                        fontWeight: 700,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: 1,
-                                    }}
-                                >
-                                    Index Bloat
-                                </div>
-                                <div
-                                    style={{
-                                        color: DS.emerald,
-                                        fontSize: 22,
-                                        fontWeight: 800,
-                                        fontFamily: "'JetBrains Mono', monospace",
-                                    }}
-                                >
-                                    1.8%
-                                </div>
-                                <div style={{ color: '#64748b', fontSize: 11 }}>640 MB reclaimable</div>
-                            </div>
-                        </div>
-                    </div>
-                </GlassCard>
+                </Panel>
+                <Panel title="Replication & WAL" icon={Radio} accentColor={THEME.secondary}>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <LineChart data={walData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} opacity={0.5} />
+                            <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis yAxisId="left" stroke={THEME.textDim} fontSize={10} />
+                            <YAxis yAxisId="right" orientation="right" stroke={THEME.textDim} fontSize={10} />
+                            <Tooltip content={<ChartTip />} />
+                            <Legend />
+                            <Line
+                                yAxisId="left"
+                                type="monotone"
+                                dataKey="walMB"
+                                stroke={THEME.ai}
+                                strokeWidth={2}
+                                dot={false}
+                                name="WAL (MB/s)"
+                            />
+                            <Line
+                                yAxisId="right"
+                                type="monotone"
+                                dataKey="replLag"
+                                stroke={THEME.danger}
+                                strokeWidth={2}
+                                dot={false}
+                                name="Repl Lag (s)"
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Panel>
             </div>
-
-            {/* Replication & WAL */}
-            <SectionHeader color={DS.emerald}>Replication & WAL</SectionHeader>
-            <GlassCard accent={DS.emerald}>
-                <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={walData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                        <XAxis dataKey="time" stroke="#475569" fontSize={10} />
-                        <YAxis yAxisId="left" stroke="#475569" fontSize={10} />
-                        <YAxis yAxisId="right" orientation="right" stroke="#475569" fontSize={10} />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Legend />
-                        <Line
-                            yAxisId="left"
-                            type="monotone"
-                            dataKey="walMB"
-                            stroke={DS.violet}
-                            strokeWidth={2}
-                            dot={false}
-                            name="WAL (MB/s)"
-                        />
-                        <Line
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey="replLag"
-                            stroke={DS.rose}
-                            strokeWidth={2}
-                            dot={false}
-                            name="Repl Lag (s)"
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </GlassCard>
 
             <div style={{ height: 40 }} />
         </div>
