@@ -110,7 +110,7 @@ export const LoginHeatmap = ({ data }) => {
                 <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {week.map((val, di) => (
                         <div key={di} title={`${val} logins`} style={{
-                            width: 12, height: 12, borderRadius: 3,
+                            width: 12, height: 12, borderRadius: 10,
                             background: val === 0 ? T.border
                                 : val < 3 ? `${T.primary}44`
                                     : val < 6 ? `${T.primary}88`

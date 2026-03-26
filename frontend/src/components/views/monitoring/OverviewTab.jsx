@@ -1396,7 +1396,7 @@ const LongTxnCard = ({ data }) => {
                             <div
                                 style={{
                                     height: 4,
-                                    borderRadius: 3,
+                                    borderRadius: 10,
                                     background: `${THEME.grid}50`,
                                     overflow: 'hidden',
                                 }}
@@ -1406,7 +1406,7 @@ const LongTxnCard = ({ data }) => {
                                     style={{
                                         width: `${pct}%`,
                                         height: '100%',
-                                        borderRadius: 3,
+                                        borderRadius: 10,
                                         background:
                                             i === 0
                                                 ? `linear-gradient(90deg, ${THEME.danger}70, ${THEME.danger})`
@@ -1523,7 +1523,7 @@ const VacuumHealthCard = ({ data }) => {
             <div
                 style={{
                     height: 7,
-                    borderRadius: 4,
+                    borderRadius: 14,
                     background: `${THEME.grid}50`,
                     overflow: 'hidden',
                     display: 'flex',
@@ -2510,7 +2510,7 @@ const OverviewTab = () => {
                                         <div
                                             style={{
                                                 height: 5,
-                                                borderRadius: 3,
+                                                borderRadius: 10,
                                                 background: `${THEME.grid}55`,
                                                 overflow: 'hidden',
                                                 boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)',
@@ -2521,7 +2521,7 @@ const OverviewTab = () => {
                                                 style={{
                                                     width: `${Math.min(item.pct, 100)}%`,
                                                     height: '100%',
-                                                    borderRadius: 3,
+                                                    borderRadius: 10,
                                                     background: `linear-gradient(90deg, ${item.color}80, ${item.color})`,
                                                     animationDelay: `${i * 0.12}s`,
                                                     boxShadow: `0 0 8px ${item.color}50`,
@@ -2852,7 +2852,7 @@ const OverviewTab = () => {
                                         <div
                                             style={{
                                                 height: 4,
-                                                borderRadius: 3,
+                                                borderRadius: 10,
                                                 background: `${THEME.grid}45`,
                                                 overflow: 'hidden',
                                             }}
@@ -2862,7 +2862,7 @@ const OverviewTab = () => {
                                                 style={{
                                                     width: `${pct}%`,
                                                     height: '100%',
-                                                    borderRadius: 3,
+                                                    borderRadius: 10,
                                                     background: `linear-gradient(90deg, ${row.color}65, ${row.color})`,
                                                     boxShadow: `0 0 8px ${row.color}30`,
                                                     animationDelay: `${i * 0.1}s`,
@@ -3174,7 +3174,7 @@ const OverviewTab = () => {
                                 <div
                                     style={{
                                         height: 5,
-                                        borderRadius: 3,
+                                        borderRadius: 10,
                                         background: `${THEME.grid}50`,
                                         overflow: 'hidden',
                                         boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
@@ -3185,7 +3185,7 @@ const OverviewTab = () => {
                                         style={{
                                             width: '60%',
                                             height: '100%',
-                                            borderRadius: 3,
+                                            borderRadius: 10,
                                             background: `linear-gradient(90deg, ${THEME.danger}75, ${THEME.danger})`,
                                             boxShadow: `0 0 8px ${THEME.danger}40`,
                                         }}
@@ -3266,7 +3266,7 @@ const OverviewTab = () => {
                                     <div
                                         style={{
                                             height: 6,
-                                            borderRadius: 4,
+                                            borderRadius: 14,
                                             background: `${THEME.grid}50`,
                                             overflow: 'hidden',
                                             display: 'flex',

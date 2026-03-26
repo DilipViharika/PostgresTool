@@ -366,9 +366,9 @@ const AlertCard = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alert.title}</span>
-                        {isNew && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: `${THEME.primary}18`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>NEW</span>}
-                        {alert.autoResolved && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${THEME.success}12`, color: THEME.success }}>AUTO-RESOLVED</span>}
-                        {alert.runbook && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><BookOpen size={8} />RUNBOOK</span>}
+                        {isNew && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 14, background: `${THEME.primary}18`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>NEW</span>}
+                        {alert.autoResolved && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 14, background: `${THEME.success}12`, color: THEME.success }}>AUTO-RESOLVED</span>}
+                        {alert.runbook && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 14, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><BookOpen size={8} />RUNBOOK</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                         <StatusBadge label={sev.label} color={sev.color} pulse={isCritical && !alert.acknowledged} />
@@ -725,8 +725,8 @@ const SloBurnRatePanel = ({ burnData }) => {
                                     <span style={{ fontSize: 11, color: THEME.textDim }}>Budget Consumed</span>
                                     <span style={{ fontSize: 11, fontWeight: 800, color: burnColor, fontFamily: THEME.fontMono }}>{100 - slo.budgetRemaining}%</span>
                                 </div>
-                                <div style={{ height: 8, borderRadius: 4, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                    <div className={slo.alert ? 'rel-burn-critical' : ''} style={{ width: `${100 - slo.budgetRemaining}%`, height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${burnColor}, ${burnColor}cc)`, transition: 'width 0.6s ease' }} />
+                                <div style={{ height: 8, borderRadius: 14, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                    <div className={slo.alert ? 'rel-burn-critical' : ''} style={{ width: `${100 - slo.budgetRemaining}%`, height: '100%', borderRadius: 14, background: `linear-gradient(90deg, ${burnColor}, ${burnColor}cc)`, transition: 'width 0.6s ease' }} />
                                 </div>
                             </div>
                         </div>
@@ -1167,9 +1167,9 @@ const ReliabilityTab = () => {
                                                     <span style={{ color: THEME.textDim }}>{s.count} total</span>
                                                 </div>
                                             </div>
-                                            <div style={{ display: 'flex', gap: 2, height: 5, borderRadius: 3, overflow: 'hidden', background: `${THEME.grid}40` }}>
-                                                <div className="rel-bar-animate" style={{ width: `${(s.active / maxC) * 100}%`, background: s.color, borderRadius: 3, animationDelay: `${i * 0.1}s` }} />
-                                                <div className="rel-bar-animate" style={{ width: `${((s.count - s.active) / maxC) * 100}%`, background: `${s.color}28`, borderRadius: 3, animationDelay: `${i * 0.1 + 0.1}s` }} />
+                                            <div style={{ display: 'flex', gap: 2, height: 5, borderRadius: 10, overflow: 'hidden', background: `${THEME.grid}40` }}>
+                                                <div className="rel-bar-animate" style={{ width: `${(s.active / maxC) * 100}%`, background: s.color, borderRadius: 10, animationDelay: `${i * 0.1}s` }} />
+                                                <div className="rel-bar-animate" style={{ width: `${((s.count - s.active) / maxC) * 100}%`, background: `${s.color}28`, borderRadius: 10, animationDelay: `${i * 0.1 + 0.1}s` }} />
                                             </div>
                                         </div>
                                     );
@@ -1310,10 +1310,10 @@ const ReliabilityTab = () => {
                                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
                                             <div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-                                                    <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, background: `${THEME.primary}08`, padding: '2px 8px', borderRadius: 4, border: `1px solid ${THEME.primary}12` }}>{inc.id}</span>
+                                                    <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, background: `${THEME.primary}08`, padding: '2px 8px', borderRadius: 14, border: `1px solid ${THEME.primary}12` }}>{inc.id}</span>
                                                     <StatusBadge label={sev.label} color={sev.color} />
                                                     <StatusBadge label="Resolved" color={THEME.success} />
-                                                    {rcaTag && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: `${rcaTag.color}10`, color: rcaTag.color, border: `1px solid ${rcaTag.color}20`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Hash size={8} />{inc.rca_tag}</span>}
+                                                    {rcaTag && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 14, background: `${rcaTag.color}10`, color: rcaTag.color, border: `1px solid ${rcaTag.color}20`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Hash size={8} />{inc.rca_tag}</span>}
                                                 </div>
                                                 <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{inc.title}</div>
                                             </div>
@@ -1372,7 +1372,7 @@ const ReliabilityTab = () => {
                                             <span style={{ flex: 1, fontSize: 11, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</span>
                                             {a.runbook
                                                 ? <a href={a.runbook} target="_blank" rel="noreferrer" style={{ fontSize: 9, color: THEME.success, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3, background: `${THEME.success}10`, padding: '2px 7px', borderRadius: 4 }}><Link2 size={8} />Runbook</a>
-                                                : <span style={{ fontSize: 9, color: THEME.danger, background: `${THEME.danger}10`, padding: '2px 7px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 3 }}><AlertOctagon size={8} />Missing</span>
+                                                : <span style={{ fontSize: 9, color: THEME.danger, background: `${THEME.danger}10`, padding: '2px 7px', borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 3 }}><AlertOctagon size={8} />Missing</span>
                                             }
                                         </div>
                                     );

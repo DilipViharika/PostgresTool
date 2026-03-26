@@ -495,7 +495,7 @@ const MongoReplicationTab: React.FC = () => {
                                 <div style={{
                                     height: 8,
                                     background: DARK_THEME.border,
-                                    borderRadius: 4,
+                                    borderRadius: 14,
                                     overflow: 'hidden'
                                 }}>
                                     <div style={{

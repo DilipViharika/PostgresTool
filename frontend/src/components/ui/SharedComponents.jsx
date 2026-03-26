@@ -934,7 +934,7 @@ export const MetricCard = ({
                             style={{
                                 width: 80,
                                 height: 28,
-                                borderRadius: 3,
+                                borderRadius: 10,
                                 background: _AT.grid,
                                 animation: 'shimmer 1.5s infinite',
                                 backgroundSize: '400%',
@@ -1143,7 +1143,7 @@ export const NeonProgressBar = ({
                     width: '100%',
                     height,
                     background: _AT.grid,
-                    borderRadius: 3,
+                    borderRadius: 10,
                     overflow: 'hidden',
                     position: 'relative',
                     border: `1px solid ${_AT.grid}`,
@@ -1154,7 +1154,7 @@ export const NeonProgressBar = ({
                         width: `${percent}%`,
                         height: '100%',
                         background: resolvedColor,
-                        borderRadius: 3,
+                        borderRadius: 10,
                         transition: animate ? 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
                     }}
                 />
@@ -1277,7 +1277,7 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
             style={{
                 backgroundColor: 'rgba(1, 5, 16, 0.98)',
                 border: `1px solid ${_AT.glassBorderHot}`,
-                borderRadius: 4,
+                borderRadius: 14,
                 padding: '12px 16px',
                 boxShadow: `0 4px 24px rgba(0,0,0,0.6)`,
                 backdropFilter: 'blur(24px)',
@@ -1386,7 +1386,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                     gap: 10,
                     padding: '8px 12px',
                     background: config.bg,
-                    borderRadius: 3,
+                    borderRadius: 10,
                     border: `1px solid ${config.color}25`,
                     animation: 'alertSlide 0.3s ease backwards',
                 }}
@@ -1406,7 +1406,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                             border: `1px solid ${config.color}30`,
                             color: config.color,
                             padding: '2px 10px',
-                            borderRadius: 3,
+                            borderRadius: 10,
                             cursor: 'pointer',
                             fontSize: 9,
                             fontWeight: 700,
@@ -1426,7 +1426,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
         <div
             style={{
                 background: config.bg,
-                borderRadius: 4,
+                borderRadius: 14,
                 padding: 16,
                 border: `1px solid ${config.color}22`,
                 animation: 'alertSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards',
@@ -1454,7 +1454,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                 style={{
                     width: 38,
                     height: 38,
-                    borderRadius: 4,
+                    borderRadius: 14,
                     flexShrink: 0,
                     background: `${config.color}12`,
                     color: config.color,
@@ -1518,7 +1518,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                             border: `1px solid ${config.color}30`,
                             color: config.color,
                             padding: '6px 14px',
-                            borderRadius: 3,
+                            borderRadius: 10,
                             cursor: 'pointer',
                             fontSize: 9,
                             fontWeight: 700,
@@ -1538,7 +1538,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                             color: _AT.textMuted,
                             cursor: 'pointer',
                             padding: '6px 8px',
-                            borderRadius: 3,
+                            borderRadius: 10,
                             display: 'flex',
                             alignItems: 'center',
                         }}
@@ -1575,7 +1575,7 @@ export const AlertToast = ({ alerts, onDismiss }) => {
                         key={alert.id || i}
                         style={{
                             background: 'rgba(2,6,20,0.97)',
-                            borderRadius: 4,
+                            borderRadius: 14,
                             padding: '12px 16px',
                             border: `1px solid ${config.color}30`,
                             boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${config.color}14`,
@@ -1691,7 +1691,7 @@ export const NanoButton = ({
                 background: disabled ? 'rgba(255,255,255,0.02)' : vs.bg,
                 border: `1px solid ${disabled ? _AT.glassBorder : vs.border}`,
                 color: disabled ? _AT.textDim : vs.color,
-                borderRadius: 3,
+                borderRadius: 10,
                 padding: sm ? '3px 6px' : lg ? '8px 16px' : label ? '5px 12px' : '5px 8px',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 display: 'inline-flex',
@@ -1802,7 +1802,7 @@ export const DataTable = ({
                         gap: 8,
                         marginBottom: 10,
                         background: _AT.surfaceHover,
-                        borderRadius: 3,
+                        borderRadius: 10,
                         padding: '7px 12px',
                         border: `1px solid ${_AT.glassBorder}`,
                     }}
@@ -1855,7 +1855,7 @@ export const DataTable = ({
                         marginBottom: 8,
                         padding: '6px 12px',
                         background: `${accentColor}08`,
-                        borderRadius: 3,
+                        borderRadius: 10,
                         border: `1px solid ${accentColor}20`,
                     }}
                 >
@@ -2069,7 +2069,7 @@ export const DataTable = ({
                                 color: _AT.textDim,
                                 width: 26,
                                 height: 26,
-                                borderRadius: 3,
+                                borderRadius: 10,
                                 cursor: page === 0 ? 'not-allowed' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -2089,7 +2089,7 @@ export const DataTable = ({
                                     color: page === i ? accentColor : _AT.textDim,
                                     width: 26,
                                     height: 26,
-                                    borderRadius: 3,
+                                    borderRadius: 10,
                                     cursor: 'pointer',
                                     fontSize: 10,
                                     fontFamily: _AT.fontMono,
@@ -2107,7 +2107,7 @@ export const DataTable = ({
                                 color: _AT.textDim,
                                 width: 26,
                                 height: 26,
-                                borderRadius: 3,
+                                borderRadius: 10,
                                 cursor: page === totalPages - 1 ? 'not-allowed' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -2145,7 +2145,7 @@ export const EmptyState = ({ icon: Icon, title, text, action, onAction, color = 
                 style={{
                     width: 76,
                     height: 76,
-                    borderRadius: 4,
+                    borderRadius: 14,
                     background: _AT.surfaceHover,
                     display: 'flex',
                     alignItems: 'center',
@@ -2210,7 +2210,7 @@ export const SkeletonLoader = ({ rows = 3, height = 16, gap = 10, style: customS
                         key={i}
                         style={{
                             height: 120,
-                            borderRadius: 4,
+                            borderRadius: 14,
                             background: 'rgba(255,255,255,0.03)',
                             border: `1px solid ${_AT.glassBorder}`,
                             overflow: 'hidden',
@@ -2269,7 +2269,7 @@ export const LoadingOverlay = ({ message }) => {
                 justifyContent: 'center',
                 background: 'rgba(0,2,12,0.8)',
                 zIndex: 20,
-                borderRadius: 4,
+                borderRadius: 14,
                 backdropFilter: 'blur(6px)',
                 gap: 12,
             }}
@@ -2354,7 +2354,7 @@ export const CopyButton = ({ text, size = 'default', label }) => {
                 border: `1px solid ${copied ? _AT.success + '40' : _AT.glassBorder}`,
                 color: copied ? _AT.success : _AT.textMuted,
                 padding: sm ? '3px 8px' : '5px 12px',
-                borderRadius: 3,
+                borderRadius: 10,
                 cursor: 'pointer',
                 fontSize: sm ? 9 : 10,
                 display: 'inline-flex',
@@ -2424,7 +2424,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
         <div
             style={{
                 background: '#01060e',
-                borderRadius: 4,
+                borderRadius: 14,
                 border: `1px solid ${_AT.glassBorder}`,
                 overflow: 'hidden',
                 display: 'flex',
@@ -2639,7 +2639,7 @@ export const Timeline = ({ events = [], maxHeight = 400 }) => {
                                 style={{
                                     width: 28,
                                     height: 28,
-                                    borderRadius: 4,
+                                    borderRadius: 14,
                                     background: `${config.color}12`,
                                     border: `1px solid ${config.color}28`,
                                     color: config.color,
@@ -3077,7 +3077,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                             background: 'rgba(255,255,255,0.04)',
                             border: `1px solid ${_AT.glassBorder}`,
                             padding: '2px 7px',
-                            borderRadius: 3,
+                            borderRadius: 10,
                             fontFamily: _AT.fontMono,
                         }}
                     >
@@ -3127,7 +3127,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                                                 style={{
                                                     width: 30,
                                                     height: 30,
-                                                    borderRadius: 4,
+                                                    borderRadius: 14,
                                                     background: `${_AT.primary}10`,
                                                     color: _AT.primary,
                                                     display: 'flex',
@@ -3165,7 +3165,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                                                     background: 'rgba(255,255,255,0.04)',
                                                     border: `1px solid ${_AT.glassBorder}`,
                                                     padding: '2px 7px',
-                                                    borderRadius: 3,
+                                                    borderRadius: 10,
                                                     fontFamily: _AT.fontMono,
                                                 }}
                                             >
@@ -3420,7 +3420,7 @@ export const StatCompare = ({ label, before, after, unit, color = _AT.primary, i
         <div
             style={{
                 background: 'rgba(4,9,28,0.7)',
-                borderRadius: 4,
+                borderRadius: 14,
                 padding: 16,
                 border: `1px solid ${_AT.glassBorder}`,
                 position: 'relative',
@@ -3507,7 +3507,7 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
                 gap: 6,
                 padding: '8px 12px',
                 background: 'rgba(0,0,0,0.2)',
-                borderRadius: 4,
+                borderRadius: 14,
                 border: `1px solid ${focused ? _AT.glassBorderHot : _AT.glassBorder}`,
                 minHeight: 40,
                 alignItems: 'center',
@@ -3764,7 +3764,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '8px 12px',
-                    borderRadius: 3,
+                    borderRadius: 10,
                     cursor: disabled ? 'not-allowed' : 'pointer',
                     background: open ? `${color}08` : 'rgba(0,0,0,0.3)',
                     border: `1px solid ${open || hovered ? color + '40' : _AT.glassBorder}`,
@@ -3789,7 +3789,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                         marginTop: 4,
                         zIndex: 100,
                         background: 'rgba(2,6,20,0.98)',
-                        borderRadius: 3,
+                        borderRadius: 10,
                         border: `1px solid ${_AT.glassBorderHot}`,
                         boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${color}10`,
                         backdropFilter: 'blur(20px)',
@@ -3945,7 +3945,7 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
                 style={{
                     display: 'flex',
                     height: 18,
-                    borderRadius: 3,
+                    borderRadius: 10,
                     overflow: 'hidden',
                     background: 'rgba(255,255,255,0.03)',
                     border: `1px solid ${_AT.glassBorder}`,
@@ -4100,7 +4100,7 @@ export const RoleBadge = ({ role, showIcon = true, size = 'default' }) => {
                 gap: sm ? 4 : 6,
                 background: `${config.color}10`,
                 padding: sm ? '2px 8px' : '5px 12px',
-                borderRadius: 3,
+                borderRadius: 10,
                 border: `1px solid ${config.color}22`,
             }}
         >
@@ -4277,7 +4277,7 @@ export const ExtensionCard = ({ name, version, schema, description, enabled }) =
             {...hoverProps}
             style={{
                 background: hovered ? 'rgba(10,20,40,0.8)' : 'rgba(4,9,28,0.6)',
-                borderRadius: 3,
+                borderRadius: 10,
                 border: `1px solid ${hovered ? _AT.glassBorderHot : _AT.glassBorder}`,
                 padding: 14,
                 display: 'flex',
@@ -4290,7 +4290,7 @@ export const ExtensionCard = ({ name, version, schema, description, enabled }) =
                 style={{
                     width: 38,
                     height: 38,
-                    borderRadius: 4,
+                    borderRadius: 14,
                     background: `${_AT.primary}08`,
                     color: _AT.primary,
                     display: 'flex',
@@ -4378,7 +4378,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                 style={{
                     background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(123,47,255,0.05) 100%)',
                     border: `1px solid ${_AT.ai}28`,
-                    borderRadius: 4,
+                    borderRadius: 14,
                     padding: 16,
                     position: 'relative',
                     overflow: 'hidden',
@@ -4468,7 +4468,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                     gap: 2,
                     background: 'rgba(255,255,255,0.02)',
                     padding: 3,
-                    borderRadius: 4,
+                    borderRadius: 14,
                     border: `1px solid ${_AT.glassBorder}`,
                 }}
             >
@@ -4482,7 +4482,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                             border: activeTab === tab ? `1px solid ${_AT.primary}30` : '1px solid transparent',
                             color: activeTab === tab ? _AT.primary : _AT.textMuted,
                             padding: '5px 0',
-                            borderRadius: 3,
+                            borderRadius: 10,
                             cursor: 'pointer',
                             fontSize: 8,
                             fontWeight: 700,
@@ -4502,7 +4502,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                 style={{
                     flex: 1,
                     background: '#01060e',
-                    borderRadius: 4,
+                    borderRadius: 14,
                     border: `1px solid ${_AT.glassBorder}`,
                     overflow: 'hidden',
                     display: 'flex',
@@ -4602,7 +4602,7 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
             {...hoverProps}
             style={{
                 background: hovered ? 'rgba(7,15,36,0.9)' : 'rgba(4,9,28,0.7)',
-                borderRadius: 3,
+                borderRadius: 10,
                 border: `1px solid ${hovered ? _AT.glassBorderHot : _AT.glassBorder}`,
                 overflow: 'hidden',
                 transition: 'all 0.2s',
@@ -4690,7 +4690,7 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
                             fontFamily: _AT.fontMono,
                             background: '#01060e',
                             padding: 12,
-                            borderRadius: 3,
+                            borderRadius: 10,
                             margin: '10px 0',
                             overflowX: 'auto',
                             lineHeight: 1.7,
@@ -4847,7 +4847,7 @@ export const BloatStatusBadge = ({ status, bloatPct }) => {
                 gap: 5,
                 background: `${config.color}10`,
                 padding: '3px 10px',
-                borderRadius: 3,
+                borderRadius: 10,
                 border: `1px solid ${config.color}25`,
             }}
         >
@@ -5048,7 +5048,7 @@ export const CommandPaletteItem = ({
                 alignItems: 'center',
                 gap: 12,
                 padding: '10px 14px',
-                borderRadius: 3,
+                borderRadius: 10,
                 background: isHighlighted ? `${color}08` : 'transparent',
                 border: `1px solid ${isHighlighted ? color + '22' : 'transparent'}`,
                 borderLeft: `2px solid ${isHighlighted ? color : 'transparent'}`,
@@ -5061,7 +5061,7 @@ export const CommandPaletteItem = ({
                     style={{
                         width: 30,
                         height: 30,
-                        borderRadius: 4,
+                        borderRadius: 14,
                         background: `${color}12`,
                         color,
                         display: 'flex',
@@ -5095,7 +5095,7 @@ export const CommandPaletteItem = ({
                         background: 'rgba(255,255,255,0.05)',
                         border: `1px solid ${_AT.glassBorder}`,
                         padding: '2px 7px',
-                        borderRadius: 3,
+                        borderRadius: 10,
                         fontFamily: _AT.fontMono,
                     }}
                 >
@@ -5291,7 +5291,7 @@ export const Breadcrumbs = ({ items, onNavigate }) => {
                             fontFamily: _AT.fontMono,
                             fontSize: 12,
                             padding: '2px 4px',
-                            borderRadius: 4,
+                            borderRadius: 14,
                         }}
                         onMouseEnter={(e) => {
                             if (idx !== items.length - 1 && onNavigate) {

@@ -473,7 +473,7 @@ const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => 
 const DiffTag = ({ before, after }) => {
     if (!before || before === after) return null;
     return (
-        <span style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, background: `${T.warning}14`, color: T.warning, border: `1px solid ${T.warning}25`, fontFamily: T.fontMono }}>
+        <span style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 14, background: `${T.warning}14`, color: T.warning, border: `1px solid ${T.warning}25`, fontFamily: T.fontMono }}>
             <span style={{ opacity: 0.6, textDecoration: 'line-through' }}>{before}</span>
             <ArrowUpRight size={7} />
             <strong>{after}</strong>
@@ -554,8 +554,8 @@ const ServerSidebar = ({ collapsed, onToggle }) => {
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 800, color: T.primary, fontFamily: T.fontMono }}>{s.ram.usedGB}/{s.ram.totalGB}GB</span>
                 </div>
-                <div style={{ height: 5, background: `${T.grid}50`, borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ width: `${ramPct}%`, height: '100%', background: `linear-gradient(90deg, ${T.primary}, ${T.secondary})`, borderRadius: 3, transition: 'width 1s ease' }} />
+                <div style={{ height: 5, background: `${T.grid}50`, borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ width: `${ramPct}%`, height: '100%', background: `linear-gradient(90deg, ${T.primary}, ${T.secondary})`, borderRadius: 10, transition: 'width 1s ease' }} />
                 </div>
             </div>
 
@@ -778,7 +778,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                         return (
                                             <tr key={rec.name} onClick={() => toggleSel(rec.name)} style={{ borderTop: `1px solid ${T.grid}20`, background: isSel && changed ? `${T.success}04` : 'transparent', cursor: 'pointer', transition: 'background 0.15s' }}>
                                                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                                                    <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${isSel ? T.primary : T.grid}60`, background: isSel ? T.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', boxShadow: isSel ? `0 0 8px ${T.primary}50` : 'none' }}>
+                                                    <div style={{ width: 16, height: 16, borderRadius: 14, border: `2px solid ${isSel ? T.primary : T.grid}60`, background: isSel ? T.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', boxShadow: isSel ? `0 0 8px ${T.primary}50` : 'none' }}>
                                                         {isSel && <Check size={10} color="#fff" />}
                                                     </div>
                                                 </td>
@@ -791,7 +791,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                                     {rec.val}{changed && <ArrowUpRight size={9} style={{ marginLeft: 3, display: 'inline', verticalAlign: 'middle' }} />}
                                                 </td>
                                                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: rec.impact === 'restart' ? `${T.warning}15` : `${T.success}10`, color: rec.impact === 'restart' ? T.warning : T.success, fontWeight: 700 }}>
+                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: rec.impact === 'restart' ? `${T.warning}15` : `${T.success}10`, color: rec.impact === 'restart' ? T.warning : T.success, fontWeight: 700 }}>
                                                             {rec.impact === 'restart' ? '⚡ restart' : '↺ reload'}
                                                         </span>
                                                 </td>
@@ -850,7 +850,7 @@ const ChangeLogModal = ({ onClose }) => (
                             </div>
                             <div style={{ display: 'flex', gap: 8 }}>
                                 <span style={{ fontSize: 9.5, color: T.textDim }}>by <strong style={{ color: T.textMuted }}>{entry.user}</strong></span>
-                                <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: `${T.primary}10`, color: T.primary, border: `1px solid ${T.primary}20` }}>{entry.source}</span>
+                                <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 10, background: `${T.primary}10`, color: T.primary, border: `1px solid ${T.primary}20` }}>{entry.source}</span>
                             </div>
                         </div>
                     </div>
@@ -945,8 +945,8 @@ const CacheView = ({ onClear }) => {
                                         <span style={{ fontSize: 12, fontWeight: 800, color: T.textMain, fontFamily: T.fontMono }}>{b.size} KB</span>
                                     </div>
                                 </div>
-                                <div style={{ height: 5, background: `${T.grid}40`, borderRadius: 3, overflow: 'hidden' }}>
-                                    <div className="adm-progress-animated" style={{ width: `${b.pct * 2.5}%`, height: '100%', background: `linear-gradient(90deg, ${b.color}, ${b.color}bb)`, borderRadius: 3, maxWidth: '100%', boxShadow: `0 0 8px ${b.color}30` }} />
+                                <div style={{ height: 5, background: `${T.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
+                                    <div className="adm-progress-animated" style={{ width: `${b.pct * 2.5}%`, height: '100%', background: `linear-gradient(90deg, ${b.color}, ${b.color}bb)`, borderRadius: 10, maxWidth: '100%', boxShadow: `0 0 8px ${b.color}30` }} />
                                 </div>
                             </div>
                         ))}
@@ -1207,7 +1207,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
                                                 {ext.superuser && <Tooltip content="Requires superuser"><Lock size={9} color={T.warning} /></Tooltip>}
                                             </div>
                                             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                                                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}20`, fontFamily: T.fontMono }}>v{ext.version}</span>
+                                                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}20`, fontFamily: T.fontMono }}>v{ext.version}</span>
                                                 {ext.installed && <StatusBadge label={ext.active ? 'Active' : 'Installed'} color={ext.active ? T.success : T.warning} size="sm" />}
                                             </div>
                                         </div>

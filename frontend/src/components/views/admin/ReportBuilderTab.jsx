@@ -905,7 +905,7 @@ function ProgressBar({ value }) {
             width: '100%',
             height: 6,
             background: THEME.bg,
-            borderRadius: 3,
+            borderRadius: 10,
             marginTop: 6,
             overflow: 'hidden'
         }}>

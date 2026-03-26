@@ -475,10 +475,10 @@ const PlanNode = ({ node, maxCost, totalTime, depth = 0, heatmapData, showHeatma
                             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                                 {node["Node Type"]}
                                 {node["Relation Name"] && <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 400 }}>→ {node["Relation Name"]}</span>}
-                                {node["Index Name"] && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.success}20`, color: THEME.success, fontWeight: 700 }}>IDX</span>}
-                                {badEstimate && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.danger}20`, color: THEME.danger, fontWeight: 700 }}>MISEST</span>}
-                                {node["Parallel Aware"] && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.primary}20`, color: THEME.primary, fontWeight: 700 }}>PARALLEL</span>}
-                                {isHotspot && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.danger}25`, color: THEME.danger, fontWeight: 700 }}>🔥 HOTSPOT</span>}
+                                {node["Index Name"] && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: `${THEME.success}20`, color: THEME.success, fontWeight: 700 }}>IDX</span>}
+                                {badEstimate && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: `${THEME.danger}20`, color: THEME.danger, fontWeight: 700 }}>MISEST</span>}
+                                {node["Parallel Aware"] && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: `${THEME.primary}20`, color: THEME.primary, fontWeight: 700 }}>PARALLEL</span>}
+                                {isHotspot && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: `${THEME.danger}25`, color: THEME.danger, fontWeight: 700 }}>🔥 HOTSPOT</span>}
                             </div>
                             <div style={{ fontSize: 10, color: THEME.textMuted, display: 'flex', gap: 10, marginTop: 3, flexWrap: 'wrap' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={9} /> {formatDuration(node["Actual Total Time"] || 0)}</span>
@@ -542,13 +542,13 @@ const CostBreakdownChart = ({ plan }) => {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 140, fontSize: 10, color: THEME.textMuted, textAlign: 'right', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.label}</div>
                     <div style={{ flex: 1, display: 'flex', gap: 4, alignItems: 'center' }}>
-                        <div style={{ flex: 1, height: 10, background: `${THEME.grid}40`, borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ flex: 1, height: 10, background: `${THEME.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
                             <div style={{ width: `${(n.cost / maxCost) * 100}%`, height: '100%', background: getCostColor(n.cost / maxCost), borderRadius: 3 }} />
                         </div>
                         <span style={{ width: 48, fontSize: 9, color: THEME.textMuted, textAlign: 'right' }}>{n.cost.toFixed(1)}</span>
                     </div>
                     <div style={{ flex: 1, display: 'flex', gap: 4, alignItems: 'center' }}>
-                        <div style={{ flex: 1, height: 10, background: `${THEME.grid}40`, borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ flex: 1, height: 10, background: `${THEME.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
                             <div style={{ width: `${(n.time / maxTime) * 100}%`, height: '100%', background: THEME.primary, borderRadius: 3 }} />
                         </div>
                         <span style={{ width: 48, fontSize: 9, color: THEME.textMuted, textAlign: 'right' }}>{formatDuration(n.time)}</span>
@@ -638,7 +638,7 @@ const InsightsPanel = ({ insights, rewrites, indexRecs }) => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
                                     <Layers size={12} color={THEME.primary} />
                                     <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain }}>→ {rec.table}</span>
-                                    <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: `${THEME.success}20`, color: THEME.success }}>{rec.estimatedGain}</span>
+                                    <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 10, background: `${THEME.success}20`, color: THEME.success }}>{rec.estimatedGain}</span>
                                 </div>
                                 <div style={{ fontSize: 10, color: THEME.textMuted, marginBottom: 7 }}>{rec.reason}</div>
                                 <div style={{ position: 'relative' }}>
@@ -739,7 +739,7 @@ const FlameGraph = ({ plan }) => {
                      style={{
                          marginBottom: 3, marginLeft: `${n.depth * 20}px`,
                          width: `calc(${Math.max(4, (n.time / maxTime) * 100)}% - ${n.depth * 20}px)`,
-                         height: 26, borderRadius: 4,
+                         height: 26, borderRadius: 14,
                          background: `${FLAME_COLORS[Math.min(n.depth, FLAME_COLORS.length - 1)]}cc`,
                          display: 'flex', alignItems: 'center', padding: '0 8px',
                          cursor: 'default', overflow: 'hidden',
@@ -980,11 +980,11 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                             <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: `1px solid ${THEME.success}30` }}>
                                 <pre style={{ margin: 0, padding: '12px 14px', fontSize: 11, fontFamily: 'monospace', color: THEME.success, background: `${THEME.bg}95`, whiteSpace: 'pre-wrap' }}>{rewrite.optimized_query}</pre>
                                 <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}>
-                                    <button onClick={() => copy(rewrite.optimized_query, 'optimized')} style={{ padding: '3px 8px', borderRadius: 4, background: `${THEME.grid}80`, border: `1px solid ${THEME.grid}`, cursor: 'pointer', color: THEME.textDim, fontSize: 9, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <button onClick={() => copy(rewrite.optimized_query, 'optimized')} style={{ padding: '3px 8px', borderRadius: 14, background: `${THEME.grid}80`, border: `1px solid ${THEME.grid}`, cursor: 'pointer', color: THEME.textDim, fontSize: 9, display: 'flex', alignItems: 'center', gap: 3 }}>
                                         {copiedSection === 'optimized' ? <Check size={9} color={THEME.success} /> : <Copy size={9} />}
                                         Copy
                                     </button>
-                                    <button onClick={() => onApplyRewrite(rewrite.optimized_query)} className="opt-btn" style={{ padding: '3px 10px', borderRadius: 4, background: `${THEME.primary}20`, border: `1px solid ${THEME.primary}40`, cursor: 'pointer', color: THEME.primary, fontSize: 9, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <button onClick={() => onApplyRewrite(rewrite.optimized_query)} className="opt-btn" style={{ padding: '3px 10px', borderRadius: 14, background: `${THEME.primary}20`, border: `1px solid ${THEME.primary}40`, cursor: 'pointer', color: THEME.primary, fontSize: 9, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
                                         <Play size={9} fill="currentColor" /> Apply to Editor
                                     </button>
                                 </div>
@@ -1040,11 +1040,11 @@ const ServiceAttributionPanel = () => {
                     { key: 'avg_time', label: 'Avg Time' },
                     { key: 'queries', label: 'Query Count' },
                 ].map(s => (
-                    <button key={s.key} onClick={() => setSortBy(s.key)} style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${sortBy === s.key ? THEME.primary : THEME.grid}`, background: sortBy === s.key ? `${THEME.primary}20` : 'transparent', color: sortBy === s.key ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', fontWeight: 600 }}>{s.label}</button>
+                    <button key={s.key} onClick={() => setSortBy(s.key)} style={{ padding: '3px 10px', borderRadius: 14, border: `1px solid ${sortBy === s.key ? THEME.primary : THEME.grid}`, background: sortBy === s.key ? `${THEME.primary}20` : 'transparent', color: sortBy === s.key ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', fontWeight: 600 }}>{s.label}</button>
                 ))}
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
                     {['chart', 'table'].map(v => (
-                        <button key={v} onClick={() => setView(v)} style={{ padding: '3px 9px', borderRadius: 4, border: `1px solid ${view === v ? THEME.primary : THEME.grid}`, background: view === v ? `${THEME.primary}20` : 'transparent', color: view === v ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', textTransform: 'capitalize' }}>{v}</button>
+                        <button key={v} onClick={() => setView(v)} style={{ padding: '3px 9px', borderRadius: 14, border: `1px solid ${view === v ? THEME.primary : THEME.grid}`, background: view === v ? `${THEME.primary}20` : 'transparent', color: view === v ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', textTransform: 'capitalize' }}>{v}</button>
                     ))}
                 </div>
             </div>
@@ -1094,8 +1094,8 @@ const ServiceAttributionPanel = () => {
                                             <div>
                                                 <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 6 }}>
                                                     {svc.service}
-                                                    <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: `${teamColor}18`, color: teamColor, fontWeight: 700 }}>{svc.team}</span>
-                                                    <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: `${THEME.grid}60`, color: THEME.textDim }}>{svc.db}</span>
+                                                    <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 14, background: `${teamColor}18`, color: teamColor, fontWeight: 700 }}>{svc.team}</span>
+                                                    <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 14, background: `${THEME.grid}60`, color: THEME.textDim }}>{svc.db}</span>
                                                 </div>
                                                 <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>Hot table: <code style={{ color: THEME.primary, fontFamily: 'monospace' }}>{svc.top_table}</code></div>
                                             </div>
@@ -1107,8 +1107,8 @@ const ServiceAttributionPanel = () => {
                                     </div>
 
                                     {/* Cost share bar */}
-                                    <div style={{ height: 6, background: `${THEME.grid}30`, borderRadius: 3, overflow: 'hidden', marginBottom: 10 }}>
-                                        <div style={{ width: `${(svc.cost_share / maxCostShare) * 100}%`, height: '100%', background: `linear-gradient(90deg, ${c}, ${c}99)`, borderRadius: 3, transition: 'width 0.8s ease' }} />
+                                    <div style={{ height: 6, background: `${THEME.grid}30`, borderRadius: 10, overflow: 'hidden', marginBottom: 10 }}>
+                                        <div style={{ width: `${(svc.cost_share / maxCostShare) * 100}%`, height: '100%', background: `linear-gradient(90deg, ${c}, ${c}99)`, borderRadius: 10, transition: 'width 0.8s ease' }} />
                                     </div>
 
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -1235,7 +1235,7 @@ const ParameterizationAdvisorPanel = () => {
                                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 5, flexWrap: 'wrap' }}>
                                         {riskIcon(q.risk)}
                                         <span style={{ fontSize: 10, fontWeight: 700, color: riskColor(q.risk) }}>{q.risk}</span>
-                                        <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: `${riskColor(q.risk)}15`, color: riskColor(q.risk) }}>{q.issue}</span>
+                                        <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 10, background: `${riskColor(q.risk)}15`, color: riskColor(q.risk) }}>{q.issue}</span>
                                         <span style={{ fontSize: 9, color: THEME.textDim }}>{q.calls.toLocaleString()} calls/day</span>
                                     </div>
                                     <div style={{ fontSize: 10, color: THEME.textMain, fontFamily: 'monospace', background: `${THEME.bg}80`, padding: '6px 8px', borderRadius: 5, border: `1px solid ${THEME.grid}40`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1275,7 +1275,7 @@ const ParameterizationAdvisorPanel = () => {
                                 <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>Detected Literals</div>
                                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                     {q.literals.map((lit, i) => (
-                                        <span key={i} style={{ padding: '2px 8px', borderRadius: 4, background: `${THEME.danger}18`, border: `1px solid ${THEME.danger}30`, fontSize: 10, fontFamily: 'monospace', color: THEME.danger, fontWeight: 600 }}>{lit}</span>
+                                        <span key={i} style={{ padding: '2px 8px', borderRadius: 14, background: `${THEME.danger}18`, border: `1px solid ${THEME.danger}30`, fontSize: 10, fontFamily: 'monospace', color: THEME.danger, fontWeight: 600 }}>{lit}</span>
                                     ))}
                                 </div>
                             </div>
@@ -1439,7 +1439,7 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
 
                     <div style={{ marginBottom: 12 }}>
                         <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8 }}>Time Distribution</div>
-                        <div style={{ position: 'relative', height: 24, borderRadius: 4, overflow: 'hidden', background: `${THEME.grid}30` }}>
+                        <div style={{ position: 'relative', height: 24, borderRadius: 14, overflow: 'hidden', background: `${THEME.grid}30` }}>
                             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${(selected.mean_time / selected.p99_time) * 100}%`, background: THEME.success, borderRadius: 4 }} />
                             <div style={{ position: 'absolute', left: `${(selected.mean_time / selected.p99_time) * 100}%`, top: 0, bottom: 0, width: `${((selected.p95_time - selected.mean_time) / selected.p99_time) * 100}%`, background: THEME.warning }} />
                             <div style={{ position: 'absolute', left: `${(selected.p95_time / selected.p99_time) * 100}%`, top: 0, bottom: 0, right: 0, background: THEME.danger, borderRadius: '0 4px 4px 0' }} />
@@ -1622,7 +1622,7 @@ const MaintenancePanel = () => {
                                 <td style={{ padding: '9px 12px' }}>
                                     <div style={{ display: 'flex', gap: 4 }}>
                                         <button onClick={() => triggerVacuum(t.table)} disabled={isRunning}
-                                                style={{ fontSize: 9, padding: '2px 8px', borderRadius: 3, background: isRunning ? `${THEME.primary}10` : `${THEME.primary}15`, color: isRunning ? THEME.textDim : THEME.primary, border: `1px solid ${THEME.primary}30`, cursor: isRunning ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                                style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: isRunning ? `${THEME.primary}10` : `${THEME.primary}15`, color: isRunning ? THEME.textDim : THEME.primary, border: `1px solid ${THEME.primary}30`, cursor: isRunning ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
                                             {isRunning ? <><RefreshCw size={8} style={{ animation: 'optSpin 1s linear infinite' }} /> Running…</> : 'VACUUM'}
                                         </button>
                                     </div>
@@ -1655,7 +1655,7 @@ const ConfigAdvisorPanel = () => {
                 <SlidersHorizontal size={13} color={THEME.primary} />
                 <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginRight: 6, textTransform: 'uppercase' }}>Category:</span>
                 {categories.map(c => (
-                    <button key={c} onClick={() => setCategory(c)} style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${category === c ? THEME.primary : THEME.grid}`, background: category === c ? `${THEME.primary}20` : 'transparent', color: category === c ? THEME.primary : THEME.textMuted, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>{c}</button>
+                    <button key={c} onClick={() => setCategory(c)} style={{ padding: '3px 10px', borderRadius: 14, border: `1px solid ${category === c ? THEME.primary : THEME.grid}`, background: category === c ? `${THEME.primary}20` : 'transparent', color: category === c ? THEME.primary : THEME.textMuted, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>{c}</button>
                 ))}
                 <span style={{ marginLeft: 'auto', fontSize: 10, color: THEME.textDim }}>
                     {filtered.filter(c => c.current !== c.recommended).length} settings need tuning
@@ -1673,21 +1673,21 @@ const ConfigAdvisorPanel = () => {
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                                             <code style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{cfg.name}</code>
-                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 3, background: `${impactColor(cfg.impact)}18`, color: impactColor(cfg.impact), fontWeight: 700 }}>{cfg.impact}</span>
-                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 3, background: `${THEME.grid}60`, color: THEME.textDim, fontWeight: 600 }}>{cfg.category}</span>
+                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 10, background: `${impactColor(cfg.impact)}18`, color: impactColor(cfg.impact), fontWeight: 700 }}>{cfg.impact}</span>
+                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 10, background: `${THEME.grid}60`, color: THEME.textDim, fontWeight: 600 }}>{cfg.category}</span>
                                         </div>
                                         <div style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, marginBottom: 8 }}>{cfg.desc}</div>
                                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                                             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                                 <span style={{ fontSize: 9, color: THEME.textDim }}>Current:</span>
-                                                <code style={{ fontSize: 11, fontWeight: 700, color: needsChange ? THEME.danger : THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 3, background: needsChange ? `${THEME.danger}15` : `${THEME.success}15` }}>{cfg.current}</code>
+                                                <code style={{ fontSize: 11, fontWeight: 700, color: needsChange ? THEME.danger : THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 10, background: needsChange ? `${THEME.danger}15` : `${THEME.success}15` }}>{cfg.current}</code>
                                             </div>
                                             {needsChange && (
                                                 <>
                                                     <ArrowRight size={12} color={THEME.textDim} />
                                                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                                         <span style={{ fontSize: 9, color: THEME.textDim }}>Recommended:</span>
-                                                        <code style={{ fontSize: 11, fontWeight: 700, color: THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 3, background: `${THEME.success}15` }}>{cfg.recommended}</code>
+                                                        <code style={{ fontSize: 11, fontWeight: 700, color: THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 10, background: `${THEME.success}15` }}>{cfg.recommended}</code>
                                                     </div>
                                                 </>
                                             )}
@@ -1727,7 +1727,7 @@ const IndexAdvisorPanel = () => {
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
                 {['all', 'healthy', 'bloated', 'unused'].map(f => (
-                    <button key={f} onClick={() => setFilter(f)} style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${filter === f ? THEME.primary : THEME.grid}`, background: filter === f ? `${THEME.primary}20` : 'transparent', color: filter === f ? THEME.primary : THEME.textMuted, fontSize: 10, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{f}</button>
+                    <button key={f} onClick={() => setFilter(f)} style={{ padding: '3px 10px', borderRadius: 14, border: `1px solid ${filter === f ? THEME.primary : THEME.grid}`, background: filter === f ? `${THEME.primary}20` : 'transparent', color: filter === f ? THEME.primary : THEME.textMuted, fontSize: 10, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{f}</button>
                 ))}
             </div>
             <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
@@ -1744,14 +1744,14 @@ const IndexAdvisorPanel = () => {
                         <tr key={i} className="opt-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}30` }}>
                             <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace' }}>{idx.table}</td>
                             <td style={{ padding: '9px 12px', color: THEME.primary, fontFamily: 'monospace' }}>{idx.column}</td>
-                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 6px', borderRadius: 3, background: `${THEME.grid}60`, fontSize: 9, fontFamily: 'monospace', color: THEME.textMuted }}>{idx.type}</span></td>
+                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 6px', borderRadius: 10, background: `${THEME.grid}60`, fontSize: 9, fontFamily: 'monospace', color: THEME.textMuted }}>{idx.type}</span></td>
                             <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{idx.size}</td>
                             <td style={{ padding: '9px 12px', color: idx.scans === 0 ? THEME.danger : THEME.textMuted }}>{idx.scans.toLocaleString()}</td>
                             <td style={{ padding: '9px 12px', color: parseFloat(idx.bloat) > 20 ? THEME.warning : THEME.textMuted }}>{idx.bloat}</td>
                             <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${statusColor(idx.status)}18`, color: statusColor(idx.status), fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{idx.status}</span></td>
                             <td style={{ padding: '9px 12px' }}>
-                                {idx.status === 'unused' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 3, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}30`, cursor: 'pointer' }}>DROP</button>}
-                                {idx.status === 'bloated' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 3, background: `${THEME.warning}15`, color: THEME.warning, border: `1px solid ${THEME.warning}30`, cursor: 'pointer' }}>REINDEX</button>}
+                                {idx.status === 'unused' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}30`, cursor: 'pointer' }}>DROP</button>}
+                                {idx.status === 'bloated' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.warning}15`, color: THEME.warning, border: `1px solid ${THEME.warning}30`, cursor: 'pointer' }}>REINDEX</button>}
                             </td>
                         </tr>
                     ))}
@@ -2007,7 +2007,7 @@ const QueryOptimizerTab = () => {
             {showSamples && (
                 <div style={{ padding: '8px 20px', borderBottom: `1px solid ${THEME.grid}`, background: `${THEME.surface}90`, display: 'flex', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
                     {SAMPLE_QUERIES.map((s, i) => (
-                        <button key={i} onClick={() => { setQuery(s.sql); setShowSamples(false); }} className="opt-btn" style={{ padding: '4px 12px', borderRadius: 4, border: `1px solid ${THEME.grid}`, background: 'transparent', color: THEME.textMuted, fontSize: 10, cursor: 'pointer' }}>
+                        <button key={i} onClick={() => { setQuery(s.sql); setShowSamples(false); }} className="opt-btn" style={{ padding: '4px 12px', borderRadius: 14, border: `1px solid ${THEME.grid}`, background: 'transparent', color: THEME.textMuted, fontSize: 10, cursor: 'pointer' }}>
                             {s.label}
                         </button>
                     ))}
@@ -2082,7 +2082,7 @@ const QueryOptimizerTab = () => {
                             <button key={t.id} onClick={() => setActiveTab(t.id)} className="opt-tab-btn" style={{ padding: '11px 14px', border: 'none', borderBottom: activeTab === t.id ? `2px solid ${THEME.primary}` : '2px solid transparent', background: 'transparent', color: activeTab === t.id ? THEME.primary : THEME.textMuted, fontSize: 11, fontWeight: activeTab === t.id ? 700 : 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1, whiteSpace: 'nowrap', flexShrink: 0 }}>
                                 <t.icon size={12} />
                                 {t.label}
-                                {t.isNew && <span style={{ fontSize: 7, padding: '1px 4px', borderRadius: 3, background: `${THEME.primary}25`, color: THEME.primary, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NEW</span>}
+                                {t.isNew && <span style={{ fontSize: 7, padding: '1px 4px', borderRadius: 10, background: `${THEME.primary}25`, color: THEME.primary, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NEW</span>}
                                 {t.id === 'plan' && insights.length > 0 && (
                                     <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.danger, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{insights.length}</span>
                                 )}
@@ -2150,11 +2150,11 @@ const QueryOptimizerTab = () => {
                                             <div style={{ fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}><Share2 size={12} /> Execution Plan Tree</div>
                                             <div style={{ display: 'flex', gap: 6 }}>
                                                 {/* Heatmap toggle */}
-                                                <button onClick={() => setShowHeatmap(!showHeatmap)} className="opt-btn" style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${showHeatmap ? THEME.danger : THEME.grid}`, background: showHeatmap ? `${THEME.danger}18` : 'transparent', color: showHeatmap ? THEME.danger : THEME.textMuted, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                <button onClick={() => setShowHeatmap(!showHeatmap)} className="opt-btn" style={{ padding: '3px 10px', borderRadius: 14, border: `1px solid ${showHeatmap ? THEME.danger : THEME.grid}`, background: showHeatmap ? `${THEME.danger}18` : 'transparent', color: showHeatmap ? THEME.danger : THEME.textMuted, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                                                     <Flame size={10} /> {showHeatmap ? 'Heatmap ON' : 'Heatmap'}
                                                 </button>
                                                 {['visual', 'json'].map(mode => (
-                                                    <button key={mode} onClick={() => setViewMode(mode)} style={{ padding: '3px 9px', borderRadius: 4, border: `1px solid ${viewMode === mode ? THEME.primary : THEME.grid}`, background: viewMode === mode ? `${THEME.primary}20` : 'transparent', color: viewMode === mode ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', textTransform: 'capitalize' }}>{mode}</button>
+                                                    <button key={mode} onClick={() => setViewMode(mode)} style={{ padding: '3px 9px', borderRadius: 14, border: `1px solid ${viewMode === mode ? THEME.primary : THEME.grid}`, background: viewMode === mode ? `${THEME.primary}20` : 'transparent', color: viewMode === mode ? THEME.primary : THEME.textMuted, fontSize: 10, cursor: 'pointer', textTransform: 'capitalize' }}>{mode}</button>
                                                 ))}
                                             </div>
                                         </div>
@@ -2167,7 +2167,7 @@ const QueryOptimizerTab = () => {
                                         {showHeatmap && (
                                             <div style={{ padding: '6px 16px', borderTop: `1px solid ${THEME.grid}`, flexShrink: 0, display: 'flex', gap: 16, alignItems: 'center', background: `${THEME.danger}05` }}>
                                                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                                    <div style={{ display: 'flex', height: 6, width: 80, borderRadius: 3, overflow: 'hidden' }}>
+                                                    <div style={{ display: 'flex', height: 6, width: 80, borderRadius: 10, overflow: 'hidden' }}>
                                                         {Array.from({length:20}, (_, i) => (
                                                             <div key={i} style={{ flex:1, background:`rgba(${Math.round(220*i/19)},${Math.round(60*(1-i/19))},0,0.8)` }} />
                                                         ))}
@@ -2227,7 +2227,7 @@ const QueryOptimizerTab = () => {
                                                             <span style={{ color: THEME.textMuted }}>{b.label}</span>
                                                             <span style={{ color: b.color, fontWeight: 700 }}>{b.value.toLocaleString()}</span>
                                                         </div>
-                                                        <div style={{ height: 6, background: `${THEME.grid}40`, borderRadius: 3, overflow: 'hidden' }}>
+                                                        <div style={{ height: 6, background: `${THEME.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
                                                             <div style={{ width: `${Math.min(100, (b.value / ((result.Plan["Shared Hit Blocks"] || 1) + (result.Plan["Shared Read Blocks"] || 1))) * 100)}%`, height: '100%', background: b.color, borderRadius: 3 }} />
                                                         </div>
                                                         <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>{b.desc} · {formatBytes(b.value * 8192)}</div>

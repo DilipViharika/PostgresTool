@@ -228,7 +228,7 @@ const AIQueryAdvisorTab: React.FC = () => {
                                     </div>
                                     <div style={{ color: THEME.textDim, fontSize: 12 }}>{sug.description}</div>
                                     {sug.recommendation && (
-                                        <div style={{ marginTop: 8, padding: 8, background: `${THEME.bg}40`, borderRadius: 4, fontSize: 12, color: THEME.textMuted }}>
+                                        <div style={{ marginTop: 8, padding: 8, background: `${THEME.bg}40`, borderRadius: 14, fontSize: 12, color: THEME.textMuted }}>
                                             <strong>Recommendation:</strong> {sug.recommendation}
                                         </div>
                                     )}

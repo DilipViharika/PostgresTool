@@ -375,7 +375,7 @@ export default function MongoOverviewTab() {
                             <div style={{
                                 height: 8,
                                 background: DARK_THEME.border,
-                                borderRadius: 4,
+                                borderRadius: 14,
                                 overflow: 'hidden'
                             }}>
                                 <div style={{
@@ -394,7 +394,7 @@ export default function MongoOverviewTab() {
                             <div style={{
                                 height: 8,
                                 background: DARK_THEME.border,
-                                borderRadius: 4,
+                                borderRadius: 14,
                                 overflow: 'hidden'
                             }}>
                                 <div style={{
@@ -421,7 +421,7 @@ export default function MongoOverviewTab() {
                             <div style={{
                                 height: 8,
                                 background: DARK_THEME.border,
-                                borderRadius: 4,
+                                borderRadius: 14,
                                 overflow: 'hidden'
                             }}>
                                 <div style={{

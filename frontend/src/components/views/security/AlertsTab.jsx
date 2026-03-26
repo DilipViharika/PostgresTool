@@ -199,7 +199,7 @@ const PulseDot = ({ color, size = 8 }) => (
 const SeverityBadge = ({ severity, small }) => {
   const s = SEVERITY[severity] || SEVERITY.info;
   return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 3, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: THEME.fontMono, fontWeight: 700, letterSpacing: '0.08em' }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 10, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: THEME.fontMono, fontWeight: 700, letterSpacing: '0.08em' }}>
       {s.label}
     </span>
   );
@@ -212,7 +212,7 @@ const Toggle = ({ on, onChange, accent = '#6366f1' }) => (
 );
 
 const ChannelDot = ({ active, label }) => (
-    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 4, background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`, fontSize: 8, fontWeight: 700, color: active ? '#818cf8' : '#4b5563', fontFamily: THEME.fontMono, cursor: 'default', transition: 'all 0.2s' }}>
+    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 14, background: active ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`, fontSize: 8, fontWeight: 700, color: active ? '#818cf8' : '#4b5563', fontFamily: THEME.fontMono, cursor: 'default', transition: 'all 0.2s' }}>
     {label.slice(0,2).toUpperCase()}
   </span>
 );
@@ -543,7 +543,7 @@ const VIGILDashboard = () => {
             <div>
               <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Affected Services</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: '#818cf8', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 3, padding: '2px 6px', fontFamily: THEME.fontMono }}>{s}</span>)}
+                {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: '#818cf8', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 10, padding: '2px 6px', fontFamily: THEME.fontMono }}>{s}</span>)}
               </div>
             </div>
           </div>
@@ -552,7 +552,7 @@ const VIGILDashboard = () => {
               <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em' }}>BLAST RADIUS</span>
               <span style={{ fontSize: 9, color: scoreColor }}>{score >= 8 ? 'CRITICAL — INCIDENT RESPONSE REQUIRED' : score >= 5 ? 'SIGNIFICANT — MONITOR CLOSELY' : 'CONTAINED — LOW RISK'}</span>
             </div>
-            <div style={{ height: 6, background: THEME.grid, borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 6, background: THEME.grid, borderRadius: 10, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${score * 10}%`, background: `linear-gradient(90deg, ${scoreColor}80, ${scoreColor})`, borderRadius: 3 }} />
             </div>
           </div>
@@ -647,12 +647,12 @@ const VIGILDashboard = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
                               <SeverityBadge severity={alert.severity} />
                               <span style={{ fontSize: 13, color: alert.acknowledged ? '#6b7280' : '#e5e7eb', fontFamily: THEME.fontBody, fontWeight: 500 }}>{alert.message}</span>
-                              {alert.count > 1 && <span style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', borderRadius: 3, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>×{alert.count}</span>}
+                              {alert.count > 1 && <span style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', borderRadius: 10, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>×{alert.count}</span>}
                             </div>
                             <span style={{ fontSize: 10, color: '#4b5563', whiteSpace: 'nowrap', flexShrink: 0 }}>{formatAge(alert.timestamp)}</span>
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: alert.acknowledged ? 0 : 10 }}>
-                            <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: THEME.fontMono }}>{alert.source}</span>
+                            <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: THEME.fontMono }}>{alert.source}</span>
                             <span style={{ fontSize: 10, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{alert.category}</span>
                             <span style={{ fontSize: 10, color: '#374151' }}>⟵ {alert.rule}</span>
                             {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: '#4b5563', borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)', padding: '1px 5px' }}>#{t}</span>)}
@@ -727,7 +727,7 @@ const VIGILDashboard = () => {
                 <div style={{ fontSize: 10, color: '#4b5563' }}>Fire a test alert without affecting production</div>
               </div>
             </div>
-            <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8', borderRadius: 3, padding: '2px 8px', letterSpacing: '0.08em' }}>SANDBOX</span>
+            <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8', borderRadius: 10, padding: '2px 8px', letterSpacing: '0.08em' }}>SANDBOX</span>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 180 }}>
@@ -838,14 +838,14 @@ const VIGILDashboard = () => {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>{sw.name}</span>
-                      {sw.active && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}30`, color: SEVERITY.warning.color, borderRadius: 3, padding: '1px 6px', letterSpacing: '0.06em' }}>ACTIVE</span>}
+                      {sw.active && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}30`, color: SEVERITY.warning.color, borderRadius: 10, padding: '1px 6px', letterSpacing: '0.06em' }}>ACTIVE</span>}
                     </div>
                     <div style={{ fontSize: 10, color: '#6b7280', fontFamily: THEME.fontMono, marginBottom: 4 }}>
                       <Clock size={10} style={{ display: 'inline', marginRight: 4 }} />{sw.schedule}
                       <span style={{ color: '#374151', marginLeft: 12 }}>Next: {sw.nextRun}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {sw.rules.map(r => <span key={r} style={{ fontSize: 9, color: '#4b5563', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '1px 6px' }}>{r}</span>)}
+                      {sw.rules.map(r => <span key={r} style={{ fontSize: 9, color: '#4b5563', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '1px 6px' }}>{r}</span>)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -1002,7 +1002,7 @@ const VIGILDashboard = () => {
                   <input type="number" style={{ ...css.input, width: 60 }} value={newRule.duration} onChange={e => setNewRule(r => ({ ...r, duration: e.target.value }))} />
                   <span style={{ fontSize: 11, color: '#4b5563' }}>min</span>
                 </div>
-                <div style={{ marginTop: 10, padding: '8px 10px', background: 'rgba(99,102,241,0.06)', borderRadius: 4, fontSize: 11, color: '#6b7280', fontFamily: THEME.fontBody }}>
+                <div style={{ marginTop: 10, padding: '8px 10px', background: 'rgba(99,102,241,0.06)', borderRadius: 14, fontSize: 11, color: '#6b7280', fontFamily: THEME.fontBody }}>
                   Alert fires when <strong style={{ color: '#818cf8' }}>{METRICS[newRule.metric]?.label}</strong> is {newRule.condition === 'gt' ? 'above' : newRule.condition === 'lt' ? 'below' : 'equal to'} <strong style={{ color: '#9ca3af' }}>{newRule.threshold}{METRICS[newRule.metric]?.unit}</strong> for <strong style={{ color: '#9ca3af' }}>{newRule.duration} minutes</strong>
                 </div>
               </div>
@@ -1059,8 +1059,8 @@ const VIGILDashboard = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
               <Terminal size={16} color="#818cf8" />
               <span style={{ fontSize: 16, fontWeight: 700, color: '#e5e7eb', letterSpacing: '0.06em' }}>VIGIL</span>
-              <span style={{ fontSize: 9, color: '#4b5563', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 3, padding: '2px 6px', letterSpacing: '0.1em' }}>v3.0</span>
-              {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}40`, color: SEVERITY.warning.color, borderRadius: 3, padding: '2px 8px', letterSpacing: '0.1em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
+              <span style={{ fontSize: 9, color: '#4b5563', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '2px 6px', letterSpacing: '0.1em' }}>v3.0</span>
+              {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}40`, color: SEVERITY.warning.color, borderRadius: 10, padding: '2px 8px', letterSpacing: '0.1em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
             </div>
             <div style={{ fontSize: 10, color: '#4b5563', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ display: 'flex', alignItems: 'center' }}><PulseDot color={SEVERITY.resolved.color} size={6} /><span style={{ marginLeft: 6 }}>Connected · Last sync {formatAge(Date.now() - 8000)}</span></span>
@@ -1090,7 +1090,7 @@ const VIGILDashboard = () => {
         <div style={{ display: 'flex', gap: 6, paddingBottom: 16, borderBottom: `1px solid ${THEME.grid}`, marginBottom: 18 }}>
           <button onClick={() => setActiveTab('active')} style={css.tab(activeTab === 'active')}>
             <Bell size={12} /> ACTIVE
-            {stats.unacked > 0 && <span style={{ background: SEVERITY.critical.color, color: '#fff', borderRadius: 3, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>{stats.unacked}</span>}
+            {stats.unacked > 0 && <span style={{ background: SEVERITY.critical.color, color: '#fff', borderRadius: 10, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>{stats.unacked}</span>}
           </button>
           <button onClick={() => setActiveTab('config')} style={css.tab(activeTab === 'config')}>
             <SlidersHorizontal size={12} /> CONFIG

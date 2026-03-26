@@ -202,14 +202,14 @@ const MongoStorageTab: React.FC = () => {
                         <div>
                             <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>Size</div>
                             <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent, marginBottom: 8 }}>{fmt(wiredTiger.cacheFilled)} / {fmt(wiredTiger.cacheSize)} MB</div>
-                            <div style={{ height: 8, background: DARK_THEME.border, borderRadius: 4, overflow: 'hidden' }}>
+                            <div style={{ height: 8, background: DARK_THEME.border, borderRadius: 14, overflow: 'hidden' }}>
                                 <div style={{ height: '100%', width: `${(wiredTiger.cacheFilled / wiredTiger.cacheSize) * 100}%`, background: DARK_THEME.success }} />
                             </div>
                         </div>
                         <div>
                             <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>Dirty Pages</div>
                             <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.warning, marginBottom: 8 }}>{fmt(wiredTiger.cacheDirty)} MB</div>
-                            <div style={{ height: 8, background: DARK_THEME.border, borderRadius: 4, overflow: 'hidden' }}>
+                            <div style={{ height: 8, background: DARK_THEME.border, borderRadius: 14, overflow: 'hidden' }}>
                                 <div style={{ height: '100%', width: `${(wiredTiger.cacheDirty / wiredTiger.cacheSize) * 100}%`, background: DARK_THEME.warning }} />
                             </div>
                         </div>

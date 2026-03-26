@@ -727,7 +727,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                     {mig.tags?.length > 0 && (
                         <div style={{ display: 'flex', gap: 5, marginBottom: 10, flexWrap: 'wrap' }}>
                             {mig.tags.map(tag => (
-                                <span key={tag} className="sv-mono" style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: THEME.surface, color: THEME.textDim, border: `1px solid ${THEME.grid}`, textTransform: 'uppercase', letterSpacing: '.8px' }}>{tag}</span>
+                                <span key={tag} className="sv-mono" style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, border: `1px solid ${THEME.grid}`, textTransform: 'uppercase', letterSpacing: '.8px' }}>{tag}</span>
                             ))}
                         </div>
                     )}
@@ -779,7 +779,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                                 {mig.pre_checks.map((check, idx) => (
                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: THEME.surfaceHover, borderRadius: 6, marginBottom: 4, fontSize: 11 }}>
                                         <span style={{ color: THEME.textMuted }}>{check.name}</span>
-                                        <span className="sv-mono" style={{ padding: '2px 7px', borderRadius: 4, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', background: check.status === 'passed' ? 'rgba(16,185,129,.15)' : 'rgba(245,158,11,.12)', color: check.status === 'passed' ? '#34d399' : '#fbbf24' }}>{check.status}</span>
+                                        <span className="sv-mono" style={{ padding: '2px 7px', borderRadius: 14, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', background: check.status === 'passed' ? 'rgba(16,185,129,.15)' : 'rgba(245,158,11,.12)', color: check.status === 'passed' ? '#34d399' : '#fbbf24' }}>{check.status}</span>
                                     </div>
                                 ))}
                             </div>
@@ -1434,7 +1434,7 @@ const SchemaVersioningTab = () => {
                                                         </span>
                                                     )}
                                                     {c.status === 'pending_removal' && (
-                                                        <span className="sv-mono" style={{ fontSize: 11, background: 'rgba(245,158,11,.12)', color: '#fbbf24', padding: '2px 8px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                                        <span className="sv-mono" style={{ fontSize: 11, background: 'rgba(245,158,11,.12)', color: '#fbbf24', padding: '2px 8px', borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                                                             <Clock size={9} /> Scheduled for removal · {c.type}
                                                         </span>
                                                     )}
@@ -1456,9 +1456,9 @@ const SchemaVersioningTab = () => {
                                                         {idx.name} <span style={{ color: THEME.textDim }}>({idx.columns.join(', ')})</span>
                                                     </span>
                                                     <div style={{ display: 'flex', gap: 5 }}>
-                                                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{idx.type}</span>
-                                                        {idx.unique  && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,.15)', color: '#a5b4fc', textTransform: 'uppercase', fontWeight: 700 }}>UNIQUE</span>}
-                                                        {idx.primary && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(16,185,129,.15)', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>PRIMARY</span>}
+                                                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{idx.type}</span>
+                                                        {idx.unique  && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: 'rgba(99,102,241,.15)', color: '#a5b4fc', textTransform: 'uppercase', fontWeight: 700 }}>UNIQUE</span>}
+                                                        {idx.primary && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: 'rgba(16,185,129,.15)', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>PRIMARY</span>}
                                                     </div>
                                                 </div>
                                             ))}
@@ -1478,7 +1478,7 @@ const SchemaVersioningTab = () => {
                                                             {con.status === 'added' && <span style={{ color: '#34d399', marginRight: 6 }}>+</span>}
                                                             {con.name}
                                                         </span>
-                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{con.type.replace('_', ' ')}</span>
+                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{con.type.replace('_', ' ')}</span>
                                                     </div>
                                                     <div style={{ fontSize: 10, color: THEME.textDim, fontStyle: 'italic' }}>{con.definition}</div>
                                                 </div>

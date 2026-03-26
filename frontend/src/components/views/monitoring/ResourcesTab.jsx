@@ -496,7 +496,7 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                         const checked = checks[key];
                         return (
                             <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
-                                <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                                <div style={{ width: 16, height: 16, borderRadius: 14, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                                     {checked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                 </div>
                                 <span style={{ fontSize: 12, color: checked ? THEME.textMain : THEME.textMuted, lineHeight: 1.5, transition: 'color 0.15s' }}>{label}</span>
@@ -610,7 +610,7 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, boxShadow: `0 0 4px ${statusColor}60` }} />
                                     <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{ts.name}</span>
-                                    <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 4, background: `${THEME.primary}0a`, color: THEME.textDim, border: `1px solid ${THEME.grid}30` }}>{ts.tables} tables · {ts.sizePct}% capacity</span>
+                                    <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 14, background: `${THEME.primary}0a`, color: THEME.textDim, border: `1px solid ${THEME.grid}30` }}>{ts.tables} tables · {ts.sizePct}% capacity</span>
                                 </div>
                                 <div style={{ display: 'flex', gap: 14, fontSize: 11 }}>
                                     <span style={{ color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>↑ {ts.readsMB} MB/s</span>
@@ -621,15 +621,15 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                                 {/* Reads bar */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Read</span>
-                                    <div style={{ flex: 1, height: 5, borderRadius: 3, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                        <div className="res-bar-animate" style={{ width: `${readPct}%`, height: '100%', borderRadius: 3, background: THEME.primary, animationDelay: `${i * 0.08}s` }} />
+                                    <div style={{ flex: 1, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                        <div className="res-bar-animate" style={{ width: `${readPct}%`, height: '100%', borderRadius: 10, background: THEME.primary, animationDelay: `${i * 0.08}s` }} />
                                     </div>
                                 </div>
                                 {/* Writes bar */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Write</span>
-                                    <div style={{ flex: 1, height: 5, borderRadius: 3, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                        <div className="res-bar-animate" style={{ width: `${writePct}%`, height: '100%', borderRadius: 3, background: THEME.success, animationDelay: `${i * 0.08 + 0.04}s` }} />
+                                    <div style={{ flex: 1, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                        <div className="res-bar-animate" style={{ width: `${writePct}%`, height: '100%', borderRadius: 10, background: THEME.success, animationDelay: `${i * 0.08 + 0.04}s` }} />
                                     </div>
                                 </div>
                             </div>
@@ -745,8 +745,8 @@ const FreezeUrgencyPanel = ({ data, refreshing }) => {
                         <div key={i} className={isCritical ? 'res-freeze-urgent' : ''} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <Zap size={11} color={color} style={{ flexShrink: 0, opacity: isCritical ? 1 : 0.6 }} />
                             <span style={{ fontSize: 11.5, color: THEME.textMuted, width: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{d.table_name}</span>
-                            <div style={{ flex: 1, height: 5, borderRadius: 3, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                <div className="res-bar-animate" style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 3, background: `linear-gradient(90deg, ${color}80, ${color})`, animationDelay: `${i * 0.05}s` }} />
+                            <div style={{ flex: 1, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                <div className="res-bar-animate" style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 10, background: `linear-gradient(90deg, ${color}80, ${color})`, animationDelay: `${i * 0.05}s` }} />
                             </div>
                             <span style={{ fontSize: 10.5, fontWeight: 700, color, fontVariantNumeric: 'tabular-nums', minWidth: 50, textAlign: 'right' }}>{fmtXID(d.oldest_xid_age)}</span>
                             <span style={{ fontSize: 9.5, color: THEME.textDim, minWidth: 40, textAlign: 'right' }}>{pct.toFixed(0)}%</span>
@@ -826,7 +826,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                             <span style={{ fontSize: 11.5, color: THEME.textDim }}>{c.table}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ fontSize: 11.5, fontWeight: 600, color: THEME.textMain, fontFamily: 'monospace' }}>{c.column}</span>
-                                {c.nullable && <span style={{ fontSize: 8.5, padding: '1px 5px', borderRadius: 3, background: `${THEME.grid}30`, color: THEME.textDim }}>NULL</span>}
+                                {c.nullable && <span style={{ fontSize: 8.5, padding: '1px 5px', borderRadius: 10, background: `${THEME.grid}30`, color: THEME.textDim }}>NULL</span>}
                             </div>
                             <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: THEME.secondary }}>{c.type}</span>
                             <span style={{ fontSize: 10.5, color: THEME.textDim }}>{c.last_read}</span>
@@ -948,7 +948,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                                     <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{p.table}</span>
-                                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
+                                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 14, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
                                 </div>
                                 <div style={{ fontSize: 10.5, color: THEME.textDim, display: 'flex', gap: 14 }}>
                                     <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
@@ -996,7 +996,7 @@ const TOASTRatioCell = ({ table }) => {
 
     return (
         <div title={`Data: ${fmtSize(data)} · Index: ${fmtSize(idx)} · TOAST: ${fmtSize(toast)}`} style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 64 }}>
-            <div style={{ display: 'flex', height: 5, borderRadius: 3, overflow: 'hidden', background: `${THEME.grid}30` }}>
+            <div style={{ display: 'flex', height: 5, borderRadius: 10, overflow: 'hidden', background: `${THEME.grid}30` }}>
                 <div style={{ width: `${dataPct}%`, background: THEME.primary,   height: '100%' }} />
                 <div style={{ width: `${idxPct}%`, background: THEME.secondary, height: '100%' }} />
                 <div style={{ width: `${toastPct}%`, background: THEME.warning,  height: '100%' }} />
@@ -1726,7 +1726,7 @@ const ResourcesTab = () => {
                                 return (
                                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 70px', alignItems: 'center', gap: 16, padding: '9px 20px', borderBottom: i < 7 ? `1px solid ${THEME.grid}20` : 'none' }}>
                                         <div style={{ fontSize: 11.5, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.table_name}</div>
-                                        <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', background: `${THEME.grid}40` }}>
+                                        <div style={{ display: 'flex', height: 8, borderRadius: 14, overflow: 'hidden', background: `${THEME.grid}40` }}>
                                             <div className="res-bar-animate" style={{ width: `${pct * (100 - idxPct - toastPct) / 100}%`, background: THEME.primary,   height: '100%', animationDelay: `${i * 0.05}s` }} />
                                             <div className="res-bar-animate" style={{ width: `${pct * idxPct / 100}%`,                   background: THEME.secondary, height: '100%', animationDelay: `${i * 0.05 + 0.06}s` }} />
                                             <div className="res-bar-animate" style={{ width: `${pct * toastPct / 100}%`,                 background: THEME.warning,   height: '100%', animationDelay: `${i * 0.05 + 0.12}s` }} />
@@ -1778,7 +1778,7 @@ const ResourcesTab = () => {
                     <div style={{ padding: '14px 18px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}15`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                         <ShieldAlert size={16} color={THEME.warning} style={{ flexShrink: 0, marginTop: 1 }} />
                         <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
-                            <strong style={{ color: THEME.warning }}>Before archiving or dropping:</strong> Verify with application owners, check for indirect reads through ORMs, background workers, or reporting pipelines. Zero-read in the past 90 days does not guarantee zero-use — some tables are queried rarely but are still critical (e.g., configuration, audit, disaster-recovery). Use <code style={{ background: `${THEME.grid}30`, padding: '1px 5px', borderRadius: 3, fontSize: 11 }}>pg_stat_user_tables</code> to confirm.
+                            <strong style={{ color: THEME.warning }}>Before archiving or dropping:</strong> Verify with application owners, check for indirect reads through ORMs, background workers, or reporting pipelines. Zero-read in the past 90 days does not guarantee zero-use — some tables are queried rarely but are still critical (e.g., configuration, audit, disaster-recovery). Use <code style={{ background: `${THEME.grid}30`, padding: '1px 5px', borderRadius: 10, fontSize: 11 }}>pg_stat_user_tables</code> to confirm.
                         </div>
                     </div>
                 </div>

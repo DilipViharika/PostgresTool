@@ -420,8 +420,8 @@ const AIAnalysisResult = ({ result, tableName }) => {
                 <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                         <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.textMain }}>AI Assessment</span>
-                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 3, background: `${riskColor(result.riskLevel)}10`, color: riskColor(result.riskLevel), border: `1px solid ${riskColor(result.riskLevel)}20`, textTransform: 'uppercase' }}>{result.riskLevel} risk</span>
-                        <span style={{ fontSize: 8, fontWeight: 600, padding: '2px 6px', borderRadius: 3, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18` }}>{result.workloadProfile}</span>
+                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: `${riskColor(result.riskLevel)}10`, color: riskColor(result.riskLevel), border: `1px solid ${riskColor(result.riskLevel)}20`, textTransform: 'uppercase' }}>{result.riskLevel} risk</span>
+                        <span style={{ fontSize: 8, fontWeight: 600, padding: '2px 6px', borderRadius: 10, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18` }}>{result.workloadProfile}</span>
                     </div>
                     <p style={{ fontSize: 10.5, color: THEME.textMuted, lineHeight: 1.55, margin: 0 }}>{result.overallAssessment}</p>
                     {result.estimatedImprovementPct > 0 && (
@@ -456,8 +456,8 @@ const AIAnalysisResult = ({ result, tableName }) => {
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
                                     <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain }}>{w.title}</span>
-                                    <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3, background: `${impactColor(w.impact)}10`, color: impactColor(w.impact), border: `1px solid ${impactColor(w.impact)}18` }}>{w.impact} impact</span>
-                                    <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3, background: `${effortColor(w.effort)}10`, color: effortColor(w.effort), border: `1px solid ${effortColor(w.effort)}18` }}>{w.effort}</span>
+                                    <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 10, background: `${impactColor(w.impact)}10`, color: impactColor(w.impact), border: `1px solid ${impactColor(w.impact)}18` }}>{w.impact} impact</span>
+                                    <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 10, background: `${effortColor(w.effort)}10`, color: effortColor(w.effort), border: `1px solid ${effortColor(w.effort)}18` }}>{w.effort}</span>
                                 </div>
                                 <div style={{ fontSize: 9.5, color: THEME.textDim, lineHeight: 1.4 }}>{w.rationale}</div>
                             </div>

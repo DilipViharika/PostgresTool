@@ -175,7 +175,7 @@ const GaugeBar = ({ used, total, color, unit = '' }) => {
             <div style={{ height: 4, background: THEME.border, borderRadius: 4 }}>
                 <div style={{
                     width: `${pct}%`, height: '100%',
-                    background: barColor, borderRadius: 4,
+                    background: barColor, borderRadius: 14,
                     transition: 'width 0.6s ease'
                 }} />
             </div>
@@ -239,7 +239,7 @@ const RecommendationCard = ({ rec }) => {
                     )}
                     <button
                         className="action-btn"
-                        style={{ padding: '4px 10px', borderRadius: 4, background: THEME.bg, border: `1px solid ${THEME.border}`, color: THEME.textMain, fontSize: 10, cursor: 'pointer' }}
+                        style={{ padding: '4px 10px', borderRadius: 14, background: THEME.bg, border: `1px solid ${THEME.border}`, color: THEME.textMain, fontSize: 10, cursor: 'pointer' }}
                     >
                         {rec.action}
                     </button>

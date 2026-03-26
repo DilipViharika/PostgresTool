@@ -296,7 +296,7 @@ const getStyles = () => ({
     recurrenceBadge: {
         display: 'inline-block',
         padding: '2px 8px',
-        borderRadius: 4,
+        borderRadius: 14,
         backgroundColor: `${THEME.primary}15`,
         color: THEME.primary,
         fontWeight: 600,
@@ -305,7 +305,7 @@ const getStyles = () => ({
     assigneeBadge: {
         display: 'inline-block',
         padding: '2px 8px',
-        borderRadius: 4,
+        borderRadius: 14,
         backgroundColor: `${THEME.secondary}15`,
         color: THEME.secondary,
         fontWeight: 600,
@@ -314,7 +314,7 @@ const getStyles = () => ({
     dueDateBadge: {
         display: 'inline-block',
         padding: '2px 8px',
-        borderRadius: 4,
+        borderRadius: 14,
         backgroundColor: `${THEME.textMuted}15`,
         fontWeight: 600,
     } as React.CSSProperties,
@@ -459,7 +459,7 @@ const getStyles = () => ({
 
     approvalCategory: {
         padding: '2px 8px',
-        borderRadius: 4,
+        borderRadius: 14,
         backgroundColor: `${THEME.primary}15`,
         color: THEME.primary,
         fontWeight: 600,
@@ -467,7 +467,7 @@ const getStyles = () => ({
 
     approvalPriorityBadge: {
         padding: '3px 10px',
-        borderRadius: 4,
+        borderRadius: 14,
         fontSize: 10,
         fontWeight: 700,
     } as React.CSSProperties,
@@ -538,7 +538,7 @@ const getStyles = () => ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '4px 10px',
-        borderRadius: 4,
+        borderRadius: 14,
         fontSize: 11,
         fontWeight: 600,
     } as React.CSSProperties,
@@ -1285,7 +1285,7 @@ const DBATaskSchedulerTab: React.FC = () => {
                                             borderLeft: `3px solid ${getCategoryColor(category)}`,
                                             backgroundColor: THEME.surfaceHover,
                                             marginBottom: 12,
-                                            borderRadius: 4,
+                                            borderRadius: 14,
                                             fontSize: 12,
                                             fontWeight: 700,
                                             color: THEME.textMain,
@@ -1296,7 +1296,7 @@ const DBATaskSchedulerTab: React.FC = () => {
                                             <span>{category}</span>
                                             <span style={{
                                                 padding: '2px 8px',
-                                                borderRadius: 4,
+                                                borderRadius: 14,
                                                 backgroundColor: THEME.grid,
                                                 color: THEME.textMuted,
                                                 fontSize: 10,

@@ -912,7 +912,7 @@ const VacuumHealthCard = ({ data }) => {
             </div>
 
             {/* Stacked bar */}
-            <div style={{ height: 6, borderRadius: 4, background: `${THEME.grid}40`, overflow: 'hidden', display: 'flex', marginBottom: 6 }}>
+            <div style={{ height: 6, borderRadius: 14, background: `${THEME.grid}40`, overflow: 'hidden', display: 'flex', marginBottom: 6 }}>
                 <div style={{ width: `${urgentPct}%`, height: '100%', background: THEME.danger, transition: 'width 0.9s ease' }} />
                 <div style={{ width: `${warnPct}%`, height: '100%', background: THEME.warning, transition: 'width 0.9s ease 0.05s' }} />
                 <div style={{ flex: 1, height: '100%', background: `${THEME.success}50`, transition: 'width 0.9s ease 0.1s' }} />
@@ -1591,8 +1591,8 @@ const OverviewTab: React.FC = () => {
                                             <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textMuted }}>{row.label}</span>
                                             <span className="ov-mono" style={{ fontSize: 11.5, fontWeight: 800, color: row.color }}>{fmtNum(row.raw)}</span>
                                         </div>
-                                        <div style={{ height: 4, borderRadius: 3, background: `${THEME.grid}45`, overflow: 'hidden' }}>
-                                            <div className="ov-bar-animate" style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: `linear-gradient(90deg, ${row.color}65, ${row.color})`, boxShadow: `0 0 8px ${row.color}30`, animationDelay: `${i * 0.1}s` }} />
+                                        <div style={{ height: 4, borderRadius: 10, background: `${THEME.grid}45`, overflow: 'hidden' }}>
+                                            <div className="ov-bar-animate" style={{ width: `${pct}%`, height: '100%', borderRadius: 10, background: `linear-gradient(90deg, ${row.color}65, ${row.color})`, boxShadow: `0 0 8px ${row.color}30`, animationDelay: `${i * 0.1}s` }} />
                                         </div>
                                     </div>
                                 </div>
@@ -1750,7 +1750,7 @@ const OverviewTab: React.FC = () => {
                                         <span className="ov-mono" style={{ fontSize: 10.5, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '62%' }} title={t.name}>{t.name}</span>
                                         <span style={{ fontSize: 10.5, color: THEME.textDim }}>{fmtNum(total)} ops</span>
                                     </div>
-                                    <div style={{ height: 5, borderRadius: 4, background: `${THEME.grid}40`, overflow: 'hidden', display: 'flex' }}>
+                                    <div style={{ height: 5, borderRadius: 14, background: `${THEME.grid}40`, overflow: 'hidden', display: 'flex' }}>
                                         <div className="ov-bar-animate" style={{ width: '100%', height: '100%', display: 'flex', transformOrigin: 'left' }}>
                                             <div style={{ width: `${rp}%`, background: `linear-gradient(90deg, ${THEME.primary}70, ${THEME.primary})` }} />
                                             <div style={{ flex: 1, background: `linear-gradient(90deg, ${THEME.secondary}70, ${THEME.secondary})` }} />

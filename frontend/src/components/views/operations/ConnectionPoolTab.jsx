@@ -97,7 +97,7 @@ const S = {
     }),
     badge: (color) => ({
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        padding: '3px 10px', borderRadius: 4, fontSize: 11, fontWeight: 700,
+        padding: '3px 10px', borderRadius: 14, fontSize: 11, fontWeight: 700,
         background: `${color}22`, color: color,
         border: `1px solid ${color}44`, letterSpacing: '0.05em',
     }),

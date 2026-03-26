@@ -308,10 +308,13 @@ const AppStyles = () => (
         @keyframes waveFlow        { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes dotBlink        { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-        /* ── Advanced glassmorphism auto-targeting ── */
+        /* ═══ VIGIL VISUAL OVERHAUL — Auto-targeting CSS ═══ */
+
+        /* ── Sidebar: gradient glass background ── */
         aside {
-            background: linear-gradient(180deg, var(--bg-deep, #020409), var(--bg, #04060f)) !important;
-            border-right: 1px solid var(--border, rgba(255,255,255,0.06)) !important;
+            background: linear-gradient(180deg, ${DS._dark ? '#030712' : '#f0f4f8'}, ${DS._dark ? '#0a1020' : '#e8eef5'}) !important;
+            border-right: 1px solid ${DS._dark ? 'rgba(56,189,248,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            box-shadow: ${DS._dark ? '4px 0 24px rgba(0,0,0,0.4)' : '2px 0 12px rgba(0,0,0,0.04)'} !important;
         }
 
         aside::after {
@@ -321,41 +324,198 @@ const AppStyles = () => (
             right: 0;
             bottom: 0;
             width: 1px;
-            background: linear-gradient(180deg, transparent 0%, var(--accent, #38bdf8) 40%, var(--violet, #a78bfa) 75%, transparent 100%);
-            opacity: 0.3;
+            background: linear-gradient(180deg, transparent 5%, ${DS.cyan}50 35%, ${DS.violet}40 70%, transparent 95%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ── Header: frosted glass ── */
+        header {
+            backdrop-filter: blur(24px) saturate(1.4) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
+            box-shadow: ${DS._dark ? '0 1px 0 rgba(56,189,248,0.06), 0 4px 20px rgba(0,0,0,0.3)' : '0 1px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)'} !important;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, ${DS.cyan}30, ${DS.violet}20, transparent);
             pointer-events: none;
         }
 
-        /* Enhanced header bar */
-        header, [role="banner"] {
-            backdrop-filter: blur(20px) saturate(1.3) !important;
-            -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
-        }
-
-        /* Tab content area */
-        .tab-mount {
-            animation: tabIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        /* Nav items enhanced hover */
+        /* ── Nav items: polished interactions ── */
         .nav-item {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
             border-radius: 8px !important;
             margin: 1px 8px !important;
+            position: relative;
         }
 
         .nav-item:hover {
-            background: rgba(56, 189, 248, 0.06) !important;
-            transform: translateX(2px);
+            background: ${DS._dark ? 'rgba(56,189,248,0.08)' : 'rgba(14,165,233,0.06)'} !important;
+            transform: translateX(3px);
         }
 
-        /* Section headers enhanced */
+        .nav-item[aria-selected="true"] {
+            box-shadow: ${DS._dark ? 'inset 0 0 20px rgba(56,189,248,0.05)' : 'inset 0 0 12px rgba(14,165,233,0.04)'};
+        }
+
         .section-btn {
             transition: all 0.2s ease !important;
+            border-radius: 6px !important;
+            margin: 0 6px !important;
         }
 
         .section-btn:hover {
-            background: rgba(56, 189, 248, 0.04) !important;
+            background: ${DS._dark ? 'rgba(56,189,248,0.05)' : 'rgba(14,165,233,0.04)'} !important;
+        }
+
+        /* ── Tab content animation ── */
+        .tab-mount {
+            animation: tabIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* ═══ CARD OVERRIDES — targets all panel-like divs ═══ */
+        /* GlassCard, MetricCard, and panel containers use borderRadius:4 inline */
+        /* We target common patterns to add depth and polish */
+
+        /* Override tiny border-radius on all card-like elements */
+        [style*="border-radius: 4px"],
+        [style*="borderRadius: 4"],
+        [style*="border-radius:4px"] {
+            border-radius: 14px !important;
+        }
+
+        /* Tables: enhanced styling */
+        table {
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+        }
+
+        table th {
+            text-transform: uppercase !important;
+            letter-spacing: 0.08em !important;
+            font-size: 10.5px !important;
+            font-weight: 700 !important;
+            padding: 12px 16px !important;
+            background: ${DS._dark ? 'rgba(56,189,248,0.03)' : 'rgba(14,165,233,0.02)'} !important;
+            border-bottom: 1px solid ${DS._dark ? 'rgba(56,189,248,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            color: ${DS.textMuted} !important;
+        }
+
+        table td {
+            padding: 11px 16px !important;
+            border-bottom: 1px solid ${DS.border} !important;
+            transition: background 0.15s ease !important;
+        }
+
+        table tr:hover td {
+            background: ${DS._dark ? 'rgba(56,189,248,0.03)' : 'rgba(14,165,233,0.02)'} !important;
+        }
+
+        table tr:last-child td {
+            border-bottom: none !important;
+        }
+
+        /* ═══ BUTTON POLISH ═══ */
+        button {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        /* Primary/accent-colored buttons get glow */
+        button[style*="background: linear-gradient"],
+        button[style*="background:linear-gradient"],
+        button[style*="background: rgb(56, 189"],
+        button[style*="background: #38bdf8"],
+        button[style*="background:#38bdf8"] {
+            box-shadow: 0 4px 14px rgba(56,189,248,0.3), 0 1px 3px rgba(0,0,0,0.2) !important;
+            border-radius: 10px !important;
+        }
+
+        button[style*="background: linear-gradient"]:hover,
+        button[style*="background:linear-gradient"]:hover {
+            box-shadow: 0 6px 20px rgba(56,189,248,0.4), 0 2px 6px rgba(0,0,0,0.2) !important;
+            transform: translateY(-1px) !important;
+            filter: brightness(1.08) !important;
+        }
+
+        /* ═══ INPUT FIELDS ═══ */
+        input, textarea, select {
+            transition: all 0.2s ease !important;
+            border-radius: 10px !important;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: ${DS.cyan}80 !important;
+            box-shadow: 0 0 0 3px ${DS.cyan}12, 0 0 16px ${DS.cyan}08 !important;
+            outline: none !important;
+        }
+
+        /* ═══ BADGE / PILL POLISH ═══ */
+        [style*="border-radius: 20px"],
+        [style*="borderRadius: 20"],
+        [style*="border-radius:20px"] {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* ═══ SCROLLBAR — refined ═══ */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: ${DS._dark ? 'rgba(148,163,184,0.15)' : 'rgba(0,0,0,0.08)'};
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: ${DS.cyan}50;
+        }
+
+        /* ═══ RECHARTS TOOLTIP OVERRIDE ═══ */
+        .recharts-default-tooltip {
+            background: ${DS._dark ? 'rgba(4,6,15,0.92)' : 'rgba(255,255,255,0.95)'} !important;
+            border: 1px solid ${DS._dark ? 'rgba(56,189,248,0.15)' : 'rgba(0,0,0,0.08)'} !important;
+            border-radius: 12px !important;
+            box-shadow: ${DS._dark ? '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.06)' : '0 8px 24px rgba(0,0,0,0.08)'} !important;
+            backdrop-filter: blur(16px) !important;
+            padding: 10px 14px !important;
+        }
+
+        .recharts-tooltip-label {
+            font-weight: 600 !important;
+            margin-bottom: 6px !important;
+            font-size: 11px !important;
+            letter-spacing: 0.04em !important;
+        }
+
+        /* ═══ SELECTION COLOR ═══ */
+        ::selection {
+            background: ${DS.cyan}30;
+            color: ${DS.textPrimary};
+        }
+
+        /* ═══ FOCUS VISIBLE RING ═══ */
+        *:focus-visible {
+            outline: 2px solid ${DS.cyan}60 !important;
+            outline-offset: 2px !important;
+        }
+
+        /* ═══ SMOOTH HOVER CARD LIFT (all interactive card-like divs) ═══ */
+        [style*="cursor: pointer"][style*="border-radius"],
+        [style*="cursor:pointer"][style*="borderRadius"] {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        [style*="cursor: pointer"][style*="border-radius"]:hover,
+        [style*="cursor:pointer"][style*="borderRadius"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: ${DS._dark
+                ? '0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,189,248,0.1)'
+                : '0 8px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(14,165,233,0.08)'
+            } !important;
         }
 
         body {
@@ -372,20 +532,8 @@ const AppStyles = () => (
         .sidebar-nav::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 2px; }
         .sidebar-nav::-webkit-scrollbar-thumb:hover { background: ${DS.cyan}60; }
 
-        /* ── Nav hover transition ── */
-        .nav-item { transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
-        .nav-item:hover { background: ${DS.sidebarHover} !important; }
-        .nav-item:hover .nav-icon { opacity: 1 !important; }
-
-        /* ── Section header ── */
-        .section-btn { transition: all 0.15s ease; }
-        .section-btn:hover { background: ${DS.sidebarHover} !important; }
-
         /* ── Section tab animation ── */
         .section-open { animation: sectionOpen 0.18s ease-out both; }
-
-        /* ── Content tab mount ── */
-        .tab-mount { animation: tabIn 0.22s ease-out both; }
 
         /* ── Notification panel ── */
         .notif-panel { animation: slideDown 0.22s cubic-bezier(0.34,1.4,0.64,1) both; }
@@ -418,11 +566,7 @@ const AppStyles = () => (
         /* ── Tag badge ── */
         .badge-new { animation: badgePop 0.35s ease-out both; }
 
-        /* ── Scrollbar global ── */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: ${DS.bgDeep}; }
-        ::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.3); }
+        /* scrollbar: see enhanced version above */
 
         /* ── Responsive Design Improvements ── */
         @media (max-width: 768px) {
@@ -3323,7 +3467,7 @@ const ConnectionSelector = () => {
                                             color: DS.emerald,
                                             background: `${DS.emerald}18`,
                                             padding: '1px 5px',
-                                            borderRadius: 4,
+                                            borderRadius: 14,
                                             fontFamily: DS.fontMono,
                                             flexShrink: 0,
                                         }}
@@ -3338,7 +3482,7 @@ const ConnectionSelector = () => {
                                             color: DS.violet || '#a78bfa',
                                             background: `${DS.violet || '#a78bfa'}18`,
                                             padding: '1px 5px',
-                                            borderRadius: 4,
+                                            borderRadius: 14,
                                             fontFamily: DS.fontMono,
                                             flexShrink: 0,
                                         }}
@@ -3759,7 +3903,7 @@ const DashboardInner = ({ onLogout }) => {
                                         color: DS.textMuted,
                                         fontFamily: DS.fontMono,
                                         padding: '2px 8px',
-                                        borderRadius: 4,
+                                        borderRadius: 14,
                                         background: `${DS.cyan}10`,
                                     }}
                                 >
@@ -4141,7 +4285,7 @@ const DashboardInner = ({ onLogout }) => {
                                                         background: 'rgba(255,255,255,0.05)',
                                                         border: `1px solid ${DS.border}`,
                                                         padding: '4px 8px',
-                                                        borderRadius: 4,
+                                                        borderRadius: 14,
                                                         fontFamily: DS.fontMono,
                                                     }}
                                                 >
@@ -4157,7 +4301,7 @@ const DashboardInner = ({ onLogout }) => {
                                                         background: 'rgba(255,255,255,0.05)',
                                                         border: `1px solid ${DS.border}`,
                                                         padding: '4px 8px',
-                                                        borderRadius: 4,
+                                                        borderRadius: 14,
                                                         fontFamily: DS.fontMono,
                                                     }}
                                                 >
@@ -4173,7 +4317,7 @@ const DashboardInner = ({ onLogout }) => {
                                                         background: 'rgba(255,255,255,0.05)',
                                                         border: `1px solid ${DS.border}`,
                                                         padding: '4px 8px',
-                                                        borderRadius: 4,
+                                                        borderRadius: 14,
                                                         fontFamily: DS.fontMono,
                                                     }}
                                                 >
@@ -4207,7 +4351,7 @@ const DashboardInner = ({ onLogout }) => {
                                                         background: 'rgba(255,255,255,0.05)',
                                                         border: `1px solid ${DS.border}`,
                                                         padding: '4px 8px',
-                                                        borderRadius: 4,
+                                                        borderRadius: 14,
                                                         fontFamily: DS.fontMono,
                                                     }}
                                                 >
@@ -4223,7 +4367,7 @@ const DashboardInner = ({ onLogout }) => {
                                                         background: 'rgba(255,255,255,0.05)',
                                                         border: `1px solid ${DS.border}`,
                                                         padding: '4px 8px',
-                                                        borderRadius: 4,
+                                                        borderRadius: 14,
                                                         fontFamily: DS.fontMono,
                                                     }}
                                                 >

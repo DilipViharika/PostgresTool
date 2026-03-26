@@ -2406,7 +2406,7 @@ export default function UnifiedDashboard() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                             <g.Icon size={11} color={gColor} />
                                             <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: gColor, fontFamily: THEME.fontMono }}>{g.label}</span>
-                                            {isAI && <span style={{ fontSize: 8, fontWeight: 700, color: THEME.purple, background: `${THEME.purple}20`, padding: '1px 5px', borderRadius: 3, letterSpacing: '.04em' }}>NEW</span>}
+                                            {isAI && <span style={{ fontSize: 8, fontWeight: 700, color: THEME.purple, background: `${THEME.purple}20`, padding: '1px 5px', borderRadius: 10, letterSpacing: '.04em' }}>NEW</span>}
                                         </div>
                                         <ChevronDown size={11} color={THEME.textDim} style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform .2s' }} />
                                     </button>

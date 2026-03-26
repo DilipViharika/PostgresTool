@@ -155,7 +155,7 @@ const S = {
         alignItems: 'center',
         gap: 5,
         padding: '3px 10px',
-        borderRadius: 4,
+        borderRadius: 14,
         fontSize: 11,
         fontWeight: 700,
         background: `${color}22`,

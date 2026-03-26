@@ -218,7 +218,7 @@ const PercentileBars = ({ p50, p95, p99 }) => {
             {bars.map(({ label, val, color }) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, width: 24 }}>{label}</span>
-                    <div style={{ flex: 1, height: 5, background: T.border, borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: 5, background: T.border, borderRadius: 10, overflow: 'hidden' }}>
                         <div className="span-bar" style={{ height: '100%', width: `${(val / max) * 100}%`, background: color, borderRadius: 3 }} />
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 700, color, width: 40, textAlign: 'right' }}>{fmtMs(val)}</span>
@@ -273,7 +273,7 @@ const DependencyGraph = ({ spans }) => {
                 return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: indent * 18, paddingTop: 4, paddingBottom: 4 }}>
                         {indent > 0 && <div style={{ width: 12, height: 1, background: T.border, flexShrink: 0 }} />}
-                        <div style={{ width: 20, height: 20, borderRadius: 4, background: `${color}15`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: 14, background: `${color}15`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <Icon size={10} color={color} />
                         </div>
                         <span style={{ fontSize: 10, color: T.text2, flex: 1 }}>{s.name}</span>
@@ -299,7 +299,7 @@ const ExplainPlan = ({ span }) => (
             <div style={{ paddingLeft: 14, color: T.text3, marginBottom: 4 }}>Filter: (email = $1)</div>
             <div style={{ paddingLeft: 14, color: T.text3 }}>Rows Removed by Filter: 4195</div>
         </div>
-        <div style={{ marginTop: 10, padding: '6px 10px', background: `${T.warning}10`, border: `1px solid ${T.warning}20`, borderRadius: 4, display: 'flex', gap: 6, alignItems: 'center' }}>
+        <div style={{ marginTop: 10, padding: '6px 10px', background: `${T.warning}10`, border: `1px solid ${T.warning}20`, borderRadius: 14, display: 'flex', gap: 6, alignItems: 'center' }}>
             <FlaskConical size={10} color={T.warning} />
             <span style={{ fontSize: 10, color: T.warning }}>
                 Fix: <code style={{ color: T.text1 }}>CREATE INDEX CONCURRENTLY idx_users_email ON users(email);</code>
@@ -367,11 +367,11 @@ const TraceWaterfall = ({ spans, totalMs }) => {
                                 <span style={{ animation: `tickIn 0.2s ease-out ${i * 0.04}s both` }}>{span.name}</span>
                             </div>
                             {/* Bar track */}
-                            <div style={{ flex: 1, height: 26, background: T.border, borderRadius: 4, position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, height: 26, background: T.border, borderRadius: 14, position: 'relative', overflow: 'hidden' }}>
                                 <div className="span-bar" style={{
                                     position: 'absolute', left: `${l}%`, width: `${w}%`,
                                     height: '100%', background: `linear-gradient(90deg, ${color}80, ${color})`,
-                                    borderRadius: 4, animationDelay: `${i * 0.05}s`,
+                                    borderRadius: 14, animationDelay: `${i * 0.05}s`,
                                     display: 'flex', alignItems: 'center', padding: '0 8px',
                                 }}>
                                     <span style={{ fontSize: 9, color: '#fff', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' }}>{fmtMs(span.duration)}</span>
@@ -586,7 +586,7 @@ const SecurityPanel = ({ security, endpoint }) => {
                         <CheckCircle size={12} /> No rules triggered
                     </div>
                 ) : security.rules_triggered.map((r, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '6px 8px', background: `${T.danger}08`, borderRadius: 4, marginBottom: 4, border: `1px solid ${T.danger}20` }}>
+                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '6px 8px', background: `${T.danger}08`, borderRadius: 14, marginBottom: 4, border: `1px solid ${T.danger}20` }}>
                         <AlertTriangle size={10} color={T.danger} />
                         <span style={{ fontSize: 10, color: T.danger }}>{r}</span>
                     </div>
@@ -639,7 +639,7 @@ const EndpointItem = ({ api, selected, onClick }) => {
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ fontSize: 8, fontWeight: 800, color: mColor, background: `${mColor}15`, padding: '2px 6px', borderRadius: 3, letterSpacing: '0.05em' }}>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: mColor, background: `${mColor}15`, padding: '2px 6px', borderRadius: 10, letterSpacing: '0.05em' }}>
                         {api.method}
                     </span>
                     <span style={{ fontSize: 9, fontWeight: 700, color: T.text3 }}>v{api.version}</span>
@@ -855,7 +855,7 @@ const ApiQueriesTab = () => {
                         <div style={{ display: 'flex', gap: 4 }}>
                             {['ALL','GET','POST','PUT','DELETE'].map(m => (
                                 <button key={m} onClick={() => setFilterMethod(m)} style={{
-                                    padding: '3px 7px', borderRadius: 4, border: `1px solid ${filterMethod===m ? methodColor(m) : T.border}`,
+                                    padding: '3px 7px', borderRadius: 14, border: `1px solid ${filterMethod===m ? methodColor(m) : T.border}`,
                                     background: filterMethod===m ? `${methodColor(m)}15` : 'transparent',
                                     color: filterMethod===m ? methodColor(m) : T.text3,
                                     fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontMono,
@@ -867,7 +867,7 @@ const ApiQueriesTab = () => {
                     <div style={{ padding: '6px 8px', borderBottom: `1px solid ${T.border}`, display: 'flex', gap: 4, flexShrink: 0 }}>
                         {[['ALL','All'], ['OK','2xx / 3xx'], ['ERROR','5xx']].map(([v, l]) => (
                             <button key={v} onClick={() => setFilterStatus(v)} style={{
-                                padding: '3px 8px', borderRadius: 4, border: `1px solid ${filterStatus===v ? T.primary : T.border}`,
+                                padding: '3px 8px', borderRadius: 14, border: `1px solid ${filterStatus===v ? T.primary : T.border}`,
                                 background: filterStatus===v ? `${T.primary}10` : 'transparent',
                                 color: filterStatus===v ? T.primary : T.text3,
                                 fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontMono, transition: 'all 0.15s'
@@ -892,7 +892,7 @@ const ApiQueriesTab = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 14 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                                        <span style={{ fontSize: 8, fontWeight: 800, color: methodColor(selected.method), background: `${methodColor(selected.method)}15`, padding: '3px 8px', borderRadius: 4, letterSpacing: '0.06em', flexShrink: 0 }}>
+                                        <span style={{ fontSize: 8, fontWeight: 800, color: methodColor(selected.method), background: `${methodColor(selected.method)}15`, padding: '3px 8px', borderRadius: 14, letterSpacing: '0.06em', flexShrink: 0 }}>
                                             {selected.method}
                                         </span>
                                         <span style={{ fontSize: 14, fontWeight: 700, color: T.text1, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

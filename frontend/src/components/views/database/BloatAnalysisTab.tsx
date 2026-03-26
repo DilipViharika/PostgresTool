@@ -822,7 +822,7 @@ export default function BloatAnalysisTab() {
                             <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
                                 {horizons.map(h => (
                                     <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-                                        <span style={{ width: 10, height: 10, borderRadius: 3, background: h.color, display: 'inline-block' }} />
+                                        <span style={{ width: 10, height: 10, borderRadius: 10, background: h.color, display: 'inline-block' }} />
                                         <span style={{ color: THEME.textDim }}>{h.label}</span>
                                     </div>
                                 ))}

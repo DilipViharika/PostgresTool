@@ -1207,7 +1207,7 @@ export default function VacuumMaintenanceTab() {
                                                 style={{
                                                     width: 120,
                                                     background: THEME.bg,
-                                                    borderRadius: 4,
+                                                    borderRadius: 14,
                                                     height: 8,
                                                     overflow: 'hidden',
                                                 }}
@@ -1217,7 +1217,7 @@ export default function VacuumMaintenanceTab() {
                                                         width: `${Math.min(pct, 100)}%`,
                                                         height: '100%',
                                                         background: color,
-                                                        borderRadius: 4,
+                                                        borderRadius: 14,
                                                         transition: 'width .4s',
                                                     }}
                                                 />

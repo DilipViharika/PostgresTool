@@ -665,9 +665,9 @@ function HorizontalBarList({ items, color }) {
             <span style={{ fontSize: 11, color: THEME.textMuted }}>{item.label}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color, fontFamily: "'JetBrains Mono',monospace" }}>{item.display}</span>
           </div>
-          <div style={{ height: 6, borderRadius: 3, background: THEME.glassBorder, overflow: 'hidden' }}>
+          <div style={{ height: 6, borderRadius: 10, background: THEME.glassBorder, overflow: 'hidden' }}>
             <div style={{
-              height: '100%', borderRadius: 3, width: `${(item.value / maxVal) * 100}%`,
+              height: '100%', borderRadius: 10, width: `${(item.value / maxVal) * 100}%`,
               background: `linear-gradient(90deg, ${color}, ${color}88)`,
               animation: 'demoBarGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both',
               transformOrigin: 'left',
@@ -1290,7 +1290,7 @@ function SeverityBadge({ label, severity }) {
     <span style={{
       display: 'inline-block',
       padding: '2px 6px',
-      borderRadius: 4,
+      borderRadius: 14,
       background: `${color}20`,
       color: color,
       fontSize: 9,
@@ -2387,7 +2387,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{evt.name}</div>
-                    <div style={{ width: '100%', height: 6, background: `${evt.color}15`, borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: 6, background: `${evt.color}15`, borderRadius: 10, overflow: 'hidden' }}>
                       <div style={{ width: `${(evt.value / 100) * 100}%`, height: '100%', background: evt.color, borderRadius: 3 }} />
                     </div>
                   </div>
@@ -2552,7 +2552,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 <button key={level} style={{
                   padding: '6px 12px', fontSize: 10, fontWeight: 600, border: 'none',
                   background: level === 'All' ? db.color : THEME.glassBorder, color: THEME.textMain,
-                  borderRadius: 4, cursor: 'pointer', transition: 'all 0.2s',
+                  borderRadius: 14, cursor: 'pointer', transition: 'all 0.2s',
                 }}>
                   {level}
                 </button>

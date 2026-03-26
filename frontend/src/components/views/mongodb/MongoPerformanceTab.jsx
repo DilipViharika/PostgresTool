@@ -485,7 +485,7 @@ export default function MongoPerformanceTab() {
                                 <div style={{
                                     height: 6,
                                     background: DARK_THEME.border,
-                                    borderRadius: 3,
+                                    borderRadius: 10,
                                     overflow: 'hidden',
                                     marginTop: 4
                                 }}>
