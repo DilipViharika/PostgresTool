@@ -1246,32 +1246,95 @@ function DemoPostgresTab({ tabId }) {
                     {/* ── TAB 1: Table Inventory ── */}
                     {resourcesTab === 'inventory' && (
                         <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard
+                                    icon={Database}
+                                    label="Total Tables"
+                                    value="45"
+                                    color={THEME.primary}
+                                    spark={Array.from({ length: 12 }, () => 40 + Math.random() * 10)}
+                                />
+                                <MetricCard
+                                    icon={HardDrive}
+                                    label="Total Size"
+                                    value="8.7 GB"
+                                    color={THEME.warning}
+                                    trend="+2.4%"
+                                />
+                                <MetricCard icon={Layers} label="Indexes" value="128" color={THEME.ai} />
+                                <MetricCard icon={CheckCircle} label="Healthy" value="42" color={THEME.success} />
+                            </div>
                             <Panel title="Table Inventory & Metrics" icon={Database} accentColor={THEME.primary}>
                                 <DataTable
                                     columns={[
                                         { key: 'table', label: 'Table' },
+                                        { key: 'rows', label: 'Rows' },
                                         { key: 'size', label: 'Size' },
-                                        { key: 'toastRatio', label: 'TOAST Ratio' },
+                                        { key: 'toastRatio', label: 'TOAST' },
                                         { key: 'indexRatio', label: 'Index Ratio' },
+                                        { key: 'lastVacuum', label: 'Last Vacuum' },
+                                        { key: 'health', label: 'Health' },
                                     ]}
                                     rows={[
                                         {
                                             table: 'users',
+                                            rows: '2.3M',
                                             size: '845 MB',
                                             toastRatio: '12%',
                                             indexRatio: '65%',
+                                            lastVacuum: '2h ago',
+                                            health: <StatusBadge label="Good" color={THEME.success} />,
                                         },
                                         {
                                             table: 'orders',
+                                            rows: '8.9M',
                                             size: '2.1 GB',
                                             toastRatio: '8%',
                                             indexRatio: '72%',
+                                            lastVacuum: '45m ago',
+                                            health: <StatusBadge label="Good" color={THEME.success} />,
                                         },
                                         {
                                             table: 'products',
+                                            rows: '450K',
                                             size: '123 MB',
                                             toastRatio: '5%',
                                             indexRatio: '58%',
+                                            lastVacuum: '1h ago',
+                                            health: <StatusBadge label="Good" color={THEME.success} />,
+                                        },
+                                        {
+                                            table: 'sessions',
+                                            rows: '12.4M',
+                                            size: '890 MB',
+                                            toastRatio: '2%',
+                                            indexRatio: '45%',
+                                            lastVacuum: '6h ago',
+                                            health: <StatusBadge label="Warn" color={THEME.warning} />,
+                                        },
+                                        {
+                                            table: 'audit_logs',
+                                            rows: '45.2M',
+                                            size: '4.5 GB',
+                                            toastRatio: '18%',
+                                            indexRatio: '32%',
+                                            lastVacuum: '12h ago',
+                                            health: <StatusBadge label="Good" color={THEME.success} />,
+                                        },
+                                        {
+                                            table: 'inventory',
+                                            rows: '1.2M',
+                                            size: '234 MB',
+                                            toastRatio: '3%',
+                                            indexRatio: '78%',
+                                            lastVacuum: '3h ago',
+                                            health: <StatusBadge label="Good" color={THEME.success} />,
                                         },
                                     ]}
                                 />
@@ -4854,20 +4917,85 @@ function DemoPostgresTab({ tabId }) {
                             gap: '12px',
                         }}
                     >
-                        <MetricCard icon={Clock} label="Last Checkpoint" value="5m ago" color={THEME.primary} />
-                        <MetricCard icon={Zap} label="Duration" value="234ms" color={THEME.warning} />
-                        <MetricCard icon={HardDrive} label="Buffers" value="8,234" color={THEME.ai} />
+                        <MetricCard
+                            icon={Clock}
+                            label="Last Checkpoint"
+                            value="5m ago"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => 2 + Math.random() * 8)}
+                        />
+                        <MetricCard icon={Zap} label="Duration" value="234ms" color={THEME.warning} trend="-12ms" />
+                        <MetricCard
+                            icon={HardDrive}
+                            label="Buffers Written"
+                            value="8,234"
+                            color={THEME.ai}
+                            trend="+1.2%"
+                        />
+                        <MetricCard icon={Activity} label="WAL Size" value="2.4 GB" color={THEME.success} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                        <RingGauge value={72} max={100} label="Buffer Hit %" color={THEME.success} />
+                        <RingGauge value={234} max={500} label="Avg Duration" color={THEME.warning} />
+                        <RingGauge value={85} max={100} label="Efficiency" color={THEME.primary} />
                     </div>
                     <Panel title="Checkpoint Timing" icon={Clock} accentColor={THEME.primary}>
                         <ResponsiveContainer width="100%" height={220}>
-                            <BarChart data={demoData.clusterVelocity.slice(0, 12)}>
+                            <BarChart
+                                data={generateChartData(12).map((d, i) => ({
+                                    ...d,
+                                    duration: Math.floor(150 + Math.sin(i / 3) * 80 + Math.random() * 60),
+                                    buffers: Math.floor(5000 + Math.random() * 5000),
+                                }))}
+                            >
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Bar dataKey="qps" fill={THEME.primary} name="Duration (ms)" />
+                                <Bar dataKey="duration" fill={THEME.primary} name="Duration (ms)" />
                             </BarChart>
                         </ResponsiveContainer>
+                    </Panel>
+                    <Panel title="Checkpoint History" icon={Database} accentColor={THEME.ai}>
+                        <DataTable
+                            columns={[
+                                { key: 'time', label: 'Time' },
+                                { key: 'type', label: 'Type' },
+                                { key: 'duration', label: 'Duration' },
+                                { key: 'buffers', label: 'Buffers' },
+                                { key: 'wal', label: 'WAL Written' },
+                            ]}
+                            rows={[
+                                {
+                                    time: '5m ago',
+                                    type: <StatusBadge label="Timed" color={THEME.primary} />,
+                                    duration: '234ms',
+                                    buffers: '8,234',
+                                    wal: '128 MB',
+                                },
+                                {
+                                    time: '35m ago',
+                                    type: <StatusBadge label="Timed" color={THEME.primary} />,
+                                    duration: '198ms',
+                                    buffers: '6,891',
+                                    wal: '96 MB',
+                                },
+                                {
+                                    time: '1h ago',
+                                    type: <StatusBadge label="Requested" color={THEME.warning} />,
+                                    duration: '412ms',
+                                    buffers: '12,456',
+                                    wal: '256 MB',
+                                },
+                                {
+                                    time: '1.5h ago',
+                                    type: <StatusBadge label="Timed" color={THEME.primary} />,
+                                    duration: '187ms',
+                                    buffers: '5,234',
+                                    wal: '84 MB',
+                                },
+                            ]}
+                        />
                     </Panel>
                 </div>
             );
@@ -4884,33 +5012,207 @@ function DemoPostgresTab({ tabId }) {
                             gap: '12px',
                         }}
                     >
-                        <MetricCard icon={RefreshCw} label="Tables" value="3" color={THEME.warning} />
-                        <MetricCard icon={CheckCircle} label="Last Run" value="2h ago" color={THEME.success} />
-                        <MetricCard icon={Clock} label="Avg Duration" value="45s" color={THEME.primary} />
+                        <MetricCard
+                            icon={RefreshCw}
+                            label="Tables Needing"
+                            value="5"
+                            color={THEME.warning}
+                            spark={Array.from({ length: 12 }, () => 2 + Math.random() * 6)}
+                            trend="+2"
+                        />
+                        <MetricCard icon={CheckCircle} label="Last Auto-Vacuum" value="12m ago" color={THEME.success} />
+                        <MetricCard icon={Clock} label="Avg Duration" value="45s" color={THEME.primary} trend="-3s" />
+                        <MetricCard
+                            icon={Database}
+                            label="Dead Tuples"
+                            value="182K"
+                            color={THEME.danger}
+                            trend="+8.3%"
+                        />
                     </div>
+
+                    {/* Urgent banner */}
+                    <div
+                        style={{
+                            padding: '10px 14px',
+                            background: `${THEME.danger}12`,
+                            border: `1px solid ${THEME.danger}30`,
+                            borderRadius: 8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                        }}
+                    >
+                        <AlertTriangle size={16} style={{ color: THEME.danger }} />
+                        <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: THEME.danger }}>
+                                2 tables require urgent VACUUM FULL
+                            </div>
+                            <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                users table has 45K+ dead tuples — autovacuum threshold exceeded
+                            </div>
+                        </div>
+                        <div
+                            style={{
+                                marginLeft: 'auto',
+                                padding: '4px 12px',
+                                background: `${THEME.danger}20`,
+                                border: `1px solid ${THEME.danger}40`,
+                                borderRadius: 6,
+                                fontSize: 10,
+                                color: THEME.danger,
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Run Now
+                        </div>
+                    </div>
+
                     <Panel title="Tables Needing Vacuum" icon={RefreshCw} accentColor={THEME.warning}>
                         <DataTable
                             columns={[
                                 { key: 'table', label: 'Table' },
+                                { key: 'schema', label: 'Schema' },
                                 { key: 'lastVacuum', label: 'Last Vacuum' },
                                 { key: 'deadRows', label: 'Dead Rows' },
+                                { key: 'bloat', label: 'Bloat %' },
                                 { key: 'priority', label: 'Priority' },
+                                { key: 'action', label: '' },
                             ]}
                             rows={[
                                 {
                                     table: 'users',
+                                    schema: 'public',
                                     lastVacuum: '1d ago',
                                     deadRows: '45,234',
-                                    priority: <StatusBadge label="High" color={THEME.danger} />,
+                                    bloat: <span style={{ color: THEME.danger }}>23%</span>,
+                                    priority: <StatusBadge label="Critical" color={THEME.danger} />,
+                                    action: (
+                                        <span
+                                            style={{
+                                                padding: '2px 8px',
+                                                background: `${THEME.danger}15`,
+                                                border: `1px solid ${THEME.danger}30`,
+                                                borderRadius: 4,
+                                                fontSize: 9,
+                                                color: THEME.danger,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            VACUUM FULL
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    table: 'sessions',
+                                    schema: 'public',
+                                    lastVacuum: '2d ago',
+                                    deadRows: '89,102',
+                                    bloat: <span style={{ color: THEME.danger }}>28%</span>,
+                                    priority: <StatusBadge label="Critical" color={THEME.danger} />,
+                                    action: (
+                                        <span
+                                            style={{
+                                                padding: '2px 8px',
+                                                background: `${THEME.danger}15`,
+                                                border: `1px solid ${THEME.danger}30`,
+                                                borderRadius: 4,
+                                                fontSize: 9,
+                                                color: THEME.danger,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            VACUUM FULL
+                                        </span>
+                                    ),
                                 },
                                 {
                                     table: 'orders',
+                                    schema: 'public',
                                     lastVacuum: '6h ago',
                                     deadRows: '12,456',
+                                    bloat: <span style={{ color: THEME.warning }}>12%</span>,
                                     priority: <StatusBadge label="Medium" color={THEME.warning} />,
+                                    action: (
+                                        <span
+                                            style={{
+                                                padding: '2px 8px',
+                                                background: `${THEME.warning}15`,
+                                                border: `1px solid ${THEME.warning}30`,
+                                                borderRadius: 4,
+                                                fontSize: 9,
+                                                color: THEME.warning,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            VACUUM
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    table: 'audit_logs',
+                                    schema: 'logging',
+                                    lastVacuum: '12h ago',
+                                    deadRows: '34,567',
+                                    bloat: <span style={{ color: THEME.warning }}>15%</span>,
+                                    priority: <StatusBadge label="Medium" color={THEME.warning} />,
+                                    action: (
+                                        <span
+                                            style={{
+                                                padding: '2px 8px',
+                                                background: `${THEME.warning}15`,
+                                                border: `1px solid ${THEME.warning}30`,
+                                                borderRadius: 4,
+                                                fontSize: 9,
+                                                color: THEME.warning,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            VACUUM
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    table: 'products',
+                                    schema: 'public',
+                                    lastVacuum: '3h ago',
+                                    deadRows: '1,234',
+                                    bloat: <span style={{ color: THEME.success }}>3%</span>,
+                                    priority: <StatusBadge label="Low" color={THEME.success} />,
+                                    action: '',
                                 },
                             ]}
                         />
+                    </Panel>
+
+                    <Panel title="Dead Tuple Accumulation" icon={TrendingUp} accentColor={THEME.danger}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart
+                                data={generateChartData(12).map((d, i) => ({
+                                    ...d,
+                                    deadTuples: Math.floor(120000 + Math.sin(i / 2) * 40000 + Math.random() * 20000),
+                                }))}
+                            >
+                                <defs>
+                                    <linearGradient id="vacuum-dead-grad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={THEME.danger} stopOpacity={0.3} />
+                                        <stop offset="100%" stopColor={THEME.danger} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="deadTuples"
+                                    stroke={THEME.danger}
+                                    fill="url(#vacuum-dead-grad)"
+                                    name="Dead Tuples"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </Panel>
                 </div>
             );
@@ -4920,11 +5222,48 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'infrastructure' && itemKey === 'capacity-planning') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={HardDrive}
+                            label="Current Storage"
+                            value="645 GB"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, (_, i) => 580 + i * 6 + Math.random() * 10)}
+                            trend="+2.8%"
+                        />
+                        <MetricCard
+                            icon={TrendingUp}
+                            label="Growth Rate"
+                            value="2.3 GB/d"
+                            color={THEME.warning}
+                            trend="+0.4 GB"
+                        />
+                        <MetricCard icon={Clock} label="Days to 80%" value="42 days" color={THEME.success} />
+                        <MetricCard icon={Server} label="Total Capacity" value="1 TB" color={THEME.textMuted} />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                        <RingGauge value={645} max={1000} label="Storage Used" color={THEME.warning} />
+                        <RingGauge value={78} max={100} label="CPU Headroom" color={THEME.success} />
+                        <RingGauge value={61} max={100} label="Memory Used" color={THEME.primary} />
+                    </div>
+
                     <Panel title="Storage Growth Trend" icon={TrendingUp} accentColor={THEME.success}>
                         <ResponsiveContainer width="100%" height={220}>
-                            <AreaChart data={demoData.clusterVelocity}>
+                            <AreaChart
+                                data={generateChartData(14).map((d, i) => ({
+                                    ...d,
+                                    storage: Math.floor(580 + i * 5 + Math.random() * 8),
+                                }))}
+                            >
                                 <defs>
-                                    <linearGradient id="growth-grad" x1="0" y1="0" x2="0" y2="1">
+                                    <linearGradient id="cap-growth-grad" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stopColor={THEME.success} stopOpacity={0.3} />
                                         <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
                                     </linearGradient>
@@ -4935,34 +5274,106 @@ function DemoPostgresTab({ tabId }) {
                                 <Tooltip content={<ChartTip />} />
                                 <Area
                                     type="monotone"
-                                    dataKey="qps"
+                                    dataKey="storage"
                                     stroke={THEME.success}
-                                    fill="url(#growth-grad)"
+                                    fill="url(#cap-growth-grad)"
                                     name="Storage (GB)"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Panel>
+
                     <Panel title="Capacity Projection" icon={BarChart2} accentColor={THEME.primary}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    fontSize: 11,
-                                    marginBottom: 8,
-                                }}
-                            >
-                                <span>Current: 645 GB</span>
-                                <span>30 days: 724 GB</span>
-                                <span>90 days: 912 GB</span>
-                            </div>
-                            <div
-                                style={{ height: '8px', background: THEME.glass, borderRadius: 4, overflow: 'hidden' }}
-                            >
-                                <div style={{ width: '71%', height: '100%', background: THEME.success }} />
-                            </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {[
+                                { label: 'Storage', current: 645, max: 1000, unit: 'GB', color: THEME.warning },
+                                { label: 'Connections', current: 120, max: 200, unit: '', color: THEME.primary },
+                                { label: 'IOPS', current: 3400, max: 10000, unit: '', color: THEME.success },
+                            ].map((r, i) => (
+                                <div key={i}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            fontSize: 10,
+                                            marginBottom: 4,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        <span style={{ fontWeight: 600, color: THEME.textMain }}>{r.label}</span>
+                                        <span>
+                                            {r.current} {r.unit} / {r.max} {r.unit} (
+                                            {Math.round((r.current / r.max) * 100)}%)
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            height: '8px',
+                                            background: THEME.glass,
+                                            borderRadius: 4,
+                                            overflow: 'hidden',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width: `${(r.current / r.max) * 100}%`,
+                                                height: '100%',
+                                                background: r.color,
+                                                borderRadius: 4,
+                                                transition: 'width 0.3s',
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
+                    </Panel>
+
+                    <Panel title="Resource Forecast (90 days)" icon={Radar} accentColor={THEME.ai}>
+                        <DataTable
+                            columns={[
+                                { key: 'resource', label: 'Resource' },
+                                { key: 'current', label: 'Current' },
+                                { key: 'day30', label: '30 Days' },
+                                { key: 'day60', label: '60 Days' },
+                                { key: 'day90', label: '90 Days' },
+                                { key: 'risk', label: 'Risk' },
+                            ]}
+                            rows={[
+                                {
+                                    resource: 'Storage',
+                                    current: '645 GB',
+                                    day30: '724 GB',
+                                    day60: '803 GB',
+                                    day90: '912 GB',
+                                    risk: <StatusBadge label="Medium" color={THEME.warning} />,
+                                },
+                                {
+                                    resource: 'Connections',
+                                    current: '120',
+                                    day30: '135',
+                                    day60: '148',
+                                    day90: '162',
+                                    risk: <StatusBadge label="Low" color={THEME.success} />,
+                                },
+                                {
+                                    resource: 'CPU',
+                                    current: '34%',
+                                    day30: '38%',
+                                    day60: '42%',
+                                    day90: '47%',
+                                    risk: <StatusBadge label="Low" color={THEME.success} />,
+                                },
+                                {
+                                    resource: 'Memory',
+                                    current: '61%',
+                                    day30: '65%',
+                                    day60: '70%',
+                                    day90: '76%',
+                                    risk: <StatusBadge label="Medium" color={THEME.warning} />,
+                                },
+                            ]}
+                        />
                     </Panel>
                 </div>
             );
@@ -4979,52 +5390,157 @@ function DemoPostgresTab({ tabId }) {
                             gap: '12px',
                         }}
                     >
-                        <MetricCard icon={Archive} label="Backups" value="8" color={THEME.primary} />
-                        <MetricCard icon={CheckCircle} label="Last Backup" value="4h ago" color={THEME.success} />
-                        <MetricCard icon={Clock} label="Retention" value="30d" color={THEME.textMuted} />
+                        <MetricCard
+                            icon={Archive}
+                            label="Total Backups"
+                            value="128"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => 100 + Math.random() * 40)}
+                        />
+                        <MetricCard
+                            icon={CheckCircle}
+                            label="Last Backup"
+                            value="4h ago"
+                            color={THEME.success}
+                            trend="12.4 GB"
+                        />
+                        <MetricCard icon={Clock} label="Retention" value="30 days" color={THEME.textMuted} />
+                        <MetricCard
+                            icon={HardDrive}
+                            label="Backup Size"
+                            value="2.4 TB"
+                            color={THEME.warning}
+                            trend="+3.2%"
+                        />
                     </div>
+
+                    {/* Success banner */}
+                    <div
+                        style={{
+                            padding: '10px 14px',
+                            background: `${THEME.success}12`,
+                            border: `1px solid ${THEME.success}30`,
+                            borderRadius: 8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                        }}
+                    >
+                        <CheckCircle size={16} style={{ color: THEME.success }} />
+                        <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: THEME.success }}>
+                                All backups healthy — last recovery test passed
+                            </div>
+                            <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                Recovery Time Objective (RTO): 8m 23s | Recovery Point Objective (RPO): 4h
+                            </div>
+                        </div>
+                    </div>
+
                     <Panel title="Backup Schedule" icon={Archive} accentColor={THEME.primary}>
                         <DataTable
                             columns={[
                                 { key: 'time', label: 'Scheduled' },
                                 { key: 'type', label: 'Type' },
                                 { key: 'size', label: 'Size' },
+                                { key: 'duration', label: 'Duration' },
                                 { key: 'status', label: 'Status' },
                             ]}
                             rows={[
                                 {
                                     time: '02:00 UTC',
-                                    type: 'Full',
-                                    size: '645 GB',
+                                    type: <StatusBadge label="Full" color={THEME.primary} />,
+                                    size: '12.4 GB',
+                                    duration: '18m 45s',
                                     status: <StatusBadge label="Completed" color={THEME.success} />,
                                 },
                                 {
                                     time: '08:00 UTC',
-                                    type: 'Incremental',
-                                    size: '120 GB',
-                                    status: <StatusBadge label="Scheduled" color={THEME.primary} />,
+                                    type: <StatusBadge label="Incremental" color={THEME.ai} />,
+                                    size: '1.2 GB',
+                                    duration: '3m 12s',
+                                    status: <StatusBadge label="Completed" color={THEME.success} />,
+                                },
+                                {
+                                    time: '14:00 UTC',
+                                    type: <StatusBadge label="Incremental" color={THEME.ai} />,
+                                    size: '890 MB',
+                                    duration: '2m 34s',
+                                    status: <StatusBadge label="Completed" color={THEME.success} />,
+                                },
+                                {
+                                    time: '20:00 UTC',
+                                    type: <StatusBadge label="Incremental" color={THEME.ai} />,
+                                    size: '-',
+                                    duration: '-',
+                                    status: <StatusBadge label="Scheduled" color={THEME.textMuted} />,
                                 },
                             ]}
                         />
                     </Panel>
-                    <Panel title="Recovery Test Results" icon={CheckCircle} accentColor={THEME.success}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <div
-                                style={{
-                                    padding: '12px',
-                                    background: `${THEME.success}15`,
-                                    border: `1px solid ${THEME.success}30`,
-                                    borderRadius: 6,
-                                    fontSize: 11,
-                                    color: THEME.textMain,
-                                }}
+
+                    <Panel title="Backup Size Trend" icon={TrendingUp} accentColor={THEME.warning}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart
+                                data={generateChartData(14).map((d, i) => ({
+                                    ...d,
+                                    size: Math.floor(10 + i * 0.3 + Math.random() * 2),
+                                }))}
                             >
-                                <div style={{ fontWeight: 600 }}>Last Test: 2 days ago</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>
-                                    Recovery Time: 8m 23s - PASS
-                                </div>
-                            </div>
-                        </div>
+                                <defs>
+                                    <linearGradient id="backup-size-grad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={THEME.warning} stopOpacity={0.3} />
+                                        <stop offset="100%" stopColor={THEME.warning} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="size"
+                                    stroke={THEME.warning}
+                                    fill="url(#backup-size-grad)"
+                                    name="Backup Size (GB)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
+                    <Panel title="Recovery Test Results" icon={ShieldCheck} accentColor={THEME.success}>
+                        <DataTable
+                            columns={[
+                                { key: 'date', label: 'Date' },
+                                { key: 'type', label: 'Test Type' },
+                                { key: 'rto', label: 'Recovery Time' },
+                                { key: 'dataLoss', label: 'Data Loss' },
+                                { key: 'result', label: 'Result' },
+                            ]}
+                            rows={[
+                                {
+                                    date: '2d ago',
+                                    type: 'Full Restore',
+                                    rto: '8m 23s',
+                                    dataLoss: '0 rows',
+                                    result: <StatusBadge label="PASS" color={THEME.success} />,
+                                },
+                                {
+                                    date: '1w ago',
+                                    type: 'Point-in-Time',
+                                    rto: '4m 12s',
+                                    dataLoss: '0 rows',
+                                    result: <StatusBadge label="PASS" color={THEME.success} />,
+                                },
+                                {
+                                    date: '2w ago',
+                                    type: 'Full Restore',
+                                    rto: '9m 45s',
+                                    dataLoss: '0 rows',
+                                    result: <StatusBadge label="PASS" color={THEME.success} />,
+                                },
+                            ]}
+                        />
                     </Panel>
                 </div>
             );
