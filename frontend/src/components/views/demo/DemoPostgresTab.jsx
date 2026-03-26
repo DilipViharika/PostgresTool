@@ -1,33 +1,56 @@
 import React, { useMemo } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import DemoLayout, {
+    Panel,
+    StatusBadge,
+    RingGauge,
+    MiniSparkline,
+    HeroMetric,
+    ChartTip,
+    generateChartData,
+} from './DemoLayout.jsx';
 import {
     Activity,
     Database,
-    AlertCircle,
-    Code,
-    Lock,
-    Eye,
+    Bell,
     Zap,
-    Wrench,
-    LayoutDashboard,
-    Network,
     Server,
-    Package,
+    Shield,
+    Eye,
+    Terminal,
     TrendingUp,
-    BarChart3,
-    CheckCircle,
     AlertTriangle,
-    Info,
     Clock,
     HardDrive,
+    Lock,
     Cpu,
-    Gauge,
-    Shield,
-    Terminal,
-    BookOpen,
+    Network,
+    BarChart2,
+    CheckCircle,
+    RefreshCw,
+    Archive,
+    Layers,
+    Cloud,
+    FileSearch,
+    Radar,
+    Container,
+    Globe,
+    Brain,
     GitBranch,
-    Sparkles,
-    Settings,
-    Volume2,
+    Droplets,
+    Radio,
+    AlertOctagon,
+    Link2,
+    DatabaseZap,
+    Workflow,
+    ScanSearch,
+    TreePine,
+    FolderGit2,
+    Blocks,
+    ListTree,
+    BarChart3,
+    ShieldCheck,
+    TableProperties,
 } from 'lucide-react';
 import {
     AreaChart,
@@ -46,16 +69,6 @@ import {
     ResponsiveContainer,
     Legend,
 } from 'recharts';
-import DemoLayout, {
-    Panel,
-    StatusBadge,
-    RingGauge,
-    MiniSparkline,
-    HeroMetric,
-    ChartTip,
-    generateChartData,
-} from './DemoLayout.jsx';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 
 function DemoPostgresTab({ tabId }) {
     useAdaptiveTheme();
@@ -64,16 +77,31 @@ function DemoPostgresTab({ tabId }) {
         const base24h = generateChartData(24);
         const base30d = generateChartData(30);
 
+        // Index the data
+        const indexed24h = base24h.map((d, i) => ({ ...d, index: i }));
+        const indexed30d = base30d.map((d, i) => ({ ...d, index: i }));
+
         return {
-            clusterVelocity: base24h.map((d) => ({
+            // Overview data
+            clusterVelocity: indexed24h.map((d) => ({
                 ...d,
                 qps: Math.floor(1200 + Math.sin(d.index / 6) * 400 + Math.random() * 200),
                 tps: Math.floor(850 + Math.cos(d.index / 6) * 300 + Math.random() * 150),
             })),
-            connectionTrends: base24h.map((d) => ({
+            connectionTrends: indexed24h.map((d) => ({
                 ...d,
                 active: Math.floor(45 + Math.sin(d.index / 8) * 15 + Math.random() * 10),
                 idle: Math.floor(35 + Math.cos(d.index / 8) * 20 + Math.random() * 12),
+            })),
+            cpuMemory: indexed24h.map((d) => ({
+                ...d,
+                cpu: Math.floor(35 + Math.sin(d.index / 5) * 20 + Math.random() * 15),
+                memory: Math.floor(58 + Math.cos(d.index / 7) * 15 + Math.random() * 10),
+            })),
+            diskIO: indexed24h.map((d) => ({
+                ...d,
+                reads: Math.floor(450 + Math.sin(d.index / 4) * 200 + Math.random() * 150),
+                writes: Math.floor(320 + Math.cos(d.index / 5) * 150 + Math.random() * 100),
             })),
             databaseList: [
                 { name: 'production_db', size: '48.2 GB', connections: 23, txns: 1240, uptime: '45d' },
@@ -81,11 +109,26 @@ function DemoPostgresTab({ tabId }) {
                 { name: 'backup_db', size: '16.1 GB', connections: 2, txns: 12, uptime: '45d' },
                 { name: 'test_db', size: '8.3 GB', connections: 1, txns: 2, uptime: '45d' },
             ],
+
+            // Alerts
             alertMetrics: { critical: 2, warning: 5, info: 12, resolved: 47 },
-            alertTrends: base24h.map((d) => ({
+            alertTrends: indexed24h.map((d) => ({
                 ...d,
                 alerts: Math.floor(8 + Math.sin(d.index / 7) * 4 + Math.random() * 3),
             })),
+            activeAlerts: [
+                { id: 'a1', severity: 'critical', title: 'High Cache Miss Rate', time: '12m', db: 'production_db' },
+                { id: 'a2', severity: 'warning', title: 'Connection Pool Near Limit', time: '34m', db: 'analytics_db' },
+                { id: 'a3', severity: 'warning', title: 'Slow Query Detected', time: '2h', db: 'production_db' },
+            ],
+            alertRules: [
+                { name: 'High CPU', threshold: '80%', duration: '5m', enabled: true },
+                { name: 'Replication Lag', threshold: '10s', duration: '3m', enabled: true },
+                { name: 'Cache Hit Ratio', threshold: '<95%', duration: '10m', enabled: true },
+                { name: 'Disk Space', threshold: '85%', duration: 'immediate', enabled: false },
+            ],
+
+            // Query Analysis
             slowQueries: [
                 { id: 'q1', query: 'SELECT * FROM orders WHERE status = $1', duration: 2340, calls: 145, rows: 8420 },
                 { id: 'q2', query: 'SELECT COUNT(*) FROM transactions', duration: 1820, calls: 1203, rows: 1 },
@@ -97,18 +140,30 @@ function DemoPostgresTab({ tabId }) {
                     rows: 34200,
                 },
             ],
-            queryDist: base24h.map((d) => ({
+            queryDist: indexed24h.map((d) => ({
                 ...d,
                 select: Math.floor(400 + Math.random() * 300),
                 insert: Math.floor(150 + Math.random() * 100),
                 update: Math.floor(120 + Math.random() * 80),
                 delete: Math.floor(30 + Math.random() * 20),
             })),
-            bloatAnalysis: [
-                { table: 'orders', bloat: 32, size: '12.4 GB' },
-                { table: 'users', bloat: 18, size: '2.1 GB' },
-                { table: 'transactions', bloat: 45, size: '8.9 GB' },
+            indexMetrics: [
+                { name: 'orders_user_id_idx', scans: 12450, tuples: 8420, size: '4.2 MB' },
+                { name: 'users_email_idx', scans: 3420, tuples: 1230, size: '1.1 MB' },
+                { name: 'transactions_status_idx', scans: 890, tuples: 340, size: '520 KB' },
             ],
+            bloatAnalysis: [
+                { table: 'orders', bloat: 32, size: '12.4 GB', lastVacuum: '2h ago' },
+                { table: 'users', bloat: 18, size: '2.1 GB', lastVacuum: '4h ago' },
+                { table: 'transactions', bloat: 45, size: '8.9 GB', lastVacuum: '1h ago' },
+            ],
+            tableAnalysis: [
+                { table: 'orders', rows: 2450000, size: '12.4 GB', indexes: 8, toast: '2.1 GB' },
+                { table: 'users', rows: 145000, size: '2.1 GB', indexes: 4, toast: '340 MB' },
+                { table: 'transactions', rows: 8900000, size: '8.9 GB', indexes: 6, toast: '1.2 GB' },
+            ],
+
+            // Schema & Data
             schemaStats: [
                 { object: 'Tables', count: 124 },
                 { object: 'Views', count: 38 },
@@ -117,26 +172,56 @@ function DemoPostgresTab({ tabId }) {
             ],
             tableSizes: [
                 { name: 'orders', size: 12.4 },
-                { name: 'users', size: 2.1 },
                 { name: 'transactions', size: 8.9 },
                 { name: 'products', size: 1.8 },
                 { name: 'audit_log', size: 3.2 },
+                { name: 'users', size: 2.1 },
             ],
+            schemaMigrations: [
+                { version: 'v1.0.3', description: 'Add user_preferences table', applied: '2d ago', status: 'Success' },
+                { version: 'v1.0.2', description: 'Create indexes on orders', applied: '4d ago', status: 'Success' },
+                { version: 'v1.0.1', description: 'Alter transactions table', applied: '1w ago', status: 'Success' },
+            ],
+
+            // Infrastructure
             poolMetrics: { available: 78, waiting: 2, active: 20, max: 100 },
-            poolTrends: base24h.map((d) => ({
+            poolTrends: indexed24h.map((d) => ({
                 ...d,
                 utilization: Math.floor(18 + Math.sin(d.index / 6) * 8 + Math.random() * 6),
             })),
-            replicationLag: base24h.map((d) => ({
+            replicationLag: indexed24h.map((d) => ({
                 ...d,
                 replica1: Math.floor(2.5 + Math.random() * 2),
                 replica2: Math.floor(2.3 + Math.random() * 1.8),
             })),
+            walMetrics: {
+                archiveCount: 1452,
+                archiveSize: '23.4 GB',
+                lastArchive: '2m ago',
+                replicationSlots: 2,
+            },
+            checkpointMetrics: [
+                { type: 'Scheduled', last: '15m ago', duration: '34s', buffers: '2.3M' },
+                { type: 'Requested', last: '42m ago', duration: '56s', buffers: '3.1M' },
+            ],
+            vacuumStats: [
+                { table: 'orders', lastVacuum: '2h ago', deadTuples: 1240, tuples: 2450000 },
+                { table: 'users', lastVacuum: '4h ago', deadTuples: 340, tuples: 145000 },
+                { table: 'transactions', lastVacuum: '1h ago', deadTuples: 890, tuples: 8900000 },
+            ],
+            capacityMetrics: {
+                used: 97.2,
+                total: 2048,
+                growing: '12 GB/week',
+                projectedFull: '42 days',
+            },
             backupHistory: [
                 { name: 'Full #142', size: '48.2 GB', duration: '2h 34m', date: '2h ago', status: 'Success' },
                 { name: 'Incr #143', size: '2.1 GB', duration: '12m', date: '1h ago', status: 'Success' },
                 { name: 'Full #141', size: '48.2 GB', duration: '2h 28m', date: '1d ago', status: 'Success' },
             ],
+
+            // Security
             sslRatio: 98.5,
             roleStats: [
                 { role: 'postgres', conns: 5, perms: 'superuser' },
@@ -148,6 +233,8 @@ function DemoPostgresTab({ tabId }) {
                 { time: '5m ago', event: 'CREATE_ROLE', user: 'postgres', status: 'success' },
                 { time: '12m ago', event: 'ALTER_TABLE', user: 'app_user', status: 'success' },
             ],
+
+            // Observability
             logPatterns: [
                 { pattern: 'connection timeout', frequency: 142, trending: 'up' },
                 { pattern: 'query slow log', frequency: 89, trending: 'stable' },
@@ -161,29 +248,135 @@ function DemoPostgresTab({ tabId }) {
         };
     }, []);
 
+    const sections = [
+        {
+            key: 'overview',
+            label: 'Overview',
+            icon: Activity,
+            accent: THEME.primary,
+            items: [
+                { key: 'fleet-overview', label: 'Fleet Overview' },
+                { key: 'database-overview', label: 'Database Overview' },
+                { key: 'performance', label: 'Performance' },
+                { key: 'resources', label: 'Resources' },
+                { key: 'reliability', label: 'Reliability' },
+            ],
+        },
+        {
+            key: 'alerts',
+            label: 'Alerts & Rules',
+            icon: Bell,
+            accent: THEME.danger,
+            items: [
+                { key: 'active-alerts', label: 'Active Alerts' },
+                { key: 'alert-rules', label: 'Alert Rules' },
+                { key: 'alert-correlation', label: 'Alert Correlation' },
+            ],
+        },
+        {
+            key: 'query-analysis',
+            label: 'Query Analysis',
+            icon: Zap,
+            accent: THEME.ai,
+            items: [
+                { key: 'query-optimizer', label: 'Query Optimizer' },
+                { key: 'query-plan', label: 'Query Plan Viewer' },
+                { key: 'plan-regression', label: 'Plan Regression' },
+                { key: 'indexes', label: 'Indexes' },
+                { key: 'bloat-analysis', label: 'Bloat Analysis' },
+                { key: 'table-analysis', label: 'Table Analysis' },
+            ],
+        },
+        {
+            key: 'schema',
+            label: 'Schema & Data',
+            icon: Database,
+            accent: THEME.warning,
+            items: [
+                { key: 'schema-browser', label: 'Schema Browser' },
+                { key: 'schema-migrations', label: 'Schema & Migrations' },
+                { key: 'schema-visualizer', label: 'Schema Visualizer' },
+                { key: 'table-dependencies', label: 'Table Dependencies' },
+                { key: 'chart-builder', label: 'Chart Builder' },
+            ],
+        },
+        {
+            key: 'infrastructure',
+            label: 'Infrastructure',
+            icon: Server,
+            accent: THEME.success,
+            items: [
+                { key: 'connection-pool', label: 'Connection Pool' },
+                { key: 'pool-metrics', label: 'Pool Metrics' },
+                { key: 'replication-wal', label: 'Replication & WAL' },
+                { key: 'checkpoint-monitor', label: 'Checkpoint Monitor' },
+                { key: 'vacuum-maintenance', label: 'Vacuum & Maintenance' },
+                { key: 'capacity-planning', label: 'Capacity Planning' },
+                { key: 'backup-recovery', label: 'Backup & Recovery' },
+            ],
+        },
+        {
+            key: 'security',
+            label: 'Security',
+            icon: Shield,
+            accent: THEME.danger,
+            items: [{ key: 'security-compliance', label: 'Security & Compliance' }],
+        },
+        {
+            key: 'observability',
+            label: 'Observability',
+            icon: Eye,
+            accent: THEME.warning,
+            items: [
+                { key: 'observability-hub', label: 'Observability Hub' },
+                { key: 'cloudwatch', label: 'CloudWatch' },
+                { key: 'log-patterns', label: 'Log Pattern Analysis' },
+                { key: 'opentelemetry', label: 'OpenTelemetry' },
+                { key: 'kubernetes', label: 'Kubernetes' },
+                { key: 'status-page', label: 'Status Page' },
+                { key: 'ai-monitoring', label: 'AI Monitoring' },
+            ],
+        },
+        {
+            key: 'developer',
+            label: 'Developer Tools',
+            icon: Terminal,
+            accent: THEME.ai,
+            items: [
+                { key: 'sql-console', label: 'SQL Console' },
+                { key: 'api-tracing', label: 'API Tracing' },
+                { key: 'repository', label: 'Repository' },
+                { key: 'ai-advisor', label: 'AI Query Advisor' },
+            ],
+        },
+    ];
+
     const renderContent = (sectionKey, itemKey) => {
-        if (sectionKey === 'overview' && itemKey === 'executive') {
+        // ═══════════════════════════════════════════════════════════════════════
+        // OVERVIEW SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'overview' && itemKey === 'fleet-overview') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                        <StatusBadge status="operational" label="Operational" />
-                        <StatusBadge status="active" label="Production" />
-                        <StatusBadge status="default" label="PostgreSQL 16.2" />
+                        <StatusBadge label="Operational" color={THEME.success} />
+                        <StatusBadge label="4 Instances" color={THEME.primary} />
+                        <StatusBadge label="PostgreSQL 16.2" color={THEME.textMuted} />
                     </div>
 
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
                             gap: '16px',
                         }}
                     >
-                        <HeroMetric label="Uptime" value="63" unit="days" icon={Clock} />
-                        <HeroMetric label="Active Sessions" value="52" unit="/ 100" icon={Activity} />
-                        <HeroMetric label="Cache Hit Ratio" value="99.4" unit="%" icon={Zap} trend="up" />
-                        <HeroMetric label="Database Size" value="148" unit="GB" icon={HardDrive} />
-                        <HeroMetric label="Long Transactions" value="3" unit="active" icon={Clock} />
-                        <HeroMetric label="Urgent Vacuums" value="5" unit="pending" icon={Wrench} trend="up" />
+                        <HeroMetric icon={Activity} label="Total Servers" value="4" color={THEME.primary} />
+                        <HeroMetric icon={CheckCircle} label="Healthy" value="4" color={THEME.success} />
+                        <HeroMetric icon={Clock} label="Avg Uptime" value="98.2%" color={THEME.primary} />
+                        <HeroMetric icon={Cpu} label="Total Load" value="34.2%" color={THEME.warning} />
+                        <HeroMetric icon={HardDrive} label="Fleet Storage" value="145 GB" color={THEME.textMuted} />
+                        <HeroMetric icon={Network} label="Net Throughput" value="2.3 Gbps" color={THEME.ai} />
                     </div>
 
                     <div
@@ -193,30 +386,27 @@ function DemoPostgresTab({ tabId }) {
                             gap: '20px',
                         }}
                     >
-                        <Panel title="Cluster Velocity" icon={TrendingUp}>
-                            <ResponsiveContainer width="100%" height={200}>
+                        <Panel title="Fleet Query Rate" icon={Zap} accentColor={THEME.ai}>
+                            <ResponsiveContainer width="100%" height={220}>
                                 <AreaChart data={demoData.clusterVelocity}>
                                     <defs>
                                         <linearGradient id="colorQps" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                            <stop offset="5%" stopColor={THEME.ai} stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor={THEME.ai} stopOpacity={0} />
                                         </linearGradient>
                                         <linearGradient id="colorTps" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={THEME.secondary} stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor={THEME.secondary} stopOpacity={0} />
+                                            <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
-                                        }}
-                                    />
+                                    <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                    <YAxis stroke={THEME.textDim} fontSize={10} />
+                                    <Tooltip content={<ChartTip />} />
                                     <Area
                                         type="monotone"
                                         dataKey="qps"
-                                        stroke={THEME.primary}
+                                        stroke={THEME.ai}
                                         fillOpacity={1}
                                         fill="url(#colorQps)"
                                         name="QPS"
@@ -224,204 +414,143 @@ function DemoPostgresTab({ tabId }) {
                                     <Area
                                         type="monotone"
                                         dataKey="tps"
-                                        stroke={THEME.secondary}
+                                        stroke={THEME.primary}
                                         fillOpacity={1}
                                         fill="url(#colorTps)"
                                         name="TPS"
                                     />
-                                    <Legend />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </Panel>
 
-                        <Panel title="Database Health" icon={Gauge}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                                <RingGauge value={99.4} max={100} label="Cache Hit" unit="%" />
-                                <RingGauge value={97.2} max={100} label="Index Hit" unit="%" />
-                                <RingGauge value={0.01} max={1} label="Deadlock" unit="%" />
-                            </div>
+                        <Panel title="Connections" icon={Network} accentColor={THEME.primary}>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <LineChart data={demoData.connectionTrends}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                    <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                    <YAxis stroke={THEME.textDim} fontSize={10} />
+                                    <Tooltip content={<ChartTip />} />
+                                    <Legend />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="active"
+                                        stroke={THEME.success}
+                                        strokeWidth={2}
+                                        name="Active"
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="idle"
+                                        stroke={THEME.textMuted}
+                                        strokeWidth={2}
+                                        name="Idle"
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
                         </Panel>
                     </div>
 
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                            gap: '16px',
-                        }}
-                    >
-                        <Panel title="Last Backup" icon={HardDrive}>
-                            <div style={{ fontSize: '14px', color: THEME.textMuted }}>
-                                <p>
-                                    <strong>Full Backup #142</strong>
-                                </p>
-                                <p>Size: 48.2 GB | Duration: 2h 34m</p>
-                                <p style={{ color: THEME.success, marginTop: '8px' }}>✓ Success</p>
-                            </div>
-                        </Panel>
-                        <Panel title="Long-Running Transactions" icon={Clock}>
-                            <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                                <div>txid: 12450 | Duration: 2h 15m</div>
-                                <div style={{ color: THEME.warning, marginTop: '4px' }}>⚠ Blocking</div>
-                            </div>
-                        </Panel>
-                        <Panel title="Vacuum Health" icon={Wrench}>
-                            <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                                <p>Last run: 45m ago | Duration: 8m 23s</p>
-                                <p style={{ color: THEME.success, marginTop: '8px' }}>✓ Healthy</p>
-                            </div>
-                        </Panel>
-                    </div>
+                    <Panel title="Instances" icon={Server} accentColor={THEME.primary}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                gap: '12px',
+                            }}
+                        >
+                            {demoData.databaseList.map((db) => (
+                                <div
+                                    key={db.name}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: THEME.textMain,
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        {db.name}
+                                    </div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, lineHeight: 1.5 }}>
+                                        Size: {db.size}
+                                        <br />
+                                        Conns: {db.connections}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
                 </div>
             );
         }
 
-        if (sectionKey === 'overview' && itemKey === 'connections') {
+        if (sectionKey === 'overview' && itemKey === 'database-overview') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
                             gap: '16px',
                         }}
                     >
-                        <HeroMetric label="Active" value="52" unit="connections" icon={Activity} />
-                        <HeroMetric label="Idle" value="18" unit="connections" icon={Clock} />
-                        <HeroMetric label="Waiting" value="2" unit="connections" icon={AlertCircle} />
-                        <HeroMetric label="Max" value="100" unit="limit" icon={Gauge} />
+                        <HeroMetric icon={Clock} label="Uptime" value="45" color={THEME.primary} />
+                        <HeroMetric icon={Activity} label="Active Sessions" value="52" color={THEME.success} />
+                        <HeroMetric icon={Zap} label="Cache Hit Ratio" value="99.4" color={THEME.ai} />
+                        <HeroMetric icon={HardDrive} label="Database Size" value="148 GB" color={THEME.textMuted} />
+                        <HeroMetric icon={Clock} label="Long Txns" value="3" color={THEME.warning} />
+                        <HeroMetric icon={RefreshCw} label="Vacuums Pending" value="5" color={THEME.danger} />
                     </div>
-                    <Panel title="Connection Trends (24h)" icon={TrendingUp}>
-                        <ResponsiveContainer width="100%" height={250}>
-                            <AreaChart data={demoData.connectionTrends}>
+
+                    <Panel title="Databases" icon={Database} accentColor={THEME.primary}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {demoData.databaseList.map((db) => (
+                                <div
+                                    key={db.name}
+                                    className="dpg-table-row"
+                                    style={{
+                                        justifyContent: 'space-between',
+                                        padding: '10px 0',
+                                        fontSize: 12,
+                                        color: THEME.textMuted,
+                                    }}
+                                >
+                                    <span style={{ fontFamily: THEME.fontMono, fontWeight: 500 }}>{db.name}</span>
+                                    <span>{db.size}</span>
+                                    <span>{db.connections} conns</span>
+                                    <span style={{ color: THEME.textDim }}>{db.txns} txns</span>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Transaction Throughput" icon={TrendingUp} accentColor={THEME.ai}>
+                        <ResponsiveContainer width="100%" height={240}>
+                            <AreaChart data={demoData.clusterVelocity}>
                                 <defs>
-                                    <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                    <linearGradient id="colorTxn" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.ai} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={THEME.ai} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                    }}
-                                />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
                                 <Area
                                     type="monotone"
-                                    dataKey="active"
-                                    stroke={THEME.primary}
-                                    fill="url(#colorActive)"
-                                    name="Active Connections"
-                                />
-                                <Legend />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </Panel>
-                </div>
-            );
-        }
-
-        if (sectionKey === 'overview' && itemKey === 'serverinfo') {
-            return (
-                <Panel title="Server Information" icon={Server}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', fontSize: '14px' }}>
-                        <div>
-                            <p style={{ color: THEME.textMuted }}>PostgreSQL Version</p>
-                            <p style={{ color: THEME.textMain, fontSize: '16px', marginBottom: '16px' }}>16.2.1</p>
-                            <p style={{ color: THEME.textMuted }}>Uptime</p>
-                            <p style={{ color: THEME.textMain, fontSize: '16px', marginBottom: '16px' }}>
-                                63 days, 4 hours
-                            </p>
-                            <p style={{ color: THEME.textMuted }}>Max Connections</p>
-                            <p style={{ color: THEME.textMain, fontSize: '16px' }}>100</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMuted }}>Data Directory</p>
-                            <p
-                                style={{
-                                    color: THEME.textMain,
-                                    fontSize: '13px',
-                                    marginBottom: '16px',
-                                    fontFamily: THEME.fontMono,
-                                }}
-                            >
-                                /var/lib/postgresql/16/main
-                            </p>
-                            <p style={{ color: THEME.textMuted }}>WAL Level</p>
-                            <p style={{ color: THEME.textMain, fontSize: '16px', marginBottom: '16px' }}>logical</p>
-                            <p style={{ color: THEME.textMuted }}>SSL Status</p>
-                            <p style={{ color: THEME.success, fontSize: '16px' }}>✓ Enabled</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'overview' && itemKey === 'databases') {
-            return (
-                <Panel title="Databases" icon={Package}>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Name</th>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Size</th>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Conns</th>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Txns</th>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
-                                        Uptime
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {demoData.databaseList.map((db, i) => (
-                                    <tr key={i} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                                        <td style={{ padding: '8px', color: THEME.textMain }}>{db.name}</td>
-                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{db.size}</td>
-                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{db.connections}</td>
-                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{db.txns}</td>
-                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{db.uptime}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'overview' && itemKey === 'perfsnap') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                            gap: '16px',
-                        }}
-                    >
-                        <RingGauge value={99.4} max={100} label="Cache Hit" unit="%" />
-                        <RingGauge value={97.2} max={100} label="Index Hit" unit="%" />
-                        <RingGauge value={0.01} max={1} label="Deadlock Rate" unit="%" />
-                    </div>
-                    <Panel title="Performance Metrics (24h)" icon={BarChart3}>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <AreaChart data={demoData.clusterVelocity}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                    }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="qps"
-                                    stroke={THEME.primary}
-                                    fill={THEME.primary}
-                                    fillOpacity={0.3}
-                                    name="QPS"
+                                    dataKey="tps"
+                                    stroke={THEME.ai}
+                                    fillOpacity={1}
+                                    fill="url(#colorTxn)"
+                                    name="TPS"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -430,9 +559,9 @@ function DemoPostgresTab({ tabId }) {
             );
         }
 
-        if (sectionKey === 'alerts' && itemKey === 'active') {
+        if (sectionKey === 'overview' && itemKey === 'performance') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div
                         style={{
                             display: 'grid',
@@ -440,37 +569,381 @@ function DemoPostgresTab({ tabId }) {
                             gap: '16px',
                         }}
                     >
-                        <HeroMetric
-                            label="Critical"
-                            value={String(demoData.alertMetrics.critical)}
-                            unit="alerts"
-                            icon={AlertTriangle}
-                        />
-                        <HeroMetric
-                            label="Warning"
-                            value={String(demoData.alertMetrics.warning)}
-                            unit="alerts"
-                            icon={AlertCircle}
-                        />
-                        <HeroMetric label="Info" value={String(demoData.alertMetrics.info)} unit="alerts" icon={Info} />
-                        <HeroMetric
-                            label="Resolved"
-                            value={String(demoData.alertMetrics.resolved)}
-                            unit="alerts"
-                            icon={CheckCircle}
-                        />
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <RingGauge value={94} color={THEME.success} label="Cache Hit" size={100} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <RingGauge value={52} color={THEME.ai} label="CPU Usage" size={100} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <RingGauge value={68} color={THEME.warning} label="Memory" size={100} />
+                        </div>
                     </div>
-                    <Panel title="Alert Trend (24h)" icon={TrendingUp}>
+
+                    <Panel title="Query Distribution" icon={BarChart2} accentColor={THEME.ai}>
+                        <ResponsiveContainer width="100%" height={240}>
+                            <BarChart data={demoData.queryDist.slice(-12)}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
+                                <Legend />
+                                <Bar dataKey="select" stackId="a" fill={THEME.ai} name="SELECT" />
+                                <Bar dataKey="insert" stackId="a" fill={THEME.success} name="INSERT" />
+                                <Bar dataKey="update" stackId="a" fill={THEME.warning} name="UPDATE" />
+                                <Bar dataKey="delete" stackId="a" fill={THEME.danger} name="DELETE" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                            gap: '20px',
+                        }}
+                    >
+                        <Panel title="CPU & Memory" icon={Cpu} accentColor={THEME.warning}>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <LineChart data={demoData.cpuMemory}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                    <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                    <YAxis stroke={THEME.textDim} fontSize={10} />
+                                    <Tooltip content={<ChartTip />} />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="cpu"
+                                        stroke={THEME.warning}
+                                        strokeWidth={2}
+                                        name="CPU %"
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="memory"
+                                        stroke={THEME.primary}
+                                        strokeWidth={2}
+                                        name="Memory %"
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </Panel>
+
+                        <Panel title="Disk I/O" icon={HardDrive} accentColor={THEME.textMuted}>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <AreaChart data={demoData.diskIO}>
+                                    <defs>
+                                        <linearGradient id="colorReads" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor={THEME.ai} stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor={THEME.ai} stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="colorWrites" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor={THEME.warning} stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                    <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                    <YAxis stroke={THEME.textDim} fontSize={10} />
+                                    <Tooltip content={<ChartTip />} />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="reads"
+                                        stroke={THEME.ai}
+                                        fillOpacity={1}
+                                        fill="url(#colorReads)"
+                                        name="Reads"
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="writes"
+                                        stroke={THEME.warning}
+                                        fillOpacity={1}
+                                        fill="url(#colorWrites)"
+                                        name="Writes"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </Panel>
+                    </div>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'overview' && itemKey === 'resources') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric icon={HardDrive} label="Disk Used" value="97.2 GB" color={THEME.warning} />
+                        <HeroMetric icon={Cpu} label="CPU Cores" value="16" color={THEME.primary} />
+                        <HeroMetric icon={Activity} label="Total RAM" value="64 GB" color={THEME.success} />
+                        <HeroMetric icon={Network} label="Network" value="10 Gbps" color={THEME.ai} />
+                    </div>
+
+                    <Panel title="Storage Allocation" icon={HardDrive} accentColor={THEME.warning}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                gap: '12px',
+                            }}
+                        >
+                            {demoData.tableSizes.map((t) => (
+                                <div
+                                    key={t.name}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: THEME.textMain,
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        {t.name}
+                                    </div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.primary }}>
+                                        {t.size.toFixed(1)} GB
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 9,
+                                            marginTop: 6,
+                                            height: 4,
+                                            borderRadius: 2,
+                                            background: THEME.glassBorder,
+                                            overflow: 'hidden',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                height: '100%',
+                                                width: `${Math.min((t.size / 15) * 100, 100)}%`,
+                                                background: THEME.warning,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'overview' && itemKey === 'reliability') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric icon={CheckCircle} label="Availability" value="99.97%" color={THEME.success} />
+                        <HeroMetric icon={RefreshCw} label="MTTR" value="12m" color={THEME.primary} />
+                        <HeroMetric icon={AlertTriangle} label="Failed Checks" value="0" color={THEME.success} />
+                        <HeroMetric icon={Archive} label="Recovery Points" value="48" color={THEME.ai} />
+                    </div>
+
+                    <Panel title="Health Status" icon={CheckCircle} accentColor={THEME.success}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {[
+                                { name: 'Primary Database', status: 'healthy' },
+                                { name: 'Replica 1', status: 'healthy' },
+                                { name: 'Replica 2', status: 'healthy' },
+                                { name: 'Backup Server', status: 'healthy' },
+                            ].map((item) => (
+                                <div
+                                    key={item.name}
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '10px 0',
+                                        borderBottom: `1px solid ${THEME.glassBorder}`,
+                                    }}
+                                >
+                                    <span style={{ fontSize: 12, color: THEME.textMuted }}>{item.name}</span>
+                                    <StatusBadge label="Healthy" color={THEME.success} />
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Backup Status" icon={Archive} accentColor={THEME.ai}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {demoData.backupHistory.map((backup) => (
+                                <div
+                                    key={backup.name}
+                                    className="dpg-table-row"
+                                    style={{
+                                        justifyContent: 'space-between',
+                                        padding: '10px 0',
+                                        fontSize: 11,
+                                        color: THEME.textMuted,
+                                    }}
+                                >
+                                    <span style={{ fontFamily: THEME.fontMono }}>{backup.name}</span>
+                                    <span>{backup.size}</span>
+                                    <span style={{ color: THEME.success }}>{backup.status}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // ALERTS & RULES SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'alerts' && itemKey === 'active-alerts') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <div
+                            style={{
+                                padding: '16px',
+                                background: `${THEME.danger}12`,
+                                border: `1px solid ${THEME.danger}30`,
+                                borderRadius: 8,
+                            }}
+                        >
+                            <div style={{ fontSize: 10, color: THEME.danger, fontWeight: 700, marginBottom: 4 }}>
+                                CRITICAL
+                            </div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: THEME.danger }}>
+                                {demoData.alertMetrics.critical}
+                            </div>
+                        </div>
+                        <div
+                            style={{
+                                padding: '16px',
+                                background: `${THEME.warning}12`,
+                                border: `1px solid ${THEME.warning}30`,
+                                borderRadius: 8,
+                            }}
+                        >
+                            <div style={{ fontSize: 10, color: THEME.warning, fontWeight: 700, marginBottom: 4 }}>
+                                WARNING
+                            </div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: THEME.warning }}>
+                                {demoData.alertMetrics.warning}
+                            </div>
+                        </div>
+                        <div
+                            style={{
+                                padding: '16px',
+                                background: `${THEME.primary}12`,
+                                border: `1px solid ${THEME.primary}30`,
+                                borderRadius: 8,
+                            }}
+                        >
+                            <div style={{ fontSize: 10, color: THEME.primary, fontWeight: 700, marginBottom: 4 }}>
+                                INFO
+                            </div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: THEME.primary }}>
+                                {demoData.alertMetrics.info}
+                            </div>
+                        </div>
+                        <div
+                            style={{
+                                padding: '16px',
+                                background: `${THEME.success}12`,
+                                border: `1px solid ${THEME.success}30`,
+                                borderRadius: 8,
+                            }}
+                        >
+                            <div style={{ fontSize: 10, color: THEME.success, fontWeight: 700, marginBottom: 4 }}>
+                                RESOLVED
+                            </div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: THEME.success }}>
+                                {demoData.alertMetrics.resolved}
+                            </div>
+                        </div>
+                    </div>
+
+                    <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.danger}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.activeAlerts.map((alert) => (
+                                <div
+                                    key={alert.id}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                        borderLeft: `3px solid ${
+                                            alert.severity === 'critical' ? THEME.danger : THEME.warning
+                                        }`,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            gap: 10,
+                                        }}
+                                    >
+                                        <div style={{ flex: 1 }}>
+                                            <div
+                                                style={{
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    color: THEME.textMain,
+                                                    marginBottom: 4,
+                                                }}
+                                            >
+                                                {alert.title}
+                                            </div>
+                                            <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                                {alert.db} • {alert.time}
+                                            </div>
+                                        </div>
+                                        <StatusBadge
+                                            label={alert.severity.toUpperCase()}
+                                            color={alert.severity === 'critical' ? THEME.danger : THEME.warning}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Alert Trend" icon={TrendingUp} accentColor={THEME.danger}>
                         <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={demoData.alertTrends}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                    }}
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
+                                <Line
+                                    type="monotone"
+                                    dataKey="alerts"
+                                    stroke={THEME.danger}
+                                    strokeWidth={2}
+                                    name="Alerts"
                                 />
-                                <Line type="monotone" dataKey="alerts" stroke={THEME.warning} strokeWidth={2} />
                             </LineChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -478,329 +951,618 @@ function DemoPostgresTab({ tabId }) {
             );
         }
 
-        if (sectionKey === 'alerts' && itemKey === 'rules') {
+        if (sectionKey === 'alerts' && itemKey === 'alert-rules') {
             return (
-                <Panel title="Alert Rules Configuration" icon={AlertCircle}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Cache Hit Ratio &lt; 95%</p>
-                            <p>Action: Email notification</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Connection Pool &gt; 80%</p>
-                            <p>Action: Slack alert</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Query Duration &gt; 5s</p>
-                            <p>Action: Log event</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'alerts' && itemKey === 'corr') {
-            return (
-                <Panel title="Alert Correlation" icon={Activity}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>High CPU + Slow Queries</p>
-                            <p>Correlation: 87%</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>Connection Spike + Cache Miss</p>
-                            <p>Correlation: 72%</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMain }}>Low Disk Space + Vacuum</p>
-                            <p>Correlation: 94%</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'query' && itemKey === 'optimizer') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <Panel title="Slow Queries" icon={Code}>
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                                        <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
-                                            Query
-                                        </th>
-                                        <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
-                                            ms
-                                        </th>
-                                        <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
-                                            Calls
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {demoData.slowQueries.map((q, i) => (
-                                        <tr key={i} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                                            <td
-                                                style={{
-                                                    padding: '8px',
-                                                    color: THEME.textMain,
-                                                    fontFamily: THEME.fontMono,
-                                                    fontSize: '11px',
-                                                }}
-                                            >
-                                                {q.query.slice(0, 35)}...
-                                            </td>
-                                            <td style={{ padding: '8px', color: THEME.textMuted }}>{q.duration}</td>
-                                            <td style={{ padding: '8px', color: THEME.textMuted }}>{q.calls}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </Panel>
-
-                    <Panel title="Query Distribution (24h)" icon={BarChart3}>
-                        <ResponsiveContainer width="100%" height={220}>
-                            <AreaChart data={demoData.queryDist}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: THEME.glass,
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Alert Rules" icon={Bell} accentColor={THEME.danger}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.alertRules.map((rule) => (
+                                <div
+                                    key={rule.name}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
                                         border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
                                     }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="select"
-                                    stackId="1"
-                                    stroke={THEME.primary}
-                                    fill={THEME.primary}
-                                    fillOpacity={0.6}
-                                    name="SELECT"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="insert"
-                                    stackId="1"
-                                    stroke={THEME.secondary}
-                                    fill={THEME.secondary}
-                                    fillOpacity={0.6}
-                                    name="INSERT"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="update"
-                                    stackId="1"
-                                    stroke={THEME.success}
-                                    fill={THEME.success}
-                                    fillOpacity={0.6}
-                                    name="UPDATE"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="delete"
-                                    stackId="1"
-                                    stroke={THEME.danger}
-                                    fill={THEME.danger}
-                                    fillOpacity={0.6}
-                                    name="DELETE"
-                                />
-                                <Legend />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                                >
+                                    <div>
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                fontWeight: 600,
+                                                color: THEME.textMain,
+                                                marginBottom: 4,
+                                            }}
+                                        >
+                                            {rule.name}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 10,
+                                                color: THEME.textDim,
+                                                fontFamily: THEME.fontMono,
+                                            }}
+                                        >
+                                            Threshold: {rule.threshold} • Duration: {rule.duration}
+                                        </div>
+                                    </div>
+                                    <StatusBadge
+                                        label={rule.enabled ? 'ENABLED' : 'DISABLED'}
+                                        color={rule.enabled ? THEME.success : THEME.textDim}
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </Panel>
                 </div>
             );
         }
 
-        if (sectionKey === 'query' && itemKey === 'plans') {
+        if (sectionKey === 'alerts' && itemKey === 'alert-correlation') {
             return (
-                <Panel title="Query Execution Plans" icon={Code}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
-                        <pre
-                            style={{
-                                backgroundColor: THEME.glass,
-                                padding: '12px',
-                                borderRadius: '6px',
-                                overflow: 'auto',
-                                maxHeight: '400px',
-                            }}
-                        >
-                            {`Seq Scan on orders (cost=0.00..15234.50 rows=50000)
-  Filter: (status = 'shipped')
-  Planning: 0.187 ms | Execution: 2340 ms
-
-Index Scan using users_pkey on users (cost=0.29..8.31 rows=1)
-  Index Cond: (id = 12345) | Loops: 8420
-  Planning: 0.045 ms | Execution: 156 ms`}
-                        </pre>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'query' && itemKey === 'regdet') {
-            return (
-                <Panel title="Regression Detector" icon={TrendingUp}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <div>
-                            <p style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>
-                                Baseline (Last Week)
-                            </p>
-                            <p style={{ color: THEME.textMain, fontSize: '18px' }}>1840 ms</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>
-                                Current (This Week)
-                            </p>
-                            <p style={{ color: THEME.danger, fontSize: '18px' }}>2340 ms (↑ 27%)</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'query' && itemKey === 'idxadv') {
-            return (
-                <Panel title="Index Advisor" icon={Zap}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Missing: idx_orders_status</p>
-                            <p>Estimated speedup: 12x on status filter</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
-                                Unused: idx_users_created_unused
-                            </p>
-                            <p style={{ color: THEME.warning }}>Free 245 MB by dropping</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'query' && itemKey === 'bloat') {
-            return (
-                <Panel title="Table Bloat Analysis" icon={BarChart3}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={demoData.bloatAnalysis}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                            <XAxis dataKey="table" stroke={THEME.textMuted} />
-                            <YAxis stroke={THEME.textMuted} />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
-                                }}
-                            />
-                            <Bar dataKey="bloat" fill={THEME.warning} name="Bloat %" radius={[8, 8, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'query' && itemKey === 'tblstat') {
-            return (
-                <Panel title="Table Statistics" icon={BarChart3}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>orders table</p>
-                            <p>Sequential: 234 | Index: 8420 | Dead tuples: 12,345</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>users table</p>
-                            <p>Sequential: 12 | Index: 2340 | Dead tuples: 45</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'schema' && itemKey === 'tree') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <Panel title="Schema Objects" icon={Package}>
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-                                gap: '12px',
-                            }}
-                        >
-                            {demoData.schemaStats.map((stat, i) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        backgroundColor: THEME.glass,
-                                        padding: '12px',
-                                        borderRadius: '6px',
-                                        borderLeft: `3px solid ${THEME.primary}`,
-                                    }}
-                                >
-                                    <p style={{ color: THEME.textMuted, fontSize: '12px' }}>{stat.object}</p>
-                                    <p style={{ color: THEME.textMain, fontSize: '20px', fontWeight: 'bold' }}>
-                                        {stat.count}
-                                    </p>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Correlated Events" icon={Link2} accentColor={THEME.ai}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {[
+                                {
+                                    group: 'High Cache Misses',
+                                    events: ['Cache hit ratio drop', 'Slow query rate increase', 'CPU usage spike'],
+                                },
+                                {
+                                    group: 'Connection Pool Pressure',
+                                    events: ['Pool utilization >80%', 'Waiting connections', 'Query queue builds'],
+                                },
+                            ].map((group) => (
+                                <div key={group.group} style={{ borderLeft: `3px solid ${THEME.ai}`, paddingLeft: 12 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            color: THEME.textMain,
+                                            marginBottom: 8,
+                                        }}
+                                    >
+                                        {group.group}
+                                    </div>
+                                    <ul
+                                        style={{
+                                            listStyle: 'none',
+                                            padding: 0,
+                                            margin: 0,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 6,
+                                        }}
+                                    >
+                                        {group.events.map((evt, i) => (
+                                            <li key={i} style={{ fontSize: 11, color: THEME.textMuted }}>
+                                                → {evt}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             ))}
                         </div>
                     </Panel>
+                </div>
+            );
+        }
 
-                    <Panel title="Largest Tables by Size" icon={HardDrive}>
-                        <ResponsiveContainer width="100%" height={240}>
+        // ═══════════════════════════════════════════════════════════════════════
+        // QUERY ANALYSIS SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'query-analysis' && itemKey === 'query-optimizer') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric
+                            icon={Zap}
+                            label="Slow Queries"
+                            value={demoData.slowQueries.length}
+                            color={THEME.warning}
+                        />
+                        <HeroMetric icon={BarChart2} label="Avg Duration" value="1.9s" color={THEME.danger} />
+                        <HeroMetric icon={Activity} label="Optimization Gain" value="34%" color={THEME.success} />
+                    </div>
+
+                    <Panel title="Slow Queries (pg_stat_statements)" icon={DatabaseZap} accentColor={THEME.ai}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {demoData.slowQueries.map((q) => (
+                                <div
+                                    key={q.id}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            fontFamily: THEME.fontMono,
+                                            color: THEME.textMuted,
+                                            marginBottom: 6,
+                                            wordBreak: 'break-all',
+                                        }}
+                                    >
+                                        {q.query}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3, 1fr)',
+                                            gap: 10,
+                                            fontSize: 10,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        <span>Duration: {(q.duration / 1000).toFixed(2)}s</span>
+                                        <span>Calls: {q.calls}</span>
+                                        <span>Rows: {q.rows.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'query-analysis' && itemKey === 'query-plan') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="EXPLAIN ANALYZE Results" icon={Workflow} accentColor={THEME.ai}>
+                        <div
+                            style={{
+                                fontFamily: THEME.fontMono,
+                                fontSize: 10,
+                                color: THEME.textMuted,
+                                background: THEME.glass,
+                                padding: '12px',
+                                borderRadius: 6,
+                                lineHeight: 1.6,
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word',
+                            }}
+                        >
+                            {`Seq Scan on orders (cost=0.00..15240.00 rows=245000 width=68)
+  Filter: (status = $1)
+  Rows: 8420, Duration: 2340.23ms
+
+Optimizer Notes:
+  • Consider creating index on (status)
+  • Rows estimated: 245000, actual: 8420
+  • Planner chose seq scan over index (correct decision)
+  • Filter selectivity: 3.4%`}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'query-analysis' && itemKey === 'plan-regression') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Plan Changes" icon={TrendingUp} accentColor={THEME.warning}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {[
+                                { query: 'SELECT * FROM orders', prev: 'Index Scan', curr: 'Seq Scan', impact: 'High' },
+                                { query: 'JOIN users ON ...', prev: '45ms', curr: '120ms', impact: 'Medium' },
+                            ].map((item, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontFamily: THEME.fontMono,
+                                            color: THEME.textMuted,
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        {item.query}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3, 1fr)',
+                                            gap: 10,
+                                            fontSize: 10,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        <span>Prev: {item.prev}</span>
+                                        <span>Now: {item.curr}</span>
+                                        <span style={{ color: THEME.warning }}>Impact: {item.impact}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'query-analysis' && itemKey === 'indexes') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric
+                            icon={Layers}
+                            label="Total Indexes"
+                            value={demoData.indexMetrics.length}
+                            color={THEME.ai}
+                        />
+                        <HeroMetric icon={Zap} label="Unused Indexes" value="0" color={THEME.success} />
+                        <HeroMetric icon={HardDrive} label="Index Size" value="5.8 MB" color={THEME.textMuted} />
+                    </div>
+
+                    <Panel title="Index Performance" icon={Layers} accentColor={THEME.ai}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.indexMetrics.map((idx) => (
+                                <div
+                                    key={idx.name}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            color: THEME.textMain,
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        {idx.name}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3, 1fr)',
+                                            gap: 10,
+                                            fontSize: 10,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        <span>Scans: {idx.scans.toLocaleString()}</span>
+                                        <span>Tuples: {idx.tuples.toLocaleString()}</span>
+                                        <span>Size: {idx.size}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'query-analysis' && itemKey === 'bloat-analysis') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Table Bloat (MVCC Analysis)" icon={ScanSearch} accentColor={THEME.warning}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.bloatAnalysis.map((t) => (
+                                <div
+                                    key={t.table}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: 8,
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain }}>
+                                            {t.table}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: THEME.warning, fontWeight: 700 }}>
+                                            {t.bloat}% bloat
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            height: 4,
+                                            borderRadius: 2,
+                                            background: THEME.glassBorder,
+                                            overflow: 'hidden',
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                height: '100%',
+                                                width: `${Math.min(t.bloat, 100)}%`,
+                                                background: THEME.warning,
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim }}>
+                                        Size: {t.size} • Last vacuum: {t.lastVacuum}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'query-analysis' && itemKey === 'table-analysis') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Table Statistics" icon={TableProperties} accentColor={THEME.ai}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.tableAnalysis.map((t) => (
+                                <div
+                                    key={t.table}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            color: THEME.textMain,
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        {t.table}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                                            gap: 8,
+                                            fontSize: 9,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        <span>Rows: {t.rows.toLocaleString()}</span>
+                                        <span>Size: {t.size}</span>
+                                        <span>Indexes: {t.indexes}</span>
+                                        <span>TOAST: {t.toast}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SCHEMA & DATA SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'schema' && itemKey === 'schema-browser') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Schema Objects" icon={TreePine} accentColor={THEME.warning}>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                                <Pie
+                                    data={demoData.schemaStats}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={({ name, value }) => `${name}: ${value}`}
+                                    outerRadius={80}
+                                    fill="#8884d8"
+                                    dataKey="count"
+                                >
+                                    <Cell fill={THEME.ai} />
+                                    <Cell fill={THEME.primary} />
+                                    <Cell fill={THEME.warning} />
+                                    <Cell fill={THEME.success} />
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
+                    <Panel title="Object Count" icon={Database} accentColor={THEME.warning}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+                                gap: '12px',
+                            }}
+                        >
+                            {demoData.schemaStats.map((stat) => (
+                                <div
+                                    key={stat.object}
+                                    style={{
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>
+                                        {stat.object}
+                                    </div>
+                                    <div style={{ fontSize: 18, fontWeight: 700, color: THEME.ai }}>{stat.count}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'schema' && itemKey === 'schema-migrations') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Migration History" icon={FolderGit2} accentColor={THEME.ai}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.schemaMigrations.map((m) => (
+                                <div
+                                    key={m.version}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                        borderLeft: `3px solid ${THEME.success}`,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                color: THEME.textMain,
+                                                fontFamily: THEME.fontMono,
+                                            }}
+                                        >
+                                            {m.version}
+                                        </span>
+                                        <StatusBadge label={m.status} color={THEME.success} />
+                                    </div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 4 }}>
+                                        {m.description}
+                                    </div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim }}>Applied: {m.applied}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'schema' && itemKey === 'schema-visualizer') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Schema Graph" icon={Blocks} accentColor={THEME.ai}>
+                        <div
+                            style={{
+                                fontSize: 12,
+                                color: THEME.textMuted,
+                                padding: '40px 20px',
+                                textAlign: 'center',
+                                borderRadius: 8,
+                                background: THEME.glass,
+                            }}
+                        >
+                            Schema visualization (SVG/Canvas rendering)
+                            <br />
+                            Shows table relationships and constraints
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'schema' && itemKey === 'table-dependencies') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Table Dependency Graph" icon={ListTree} accentColor={THEME.warning}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {[
+                                { table: 'users', deps: ['user_preferences', 'audit_log', 'user_sessions'] },
+                                { table: 'orders', deps: ['order_items', 'order_status_history', 'shipments'] },
+                                { table: 'products', deps: ['product_categories', 'product_variants'] },
+                            ].map((item) => (
+                                <div key={item.table} style={{ borderLeft: `3px solid ${THEME.ai}`, paddingLeft: 12 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            color: THEME.textMain,
+                                            fontFamily: THEME.fontMono,
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        {item.table}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 8,
+                                        }}
+                                    >
+                                        {item.deps.map((dep) => (
+                                            <span
+                                                key={dep}
+                                                style={{
+                                                    fontSize: 10,
+                                                    padding: '4px 8px',
+                                                    background: THEME.glass,
+                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    borderRadius: 4,
+                                                    color: THEME.textDim,
+                                                }}
+                                            >
+                                                → {dep}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'schema' && itemKey === 'chart-builder') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Top Tables by Size" icon={BarChart3} accentColor={THEME.ai}>
+                        <ResponsiveContainer width="100%" height={260}>
                             <BarChart data={demoData.tableSizes}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="name" stroke={THEME.textMuted} />
-                                <YAxis
-                                    stroke={THEME.textMuted}
-                                    label={{ value: 'Size (GB)', angle: -90, position: 'insideLeft' }}
-                                />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                    }}
-                                />
-                                <Bar dataKey="size" fill={THEME.secondary} radius={[8, 8, 0, 0]} />
+                                <XAxis dataKey="name" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
+                                <Bar dataKey="size" fill={THEME.ai} name="Size (GB)" />
                             </BarChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -808,144 +1570,75 @@ Index Scan using users_pkey on users (cost=0.29..8.31 rows=1)
             );
         }
 
-        if (sectionKey === 'schema' && itemKey === 'visualizer') {
+        // ═══════════════════════════════════════════════════════════════════════
+        // INFRASTRUCTURE SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'infrastructure' && itemKey === 'connection-pool') {
             return (
-                <Panel title="Schema Entity Relationship" icon={Network}>
-                    <div style={{ padding: '20px', textAlign: 'center', color: THEME.textMuted, fontSize: '14px' }}>
-                        <p>Entity Relationship Diagram</p>
-                        <div
-                            style={{
-                                marginTop: '16px',
-                                padding: '16px',
-                                backgroundColor: THEME.glass,
-                                borderRadius: '6px',
-                            }}
-                        >
-                            <div>users ↔ orders ↔ products</div>
-                            <div style={{ marginTop: '8px', fontSize: '12px' }}>+ payments, shipments, audit_log</div>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'schema' && itemKey === 'deps') {
-            return (
-                <Panel title="Foreign Key Dependencies" icon={GitBranch}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>orders.user_id → users.id</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>orders.product_id → products.id</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>payments.order_id → orders.id</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMain }}>shipments.order_id → orders.id</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'schema' && itemKey === 'chartbldr') {
-            return (
-                <Panel title="Custom Chart Builder" icon={BarChart3}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <p style={{ marginBottom: '12px' }}>Build visualizations from any query</p>
-                        <div
-                            style={{
-                                backgroundColor: THEME.glass,
-                                padding: '12px',
-                                borderRadius: '6px',
-                                marginBottom: '12px',
-                            }}
-                        >
-                            <p
-                                style={{
-                                    color: THEME.textMain,
-                                    fontSize: '12px',
-                                    marginBottom: '8px',
-                                    fontFamily: THEME.fontMono,
-                                }}
-                            >
-                                SELECT DATE(created_at), COUNT(*)
-                                <br />
-                                FROM orders GROUP BY DATE(created_at)
-                            </p>
-                        </div>
-                        <p style={{ color: THEME.success }}>✓ Chart with 365 data points</p>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'infra' && itemKey === 'pool') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                             gap: '16px',
                         }}
                     >
-                        <HeroMetric
-                            label="Available"
-                            value={String(demoData.poolMetrics.available)}
-                            unit="connections"
-                            icon={CheckCircle}
-                        />
-                        <HeroMetric
-                            label="Active"
-                            value={String(demoData.poolMetrics.active)}
-                            unit="connections"
-                            icon={Activity}
-                        />
-                        <HeroMetric
-                            label="Waiting"
-                            value={String(demoData.poolMetrics.waiting)}
-                            unit="connections"
-                            icon={Clock}
-                        />
-                        <HeroMetric label="Max" value={String(demoData.poolMetrics.max)} unit="limit" icon={Gauge} />
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <RingGauge
+                                value={Math.round((demoData.poolMetrics.active / demoData.poolMetrics.max) * 100)}
+                                color={THEME.ai}
+                                label="Usage"
+                                size={100}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <RingGauge value={78} color={THEME.success} label="Available" size={100} />
+                        </div>
                     </div>
-                    <Panel title="Pool Utilization (24h)" icon={Gauge}>
-                        <ResponsiveContainer width="100%" height={200}>
+
+                    <Panel title="Pool Status (pgBouncer)" icon={Network} accentColor={THEME.ai}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                            {[
+                                { label: 'Available', value: demoData.poolMetrics.available, color: THEME.success },
+                                { label: 'Active', value: demoData.poolMetrics.active, color: THEME.ai },
+                                { label: 'Waiting', value: demoData.poolMetrics.waiting, color: THEME.warning },
+                                { label: 'Max', value: demoData.poolMetrics.max, color: THEME.textMuted },
+                            ].map((item) => (
+                                <div key={item.label} style={{ textAlign: 'center' }}>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 4 }}>
+                                        {item.label}
+                                    </div>
+                                    <div style={{ fontSize: 18, fontWeight: 700, color: item.color }}>{item.value}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'infrastructure' && itemKey === 'pool-metrics') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Pool Utilization Trend" icon={Droplets} accentColor={THEME.ai}>
+                        <ResponsiveContainer width="100%" height={240}>
                             <AreaChart data={demoData.poolTrends}>
+                                <defs>
+                                    <linearGradient id="colorPoolUtil" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.ai} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={THEME.ai} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                    }}
-                                />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
                                 <Area
                                     type="monotone"
                                     dataKey="utilization"
-                                    stroke={THEME.primary}
-                                    fill={THEME.primary}
-                                    fillOpacity={0.3}
+                                    stroke={THEME.ai}
+                                    fillOpacity={1}
+                                    fill="url(#colorPoolUtil)"
                                     name="Utilization %"
                                 />
                             </AreaChart>
@@ -955,688 +1648,719 @@ Index Scan using users_pkey on users (cost=0.29..8.31 rows=1)
             );
         }
 
-        if (sectionKey === 'infra' && itemKey === 'repl') {
+        if (sectionKey === 'infrastructure' && itemKey === 'replication-wal') {
             return (
-                <Panel title="Replication Status" icon={Network}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <LineChart data={demoData.replicationLag}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                            <XAxis dataKey="index" stroke={THEME.textMuted} />
-                            <YAxis
-                                stroke={THEME.textMuted}
-                                label={{ value: 'Lag (ms)', angle: -90, position: 'insideLeft' }}
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
-                                }}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="replica1"
-                                stroke={THEME.primary}
-                                name="Replica 1"
-                                strokeWidth={2}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="replica2"
-                                stroke={THEME.secondary}
-                                name="Replica 2"
-                                strokeWidth={2}
-                            />
-                            <Legend />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </Panel>
-            );
-        }
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Replication Lag (WAL)" icon={Radio} accentColor={THEME.success}>
+                        <ResponsiveContainer width="100%" height={240}>
+                            <LineChart data={demoData.replicationLag}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                <Tooltip content={<ChartTip />} />
+                                <Legend />
+                                <Line
+                                    type="monotone"
+                                    dataKey="replica1"
+                                    stroke={THEME.success}
+                                    strokeWidth={2}
+                                    name="Replica 1"
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="replica2"
+                                    stroke={THEME.ai}
+                                    strokeWidth={2}
+                                    name="Replica 2"
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </Panel>
 
-        if (sectionKey === 'infra' && itemKey === 'checkpoint') {
-            return (
-                <Panel title="Checkpoint Activity" icon={Clock}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
+                    <Panel title="WAL Archiving" icon={Archive} accentColor={THEME.ai}>
                         <div
                             style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                gap: '16px',
                             }}
                         >
-                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Last Checkpoint</p>
-                            <p>Duration: 2m 34s | Size: 12.4 GB</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMuted }}>Interval: 5 minutes</p>
-                            <p style={{ color: THEME.success, marginTop: '8px' }}>✓ Healthy</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'infra' && itemKey === 'maint') {
-            return (
-                <Panel title="Maintenance Schedule" icon={Wrench}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>VACUUM: Daily 02:00 UTC</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>ANALYZE: Daily 03:00 UTC</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>REINDEX: Weekly Sunday 04:00</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.success }}>✓ All jobs on schedule</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'infra' && itemKey === 'cap') {
-            return (
-                <Panel title="Capacity Planning" icon={HardDrive}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', fontSize: '13px' }}>
-                        <div>
-                            <p style={{ color: THEME.textMuted }}>Current Used</p>
-                            <p style={{ color: THEME.textMain, fontSize: '18px', marginBottom: '12px' }}>148 GB</p>
-                            <p style={{ color: THEME.textMuted }}>Growth Rate</p>
-                            <p style={{ color: THEME.textMain, fontSize: '18px' }}>2.3 GB/week</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMuted }}>Total Disk</p>
-                            <p style={{ color: THEME.textMain, fontSize: '18px', marginBottom: '12px' }}>500 GB</p>
-                            <p style={{ color: THEME.textMain }}>Full in: 148 days</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'infra' && itemKey === 'backup') {
-            return (
-                <Panel title="Backup History" icon={HardDrive}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        {demoData.backupHistory.map((backup, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    marginBottom: '12px',
-                                    paddingBottom: '12px',
-                                    borderBottom:
-                                        i < demoData.backupHistory.length - 1
-                                            ? `1px solid ${THEME.glassBorder}`
-                                            : 'none',
-                                }}
-                            >
-                                <p style={{ color: THEME.textMain }}>{backup.name}</p>
-                                <p>
-                                    {backup.size} | {backup.duration} | {backup.date}
-                                </p>
-                                <p style={{ color: THEME.success }}>✓ {backup.status}</p>
-                            </div>
-                        ))}
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'security' && itemKey === 'ssl') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <RingGauge value={demoData.sslRatio} max={100} label="SSL Connections" unit="%" />
-                    <Panel title="Certificate Details" icon={Shield}>
-                        <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                            <div style={{ marginBottom: '8px' }}>
-                                <p style={{ color: THEME.textMuted }}>Issuer</p>
-                                <p style={{ color: THEME.textMain }}>Let's Encrypt</p>
-                            </div>
-                            <div style={{ marginBottom: '8px' }}>
-                                <p style={{ color: THEME.textMuted }}>Valid Until</p>
-                                <p style={{ color: THEME.textMain }}>2026-06-15</p>
-                            </div>
-                            <div>
-                                <p style={{ color: THEME.textMuted }}>Protocol</p>
-                                <p style={{ color: THEME.textMain }}>TLS 1.3</p>
-                            </div>
+                            {[
+                                { label: 'Archive Count', value: demoData.walMetrics.archiveCount.toLocaleString() },
+                                { label: 'Archive Size', value: demoData.walMetrics.archiveSize },
+                                { label: 'Last Archive', value: demoData.walMetrics.lastArchive },
+                                { label: 'Replication Slots', value: demoData.walMetrics.replicationSlots },
+                            ].map((item) => (
+                                <div
+                                    key={item.label}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>
+                                        {item.label}
+                                    </div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: THEME.ai }}>{item.value}</div>
+                                </div>
+                            ))}
                         </div>
                     </Panel>
                 </div>
             );
         }
 
-        if (sectionKey === 'security' && itemKey === 'roles') {
+        if (sectionKey === 'infrastructure' && itemKey === 'checkpoint-monitor') {
             return (
-                <Panel title="Roles & Privileges" icon={Lock}>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Role</th>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Conns</th>
-                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
-                                        Privileges
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {demoData.roleStats.map((role, i) => (
-                                    <tr key={i} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                                        <td style={{ padding: '8px', color: THEME.textMain }}>{role.role}</td>
-                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{role.conns}</td>
-                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{role.perms}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </Panel>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Checkpoint Activity" icon={CheckCircle} accentColor={THEME.success}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.checkpointMetrics.map((cp) => (
+                                <div
+                                    key={cp.type}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            color: THEME.textMain,
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        {cp.type}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3, 1fr)',
+                                            gap: 10,
+                                            fontSize: 10,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        <span>Last: {cp.last}</span>
+                                        <span>Duration: {cp.duration}</span>
+                                        <span>Buffers: {cp.buffers}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'security' && itemKey === 'audit') {
+        if (sectionKey === 'infrastructure' && itemKey === 'vacuum-maintenance') {
             return (
-                <Panel title="Audit Log" icon={Eye}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        {demoData.auditEvents.map((event, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    marginBottom: '10px',
-                                    paddingBottom: '10px',
-                                    borderBottom:
-                                        i < demoData.auditEvents.length - 1 ? `1px solid ${THEME.glassBorder}` : 'none',
-                                }}
-                            >
-                                <p style={{ color: THEME.textMain }}>
-                                    {event.event} by {event.user}
-                                </p>
-                                <p>
-                                    {event.time} - {event.status}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </Panel>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Vacuum Status" icon={RefreshCw} accentColor={THEME.warning}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.vacuumStats.map((t) => (
+                                <div
+                                    key={t.table}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain }}>
+                                            {t.table}
+                                        </span>
+                                        <span style={{ fontSize: 9, color: THEME.textDim }}>
+                                            Dead tuples: {t.deadTuples.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim }}>
+                                        {t.tuples.toLocaleString()} rows • {t.lastVacuum}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'security' && itemKey === 'rls') {
+        if (sectionKey === 'infrastructure' && itemKey === 'capacity-planning') {
             return (
-                <Panel title="Row-Level Security Policies" icon={Shield}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>orders - authenticated_users</p>
-                            <p>SELECT: user_id = current_user_id</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>users - public_profile</p>
-                            <p>SELECT: public = true</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.success }}>✓ 2 policies active</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'observability' && itemKey === 'hub') {
-            return (
-                <Panel title="Observability Hub" icon={Eye}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                             gap: '16px',
                         }}
                     >
-                        <div style={{ backgroundColor: THEME.glass, padding: '16px', borderRadius: '6px' }}>
-                            <p style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>Metrics</p>
-                            <p style={{ color: THEME.textMain, fontSize: '18px' }}>2.4K/s</p>
-                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>data points</p>
-                        </div>
-                        <div style={{ backgroundColor: THEME.glass, padding: '16px', borderRadius: '6px' }}>
-                            <p style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>Logs</p>
-                            <p style={{ color: THEME.textMain, fontSize: '18px' }}>542K/h</p>
-                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>events</p>
-                        </div>
-                        <div style={{ backgroundColor: THEME.glass, padding: '16px', borderRadius: '6px' }}>
-                            <p style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>Traces</p>
-                            <p style={{ color: THEME.textMain, fontSize: '18px' }}>84K/h</p>
-                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>spans</p>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <RingGauge value={97} color={THEME.warning} label="Used %" size={100} />
                         </div>
                     </div>
-                </Panel>
+
+                    <Panel title="Storage Capacity" icon={BarChart2} accentColor={THEME.warning}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {[
+                                { label: 'Used', value: '1987 GB', color: THEME.warning },
+                                { label: 'Total', value: '2048 GB', color: THEME.textMuted },
+                                { label: 'Growth Rate', value: '12 GB/week', color: THEME.ai },
+                                { label: 'Projected Full', value: '42 days', color: THEME.danger },
+                            ].map((item) => (
+                                <div
+                                    key={item.label}
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '10px 0',
+                                        borderBottom: `1px solid ${THEME.glassBorder}`,
+                                    }}
+                                >
+                                    <span style={{ fontSize: 11, color: THEME.textMuted }}>{item.label}</span>
+                                    <span style={{ fontSize: 12, fontWeight: 600, color: item.color }}>
+                                        {item.value}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'infrastructure' && itemKey === 'backup-recovery') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Backup History" icon={Archive} accentColor={THEME.success}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.backupHistory.map((b) => (
+                                <div
+                                    key={b.name}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                        borderLeft: `3px solid ${THEME.success}`,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain }}>
+                                            {b.name}
+                                        </span>
+                                        <StatusBadge label={b.status} color={THEME.success} />
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3, 1fr)',
+                                            gap: 10,
+                                            fontSize: 9,
+                                            color: THEME.textDim,
+                                        }}
+                                    >
+                                        <span>{b.size}</span>
+                                        <span>{b.duration}</span>
+                                        <span>{b.date}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SECURITY SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'security' && itemKey === 'security-compliance') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric
+                            icon={Lock}
+                            label="SSL Connections"
+                            value={`${demoData.sslRatio}%`}
+                            color={THEME.success}
+                        />
+                        <HeroMetric
+                            icon={ShieldCheck}
+                            label="Roles"
+                            value={demoData.roleStats.length}
+                            color={THEME.ai}
+                        />
+                        <HeroMetric icon={CheckCircle} label="Compliance" value="GDPR" color={THEME.primary} />
+                    </div>
+
+                    <Panel title="Role Management" icon={Shield} accentColor={THEME.danger}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.roleStats.map((role) => (
+                                <div
+                                    key={role.role}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                color: THEME.textMain,
+                                                fontFamily: THEME.fontMono,
+                                            }}
+                                        >
+                                            {role.role}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: THEME.ai }}>{role.conns} connections</span>
+                                    </div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim }}>Permissions: {role.perms}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Audit Log" icon={AlertTriangle} accentColor={THEME.danger}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {demoData.auditEvents.map((evt, i) => (
+                                <div
+                                    key={i}
+                                    className="dpg-table-row"
+                                    style={{
+                                        justifyContent: 'space-between',
+                                        padding: '10px 0',
+                                        fontSize: 10,
+                                        color: THEME.textMuted,
+                                    }}
+                                >
+                                    <span style={{ fontFamily: THEME.fontMono }}>{evt.event}</span>
+                                    <span>{evt.user}</span>
+                                    <span style={{ color: THEME.success }}>{evt.status}</span>
+                                    <span style={{ color: THEME.textDim }}>{evt.time}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // OBSERVABILITY SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'observability' && itemKey === 'observability-hub') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Data Collection" icon={Eye} accentColor={THEME.warning}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                gap: '12px',
+                            }}
+                        >
+                            {[
+                                { name: 'PostgreSQL Logs', status: 'active' },
+                                { name: 'Metrics Export', status: 'active' },
+                                { name: 'Query Tracing', status: 'active' },
+                                { name: 'Slow Query Log', status: 'active' },
+                            ].map((item) => (
+                                <div
+                                    key={item.name}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 6,
+                                    }}
+                                >
+                                    <div style={{ fontSize: 10, color: THEME.textMuted }}>{item.name}</div>
+                                    <StatusBadge label={item.status.toUpperCase()} color={THEME.success} />
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
             );
         }
 
         if (sectionKey === 'observability' && itemKey === 'cloudwatch') {
             return (
-                <Panel title="AWS CloudWatch Integration" icon={Gauge}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="AWS CloudWatch Integration" icon={Cloud} accentColor={THEME.ai}>
                         <div
                             style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                                fontSize: 12,
+                                color: THEME.textMuted,
+                                padding: '40px 20px',
+                                textAlign: 'center',
+                                borderRadius: 8,
+                                background: THEME.glass,
                             }}
                         >
-                            <p style={{ color: THEME.textMain }}>RDS CPU Utilization</p>
-                            <p>Current: 34% | Max (24h): 67%</p>
+                            Connected to CloudWatch
+                            <br />
+                            Syncing metrics every 60 seconds
                         </div>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>RDS Network In/Out</p>
-                            <p>IN: 2.3 MB/s | OUT: 1.8 MB/s</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.success }}>✓ Synced 45s ago</p>
-                        </div>
-                    </div>
-                </Panel>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'observability' && itemKey === 'logs') {
+        if (sectionKey === 'observability' && itemKey === 'log-patterns') {
             return (
-                <Panel title="Log Pattern Detection" icon={Activity}>
-                    <ResponsiveContainer width="100%" height={240}>
-                        <BarChart data={demoData.logPatterns}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                            <XAxis dataKey="pattern" stroke={THEME.textMuted} angle={-15} height={60} />
-                            <YAxis stroke={THEME.textMuted} />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
-                                }}
-                            />
-                            <Bar dataKey="frequency" fill={THEME.warning} radius={[8, 8, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </Panel>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Log Pattern Trends" icon={FileSearch} accentColor={THEME.warning}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.logPatterns.map((pattern) => (
+                                <div
+                                    key={pattern.pattern}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: 6,
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain }}>
+                                            {pattern.pattern}
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontSize: 9,
+                                                color:
+                                                    pattern.trending === 'up'
+                                                        ? THEME.danger
+                                                        : pattern.trending === 'down'
+                                                          ? THEME.success
+                                                          : THEME.textMuted,
+                                            }}
+                                        >
+                                            {pattern.trending.toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div style={{ fontSize: 10, color: THEME.ai }}>
+                                        {pattern.frequency.toLocaleString()} occurrences
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'observability' && itemKey === 'otel') {
+        if (sectionKey === 'observability' && itemKey === 'opentelemetry') {
             return (
-                <Panel title="OpenTelemetry Configuration" icon={Sparkles}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
-                        <pre
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="OpenTelemetry Collector" icon={Radar} accentColor={THEME.ai}>
+                        <div
                             style={{
-                                backgroundColor: THEME.glass,
+                                fontSize: 12,
+                                color: THEME.textMuted,
+                                padding: '40px 20px',
+                                textAlign: 'center',
+                                borderRadius: 8,
+                                background: THEME.glass,
+                            }}
+                        >
+                            Collector Active
+                            <br />
+                            Exporting traces, metrics, logs
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'observability' && itemKey === 'kubernetes') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Kubernetes Cluster Info" icon={Container} accentColor={THEME.primary}>
+                        <div
+                            style={{
+                                fontSize: 12,
+                                color: THEME.textMuted,
+                                padding: '40px 20px',
+                                textAlign: 'center',
+                                borderRadius: 8,
+                                background: THEME.glass,
+                            }}
+                        >
+                            K8s Integration Enabled
+                            <br />
+                            Monitoring 4 nodes, 12 pods
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'observability' && itemKey === 'status-page') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Service Status" icon={Globe} accentColor={THEME.success}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {[
+                                { service: 'API Server', status: 'operational' },
+                                { service: 'Database', status: 'operational' },
+                                { service: 'Cache Layer', status: 'operational' },
+                                { service: 'Replication', status: 'operational' },
+                            ].map((item) => (
+                                <div
+                                    key={item.service}
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '10px 0',
+                                        borderBottom: `1px solid ${THEME.glassBorder}`,
+                                    }}
+                                >
+                                    <span style={{ fontSize: 11, color: THEME.textMuted }}>{item.service}</span>
+                                    <StatusBadge label={item.status.toUpperCase()} color={THEME.success} />
+                                </div>
+                            ))}
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'observability' && itemKey === 'ai-monitoring') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="AI Anomaly Detection" icon={Brain} accentColor={THEME.ai}>
+                        <div
+                            style={{
+                                fontSize: 12,
+                                color: THEME.textMuted,
+                                padding: '40px 20px',
+                                textAlign: 'center',
+                                borderRadius: 8,
+                                background: THEME.glass,
+                            }}
+                        >
+                            Monitoring for anomalies
+                            <br />
+                            Confidence: 96.2%
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // DEVELOPER TOOLS SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        if (sectionKey === 'developer' && itemKey === 'sql-console') {
+            return (
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="SQL Console" icon={Terminal} accentColor={THEME.ai}>
+                        <div
+                            style={{
+                                fontFamily: THEME.fontMono,
+                                fontSize: 10,
+                                color: THEME.textMuted,
+                                background: THEME.glass,
                                 padding: '12px',
-                                borderRadius: '6px',
-                                overflow: 'auto',
+                                borderRadius: 6,
+                                lineHeight: 1.6,
+                                minHeight: 200,
                             }}
                         >
-                            {`exporter: jaeger
-endpoint: localhost:14268
-sampling_rate: 0.1
-batch_size: 512
-trace_attributes:
-  service.name: postgresql
-  service.version: 16.2`}
-                        </pre>
-                    </div>
-                </Panel>
+                            {`> SELECT version();
+ PostgreSQL 16.2 on x86_64-pc-linux-gnu
+
+> SELECT COUNT(*) FROM orders;
+ COUNT
+-------
+ 2450000
+
+> EXPLAIN ANALYZE SELECT * FROM users;
+ Seq Scan on users  (cost=0.00..3240.00 rows=145000 width=512)
+   Execution Time: 142.234 ms`}
+                        </div>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'observability' && itemKey === 'kube') {
+        if (sectionKey === 'developer' && itemKey === 'api-tracing') {
             return (
-                <Panel title="Kubernetes Monitoring" icon={Cpu}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>Pod: pg-primary-0</p>
-                            <p>CPU: 340m / 2000m | Memory: 2.4 Gi / 4 Gi</p>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Recent Queries" icon={Cpu} accentColor={THEME.primary}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {demoData.recentQueries.map((q, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 9,
+                                            fontFamily: THEME.fontMono,
+                                            color: THEME.textMuted,
+                                            marginBottom: 6,
+                                            wordBreak: 'break-all',
+                                        }}
+                                    >
+                                        {q.query}
+                                    </div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim }}>{q.time}</div>
+                                </div>
+                            ))}
                         </div>
-                        <div>
-                            <p style={{ color: THEME.success }}>✓ All pods healthy</p>
-                        </div>
-                    </div>
-                </Panel>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'observability' && itemKey === 'status') {
+        if (sectionKey === 'developer' && itemKey === 'repository') {
             return (
-                <Panel title="Status Page Overview" icon={CheckCircle}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="Repository" icon={GitBranch} accentColor={THEME.primary}>
                         <div
                             style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                                fontSize: 12,
+                                color: THEME.textMuted,
+                                padding: '40px 20px',
+                                textAlign: 'center',
+                                borderRadius: 8,
+                                background: THEME.glass,
                             }}
                         >
-                            <p style={{ color: THEME.success }}>✓ Database: Operational</p>
+                            Git repository integration
+                            <br />
+                            Branch: main • Last commit: 2h ago
                         </div>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.success }}>✓ API: Operational</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.success }}>✓ Backups: Operational</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMain }}>Uptime (30d): 99.98%</p>
-                        </div>
-                    </div>
-                </Panel>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'observability' && itemKey === 'aimon') {
+        if (sectionKey === 'developer' && itemKey === 'ai-advisor') {
             return (
-                <Panel title="AI Monitoring" icon={Sparkles}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>Anomaly Detection</p>
-                            <p>12 anomalies detected in 24h</p>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <Panel title="AI Query Advisor" icon={Brain} accentColor={THEME.ai}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {[
+                                {
+                                    query: 'SELECT * FROM orders WHERE status = $1',
+                                    advice: 'Add index on (status) for faster filtering',
+                                    impact: 'High',
+                                },
+                                {
+                                    query: 'JOIN orders, users WHERE orders.user_id = users.id',
+                                    advice: 'Use INNER JOIN syntax for clarity',
+                                    impact: 'Low',
+                                },
+                            ].map((item, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: 9,
+                                            fontFamily: THEME.fontMono,
+                                            color: THEME.textMuted,
+                                            marginBottom: 6,
+                                            wordBreak: 'break-all',
+                                        }}
+                                    >
+                                        {item.query}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: THEME.ai, marginBottom: 4 }}>
+                                        💡 {item.advice}
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 9,
+                                            color: item.impact === 'High' ? THEME.danger : THEME.textDim,
+                                        }}
+                                    >
+                                        Impact: {item.impact}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <div>
-                            <p style={{ color: THEME.textMain }}>Predictive Alerts</p>
-                            <p style={{ color: THEME.warning }}>Disk usage exceeds 400GB in 4 days</p>
-                        </div>
-                    </div>
-                </Panel>
+                    </Panel>
+                </div>
             );
         }
 
-        if (sectionKey === 'tools' && itemKey === 'console') {
-            return (
-                <Panel title="SQL Console" icon={Terminal}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
-                        <p style={{ marginBottom: '12px', color: THEME.textMain }}>Recent Queries:</p>
-                        {demoData.recentQueries.map((q, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    marginBottom: '10px',
-                                    paddingBottom: '10px',
-                                    borderBottom: `1px solid ${THEME.glassBorder}`,
-                                }}
-                            >
-                                <p style={{ color: THEME.primary, fontSize: '11px' }}>{q.query.slice(0, 50)}...</p>
-                                <p style={{ color: THEME.textMuted, fontSize: '11px' }}>{q.time}</p>
-                            </div>
-                        ))}
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'tools' && itemKey === 'apiex') {
-            return (
-                <Panel title="API Explorer" icon={BookOpen}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.primary }}>GET /api/databases</p>
-                            <p>Returns list of databases with stats</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.secondary }}>POST /api/query</p>
-                            <p>Execute custom SQL query</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.success }}>GET /api/health</p>
-                            <p>Database health status endpoint</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'tools' && itemKey === 'repo') {
-            return (
-                <Panel title="Migration Repository" icon={GitBranch}>
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>v1.4.2 - 2026-03-20</p>
-                            <p>Add user_preferences table</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '10px',
-                                paddingBottom: '10px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.textMain }}>v1.4.1 - 2026-03-15</p>
-                            <p>Index optimization on orders</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.textMain }}>v1.4.0 - 2026-03-10</p>
-                            <p>Add RLS policies</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'tools' && itemKey === 'aiadv') {
-            return (
-                <Panel title="AI Advisor" icon={Sparkles}>
-                    <div style={{ fontSize: '13px', color: THEME.textMuted }}>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.primary }}>Idea: Query Optimization</p>
-                            <p>Add index on orders.status for 12x speedup</p>
-                        </div>
-                        <div
-                            style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: `1px solid ${THEME.glassBorder}`,
-                            }}
-                        >
-                            <p style={{ color: THEME.primary }}>Idea: Schema Insight</p>
-                            <p>45GB table bloat detected - run VACUUM</p>
-                        </div>
-                        <div>
-                            <p style={{ color: THEME.primary }}>Idea: Performance</p>
-                            <p>Connection pool at 87% - consider scaling</p>
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        return <div style={{ color: THEME.textMain }}>Select an item</div>;
+        // Default fallback
+        return (
+            <Panel title="Content Not Found" icon={AlertTriangle} accentColor={THEME.danger}>
+                <div style={{ padding: '20px', textAlign: 'center', color: THEME.textMuted }}>
+                    Section: {sectionKey} • Item: {itemKey}
+                </div>
+            </Panel>
+        );
     };
-
-    const sections = [
-        {
-            key: 'overview',
-            label: 'Overview',
-            icon: Activity,
-            accent: THEME.primary,
-            items: [
-                { key: 'executive', label: 'Executive Dashboard', icon: LayoutDashboard },
-                { key: 'connections', label: 'Connections', icon: Network },
-                { key: 'serverinfo', label: 'Server Info', icon: Server },
-                { key: 'databases', label: 'Databases', icon: Package },
-                { key: 'perfsnap', label: 'Performance Snapshot', icon: TrendingUp },
-            ],
-        },
-        {
-            key: 'alerts',
-            label: 'Alerts & Rules',
-            icon: AlertCircle,
-            accent: THEME.danger,
-            items: [
-                { key: 'active', label: 'Active Alerts', icon: AlertTriangle },
-                { key: 'rules', label: 'Alert Rules', icon: Settings },
-                { key: 'corr', label: 'Alert Correlation', icon: Network },
-            ],
-        },
-        {
-            key: 'query',
-            label: 'Query Analysis',
-            icon: Code,
-            accent: THEME.secondary,
-            items: [
-                { key: 'optimizer', label: 'Query Optimizer', icon: Zap },
-                { key: 'plans', label: 'Query Plans', icon: Code },
-                { key: 'regdet', label: 'Regression Detector', icon: TrendingUp },
-                { key: 'idxadv', label: 'Index Advisor', icon: Zap },
-                { key: 'bloat', label: 'Bloat Analyzer', icon: BarChart3 },
-                { key: 'tblstat', label: 'Table Stats', icon: Package },
-            ],
-        },
-        {
-            key: 'schema',
-            label: 'Schema & Data',
-            icon: Package,
-            accent: THEME.primary,
-            items: [
-                { key: 'tree', label: 'Schema Tree', icon: Package },
-                { key: 'visualizer', label: 'Schema Visualizer', icon: Network },
-                { key: 'deps', label: 'Table Dependencies', icon: GitBranch },
-                { key: 'chartbldr', label: 'Chart Builder', icon: BarChart3 },
-            ],
-        },
-        {
-            key: 'infra',
-            label: 'Infrastructure',
-            icon: Cpu,
-            accent: THEME.warning,
-            items: [
-                { key: 'pool', label: 'Connection Pool', icon: Network },
-                { key: 'repl', label: 'Replication', icon: Volume2 },
-                { key: 'checkpoint', label: 'Checkpoints', icon: Clock },
-                { key: 'maint', label: 'Maintenance', icon: Wrench },
-                { key: 'cap', label: 'Capacity', icon: HardDrive },
-                { key: 'backup', label: 'Backups', icon: HardDrive },
-            ],
-        },
-        {
-            key: 'security',
-            label: 'Security',
-            icon: Lock,
-            accent: THEME.ai,
-            items: [
-                { key: 'ssl', label: 'SSL/TLS Status', icon: Shield },
-                { key: 'roles', label: 'Roles & Privileges', icon: Lock },
-                { key: 'audit', label: 'Audit Log', icon: Eye },
-                { key: 'rls', label: 'Row-Level Security', icon: Shield },
-            ],
-        },
-        {
-            key: 'observability',
-            label: 'Observability',
-            icon: Eye,
-            accent: THEME.secondary,
-            items: [
-                { key: 'hub', label: 'Observability Hub', icon: Eye },
-                { key: 'cloudwatch', label: 'CloudWatch', icon: Gauge },
-                { key: 'logs', label: 'Log Patterns', icon: Activity },
-                { key: 'otel', label: 'OpenTelemetry', icon: Sparkles },
-                { key: 'kube', label: 'Kubernetes', icon: Cpu },
-                { key: 'status', label: 'Status Page', icon: CheckCircle },
-                { key: 'aimon', label: 'AI Monitoring', icon: Sparkles },
-            ],
-        },
-        {
-            key: 'tools',
-            label: 'Developer Tools',
-            icon: Wrench,
-            accent: THEME.success,
-            items: [
-                { key: 'console', label: 'SQL Console', icon: Terminal },
-                { key: 'apiex', label: 'API Explorer', icon: BookOpen },
-                { key: 'repo', label: 'Repository', icon: GitBranch },
-                { key: 'aiadv', label: 'AI Advisor', icon: Sparkles },
-            ],
-        },
-    ];
 
     return (
         <DemoLayout

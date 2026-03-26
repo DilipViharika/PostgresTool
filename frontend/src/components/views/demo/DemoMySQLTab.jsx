@@ -1,24 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-    Database,
-    TrendingUp,
-    AlertCircle,
-    Lock,
-    Settings,
-    Server,
-    HardDrive,
-    Zap,
-    Users,
-    FileText,
-    Shield,
-    Activity,
-    Gauge,
-    Clock,
-    Eye,
-    Code,
-    ArrowRight,
-    CheckCircle,
-} from 'lucide-react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import DemoLayout, {
     Panel,
     StatusBadge,
@@ -28,7 +9,36 @@ import DemoLayout, {
     ChartTip,
     generateChartData,
 } from './DemoLayout.jsx';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import {
+    Activity,
+    Database,
+    Bell,
+    Eye,
+    Server,
+    Shield,
+    Gauge,
+    Terminal,
+    Zap,
+    Clock,
+    TrendingUp,
+    HardDrive,
+    AlertCircle,
+    Lock,
+    Users,
+    Code,
+    CheckCircle,
+    Network,
+    RefreshCw,
+    Settings,
+    Cpu,
+    BarChart3,
+    Layers,
+    FileText,
+    GitBranch,
+    Radio,
+    Archive,
+    AlertTriangle,
+} from 'lucide-react';
 import {
     AreaChart,
     Area,
@@ -51,306 +61,110 @@ function DemoMySQLTab({ tabId }) {
     useAdaptiveTheme();
 
     const demoData = useMemo(() => {
-        const baseData = generateChartData(24);
+        const base24h = generateChartData(24);
+        const base30d = generateChartData(30);
 
         return {
-            // OVERVIEW data
-            executiveDashboard: {
-                statusBadges: [
-                    { label: 'Status', value: 'Operational', icon: CheckCircle, color: THEME.success },
-                    { label: 'Environment', value: 'Production', icon: Server, color: THEME.primary },
-                    { label: 'Version', value: 'MySQL 8.0.35', icon: Database, color: THEME.secondary },
-                ],
-                heroMetrics: [
-                    { label: 'Uptime', value: '142d', unit: 'days', icon: Clock, trend: '+2.1%' },
-                    { label: 'Threads Running', value: '18', unit: 'threads', icon: Activity, trend: '-0.5%' },
-                    { label: 'Buffer Pool Hit', value: '99.7%', unit: 'ratio', icon: Zap, trend: '+0.2%' },
-                    { label: 'QPS', value: '1.2K', unit: 'queries/sec', icon: TrendingUp, trend: '+12%' },
-                    { label: 'Slow Queries', value: '42', unit: 'queries', icon: AlertCircle, trend: '-8%' },
-                    { label: 'Aborted Conn', value: '3', unit: 'connections', icon: Server, trend: 'stable' },
-                ],
-                qpsTrend: baseData.map((d, i) => ({
-                    ...d,
-                    value: Math.floor(800 + Math.sin(i / 4) * 400 + Math.random() * 200),
-                })),
-                innodbHealth: [
-                    { name: 'Buffer Pool', value: 96, color: THEME.primary },
-                    { name: 'Redo Log', value: 73, color: THEME.secondary },
-                    { name: 'Adaptive Hash', value: 68, color: THEME.success },
-                ],
-                binaryLogStatus: {
-                    currentFile: 'mysql-bin.000847',
-                    size: '2.1 GB',
-                    position: '16,384,201',
-                    purgedUntil: 'mysql-bin.000800',
-                },
-                threadActivity: {
-                    idle: 152,
-                    query: 18,
-                    sleeping: 34,
-                    connecting: 2,
-                },
-                tableCache: {
-                    open: 1247,
-                    hit: 99.8,
-                    total: 1250,
-                },
+            innodb: {
+                bufferPoolUsage: 78.5,
+                bufferPoolPages: 2048000,
+                readHits: 99.2,
+                writeHits: 87.3,
+                pagesRead: 1240,
+                pagesWritten: 560,
             },
-
-            // InnoDB Status data
-            innodbStatus: {
-                bufferPoolPages: [
-                    { name: 'Data Pages', value: 65536, color: THEME.primary },
-                    { name: 'Free Pages', value: 16384, color: THEME.textMuted },
-                    { name: 'Dirty Pages', value: 2048, color: THEME.warning },
-                ],
-                pendingIO: [
-                    { type: 'Read', count: 2, avg: '1.2ms' },
-                    { type: 'Write', count: 5, avg: '0.8ms' },
-                    { type: 'Log Flush', count: 1, avg: '0.3ms' },
-                ],
-                rowOps: [
-                    { op: 'Inserts', value: 45230, color: THEME.success },
-                    { op: 'Updates', value: 128456, color: THEME.primary },
-                    { op: 'Deletes', value: 12340, color: THEME.danger },
-                    { op: 'Reads', value: 2156789, color: THEME.secondary },
-                ],
-            },
-
-            // Alerts data
+            qps: base24h.map((d, i) => ({
+                ...d,
+                value: Math.floor(850 + Math.sin(i / 6) * 350 + Math.random() * 180),
+            })),
+            tps: base24h.map((d, i) => ({
+                ...d,
+                value: Math.floor(620 + Math.cos(i / 6) * 250 + Math.random() * 140),
+            })),
+            connections: base24h.map((d, i) => ({
+                ...d,
+                active: Math.floor(38 + Math.sin(i / 8) * 12 + Math.random() * 8),
+                idle: Math.floor(28 + Math.cos(i / 8) * 15 + Math.random() * 10),
+            })),
+            databases: [
+                { name: 'production', engine: 'InnoDB', size: '52.4 GB', tables: 127, rows: 4230000 },
+                { name: 'analytics', engine: 'InnoDB', size: '38.9 GB', tables: 64, rows: 2150000 },
+                { name: 'cache_db', engine: 'Memory', size: '2.1 GB', tables: 24, rows: 580000 },
+                { name: 'logs', engine: 'InnoDB', size: '14.2 GB', tables: 12, rows: 890000 },
+            ],
             alerts: {
                 critical: 1,
-                warning: 8,
-                info: 24,
-                resolved: 156,
-                recentAlerts: [
-                    {
-                        id: 1,
-                        severity: 'critical',
-                        message: 'High memory usage (92%)',
-                        time: '5m ago',
-                        status: 'Active',
-                    },
-                    {
-                        id: 2,
-                        severity: 'warning',
-                        message: 'Slow query detected (2.3s)',
-                        time: '12m ago',
-                        status: 'Active',
-                    },
-                    { id: 3, severity: 'warning', message: 'Replication lag > 10s', time: '24m ago', status: 'Active' },
-                    { id: 4, severity: 'info', message: 'Backup completed', time: '2h ago', status: 'Resolved' },
-                ],
-                alertTrend: baseData.map((d, i) => ({
-                    ...d,
-                    critical: Math.max(0, Math.floor(Math.sin(i / 3) * 2 + 1)),
-                    warning: Math.floor(Math.sin(i / 4 + 1) * 4 + 6),
-                    info: Math.floor(Math.cos(i / 5) * 8 + 16),
-                })),
+                warning: 4,
+                info: 8,
+                resolved: 38,
             },
-
-            // Query Analysis data
+            alertTrends: base24h.map((d, i) => ({
+                ...d,
+                alerts: Math.floor(6 + Math.sin(i / 7) * 3 + Math.random() * 2),
+            })),
             slowQueries: [
-                { id: 1, sql: 'SELECT * FROM orders WHERE user_id=?', execTime: 3.2, rowsExam: 145000 },
-                { id: 2, sql: 'SELECT * FROM logs WHERE timestamp>?', execTime: 2.8, rowsExam: 89000 },
-                { id: 3, sql: 'UPDATE inventory SET qty=? WHERE...', execTime: 2.1, rowsExam: 56000 },
+                { id: 'q1', query: 'SELECT * FROM orders WHERE status = %s', duration: 1850, calls: 203, rows: 9240 },
+                {
+                    id: 'q2',
+                    query: 'SELECT COUNT(*) FROM transactions GROUP BY user_id',
+                    duration: 1420,
+                    calls: 945,
+                    rows: 8324,
+                },
+                {
+                    id: 'q3',
+                    query: 'JOIN orders o, users u WHERE o.user_id = u.id',
+                    duration: 1260,
+                    calls: 124,
+                    rows: 42100,
+                },
             ],
-            queryDigest: [
-                { pattern: 'SELECT * FROM orders', freq: 1245, avgTime: 0.45 },
-                { pattern: 'SELECT * FROM users WHERE id=?', freq: 3421, avgTime: 0.12 },
-                { pattern: 'INSERT INTO logs VALUES', freq: 987, avgTime: 0.08 },
-            ],
-            indexStats: [
-                { name: 'idx_orders_user', usage: 98765, cardinality: 450000, size: '12 MB' },
-                { name: 'idx_users_email', usage: 45321, cardinality: 125000, size: '4 MB' },
-                { name: 'idx_logs_timestamp', usage: 234000, cardinality: 1200000, size: '28 MB' },
-            ],
+            queryDist: base24h.map((d, i) => ({
+                ...d,
+                select: Math.floor(480 + Math.random() * 280),
+                insert: Math.floor(160 + Math.random() * 110),
+                update: Math.floor(130 + Math.random() * 90),
+                delete: Math.floor(40 + Math.random() * 30),
+            })),
             tableStats: [
-                {
-                    table: 'orders',
-                    rows: 2500000,
-                    dataSize: '450 MB',
-                    indexSize: '120 MB',
-                    reads: 450000,
-                    writes: 12000,
-                },
-                { table: 'users', rows: 125000, dataSize: '18 MB', indexSize: '5 MB', reads: 234000, writes: 890 },
-                {
-                    table: 'logs',
-                    rows: 15000000,
-                    dataSize: '2.1 GB',
-                    indexSize: '380 MB',
-                    reads: 2100000,
-                    writes: 45000,
-                },
+                { name: 'orders', engine: 'InnoDB', rows: 845000, size: '18.4 GB', autoIncrement: 2450000 },
+                { name: 'users', engine: 'InnoDB', rows: 123000, size: '2.8 GB', autoIncrement: 450000 },
+                { name: 'transactions', engine: 'InnoDB', rows: 2340000, size: '28.9 GB', autoIncrement: 5000000 },
             ],
-            queryProfiler: [
-                { stage: 'Opening tables', duration: '0.02ms' },
-                { stage: 'System lock', duration: '0.01ms' },
-                { stage: 'Table lock', duration: '0.03ms' },
-                { stage: 'Init', duration: '0.05ms' },
-                { stage: 'Optimizing', duration: '0.04ms' },
-                { stage: 'Statistics', duration: '0.06ms' },
-                { stage: 'Preparing', duration: '0.03ms' },
-                { stage: 'Executing', duration: '1.23ms' },
-                { stage: 'Sending data', duration: '0.45ms' },
-            ],
-
-            // Schema & Data
-            schemas: [
-                { name: 'production', tables: 48, views: 12, procedures: 8, functions: 15 },
-                { name: 'analytics', tables: 25, views: 18, procedures: 3, functions: 5 },
-                { name: 'archive', tables: 156, views: 0, procedures: 0, functions: 0 },
-            ],
-            tableColumns: [
-                { name: 'id', type: 'BIGINT', nullable: false, key: 'PRIMARY' },
-                { name: 'user_id', type: 'BIGINT', nullable: false, key: 'MUL' },
-                { name: 'order_date', type: 'TIMESTAMP', nullable: false, default: 'CURRENT_TIMESTAMP' },
-                { name: 'total', type: 'DECIMAL(10,2)', nullable: false, key: null },
-            ],
-            foreignKeys: [
-                { table: 'orders', column: 'user_id', refsTable: 'users', refsColumn: 'id' },
-                { table: 'order_items', column: 'order_id', refsTable: 'orders', refsColumn: 'id' },
-                { table: 'order_items', column: 'product_id', refsTable: 'products', refsColumn: 'id' },
-            ],
-            storedPrograms: [
-                { name: 'sp_generate_reports', type: 'Procedure' },
-                { name: 'fn_calculate_discount', type: 'Function' },
-                { name: 'tr_update_inventory', type: 'Trigger' },
-            ],
-
-            // Infrastructure data
-            connectionPool: {
-                metrics: [
-                    { label: 'Active', value: '18', icon: Activity, trend: '+2%' },
-                    { label: 'Idle', value: '152', icon: Server, trend: '-1%' },
-                    { label: 'Max Conn', value: '1000', icon: Users, trend: 'stable' },
-                    { label: 'Aborted', value: '3', icon: AlertCircle, trend: '-5%' },
-                ],
-                trend: baseData.map((d, i) => ({
-                    ...d,
-                    active: Math.floor(10 + Math.sin(i / 5) * 8),
-                    idle: Math.floor(140 + Math.cos(i / 4) * 20),
-                })),
-            },
             replication: {
-                sourceData: baseData.map((d, i) => ({
-                    ...d,
-                    lag: Math.max(0, Math.sin(i / 6) * 15),
-                })),
-                gtidStatus: {
-                    executed: 'a7b9f2c0-1a2b-11ec-81d3-0242ac110001:1-45823',
-                    purged: 'a7b9f2c0-1a2b-11ec-81d3-0242ac110001:1-45000',
-                    replicaLag: '2.3s',
-                },
+                status: 'running',
+                binlogFile: 'mysql-bin.000142',
+                binlogPosition: 245600000,
+                slaveGtidExec: '4a2c8d3e-1234-5678-abcd-ef0123456789:1-58493',
+                lag: 0,
             },
-            binlogs: {
-                trend: baseData.map((d, i) => ({
-                    ...d,
-                    size: Math.floor(1000 + Math.sin(i / 3) * 500 + i * 20),
-                })),
-                status: {
-                    current: 'mysql-bin.000847',
-                    size: '2.1 GB',
-                    purgedUntil: 'mysql-bin.000800',
-                    retention: '7 days',
-                },
+            threadPool: {
+                running: 12,
+                sleeping: 34,
+                cached: 156,
+                max: 200,
             },
-            threadPool: [
-                { name: 'Idle', value: 8, color: THEME.success },
-                { name: 'Active', value: 18, color: THEME.primary },
-                { name: 'Waiting', value: 4, color: THEME.warning },
-            ],
-            bufferPoolMem: [
-                { name: 'Data', value: 52, color: THEME.primary },
-                { name: 'Dirty', value: 8, color: THEME.warning },
-                { name: 'Free', value: 40, color: THEME.success },
-            ],
-            tablespaces: [
-                { name: 'system', size: '100 MB', used: '92 MB', type: 'System' },
-                { name: 'ibdata1', size: '5.0 GB', used: '4.8 GB', type: 'Data' },
-                { name: 'temp_ibdata', size: '500 MB', used: '120 MB', type: 'Temporary' },
-            ],
-            backups: [
-                { date: '2026-03-26 02:00', type: 'Full', status: 'Completed', duration: '12m', size: '850 MB' },
-                { date: '2026-03-25 02:00', type: 'Full', status: 'Completed', duration: '11m', size: '847 MB' },
-                { date: '2026-03-24 02:00', type: 'Full', status: 'Completed', duration: '13m', size: '842 MB' },
-            ],
-
-            // Security data
-            users: [
-                { name: 'app_user', host: '%.example.com', authMethod: 'mysql_native_password' },
-                { name: 'replication', host: '192.168.1.%', authMethod: 'sha2_password' },
-                { name: 'admin', host: 'localhost', authMethod: 'sha2_password' },
-            ],
-            sslStatus: {
-                sslRatio: 87,
-                certIssuer: 'CN=MySQL Server,O=Example Inc',
-                certExpiry: '2026-12-15',
-                tlsVersion: '1.3',
+            performanceSchema: {
+                events: 14287,
+                waits: 3420,
+                stages: 890,
+                statements: 4500,
             },
-            auditEvents: [
-                { time: '2026-03-26 14:23', user: 'app_user@192.168.1.50', event: 'CONNECT', result: 'Success' },
-                { time: '2026-03-26 14:22', user: 'admin@localhost', event: 'QUERY', result: 'Success' },
-                { time: '2026-03-26 14:21', user: 'replication@192.168.1.10', event: 'CONNECT', result: 'Success' },
+            locks: [
+                { type: 'Table Lock', tables: 2, mode: 'WRITE' },
+                { type: 'Row Lock', rows: 45, mode: 'SHARED' },
+                { type: 'MDL', objects: 3, mode: 'SHARED_READ' },
             ],
-
-            // Observability data
-            metrics: [
-                { name: 'QPS', value: 1200, sparkline: [800, 950, 1100, 1200, 1050, 900, 1150] },
-                { name: 'Latency', value: '2.3ms', sparkline: [2.5, 2.3, 2.1, 2.8, 2.2, 1.9, 2.3] },
-                { name: 'Memory', value: '92%', sparkline: [85, 87, 89, 91, 92, 90, 92] },
-            ],
-            errors: [
-                {
-                    time: '2026-03-26 14:15',
-                    level: 'ERROR',
-                    message: 'InnoDB: Space for a new transaction log file could not be allocated',
-                },
-                {
-                    time: '2026-03-26 13:42',
-                    level: 'WARNING',
-                    message: 'InnoDB: Retry attempt 3 for space allocation failed',
-                },
-                { time: '2026-03-26 12:30', level: 'ERROR', message: 'Slave: Duplicate entry in table users_unique' },
-            ],
-
-            // Developer Tools data
-            recentQueries: [
-                'SELECT * FROM orders WHERE user_id=42 LIMIT 100;',
-                'UPDATE inventory SET qty=qty-1 WHERE product_id=? AND qty>0;',
-                'SELECT COUNT(*) as cnt FROM logs WHERE DATE(created_at)=CURDATE();',
-            ],
-            migrations: [
-                {
-                    version: '20260315_001',
-                    description: 'Add index to user_created_at',
-                    status: 'Applied',
-                    appliedAt: '2026-03-15 10:30',
-                },
-                {
-                    version: '20260310_002',
-                    description: 'Create orders_archive table',
-                    status: 'Applied',
-                    appliedAt: '2026-03-10 09:15',
-                },
-            ],
-            tuningRecs: [
-                {
-                    issue: 'High buffer pool hit rate variance',
-                    recommendation: 'Increase buffer pool size to 6GB',
-                    priority: 'Medium',
-                },
-                {
-                    issue: 'Replication lag spikes',
-                    recommendation: 'Enable parallel replication with 4 workers',
-                    priority: 'High',
-                },
-                {
-                    issue: 'Missing index on logs.timestamp',
-                    recommendation: 'CREATE INDEX idx_logs_ts ON logs(timestamp)',
-                    priority: 'Critical',
-                },
+            securityStatus: {
+                sslEnabled: true,
+                users: 18,
+                privilegedAccounts: 3,
+                passwordExpired: 0,
+            },
+            errorLog: [
+                { timestamp: '2m ago', level: 'WARNING', message: 'Aborted connection from host' },
+                { timestamp: '8m ago', level: 'ERROR', message: 'Table is marked as crashed' },
+                { timestamp: '15m ago', level: 'WARNING', message: 'InnoDB: Deadlock detected' },
             ],
         };
     }, []);
@@ -359,20 +173,20 @@ function DemoMySQLTab({ tabId }) {
         {
             key: 'overview',
             label: 'Overview',
-            icon: TrendingUp,
+            icon: Activity,
             accent: THEME.primary,
             items: [
-                { key: 'executiveDashboard', label: 'Executive Dashboard' },
-                { key: 'innodbStatus', label: 'InnoDB Status' },
-                { key: 'serverVariables', label: 'Server Variables' },
+                { key: 'dashboard', label: 'Executive Dashboard' },
+                { key: 'innodb', label: 'InnoDB Status' },
+                { key: 'serverVars', label: 'Server Variables' },
                 { key: 'databases', label: 'Databases' },
-                { key: 'performanceSchema', label: 'Performance Schema' },
+                { key: 'perfSchema', label: 'Performance Schema' },
             ],
         },
         {
             key: 'alerts',
             label: 'Alerts & Rules',
-            icon: AlertCircle,
+            icon: Bell,
             accent: THEME.danger,
             items: [
                 { key: 'activeAlerts', label: 'Active Alerts' },
@@ -384,21 +198,21 @@ function DemoMySQLTab({ tabId }) {
             key: 'queryAnalysis',
             label: 'Query Analysis',
             icon: Eye,
-            accent: THEME.warning,
+            accent: THEME.ai,
             items: [
-                { key: 'slowQueries', label: 'Slow Query Log' },
+                { key: 'slowLog', label: 'Slow Query Log' },
                 { key: 'queryDigest', label: 'Query Digest' },
                 { key: 'explainAnalyzer', label: 'EXPLAIN Analyzer' },
                 { key: 'indexStats', label: 'Index Statistics' },
                 { key: 'tableStats', label: 'Table Statistics' },
-                { key: 'queryProfiler', label: 'Query Profiler' },
+                { key: 'profiler', label: 'Query Profiler' },
             ],
         },
         {
             key: 'schemaData',
             label: 'Schema & Data',
             icon: Database,
-            accent: THEME.secondary,
+            accent: THEME.warning,
             items: [
                 { key: 'schemaBrowser', label: 'Schema Browser' },
                 { key: 'tableInspector', label: 'Table Inspector' },
@@ -410,11 +224,11 @@ function DemoMySQLTab({ tabId }) {
             key: 'infrastructure',
             label: 'Infrastructure',
             icon: Server,
-            accent: THEME.ai,
+            accent: THEME.success,
             items: [
                 { key: 'connectionPool', label: 'Connection Pool' },
                 { key: 'replication', label: 'Replication' },
-                { key: 'binlogs', label: 'Binary Logs' },
+                { key: 'binlog', label: 'Binary Logs' },
                 { key: 'threadPool', label: 'Thread Pool' },
                 { key: 'bufferPool', label: 'Buffer Pool' },
                 { key: 'tablespaces', label: 'Tablespaces' },
@@ -425,7 +239,7 @@ function DemoMySQLTab({ tabId }) {
             key: 'security',
             label: 'Security',
             icon: Shield,
-            accent: THEME.success,
+            accent: THEME.danger,
             items: [
                 { key: 'userAccounts', label: 'User Accounts' },
                 { key: 'privileges', label: 'Privileges' },
@@ -437,361 +251,190 @@ function DemoMySQLTab({ tabId }) {
             key: 'observability',
             label: 'Observability',
             icon: Gauge,
-            accent: THEME.primary,
+            accent: THEME.warning,
             items: [
                 { key: 'metricsHub', label: 'Metrics Hub' },
                 { key: 'errorLog', label: 'Error Log' },
                 { key: 'generalLog', label: 'General Log' },
-                { key: 'performanceInsights', label: 'Performance Insights' },
+                { key: 'perfInsights', label: 'Performance Insights' },
                 { key: 'statusPage', label: 'Status Page' },
             ],
         },
         {
             key: 'developerTools',
             label: 'Developer Tools',
-            icon: Code,
-            accent: THEME.warning,
+            icon: Terminal,
+            accent: THEME.ai,
             items: [
                 { key: 'sqlEditor', label: 'SQL Editor' },
                 { key: 'migrationTool', label: 'Migration Tool' },
                 { key: 'importExport', label: 'Import/Export' },
-                { key: 'aiTuningAdvisor', label: 'AI Tuning Advisor' },
+                { key: 'tuningAdvisor', label: 'AI Tuning Advisor' },
             ],
         },
     ];
 
     const renderContent = (sectionKey, itemKey) => {
-        if (sectionKey === 'overview' && itemKey === 'executiveDashboard') {
+        // OVERVIEW SECTION
+        if (sectionKey === 'overview' && itemKey === 'dashboard') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                        {demoData.executiveDashboard.statusBadges.map((badge, i) => (
-                            <StatusBadge key={i} {...badge} />
-                        ))}
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <StatusBadge label="Operational" color={THEME.success} />
+                        <StatusBadge label="Production" color={THEME.primary} />
+                        <StatusBadge label="MySQL 8.0.36" color={THEME.secondary} />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px' }}>
-                        {demoData.executiveDashboard.heroMetrics.map((m, i) => (
-                            <HeroMetric key={i} {...m} />
-                        ))}
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                        <Panel title="QPS Trend" icon={TrendingUp}>
-                            <ResponsiveContainer width="100%" height={200}>
-                                <AreaChart data={demoData.executiveDashboard.qpsTrend}>
-                                    <defs>
-                                        <linearGradient id="qpsGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor={THEME.primary} stopOpacity={0.3} />
-                                            <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                    <XAxis dataKey="name" stroke={THEME.textMuted} style={{ fontSize: '11px' }} />
-                                    <YAxis stroke={THEME.textMuted} style={{ fontSize: '11px' }} />
-                                    <Tooltip
-                                        contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
-                                        }}
-                                    />
-                                    <Area type="monotone" dataKey="value" fill="url(#qpsGrad)" stroke={THEME.primary} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </Panel>
-                        <Panel title="InnoDB Health" icon={Zap}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                                {demoData.executiveDashboard.innodbHealth.map((r, i) => (
-                                    <RingGauge key={i} name={r.name} value={r.value} color={r.color} />
-                                ))}
-                            </div>
-                        </Panel>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
-                        <Panel title="Binary Log Status" icon={FileText}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-                                <div>
-                                    <strong>Current:</strong> {demoData.executiveDashboard.binaryLogStatus.currentFile}
-                                </div>
-                                <div>
-                                    <strong>Size:</strong> {demoData.executiveDashboard.binaryLogStatus.size}
-                                </div>
-                                <div>
-                                    <strong>Position:</strong> {demoData.executiveDashboard.binaryLogStatus.position}
-                                </div>
-                                <div>
-                                    <strong>Purged:</strong> {demoData.executiveDashboard.binaryLogStatus.purgedUntil}
-                                </div>
-                            </div>
-                        </Panel>
-                        <Panel title="Thread Activity" icon={Activity}>
-                            <ResponsiveContainer width="100%" height={120}>
-                                <PieChart>
-                                    <Pie
-                                        data={[
-                                            {
-                                                name: 'Idle',
-                                                value: demoData.executiveDashboard.threadActivity.idle,
-                                                fill: THEME.success,
-                                            },
-                                            {
-                                                name: 'Query',
-                                                value: demoData.executiveDashboard.threadActivity.query,
-                                                fill: THEME.primary,
-                                            },
-                                            {
-                                                name: 'Sleep',
-                                                value: demoData.executiveDashboard.threadActivity.sleeping,
-                                                fill: THEME.textMuted,
-                                            },
-                                            {
-                                                name: 'Conn',
-                                                value: demoData.executiveDashboard.threadActivity.connecting,
-                                                fill: THEME.warning,
-                                            },
-                                        ]}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={30}
-                                        outerRadius={50}
-                                        paddingAngle={2}
-                                        dataKey="value"
-                                    >
-                                        {[THEME.success, THEME.primary, THEME.textMuted, THEME.warning].map((c, i) => (
-                                            <Cell key={i} fill={c} />
-                                        ))}
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </Panel>
-                        <Panel title="Table Cache" icon={HardDrive}>
-                            <div style={{ fontSize: '13px' }}>
-                                <div>
-                                    <strong>Open:</strong> {demoData.executiveDashboard.tableCache.open}
-                                </div>
-                                <div>
-                                    <strong>Hit Ratio:</strong> {demoData.executiveDashboard.tableCache.hit}%
-                                </div>
-                                <div>
-                                    <strong>Total:</strong> {demoData.executiveDashboard.tableCache.total}
-                                </div>
-                            </div>
-                        </Panel>
-                    </div>
-                </div>
-            );
-        }
 
-        if (sectionKey === 'overview' && itemKey === 'innodbStatus') {
-            return (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                    <Panel title="Buffer Pool Pages" icon={HardDrive}>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={demoData.innodbStatus.bufferPoolPages}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="name" stroke={THEME.textMuted} />
-                                <YAxis stroke={THEME.textMuted} />
-                                <Tooltip
-                                    contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                                />
-                                <Bar dataKey="value" fill={THEME.primary} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Panel>
-                    <Panel title="Pending I/O" icon={Activity}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {demoData.innodbStatus.pendingIO.map((io, i) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        fontSize: '13px',
-                                        padding: '8px',
-                                        background: THEME.glass,
-                                        borderRadius: '6px',
-                                    }}
-                                >
-                                    <div>
-                                        <strong>{io.type}:</strong> {io.count} pending
-                                    </div>
-                                    <div style={{ color: THEME.textMuted }}>Avg: {io.avg}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </Panel>
-                    <Panel title="Row Operations" icon={TrendingUp} span={2}>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={demoData.innodbStatus.rowOps} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis type="number" stroke={THEME.textMuted} />
-                                <YAxis
-                                    dataKey="op"
-                                    type="category"
-                                    stroke={THEME.textMuted}
-                                    width={80}
-                                    style={{ fontSize: '12px' }}
-                                />
-                                <Tooltip
-                                    contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                                />
-                                <Bar dataKey="value" fill={THEME.primary} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Panel>
-                </div>
-            );
-        }
-
-        if (sectionKey === 'overview' && itemKey === 'serverVariables') {
-            return (
-                <Panel title="MySQL Server Variables" icon={Settings}>
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                             gap: '16px',
-                            fontSize: '13px',
                         }}
                     >
-                        {[
-                            { name: 'max_connections', value: '1000' },
-                            { name: 'max_allowed_packet', value: '64M' },
-                            { name: 'innodb_buffer_pool_size', value: '5G' },
-                            { name: 'innodb_log_file_size', value: '512M' },
-                            { name: 'binlog_format', value: 'ROW' },
-                            { name: 'slow_query_log', value: 'ON' },
-                        ].map((v, i) => (
-                            <div key={i} style={{ padding: '8px', background: THEME.glass, borderRadius: '6px' }}>
-                                <div style={{ color: THEME.textMuted }}>{v.name}</div>
-                                <div style={{ fontSize: '14px', fontFamily: THEME.fontMono }}>{v.value}</div>
-                            </div>
-                        ))}
+                        <HeroMetric label="Uptime" value="72" icon={Clock} />
+                        <HeroMetric label="QPS" value="856" icon={Zap} />
+                        <HeroMetric label="Active Conn" value="38" icon={Activity} />
+                        <HeroMetric label="InnoDB Cache" value="78.5" icon={HardDrive} />
+                        <HeroMetric label="Slow Queries" value="3" icon={AlertCircle} />
+                        <HeroMetric label="Database Size" value="107.6GB" icon={Database} />
                     </div>
-                </Panel>
+
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+                            gap: '20px',
+                        }}
+                    >
+                        <Panel title="Query Throughput (24h)" icon={TrendingUp} accentColor={THEME.primary}>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <AreaChart data={demoData.qps}>
+                                    <defs>
+                                        <linearGradient id="colorQps" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.8} />
+                                            <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                    <Tooltip content={<ChartTip />} />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke={THEME.primary}
+                                        fillOpacity={1}
+                                        fill="url(#colorQps)"
+                                        name="QPS"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </Panel>
+
+                        <Panel title="InnoDB Health" icon={Gauge} accentColor={THEME.success}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                                <RingGauge value={78} color={THEME.primary} label="Buffer Pool" />
+                                <RingGauge value={99} color={THEME.success} label="Cache Hit" />
+                            </div>
+                        </Panel>
+                    </div>
+
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <Panel title="Last Checkpoint" icon={CheckCircle} accentColor={THEME.success}>
+                            <div style={{ fontSize: '13px', color: THEME.textMuted }}>
+                                <p style={{ color: THEME.textMain, marginBottom: '8px' }}>
+                                    <strong>Type:</strong> Full Flush
+                                </p>
+                                <p style={{ marginBottom: '4px' }}>Time: 2m ago</p>
+                                <p style={{ color: THEME.success }}>✓ Clean</p>
+                            </div>
+                        </Panel>
+                        <Panel title="Thread Status" icon={Users} accentColor={THEME.primary}>
+                            <div style={{ fontSize: '13px', color: THEME.textMuted }}>
+                                <p style={{ marginBottom: '6px' }}>Running: 12</p>
+                                <p style={{ marginBottom: '6px' }}>Sleeping: 34</p>
+                                <p>Cached: 156</p>
+                            </div>
+                        </Panel>
+                        <Panel title="Binlog Status" icon={Radio} accentColor={THEME.warning}>
+                            <div style={{ fontSize: '12px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                                <p style={{ marginBottom: '4px' }}>mysql-bin.000142</p>
+                                <p style={{ color: THEME.textMain }}>245.6M pos</p>
+                            </div>
+                        </Panel>
+                    </div>
+                </div>
             );
         }
 
-        if (sectionKey === 'overview' && itemKey === 'databases') {
+        if (sectionKey === 'overview' && itemKey === 'innodb') {
             return (
-                <Panel title="Databases" icon={Database}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                        {[
-                            { name: 'production', tables: 48, size: '5.2 GB' },
-                            { name: 'analytics', tables: 25, size: '850 MB' },
-                            { name: 'archive', tables: 156, size: '18 GB' },
-                        ].map((db, i) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric label="Buffer Pool Usage" value="78.5" icon={HardDrive} />
+                        <HeroMetric label="Read Efficiency" value="99.2" icon={Zap} />
+                        <HeroMetric label="Write Efficiency" value="87.3" icon={RefreshCw} />
+                        <HeroMetric label="Pages Read/s" value="1.2K" icon={Activity} />
+                    </div>
+
+                    <Panel title="InnoDB Configuration" icon={Settings} accentColor={THEME.success}>
+                        <div style={{ fontSize: '13px', color: THEME.textMuted }}>
                             <div
-                                key={i}
                                 style={{
-                                    padding: '12px',
-                                    background: THEME.glass,
-                                    borderRadius: '8px',
-                                    fontSize: '13px',
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '20px',
                                 }}
                             >
-                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{db.name}</div>
-                                <div>Tables: {db.tables}</div>
-                                <div>Size: {db.size}</div>
+                                <div>
+                                    <p style={{ marginBottom: '8px' }}>
+                                        <strong style={{ color: THEME.textMain }}>Buffer Pool Size:</strong> 16 GB
+                                    </p>
+                                    <p style={{ marginBottom: '8px' }}>
+                                        <strong style={{ color: THEME.textMain }}>Log File Size:</strong> 1 GB
+                                    </p>
+                                    <p>
+                                        <strong style={{ color: THEME.textMain }}>Flush Method:</strong> O_DIRECT
+                                    </p>
+                                </div>
+                                <div>
+                                    <p style={{ marginBottom: '8px' }}>
+                                        <strong style={{ color: THEME.textMain }}>Flush Log at Trx:</strong> 1
+                                    </p>
+                                    <p style={{ marginBottom: '8px' }}>
+                                        <strong style={{ color: THEME.textMain }}>Doublewrite:</strong> ON
+                                    </p>
+                                    <p>
+                                        <strong style={{ color: THEME.textMain }}>Compression:</strong> OFF
+                                    </p>
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'overview' && itemKey === 'performanceSchema') {
-            return (
-                <Panel title="Performance Schema" icon={Eye}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
-                        <div>
-                            <h4 style={{ color: THEME.primary, marginBottom: '12px' }}>Wait Events</h4>
-                            {['io/file/sql/binlog', 'io/table/sql/handler', 'lock/mutex/innodb/buf_pool_mutex'].map(
-                                (e, i) => (
-                                    <div key={i} style={{ fontSize: '12px', padding: '6px', color: THEME.textMuted }}>
-                                        {e}
-                                    </div>
-                                ),
-                            )}
-                        </div>
-                        <div>
-                            <h4 style={{ color: THEME.primary, marginBottom: '12px' }}>Statement Digest</h4>
-                            {['SELECT', 'UPDATE', 'INSERT'].map((s, i) => (
-                                <div key={i} style={{ fontSize: '12px', padding: '6px', color: THEME.textMuted }}>
-                                    {s}: Active queries
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </Panel>
-            );
-        }
-
-        if (sectionKey === 'alerts' && itemKey === 'activeAlerts') {
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                        {[
-                            { label: 'Critical', value: demoData.alerts.critical, color: THEME.danger },
-                            { label: 'Warning', value: demoData.alerts.warning, color: THEME.warning },
-                            { label: 'Info', value: demoData.alerts.info, color: THEME.primary },
-                            { label: 'Resolved', value: demoData.alerts.resolved, color: THEME.success },
-                        ].map((a, i) => (
-                            <HeroMetric key={i} label={a.label} value={String(a.value)} icon={AlertCircle} />
-                        ))}
-                    </div>
-                    <Panel title="Recent Alerts" icon={AlertCircle}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {demoData.alerts.recentAlerts.map((a, i) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        padding: '10px',
-                                        background: THEME.glass,
-                                        borderRadius: '6px',
-                                        fontSize: '12px',
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <strong>{a.message}</strong>
-                                        <span
-                                            style={{
-                                                color:
-                                                    a.severity === 'critical'
-                                                        ? THEME.danger
-                                                        : a.severity === 'warning'
-                                                          ? THEME.warning
-                                                          : THEME.textMuted,
-                                            }}
-                                        >
-                                            {a.severity.toUpperCase()}
-                                        </span>
-                                    </div>
-                                    <div style={{ color: THEME.textMuted, fontSize: '11px' }}>
-                                        {a.time} • {a.status}
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     </Panel>
-                    <Panel title="Alert Trend" icon={TrendingUp}>
+
+                    <Panel title="InnoDB Metrics (24h)" icon={BarChart3} accentColor={THEME.primary}>
                         <ResponsiveContainer width="100%" height={200}>
-                            <AreaChart data={demoData.alerts.alertTrend}>
+                            <AreaChart data={demoData.qps}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="name" stroke={THEME.textMuted} />
-                                <YAxis stroke={THEME.textMuted} />
-                                <Tooltip
-                                    contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                                />
+                                <Tooltip content={<ChartTip />} />
                                 <Area
                                     type="monotone"
-                                    dataKey="critical"
-                                    fill={THEME.danger}
-                                    stroke={THEME.danger}
-                                    opacity={0.3}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="warning"
-                                    fill={THEME.warning}
-                                    stroke={THEME.warning}
-                                    opacity={0.3}
+                                    dataKey="value"
+                                    stroke={THEME.success}
+                                    fill={THEME.success}
+                                    fillOpacity={0.3}
+                                    name="Buffer Pool Pages"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -800,33 +443,194 @@ function DemoMySQLTab({ tabId }) {
             );
         }
 
-        if (sectionKey === 'alerts' && itemKey === 'alertRules') {
+        if (sectionKey === 'overview' && itemKey === 'serverVars') {
             return (
-                <Panel title="Configured Alert Rules" icon={Settings}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {[
-                            { rule: 'Memory Usage > 90%', threshold: '90%', severity: 'Critical' },
-                            { rule: 'Replication Lag > 10s', threshold: '10s', severity: 'Warning' },
-                            { rule: 'Slow Query Time', threshold: '2s', severity: 'Warning' },
-                            { rule: 'Connection Pool > 900', threshold: '900', severity: 'Warning' },
-                        ].map((r, i) => (
+                <Panel title="Key Server Variables" icon={Settings} accentColor={THEME.primary}>
+                    <div
+                        style={{
+                            fontSize: '12px',
+                            color: THEME.textMuted,
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '20px',
+                        }}
+                    >
+                        <div>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>max_connections:</strong> 512
+                            </p>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>max_allowed_packet:</strong> 64M
+                            </p>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>tmp_table_size:</strong> 32M
+                            </p>
+                            <p>
+                                <strong style={{ color: THEME.textMain }}>query_cache_size:</strong> 128M
+                            </p>
+                        </div>
+                        <div>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>binlog_format:</strong> ROW
+                            </p>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>slow_query_log:</strong> ON
+                            </p>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>long_query_time:</strong> 2s
+                            </p>
+                            <p>
+                                <strong style={{ color: THEME.textMain }}>log_queries_not_using_indexes:</strong> ON
+                            </p>
+                        </div>
+                    </div>
+                </Panel>
+            );
+        }
+
+        if (sectionKey === 'overview' && itemKey === 'databases') {
+            return (
+                <Panel title="Databases Overview" icon={Database} accentColor={THEME.warning}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Name</th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                        Engine
+                                    </th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Size</th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                        Tables
+                                    </th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Rows</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {demoData.databases.map((db, i) => (
+                                    <tr key={i} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                        <td style={{ padding: '8px', color: THEME.textMain }}>{db.name}</td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{db.engine}</td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{db.size}</td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{db.tables}</td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>
+                                            {(db.rows / 1000000).toFixed(2)}M
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Panel>
+            );
+        }
+
+        if (sectionKey === 'overview' && itemKey === 'perfSchema') {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric label="Event Classes" value="14.3K" icon={BarChart3} />
+                        <HeroMetric label="Wait Events" value="3.4K" icon={Clock} />
+                        <HeroMetric label="Stage Events" value="890" icon={Layers} />
+                        <HeroMetric label="Statements" value="4.5K" icon={Code} />
+                    </div>
+
+                    <Panel title="Performance Schema Instruments" icon={Gauge} accentColor={THEME.warning}>
+                        <div style={{ fontSize: '12px', color: THEME.textMuted }}>
                             <div
-                                key={i}
                                 style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
+                                    marginBottom: '12px',
+                                    paddingBottom: '12px',
+                                    borderBottom: `1px solid ${THEME.glassBorder}`,
                                 }}
                             >
-                                <div>
-                                    <strong>{r.rule}</strong>
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    Threshold: {r.threshold} • Severity: {r.severity}
-                                </div>
+                                <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Events (wait_class)</p>
+                                <p>Statement: 2.4K | Transaction: 890 | Idle: 1.1K</p>
                             </div>
-                        ))}
+                            <div>
+                                <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Table I/O</p>
+                                <p>Read: 145K | Write: 34K | Fetch: 234K</p>
+                            </div>
+                        </div>
+                    </Panel>
+                </div>
+            );
+        }
+
+        // ALERTS & RULES SECTION
+        if (sectionKey === 'alerts' && itemKey === 'activeAlerts') {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric label="Critical" value={String(demoData.alerts.critical)} icon={AlertTriangle} />
+                        <HeroMetric label="Warning" value={String(demoData.alerts.warning)} icon={AlertCircle} />
+                        <HeroMetric label="Info" value={String(demoData.alerts.info)} icon={FileText} />
+                        <HeroMetric label="Resolved" value={String(demoData.alerts.resolved)} icon={CheckCircle} />
+                    </div>
+
+                    <Panel title="Alert Timeline (24h)" icon={TrendingUp} accentColor={THEME.danger}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={demoData.alertTrends}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <Tooltip content={<ChartTip />} />
+                                <Line type="monotone" dataKey="alerts" stroke={THEME.danger} strokeWidth={2} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </Panel>
+                </div>
+            );
+        }
+
+        if (sectionKey === 'alerts' && itemKey === 'alertRules') {
+            return (
+                <Panel title="Alert Rules Configuration" icon={Bell} accentColor={THEME.danger}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Buffer Pool Usage {'>'} 90%</p>
+                            <p>Severity: Warning | Action: Email + Slack</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Replication Lag {'>'} 10s</p>
+                            <p>Severity: Critical | Action: PagerDuty + SMS</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Slow Query Rate {'>'} 50/min</p>
+                            <p>Severity: Warning | Action: Webhook</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Connection Pool {'>'} 85%</p>
+                            <p>Severity: Warning | Action: Log event</p>
+                        </div>
                     </div>
                 </Panel>
             );
@@ -834,106 +638,171 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'alerts' && itemKey === 'alertHistory') {
             return (
-                <Panel title="Alert History Timeline" icon={Clock}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {[
-                            { time: '14:23', alert: 'Memory usage increased to 92%', severity: 'critical' },
-                            { time: '14:15', alert: 'Replication lag detected: 5.2s', severity: 'warning' },
-                            { time: '14:08', alert: 'Slow query executed: 2.8s', severity: 'warning' },
-                            { time: '13:45', alert: 'Alert resolved: Memory normalized', severity: 'info' },
-                        ].map((h, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '8px',
-                                    borderLeft: `3px solid ${h.severity === 'critical' ? THEME.danger : h.severity === 'warning' ? THEME.warning : THEME.success}`,
-                                }}
-                            >
-                                <div style={{ fontSize: '11px', color: THEME.textMuted }}>{h.time}</div>
-                                <div style={{ fontSize: '13px' }}>{h.alert}</div>
-                            </div>
-                        ))}
+                <Panel title="Recent Alert Events" icon={FileText} accentColor={THEME.warning}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '10px',
+                                paddingBottom: '10px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.danger, marginBottom: '3px' }}>3m ago - CRITICAL</p>
+                            <p>InnoDB deadlock detected on orders table</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '10px',
+                                paddingBottom: '10px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.warning, marginBottom: '3px' }}>12m ago - WARNING</p>
+                            <p>Slow query log entries: 142 (threshold: 50)</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '10px',
+                                paddingBottom: '10px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.warning, marginBottom: '3px' }}>28m ago - WARNING</p>
+                            <p>Buffer pool hit ratio dropped to 92.1%</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.success, marginBottom: '3px' }}>35m ago - RESOLVED</p>
+                            <p>Connection pool utilization normalized</p>
+                        </div>
                     </div>
                 </Panel>
             );
         }
 
-        if (sectionKey === 'queryAnalysis' && itemKey === 'slowQueries') {
+        // QUERY ANALYSIS SECTION
+        if (sectionKey === 'queryAnalysis' && itemKey === 'slowLog') {
             return (
-                <Panel title="Top Slow Queries" icon={TrendingUp}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {demoData.slowQueries.map((q, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
-                                }}
-                            >
-                                <div style={{ fontFamily: THEME.fontMono, color: THEME.primary, marginBottom: '4px' }}>
-                                    {q.sql}
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    Time: {q.execTime}s • Rows examined: {q.rowsExam.toLocaleString()}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Panel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <Panel title="Slow Query Log" icon={Code} accentColor={THEME.ai}>
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                        <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                            Query
+                                        </th>
+                                        <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                            Time (ms)
+                                        </th>
+                                        <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                            Calls
+                                        </th>
+                                        <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                            Rows
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {demoData.slowQueries.map((q, i) => (
+                                        <tr key={i} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                            <td
+                                                style={{
+                                                    padding: '8px',
+                                                    color: THEME.textMain,
+                                                    fontFamily: THEME.fontMono,
+                                                    fontSize: '10px',
+                                                }}
+                                            >
+                                                {q.query.slice(0, 40)}...
+                                            </td>
+                                            <td style={{ padding: '8px', color: THEME.textMuted }}>{q.duration}</td>
+                                            <td style={{ padding: '8px', color: THEME.textMuted }}>{q.calls}</td>
+                                            <td style={{ padding: '8px', color: THEME.textMuted }}>
+                                                {q.rows.toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Panel>
+
+                    <Panel title="Slow Query Distribution" icon={BarChart3} accentColor={THEME.secondary}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={demoData.slowQueries}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="id" stroke={THEME.textMuted} />
+                                <YAxis stroke={THEME.textMuted} />
+                                <Tooltip content={<ChartTip />} />
+                                <Bar
+                                    dataKey="duration"
+                                    fill={THEME.warning}
+                                    name="Duration (ms)"
+                                    radius={[8, 8, 0, 0]}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Panel>
+                </div>
             );
         }
 
         if (sectionKey === 'queryAnalysis' && itemKey === 'queryDigest') {
             return (
-                <Panel title="Query Digest Patterns" icon={Eye}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={demoData.queryDigest}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                            <XAxis
-                                dataKey="pattern"
-                                stroke={THEME.textMuted}
-                                angle={-20}
-                                textAnchor="end"
-                                height={80}
-                                style={{ fontSize: '11px' }}
-                            />
-                            <YAxis stroke={THEME.textMuted} />
-                            <Tooltip
-                                contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                            />
-                            <Bar dataKey="freq" fill={THEME.primary} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <Panel title="Query Digest Summary" icon={Code} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Query: SELECT * FROM orders WHERE status = ?
+                            </p>
+                            <p>Count: 203 | Avg Time: 9.1ms | Max Time: 1850ms</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Query: SELECT COUNT(*) FROM transactions GROUP BY user_id
+                            </p>
+                            <p>Count: 945 | Avg Time: 1.5ms | Max Time: 1420ms</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Query: JOIN orders o, users u WHERE o.user_id = u.id
+                            </p>
+                            <p>Count: 124 | Avg Time: 10.2ms | Max Time: 1260ms</p>
+                        </div>
+                    </div>
                 </Panel>
             );
         }
 
         if (sectionKey === 'queryAnalysis' && itemKey === 'explainAnalyzer') {
             return (
-                <Panel title="EXPLAIN Analyzer" icon={Eye}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '12px' }}>
-                        {[
-                            {
-                                id: 1,
-                                select_type: 'SIMPLE',
-                                table: 'orders',
-                                key: 'idx_orders_user',
-                                rows: 1450,
-                                extra: 'Using where',
-                            },
-                            { id: 2, select_type: 'JOIN', table: 'users', key: 'PRIMARY', rows: 1, extra: 'NULL' },
-                        ].map((row, i) => (
-                            <div key={i} style={{ padding: '8px', background: THEME.glass, borderRadius: '6px' }}>
-                                <div>
-                                    <strong>ID {row.id}:</strong> {row.select_type} on {row.table}
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    Key: {row.key} | Rows: {row.rows} | {row.extra}
-                                </div>
-                            </div>
-                        ))}
+                <Panel title="EXPLAIN Plan Analysis" icon={Code} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '11px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                        <pre
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                overflow: 'auto',
+                                maxHeight: '350px',
+                            }}
+                        >
+                            {`id | select_type | table | partitions | type | rows | filtered | Extra
+1  | SIMPLE      | o     | NULL       | ALL  | 8420 | 5.00     | Using where
+1  | SIMPLE      | u     | NULL       | ref  | 1    | 100.00   | Using index`}
+                        </pre>
                     </div>
                 </Panel>
             );
@@ -941,96 +810,155 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'queryAnalysis' && itemKey === 'indexStats') {
             return (
-                <Panel title="Index Statistics" icon={TrendingUp}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={demoData.indexStats}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                            <XAxis dataKey="name" stroke={THEME.textMuted} style={{ fontSize: '12px' }} />
-                            <YAxis stroke={THEME.textMuted} />
-                            <Tooltip
-                                contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                            />
-                            <Bar dataKey="usage" fill={THEME.primary} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <Panel title="Index Statistics" icon={Zap} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                idx_orders_status (orders table)
+                            </p>
+                            <p>Cardinality: 8420 | Size: 24MB | Leaf pages: 512 | Reads: 18.4K</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>PRIMARY (users table)</p>
+                            <p>Cardinality: 123K | Size: 8MB | Leaf pages: 256 | Reads: 42.1K</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.warning, marginBottom: '4px' }}>
+                                idx_unused_column (transactions table)
+                            </p>
+                            <p>Cardinality: 890 | Size: 6MB | Reads: 12 (consider dropping)</p>
+                        </div>
+                    </div>
                 </Panel>
             );
         }
 
         if (sectionKey === 'queryAnalysis' && itemKey === 'tableStats') {
             return (
-                <Panel title="Table Statistics" icon={Database}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-                        {demoData.tableStats.map((t, i) => (
-                            <div key={i} style={{ padding: '10px', background: THEME.glass, borderRadius: '6px' }}>
-                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{t.table}</div>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(3, 1fr)',
-                                        gap: '8px',
-                                        color: THEME.textMuted,
-                                    }}
-                                >
-                                    <div>Rows: {t.rows.toLocaleString()}</div>
-                                    <div>Data: {t.dataSize}</div>
-                                    <div>Index: {t.indexSize}</div>
-                                </div>
-                                <div style={{ color: THEME.textMuted, marginTop: '4px' }}>
-                                    Reads: {t.reads.toLocaleString()} | Writes: {t.writes.toLocaleString()}
-                                </div>
-                            </div>
-                        ))}
+                <Panel title="Table I/O Statistics" icon={BarChart3} accentColor={THEME.ai}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Table</th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Rows</th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                        Auto_Inc
+                                    </th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Size</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {demoData.tableStats.map((t, i) => (
+                                    <tr key={i} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                        <td style={{ padding: '8px', color: THEME.textMain }}>{t.name}</td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>
+                                            {(t.rows / 1000000).toFixed(2)}M
+                                        </td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>
+                                            {(t.autoIncrement / 1000000).toFixed(2)}M
+                                        </td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{t.size}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </Panel>
             );
         }
 
-        if (sectionKey === 'queryAnalysis' && itemKey === 'queryProfiler') {
+        if (sectionKey === 'queryAnalysis' && itemKey === 'profiler') {
             return (
-                <Panel title="Query Profiler Stages" icon={Clock}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={demoData.queryProfiler} layout="vertical">
-                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                            <XAxis type="number" stroke={THEME.textMuted} />
-                            <YAxis
-                                dataKey="stage"
-                                type="category"
-                                width={90}
-                                stroke={THEME.textMuted}
-                                style={{ fontSize: '11px' }}
-                            />
-                            <Tooltip
-                                contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                            />
-                            <Bar dataKey="duration" fill={THEME.secondary} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <Panel title="Query Profiler Results" icon={Activity} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '11px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                        <div
+                            style={{
+                                marginBottom: '8px',
+                                paddingBottom: '8px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain }}>SELECT * FROM orders WHERE status = 'pending'</p>
+                            <p>Starting: 1.234ms | Checking privileges: 0.023ms</p>
+                            <p>Opening tables: 0.156ms | Query optimization: 0.847ms</p>
+                            <p>Executing: 1850.234ms | Sending data: 0.45ms</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain }}>Total: 1852.939ms</p>
+                        </div>
+                    </div>
                 </Panel>
             );
         }
 
+        // SCHEMA & DATA SECTION
         if (sectionKey === 'schemaData' && itemKey === 'schemaBrowser') {
             return (
-                <Panel title="Schema Browser" icon={Database}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                        {demoData.schemas.map((s, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '12px',
-                                    background: THEME.glass,
-                                    borderRadius: '8px',
-                                    fontSize: '13px',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>{s.name}</div>
-                                <div>Tables: {s.tables}</div>
-                                <div>Views: {s.views}</div>
-                                <div>Procedures: {s.procedures}</div>
-                                <div>Functions: {s.functions}</div>
-                            </div>
-                        ))}
+                <Panel title="Schema Objects" icon={Database} accentColor={THEME.warning}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <div
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${THEME.primary}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>Tables</p>
+                            <p style={{ color: THEME.textMain, fontSize: '18px', fontWeight: 'bold' }}>247</p>
+                        </div>
+                        <div
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${THEME.secondary}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>Views</p>
+                            <p style={{ color: THEME.textMain, fontSize: '18px', fontWeight: 'bold' }}>34</p>
+                        </div>
+                        <div
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${THEME.success}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>Procedures</p>
+                            <p style={{ color: THEME.textMain, fontSize: '18px', fontWeight: 'bold' }}>56</p>
+                        </div>
+                        <div
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${THEME.warning}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>Functions</p>
+                            <p style={{ color: THEME.textMain, fontSize: '18px', fontWeight: 'bold' }}>23</p>
+                        </div>
                     </div>
                 </Panel>
             );
@@ -1038,22 +966,31 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'schemaData' && itemKey === 'tableInspector') {
             return (
-                <Panel title="Table Inspector (orders)" icon={Eye}>
-                    <div style={{ fontSize: '12px' }}>
-                        <h4 style={{ color: THEME.primary, marginBottom: '12px' }}>Columns</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {demoData.tableColumns.map((col, i) => (
-                                <div key={i} style={{ padding: '8px', background: THEME.glass, borderRadius: '6px' }}>
-                                    <div>
-                                        <strong>{col.name}</strong>{' '}
-                                        <span style={{ color: THEME.textMuted }}>{col.type}</span>
-                                    </div>
-                                    <div style={{ color: THEME.textMuted, fontSize: '11px' }}>
-                                        {col.key && `Key: ${col.key}`} {!col.nullable && 'NOT NULL'}{' '}
-                                        {col.default && `Default: ${col.default}`}
-                                    </div>
-                                </div>
-                            ))}
+                <Panel title="Table Structure Inspector" icon={Layers} accentColor={THEME.warning}>
+                    <div style={{ fontSize: '11px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Table: orders</p>
+                            <p>Engine: InnoDB | Columns: 12 | Primary Key: id | Charset: utf8mb4</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Table: users</p>
+                            <p>Engine: InnoDB | Columns: 8 | Primary Key: id | Charset: utf8mb4</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Table: transactions</p>
+                            <p>Engine: InnoDB | Columns: 15 | Primary Key: id | Charset: utf8mb4</p>
                         </div>
                     </div>
                 </Panel>
@@ -1062,18 +999,34 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'schemaData' && itemKey === 'foreignKeys') {
             return (
-                <Panel title="Foreign Key Relationships" icon={ArrowRight}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-                        {demoData.foreignKeys.map((fk, i) => (
-                            <div key={i} style={{ padding: '10px', background: THEME.glass, borderRadius: '6px' }}>
-                                <div style={{ fontFamily: THEME.fontMono, color: THEME.primary }}>
-                                    {fk.table}.{fk.column}
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    → {fk.refsTable}.{fk.refsColumn}
-                                </div>
-                            </div>
-                        ))}
+                <Panel title="Foreign Key Constraints" icon={Network} accentColor={THEME.warning}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>orders → users (user_id)</p>
+                            <p>Referential Action: CASCADE</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                transactions → orders (order_id)
+                            </p>
+                            <p>Referential Action: RESTRICT</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>transactions → users (user_id)</p>
+                            <p>Referential Action: SET NULL</p>
+                        </div>
                     </div>
                 </Panel>
             );
@@ -1081,58 +1034,73 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'schemaData' && itemKey === 'storedPrograms') {
             return (
-                <Panel title="Stored Programs" icon={Code}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {demoData.storedPrograms.map((p, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '8px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '13px',
-                                }}
-                            >
-                                <div>
-                                    <strong>{p.name}</strong> <span style={{ color: THEME.textMuted }}>({p.type})</span>
-                                </div>
-                            </div>
-                        ))}
+                <Panel title="Stored Programs" icon={Code} accentColor={THEME.warning}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                        <div
+                            style={{
+                                marginBottom: '10px',
+                                paddingBottom: '10px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '3px' }}>PROCEDURE calculate_totals()</p>
+                            <p>Parameters: 2 | Lines: 34 | Last Modified: 2h ago</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '10px',
+                                paddingBottom: '10px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '3px' }}>
+                                FUNCTION get_customer_total(cid INT)
+                            </p>
+                            <p>Parameters: 1 | Lines: 12 | Returns: DECIMAL</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '3px' }}>TRIGGER orders_audit_trigger</p>
+                            <p>Event: AFTER INSERT | Table: orders | Status: Active</p>
+                        </div>
                     </div>
                 </Panel>
             );
         }
 
+        // INFRASTRUCTURE SECTION
         if (sectionKey === 'infrastructure' && itemKey === 'connectionPool') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                        {demoData.connectionPool.metrics.map((m, i) => (
-                            <HeroMetric key={i} {...m} />
-                        ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric label="Active" value="38" icon={Activity} />
+                        <HeroMetric label="Idle" value="28" icon={Clock} />
+                        <HeroMetric label="Waiting" value="1" icon={AlertCircle} />
+                        <HeroMetric label="Max" value="200" icon={Gauge} />
                     </div>
-                    <Panel title="Connection Trend" icon={TrendingUp}>
-                        <ResponsiveContainer width="100%" height={220}>
-                            <AreaChart data={demoData.connectionPool.trend}>
+
+                    <Panel title="Connection Pool Trends (24h)" icon={TrendingUp} accentColor={THEME.success}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart data={demoData.connections}>
+                                <defs>
+                                    <linearGradient id="colorActive2" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.success} stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="name" stroke={THEME.textMuted} />
-                                <YAxis stroke={THEME.textMuted} />
-                                <Tooltip
-                                    contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                                />
+                                <Tooltip content={<ChartTip />} />
                                 <Area
                                     type="monotone"
                                     dataKey="active"
-                                    fill={THEME.primary}
-                                    stroke={THEME.primary}
-                                    opacity={0.3}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="idle"
-                                    fill={THEME.success}
                                     stroke={THEME.success}
-                                    opacity={0.3}
+                                    fill="url(#colorActive2)"
+                                    name="Active Connections"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -1143,162 +1111,178 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'infrastructure' && itemKey === 'replication') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <Panel title="Replication Lag" icon={TrendingUp}>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <LineChart data={demoData.replication.sourceData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="name" stroke={THEME.textMuted} />
-                                <YAxis stroke={THEME.textMuted} />
-                                <Tooltip
-                                    contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="lag"
-                                    stroke={THEME.warning}
-                                    strokeWidth={2}
-                                    dot={false}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Panel>
-                    <Panel title="GTID Status" icon={Settings}>
-                        <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Panel title="Replication Status" icon={Network} accentColor={THEME.success}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '20px',
+                            }}
+                        >
                             <div>
-                                <strong>Executed:</strong>{' '}
-                                <div style={{ fontFamily: THEME.fontMono, color: THEME.primary, marginTop: '4px' }}>
-                                    {demoData.replication.gtidStatus.executed}
-                                </div>
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Status:</strong>{' '}
+                                    <span style={{ color: THEME.success }}>Running</span>
+                                </p>
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Binlog File:</strong> mysql-bin.000142
+                                </p>
+                                <p>
+                                    <strong style={{ color: THEME.textMain }}>Position:</strong> 245.6M
+                                </p>
                             </div>
                             <div>
-                                <strong>Purged:</strong>{' '}
-                                <div style={{ fontFamily: THEME.fontMono, color: THEME.secondary, marginTop: '4px' }}>
-                                    {demoData.replication.gtidStatus.purged}
-                                </div>
-                            </div>
-                            <div>
-                                <strong>Replica Lag:</strong> {demoData.replication.gtidStatus.replicaLag}
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Seconds Behind Master:</strong> 0
+                                </p>
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Slave IO Running:</strong> Yes
+                                </p>
+                                <p>
+                                    <strong style={{ color: THEME.textMain }}>Slave SQL Running:</strong> Yes
+                                </p>
                             </div>
                         </div>
-                    </Panel>
-                </div>
+                    </div>
+                </Panel>
             );
         }
 
-        if (sectionKey === 'infrastructure' && itemKey === 'binlogs') {
+        if (sectionKey === 'infrastructure' && itemKey === 'binlog') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <Panel title="Binary Log Size Trend" icon={TrendingUp}>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <AreaChart data={demoData.binlogs.trend}>
-                                <defs>
-                                    <linearGradient id="binlogGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={THEME.secondary} stopOpacity={0.3} />
-                                        <stop offset="100%" stopColor={THEME.secondary} stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="name" stroke={THEME.textMuted} />
-                                <YAxis stroke={THEME.textMuted} />
-                                <Tooltip
-                                    contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                                />
-                                <Area type="monotone" dataKey="size" fill="url(#binlogGrad)" stroke={THEME.secondary} />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </Panel>
-                    <Panel title="Binlog Status" icon={FileText}>
-                        <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Panel title="Binary Log Status" icon={Radio} accentColor={THEME.success}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '20px',
+                            }}
+                        >
                             <div>
-                                <strong>Current:</strong> {demoData.binlogs.status.current}
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Format:</strong> ROW
+                                </p>
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Current File:</strong> mysql-bin.000142
+                                </p>
+                                <p>
+                                    <strong style={{ color: THEME.textMain }}>Max Size:</strong> 1GB
+                                </p>
                             </div>
                             <div>
-                                <strong>Size:</strong> {demoData.binlogs.status.size}
-                            </div>
-                            <div>
-                                <strong>Purged Until:</strong> {demoData.binlogs.status.purgedUntil}
-                            </div>
-                            <div>
-                                <strong>Retention:</strong> {demoData.binlogs.status.retention}
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Total Binlogs:</strong> 142
+                                </p>
+                                <p style={{ marginBottom: '8px' }}>
+                                    <strong style={{ color: THEME.textMain }}>Purge Before:</strong> 2w ago
+                                </p>
+                                <p>
+                                    <strong style={{ color: THEME.textMain }}>Total Size:</strong> 285GB
+                                </p>
                             </div>
                         </div>
-                    </Panel>
-                </div>
+                    </div>
+                </Panel>
             );
         }
 
         if (sectionKey === 'infrastructure' && itemKey === 'threadPool') {
             return (
-                <Panel title="Thread Pool Utilization" icon={Activity}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                            <Pie
-                                data={demoData.threadPool}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                paddingAngle={2}
-                                dataKey="value"
-                            >
-                                {demoData.threadPool.map((r, i) => (
-                                    <Cell key={i} fill={r.color} />
-                                ))}
-                            </Pie>
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </Panel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric label="Running" value={String(demoData.threadPool.running)} icon={Activity} />
+                        <HeroMetric label="Sleeping" value={String(demoData.threadPool.sleeping)} icon={Clock} />
+                        <HeroMetric label="Cached" value={String(demoData.threadPool.cached)} icon={Archive} />
+                        <HeroMetric label="Max Threads" value={String(demoData.threadPool.max)} icon={Server} />
+                    </div>
+
+                    <Panel title="Thread Pool Configuration" icon={Settings} accentColor={THEME.success}>
+                        <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>thread_stack:</strong> 262144 bytes
+                            </p>
+                            <p style={{ marginBottom: '8px' }}>
+                                <strong style={{ color: THEME.textMain }}>max_connections:</strong> 512
+                            </p>
+                            <p>
+                                <strong style={{ color: THEME.textMain }}>thread_priority:</strong> 0
+                            </p>
+                        </div>
+                    </Panel>
+                </div>
             );
         }
 
         if (sectionKey === 'infrastructure' && itemKey === 'bufferPool') {
             return (
-                <Panel title="Buffer Pool Memory Allocation" icon={Zap}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                            <Pie
-                                data={demoData.bufferPoolMem}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                paddingAngle={2}
-                                dataKey="value"
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <RingGauge
+                        value={78}
+                        color={THEME.primary}
+                        size={100}
+                        label="Buffer Pool Usage"
+                        secondaryValue={99}
+                        secondaryColor={THEME.success}
+                    />
+
+                    <Panel title="Buffer Pool Metrics" icon={HardDrive} accentColor={THEME.success}>
+                        <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                            <div
+                                style={{
+                                    marginBottom: '12px',
+                                    paddingBottom: '12px',
+                                    borderBottom: `1px solid ${THEME.glassBorder}`,
+                                }}
                             >
-                                {demoData.bufferPoolMem.map((r, i) => (
-                                    <Cell key={i} fill={r.color} />
-                                ))}
-                            </Pie>
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </Panel>
+                                <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Pool Size: 16 GB</p>
+                                <p>Total Pages: 2,048,000 | Free Pages: 451,200 | Dirty Pages: 125,000</p>
+                            </div>
+                            <div>
+                                <p style={{ color: THEME.textMain, marginBottom: '4px' }}>I/O Activity</p>
+                                <p>Read Ahead: 1.2K/s | Writes: 560/s | Flushes: 340/s</p>
+                            </div>
+                        </div>
+                    </Panel>
+                </div>
             );
         }
 
         if (sectionKey === 'infrastructure' && itemKey === 'tablespaces') {
             return (
-                <Panel title="Tablespace Usage" icon={HardDrive}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {demoData.tablespaces.map((ts, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
-                                }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                    <strong>{ts.name}</strong>
-                                    <span>{ts.type}</span>
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    Size: {ts.size} | Used: {ts.used}
-                                </div>
-                            </div>
-                        ))}
+                <Panel title="Tablespace Management" icon={Database} accentColor={THEME.success}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>System Tablespace</p>
+                            <p>Type: Shared | Size: 24 MB | Status: Active</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Undo Tablespace</p>
+                            <p>Count: 2 | Total Size: 4 GB | Purge: Active</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Temp Tablespace</p>
+                            <p>Size: 2 GB | Allocations: 1,240 | Status: Active</p>
+                        </div>
                     </div>
                 </Panel>
             );
@@ -1306,52 +1290,70 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'infrastructure' && itemKey === 'backups') {
             return (
-                <Panel title="Backup History" icon={FileText}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {demoData.backups.map((b, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
-                                }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                    <strong>{b.date}</strong>
-                                    <span style={{ color: THEME.success }}>{b.status}</span>
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    {b.type} • Duration: {b.duration} • Size: {b.size}
-                                </div>
-                            </div>
-                        ))}
+                <Panel title="Backup History" icon={Archive} accentColor={THEME.success}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Full #285</p>
+                            <p>Size: 107.6 GB | Duration: 3h 42m | Date: 2h ago</p>
+                            <p style={{ color: THEME.success }}>✓ Success</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Incremental #286</p>
+                            <p>Size: 3.2 GB | Duration: 18m | Date: 1h ago</p>
+                            <p style={{ color: THEME.success }}>✓ Success</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Full #284</p>
+                            <p>Size: 107.6 GB | Duration: 3h 48m | Date: 1d ago</p>
+                            <p style={{ color: THEME.success }}>✓ Success</p>
+                        </div>
                     </div>
                 </Panel>
             );
         }
 
+        // SECURITY SECTION
         if (sectionKey === 'security' && itemKey === 'userAccounts') {
             return (
-                <Panel title="User Accounts" icon={Users}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {demoData.users.map((u, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
-                                }}
-                            >
-                                <div style={{ fontFamily: THEME.fontMono, color: THEME.primary }}>
-                                    {u.name}@{u.host}
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>Auth: {u.authMethod}</div>
-                            </div>
-                        ))}
+                <Panel title="User Accounts" icon={Users} accentColor={THEME.danger}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>User</th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>Host</th>
+                                    <th style={{ textAlign: 'left', padding: '8px', color: THEME.textMuted }}>
+                                        Connections
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[
+                                    { user: 'root', host: 'localhost', conns: 2 },
+                                    { user: 'app_user', host: '%', conns: 38 },
+                                    { user: 'readonly_user', host: '%', conns: 12 },
+                                    { user: 'backup_user', host: 'backup.local', conns: 1 },
+                                ].map((u, i) => (
+                                    <tr key={i} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                        <td style={{ padding: '8px', color: THEME.textMain }}>{u.user}</td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{u.host}</td>
+                                        <td style={{ padding: '8px', color: THEME.textMuted }}>{u.conns}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </Panel>
             );
@@ -1359,18 +1361,32 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'security' && itemKey === 'privileges') {
             return (
-                <Panel title="Privilege Hierarchy" icon={Lock}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '12px' }}>
-                        {[
-                            { user: 'app_user', privs: ['SELECT', 'INSERT', 'UPDATE'] },
-                            { user: 'replication', privs: ['REPLICATION SLAVE', 'REPLICATION CLIENT'] },
-                            { user: 'admin', privs: ['ALL PRIVILEGES'] },
-                        ].map((up, i) => (
-                            <div key={i} style={{ padding: '10px', background: THEME.glass, borderRadius: '6px' }}>
-                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{up.user}</div>
-                                <div style={{ color: THEME.textMuted }}>{up.privs.join(', ')}</div>
-                            </div>
-                        ))}
+                <Panel title="User Privileges" icon={Lock} accentColor={THEME.danger}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>root@localhost</p>
+                            <p>Grant Type: ALL PRIVILEGES | With Grant: Yes</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>app_user@%</p>
+                            <p>Grant Type: SELECT, INSERT, UPDATE, DELETE | Database: production</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>readonly_user@%</p>
+                            <p>Grant Type: SELECT | Database: analytics</p>
+                        </div>
                     </div>
                 </Panel>
             );
@@ -1378,20 +1394,39 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'security' && itemKey === 'sslStatus') {
             return (
-                <Panel title="SSL/TLS Configuration" icon={Shield}>
-                    <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <div>
-                            <strong>SSL Connections:</strong> {demoData.sslStatus.sslRatio}%
-                        </div>
-                        <div>
-                            <strong>Certificate Issuer:</strong> {demoData.sslStatus.certIssuer}
-                        </div>
-                        <div>
-                            <strong>Expiry:</strong> {demoData.sslStatus.certExpiry}
-                        </div>
-                        <div>
-                            <strong>TLS Version:</strong> {demoData.sslStatus.tlsVersion}
-                        </div>
+                <Panel title="SSL/TLS Configuration" icon={Shield} accentColor={THEME.danger}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <p
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <strong style={{ color: THEME.textMain }}>SSL Status:</strong>{' '}
+                            <span style={{ color: THEME.success }}>Enabled</span>
+                        </p>
+                        <p
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <strong style={{ color: THEME.textMain }}>Protocol Version:</strong> TLSv1.3
+                        </p>
+                        <p
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <strong style={{ color: THEME.textMain }}>Certificate Valid Until:</strong> 2026-12-31
+                        </p>
+                        <p>
+                            <strong style={{ color: THEME.textMain }}>Cipher Suite:</strong> TLS_AES_256_GCM_SHA384
+                        </p>
                     </div>
                 </Panel>
             );
@@ -1399,24 +1434,22 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'security' && itemKey === 'auditLog') {
             return (
-                <Panel title="Audit Log Events" icon={FileText}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {demoData.auditEvents.map((e, i) => (
+                <Panel title="Audit Log Events" icon={FileText} accentColor={THEME.danger}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        {demoData.errorLog.map((e, i) => (
                             <div
                                 key={i}
                                 style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
+                                    marginBottom: '10px',
+                                    paddingBottom: '10px',
+                                    borderBottom:
+                                        i < demoData.errorLog.length - 1 ? `1px solid ${THEME.glassBorder}` : 'none',
                                 }}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                    <strong>{e.event}</strong>
-                                    <span style={{ color: THEME.success }}>{e.result}</span>
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>{e.user}</div>
-                                <div style={{ color: THEME.textMuted, fontSize: '11px' }}>{e.time}</div>
+                                <p style={{ color: THEME.textMain, marginBottom: '3px' }}>
+                                    {e.timestamp} - {e.level}
+                                </p>
+                                <p>{e.message}</p>
                             </div>
                         ))}
                     </div>
@@ -1424,47 +1457,66 @@ function DemoMySQLTab({ tabId }) {
             );
         }
 
+        // OBSERVABILITY SECTION
         if (sectionKey === 'observability' && itemKey === 'metricsHub') {
             return (
-                <Panel title="Key Metrics Summary" icon={Gauge}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                        {demoData.metrics.map((m, i) => (
-                            <div key={i} style={{ padding: '12px', background: THEME.glass, borderRadius: '8px' }}>
-                                <div style={{ fontSize: '11px', color: THEME.textMuted, marginBottom: '8px' }}>
-                                    {m.name}
-                                </div>
-                                <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>
-                                    {m.value}
-                                </div>
-                                <MiniSparkline data={m.sparkline} color={THEME.primary} />
-                            </div>
-                        ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                            gap: '16px',
+                        }}
+                    >
+                        <HeroMetric label="Avg QPS" value="856" icon={Zap} />
+                        <HeroMetric label="Avg TPS" value="620" icon={Activity} />
+                        <HeroMetric label="P95 Latency" value="145ms" icon={Clock} />
+                        <HeroMetric label="Error Rate" value="0.12%" icon={AlertCircle} />
                     </div>
-                </Panel>
+
+                    <Panel title="System Metrics (24h)" icon={BarChart3} accentColor={THEME.warning}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart data={demoData.qps}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <Tooltip content={<ChartTip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke={THEME.warning}
+                                    fill={THEME.warning}
+                                    fillOpacity={0.3}
+                                    name="Throughput"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </Panel>
+                </div>
             );
         }
 
         if (sectionKey === 'observability' && itemKey === 'errorLog') {
             return (
-                <Panel title="Recent Error Log" icon={AlertCircle}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {demoData.errors.map((e, i) => (
+                <Panel title="MySQL Error Log" icon={FileText} accentColor={THEME.warning}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        {demoData.errorLog.map((e, i) => (
                             <div
                                 key={i}
                                 style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
+                                    marginBottom: '10px',
+                                    paddingBottom: '10px',
+                                    borderBottom:
+                                        i < demoData.errorLog.length - 1 ? `1px solid ${THEME.glassBorder}` : 'none',
                                 }}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                    <strong>{e.message}</strong>
-                                    <span style={{ color: e.level === 'ERROR' ? THEME.danger : THEME.warning }}>
-                                        {e.level}
-                                    </span>
-                                </div>
-                                <div style={{ color: THEME.textMuted, fontSize: '11px' }}>{e.time}</div>
+                                <p
+                                    style={{
+                                        color: e.level === 'ERROR' ? THEME.danger : THEME.warning,
+                                        marginBottom: '3px',
+                                    }}
+                                >
+                                    [{e.level}] {e.timestamp}
+                                </p>
+                                <p>{e.message}</p>
                             </div>
                         ))}
                     </div>
@@ -1474,169 +1526,177 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'observability' && itemKey === 'generalLog') {
             return (
-                <Panel title="Query Log Stream" icon={FileText}>
+                <Panel title="General Query Log" icon={Code} accentColor={THEME.warning}>
                     <div
                         style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px',
                             fontSize: '11px',
+                            color: THEME.textMuted,
                             fontFamily: THEME.fontMono,
+                            overflowX: 'auto',
                         }}
                     >
-                        {[
-                            '14:25:32 app_user@192.168.1.50 [production] SELECT * FROM orders WHERE id=42',
-                            '14:25:30 admin@localhost [production] SHOW PROCESSLIST',
-                            '14:25:28 app_user@192.168.1.50 [production] UPDATE inventory SET qty=qty-1',
-                        ].map((log, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '6px',
-                                    background: THEME.glass,
-                                    borderRadius: '4px',
-                                    color: THEME.textMuted,
-                                }}
-                            >
-                                {log}
-                            </div>
-                        ))}
+                        <pre
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                maxHeight: '350px',
+                                overflow: 'auto',
+                            }}
+                        >
+                            {`2024-01-15 14:23:45 app_user@[127.0.0.1] Query SELECT * FROM users WHERE id = 123
+2024-01-15 14:23:46 app_user@[127.0.0.1] Query INSERT INTO logs (action) VALUES ('login')
+2024-01-15 14:23:47 app_user@[127.0.0.1] Query SELECT COUNT(*) FROM orders
+2024-01-15 14:23:48 readonly_user@[192.168.1.1] Query SELECT * FROM products LIMIT 10`}
+                        </pre>
                     </div>
                 </Panel>
             );
         }
 
-        if (sectionKey === 'observability' && itemKey === 'performanceInsights') {
+        if (sectionKey === 'observability' && itemKey === 'perfInsights') {
             return (
-                <Panel title="Wait Event Analysis" icon={Eye}>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart
-                            data={[
-                                { event: 'io/file/sql/binlog', pct: 35 },
-                                { event: 'io/table/sql/handler', pct: 28 },
-                                { event: 'lock/mutex/innodb', pct: 22 },
-                                { event: 'synch/rwlock/innodb', pct: 15 },
-                            ]}
+                <Panel title="Performance Insights" icon={TrendingUp} accentColor={THEME.warning}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                            <XAxis
-                                dataKey="event"
-                                angle={-20}
-                                textAnchor="end"
-                                height={80}
-                                stroke={THEME.textMuted}
-                                style={{ fontSize: '11px' }}
-                            />
-                            <YAxis stroke={THEME.textMuted} />
-                            <Tooltip
-                                contentStyle={{ background: THEME.glass, border: `1px solid ${THEME.glassBorder}` }}
-                            />
-                            <Bar dataKey="pct" fill={THEME.warning} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Top Wait Event</p>
+                            <p>io/file/innodb/innodb_data_file (34% of load)</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Top SQL Statement</p>
+                            <p>SELECT * FROM orders WHERE status = 'pending' (18% of load)</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Top Table</p>
+                            <p>orders (42% of I/O operations)</p>
+                        </div>
+                    </div>
                 </Panel>
             );
         }
 
         if (sectionKey === 'observability' && itemKey === 'statusPage') {
             return (
-                <Panel title="Service Health Status" icon={CheckCircle}>
+                <Panel title="System Status Summary" icon={CheckCircle} accentColor={THEME.success}>
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                             gap: '12px',
-                            fontSize: '13px',
                         }}
                     >
-                        {[
-                            { service: 'MySQL Engine', status: 'Running', uptime: '142d' },
-                            { service: 'Replication', status: 'Healthy', uptime: '142d' },
-                            { service: 'Backups', status: 'On Schedule', uptime: '3/3 complete' },
-                            { service: 'Performance Schema', status: 'Active', uptime: '142d' },
-                        ].map((s, i) => (
-                            <div key={i} style={{ padding: '10px', background: THEME.glass, borderRadius: '6px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                    <CheckCircle size={16} color={THEME.success} />
-                                    <strong>{s.service}</strong>
-                                </div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    {s.status} • {s.uptime}
-                                </div>
-                            </div>
-                        ))}
+                        <div
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${THEME.success}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>Overall Status</p>
+                            <p style={{ color: THEME.success, fontSize: '16px', fontWeight: 'bold' }}>HEALTHY</p>
+                        </div>
+                        <div
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${THEME.success}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>Uptime</p>
+                            <p style={{ color: THEME.textMain, fontSize: '14px', fontWeight: 'bold' }}>72 days</p>
+                        </div>
+                        <div
+                            style={{
+                                backgroundColor: THEME.glass,
+                                padding: '12px',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${THEME.success}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMuted, fontSize: '11px' }}>Replication</p>
+                            <p style={{ color: THEME.success, fontSize: '14px', fontWeight: 'bold' }}>IN SYNC</p>
+                        </div>
                     </div>
                 </Panel>
             );
         }
 
+        // DEVELOPER TOOLS SECTION
         if (sectionKey === 'developerTools' && itemKey === 'sqlEditor') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <Panel title="Recent Queries" icon={Code}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {demoData.recentQueries.map((q, i) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        padding: '8px',
-                                        background: THEME.glass,
-                                        borderRadius: '6px',
-                                        fontSize: '11px',
-                                        fontFamily: THEME.fontMono,
-                                        color: THEME.primary,
-                                    }}
-                                >
-                                    {q}
-                                </div>
-                            ))}
-                        </div>
-                    </Panel>
-                    <Panel title="SQL Editor" icon={Code}>
-                        <div
+                <Panel title="SQL Query Editor" icon={Code} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '11px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                        <pre
                             style={{
+                                backgroundColor: THEME.glass,
                                 padding: '12px',
-                                background: THEME.glass,
                                 borderRadius: '6px',
-                                fontFamily: THEME.fontMono,
-                                fontSize: '12px',
-                                color: THEME.textMuted,
-                                minHeight: '120px',
+                                overflow: 'auto',
+                                maxHeight: '350px',
                             }}
                         >
-                            SELECT * FROM orders
-                            <br />
-                            WHERE created_at &gt; NOW() - INTERVAL 1 DAY
-                            <br />
-                            ORDER BY total DESC LIMIT 10;
-                        </div>
-                    </Panel>
-                </div>
+                            {`SELECT o.id, o.status, u.name, COUNT(t.id) as txn_count
+FROM orders o
+LEFT JOIN users u ON o.user_id = u.id
+LEFT JOIN transactions t ON o.id = t.order_id
+WHERE o.created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)
+GROUP BY o.id, o.status, u.name
+ORDER BY txn_count DESC
+LIMIT 100;`}
+                        </pre>
+                    </div>
+                </Panel>
             );
         }
 
         if (sectionKey === 'developerTools' && itemKey === 'migrationTool') {
             return (
-                <Panel title="Schema Migration History" icon={TrendingUp}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {demoData.migrations.map((m, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
-                                }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                    <strong>{m.version}</strong>
-                                    <span style={{ color: THEME.success }}>{m.status}</span>
-                                </div>
-                                <div style={{ color: THEME.textMuted, marginBottom: '4px' }}>{m.description}</div>
-                                <div style={{ color: THEME.textMuted, fontSize: '11px' }}>{m.appliedAt}</div>
-                            </div>
-                        ))}
+                <Panel title="Database Migration Tool" icon={GitBranch} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Migration #0042: Add orders_status_index
+                            </p>
+                            <p>Status: Applied | Date: 1d ago | Rollback: Supported</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Migration #0041: Alter transactions schema
+                            </p>
+                            <p>Status: Applied | Date: 3d ago | Rollback: Supported</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Migration #0040: Create audit_log table
+                            </p>
+                            <p>Status: Applied | Date: 5d ago | Rollback: Supported</p>
+                        </div>
                     </div>
                 </Panel>
             );
@@ -1644,86 +1704,96 @@ function DemoMySQLTab({ tabId }) {
 
         if (sectionKey === 'developerTools' && itemKey === 'importExport') {
             return (
-                <Panel title="Data Transfer" icon={FileText}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {[
-                            { op: 'Export orders to CSV', date: '2026-03-25 18:45', status: 'Completed', rows: '2.5M' },
-                            {
-                                op: 'Import users from backup',
-                                date: '2026-03-20 03:15',
-                                status: 'Completed',
-                                rows: '125K',
-                            },
-                            { op: 'Sync analytics DB', date: '2026-03-15 22:30', status: 'Completed', rows: '850K' },
-                        ].map((op, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '10px',
-                                    background: THEME.glass,
-                                    borderRadius: '6px',
-                                    fontSize: '12px',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{op.op}</div>
-                                <div style={{ color: THEME.textMuted }}>
-                                    {op.date} • {op.status} • {op.rows} rows
-                                </div>
-                            </div>
-                        ))}
+                <Panel title="Data Import/Export" icon={Archive} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Recent Export: users_backup.sql
+                            </p>
+                            <p>Size: 2.4 MB | Rows: 123K | Date: 2h ago</p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Recent Import: products_update.sql
+                            </p>
+                            <p>Size: 1.8 MB | Rows: 8420 | Status: Success</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>Available Formats</p>
+                            <p>SQL | CSV | JSON | Parquet</p>
+                        </div>
                     </div>
                 </Panel>
             );
         }
 
-        if (sectionKey === 'developerTools' && itemKey === 'aiTuningAdvisor') {
+        if (sectionKey === 'developerTools' && itemKey === 'tuningAdvisor') {
             return (
-                <Panel title="MySQL AI Tuning Advisor" icon={Zap}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {demoData.tuningRecs.map((rec, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    padding: '12px',
-                                    background: THEME.glass,
-                                    borderRadius: '8px',
-                                    borderLeft: `3px solid ${rec.priority === 'Critical' ? THEME.danger : rec.priority === 'High' ? THEME.warning : THEME.primary}`,
-                                    fontSize: '12px',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{rec.issue}</div>
-                                <div
-                                    style={{
-                                        color: THEME.primary,
-                                        marginBottom: '4px',
-                                        fontFamily: THEME.fontMono,
-                                        fontSize: '11px',
-                                    }}
-                                >
-                                    {rec.recommendation}
-                                </div>
-                                <div style={{ color: THEME.textMuted, fontSize: '11px' }}>Priority: {rec.priority}</div>
-                            </div>
-                        ))}
+                <Panel title="AI Tuning Advisor" icon={Zap} accentColor={THEME.ai}>
+                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Recommendation: Add idx_orders_user_status
+                            </p>
+                            <p style={{ color: THEME.success }}>
+                                Expected improvement: +28% query speed on status filters
+                            </p>
+                        </div>
+                        <div
+                            style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
+                            }}
+                        >
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Recommendation: Increase buffer pool to 24GB
+                            </p>
+                            <p style={{ color: THEME.success }}>Expected improvement: +12% cache hit ratio</p>
+                        </div>
+                        <div>
+                            <p style={{ color: THEME.textMain, marginBottom: '4px' }}>
+                                Recommendation: Optimize innodb_flush_log_at_trx_commit
+                            </p>
+                            <p style={{ color: THEME.success }}>Expected improvement: +8% write throughput</p>
+                        </div>
                     </div>
                 </Panel>
             );
         }
 
         return (
-            <Panel title="Not Found" icon={Database}>
-                No content for this section
+            <Panel title="No Content" icon={FileText}>
+                Select an item from the sidebar.
             </Panel>
         );
     };
 
     return (
         <DemoLayout
-            title="MySQL Demo"
-            titleIcon={Database}
-            accentColor={THEME.secondary}
             sections={sections}
             renderContent={renderContent}
+            title="MySQL Demo"
+            titleIcon={Database}
+            accentColor={THEME.primary}
         />
     );
 }
