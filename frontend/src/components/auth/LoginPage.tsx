@@ -129,7 +129,7 @@ const GlobalStyles: React.FC = () => (
         .sso-btn { transition:all .3s cubic-bezier(.4,0,.2,1) !important; }
         .sso-btn:hover { background:${THEME.surfaceHover} !important; border-color:rgba(0,212,255,.35) !important; transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,.3) !important; }
         .vi-input-wrap { transition:all .3s cubic-bezier(.4,0,.2,1); }
-        .vi-input-wrap:focus-within { border-color:rgba(0,212,255,.55) !important; box-shadow:0 0 0 4px rgba(0,212,255,.08), 0 2px 8px rgba(0,0,0,.2) !important; background:rgba(0,212,255,.04) !important; }
+        .vi-input-wrap:focus-within { border-color:rgba(56,189,248,.55) !important; box-shadow:0 0 0 3px rgba(56,189,248,0.12), 0 0 16px rgba(56,189,248,0.06) !important; background:rgba(56,189,248,.06) !important; }
     `}</style>
 );
 
@@ -590,13 +590,13 @@ const ServerStatus: React.FC<ServerStatusProps> = ({ status }) => {
     const color = on ? '#22c55e' : off ? '#ef4444' : '#f59e0b';
     const label = on ? 'ONLINE' : off ? 'OFFLINE' : chk ? 'CHECKING' : 'DEGRADED';
     return (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px 6px 11px', borderRadius: 100, background: `${color}0A`, border: `1px solid ${color}22`, fontFamily: THEME.fontMono, fontSize: 10 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px 6px 11px', borderRadius: 100, background: `${color}0A`, border: `1px solid ${color}22`, fontFamily: THEME.fontMono, fontSize: 10, transition: 'all .3s cubic-bezier(.4,0,.2,1)', ...(on && { boxShadow: `0 0 16px ${color}40` }) }}>
             {chk
                 ? <><Loader size={10} color={THEME.textDim} style={{ animation: 'spin 1s linear infinite' }}/><span style={{ color: THEME.textDim, letterSpacing: '.05em' }}>CHECKING...</span></>
                 : <>
                     <div style={{ position: 'relative', width: 8, height: 8 }}>
-                        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 10px ${color}`, animation: on ? 'pulseDot 2.2s ease-in-out infinite' : 'none' }}/>
-                        {on && <div style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: `1px solid ${color}60`, animation: 'ringOut 2.2s ease-out infinite' }}/>}
+                        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 12px ${color}`, animation: on ? 'pulseRing 2.2s ease-in-out infinite' : 'pulseDot 2.2s ease-in-out infinite' }}/>
+                        {on && <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: `1.5px solid ${color}70`, animation: 'pulseRing 2.2s ease-out infinite' }}/>}
                     </div>
                     <span style={{ color, fontWeight: 700, letterSpacing: '.08em' }}>{label}</span>
                     {status.latency != null && <span style={{ color: THEME.textMuted, fontSize: 9, padding: '2px 7px', borderRadius: 6, background: THEME.surfaceHover, border: `1px solid ${THEME.grid}50` }}>{status.latency}ms</span>}
@@ -738,17 +738,18 @@ const LoginPage: React.FC = () => {
 
             {/* RIGHT PANEL */}
             <div style={{ width: 500, flexShrink: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: '24px 48px', background: THEME.surfaceHover }}>
-                {/* Background mesh */}
+                {/* Background mesh with enhanced animated gradient */}
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-                    <div style={{ position: 'absolute', top: '-8%', right: '-20%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(0,212,255,.06) 0%, transparent 65%)', filter: 'blur(60px)', animation: 'meshFloat 20s ease-in-out infinite' }}/>
-                    <div style={{ position: 'absolute', bottom: '-8%', left: '-15%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(46,232,156,.045) 0%, transparent 65%)', filter: 'blur(50px)', animation: 'meshFloat 16s ease-in-out infinite reverse' }}/>
-                    <div style={{ position: 'absolute', top: '40%', right: '10%', width: 200, height: 200, background: 'radial-gradient(circle, rgba(167,139,250,.035) 0%, transparent 65%)', filter: 'blur(40px)', animation: 'meshFloat 22s ease-in-out infinite 5s' }}/>
-                    <div style={{ position: 'absolute', inset: 0, opacity: .008, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,212,255,.8) .5px, transparent 0)', backgroundSize: '32px 32px' }}/>
+                    <div style={{ position: 'absolute', top: '-12%', right: '-25%', width: 450, height: 450, background: 'radial-gradient(circle, rgba(56,189,248,.08) 0%, transparent 70%)', filter: 'blur(80px)', animation: 'meshFloat 24s ease-in-out infinite' }}/>
+                    <div style={{ position: 'absolute', bottom: '-10%', left: '-18%', width: 400, height: 400, background: 'radial-gradient(circle, rgba(34,211,238,.06) 0%, transparent 70%)', filter: 'blur(70px)', animation: 'meshFloat 20s ease-in-out infinite reverse' }}/>
+                    <div style={{ position: 'absolute', top: '45%', right: '8%', width: 250, height: 250, background: 'radial-gradient(circle, rgba(167,139,250,.05) 0%, transparent 70%)', filter: 'blur(60px)', animation: 'meshFloat 26s ease-in-out infinite 2s' }}/>
+                    <div style={{ position: 'absolute', bottom: '20%', right: '5%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(56,189,248,.04) 0%, transparent 65%)', filter: 'blur(65px)', animation: 'meshFloat 22s ease-in-out infinite 4s' }}/>
+                    <div style={{ position: 'absolute', inset: 0, opacity: .012, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(56,189,248,.8) .5px, transparent 0)', backgroundSize: '40px 40px' }}/>
                 </div>
 
-                {/* Top edge glow */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent 5%, rgba(0,212,255,.5) 30%, rgba(46,232,156,.70) 50%, rgba(167,139,250,.5) 70%, transparent 95%)', opacity: .7, animation: 'edgePulse 5s ease-in-out infinite' }}/>
-                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(0,212,255,.06) 30%, rgba(0,212,255,.10) 50%, rgba(0,212,255,.06) 70%, transparent)' }}/>
+                {/* Top edge glow - enhanced */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, transparent 2%, rgba(56,189,248,.6) 25%, rgba(34,211,238,.8) 50%, rgba(56,189,248,.6) 75%, transparent 98%)', opacity: .85, animation: 'edgePulse 5s ease-in-out infinite' }}/>
+                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: 'linear-gradient(to bottom, transparent, rgba(56,189,248,.08) 30%, rgba(56,189,248,.12) 50%, rgba(56,189,248,.08) 70%, transparent)', opacity: 0.9 }}/>
 
                 <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 390, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     {/* Logo */}
@@ -758,7 +759,7 @@ const LoginPage: React.FC = () => {
 
                     {/* Heading */}
                     <div style={{ textAlign: 'center', marginBottom: 4, animation: 'fadeUp .7s ease .18s backwards', width: '100%' }}>
-                        <h1 style={{ fontSize: 28, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.15, letterSpacing: '-.05em', fontFamily: "'Playfair Display',serif" }}>Welcome back</h1>
+                        <h1 style={{ fontSize: 28, fontWeight: 700, background: 'linear-gradient(135deg, #38bdf8, #22d3ee, #06b6d4)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0, lineHeight: 1.15, letterSpacing: '-.05em', fontFamily: "'Playfair Display',serif" }}>Welcome back</h1>
                         <p style={{ color: THEME.textMuted, margin: '8px 0 0', fontSize: 13, lineHeight: 1.6, fontFamily: THEME.fontBody, fontWeight: 300 }}>Sign in to your database command center</p>
                     </div>
 
@@ -779,9 +780,9 @@ const LoginPage: React.FC = () => {
                         width: '100%', padding: '20px 24px 16px',
                         borderRadius: 20,
                         background: THEME.surface,
-                        backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                        backdropFilter: 'blur(24px) saturate(1.3)', WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
                         border: `1px solid ${error ? 'rgba(239,68,68,.22)' : THEME.glassBorder}`,
-                        boxShadow: '0 28px 72px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.03) inset',
+                        boxShadow: '0 0 0 1px rgba(56,189,248,0.1), 0 28px 72px rgba(0,0,0,0.6), 0 0 48px rgba(56,189,248,0.04)',
                         transition: 'border-color .3s',
                         animation: shake ? 'shake .5s ease' : 'cardGlow 6s ease-in-out infinite, fadeUp .7s ease .32s backwards',
                         position: 'relative', overflow: 'hidden',
@@ -841,18 +842,18 @@ const LoginPage: React.FC = () => {
                             <button type="submit" disabled={!canSubmit} onMouseEnter={() => setBtnHover(true)} onMouseLeave={() => setBtnHover(false)}
                                     style={{
                                         position: 'relative', overflow: 'hidden',
-                                        background: canSubmit ? 'linear-gradient(135deg, #0088BB 0%, #00A8D6 40%, #00D4FF 100%)' : THEME.surfaceHover,
+                                        background: canSubmit ? 'linear-gradient(135deg, #38bdf8, #22d3ee)' : THEME.surfaceHover,
                                         border: canSubmit ? '1px solid rgba(0,212,255,.28)' : `1px solid ${THEME.grid}`,
                                         padding: '13px 20px', borderRadius: 14,
                                         color: canSubmit ? '#fff' : THEME.textMuted,
-                                        fontWeight: 700, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '.02em',
+                                        fontWeight: 700, fontSize: 14, fontFamily: THEME.fontBody, letterSpacing: '0.03em',
                                         cursor: canSubmit ? 'pointer' : 'not-allowed',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                                         transition: 'all .35s cubic-bezier(.4,0,.2,1)',
                                         boxShadow: canSubmit && !authLoading
                                             ? btnHover
-                                                ? '0 16px 48px rgba(0,180,216,.50), 0 0 0 1px rgba(0,212,255,.35) inset, 0 1px 0 rgba(255,255,255,.18) inset'
-                                                : '0 10px 32px rgba(0,180,216,.30), 0 0 0 1px rgba(0,212,255,.20) inset'
+                                                ? '0 16px 48px rgba(0,180,216,.60), 0 0 0 1px rgba(0,212,255,.40) inset, 0 2px 8px rgba(255,255,255,.20) inset'
+                                                : '0 10px 32px rgba(0,180,216,.40), 0 0 0 1px rgba(0,212,255,.25) inset'
                                             : 'none',
                                         transform: btnHover && canSubmit ? 'translateY(-2px)' : 'translateY(0)',
                                     }}>

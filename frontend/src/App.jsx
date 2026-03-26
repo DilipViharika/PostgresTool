@@ -21,109 +21,112 @@ import LicenseStatus from './enterprise/components/LicenseStatus.jsx';
 import OrgSwitcher from './enterprise/components/OrgSwitcher.jsx';
 
 /* ── Retry wrapper for lazy imports (handles stale chunk hashes after deploy) ── */
-const lazyRetry = (importFn) => lazy(() =>
-    importFn().catch((err) => {
-        // Chunk fetch failed (likely stale hash after deploy) — force-reload once
-        const key = 'vigil_chunk_retry';
-        try {
-            if (!sessionStorage.getItem(key)) {
-                sessionStorage.setItem(key, '1');
-                window.location.reload();
-                return new Promise(() => {}); // hang while reloading
+const lazyRetry = (importFn) =>
+    lazy(() =>
+        importFn().catch((err) => {
+            // Chunk fetch failed (likely stale hash after deploy) — force-reload once
+            const key = 'vigil_chunk_retry';
+            try {
+                if (!sessionStorage.getItem(key)) {
+                    sessionStorage.setItem(key, '1');
+                    window.location.reload();
+                    return new Promise(() => {}); // hang while reloading
+                }
+                sessionStorage.removeItem(key);
+            } catch {
+                /* sessionStorage unavailable — fall through */
             }
-            sessionStorage.removeItem(key);
-        } catch { /* sessionStorage unavailable — fall through */ }
-        // second attempt with cache-bust
-        return importFn().catch(() => {
-            // final fallback: hard reload with cache-bust query
-            window.location.href = window.location.pathname + '?cb=' + Date.now();
-            return new Promise(() => {});
-        });
-    })
-);
+            // second attempt with cache-bust
+            return importFn().catch(() => {
+                // final fallback: hard reload with cache-bust query
+                window.location.href = window.location.pathname + '?cb=' + Date.now();
+                return new Promise(() => {});
+            });
+        }),
+    );
 
 const SSOCallback = lazyRetry(() => import('./components/auth/SSOCallback.jsx'));
 
 /* ── Lazy-loaded tab components for faster initial load ── */
 // Monitoring features
-const OverviewTab          = lazyRetry(() => import('./components/views/monitoring/OverviewTab.jsx'));
-const PerformanceTab       = lazyRetry(() => import('./components/views/monitoring/PerformanceTab.jsx'));
-const ResourcesTab         = lazyRetry(() => import('./components/views/monitoring/ResourcesTab.jsx'));
-const CloudWatchTab        = lazyRetry(() => import('./components/views/monitoring/CloudWatchTab.jsx'));
+const OverviewTab = lazyRetry(() => import('./components/views/monitoring/OverviewTab.jsx'));
+const PerformanceTab = lazyRetry(() => import('./components/views/monitoring/PerformanceTab.jsx'));
+const ResourcesTab = lazyRetry(() => import('./components/views/monitoring/ResourcesTab.jsx'));
+const CloudWatchTab = lazyRetry(() => import('./components/views/monitoring/CloudWatchTab.jsx'));
 const CheckpointMonitorTab = lazyRetry(() => import('./components/views/monitoring/CheckpointMonitorTab.jsx'));
 
 // Security features
-const SecurityComplianceTab= lazyRetry(() => import('./components/views/security/SecurityComplianceTab.jsx'));
-const AlertsComponent      = lazyRetry(() => import('./components/views/security/AlertsTab.jsx'));
-const AlertCorrelationTab  = lazyRetry(() => import('./components/views/security/AlertCorrelationTab.jsx'));
+const SecurityComplianceTab = lazyRetry(() => import('./components/views/security/SecurityComplianceTab.jsx'));
+const AlertsComponent = lazyRetry(() => import('./components/views/security/AlertsTab.jsx'));
+const AlertCorrelationTab = lazyRetry(() => import('./components/views/security/AlertCorrelationTab.jsx'));
 
 // Database features
-const IndexesTab           = lazyRetry(() => import('./components/views/database/IndexesTab.jsx'));
-const SqlConsoleTab        = lazyRetry(() => import('./components/views/database/SqlConsoleTab.jsx'));
-const BloatAnalysisTab     = lazyRetry(() => import('./components/views/database/BloatAnalysisTab.jsx'));
-const TableAnalytics       = lazyRetry(() => import('./components/views/database/TableAnalytics.jsx'));
-const QueryOptimizerTab    = lazyRetry(() => import('./components/views/database/QueryOptimizerTab.jsx'));
+const IndexesTab = lazyRetry(() => import('./components/views/database/IndexesTab.jsx'));
+const SqlConsoleTab = lazyRetry(() => import('./components/views/database/SqlConsoleTab.jsx'));
+const BloatAnalysisTab = lazyRetry(() => import('./components/views/database/BloatAnalysisTab.jsx'));
+const TableAnalytics = lazyRetry(() => import('./components/views/database/TableAnalytics.jsx'));
+const QueryOptimizerTab = lazyRetry(() => import('./components/views/database/QueryOptimizerTab.jsx'));
 const QueryPlanRegressionTab = lazyRetry(() => import('./components/views/database/QueryPlanRegressionTab.jsx'));
-const SchemaVersioningTab  = lazyRetry(() => import('./components/views/database/SchemaVersioningTab.jsx'));
-const SchemaVisualizerTab  = lazyRetry(() => import('./components/views/database/SchemaVisualizerTab.jsx'));
+const SchemaVersioningTab = lazyRetry(() => import('./components/views/database/SchemaVersioningTab.jsx'));
+const SchemaVisualizerTab = lazyRetry(() => import('./components/views/database/SchemaVisualizerTab.jsx'));
 const TableDependencyMindMap = lazyRetry(() => import('./components/views/database/TableDependencyMindMap.jsx'));
 
 // Operations features
-const BackupRecoveryTab    = lazyRetry(() => import('./components/views/operations/BackupRecoveryTab.jsx'));
+const BackupRecoveryTab = lazyRetry(() => import('./components/views/operations/BackupRecoveryTab.jsx'));
 const VacuumMaintenanceTab = lazyRetry(() => import('./components/views/operations/VacuumMaintenanceTab.jsx'));
-const DBATaskSchedulerTab  = lazyRetry(() => import('./components/views/operations/DBATaskSchedulerTab.jsx'));
-const ReplicationWALTab    = lazyRetry(() => import('./components/views/operations/ReplicationWALTab.jsx'));
-const ConnectionPoolTab    = lazyRetry(() => import('./components/views/operations/ConnectionPoolTab.jsx'));
+const DBATaskSchedulerTab = lazyRetry(() => import('./components/views/operations/DBATaskSchedulerTab.jsx'));
+const ReplicationWALTab = lazyRetry(() => import('./components/views/operations/ReplicationWALTab.jsx'));
+const ConnectionPoolTab = lazyRetry(() => import('./components/views/operations/ConnectionPoolTab.jsx'));
 
 // Analytics features
-const CapacityPlanningTab  = lazyRetry(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
-const LogPatternAnalysisTab= lazyRetry(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
-const CustomDashboardTab   = lazyRetry(() => import('./components/views/analytics/CustomDashboardTab.jsx'));
+const CapacityPlanningTab = lazyRetry(() => import('./components/views/analytics/CapacityPlanningTab.jsx'));
+const LogPatternAnalysisTab = lazyRetry(() => import('./components/views/analytics/LogPatternAnalysisTab.jsx'));
+const CustomDashboardTab = lazyRetry(() => import('./components/views/analytics/CustomDashboardTab.jsx'));
 /* Demo data components removed — production metrics now served via metricsRegistry.js */
 
 // Admin features
-const AdminTab             = lazyRetry(() => import('./components/views/admin/AdminTab.jsx'));
-const RepositoryTab        = lazyRetry(() => import('./components/views/admin/RepositoryTab.jsx'));
-const ApiQueriesTab        = lazyRetry(() => import('./components/views/admin/ApiQueriesTab.jsx'));
+const AdminTab = lazyRetry(() => import('./components/views/admin/AdminTab.jsx'));
+const RepositoryTab = lazyRetry(() => import('./components/views/admin/RepositoryTab.jsx'));
+const ApiQueriesTab = lazyRetry(() => import('./components/views/admin/ApiQueriesTab.jsx'));
 const RetentionManagementTab = lazyRetry(() => import('./components/views/admin/RetentionManagementTab.jsx'));
-const TerraformExportTab   = lazyRetry(() => import('./components/views/admin/TerraformExportTab.jsx'));
-const ReportBuilderTab     = lazyRetry(() => import('./components/views/admin/ReportBuilderTab.jsx'));
+const TerraformExportTab = lazyRetry(() => import('./components/views/admin/TerraformExportTab.jsx'));
+const ReportBuilderTab = lazyRetry(() => import('./components/views/admin/ReportBuilderTab.jsx'));
 
 // Gap features — Monitoring
-const OpenTelemetryTab     = lazyRetry(() => import('./components/views/monitoring/OpenTelemetryTab.jsx'));
-const KubernetesTab        = lazyRetry(() => import('./components/views/monitoring/KubernetesTab.jsx'));
-const StatusPageTab        = lazyRetry(() => import('./components/views/monitoring/StatusPageTab.jsx'));
-const AIMonitoringTab      = lazyRetry(() => import('./components/views/monitoring/AIMonitoringTab.jsx'));
-const ObservabilityHub     = lazyRetry(() => import('./components/views/monitoring/ObservabilityHub.jsx'));
+const OpenTelemetryTab = lazyRetry(() => import('./components/views/monitoring/OpenTelemetryTab.jsx'));
+const KubernetesTab = lazyRetry(() => import('./components/views/monitoring/KubernetesTab.jsx'));
+const StatusPageTab = lazyRetry(() => import('./components/views/monitoring/StatusPageTab.jsx'));
+const AIMonitoringTab = lazyRetry(() => import('./components/views/monitoring/AIMonitoringTab.jsx'));
+const ObservabilityHub = lazyRetry(() => import('./components/views/monitoring/ObservabilityHub.jsx'));
 
 // Gap features — Database
-const AIQueryAdvisorTab    = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
+const AIQueryAdvisorTab = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
 
 // MongoDB features
-const MongoOverviewTab     = lazyRetry(() => import('./components/views/mongodb/MongoOverviewTab.jsx'));
-const MongoPerformanceTab  = lazyRetry(() => import('./components/views/mongodb/MongoPerformanceTab.jsx'));
-const MongoStorageTab      = lazyRetry(() => import('./components/views/mongodb/MongoStorageTab.jsx'));
-const MongoReplicationTab  = lazyRetry(() => import('./components/views/mongodb/MongoReplicationTab.jsx'));
-const MongoDataToolsTab    = lazyRetry(() => import('./components/views/mongodb/MongoDataToolsTab.jsx'));
-const MongoShardingTab     = lazyRetry(() => import('./components/views/mongodb/MongoShardingTab.jsx'));
+const MongoOverviewTab = lazyRetry(() => import('./components/views/mongodb/MongoOverviewTab.jsx'));
+const MongoPerformanceTab = lazyRetry(() => import('./components/views/mongodb/MongoPerformanceTab.jsx'));
+const MongoStorageTab = lazyRetry(() => import('./components/views/mongodb/MongoStorageTab.jsx'));
+const MongoReplicationTab = lazyRetry(() => import('./components/views/mongodb/MongoReplicationTab.jsx'));
+const MongoDataToolsTab = lazyRetry(() => import('./components/views/mongodb/MongoDataToolsTab.jsx'));
+const MongoShardingTab = lazyRetry(() => import('./components/views/mongodb/MongoShardingTab.jsx'));
 
 // Other
-const ReliabilityTab       = lazyRetry(() => import('./components/views/ReliabilityTab.jsx'));
-const UserManagementTab    = lazyRetry(() => import('./usermanagement/UserManagementTab.jsx'));
+const ReliabilityTab = lazyRetry(() => import('./components/views/ReliabilityTab.jsx'));
+const UserManagementTab = lazyRetry(() => import('./usermanagement/UserManagementTab.jsx'));
 
 // Phase 1 — Connection Onboarding
-const ConnectionWizard     = lazyRetry(() => import('./components/views/onboarding/ConnectionWizard.jsx'));
+const ConnectionWizard = lazyRetry(() => import('./components/views/onboarding/ConnectionWizard.jsx'));
 
 // Phase 2 — Multi-DB Fleet Dashboard
-const FleetOverviewTab     = lazyRetry(() => import('./components/views/monitoring/FleetOverviewTab.jsx'));
+const FleetOverviewTab = lazyRetry(() => import('./components/views/monitoring/FleetOverviewTab.jsx'));
 
 // Phase 3 — Visualization Layer
-const SchemaTreeBrowser    = lazyRetry(() => import('./components/views/database/SchemaTreeBrowser.jsx'));
-const QueryPlanViewer      = lazyRetry(() => import('./components/views/database/QueryPlanViewer.jsx'));
-const ChartBuilder         = lazyRetry(() => import('./components/views/database/ChartBuilder.jsx'));
+const SchemaTreeBrowser = lazyRetry(() => import('./components/views/database/SchemaTreeBrowser.jsx'));
+const QueryPlanViewer = lazyRetry(() => import('./components/views/database/QueryPlanViewer.jsx'));
+const ChartBuilder = lazyRetry(() => import('./components/views/database/ChartBuilder.jsx'));
 
 // Phase 4 — Monitoring & Reliability
-const AlertRuleEditor      = lazyRetry(() => import('./components/views/monitoring/AlertRuleEditor.jsx'));
+const AlertRuleEditor = lazyRetry(() => import('./components/views/monitoring/AlertRuleEditor.jsx'));
 const PoolMetricsDashboard = lazyRetry(() => import('./components/views/monitoring/PoolMetricsDashboard.jsx'));
 
 // Layout — Enhanced Connection Switcher (replaces inline ConnectionSelector)
@@ -137,13 +140,55 @@ const LicenseManagement = lazyRetry(() => import('./enterprise/views/LicenseMana
 const OrgManagement = lazyRetry(() => import('./enterprise/views/OrgManagement.jsx'));
 
 import {
-    Activity, Zap, CheckCircle, HardDrive, Layers, Shield, Terminal, Network,
-    LogOut, Database, WifiOff, Bell, ChevronLeft, ChevronRight, ChevronDown,
-    AlertCircle, X, User, GitBranch, Users, TrendingUp,
-    MessageSquarePlus, Star, Send, Archive, RefreshCw, Radio, Cloud,
-    CalendarCheck, FileSearch, Link2, Cpu, BarChart2, Lock,
-    ThumbsUp, Lightbulb, AlertTriangle, PlusCircle, Sun, Moon, Save, Edit2,
-    Radar, Brain, Container, LayoutDashboard, Globe, Download, Clock
+    Activity,
+    Zap,
+    CheckCircle,
+    HardDrive,
+    Layers,
+    Shield,
+    Terminal,
+    Network,
+    LogOut,
+    Database,
+    WifiOff,
+    Bell,
+    ChevronLeft,
+    ChevronRight,
+    ChevronDown,
+    AlertCircle,
+    X,
+    User,
+    GitBranch,
+    Users,
+    TrendingUp,
+    MessageSquarePlus,
+    Star,
+    Send,
+    Archive,
+    RefreshCw,
+    Radio,
+    Cloud,
+    CalendarCheck,
+    FileSearch,
+    Link2,
+    Cpu,
+    BarChart2,
+    Lock,
+    ThumbsUp,
+    Lightbulb,
+    AlertTriangle,
+    PlusCircle,
+    Sun,
+    Moon,
+    Save,
+    Edit2,
+    Radar,
+    Brain,
+    Container,
+    LayoutDashboard,
+    Globe,
+    Download,
+    Clock,
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents.jsx';
 
@@ -152,32 +197,69 @@ let DS = getDS();
 
 /* ── Register lazy-loaded components with tabConfig ── */
 registerComponents({
-    OverviewTab, PerformanceTab, ResourcesTab, ReliabilityTab, AlertsComponent,
-    QueryOptimizerTab, IndexesTab, QueryPlanRegressionTab, BloatAnalysisTab, TableAnalytics,
-    ConnectionPoolTab, ReplicationWALTab, CheckpointMonitorTab, VacuumMaintenanceTab,
-    CapacityPlanningTab, BackupRecoveryTab,
-    SchemaVersioningTab, SchemaVisualizerTab, TableDependencyMindMap, SecurityComplianceTab,
-    CloudWatchTab, LogPatternAnalysisTab, AlertCorrelationTab, OpenTelemetryTab,
-    KubernetesTab, StatusPageTab, AIMonitoringTab, ObservabilityHub,
-    SqlConsoleTab, ApiQueriesTab, RepositoryTab, AIQueryAdvisorTab,
-    DBATaskSchedulerTab, UserManagementTab, AdminTab, RetentionManagementTab,
-    TerraformExportTab, ReportBuilderTab, CustomDashboardTab,
-    MongoOverviewTab, MongoPerformanceTab, MongoStorageTab,
-    MongoReplicationTab, MongoDataToolsTab, MongoShardingTab,
+    OverviewTab,
+    PerformanceTab,
+    ResourcesTab,
+    ReliabilityTab,
+    AlertsComponent,
+    QueryOptimizerTab,
+    IndexesTab,
+    QueryPlanRegressionTab,
+    BloatAnalysisTab,
+    TableAnalytics,
+    ConnectionPoolTab,
+    ReplicationWALTab,
+    CheckpointMonitorTab,
+    VacuumMaintenanceTab,
+    CapacityPlanningTab,
+    BackupRecoveryTab,
+    SchemaVersioningTab,
+    SchemaVisualizerTab,
+    TableDependencyMindMap,
+    SecurityComplianceTab,
+    CloudWatchTab,
+    LogPatternAnalysisTab,
+    AlertCorrelationTab,
+    OpenTelemetryTab,
+    KubernetesTab,
+    StatusPageTab,
+    AIMonitoringTab,
+    ObservabilityHub,
+    SqlConsoleTab,
+    ApiQueriesTab,
+    RepositoryTab,
+    AIQueryAdvisorTab,
+    DBATaskSchedulerTab,
+    UserManagementTab,
+    AdminTab,
+    RetentionManagementTab,
+    TerraformExportTab,
+    ReportBuilderTab,
+    CustomDashboardTab,
+    MongoOverviewTab,
+    MongoPerformanceTab,
+    MongoStorageTab,
+    MongoReplicationTab,
+    MongoDataToolsTab,
+    MongoShardingTab,
     // Phase 1–4 new components
-    FleetOverviewTab, ConnectionWizard,
-    SchemaTreeBrowser, QueryPlanViewer, ChartBuilder,
-    AlertRuleEditor, PoolMetricsDashboard,
+    FleetOverviewTab,
+    ConnectionWizard,
+    SchemaTreeBrowser,
+    QueryPlanViewer,
+    ChartBuilder,
+    AlertRuleEditor,
+    PoolMetricsDashboard,
     // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,
 });
 
-const TAB_CONFIG      = buildTabConfig();
-const TABS_ONLY       = getTabsOnly(TAB_CONFIG);
-const SECTION_GROUPS  = getSectionGroups(TAB_CONFIG);
+const TAB_CONFIG = buildTabConfig();
+const TABS_ONLY = getTabsOnly(TAB_CONFIG);
+const SECTION_GROUPS = getSectionGroups(TAB_CONFIG);
 
 const getSectionForTab = (tabId) => {
     for (const g of SECTION_GROUPS) {
-        if (g.tabs.some(t => t.id === tabId)) return g.section;
+        if (g.tabs.some((t) => t.id === tabId)) return g.section;
     }
     return null;
 };
@@ -186,16 +268,16 @@ const getGroupForTab = () => null;
 
 const getSectionAccent = (tabId) => {
     for (const g of SECTION_GROUPS) {
-        if (g.tabs.some(t => t.id === tabId)) return g.accent;
+        if (g.tabs.some((t) => t.id === tabId)) return g.accent;
     }
     return DS.cyan;
 };
 
-const WS_RECONNECT_INTERVAL   = 5000;
-const ALERT_AUTO_DISMISS_TIME  = 5000;
-const MAX_NOTIFICATIONS        = 50;
-const AUTH_TOKEN_KEY           = 'vigil_token';
-const FEEDBACK_RATE_LIMIT_MS   = 5 * 60 * 1000; // 5 minutes
+const WS_RECONNECT_INTERVAL = 5000;
+const ALERT_AUTO_DISMISS_TIME = 5000;
+const MAX_NOTIFICATIONS = 50;
+const AUTH_TOKEN_KEY = 'vigil_token';
+const FEEDBACK_RATE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
 
 /* ─────────────────────────────────────────────────────────────────
    GLOBAL STYLES
@@ -225,6 +307,56 @@ const AppStyles = () => (
         @keyframes headerGlow      { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
         @keyframes waveFlow        { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes dotBlink        { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+        /* ── Advanced glassmorphism auto-targeting ── */
+        aside {
+            background: linear-gradient(180deg, var(--bg-deep, #020409), var(--bg, #04060f)) !important;
+            border-right: 1px solid var(--border, rgba(255,255,255,0.06)) !important;
+        }
+
+        aside::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(180deg, transparent 0%, var(--accent, #38bdf8) 40%, var(--violet, #a78bfa) 75%, transparent 100%);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Enhanced header bar */
+        header, [role="banner"] {
+            backdrop-filter: blur(20px) saturate(1.3) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
+        }
+
+        /* Tab content area */
+        .tab-mount {
+            animation: tabIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* Nav items enhanced hover */
+        .nav-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 8px !important;
+            margin: 1px 8px !important;
+        }
+
+        .nav-item:hover {
+            background: rgba(56, 189, 248, 0.06) !important;
+            transform: translateX(2px);
+        }
+
+        /* Section headers enhanced */
+        .section-btn {
+            transition: all 0.2s ease !important;
+        }
+
+        .section-btn:hover {
+            background: rgba(56, 189, 248, 0.04) !important;
+        }
 
         body {
             margin: 0;
@@ -347,28 +479,56 @@ const AppStyles = () => (
    AMBIENT BACKGROUND ORBS (decorative, pointer-events: none)
    ───────────────────────────────────────────────────────────────── */
 const AmbientOrbs = () => (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden', opacity: DS._dark ? 1 : 0.15, transition: 'opacity 0.4s ease' }}>
+    <div
+        style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 0,
+            overflow: 'hidden',
+            opacity: DS._dark ? 1 : 0.15,
+            transition: 'opacity 0.4s ease',
+        }}
+    >
         {/* Top-left cyan orb */}
-        <div style={{
-            position: 'absolute', top: -120, left: -80, width: 500, height: 500,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%)',
-            animation: 'orb 18s ease-in-out infinite',
-        }} />
+        <div
+            style={{
+                position: 'absolute',
+                top: -120,
+                left: -80,
+                width: 500,
+                height: 500,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%)',
+                animation: 'orb 18s ease-in-out infinite',
+            }}
+        />
         {/* Bottom-right violet orb */}
-        <div style={{
-            position: 'absolute', bottom: -100, right: -60, width: 600, height: 600,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(129,140,248,0.06) 0%, transparent 70%)',
-            animation: 'orb 24s ease-in-out infinite reverse',
-        }} />
+        <div
+            style={{
+                position: 'absolute',
+                bottom: -100,
+                right: -60,
+                width: 600,
+                height: 600,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(129,140,248,0.06) 0%, transparent 70%)',
+                animation: 'orb 24s ease-in-out infinite reverse',
+            }}
+        />
         {/* Center subtle emerald hint */}
-        <div style={{
-            position: 'absolute', top: '40%', left: '50%', width: 800, height: 300,
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(52,211,153,0.03) 0%, transparent 70%)',
-            transform: 'translate(-50%,-50%)',
-        }} />
+        <div
+            style={{
+                position: 'absolute',
+                top: '40%',
+                left: '50%',
+                width: 800,
+                height: 300,
+                borderRadius: '50%',
+                background: 'radial-gradient(ellipse, rgba(52,211,153,0.03) 0%, transparent 70%)',
+                transform: 'translate(-50%,-50%)',
+            }}
+        />
     </div>
 );
 
@@ -379,7 +539,7 @@ const MiniSparkline = ({ color = DS.cyan, width = 80, height = 28 }) => {
     const [pts, setPts] = useState(() => Array.from({ length: 20 }, () => Math.random()));
     useEffect(() => {
         const id = setInterval(() => {
-            setPts(prev => {
+            setPts((prev) => {
                 const next = [...prev.slice(1), Math.random()];
                 return next;
             });
@@ -389,11 +549,13 @@ const MiniSparkline = ({ color = DS.cyan, width = 80, height = 28 }) => {
 
     const toSvg = (values) => {
         const n = values.length;
-        return values.map((v, i) => {
-            const x = (i / (n - 1)) * width;
-            const y = height - 2 - v * (height - 4);
-            return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
-        }).join(' ');
+        return values
+            .map((v, i) => {
+                const x = (i / (n - 1)) * width;
+                const y = height - 2 - v * (height - 4);
+                return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+            })
+            .join(' ');
     };
 
     const fillPath = `${toSvg(pts)} L ${width} ${height} L 0 ${height} Z`;
@@ -407,7 +569,14 @@ const MiniSparkline = ({ color = DS.cyan, width = 80, height = 28 }) => {
                 </linearGradient>
             </defs>
             <path d={fillPath} fill="url(#spark-fill)" />
-            <path d={toSvg(pts)} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+                d={toSvg(pts)}
+                fill="none"
+                stroke={color}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
         </svg>
     );
 };
@@ -416,21 +585,32 @@ const MiniSparkline = ({ color = DS.cyan, width = 80, height = 28 }) => {
    LIVE STATUS PILL
    ───────────────────────────────────────────────────────────────── */
 const StatusPill = ({ connected }) => (
-    <div style={{
-        display: 'flex', alignItems: 'center', gap: 7,
-        padding: '5px 12px', borderRadius: 20,
-        background: connected ? 'rgba(52,211,153,0.1)' : 'rgba(251,113,133,0.1)',
-        border: `1px solid ${connected ? 'rgba(52,211,153,0.3)' : 'rgba(251,113,133,0.3)'}`,
-        fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
-        color: connected ? DS.emerald : DS.rose,
-        fontFamily: DS.fontMono,
-    }}>
-        <span style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: connected ? DS.emerald : DS.rose,
-            animation: connected ? 'dotBlink 2s ease-in-out infinite' : 'none',
-            flexShrink: 0,
-        }} />
+    <div
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            padding: '5px 12px',
+            borderRadius: 20,
+            background: connected ? 'rgba(52,211,153,0.1)' : 'rgba(251,113,133,0.1)',
+            border: `1px solid ${connected ? 'rgba(52,211,153,0.3)' : 'rgba(251,113,133,0.3)'}`,
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.05em',
+            color: connected ? DS.emerald : DS.rose,
+            fontFamily: DS.fontMono,
+        }}
+    >
+        <span
+            style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: connected ? DS.emerald : DS.rose,
+                animation: connected ? 'dotBlink 2s ease-in-out infinite' : 'none',
+                flexShrink: 0,
+            }}
+        />
         {connected ? 'LIVE' : 'OFFLINE'}
     </div>
 );
@@ -456,19 +636,25 @@ const ThemeToggle = () => {
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             title={isDark ? 'Light mode' : 'Dark mode'}
             style={{
-                width: 38, height: 38, borderRadius: 10,
+                width: 38,
+                height: 38,
+                borderRadius: 10,
                 background: isDark ? 'rgba(251,191,36,0.08)' : 'rgba(14,165,233,0.08)',
                 border: `1px solid ${isDark ? 'rgba(251,191,36,0.25)' : 'rgba(14,165,233,0.3)'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', transition: 'all 0.25s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+            }}
         >
-            {isDark
-                ? <Sun size={16} color="rgba(251,191,36,0.9)" />
-                : <Moon size={16} color="rgba(14,165,233,0.9)" />
-            }
+            {isDark ? <Sun size={16} color="rgba(251,191,36,0.9)" /> : <Moon size={16} color="rgba(14,165,233,0.9)" />}
         </button>
     );
 };
@@ -480,15 +666,15 @@ const ThemeToggle = () => {
 
 /* ── Data ─────────────────────────────────────────────────────── */
 const FB_MODES = [
-    { id: 'feature', label: 'Feature Request', icon: Lightbulb,     color: DS.cyan   },
-    { id: 'bug',     label: 'Bug Report',       icon: AlertTriangle, color: DS.rose   },
-    { id: 'general', label: 'General',          icon: MessageSquarePlus, color: DS.violet },
+    { id: 'feature', label: 'Feature Request', icon: Lightbulb, color: DS.cyan },
+    { id: 'bug', label: 'Bug Report', icon: AlertTriangle, color: DS.rose },
+    { id: 'general', label: 'General', icon: MessageSquarePlus, color: DS.violet },
 ];
 
 const FB_PRIORITY = [
-    { val: 'Low',    color: DS.emerald },
-    { val: 'Medium', color: DS.amber   },
-    { val: 'High',   color: DS.rose    },
+    { val: 'Low', color: DS.emerald },
+    { val: 'Medium', color: DS.amber },
+    { val: 'High', color: DS.rose },
 ];
 
 const STAR_LABELS = ['Terrible', 'Poor', 'Okay', 'Good', 'Excellent'];
@@ -498,41 +684,62 @@ const FB_GROUPS = (() => {
     const groups = [];
     let cur = null;
     for (const item of TAB_CONFIG) {
-        if (item.section) { cur = { group: item.section, accent: item.accent, tabs: [] }; groups.push(cur); }
-        else if (cur) cur.tabs.push({ id: item.id, label: item.label });
+        if (item.section) {
+            cur = { group: item.section, accent: item.accent, tabs: [] };
+            groups.push(cur);
+        } else if (cur) cur.tabs.push({ id: item.id, label: item.label });
     }
     return groups;
 })();
-const FB_ALL_TABS = FB_GROUPS.flatMap(g => g.tabs);
+const FB_ALL_TABS = FB_GROUPS.flatMap((g) => g.tabs);
 const emptyRow = () => ({ rating: 0, comment: '', remarks: '' });
 
 /* ── Shared primitives ────────────────────────────────────────── */
 const FbLabel = ({ children, color }) => (
-    <div style={{
-        fontSize: 10, fontWeight: 600, letterSpacing: '0.09em',
-        textTransform: 'uppercase', color: color || DS.textMuted,
-        marginBottom: 8, fontFamily: DS.fontMono,
-        display: 'flex', alignItems: 'center', gap: 5,
-    }}>{children}</div>
+    <div
+        style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: '0.09em',
+            textTransform: 'uppercase',
+            color: color || DS.textMuted,
+            marginBottom: 8,
+            fontFamily: DS.fontMono,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+        }}
+    >
+        {children}
+    </div>
 );
 
 const FbInput = ({ value, onChange, placeholder, maxLength, style: extraStyle }) => {
     const [focused, setFocused] = useState(false);
     return (
-        <input type="text" value={value} onChange={e => onChange(e.target.value)}
-               placeholder={placeholder} maxLength={maxLength}
-               className="fb-input"
-               style={{
-                   width: '100%', boxSizing: 'border-box',
-                   background: 'rgba(255,255,255,0.03)',
-                   border: `1px solid ${focused ? DS.borderAccent : DS.border}`,
-                   borderRadius: 9, padding: '10px 13px', color: DS.textPrimary,
-                   fontSize: 13, outline: 'none', fontFamily: DS.fontUI,
-                   transition: 'border-color 0.2s, box-shadow 0.2s',
-                   ...extraStyle,
-               }}
-               onFocus={() => setFocused(true)}
-               onBlur={() => setFocused(false)}
+        <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            maxLength={maxLength}
+            className="fb-input"
+            style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.03)',
+                border: `1px solid ${focused ? DS.borderAccent : DS.border}`,
+                borderRadius: 9,
+                padding: '10px 13px',
+                color: DS.textPrimary,
+                fontSize: 13,
+                outline: 'none',
+                fontFamily: DS.fontUI,
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                ...extraStyle,
+            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
         />
     );
 };
@@ -541,22 +748,41 @@ const FbTextarea = ({ value, onChange, placeholder, rows = 3, maxLength = 500, s
     const [focused, setFocused] = useState(false);
     return (
         <div>
-            <textarea value={value} onChange={e => onChange(e.target.value)}
-                      placeholder={placeholder} rows={rows} maxLength={maxLength}
-                      className="fb-input"
-                      style={{
-                          width: '100%', boxSizing: 'border-box',
-                          background: 'rgba(255,255,255,0.03)',
-                          border: `1px solid ${focused ? DS.borderAccent : DS.border}`,
-                          borderRadius: 9, padding: '10px 13px', color: DS.textPrimary,
-                          fontSize: 13, outline: 'none', resize: 'none', fontFamily: DS.fontUI,
-                          lineHeight: 1.6, transition: 'border-color 0.2s, box-shadow 0.2s',
-                      }}
-                      onFocus={() => setFocused(true)}
-                      onBlur={() => setFocused(false)}
+            <textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                rows={rows}
+                maxLength={maxLength}
+                className="fb-input"
+                style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${focused ? DS.borderAccent : DS.border}`,
+                    borderRadius: 9,
+                    padding: '10px 13px',
+                    color: DS.textPrimary,
+                    fontSize: 13,
+                    outline: 'none',
+                    resize: 'none',
+                    fontFamily: DS.fontUI,
+                    lineHeight: 1.6,
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                }}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
             />
             {showCount && (
-                <div style={{ fontSize: 10, color: DS.textMuted, textAlign: 'right', marginTop: 3, fontFamily: DS.fontMono }}>
+                <div
+                    style={{
+                        fontSize: 10,
+                        color: DS.textMuted,
+                        textAlign: 'right',
+                        marginTop: 3,
+                        fontFamily: DS.fontMono,
+                    }}
+                >
                     {value.length}/{maxLength}
                 </div>
             )}
@@ -569,23 +795,35 @@ const FbStarRow = ({ value, onChange, size = 22 }) => {
     const d = hov || value;
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            {[1, 2, 3, 4, 5].map(s => (
-                <button key={s} type="button" className="star-btn"
-                        onClick={() => onChange(s)}
-                        onMouseEnter={() => setHov(s)}
-                        onMouseLeave={() => setHov(0)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 1 }}
+            {[1, 2, 3, 4, 5].map((s) => (
+                <button
+                    key={s}
+                    type="button"
+                    className="star-btn"
+                    onClick={() => onChange(s)}
+                    onMouseEnter={() => setHov(s)}
+                    onMouseLeave={() => setHov(0)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 1 }}
                 >
-                    <Star size={size}
-                          fill={s <= d ? DS.amber : 'transparent'}
-                          color={s <= d ? DS.amber : DS.textMuted}
-                          strokeWidth={1.5}
-                          style={{ display: 'block', transition: 'fill 0.12s' }}
+                    <Star
+                        size={size}
+                        fill={s <= d ? DS.amber : 'transparent'}
+                        color={s <= d ? DS.amber : DS.textMuted}
+                        strokeWidth={1.5}
+                        style={{ display: 'block', transition: 'fill 0.12s' }}
                     />
                 </button>
             ))}
             {d > 0 && (
-                <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono, marginLeft: 4, userSelect: 'none' }}>
+                <span
+                    style={{
+                        fontSize: 10,
+                        color: DS.textMuted,
+                        fontFamily: DS.fontMono,
+                        marginLeft: 4,
+                        userSelect: 'none',
+                    }}
+                >
                     {STAR_LABELS[d - 1]}
                 </span>
             )}
@@ -597,80 +835,133 @@ const FbStarRow = ({ value, onChange, size = 22 }) => {
 const FbSectionDropdown = ({ value, onChange, includeAll = false }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
-    const label = (!value || value === 'all')
-        ? 'All Sections'
-        : (FB_ALL_TABS.find(t => t.id === value)?.label || value);
+    const label = !value || value === 'all' ? 'All Sections' : FB_ALL_TABS.find((t) => t.id === value)?.label || value;
     const [focused, setFocused] = useState(false);
 
     useEffect(() => {
-        const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        const h = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        };
         document.addEventListener('mousedown', h);
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
     return (
         <div ref={ref} style={{ position: 'relative' }}>
-            <button type="button" onClick={() => setOpen(o => !o)}
-                    className="fb-input"
-                    style={{
-                        width: '100%', boxSizing: 'border-box', display: 'flex',
-                        alignItems: 'center', justifyContent: 'space-between',
-                        background: 'rgba(255,255,255,0.03)',
-                        border: `1px solid ${open ? DS.borderAccent : DS.border}`,
-                        borderRadius: 9, padding: '10px 13px', color: DS.textPrimary,
-                        fontSize: 13, outline: 'none', cursor: 'pointer', fontFamily: DS.fontUI,
-                        transition: 'border-color 0.2s',
-                    }}>
+            <button
+                type="button"
+                onClick={() => setOpen((o) => !o)}
+                className="fb-input"
+                style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${open ? DS.borderAccent : DS.border}`,
+                    borderRadius: 9,
+                    padding: '10px 13px',
+                    color: DS.textPrimary,
+                    fontSize: 13,
+                    outline: 'none',
+                    cursor: 'pointer',
+                    fontFamily: DS.fontUI,
+                    transition: 'border-color 0.2s',
+                }}
+            >
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Layers size={13} color={DS.cyan} /> {label}
                 </span>
-                <ChevronDown size={13} color={DS.textMuted}
-                             style={{ transform: open ? 'rotate(180deg)' : 'none', transition: '0.2s', flexShrink: 0 }} />
+                <ChevronDown
+                    size={13}
+                    color={DS.textMuted}
+                    style={{ transform: open ? 'rotate(180deg)' : 'none', transition: '0.2s', flexShrink: 0 }}
+                />
             </button>
             {open && (
-                <div style={{
-                    position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0,
-                    background: DS.surface, border: `1px solid ${DS.borderAccent}`,
-                    borderRadius: 10, boxShadow: DS.shadowDeep, zIndex: 30,
-                    maxHeight: 260, overflowY: 'auto',
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 5px)',
+                        left: 0,
+                        right: 0,
+                        background: DS.surface,
+                        border: `1px solid ${DS.borderAccent}`,
+                        borderRadius: 10,
+                        boxShadow: DS.shadowDeep,
+                        zIndex: 30,
+                        maxHeight: 260,
+                        overflowY: 'auto',
+                    }}
+                >
                     {includeAll && (
-                        <button type="button" className="fb-opt"
-                                onClick={() => { onChange('all'); setOpen(false); }}
-                                style={{
-                                    width: '100%', textAlign: 'left', padding: '9px 14px',
-                                    background: (!value || value === 'all') ? DS.cyanDim : 'transparent',
-                                    color: (!value || value === 'all') ? DS.cyan : DS.textSub,
-                                    border: 'none', borderBottom: `1px solid ${DS.border}`,
-                                    cursor: 'pointer', fontSize: 12, fontWeight: 700,
-                                    fontFamily: DS.fontUI, transition: 'background 0.15s',
-                                }}>
+                        <button
+                            type="button"
+                            className="fb-opt"
+                            onClick={() => {
+                                onChange('all');
+                                setOpen(false);
+                            }}
+                            style={{
+                                width: '100%',
+                                textAlign: 'left',
+                                padding: '9px 14px',
+                                background: !value || value === 'all' ? DS.cyanDim : 'transparent',
+                                color: !value || value === 'all' ? DS.cyan : DS.textSub,
+                                border: 'none',
+                                borderBottom: `1px solid ${DS.border}`,
+                                cursor: 'pointer',
+                                fontSize: 12,
+                                fontWeight: 700,
+                                fontFamily: DS.fontUI,
+                                transition: 'background 0.15s',
+                            }}
+                        >
                             All Sections
                         </button>
                     )}
-                    {FB_GROUPS.map(g => (
+                    {FB_GROUPS.map((g) => (
                         <React.Fragment key={g.group}>
-                            <div style={{
-                                padding: '5px 14px 4px',
-                                fontSize: 9, fontWeight: 700, color: g.accent,
-                                fontFamily: DS.fontMono, letterSpacing: '0.1em',
-                                textTransform: 'uppercase',
-                                background: `${g.accent}08`,
-                                borderBottom: `1px solid ${DS.border}`,
-                            }}>{g.group}</div>
-                            {g.tabs.map(tab => (
-                                <button key={tab.id} type="button" className="fb-opt"
-                                        onClick={() => { onChange(tab.id); setOpen(false); }}
-                                        style={{
-                                            width: '100%', textAlign: 'left',
-                                            padding: '8px 14px 8px 22px',
-                                            background: value === tab.id ? DS.cyanDim : 'transparent',
-                                            color: value === tab.id ? DS.cyan : DS.textSub,
-                                            border: 'none', borderBottom: `1px solid ${DS.border}`,
-                                            cursor: 'pointer', fontSize: 12,
-                                            fontWeight: value === tab.id ? 600 : 400,
-                                            fontFamily: DS.fontUI, transition: 'background 0.15s',
-                                        }}>
+                            <div
+                                style={{
+                                    padding: '5px 14px 4px',
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    color: g.accent,
+                                    fontFamily: DS.fontMono,
+                                    letterSpacing: '0.1em',
+                                    textTransform: 'uppercase',
+                                    background: `${g.accent}08`,
+                                    borderBottom: `1px solid ${DS.border}`,
+                                }}
+                            >
+                                {g.group}
+                            </div>
+                            {g.tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    className="fb-opt"
+                                    onClick={() => {
+                                        onChange(tab.id);
+                                        setOpen(false);
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        textAlign: 'left',
+                                        padding: '8px 14px 8px 22px',
+                                        background: value === tab.id ? DS.cyanDim : 'transparent',
+                                        color: value === tab.id ? DS.cyan : DS.textSub,
+                                        border: 'none',
+                                        borderBottom: `1px solid ${DS.border}`,
+                                        cursor: 'pointer',
+                                        fontSize: 12,
+                                        fontWeight: value === tab.id ? 600 : 400,
+                                        fontFamily: DS.fontUI,
+                                        transition: 'background 0.15s',
+                                    }}
+                                >
                                     {tab.label}
                                 </button>
                             ))}
@@ -684,35 +975,55 @@ const FbSectionDropdown = ({ value, onChange, includeAll = false }) => {
 
 /* Single section card (used in both single + all-sections modes) */
 const FbSectionCard = ({ label, data, onChange, compact = false, accent = DS.cyan }) => (
-    <div style={{
-        border: `1px solid ${DS.border}`, borderRadius: 10,
-        padding: compact ? '12px 14px' : '18px',
-        background: 'rgba(255,255,255,0.015)',
-        marginBottom: compact ? 8 : 0,
-    }}>
+    <div
+        style={{
+            border: `1px solid ${DS.border}`,
+            borderRadius: 10,
+            padding: compact ? '12px 14px' : '18px',
+            background: 'rgba(255,255,255,0.015)',
+            marginBottom: compact ? 8 : 0,
+        }}
+    >
         {compact && (
-            <div style={{
-                fontSize: 10, fontWeight: 700, color: accent, marginBottom: 12,
-                display: 'flex', alignItems: 'center', gap: 6, fontFamily: DS.fontMono,
-                letterSpacing: '0.06em', textTransform: 'uppercase',
-            }}>
+            <div
+                style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: accent,
+                    marginBottom: 12,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontFamily: DS.fontMono,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                }}
+            >
                 <Layers size={10} /> {label}
             </div>
         )}
         <div style={{ marginBottom: 12 }}>
             <FbLabel>Rating</FbLabel>
-            <FbStarRow value={data.rating} onChange={v => onChange('rating', v)} size={compact ? 18 : 22} />
+            <FbStarRow value={data.rating} onChange={(v) => onChange('rating', v)} size={compact ? 18 : 22} />
         </div>
         <div style={{ marginBottom: 10 }}>
             <FbLabel>Feedback</FbLabel>
-            <FbTextarea value={data.comment} onChange={v => onChange('comment', v)}
-                        placeholder="What do you love, or what could be better?" rows={compact ? 2 : 3} />
+            <FbTextarea
+                value={data.comment}
+                onChange={(v) => onChange('comment', v)}
+                placeholder="What do you love, or what could be better?"
+                rows={compact ? 2 : 3}
+            />
         </div>
         <div>
             <FbLabel>Suggestions</FbLabel>
-            <FbTextarea value={data.remarks} onChange={v => onChange('remarks', v)}
-                        placeholder="Any specific improvements you'd recommend?"
-                        rows={compact ? 2 : 2} showCount={false} />
+            <FbTextarea
+                value={data.remarks}
+                onChange={(v) => onChange('remarks', v)}
+                placeholder="Any specific improvements you'd recommend?"
+                rows={compact ? 2 : 2}
+                showCount={false}
+            />
         </div>
     </div>
 );
@@ -722,35 +1033,69 @@ const FbFeatureForm = ({ data, onChange }) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div>
             <FbLabel>Related Section</FbLabel>
-            <FbSectionDropdown value={data.section} onChange={v => onChange('section', v)} />
+            <FbSectionDropdown value={data.section} onChange={(v) => onChange('section', v)} />
         </div>
         <div>
-            <FbLabel>Feature Title <span style={{ color: DS.rose }}>*</span></FbLabel>
-            <FbInput value={data.title} onChange={v => onChange('title', v)}
-                     placeholder="Give your feature a short, descriptive name" maxLength={120} />
+            <FbLabel>
+                Feature Title <span style={{ color: DS.rose }}>*</span>
+            </FbLabel>
+            <FbInput
+                value={data.title}
+                onChange={(v) => onChange('title', v)}
+                placeholder="Give your feature a short, descriptive name"
+                maxLength={120}
+            />
         </div>
         <div>
-            <FbLabel>Description / Use Case <span style={{ color: DS.rose }}>*</span></FbLabel>
-            <FbTextarea value={data.description} onChange={v => onChange('description', v)}
-                        placeholder="Describe the feature and why it would be valuable…" rows={3} />
+            <FbLabel>
+                Description / Use Case <span style={{ color: DS.rose }}>*</span>
+            </FbLabel>
+            <FbTextarea
+                value={data.description}
+                onChange={(v) => onChange('description', v)}
+                placeholder="Describe the feature and why it would be valuable…"
+                rows={3}
+            />
         </div>
         <div>
             <FbLabel>Additional Remarks</FbLabel>
-            <FbTextarea value={data.remarks} onChange={v => onChange('remarks', v)}
-                        placeholder="Implementation ideas, references, or further context…" rows={2} showCount={false} />
+            <FbTextarea
+                value={data.remarks}
+                onChange={(v) => onChange('remarks', v)}
+                placeholder="Implementation ideas, references, or further context…"
+                rows={2}
+                showCount={false}
+            />
         </div>
         {/* Suggest new tab */}
-        <div style={{
-            padding: '14px 16px',
-            border: `1px dashed ${DS.borderAccent}`,
-            borderRadius: 10, background: DS.cyanDim,
-        }}>
+        <div
+            style={{
+                padding: '14px 16px',
+                border: `1px dashed ${DS.borderAccent}`,
+                borderRadius: 10,
+                background: DS.cyanDim,
+            }}
+        >
             <FbLabel color={DS.cyan}>
                 <PlusCircle size={10} /> Suggest a New Tab
-                <span style={{ color: DS.textMuted, textTransform: 'none', fontWeight: 400, letterSpacing: 0, marginLeft: 2 }}>(optional)</span>
+                <span
+                    style={{
+                        color: DS.textMuted,
+                        textTransform: 'none',
+                        fontWeight: 400,
+                        letterSpacing: 0,
+                        marginLeft: 2,
+                    }}
+                >
+                    (optional)
+                </span>
             </FbLabel>
-            <FbInput value={data.suggestedTab} onChange={v => onChange('suggestedTab', v)}
-                     placeholder="e.g. Query History, Cost Estimator, Live Replication…" maxLength={80} />
+            <FbInput
+                value={data.suggestedTab}
+                onChange={(v) => onChange('suggestedTab', v)}
+                placeholder="e.g. Query History, Cost Estimator, Live Replication…"
+                maxLength={80}
+            />
         </div>
         {/* Priority */}
         <div>
@@ -759,16 +1104,26 @@ const FbFeatureForm = ({ data, onChange }) => (
                 {FB_PRIORITY.map(({ val, color }) => {
                     const active = data.priority === val;
                     return (
-                        <button key={val} type="button" className="fb-prio"
-                                onClick={() => onChange('priority', val)}
-                                style={{
-                                    flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 12, fontWeight: 600,
-                                    border: `1px solid ${active ? color : DS.border}`,
-                                    background: active ? `${color}15` : 'transparent',
-                                    color: active ? color : DS.textMuted,
-                                    cursor: 'pointer', fontFamily: DS.fontUI, transition: 'all 0.18s',
-                                    opacity: active ? 1 : 0.7,
-                                }}>
+                        <button
+                            key={val}
+                            type="button"
+                            className="fb-prio"
+                            onClick={() => onChange('priority', val)}
+                            style={{
+                                flex: 1,
+                                padding: '9px 0',
+                                borderRadius: 8,
+                                fontSize: 12,
+                                fontWeight: 600,
+                                border: `1px solid ${active ? color : DS.border}`,
+                                background: active ? `${color}15` : 'transparent',
+                                color: active ? color : DS.textMuted,
+                                cursor: 'pointer',
+                                fontFamily: DS.fontUI,
+                                transition: 'all 0.18s',
+                                opacity: active ? 1 : 0.7,
+                            }}
+                        >
                             {val}
                         </button>
                     );
@@ -781,7 +1136,7 @@ const FbFeatureForm = ({ data, onChange }) => (
 /* Bug / General form */
 const FbBugGeneralForm = ({ section, onSectionChange, forms, onFieldChange }) => {
     const showAll = section === 'all';
-    const accentFor = id => FB_GROUPS.find(g => g.tabs.some(t => t.id === id))?.accent || DS.cyan;
+    const accentFor = (id) => FB_GROUPS.find((g) => g.tabs.some((t) => t.id === id))?.accent || DS.cyan;
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
@@ -790,32 +1145,53 @@ const FbBugGeneralForm = ({ section, onSectionChange, forms, onFieldChange }) =>
             </div>
             {showAll ? (
                 <>
-                    <div style={{
-                        fontSize: 12, color: DS.textSub, padding: '9px 13px',
-                        background: DS.cyanDim, border: `1px solid ${DS.borderAccent}`,
-                        borderRadius: 8, lineHeight: 1.55,
-                    }}>
-                        Rate any screens you've used. Leave sections blank to skip them — only filled sections will be submitted.
+                    <div
+                        style={{
+                            fontSize: 12,
+                            color: DS.textSub,
+                            padding: '9px 13px',
+                            background: DS.cyanDim,
+                            border: `1px solid ${DS.borderAccent}`,
+                            borderRadius: 8,
+                            lineHeight: 1.55,
+                        }}
+                    >
+                        Rate any screens you've used. Leave sections blank to skip them — only filled sections will be
+                        submitted.
                     </div>
-                    {FB_GROUPS.map(g => (
+                    {FB_GROUPS.map((g) => (
                         <div key={g.group}>
-                            <div style={{
-                                fontSize: 9, fontWeight: 700, color: g.accent,
-                                fontFamily: DS.fontMono, letterSpacing: '0.1em',
-                                textTransform: 'uppercase', marginBottom: 6, marginTop: 4, paddingLeft: 2,
-                            }}>{g.group}</div>
-                            {g.tabs.map(tab => (
-                                <FbSectionCard key={tab.id} label={tab.label}
-                                               data={forms[tab.id] || emptyRow()}
-                                               onChange={(field, val) => onFieldChange(tab.id, field, val)}
-                                               compact accent={g.accent} />
+                            <div
+                                style={{
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    color: g.accent,
+                                    fontFamily: DS.fontMono,
+                                    letterSpacing: '0.1em',
+                                    textTransform: 'uppercase',
+                                    marginBottom: 6,
+                                    marginTop: 4,
+                                    paddingLeft: 2,
+                                }}
+                            >
+                                {g.group}
+                            </div>
+                            {g.tabs.map((tab) => (
+                                <FbSectionCard
+                                    key={tab.id}
+                                    label={tab.label}
+                                    data={forms[tab.id] || emptyRow()}
+                                    onChange={(field, val) => onFieldChange(tab.id, field, val)}
+                                    compact
+                                    accent={g.accent}
+                                />
                             ))}
                         </div>
                     ))}
                 </>
             ) : (
                 <FbSectionCard
-                    label={FB_ALL_TABS.find(t => t.id === section)?.label || section}
+                    label={FB_ALL_TABS.find((t) => t.id === section)?.label || section}
                     data={forms[section] || emptyRow()}
                     onChange={(field, val) => onFieldChange(section, field, val)}
                     accent={accentFor(section)}
@@ -829,28 +1205,32 @@ const FbBugGeneralForm = ({ section, onSectionChange, forms, onFieldChange }) =>
 const FeedbackModal = ({ onClose, initialSection }) => {
     const { currentUser } = useAuth();
 
-    const [mode, setMode]       = useState('feature');
+    const [mode, setMode] = useState('feature');
     const [feature, setFeature] = useState({
         section: initialSection || null,
-        title: '', description: '', remarks: '', priority: 'Medium', suggestedTab: '',
+        title: '',
+        description: '',
+        remarks: '',
+        priority: 'Medium',
+        suggestedTab: '',
     });
-    const [section, setSection]       = useState(initialSection || 'all');
-    const [forms, setForms]           = useState({});
+    const [section, setSection] = useState(initialSection || 'all');
+    const [forms, setForms] = useState({});
     const [submitting, setSubmitting] = useState(false);
-    const [sent, setSent]             = useState(false);
-    const [error, setError]           = useState('');
+    const [sent, setSent] = useState(false);
+    const [error, setError] = useState('');
 
     /* Pre-populate section form when initialSection is provided */
     useEffect(() => {
         if (initialSection && initialSection !== 'all' && !forms[initialSection]) {
-            setForms(p => ({ ...p, [initialSection]: emptyRow() }));
+            setForms((p) => ({ ...p, [initialSection]: emptyRow() }));
         }
     }, []);
 
     /* Ensure row exists when section changes */
     useEffect(() => {
         if (section !== 'all' && !forms[section]) {
-            setForms(p => ({ ...p, [section]: emptyRow() }));
+            setForms((p) => ({ ...p, [section]: emptyRow() }));
         }
     }, [section]);
 
@@ -859,26 +1239,27 @@ const FeedbackModal = ({ onClose, initialSection }) => {
     useEffect(() => {
         try {
             const last = parseInt(localStorage.getItem('vigil_last_feedback') || '0', 10);
-            if (last > 0 && Date.now() - last < FEEDBACK_RATE_LIMIT_MS)
-                setRateLimited(true);
+            if (last > 0 && Date.now() - last < FEEDBACK_RATE_LIMIT_MS) setRateLimited(true);
         } catch {}
     }, []);
 
     /* Esc to close */
     useEffect(() => {
-        const h = e => { if (e.key === 'Escape') onClose(); };
+        const h = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
         window.addEventListener('keydown', h);
         return () => window.removeEventListener('keydown', h);
     }, [onClose]);
 
-    const updateFeature   = (k, v) => setFeature(p => ({ ...p, [k]: v }));
+    const updateFeature = (k, v) => setFeature((p) => ({ ...p, [k]: v }));
     const updateFormField = (tabId, field, val) =>
-        setForms(p => ({ ...p, [tabId]: { ...(p[tabId] || emptyRow()), [field]: val } }));
+        setForms((p) => ({ ...p, [tabId]: { ...(p[tabId] || emptyRow()), [field]: val } }));
 
     const canSubmit = useCallback(() => {
         if (sent || submitting) return false;
         if (mode === 'feature') return feature.title.trim().length > 0 && feature.description.trim().length > 0;
-        if (section === 'all') return FB_ALL_TABS.some(t => (forms[t.id]?.comment || '').trim().length > 0);
+        if (section === 'all') return FB_ALL_TABS.some((t) => (forms[t.id]?.comment || '').trim().length > 0);
         return (forms[section]?.comment || '').trim().length > 0;
     }, [sent, submitting, mode, feature, section, forms]);
 
@@ -886,71 +1267,70 @@ const FeedbackModal = ({ onClose, initialSection }) => {
        username / user_id are resolved server-side from the Bearer token. */
     const buildPayload = useCallback(() => {
         const meta = {
-            page:       window.location.pathname,
-            userAgent:  navigator.userAgent,
+            page: window.location.pathname,
+            userAgent: navigator.userAgent,
             screenSize: `${window.screen.width}x${window.screen.height}`,
-            timestamp:  new Date().toISOString(),
+            timestamp: new Date().toISOString(),
         };
 
         if (mode === 'feature') {
             const sugTab = feature.suggestedTab.trim() || null;
             return {
-                feedback_type:    'feature',
-                rating:           null,
-                comment:          feature.description.trim() || '',  // NOT NULL column
-                remarks:          feature.remarks.trim()    || null,
-                section:          feature.section           || null,
-                feature_title:    feature.title.trim(),
+                feedback_type: 'feature',
+                rating: null,
+                comment: feature.description.trim() || '', // NOT NULL column
+                remarks: feature.remarks.trim() || null,
+                section: feature.section || null,
+                feature_title: feature.title.trim(),
                 feature_priority: feature.priority,
-                suggested_tab:    sugTab,                            // dedicated column (not buried in JSONB)
+                suggested_tab: sugTab, // dedicated column (not buried in JSONB)
                 section_feedback: null,
-                user_metadata:    { ...meta },
+                user_metadata: { ...meta },
             };
         }
 
         if (section === 'all') {
-            const sectionFeedback = FB_ALL_TABS
-                .map(tab => {
-                    const row = forms[tab.id] || emptyRow();
-                    return {
-                        section_id:    tab.id,
-                        section_label: tab.label,
-                        rating:        row.rating  || null,
-                        comment:       row.comment.trim(),
-                        remarks:       row.remarks.trim() || null,
-                    };
-                })
-                .filter(r => r.comment || r.rating);
+            const sectionFeedback = FB_ALL_TABS.map((tab) => {
+                const row = forms[tab.id] || emptyRow();
+                return {
+                    section_id: tab.id,
+                    section_label: tab.label,
+                    rating: row.rating || null,
+                    comment: row.comment.trim(),
+                    remarks: row.remarks.trim() || null,
+                };
+            }).filter((r) => r.comment || r.rating);
             return {
-                feedback_type:    mode,
-                rating:           null,
-                comment:          sectionFeedback
-                    .map(r => `[${r.section_label}] ${r.comment}`)
-                    .filter(Boolean)
-                    .join('\n') || '',              // NOT NULL column
-                remarks:          null,
-                section:          null,
-                feature_title:    null,
+                feedback_type: mode,
+                rating: null,
+                comment:
+                    sectionFeedback
+                        .map((r) => `[${r.section_label}] ${r.comment}`)
+                        .filter(Boolean)
+                        .join('\n') || '', // NOT NULL column
+                remarks: null,
+                section: null,
+                feature_title: null,
                 feature_priority: null,
-                suggested_tab:    null,
+                suggested_tab: null,
                 section_feedback: sectionFeedback,
-                user_metadata:    { ...meta, mode: 'all-sections' },
+                user_metadata: { ...meta, mode: 'all-sections' },
             };
         }
 
         /* Single section */
         const row = forms[section] || emptyRow();
         return {
-            feedback_type:    mode,
-            rating:           row.rating  || null,
-            comment:          row.comment.trim() || '',              // NOT NULL column
-            remarks:          row.remarks.trim() || null,
-            section:          section,
-            feature_title:    null,
+            feedback_type: mode,
+            rating: row.rating || null,
+            comment: row.comment.trim() || '', // NOT NULL column
+            remarks: row.remarks.trim() || null,
+            section: section,
+            feature_title: null,
             feature_priority: null,
-            suggested_tab:    null,
+            suggested_tab: null,
             section_feedback: null,
-            user_metadata:    meta,
+            user_metadata: meta,
         };
     }, [mode, feature, section, forms]);
 
@@ -964,10 +1344,11 @@ const FeedbackModal = ({ onClose, initialSection }) => {
             await postData('/api/feedback', payload);
 
             /* ✓ Success */
-            try { localStorage.setItem('vigil_last_feedback', Date.now().toString()); } catch {}
+            try {
+                localStorage.setItem('vigil_last_feedback', Date.now().toString());
+            } catch {}
             setSent(true);
             setTimeout(onClose, 2800);
-
         } catch (e) {
             console.error('[FeedbackModal] submit error:', e);
             setError(e.message || 'Something went wrong. Please try again.');
@@ -980,104 +1361,194 @@ const FeedbackModal = ({ onClose, initialSection }) => {
     const wide = mode !== 'feature' && section === 'all';
 
     /* Success state */
-    if (sent) return (
-        <div className="feedback-overlay">
-            <div className="feedback-modal" style={{
-                background: DS.surface, border: `1px solid ${DS.borderAccent}`,
-                borderRadius: 20, padding: '52px 44px', textAlign: 'center',
-                boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`, maxWidth: 360, width: '90%',
-            }}>
-                <div style={{
-                    width: 68, height: 68, margin: '0 auto 22px', borderRadius: '50%',
-                    background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.35)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    animation: 'glowPulse 2s ease infinite',
-                }}>
-                    <ThumbsUp size={30} color={DS.emerald} strokeWidth={1.5} />
+    if (sent)
+        return (
+            <div className="feedback-overlay">
+                <div
+                    className="feedback-modal"
+                    style={{
+                        background: DS.surface,
+                        border: `1px solid ${DS.borderAccent}`,
+                        borderRadius: 20,
+                        padding: '52px 44px',
+                        textAlign: 'center',
+                        boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`,
+                        maxWidth: 360,
+                        width: '90%',
+                    }}
+                >
+                    <div
+                        style={{
+                            width: 68,
+                            height: 68,
+                            margin: '0 auto 22px',
+                            borderRadius: '50%',
+                            background: 'rgba(52,211,153,0.1)',
+                            border: '1px solid rgba(52,211,153,0.35)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            animation: 'glowPulse 2s ease infinite',
+                        }}
+                    >
+                        <ThumbsUp size={30} color={DS.emerald} strokeWidth={1.5} />
+                    </div>
+                    <h3
+                        style={{
+                            margin: '0 0 10px',
+                            fontSize: 22,
+                            fontWeight: 700,
+                            color: DS.textPrimary,
+                            letterSpacing: '-0.02em',
+                        }}
+                    >
+                        Thank you!
+                    </h3>
+                    <p style={{ color: DS.textSub, margin: 0, fontSize: 13, lineHeight: 1.7 }}>
+                        Your feedback helps us make Vigil better for everyone.
+                    </p>
                 </div>
-                <h3 style={{ margin: '0 0 10px', fontSize: 22, fontWeight: 700, color: DS.textPrimary, letterSpacing: '-0.02em' }}>
-                    Thank you!
-                </h3>
-                <p style={{ color: DS.textSub, margin: 0, fontSize: 13, lineHeight: 1.7 }}>
-                    Your feedback helps us make Vigil better for everyone.
-                </p>
             </div>
-        </div>
-    );
+        );
 
     return (
-        <div className="feedback-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-            <div className="feedback-modal" style={{
-                background: DS.surface,
-                border: `1px solid ${DS.borderAccent}`,
-                borderRadius: 20,
-                width: wide ? 580 : 490,
-                maxWidth: '94vw',
-                maxHeight: '90vh',
-                boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`,
-                display: 'flex', flexDirection: 'column',
-                overflow: 'hidden',
-                transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)',
-            }}>
+        <div className="feedback-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+            <div
+                className="feedback-modal"
+                style={{
+                    background: DS.surface,
+                    border: `1px solid ${DS.borderAccent}`,
+                    borderRadius: 20,
+                    width: wide ? 580 : 490,
+                    maxWidth: '94vw',
+                    maxHeight: '90vh',
+                    boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)',
+                }}
+            >
                 {/* Animated rainbow top bar */}
-                <div style={{
-                    height: 3, flexShrink: 0,
-                    background: `linear-gradient(90deg, ${DS.cyan}, ${DS.violet}, ${DS.emerald})`,
-                    backgroundSize: '200% 100%',
-                    animation: 'waveFlow 3s ease infinite',
-                }} />
+                <div
+                    style={{
+                        height: 3,
+                        flexShrink: 0,
+                        background: `linear-gradient(90deg, ${DS.cyan}, ${DS.violet}, ${DS.emerald})`,
+                        backgroundSize: '200% 100%',
+                        animation: 'waveFlow 3s ease infinite',
+                    }}
+                />
 
                 {/* Header */}
-                <div style={{
-                    padding: '20px 26px 18px',
-                    borderBottom: `1px solid ${DS.border}`,
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                    flexShrink: 0,
-                }}>
+                <div
+                    style={{
+                        padding: '20px 26px 18px',
+                        borderBottom: `1px solid ${DS.border}`,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        flexShrink: 0,
+                    }}
+                >
                     <div>
-                        <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: DS.textPrimary, letterSpacing: '-0.02em' }}>
+                        <h3
+                            style={{
+                                margin: 0,
+                                fontSize: 17,
+                                fontWeight: 700,
+                                color: DS.textPrimary,
+                                letterSpacing: '-0.02em',
+                            }}
+                        >
                             Send Feedback
                         </h3>
-                        <div style={{ fontSize: 10, color: DS.textMuted, marginTop: 4, fontFamily: DS.fontMono, letterSpacing: '0.1em' }}>
+                        <div
+                            style={{
+                                fontSize: 10,
+                                color: DS.textMuted,
+                                marginTop: 4,
+                                fontFamily: DS.fontMono,
+                                letterSpacing: '0.1em',
+                            }}
+                        >
                             VIGIL · DATABASE MONITOR
                         </div>
                     </div>
-                    <button onClick={onClose}
-                            style={{
-                                background: 'rgba(255,255,255,0.04)', border: `1px solid ${DS.border}`,
-                                color: DS.textSub, cursor: 'pointer', width: 32, height: 32, borderRadius: 8,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                transition: 'all 0.15s', flexShrink: 0,
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,113,133,0.12)'; e.currentTarget.style.color = DS.rose; e.currentTarget.style.borderColor = 'rgba(251,113,133,0.3)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = DS.textSub; e.currentTarget.style.borderColor = DS.border; }}
-                            aria-label="Close feedback"
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${DS.border}`,
+                            color: DS.textSub,
+                            cursor: 'pointer',
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.15s',
+                            flexShrink: 0,
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(251,113,133,0.12)';
+                            e.currentTarget.style.color = DS.rose;
+                            e.currentTarget.style.borderColor = 'rgba(251,113,133,0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                            e.currentTarget.style.color = DS.textSub;
+                            e.currentTarget.style.borderColor = DS.border;
+                        }}
+                        aria-label="Close feedback"
                     >
                         <X size={15} strokeWidth={2} />
                     </button>
                 </div>
 
                 {/* Mode tabs */}
-                <div style={{
-                    display: 'flex', gap: 6, padding: '14px 26px 12px',
-                    borderBottom: `1px solid ${DS.border}`, flexShrink: 0,
-                    background: 'rgba(255,255,255,0.01)',
-                }}>
-                    {FB_MODES.map(m => {
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: 6,
+                        padding: '14px 26px 12px',
+                        borderBottom: `1px solid ${DS.border}`,
+                        flexShrink: 0,
+                        background: 'rgba(255,255,255,0.01)',
+                    }}
+                >
+                    {FB_MODES.map((m) => {
                         const Icon = m.icon;
                         const active = mode === m.id;
                         return (
-                            <button key={m.id} type="button" className="fb-tab"
-                                    onClick={() => { setMode(m.id); setError(''); }}
-                                    style={{
-                                        flex: 1, padding: '9px 6px', borderRadius: 9,
-                                        border: `1px solid ${active ? `${m.color}50` : DS.border}`,
-                                        background: active ? `${m.color}12` : 'transparent',
-                                        color: active ? m.color : DS.textMuted,
-                                        cursor: 'pointer', fontSize: 11, fontWeight: active ? 600 : 400,
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-                                        transition: 'all 0.18s', fontFamily: DS.fontUI, opacity: active ? 1 : 0.65,
-                                    }}>
+                            <button
+                                key={m.id}
+                                type="button"
+                                className="fb-tab"
+                                onClick={() => {
+                                    setMode(m.id);
+                                    setError('');
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '9px 6px',
+                                    borderRadius: 9,
+                                    border: `1px solid ${active ? `${m.color}50` : DS.border}`,
+                                    background: active ? `${m.color}12` : 'transparent',
+                                    color: active ? m.color : DS.textMuted,
+                                    cursor: 'pointer',
+                                    fontSize: 11,
+                                    fontWeight: active ? 600 : 400,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: 5,
+                                    transition: 'all 0.18s',
+                                    fontFamily: DS.fontUI,
+                                    opacity: active ? 1 : 0.65,
+                                }}
+                            >
                                 <Icon size={14} strokeWidth={active ? 2 : 1.5} />
                                 {m.label}
                             </button>
@@ -1092,7 +1563,10 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                     ) : (
                         <FbBugGeneralForm
                             section={section}
-                            onSectionChange={s => { setSection(s); setError(''); }}
+                            onSectionChange={(s) => {
+                                setSection(s);
+                                setError('');
+                            }}
                             forms={forms}
                             onFieldChange={updateFormField}
                         />
@@ -1100,80 +1574,154 @@ const FeedbackModal = ({ onClose, initialSection }) => {
 
                     {/* Rate-limit soft notice */}
                     {rateLimited && !error && (
-                        <div style={{
-                            marginTop: 16, padding: '9px 13px', borderRadius: 9,
-                            background: 'rgba(251,191,36,0.08)',
-                            border: '1px solid rgba(251,191,36,0.22)',
-                            color: DS.amber, fontSize: 11, lineHeight: 1.5,
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-                        }}>
+                        <div
+                            style={{
+                                marginTop: 16,
+                                padding: '9px 13px',
+                                borderRadius: 9,
+                                background: 'rgba(251,191,36,0.08)',
+                                border: '1px solid rgba(251,191,36,0.22)',
+                                color: DS.amber,
+                                fontSize: 11,
+                                lineHeight: 1.5,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 8,
+                            }}
+                        >
                             <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                 <AlertTriangle size={12} style={{ flexShrink: 0 }} />
                                 You submitted feedback recently — you can still submit again if needed.
                             </span>
-                            <button type="button" onClick={() => setRateLimited(false)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: DS.amber, opacity: 0.6, padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'opacity 0.15s' }}
-                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
-                            ><X size={13} /></button>
+                            <button
+                                type="button"
+                                onClick={() => setRateLimited(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: DS.amber,
+                                    opacity: 0.6,
+                                    padding: 0,
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    transition: 'opacity 0.15s',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
+                            >
+                                <X size={13} />
+                            </button>
                         </div>
                     )}
 
                     {/* Hard error */}
                     {error && (
-                        <div style={{
-                            marginTop: 16, padding: '10px 14px', borderRadius: 9,
-                            background: 'rgba(251,113,133,0.08)',
-                            border: '1px solid rgba(251,113,133,0.25)',
-                            color: DS.rose, fontSize: 12, lineHeight: 1.5,
-                            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8,
-                        }}>
+                        <div
+                            style={{
+                                marginTop: 16,
+                                padding: '10px 14px',
+                                borderRadius: 9,
+                                background: 'rgba(251,113,133,0.08)',
+                                border: '1px solid rgba(251,113,133,0.25)',
+                                color: DS.rose,
+                                fontSize: 12,
+                                lineHeight: 1.5,
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                                gap: 8,
+                            }}
+                        >
                             <span style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                                 <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
                                 {error}
                             </span>
-                            <button type="button" onClick={() => setError('')}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: DS.rose, opacity: 0.6, padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'opacity 0.15s' }}
-                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
-                                    aria-label="Dismiss error"
-                            ><X size={14} /></button>
+                            <button
+                                type="button"
+                                onClick={() => setError('')}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: DS.rose,
+                                    opacity: 0.6,
+                                    padding: 0,
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    transition: 'opacity 0.15s',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
+                                aria-label="Dismiss error"
+                            >
+                                <X size={14} />
+                            </button>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
                 <div style={{ padding: '12px 26px 20px', borderTop: `1px solid ${DS.border}`, flexShrink: 0 }}>
-                    <div style={{
-                        fontSize: 10, color: DS.textMuted, marginBottom: 10,
-                        fontFamily: DS.fontMono, display: 'flex', alignItems: 'center', gap: 6,
-                    }}>
+                    <div
+                        style={{
+                            fontSize: 10,
+                            color: DS.textMuted,
+                            marginBottom: 10,
+                            fontFamily: DS.fontMono,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                        }}
+                    >
                         <span style={{ color: DS.rose }}>*</span>
                         {mode === 'feature'
                             ? 'Title and description are required'
                             : 'At least one section comment is required'}
                     </div>
-                    <button type="button" className="fb-submit" onClick={handleSubmit} disabled={!ready}
-                            style={{
-                                width: '100%', padding: '13px 0', borderRadius: 10, border: 'none',
-                                background: ready
-                                    ? `linear-gradient(135deg, ${DS.cyan}, ${DS.violet})`
-                                    : 'rgba(255,255,255,0.05)',
-                                color: ready ? '#fff' : DS.textMuted,
-                                fontSize: 13, fontWeight: 700,
-                                cursor: ready ? 'pointer' : 'not-allowed',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                letterSpacing: '0.03em', fontFamily: DS.fontUI,
-                                transition: 'filter 0.2s, transform 0.15s, box-shadow 0.2s',
-                                opacity: submitting ? 0.7 : 1,
-                                boxShadow: ready ? '0 4px 20px rgba(56,189,248,0.22)' : 'none',
-                            }}>
+                    <button
+                        type="button"
+                        className="fb-submit"
+                        onClick={handleSubmit}
+                        disabled={!ready}
+                        style={{
+                            width: '100%',
+                            padding: '13px 0',
+                            borderRadius: 10,
+                            border: 'none',
+                            background: ready
+                                ? `linear-gradient(135deg, ${DS.cyan}, ${DS.violet})`
+                                : 'rgba(255,255,255,0.05)',
+                            color: ready ? '#fff' : DS.textMuted,
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: ready ? 'pointer' : 'not-allowed',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            letterSpacing: '0.03em',
+                            fontFamily: DS.fontUI,
+                            transition: 'filter 0.2s, transform 0.15s, box-shadow 0.2s',
+                            opacity: submitting ? 0.7 : 1,
+                            boxShadow: ready ? '0 4px 20px rgba(56,189,248,0.22)' : 'none',
+                        }}
+                    >
                         {submitting ? (
-                            <><Zap size={14} /> Sending…</>
+                            <>
+                                <Zap size={14} /> Sending…
+                            </>
                         ) : mode === 'feature' ? (
-                            <><PlusCircle size={14} /> Submit Feature Request</>
+                            <>
+                                <PlusCircle size={14} /> Submit Feature Request
+                            </>
                         ) : (
-                            <><Send size={14} /> Send Feedback</>
+                            <>
+                                <Send size={14} /> Send Feedback
+                            </>
                         )}
                     </button>
                 </div>
@@ -1198,112 +1746,159 @@ class ErrorBoundary extends React.Component {
         this.setState({ errorInfo });
     }
     render() {
-        if (this.state.hasError) return (
-            <div style={{
-                height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexDirection: 'column', gap: 20, padding: 40, color: DS.textPrimary, background: DS.bg,
-            }}>
-                <div style={{
-                    width: 72, height: 72, borderRadius: 18, background: 'rgba(251,113,133,0.1)',
-                    border: '1px solid rgba(251,113,133,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                    <AlertCircle size={36} color={DS.rose} />
-                </div>
-                <div style={{ textAlign: 'center', maxWidth: 520 }}>
-                    <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 12px', letterSpacing: '-0.02em' }}>
-                        Something went wrong
-                    </h2>
-                    <p style={{ color: DS.textSub, margin: '0 0 24px', lineHeight: 1.6, fontSize: 14 }}>
-                        {this.state.error?.message || 'An unexpected error occurred in this view.'}
-                    </p>
+        if (this.state.hasError)
+            return (
+                <div
+                    style={{
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        gap: 20,
+                        padding: 40,
+                        color: DS.textPrimary,
+                        background: DS.bg,
+                    }}
+                >
+                    <div
+                        style={{
+                            width: 72,
+                            height: 72,
+                            borderRadius: 18,
+                            background: 'rgba(251,113,133,0.1)',
+                            border: '1px solid rgba(251,113,133,0.3)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <AlertCircle size={36} color={DS.rose} />
+                    </div>
+                    <div style={{ textAlign: 'center', maxWidth: 520 }}>
+                        <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 12px', letterSpacing: '-0.02em' }}>
+                            Something went wrong
+                        </h2>
+                        <p style={{ color: DS.textSub, margin: '0 0 24px', lineHeight: 1.6, fontSize: 14 }}>
+                            {this.state.error?.message || 'An unexpected error occurred in this view.'}
+                        </p>
 
-                    {/* Stack trace section (collapsible) */}
-                    {this.state.errorInfo && (
-                        <div style={{
-                            textAlign: 'left',
-                            background: `${DS.surface}dd`,
-                            border: `1px solid ${DS.border}`,
-                            borderRadius: 8,
-                            padding: '12px 16px',
-                            marginBottom: 20,
-                            maxHeight: this.state.showStackTrace ? 200 : 0,
-                            overflow: 'hidden',
-                            transition: 'max-height 0.3s ease',
-                        }}>
-                            <button
-                                onClick={() => this.setState(s => ({ showStackTrace: !s.showStackTrace }))}
+                        {/* Stack trace section (collapsible) */}
+                        {this.state.errorInfo && (
+                            <div
                                 style={{
-                                    background: 'none', border: 'none', cursor: 'pointer',
-                                    color: DS.cyan, fontWeight: 600, fontSize: 12,
-                                    marginBottom: this.state.showStackTrace ? 12 : 0,
-                                    fontFamily: DS.fontMono, letterSpacing: '0.05em',
+                                    textAlign: 'left',
+                                    background: `${DS.surface}dd`,
+                                    border: `1px solid ${DS.border}`,
+                                    borderRadius: 8,
+                                    padding: '12px 16px',
+                                    marginBottom: 20,
+                                    maxHeight: this.state.showStackTrace ? 200 : 0,
+                                    overflow: 'hidden',
+                                    transition: 'max-height 0.3s ease',
                                 }}
                             >
-                                {this.state.showStackTrace ? '▼ Hide' : '▶ Show'} Developer Info
+                                <button
+                                    onClick={() => this.setState((s) => ({ showStackTrace: !s.showStackTrace }))}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        color: DS.cyan,
+                                        fontWeight: 600,
+                                        fontSize: 12,
+                                        marginBottom: this.state.showStackTrace ? 12 : 0,
+                                        fontFamily: DS.fontMono,
+                                        letterSpacing: '0.05em',
+                                    }}
+                                >
+                                    {this.state.showStackTrace ? '▼ Hide' : '▶ Show'} Developer Info
+                                </button>
+                                {this.state.showStackTrace && (
+                                    <pre
+                                        style={{
+                                            margin: 0,
+                                            fontSize: 10,
+                                            color: DS.textMuted,
+                                            fontFamily: DS.fontMono,
+                                            overflow: 'auto',
+                                            maxHeight: 160,
+                                        }}
+                                    >
+                                        {this.state.errorInfo.componentStack}
+                                    </pre>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Action buttons */}
+                        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <button
+                                onClick={() => {
+                                    try {
+                                        localStorage.removeItem('vigil_active_tab');
+                                        localStorage.removeItem('vigil_sidebar_collapsed');
+                                    } catch {}
+                                    window.location.href = '/';
+                                }}
+                                style={{
+                                    padding: '11px 24px',
+                                    borderRadius: 8,
+                                    border: `1px solid ${DS.cyan}`,
+                                    cursor: 'pointer',
+                                    background: `${DS.cyan}15`,
+                                    color: DS.cyan,
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                    fontFamily: DS.fontUI,
+                                    transition: 'all 0.15s',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = `${DS.cyan}25`;
+                                    e.currentTarget.style.boxShadow = `0 0 12px ${DS.cyan}40`;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = `${DS.cyan}15`;
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                Go to Overview
                             </button>
-                            {this.state.showStackTrace && (
-                                <pre style={{
-                                    margin: 0, fontSize: 10, color: DS.textMuted,
-                                    fontFamily: DS.fontMono, overflow: 'auto', maxHeight: 160,
-                                }}>
-                                    {this.state.errorInfo.componentStack}
-                                </pre>
-                            )}
+                            <button
+                                onClick={() => window.location.reload()}
+                                style={{
+                                    padding: '11px 24px',
+                                    borderRadius: 8,
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    background: `linear-gradient(135deg, ${DS.rose}, ${DS.violet})`,
+                                    color: '#fff',
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                    fontFamily: DS.fontUI,
+                                    transition: 'all 0.15s',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+                            >
+                                Reload Page
+                            </button>
                         </div>
-                    )}
 
-                    {/* Action buttons */}
-                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <button
-                            onClick={() => {
-                                try {
-                                    localStorage.removeItem('vigil_active_tab');
-                                    localStorage.removeItem('vigil_sidebar_collapsed');
-                                } catch {}
-                                window.location.href = '/';
-                            }}
-                            style={{
-                                padding: '11px 24px', borderRadius: 8, border: `1px solid ${DS.cyan}`,
-                                cursor: 'pointer',
-                                background: `${DS.cyan}15`,
-                                color: DS.cyan, fontWeight: 600, fontSize: 13, fontFamily: DS.fontUI,
-                                transition: 'all 0.15s',
-                            }}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.background = `${DS.cyan}25`;
-                                e.currentTarget.style.boxShadow = `0 0 12px ${DS.cyan}40`;
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.background = `${DS.cyan}15`;
-                                e.currentTarget.style.boxShadow = 'none';
-                            }}
-                        >
-                            Go to Overview
-                        </button>
-                        <button
-                            onClick={() => window.location.reload()}
-                            style={{
-                                padding: '11px 24px', borderRadius: 8, border: 'none',
-                                cursor: 'pointer',
-                                background: `linear-gradient(135deg, ${DS.rose}, ${DS.violet})`,
-                                color: '#fff', fontWeight: 600, fontSize: 13, fontFamily: DS.fontUI,
-                                transition: 'all 0.15s',
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                        >
-                            Reload Page
-                        </button>
+                        {/* Help text */}
+                        <p style={{ color: DS.textMuted, margin: '20px 0 0', fontSize: 11, lineHeight: 1.5 }}>
+                            If this error persists, please{' '}
+                            <a
+                                href="mailto:support@vigil.io"
+                                style={{ color: DS.cyan, textDecoration: 'none', fontWeight: 600 }}
+                            >
+                                contact support
+                            </a>{' '}
+                            or check the browser console for more details.
+                        </p>
                     </div>
-
-                    {/* Help text */}
-                    <p style={{ color: DS.textMuted, margin: '20px 0 0', fontSize: 11, lineHeight: 1.5 }}>
-                        If this error persists, please <a href="mailto:support@vigil.io" style={{ color: DS.cyan, textDecoration: 'none', fontWeight: 600 }}>contact support</a> or
-                        check the browser console for more details.
-                    </p>
                 </div>
-            </div>
-        );
+            );
         return this.props.children;
     }
 }
@@ -1312,21 +1907,27 @@ class ErrorBoundary extends React.Component {
    PROFILE MODAL
    ───────────────────────────────────────────────────────────────── */
 const ProfileModal = ({ user, onClose, onSave }) => {
-    const [name, setName]       = useState(user?.name || '');
-    const [email, setEmail]     = useState(user?.email || '');
-    const [saving, setSaving]   = useState(false);
-    const [saved, setSaved]     = useState(false);
-    const [error, setError]     = useState('');
+    const [name, setName] = useState(user?.name || '');
+    const [email, setEmail] = useState(user?.email || '');
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        const h = e => { if (e.key === 'Escape') onClose(); };
+        const h = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
         window.addEventListener('keydown', h);
         return () => window.removeEventListener('keydown', h);
     }, [onClose]);
 
     const handleSave = async () => {
-        if (!name.trim()) { setError('Name cannot be empty'); return; }
-        setSaving(true); setError('');
+        if (!name.trim()) {
+            setError('Name cannot be empty');
+            return;
+        }
+        setSaving(true);
+        setError('');
         try {
             const token = localStorage.getItem('vigil_token');
             const res = await fetch('/api/users/profile', {
@@ -1334,7 +1935,10 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ name: name.trim(), email: email.trim() }),
             });
-            if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Save failed'); }
+            if (!res.ok) {
+                const d = await res.json().catch(() => ({}));
+                throw new Error(d.error || 'Save failed');
+            }
             const updated = await res.json().catch(() => ({}));
             onSave({ ...user, name: name.trim(), email: email.trim(), ...updated });
             setSaved(true);
@@ -1349,53 +1953,135 @@ const ProfileModal = ({ user, onClose, onSave }) => {
         }
     };
 
-    const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+    const initials =
+        name
+            .split(' ')
+            .map((w) => w[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase() || '?';
 
     return (
-        <div style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-            backdropFilter: 'blur(8px)', zIndex: 2000,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            animation: 'fadeIn 0.2s ease-out',
-        }} onClick={e => e.target === e.currentTarget && onClose()}>
-            <div style={{
-                background: DS.surface, border: `1px solid ${DS.borderAccent}`,
-                borderRadius: 20, width: 420, maxWidth: '94vw',
-                boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`,
-                overflow: 'hidden',
-                animation: 'slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both',
-            }}>
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.75)',
+                backdropFilter: 'blur(8px)',
+                zIndex: 2000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animation: 'fadeIn 0.2s ease-out',
+            }}
+            onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+            <div
+                style={{
+                    background: DS.surface,
+                    border: `1px solid ${DS.borderAccent}`,
+                    borderRadius: 20,
+                    width: 420,
+                    maxWidth: '94vw',
+                    boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`,
+                    overflow: 'hidden',
+                    animation: 'slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both',
+                }}
+            >
                 {/* Rainbow top bar */}
-                <div style={{ height: 3, background: `linear-gradient(90deg, ${DS.cyan}, ${DS.violet}, ${DS.emerald})`, backgroundSize: '200% 100%', animation: 'waveFlow 3s ease infinite' }} />
+                <div
+                    style={{
+                        height: 3,
+                        background: `linear-gradient(90deg, ${DS.cyan}, ${DS.violet}, ${DS.emerald})`,
+                        backgroundSize: '200% 100%',
+                        animation: 'waveFlow 3s ease infinite',
+                    }}
+                />
 
                 {/* Header */}
-                <div style={{ padding: '20px 26px 18px', borderBottom: `1px solid ${DS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: DS.textPrimary, letterSpacing: '-0.02em' }}>Profile Settings</h3>
-                    <button onClick={onClose} style={{
-                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${DS.border}`,
-                        color: DS.textSub, cursor: 'pointer', width: 32, height: 32, borderRadius: 8,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+                <div
+                    style={{
+                        padding: '20px 26px 18px',
+                        borderBottom: `1px solid ${DS.border}`,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                     }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,113,133,0.12)'; e.currentTarget.style.color = DS.rose; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = DS.textSub; }}
-                    ><X size={15} strokeWidth={2} /></button>
+                >
+                    <h3
+                        style={{
+                            margin: 0,
+                            fontSize: 17,
+                            fontWeight: 700,
+                            color: DS.textPrimary,
+                            letterSpacing: '-0.02em',
+                        }}
+                    >
+                        Profile Settings
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${DS.border}`,
+                            color: DS.textSub,
+                            cursor: 'pointer',
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(251,113,133,0.12)';
+                            e.currentTarget.style.color = DS.rose;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                            e.currentTarget.style.color = DS.textSub;
+                        }}
+                    >
+                        <X size={15} strokeWidth={2} />
+                    </button>
                 </div>
 
                 {/* Body */}
                 <div style={{ padding: '24px 26px', display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {/* Avatar */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <div style={{
-                            width: 60, height: 60, borderRadius: 14, flexShrink: 0,
-                            background: `linear-gradient(135deg, ${DS.cyan}40, ${DS.violet}40)`,
-                            border: `2px solid ${DS.borderAccent}`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 22, fontWeight: 700, color: DS.cyan, fontFamily: DS.fontUI,
-                            boxShadow: DS.glowCyan,
-                        }}>{initials}</div>
+                        <div
+                            style={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: 14,
+                                flexShrink: 0,
+                                background: `linear-gradient(135deg, ${DS.cyan}40, ${DS.violet}40)`,
+                                border: `2px solid ${DS.borderAccent}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 22,
+                                fontWeight: 700,
+                                color: DS.cyan,
+                                fontFamily: DS.fontUI,
+                                boxShadow: DS.glowCyan,
+                            }}
+                        >
+                            {initials}
+                        </div>
                         <div>
                             <div style={{ fontSize: 16, fontWeight: 700, color: DS.textPrimary }}>{user?.name}</div>
-                            <div style={{ fontSize: 11, color: DS.cyan, fontFamily: DS.fontMono, marginTop: 2, letterSpacing: '0.06em' }}>
+                            <div
+                                style={{
+                                    fontSize: 11,
+                                    color: DS.cyan,
+                                    fontFamily: DS.fontMono,
+                                    marginTop: 2,
+                                    letterSpacing: '0.06em',
+                                }}
+                            >
                                 {user?.role || 'user'} · {user?.accessLevel || 'read'}
                             </div>
                         </div>
@@ -1403,78 +2089,174 @@ const ProfileModal = ({ user, onClose, onSave }) => {
 
                     {/* Name field */}
                     <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: DS.textMuted, marginBottom: 6, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Display Name</label>
-                        <input
-                            type="text" value={name} onChange={e => { setName(e.target.value); setError(''); }}
+                        <label
                             style={{
-                                width: '100%', boxSizing: 'border-box',
-                                background: 'rgba(255,255,255,0.03)', border: `1px solid ${DS.border}`,
-                                borderRadius: 9, padding: '10px 13px', color: DS.textPrimary,
-                                fontSize: 14, outline: 'none', fontFamily: DS.fontUI,
+                                display: 'block',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: DS.textMuted,
+                                marginBottom: 6,
+                                letterSpacing: '0.07em',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            Display Name
+                        </label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => {
+                                setName(e.target.value);
+                                setError('');
+                            }}
+                            style={{
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${DS.border}`,
+                                borderRadius: 9,
+                                padding: '10px 13px',
+                                color: DS.textPrimary,
+                                fontSize: 14,
+                                outline: 'none',
+                                fontFamily: DS.fontUI,
                                 transition: 'border-color 0.2s',
                             }}
-                            onFocus={e => e.target.style.borderColor = DS.borderAccent}
-                            onBlur={e => e.target.style.borderColor = DS.border}
+                            onFocus={(e) => (e.target.style.borderColor = DS.borderAccent)}
+                            onBlur={(e) => (e.target.style.borderColor = DS.border)}
                         />
                     </div>
 
                     {/* Email field */}
                     <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: DS.textMuted, marginBottom: 6, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Email</label>
-                        <input
-                            type="email" value={email} onChange={e => setEmail(e.target.value)}
+                        <label
                             style={{
-                                width: '100%', boxSizing: 'border-box',
-                                background: 'rgba(255,255,255,0.03)', border: `1px solid ${DS.border}`,
-                                borderRadius: 9, padding: '10px 13px', color: DS.textPrimary,
-                                fontSize: 14, outline: 'none', fontFamily: DS.fontUI,
+                                display: 'block',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: DS.textMuted,
+                                marginBottom: 6,
+                                letterSpacing: '0.07em',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            style={{
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${DS.border}`,
+                                borderRadius: 9,
+                                padding: '10px 13px',
+                                color: DS.textPrimary,
+                                fontSize: 14,
+                                outline: 'none',
+                                fontFamily: DS.fontUI,
                                 transition: 'border-color 0.2s',
                             }}
-                            onFocus={e => e.target.style.borderColor = DS.borderAccent}
-                            onBlur={e => e.target.style.borderColor = DS.border}
+                            onFocus={(e) => (e.target.style.borderColor = DS.borderAccent)}
+                            onBlur={(e) => (e.target.style.borderColor = DS.border)}
                         />
                     </div>
 
                     {/* Read-only fields */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        {[['Role', user?.role || '—'], ['Access', user?.accessLevel || '—']].map(([lbl, val]) => (
+                        {[
+                            ['Role', user?.role || '—'],
+                            ['Access', user?.accessLevel || '—'],
+                        ].map(([lbl, val]) => (
                             <div key={lbl}>
-                                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: DS.textMuted, marginBottom: 6, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{lbl}</label>
-                                <div style={{
-                                    background: 'rgba(255,255,255,0.02)', border: `1px solid ${DS.border}`,
-                                    borderRadius: 9, padding: '10px 13px', color: DS.textMuted,
-                                    fontSize: 13, fontFamily: DS.fontMono, letterSpacing: '0.04em',
-                                }}>{val}</div>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        color: DS.textMuted,
+                                        marginBottom: 6,
+                                        letterSpacing: '0.07em',
+                                        textTransform: 'uppercase',
+                                    }}
+                                >
+                                    {lbl}
+                                </label>
+                                <div
+                                    style={{
+                                        background: 'rgba(255,255,255,0.02)',
+                                        border: `1px solid ${DS.border}`,
+                                        borderRadius: 9,
+                                        padding: '10px 13px',
+                                        color: DS.textMuted,
+                                        fontSize: 13,
+                                        fontFamily: DS.fontMono,
+                                        letterSpacing: '0.04em',
+                                    }}
+                                >
+                                    {val}
+                                </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Error */}
                     {error && (
-                        <div style={{ padding: '10px 14px', borderRadius: 9, background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.25)', color: DS.rose, fontSize: 12 }}>
+                        <div
+                            style={{
+                                padding: '10px 14px',
+                                borderRadius: 9,
+                                background: 'rgba(251,113,133,0.08)',
+                                border: '1px solid rgba(251,113,133,0.25)',
+                                color: DS.rose,
+                                fontSize: 12,
+                            }}
+                        >
                             {error}
                         </div>
                     )}
 
                     {/* Save button */}
-                    <button onClick={handleSave} disabled={saving || saved} style={{
-                        width: '100%', padding: '13px 0', borderRadius: 10, border: 'none',
-                        background: saved
-                            ? `linear-gradient(135deg, ${DS.emerald}, ${DS.emerald})`
-                            : `linear-gradient(135deg, ${DS.cyan}, ${DS.violet})`,
-                        color: '#fff', fontSize: 13, fontWeight: 700,
-                        cursor: saving || saved ? 'default' : 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                        letterSpacing: '0.03em', fontFamily: DS.fontUI,
-                        transition: 'all 0.2s', opacity: saving ? 0.7 : 1,
-                        boxShadow: '0 4px 20px rgba(56,189,248,0.22)',
-                    }}>
+                    <button
+                        onClick={handleSave}
+                        disabled={saving || saved}
+                        style={{
+                            width: '100%',
+                            padding: '13px 0',
+                            borderRadius: 10,
+                            border: 'none',
+                            background: saved
+                                ? `linear-gradient(135deg, ${DS.emerald}, ${DS.emerald})`
+                                : `linear-gradient(135deg, ${DS.cyan}, ${DS.violet})`,
+                            color: '#fff',
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: saving || saved ? 'default' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            letterSpacing: '0.03em',
+                            fontFamily: DS.fontUI,
+                            transition: 'all 0.2s',
+                            opacity: saving ? 0.7 : 1,
+                            boxShadow: '0 4px 20px rgba(56,189,248,0.22)',
+                        }}
+                    >
                         {saved ? (
-                            <><CheckCircle size={15} /> Saved!</>
+                            <>
+                                <CheckCircle size={15} /> Saved!
+                            </>
                         ) : saving ? (
-                            <><Save size={15} /> Saving…</>
+                            <>
+                                <Save size={15} /> Saving…
+                            </>
                         ) : (
-                            <><Save size={15} /> Save Changes</>
+                            <>
+                                <Save size={15} /> Save Changes
+                            </>
                         )}
                     </button>
                 </div>
@@ -1488,34 +2270,57 @@ const ProfileModal = ({ user, onClose, onSave }) => {
    ───────────────────────────────────────────────────────────────── */
 const SEV_COLORS = {
     critical: DS.rose,
-    warning:  DS.amber,
-    info:     DS.cyan,
+    warning: DS.amber,
+    info: DS.cyan,
 };
 
 const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const unread = notifications.filter(n => !n.read).length;
+    const unread = notifications.filter((n) => !n.read).length;
 
     return (
         <div style={{ position: 'relative' }}>
-            <button onClick={() => setIsOpen(o => !o)} style={{
-                position: 'relative', width: 38, height: 38, borderRadius: 10,
-                background: isOpen ? DS.cyanDim : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${isOpen ? DS.cyan + '60' : DS.border}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', transition: 'all 0.18s ease',
-                boxShadow: isOpen ? DS.glowCyan : 'none',
-            }} aria-label="Notifications">
+            <button
+                onClick={() => setIsOpen((o) => !o)}
+                style={{
+                    position: 'relative',
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    background: isOpen ? DS.cyanDim : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${isOpen ? DS.cyan + '60' : DS.border}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.18s ease',
+                    boxShadow: isOpen ? DS.glowCyan : 'none',
+                }}
+                aria-label="Notifications"
+            >
                 <Bell size={17} color={isOpen ? DS.cyan : DS.textSub} />
                 {unread > 0 && (
-                    <span className="badge-new" style={{
-                        position: 'absolute', top: -5, right: -5, minWidth: 18, height: 18,
-                        borderRadius: 9, background: DS.rose, color: '#fff',
-                        fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', padding: '0 4px',
-                        border: `2px solid ${DS.bg}`,
-                        fontFamily: DS.fontMono,
-                    }}>
+                    <span
+                        className="badge-new"
+                        style={{
+                            position: 'absolute',
+                            top: -5,
+                            right: -5,
+                            minWidth: 18,
+                            height: 18,
+                            borderRadius: 9,
+                            background: DS.rose,
+                            color: '#fff',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '0 4px',
+                            border: `2px solid ${DS.bg}`,
+                            fontFamily: DS.fontMono,
+                        }}
+                    >
                         {unread > 9 ? '9+' : unread}
                     </span>
                 )}
@@ -1524,33 +2329,87 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
             {isOpen && (
                 <>
                     <div onClick={() => setIsOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 999 }} />
-                    <div className="notif-panel" style={{
-                        position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 390,
-                        maxHeight: 520, background: DS.surface,
-                        border: `1px solid ${DS.borderAccent}`,
-                        borderRadius: 14, boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`,
-                        zIndex: 1000, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-                    }}>
+                    <div
+                        className="notif-panel"
+                        style={{
+                            position: 'absolute',
+                            top: 'calc(100% + 10px)',
+                            right: 0,
+                            width: 390,
+                            maxHeight: 520,
+                            background: DS.surface,
+                            border: `1px solid ${DS.borderAccent}`,
+                            borderRadius: 14,
+                            boxShadow: `${DS.shadowDeep}, ${DS.glowCyan}`,
+                            zIndex: 1000,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                        }}
+                    >
                         {/* Rainbow top bar */}
-                        <div style={{ height: 2, background: `linear-gradient(90deg, ${DS.cyan}, ${DS.violet})`, flexShrink: 0 }} />
+                        <div
+                            style={{
+                                height: 2,
+                                background: `linear-gradient(90deg, ${DS.cyan}, ${DS.violet})`,
+                                flexShrink: 0,
+                            }}
+                        />
 
-                        <div style={{ padding: '14px 18px', borderBottom: `1px solid ${DS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: DS.textPrimary, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div
+                            style={{
+                                padding: '14px 18px',
+                                borderBottom: `1px solid ${DS.border}`,
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                flexShrink: 0,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    color: DS.textPrimary,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                }}
+                            >
                                 <Bell size={14} color={DS.cyan} />
                                 Notifications
                                 {notifications.length > 0 && (
-                                    <span style={{ fontSize: 10, background: DS.cyanDim, color: DS.cyan, padding: '2px 7px', borderRadius: 20, fontFamily: DS.fontMono }}>
+                                    <span
+                                        style={{
+                                            fontSize: 10,
+                                            background: DS.cyanDim,
+                                            color: DS.cyan,
+                                            padding: '2px 7px',
+                                            borderRadius: 20,
+                                            fontFamily: DS.fontMono,
+                                        }}
+                                    >
                                         {notifications.length}
                                     </span>
                                 )}
                             </div>
                             {notifications.length > 0 && (
-                                <button onClick={onClearAll} style={{
-                                    background: 'none', border: 'none', color: DS.textMuted,
-                                    fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: '4px 8px',
-                                    borderRadius: 6, transition: 'color 0.15s',
-                                }} onMouseEnter={e => e.currentTarget.style.color = DS.rose}
-                                        onMouseLeave={e => e.currentTarget.style.color = DS.textMuted}>
+                                <button
+                                    onClick={onClearAll}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: DS.textMuted,
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        padding: '4px 8px',
+                                        borderRadius: 6,
+                                        transition: 'color 0.15s',
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.color = DS.rose)}
+                                    onMouseLeave={(e) => (e.currentTarget.style.color = DS.textMuted)}
+                                >
                                     Clear all
                                 </button>
                             )}
@@ -1562,43 +2421,99 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
                                     <Bell size={28} style={{ opacity: 0.2, marginBottom: 10 }} />
                                     <div style={{ fontSize: 12 }}>All caught up</div>
                                 </div>
-                            ) : notifications.map((n, idx) => {
-                                const col = SEV_COLORS[n.severity] || DS.cyan;
-                                return (
-                                    <div key={n.id} className="notif-item" style={{
-                                        padding: '13px 18px', borderBottom: `1px solid ${DS.border}`,
-                                        display: 'flex', gap: 12, alignItems: 'flex-start',
-                                        background: !n.read ? `${col}06` : 'transparent',
-                                        cursor: 'default',
-                                        animation: `notifPop 0.25s ${idx * 0.04}s ease-out both`,
-                                    }}>
-                                        {/* Severity dot + icon */}
-                                        <div style={{
-                                            width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                                            background: `${col}12`, border: `1px solid ${col}30`,
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        }}>
-                                            <AlertCircle size={15} color={col} />
-                                        </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: DS.textPrimary, marginBottom: 3 }}>{n.title}</div>
-                                            <div style={{ fontSize: 11, color: DS.textSub, lineHeight: 1.5 }}>{n.message}</div>
-                                            <div style={{ fontSize: 10, color: DS.textMuted, marginTop: 5, fontFamily: DS.fontMono }}>
-                                                {new Date(n.timestamp).toLocaleTimeString()}
+                            ) : (
+                                notifications.map((n, idx) => {
+                                    const col = SEV_COLORS[n.severity] || DS.cyan;
+                                    return (
+                                        <div
+                                            key={n.id}
+                                            className="notif-item"
+                                            style={{
+                                                padding: '13px 18px',
+                                                borderBottom: `1px solid ${DS.border}`,
+                                                display: 'flex',
+                                                gap: 12,
+                                                alignItems: 'flex-start',
+                                                background: !n.read ? `${col}06` : 'transparent',
+                                                cursor: 'default',
+                                                animation: `notifPop 0.25s ${idx * 0.04}s ease-out both`,
+                                            }}
+                                        >
+                                            {/* Severity dot + icon */}
+                                            <div
+                                                style={{
+                                                    width: 34,
+                                                    height: 34,
+                                                    borderRadius: 8,
+                                                    flexShrink: 0,
+                                                    background: `${col}12`,
+                                                    border: `1px solid ${col}30`,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                }}
+                                            >
+                                                <AlertCircle size={15} color={col} />
                                             </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div
+                                                    style={{
+                                                        fontSize: 12,
+                                                        fontWeight: 700,
+                                                        color: DS.textPrimary,
+                                                        marginBottom: 3,
+                                                    }}
+                                                >
+                                                    {n.title}
+                                                </div>
+                                                <div style={{ fontSize: 11, color: DS.textSub, lineHeight: 1.5 }}>
+                                                    {n.message}
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        color: DS.textMuted,
+                                                        marginTop: 5,
+                                                        fontFamily: DS.fontMono,
+                                                    }}
+                                                >
+                                                    {new Date(n.timestamp).toLocaleTimeString()}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDismiss(n.id);
+                                                }}
+                                                style={{
+                                                    width: 22,
+                                                    height: 22,
+                                                    borderRadius: 5,
+                                                    border: 'none',
+                                                    background: 'transparent',
+                                                    color: DS.textMuted,
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    flexShrink: 0,
+                                                    transition: 'all 0.15s',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(251,113,133,0.12)';
+                                                    e.currentTarget.style.color = DS.rose;
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = 'transparent';
+                                                    e.currentTarget.style.color = DS.textMuted;
+                                                }}
+                                            >
+                                                <X size={13} />
+                                            </button>
                                         </div>
-                                        <button onClick={e => { e.stopPropagation(); onDismiss(n.id); }} style={{
-                                            width: 22, height: 22, borderRadius: 5, border: 'none',
-                                            background: 'transparent', color: DS.textMuted, cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                                            transition: 'all 0.15s',
-                                        }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,113,133,0.12)'; e.currentTarget.style.color = DS.rose; }}
-                                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = DS.textMuted; }}>
-                                            <X size={13} />
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                 </>
@@ -1610,7 +2525,17 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
 /* ─────────────────────────────────────────────────────────────────
    SIDEBAR
    ───────────────────────────────────────────────────────────────── */
-const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onToggleCollapse, onOpenFeedback, onOpenProfile, allowedTabIds }) => {
+const Sidebar = ({
+    activeTab,
+    onTabChange,
+    onLogout,
+    currentUser,
+    collapsed,
+    onToggleCollapse,
+    onOpenFeedback,
+    onOpenProfile,
+    allowedTabIds,
+}) => {
     const { activeConnection } = useConnection();
     const [openSections, setOpenSections] = useState(() => {
         const active = getSectionForTab(activeTab);
@@ -1626,18 +2551,17 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
     useEffect(() => {
         const sec = getSectionForTab(activeTab);
         const parentGrp = getGroupForTab(activeTab);
-        setOpenSections(prev => {
+        setOpenSections((prev) => {
             const needs = [];
             if (sec && !prev.has(sec)) needs.push(sec);
             if (parentGrp && !prev.has(parentGrp)) needs.push(parentGrp);
             if (needs.length === 0) return prev;
             return new Set([...prev, ...needs]);
         });
-
     }, [activeTab]);
 
     const toggleSection = useCallback((sec) => {
-        setOpenSections(prev => {
+        setOpenSections((prev) => {
             const next = new Set(prev);
             next.has(sec) ? next.delete(sec) : next.add(sec);
             return next;
@@ -1647,77 +2571,108 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
     // Determine which DB-specific sections to show based on active connection
     const connDbType = activeConnection?.dbType || null;
 
-    const visibleGroups = useMemo(() =>
-            SECTION_GROUPS
-                .map(g => ({ ...g, tabs: g.tabs.filter(t => allowedTabIds.includes(t.id)) }))
-                .filter(g => g.tabs.length > 0)
+    const visibleGroups = useMemo(
+        () =>
+            SECTION_GROUPS.map((g) => ({ ...g, tabs: g.tabs.filter((t) => allowedTabIds.includes(t.id)) }))
+                .filter((g) => g.tabs.length > 0)
                 // Hide DB-specific sections unless that DB type is connected
-                .filter(g => {
+                .filter((g) => {
                     if (g.section === 'MongoDB') return connDbType === 'mongodb';
                     return true;
                 }),
-        [allowedTabIds, connDbType]);
+        [allowedTabIds, connDbType],
+    );
 
     /* Build flat nav: each section becomes a { type:'section', ... } entry */
     const groupedNav = useMemo(() => {
-        return visibleGroups.map(g => ({ type: 'section', ...g }));
+        return visibleGroups.map((g) => ({ type: 'section', ...g }));
     }, [visibleGroups]);
 
     const W = collapsed ? 64 : 252;
 
     return (
-        <aside style={{
-            width: W,
-            minWidth: W,
-            background: DS.sidebarBg,
-            borderRight: `1px solid ${DS.sidebarBorder}`,
-            display: 'flex',
-            flexDirection: 'column',
-            zIndex: 50,
-            flexShrink: 0,
-            transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1), min-width 0.25s cubic-bezier(0.4,0,0.2,1)',
-            position: 'relative',
-            overflow: 'hidden',
-        }}>
-
+        <aside
+            style={{
+                width: W,
+                minWidth: W,
+                background: DS.sidebarBg,
+                borderRight: `1px solid ${DS.sidebarBorder}`,
+                display: 'flex',
+                flexDirection: 'column',
+                zIndex: 50,
+                flexShrink: 0,
+                transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1), min-width 0.25s cubic-bezier(0.4,0,0.2,1)',
+                position: 'relative',
+                overflow: 'hidden',
+            }}
+        >
             {/* Right-edge gradient rule */}
-            <div style={{
-                position: 'absolute', top: 0, right: 0, bottom: 0, width: 1, pointerEvents: 'none',
-                background: 'linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.18) 40%, rgba(129,140,248,0.12) 75%, transparent 100%)',
-            }} />
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: 1,
+                    pointerEvents: 'none',
+                    background:
+                        'linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.18) 40%, rgba(129,140,248,0.12) 75%, transparent 100%)',
+                }}
+            />
 
             {/* ── LOGO ── */}
-            <div style={{
-                height: 64, flexShrink: 0,
-                display: 'flex', alignItems: 'center',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                padding: collapsed ? 0 : '0 18px',
-                gap: 12,
-                borderBottom: `1px solid ${DS.border}`,
-            }}>
+            <div
+                style={{
+                    height: 64,
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    padding: collapsed ? 0 : '0 18px',
+                    gap: 12,
+                    borderBottom: `1px solid ${DS.border}`,
+                }}
+            >
                 {/* Icon mark */}
-                <div style={{
-                    width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                    background: DS.logoBg,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 0 16px rgba(56,189,248,0.35)',
-                }}>
+                <div
+                    style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        flexShrink: 0,
+                        background: DS.logoBg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 0 20px rgba(56,189,248,0.4), 0 0 40px rgba(56,189,248,0.15)',
+                    }}
+                >
                     <Database color="#fff" size={15} strokeWidth={2.5} />
                 </div>
 
                 {/* Wordmark — hidden when collapsed */}
                 {!collapsed && (
                     <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                        <span style={{
-                            fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em',
-                            color: DS.logoText,
-                        }}>
+                        <span
+                            style={{
+                                fontSize: 15,
+                                fontWeight: 800,
+                                letterSpacing: '-0.03em',
+                                color: DS.logoText,
+                            }}
+                        >
                             PG <span style={{ color: DS.cyan }}>Monitor</span>
                         </span>
-                        <span style={{
-                            fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase',
-                            color: DS.logoSub, fontFamily: DS.fontMono, marginTop: 2,
-                        }}>
+                        <span
+                            style={{
+                                fontSize: 9,
+                                letterSpacing: '0.14em',
+                                textTransform: 'uppercase',
+                                color: DS.logoSub,
+                                fontFamily: DS.fontMono,
+                                marginTop: 2,
+                            }}
+                        >
                             Database Intelligence
                         </span>
                     </div>
@@ -1727,12 +2682,17 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
             {/* Search bar and recently viewed removed */}
 
             {/* ── NAV ── */}
-            <nav className="sidebar-nav" role="navigation" aria-label="Main navigation" style={{
-                flex: 1,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                padding: '8px 0',
-            }}>
+            <nav
+                className="sidebar-nav"
+                role="navigation"
+                aria-label="Main navigation"
+                style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    padding: '8px 0',
+                }}
+            >
                 {/* ── Helper: render a single tab button ── */}
                 {(() => {
                     const renderTab = (tab, accent, extraPadLeft = 0) => {
@@ -1759,15 +2719,13 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                     padding: collapsed
                                         ? '9px 0'
                                         : isActive
-                                            ? `8px 14px 8px ${basePadLeft - 3}px`
-                                            : `8px 14px 8px ${basePadLeft}px`,
+                                          ? `8px 14px 8px ${basePadLeft - 3}px`
+                                          : `8px 14px 8px ${basePadLeft}px`,
                                     background: isActive
                                         ? `linear-gradient(90deg, ${accent}1a 0%, ${accent}08 100%)`
                                         : 'transparent',
                                     border: 'none',
-                                    borderLeft: isActive
-                                        ? `3px solid ${accent}`
-                                        : '3px solid transparent',
+                                    borderLeft: isActive ? `3px solid ${accent}` : '3px solid transparent',
                                     cursor: 'pointer',
                                     color: isActive ? accent : DS.sidebarText,
                                     fontWeight: isActive ? 600 : 400,
@@ -1780,13 +2738,13 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                     transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
                                     position: 'relative',
                                 }}
-                                onMouseEnter={e => {
+                                onMouseEnter={(e) => {
                                     if (!isActive) {
                                         e.currentTarget.style.background = DS.sidebarHover;
                                         e.currentTarget.style.color = DS.textSub;
                                     }
                                 }}
-                                onMouseLeave={e => {
+                                onMouseLeave={(e) => {
                                     if (!isActive) {
                                         e.currentTarget.style.background = 'transparent';
                                         e.currentTarget.style.color = DS.sidebarText;
@@ -1807,27 +2765,37 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                             {tab.label}
                                         </span>
                                         {tab.badge && (
-                                            <span style={{
-                                                fontSize: 9, fontWeight: 700,
-                                                padding: '1px 6px', borderRadius: 10,
-                                                background: 'rgba(251,113,133,0.15)',
-                                                color: DS.rose,
-                                                border: '1px solid rgba(251,113,133,0.3)',
-                                                fontFamily: DS.fontMono,
-                                                lineHeight: '16px',
-                                                flexShrink: 0,
-                                            }}>
+                                            <span
+                                                style={{
+                                                    fontSize: 9,
+                                                    fontWeight: 700,
+                                                    padding: '1px 6px',
+                                                    borderRadius: 10,
+                                                    background: 'rgba(251,113,133,0.15)',
+                                                    color: DS.rose,
+                                                    border: '1px solid rgba(251,113,133,0.3)',
+                                                    fontFamily: DS.fontMono,
+                                                    lineHeight: '16px',
+                                                    flexShrink: 0,
+                                                }}
+                                            >
                                                 {tab.badge}
                                             </span>
                                         )}
                                     </>
                                 )}
                                 {isActive && !collapsed && (
-                                    <div style={{
-                                        position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
-                                        background: `linear-gradient(270deg, ${accent}10, transparent)`,
-                                        pointerEvents: 'none',
-                                    }} />
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            right: 0,
+                                            top: 0,
+                                            bottom: 0,
+                                            width: 60,
+                                            background: `linear-gradient(270deg, ${accent}10, transparent)`,
+                                            pointerEvents: 'none',
+                                        }}
+                                    />
                                 )}
                             </button>
                         );
@@ -1853,14 +2821,16 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                 marginTop,
                             }}
                         >
-                            <span style={{
-                                fontSize: 10,
-                                fontWeight: 700,
-                                letterSpacing: '0.1em',
-                                textTransform: 'uppercase',
-                                fontFamily: DS.fontMono,
-                                color: hasActive ? accent : DS.sidebarText,
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    letterSpacing: '0.1em',
+                                    textTransform: 'uppercase',
+                                    fontFamily: DS.fontMono,
+                                    color: hasActive ? accent : DS.sidebarText,
+                                }}
+                            >
                                 {label}
                             </span>
                             <ChevronDown
@@ -1868,7 +2838,8 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                                 color={hasActive ? accent : '#334155'}
                                 style={{
                                     transition: 'transform 0.2s ease',
-                                    transform: (collapsed || openSections.has(sectionKey)) ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                    transform:
+                                        collapsed || openSections.has(sectionKey) ? 'rotate(0deg)' : 'rotate(-90deg)',
                                     flexShrink: 0,
                                 }}
                             />
@@ -1880,23 +2851,30 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                         /* ═══ Two-level: Section header → Tabs ═══ */
                         const group = item;
                         const isOpen = collapsed || openSections.has(group.section);
-                        const hasActive = group.tabs.some(t => t.id === activeTab);
+                        const hasActive = group.tabs.some((t) => t.id === activeTab);
 
                         return (
                             <div key={group.section} style={{ marginBottom: 2 }}>
-                                {collapsed ? (
-                                    gi > 0 && (
-                                        <div style={{
-                                            margin: '6px 16px', height: '1px',
-                                            background: `linear-gradient(90deg, transparent, ${group.accent}40, transparent)`,
-                                        }} />
-                                    )
-                                ) : (
-                                    renderSectionHeader(group.section, group.section, group.accent, hasActive, gi === 0 ? 2 : 8)
-                                )}
+                                {collapsed
+                                    ? gi > 0 && (
+                                          <div
+                                              style={{
+                                                  margin: '6px 16px',
+                                                  height: '1px',
+                                                  background: `linear-gradient(90deg, transparent, ${group.accent}40, transparent)`,
+                                              }}
+                                          />
+                                      )
+                                    : renderSectionHeader(
+                                          group.section,
+                                          group.section,
+                                          group.accent,
+                                          hasActive,
+                                          gi === 0 ? 2 : 8,
+                                      )}
                                 {isOpen && (
                                     <div className={collapsed ? '' : 'section-open'}>
-                                        {group.tabs.map(tab => renderTab(tab, group.accent))}
+                                        {group.tabs.map((tab) => renderTab(tab, group.accent))}
                                     </div>
                                 )}
                             </div>
@@ -1906,42 +2884,83 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
             </nav>
 
             {/* ── FOOTER ── */}
-            <div style={{
-                borderTop: `1px solid ${DS.border}`,
-                padding: collapsed ? '10px 0' : '10px 8px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-            }}>
+            <div
+                style={{
+                    borderTop: `1px solid ${DS.border}`,
+                    backgroundImage: `linear-gradient(90deg, transparent, ${DS.cyan}30, transparent)`,
+                    backgroundSize: '100% 1px',
+                    backgroundPosition: '0 0',
+                    backgroundRepeat: 'no-repeat',
+                    padding: collapsed ? '10px 0' : '10px 8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                }}
+            >
                 {/* User info row */}
                 {!collapsed && (
                     <button
                         onClick={onOpenProfile}
                         title="Edit profile"
                         style={{
-                            display: 'flex', alignItems: 'center', gap: 10,
-                            padding: '8px 10px', marginBottom: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '8px 10px',
+                            marginBottom: 2,
                             background: 'rgba(56,189,248,0.04)',
-                            borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)',
-                            cursor: 'pointer', width: '100%', textAlign: 'left',
+                            borderRadius: 8,
+                            border: '1px solid rgba(56,189,248,0.1)',
+                            cursor: 'pointer',
+                            width: '100%',
+                            textAlign: 'left',
                             transition: 'all 0.15s ease',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56,189,248,0.1)'; e.currentTarget.style.borderColor = 'rgba(56,189,248,0.25)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(56,189,248,0.04)'; e.currentTarget.style.borderColor = 'rgba(56,189,248,0.1)'; }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(56,189,248,0.1)';
+                            e.currentTarget.style.borderColor = 'rgba(56,189,248,0.25)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(56,189,248,0.04)';
+                            e.currentTarget.style.borderColor = 'rgba(56,189,248,0.1)';
+                        }}
                     >
-                        <div style={{
-                            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                            background: 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(129,140,248,0.25))',
-                            border: '1px solid rgba(56,189,248,0.2)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
+                        <div
+                            style={{
+                                width: 30,
+                                height: 30,
+                                borderRadius: 8,
+                                flexShrink: 0,
+                                background: 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(129,140,248,0.25))',
+                                border: '1px solid rgba(56,189,248,0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <User size={14} color={DS.cyan} />
                         </div>
                         <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: DS.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div
+                                style={{
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: DS.textPrimary,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
                                 {currentUser?.name || currentUser?.username || 'User'}
                             </div>
-                            <div style={{ fontSize: 10, color: DS.cyan, fontFamily: DS.fontMono, letterSpacing: '0.06em' }}>
+                            <div
+                                style={{
+                                    fontSize: 10,
+                                    color: DS.cyan,
+                                    fontFamily: DS.fontMono,
+                                    letterSpacing: '0.06em',
+                                }}
+                            >
                                 ● Online
                             </div>
                         </div>
@@ -1960,16 +2979,30 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     onClick={onOpenFeedback}
                     title={collapsed ? 'Feedback' : undefined}
                     style={{
-                        display: 'flex', alignItems: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
                         justifyContent: collapsed ? 'center' : 'flex-start',
-                        gap: 10, background: 'transparent', border: 'none',
-                        color: DS.sidebarText, cursor: 'pointer',
+                        gap: 10,
+                        background: 'transparent',
+                        border: 'none',
+                        color: DS.sidebarText,
+                        cursor: 'pointer',
                         padding: collapsed ? '9px 0' : '8px 10px',
-                        fontSize: 13, fontWeight: 400, borderRadius: 8, width: '100%',
-                        fontFamily: DS.fontUI, transition: 'color 0.15s, background 0.15s',
+                        fontSize: 13,
+                        fontWeight: 400,
+                        borderRadius: 8,
+                        width: '100%',
+                        fontFamily: DS.fontUI,
+                        transition: 'color 0.15s, background 0.15s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = DS.violet; e.currentTarget.style.background = 'rgba(129,140,248,0.08)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = DS.sidebarText; e.currentTarget.style.background = 'transparent'; }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.color = DS.violet;
+                        e.currentTarget.style.background = 'rgba(129,140,248,0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.color = DS.sidebarText;
+                        e.currentTarget.style.background = 'transparent';
+                    }}
                 >
                     <MessageSquarePlus size={15} style={{ flexShrink: 0 }} />
                     {!collapsed && 'Feedback'}
@@ -1980,16 +3013,29 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                     onClick={onLogout}
                     title={collapsed ? 'Sign out' : undefined}
                     style={{
-                        display: 'flex', alignItems: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
                         justifyContent: collapsed ? 'center' : 'flex-start',
-                        gap: 10, background: 'none', border: 'none',
-                        color: DS.sidebarText, cursor: 'pointer',
+                        gap: 10,
+                        background: 'none',
+                        border: 'none',
+                        color: DS.sidebarText,
+                        cursor: 'pointer',
                         padding: collapsed ? '9px 0' : '8px 10px',
-                        fontSize: 13, borderRadius: 8, width: '100%',
-                        fontFamily: DS.fontUI, transition: 'color 0.15s, background 0.15s',
+                        fontSize: 13,
+                        borderRadius: 8,
+                        width: '100%',
+                        fontFamily: DS.fontUI,
+                        transition: 'color 0.15s, background 0.15s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = DS.rose; e.currentTarget.style.background = 'rgba(251,113,133,0.08)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = DS.sidebarText; e.currentTarget.style.background = 'none'; }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.color = DS.rose;
+                        e.currentTarget.style.background = 'rgba(251,113,133,0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.color = DS.sidebarText;
+                        e.currentTarget.style.background = 'none';
+                    }}
                 >
                     <LogOut size={15} style={{ flexShrink: 0 }} />
                     {!collapsed && 'Sign Out'}
@@ -2001,23 +3047,31 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, collapsed, onT
                 onClick={onToggleCollapse}
                 aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 style={{
-                    position: 'absolute', right: -11, top: 76,
-                    width: 22, height: 22, borderRadius: '50%',
+                    position: 'absolute',
+                    right: -11,
+                    top: 76,
+                    width: 22,
+                    height: 22,
+                    borderRadius: '50%',
                     background: DS.surface,
                     border: `1px solid ${DS.border}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: DS.sidebarText, zIndex: 51,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: DS.sidebarText,
+                    zIndex: 51,
                     transition: 'all 0.2s ease',
                     boxShadow: DS.shadowCard,
                 }}
-                onMouseEnter={e => {
+                onMouseEnter={(e) => {
                     e.currentTarget.style.background = DS.cyan;
                     e.currentTarget.style.color = DS._dark ? '#020409' : '#ffffff';
                     e.currentTarget.style.borderColor = DS.cyan;
                     e.currentTarget.style.boxShadow = DS.glowCyan;
                     e.currentTarget.style.transform = 'scale(1.15)';
                 }}
-                onMouseLeave={e => {
+                onMouseLeave={(e) => {
                     e.currentTarget.style.background = DS.surface;
                     e.currentTarget.style.color = DS.sidebarText;
                     e.currentTarget.style.borderColor = DS.border;
@@ -2041,7 +3095,7 @@ const useWebSocket = (onMessage) => {
 
     useEffect(() => {
         // connectWS now uses HTTP polling — no WebSocket, works on Vercel
-        stopRef.current = connectWS(msg => {
+        stopRef.current = connectWS((msg) => {
             setConnected(true);
             onMessage(msg);
         });
@@ -2065,13 +3119,18 @@ const ConnectionSelector = () => {
 
     // Close on outside click
     useEffect(() => {
-        const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        const handler = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
     const handleSwitch = async (id) => {
-        if (id === activeConnectionId) { setOpen(false); return; }
+        if (id === activeConnectionId) {
+            setOpen(false);
+            return;
+        }
         setSwitching(true);
         try {
             await switchConnection(id);
@@ -2085,22 +3144,37 @@ const ConnectionSelector = () => {
 
     if (loading || connections.length === 0) return null;
 
-    const displayName  = activeConnection?.name || 'Select DB';
-    const connString   = activeConnection ? `${activeConnection.host}:${activeConnection.port}/${activeConnection.database}` : '';
-    const statusColor  = activeConnection?.status === 'success' ? DS.emerald : activeConnection?.status === 'failed' ? DS.rose : DS.amber;
-    const statusLabel  = activeConnection?.status === 'success' ? 'connected' : activeConnection?.status === 'failed' ? 'failed' : 'untested';
+    const displayName = activeConnection?.name || 'Select DB';
+    const connString = activeConnection
+        ? `${activeConnection.host}:${activeConnection.port}/${activeConnection.database}`
+        : '';
+    const statusColor =
+        activeConnection?.status === 'success'
+            ? DS.emerald
+            : activeConnection?.status === 'failed'
+              ? DS.rose
+              : DS.amber;
+    const statusLabel =
+        activeConnection?.status === 'success'
+            ? 'connected'
+            : activeConnection?.status === 'failed'
+              ? 'failed'
+              : 'untested';
 
     return (
         <div ref={ref} style={{ position: 'relative' }}>
             {/* ── Trigger button — shows name + connection string ── */}
             <button
-                onClick={() => setOpen(p => !p)}
+                onClick={() => setOpen((p) => !p)}
                 style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
                     padding: '5px 10px 5px 9px',
                     background: open ? DS.surfaceHover : DS.surface,
                     border: `1px solid ${open ? DS.borderAccent : DS.border}`,
-                    borderRadius: 8, cursor: 'pointer',
+                    borderRadius: 8,
+                    cursor: 'pointer',
                     transition: 'all 0.15s ease',
                     maxWidth: 280,
                 }}
@@ -2108,65 +3182,169 @@ const ConnectionSelector = () => {
             >
                 {/* Status dot / spinner */}
                 {switching ? (
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', border: `1.5px solid ${DS.border}`, borderTopColor: DS.cyan, animation: 'rotate 0.7s linear infinite', flexShrink: 0 }} />
+                    <div
+                        style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            border: `1.5px solid ${DS.border}`,
+                            borderTopColor: DS.cyan,
+                            animation: 'rotate 0.7s linear infinite',
+                            flexShrink: 0,
+                        }}
+                    />
                 ) : (
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, flexShrink: 0, boxShadow: `0 0 5px ${statusColor}88` }} />
+                    <span
+                        style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: statusColor,
+                            flexShrink: 0,
+                            boxShadow: `0 0 5px ${statusColor}88`,
+                        }}
+                    />
                 )}
                 <Database size={12} style={{ color: DS.cyan, flexShrink: 0 }} />
                 {/* Two-line label: name on top, connection string below */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0 }}>
-                    <span style={{
-                        fontSize: 12, fontWeight: 600, color: DS.textPrimary, fontFamily: DS.fontMono,
-                        maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        lineHeight: 1.2,
-                    }}>
+                    <span
+                        style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: DS.textPrimary,
+                            fontFamily: DS.fontMono,
+                            maxWidth: 160,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            lineHeight: 1.2,
+                        }}
+                    >
                         {displayName}
                     </span>
                     {connString && (
-                        <span style={{
-                            fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono,
-                            maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                            lineHeight: 1.3, letterSpacing: '0.01em',
-                        }}>
+                        <span
+                            style={{
+                                fontSize: 10,
+                                color: DS.textMuted,
+                                fontFamily: DS.fontMono,
+                                maxWidth: 160,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                lineHeight: 1.3,
+                                letterSpacing: '0.01em',
+                            }}
+                        >
                             {connString}
                         </span>
                     )}
                 </div>
-                <ChevronDown size={12} style={{ color: DS.textMuted, flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+                <ChevronDown
+                    size={12}
+                    style={{
+                        color: DS.textMuted,
+                        flexShrink: 0,
+                        transform: open ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s ease',
+                    }}
+                />
             </button>
 
             {/* ── Dropdown ── */}
             {open && (
-                <div style={{
-                    position: 'absolute', top: 'calc(100% + 6px)', right: 0,
-                    background: DS.surface, border: `1px solid ${DS.border}`,
-                    borderRadius: 10, boxShadow: DS.shadowDeep,
-                    minWidth: 300, zIndex: 300, overflow: 'hidden',
-                    animation: 'slideDown 0.15s ease-out both',
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 6px)',
+                        right: 0,
+                        background: DS.surface,
+                        border: `1px solid ${DS.border}`,
+                        borderRadius: 10,
+                        boxShadow: DS.shadowDeep,
+                        minWidth: 300,
+                        zIndex: 300,
+                        overflow: 'hidden',
+                        animation: 'slideDown 0.15s ease-out both',
+                    }}
+                >
                     {/* Header */}
                     <div style={{ padding: '10px 14px 8px', borderBottom: `1px solid ${DS.border}` }}>
-                        <div style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.08em', marginBottom: 4 }}>
+                        <div
+                            style={{
+                                fontSize: 10,
+                                color: DS.textMuted,
+                                fontFamily: DS.fontMono,
+                                letterSpacing: '0.08em',
+                                marginBottom: 4,
+                            }}
+                        >
                             DATABASE CONNECTIONS
                         </div>
                         {/* Active connection string prominently shown */}
                         {activeConnection && (
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 6,
-                                padding: '5px 8px',
-                                background: `${DS.cyan}10`,
-                                border: `1px solid ${DS.cyan}30`,
-                                borderRadius: 6,
-                            }}>
-                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, flexShrink: 0, boxShadow: `0 0 4px ${statusColor}` }} />
-                                <span style={{ fontSize: 11, color: DS.cyan, fontFamily: DS.fontMono, letterSpacing: '0.02em' }}>
-                                    {activeConnection.username}@{activeConnection.host}:{activeConnection.port}/{activeConnection.database}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    padding: '5px 8px',
+                                    background: `${DS.cyan}10`,
+                                    border: `1px solid ${DS.cyan}30`,
+                                    borderRadius: 6,
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: '50%',
+                                        background: statusColor,
+                                        flexShrink: 0,
+                                        boxShadow: `0 0 4px ${statusColor}`,
+                                    }}
+                                />
+                                <span
+                                    style={{
+                                        fontSize: 11,
+                                        color: DS.cyan,
+                                        fontFamily: DS.fontMono,
+                                        letterSpacing: '0.02em',
+                                    }}
+                                >
+                                    {activeConnection.username}@{activeConnection.host}:{activeConnection.port}/
+                                    {activeConnection.database}
                                 </span>
                                 {activeConnection.ssl && (
-                                    <span style={{ fontSize: 9, color: DS.emerald, background: `${DS.emerald}18`, padding: '1px 5px', borderRadius: 4, fontFamily: DS.fontMono, flexShrink: 0 }}>SSL</span>
+                                    <span
+                                        style={{
+                                            fontSize: 9,
+                                            color: DS.emerald,
+                                            background: `${DS.emerald}18`,
+                                            padding: '1px 5px',
+                                            borderRadius: 4,
+                                            fontFamily: DS.fontMono,
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        SSL
+                                    </span>
                                 )}
                                 {activeConnection.sshEnabled && (
-                                    <span style={{ fontSize: 9, color: DS.violet || '#a78bfa', background: `${DS.violet || '#a78bfa'}18`, padding: '1px 5px', borderRadius: 4, fontFamily: DS.fontMono, flexShrink: 0 }}>SSH</span>
+                                    <span
+                                        style={{
+                                            fontSize: 9,
+                                            color: DS.violet || '#a78bfa',
+                                            background: `${DS.violet || '#a78bfa'}18`,
+                                            padding: '1px 5px',
+                                            borderRadius: 4,
+                                            fontFamily: DS.fontMono,
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        SSH
+                                    </span>
                                 )}
                             </div>
                         )}
@@ -2174,57 +3352,135 @@ const ConnectionSelector = () => {
 
                     {/* Connection list */}
                     <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-                        {connections.map(c => {
+                        {connections.map((c) => {
                             const isActive = c.id === activeConnectionId;
-                            const cs = activeConnection?.status === 'success' ? DS.emerald : c.status === 'failed' ? DS.rose : DS.amber;
+                            const cs =
+                                activeConnection?.status === 'success'
+                                    ? DS.emerald
+                                    : c.status === 'failed'
+                                      ? DS.rose
+                                      : DS.amber;
                             return (
                                 <button
                                     key={c.id}
                                     onClick={() => handleSwitch(c.id)}
                                     style={{
-                                        width: '100%', textAlign: 'left',
-                                        display: 'flex', alignItems: 'center', gap: 10,
+                                        width: '100%',
+                                        textAlign: 'left',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 10,
                                         padding: '10px 14px',
                                         background: isActive ? `${DS.cyan}12` : 'transparent',
-                                        border: 'none', borderBottom: `1px solid ${DS.border}`,
-                                        cursor: 'pointer', transition: 'background 0.12s',
+                                        border: 'none',
+                                        borderBottom: `1px solid ${DS.border}`,
+                                        cursor: 'pointer',
+                                        transition: 'background 0.12s',
                                     }}
                                     className="nav-item"
                                 >
-                                    <span style={{
-                                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                                        background: c.status === 'success' ? DS.emerald : c.status === 'failed' ? DS.rose : DS.amber,
-                                        boxShadow: isActive ? `0 0 5px ${cs}` : 'none',
-                                    }} />
+                                    <span
+                                        style={{
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: '50%',
+                                            flexShrink: 0,
+                                            background:
+                                                c.status === 'success'
+                                                    ? DS.emerald
+                                                    : c.status === 'failed'
+                                                      ? DS.rose
+                                                      : DS.amber,
+                                            boxShadow: isActive ? `0 0 5px ${cs}` : 'none',
+                                        }}
+                                    />
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontWeight: 600, fontSize: 13, color: isActive ? DS.cyan : DS.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <div
+                                            style={{
+                                                fontWeight: 600,
+                                                fontSize: 13,
+                                                color: isActive ? DS.cyan : DS.textPrimary,
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
                                             {c.name}
-                                            {isActive && <span style={{ marginLeft: 6, fontSize: 10, color: DS.emerald, fontWeight: 400 }}>● active</span>}
+                                            {isActive && (
+                                                <span
+                                                    style={{
+                                                        marginLeft: 6,
+                                                        fontSize: 10,
+                                                        color: DS.emerald,
+                                                        fontWeight: 400,
+                                                    }}
+                                                >
+                                                    ● active
+                                                </span>
+                                            )}
                                         </div>
                                         {/* Full connection string on second line */}
-                                        <div style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 11,
+                                                color: DS.textMuted,
+                                                fontFamily: DS.fontMono,
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                marginTop: 2,
+                                            }}
+                                        >
                                             {c.username}@{c.host}:{c.port}/{c.database}
                                             {c.ssl ? ' 🔒' : ''}
                                             {c.sshEnabled ? ' 🔑' : ''}
                                         </div>
                                     </div>
-                                    {isActive
-                                        ? <CheckCircle size={14} style={{ color: DS.cyan, flexShrink: 0 }} />
-                                        : <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono, flexShrink: 0 }}>switch</span>
-                                    }
+                                    {isActive ? (
+                                        <CheckCircle size={14} style={{ color: DS.cyan, flexShrink: 0 }} />
+                                    ) : (
+                                        <span
+                                            style={{
+                                                fontSize: 10,
+                                                color: DS.textMuted,
+                                                fontFamily: DS.fontMono,
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            switch
+                                        </span>
+                                    )}
                                 </button>
                             );
                         })}
                     </div>
 
                     {/* Footer */}
-                    <div style={{ padding: '8px 14px', borderTop: `1px solid ${DS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div
+                        style={{
+                            padding: '8px 14px',
+                            borderTop: `1px solid ${DS.border}`,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}
+                    >
                         <span style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono }}>
                             {connections.length} connection{connections.length !== 1 ? 's' : ''} configured
                         </span>
                         <span
-                            onClick={() => { goToTab?.('pool'); setOpen(false); }}
-                            style={{ fontSize: 11, color: DS.cyan, fontFamily: DS.fontMono, cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+                            onClick={() => {
+                                goToTab?.('pool');
+                                setOpen(false);
+                            }}
+                            style={{
+                                fontSize: 11,
+                                color: DS.cyan,
+                                fontFamily: DS.fontMono,
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                textDecorationStyle: 'dotted',
+                            }}
                         >
                             Manage connections →
                         </span>
@@ -2242,7 +3498,7 @@ const Dashboard = ({ onLogout }) => (
     <ConnectionProvider>
         {/* Enterprise providers (hidden — uncomment when ready) */}
         {/* <LicenseProvider><OrgProvider> */}
-            <DashboardInner onLogout={onLogout} />
+        <DashboardInner onLogout={onLogout} />
         {/* </OrgProvider></LicenseProvider> */}
     </ConnectionProvider>
 );
@@ -2265,29 +3521,48 @@ const DashboardInner = ({ onLogout }) => {
     // on logout, so every fresh login session starts at the Overview page.
     // Within a session, tab navigation is persisted as before.
     const [activeTab, setActiveTab] = useState(() => {
-        try { return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || 'overview'; }
-        catch { return 'overview'; }
+        try {
+            return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || 'overview';
+        } catch {
+            return 'overview';
+        }
     });
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true'; } catch { return false; } });
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+        try {
+            return localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true';
+        } catch {
+            return false;
+        }
+    });
     const [notifications, setNotifications] = useState([]);
     const [latestAlert, setLatestAlert] = useState(null);
     const [showFeedback, setShowFeedback] = useState(false);
-    const [showProfile, setShowProfile]   = useState(false);
-    const [profileUser, setProfileUser]   = useState(currentUser);
+    const [showProfile, setShowProfile] = useState(false);
+    const [profileUser, setProfileUser] = useState(currentUser);
     const prevTabRef = useRef(activeTab);
 
     // Feedback prompt
     useEffect(() => {
         if (!localStorage.getItem(STORAGE_KEYS.FEEDBACK_PROMPT)) {
-            const t = setTimeout(() => { setShowFeedback(true); localStorage.setItem(STORAGE_KEYS.FEEDBACK_PROMPT, 'true'); }, 3000);
+            const t = setTimeout(() => {
+                setShowFeedback(true);
+                localStorage.setItem(STORAGE_KEYS.FEEDBACK_PROMPT, 'true');
+            }, 3000);
             return () => clearTimeout(t);
         }
     }, []);
 
     const handleWSMessage = useCallback((msg) => {
         if (msg.type === 'alert') {
-            const n = { id: Date.now(), title: msg.payload.title || 'Alert', message: msg.payload.message, severity: msg.payload.severity || 'info', timestamp: Date.now(), read: false };
-            setNotifications(p => [n, ...p].slice(0, MAX_NOTIFICATIONS));
+            const n = {
+                id: Date.now(),
+                title: msg.payload.title || 'Alert',
+                message: msg.payload.message,
+                severity: msg.payload.severity || 'info',
+                timestamp: Date.now(),
+                read: false,
+            };
+            setNotifications((p) => [n, ...p].slice(0, MAX_NOTIFICATIONS));
             setLatestAlert(msg.payload);
             setTimeout(() => setLatestAlert(null), ALERT_AUTO_DISMISS_TIME);
         }
@@ -2295,39 +3570,49 @@ const DashboardInner = ({ onLogout }) => {
 
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
 
-    const allowedTabIds = useMemo(() => TABS_ONLY.filter(t => (currentUser?.allowedScreens || []).includes(t.id)).map(t => t.id), [currentUser?.allowedScreens]);
+    const allowedTabIds = useMemo(
+        () => TABS_ONLY.filter((t) => (currentUser?.allowedScreens || []).includes(t.id)).map((t) => t.id),
+        [currentUser?.allowedScreens],
+    );
 
     const ActiveComponent = useMemo(() => {
-        const tab = TABS_ONLY.find(t => t.id === activeTab && allowedTabIds.includes(t.id));
+        const tab = TABS_ONLY.find((t) => t.id === activeTab && allowedTabIds.includes(t.id));
         if (tab) return tab.component;
-        return TABS_ONLY.find(t => allowedTabIds.includes(t.id))?.component;
+        return TABS_ONLY.find((t) => allowedTabIds.includes(t.id))?.component;
     }, [activeTab, allowedTabIds]);
 
-    const activeTabMeta = useMemo(() => TABS_ONLY.find(t => t.id === activeTab), [activeTab]);
+    const activeTabMeta = useMemo(() => TABS_ONLY.find((t) => t.id === activeTab), [activeTab]);
     const accent = useMemo(() => getSectionAccent(activeTab), [activeTab]);
 
-    const handleTabChange = useCallback((id) => {
-        prevTabRef.current = activeTab;
-        setActiveTab(id);
-        try { localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, id); } catch {}
-    }, [activeTab]);
+    const handleTabChange = useCallback(
+        (id) => {
+            prevTabRef.current = activeTab;
+            setActiveTab(id);
+            try {
+                localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, id);
+            } catch {}
+        },
+        [activeTab],
+    );
 
     const handleToggleCollapse = useCallback(() => {
-        setSidebarCollapsed(p => {
+        setSidebarCollapsed((p) => {
             const v = !p;
-            try { localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, v.toString()); } catch {}
+            try {
+                localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, v.toString());
+            } catch {}
             return v;
         });
     }, []);
 
-    const handleDismissNotification = useCallback((id) => setNotifications(p => p.filter(n => n.id !== id)), []);
+    const handleDismissNotification = useCallback((id) => setNotifications((p) => p.filter((n) => n.id !== id)), []);
     const handleClearAllNotifications = useCallback(() => setNotifications([]), []);
 
     const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
     /* Keyboard shortcuts: Ctrl+B (sidebar), Ctrl+K (search), Ctrl+? (help), etc. */
     useEffect(() => {
-        const handler = e => {
+        const handler = (e) => {
             const isMod = e.ctrlKey || e.metaKey;
 
             // Escape: Close help dialog if open
@@ -2345,7 +3630,7 @@ const DashboardInner = ({ onLogout }) => {
             // Ctrl+?: Show keyboard help
             else if (isMod && (e.key === '?' || (e.shiftKey && e.key === '/'))) {
                 e.preventDefault();
-                setShowKeyboardHelp(prev => !prev);
+                setShowKeyboardHelp((prev) => !prev);
             }
             // Ctrl+O: Go to overview
             else if (isMod && e.key === 'o') {
@@ -2365,291 +3650,611 @@ const DashboardInner = ({ onLogout }) => {
 
     return (
         <NavigationContext.Provider value={{ goToTab: handleTabChange }}>
-        <div style={{ display: 'flex', height: '100vh', width: '100%', background: DS.bg, color: DS.textPrimary, overflow: 'hidden', fontFamily: DS.fontUI, position: 'relative', zIndex: 1 }}>
-            <AppStyles />
-            <ChartDefs />
-            <AmbientOrbs />
+            <div
+                style={{
+                    display: 'flex',
+                    height: '100vh',
+                    width: '100%',
+                    background: DS.bg,
+                    color: DS.textPrimary,
+                    overflow: 'hidden',
+                    fontFamily: DS.fontUI,
+                    position: 'relative',
+                    zIndex: 1,
+                }}
+            >
+                <AppStyles />
+                <ChartDefs />
+                <AmbientOrbs />
 
-            <Sidebar
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                onLogout={logout}
-                currentUser={profileUser}
-                collapsed={sidebarCollapsed}
-                onToggleCollapse={handleToggleCollapse}
-                onOpenFeedback={() => setShowFeedback(true)}
-                onOpenProfile={() => setShowProfile(true)}
-                allowedTabIds={allowedTabIds}
-            />
+                <Sidebar
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    onLogout={logout}
+                    currentUser={profileUser}
+                    collapsed={sidebarCollapsed}
+                    onToggleCollapse={handleToggleCollapse}
+                    onOpenFeedback={() => setShowFeedback(true)}
+                    onOpenProfile={() => setShowProfile(true)}
+                    allowedTabIds={allowedTabIds}
+                />
 
-            <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-                {/* ── TOP HEADER ── */}
-                <header style={{
-                    height: 62, flexShrink: 0,
-                    borderBottom: `1px solid ${DS.border}`,
-                    display: 'flex', alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0 28px',
-                    background: DS.headerBg,
-                    backdropFilter: 'blur(20px)',
-                    position: 'sticky', top: 0, zIndex: 40,
-                }}>
-                    {/* Accent underline */}
-                    <div style={{
-                        position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
-                        background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
-                        animation: 'headerGlow 4s ease-in-out infinite',
-                    }} />
-
-                    {/* Left: breadcrumb + reconnecting */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        {/* Enhanced breadcrumb navigation */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span style={{ fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.06em' }}>
-                                    {getSectionForTab(activeTab)?.toUpperCase() || 'CORE'}
-                                </span>
-                                <span style={{ color: DS.textMuted, fontSize: 13 }}>/</span>
-                                <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: DS.textPrimary, letterSpacing: '-0.01em', cursor: 'pointer', transition: 'color 0.15s' }}
-                                    onMouseEnter={(e) => e.currentTarget.style.color = DS.cyan}
-                                    onMouseLeave={(e) => e.currentTarget.style.color = DS.textPrimary}
-                                    title="Current tab"
-                                >
-                                    {activeTabMeta?.label || ''}
-                                </h2>
-                            </div>
-                            <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono, padding: '2px 8px', borderRadius: 4, background: `${DS.cyan}10` }}>
-                                Tab {TABS_ONLY.findIndex(t => t.id === activeTab) + 1} of {TABS_ONLY.length}
-                            </span>
-                        </div>
-
-                        {reconnecting && (
-                            <div style={{
-                                fontSize: 11, color: DS.amber,
-                                display: 'flex', alignItems: 'center', gap: 6,
-                                padding: '4px 10px', background: 'rgba(251,191,36,0.08)',
-                                borderRadius: 20, border: '1px solid rgba(251,191,36,0.25)',
-                                fontFamily: DS.fontMono,
-                            }}>
-                                <WifiOff size={12} style={{ animation: 'pulse 1.5s infinite' }} />
-                                RECONNECTING…
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Right: sparkline + status + bell + theme */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', background: 'rgba(56,189,248,0.05)', borderRadius: 8, border: `1px solid ${DS.border}` }}>
-                            <MiniSparkline color={DS.cyan} />
-                            <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>QPS</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', background: 'rgba(52,211,153,0.05)', borderRadius: 8, border: `1px solid ${DS.border}` }}>
-                            <MiniSparkline color={DS.emerald} />
-                            <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>CPU</span>
-                        </div>
-                        <div style={{ width: 1, height: 24, background: DS.border }} />
-                        <Suspense fallback={<ConnectionSelector />}>
-                            <ConnectionSwitcherLazy />
-                        </Suspense>
-                        <div style={{ width: 1, height: 24, background: DS.border }} />
-                        <ThemeToggle />
-                        <StatusPill connected={connected} />
-                        <NotificationCenter notifications={notifications} onDismiss={handleDismissNotification} onClearAll={handleClearAllNotifications} />
-                    </div>
-                </header>
-
-                {/* ── DEMO MODE BANNER ── */}
-                {isDemo && (
-                    <div style={{
-                        padding: '8px 28px',
-                        background: 'linear-gradient(90deg, rgba(52,211,153,.12), rgba(56,189,248,.12))',
-                        borderBottom: '1px solid rgba(52,211,153,.20)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        animation: 'fadeIn 0.3s ease',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{
-                                padding: '2px 10px', borderRadius: 20,
-                                background: 'rgba(52,211,153,.15)', border: '1px solid rgba(52,211,153,.30)',
-                                fontSize: 11, fontWeight: 700, color: '#34d399',
-                                fontFamily: DS.fontMono, letterSpacing: '0.08em',
-                            }}>
-                                DEMO
-                            </div>
-                            <span style={{ fontSize: 12, color: DS.textSub, fontFamily: DS.fontUI }}>
-                                Viewing sample data — no database connected
-                            </span>
-                        </div>
-                        <button
-                            onClick={logout}
+                <main
+                    style={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        zIndex: 1,
+                    }}
+                >
+                    {/* ── TOP HEADER ── */}
+                    <header
+                        style={{
+                            height: 62,
+                            flexShrink: 0,
+                            borderBottom: `1px solid ${DS.border}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '0 28px',
+                            background: DS.headerBg,
+                            backdropFilter: 'blur(20px)',
+                            position: 'sticky',
+                            top: 0,
+                            zIndex: 40,
+                        }}
+                    >
+                        {/* Accent underline */}
+                        <div
                             style={{
-                                background: 'rgba(52,211,153,.10)', border: '1px solid rgba(52,211,153,.25)',
-                                borderRadius: 8, padding: '5px 14px', cursor: 'pointer',
-                                fontSize: 11, fontWeight: 600, color: '#34d399',
-                                fontFamily: DS.fontUI, transition: 'all .2s',
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                height: 1,
+                                background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
+                                animation: 'headerGlow 4s ease-in-out infinite',
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,.20)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(52,211,153,.10)'; }}
-                        >
-                            Exit Demo
-                        </button>
-                    </div>
-                )}
+                        />
 
-                {/* ── MAIN CONTENT ── */}
-                <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
-                    {/* Floating alert toast */}
-                    {latestAlert && (
-                        <div style={{ position: 'fixed', top: 78, right: 28, zIndex: 200, width: 380, animation: 'slideInRight 0.3s cubic-bezier(0.34,1.4,0.64,1) both' }}>
-                            <div style={{
-                                background: DS.surface, borderRadius: 12, overflow: 'hidden',
-                                border: `1px solid ${SEV_COLORS[latestAlert.severity] || DS.cyan}50`,
-                                boxShadow: `${DS.shadowCard}, 0 0 20px ${SEV_COLORS[latestAlert.severity] || DS.cyan}20`,
-                            }}>
-                                <div style={{ height: 2.5, background: SEV_COLORS[latestAlert.severity] || DS.cyan }} />
-                                <AlertBanner alert={latestAlert} onDismiss={() => setLatestAlert(null)} />
+                        {/* Left: breadcrumb + reconnecting */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                            {/* Enhanced breadcrumb navigation */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span
+                                        style={{
+                                            fontSize: 11,
+                                            color: DS.textMuted,
+                                            fontFamily: DS.fontMono,
+                                            letterSpacing: '0.06em',
+                                        }}
+                                    >
+                                        {getSectionForTab(activeTab)?.toUpperCase() || 'CORE'}
+                                    </span>
+                                    <span style={{ color: DS.textMuted, fontSize: 13 }}>/</span>
+                                    <h2
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 700,
+                                            margin: 0,
+                                            color: DS.textPrimary,
+                                            letterSpacing: '-0.01em',
+                                            cursor: 'pointer',
+                                            transition: 'color 0.15s',
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.color = DS.cyan)}
+                                        onMouseLeave={(e) => (e.currentTarget.style.color = DS.textPrimary)}
+                                        title="Current tab"
+                                    >
+                                        {activeTabMeta?.label || ''}
+                                    </h2>
+                                </div>
+                                <span
+                                    style={{
+                                        fontSize: 10,
+                                        color: DS.textMuted,
+                                        fontFamily: DS.fontMono,
+                                        padding: '2px 8px',
+                                        borderRadius: 4,
+                                        background: `${DS.cyan}10`,
+                                    }}
+                                >
+                                    Tab {TABS_ONLY.findIndex((t) => t.id === activeTab) + 1} of {TABS_ONLY.length}
+                                </span>
                             </div>
+
+                            {reconnecting && (
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DS.amber,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 6,
+                                        padding: '4px 10px',
+                                        background: 'rgba(251,191,36,0.08)',
+                                        borderRadius: 20,
+                                        border: '1px solid rgba(251,191,36,0.25)',
+                                        fontFamily: DS.fontMono,
+                                    }}
+                                >
+                                    <WifiOff size={12} style={{ animation: 'pulse 1.5s infinite' }} />
+                                    RECONNECTING…
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Right: sparkline + status + bell + theme */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    padding: '5px 10px',
+                                    background: 'rgba(56,189,248,0.05)',
+                                    borderRadius: 8,
+                                    border: `1px solid ${DS.border}`,
+                                }}
+                            >
+                                <MiniSparkline color={DS.cyan} />
+                                <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>QPS</span>
+                            </div>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    padding: '5px 10px',
+                                    background: 'rgba(52,211,153,0.05)',
+                                    borderRadius: 8,
+                                    border: `1px solid ${DS.border}`,
+                                }}
+                            >
+                                <MiniSparkline color={DS.emerald} />
+                                <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>CPU</span>
+                            </div>
+                            <div style={{ width: 1, height: 24, background: DS.border }} />
+                            <Suspense fallback={<ConnectionSelector />}>
+                                <ConnectionSwitcherLazy />
+                            </Suspense>
+                            <div style={{ width: 1, height: 24, background: DS.border }} />
+                            <ThemeToggle />
+                            <StatusPill connected={connected} />
+                            <NotificationCenter
+                                notifications={notifications}
+                                onDismiss={handleDismissNotification}
+                                onClearAll={handleClearAllNotifications}
+                            />
+                        </div>
+                    </header>
+
+                    {/* ── DEMO MODE BANNER ── */}
+                    {isDemo && (
+                        <div
+                            style={{
+                                padding: '8px 28px',
+                                background: 'linear-gradient(90deg, rgba(52,211,153,.12), rgba(56,189,248,.12))',
+                                borderBottom: '1px solid rgba(52,211,153,.20)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                animation: 'fadeIn 0.3s ease',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div
+                                    style={{
+                                        padding: '2px 10px',
+                                        borderRadius: 20,
+                                        background: 'rgba(52,211,153,.15)',
+                                        border: '1px solid rgba(52,211,153,.30)',
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        color: '#34d399',
+                                        fontFamily: DS.fontMono,
+                                        letterSpacing: '0.08em',
+                                    }}
+                                >
+                                    DEMO
+                                </div>
+                                <span style={{ fontSize: 12, color: DS.textSub, fontFamily: DS.fontUI }}>
+                                    Viewing sample data — no database connected
+                                </span>
+                            </div>
+                            <button
+                                onClick={logout}
+                                style={{
+                                    background: 'rgba(52,211,153,.10)',
+                                    border: '1px solid rgba(52,211,153,.25)',
+                                    borderRadius: 8,
+                                    padding: '5px 14px',
+                                    cursor: 'pointer',
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    color: '#34d399',
+                                    fontFamily: DS.fontUI,
+                                    transition: 'all .2s',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(52,211,153,.20)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(52,211,153,.10)';
+                                }}
+                            >
+                                Exit Demo
+                            </button>
                         </div>
                     )}
 
-                    <div style={{ padding: '28px 32px', width: '100%', minHeight: '100%', position: 'relative' }}>
-                        <ErrorBoundary key={activeTab}>
-                            <Suspense fallback={
-                                <div style={{ animation: 'fadeUp 0.3s ease-out' }}>
-                                    {/* Enhanced loading state with skeleton cards */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 24 }}>
-                                        {Array.from({ length: 3 }).map((_, i) => (
-                                            <div key={i} style={{
-                                                height: 160,
-                                                borderRadius: 12,
-                                                background: `linear-gradient(90deg, ${DS.surface} 0%, ${DS.surfaceHover} 50%, ${DS.surface} 100%)`,
-                                                backgroundSize: '200% 100%',
-                                                animation: 'shimmer 2s infinite',
-                                                border: `1px solid ${DS.border}`,
-                                            }} />
-                                        ))}
-                                    </div>
-                                    <div style={{
-                                        height: 300,
-                                        borderRadius: 12,
-                                        background: `linear-gradient(90deg, ${DS.surface} 0%, ${DS.surfaceHover} 50%, ${DS.surface} 100%)`,
-                                        backgroundSize: '200% 100%',
-                                        animation: 'shimmer 2s infinite',
-                                        border: `1px solid ${DS.border}`,
-                                    }} />
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 24, gap: 12, color: DS.textMuted, fontFamily: DS.fontUI }}>
-                                        <div style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${DS.border}`, borderTopColor: DS.cyan, animation: 'rotate 0.9s linear infinite' }} />
-                                        <span style={{ fontSize: 13 }}>Loading tab…</span>
-                                    </div>
-                                </div>
-                            }>
-                                <div key={activeTab} className="tab-mount" role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
-                                    <SectionErrorBoundary sectionName={activeTabMeta?.label || activeTab} key={activeTab}>
-                                        {ActiveComponent && <ActiveComponent tabId={activeTab} />}
-                                    </SectionErrorBoundary>
-                                </div>
-                            </Suspense>
-                        </ErrorBoundary>
-                    </div>
-                </div>
-            </main>
-
-            {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} initialSection={activeTab} />}
-            {showProfile && <ProfileModal user={profileUser} onClose={() => setShowProfile(false)} onSave={u => setProfileUser(u)} />}
-
-            {/* Keyboard Shortcuts Help Modal */}
-            {showKeyboardHelp && (
-                <div style={{
-                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-                    backdropFilter: 'blur(8px)', zIndex: 2000,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    animation: 'fadeIn 0.2s ease-out',
-                }} onClick={e => e.target === e.currentTarget && setShowKeyboardHelp(false)}>
-                    <div style={{
-                        background: DS.surface, border: `1px solid ${DS.borderAccent}`,
-                        borderRadius: 16, width: 520, maxWidth: '90vw', maxHeight: '80vh',
-                        boxShadow: `${DS.shadowDeep}`,
-                        overflow: 'hidden', display: 'flex', flexDirection: 'column',
-                        animation: 'slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both',
-                    }}>
-                        {/* Header */}
-                        <div style={{
-                            padding: '20px 26px 18px', borderBottom: `1px solid ${DS.border}`,
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        }}>
-                            <div>
-                                <h3 style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 700, color: DS.textPrimary, letterSpacing: '-0.02em' }}>
-                                    Keyboard Shortcuts
-                                </h3>
-                                <p style={{ margin: 0, fontSize: 11, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.05em' }}>
-                                    Press Ctrl+? anytime to toggle this dialog
-                                </p>
-                            </div>
-                            <button onClick={() => setShowKeyboardHelp(false)}
-                                    style={{
-                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${DS.border}`,
-                                        color: DS.textSub, cursor: 'pointer', width: 32, height: 32, borderRadius: 8,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
-                                    }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,113,133,0.12)'; e.currentTarget.style.color = DS.rose; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = DS.textSub; }}
+                    {/* ── MAIN CONTENT ── */}
+                    <div
+                        style={{
+                            flex: 1,
+                            overflowY: 'auto',
+                            position: 'relative',
+                            background: `linear-gradient(135deg, ${DS.bg} 0%, rgba(56,189,248,0.02) 100%)`,
+                        }}
+                    >
+                        {/* Floating alert toast */}
+                        {latestAlert && (
+                            <div
+                                style={{
+                                    position: 'fixed',
+                                    top: 78,
+                                    right: 28,
+                                    zIndex: 200,
+                                    width: 380,
+                                    animation: 'slideInRight 0.3s cubic-bezier(0.34,1.4,0.64,1) both',
+                                }}
                             >
-                                <X size={15} strokeWidth={2} />
-                            </button>
-                        </div>
-
-                        {/* Content */}
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 26px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                                {/* Navigation */}
-                                <div>
-                                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: DS.cyan, marginBottom: 12 }}>
-                                        Navigation
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+B</kbd>
-                                            <span style={{ fontSize: 12, color: DS.textSub }}>Toggle sidebar</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+K</kbd>
-                                            <span style={{ fontSize: 12, color: DS.textSub }}>Focus search</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+O</kbd>
-                                            <span style={{ fontSize: 12, color: DS.textSub }}>Go to Overview</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Info */}
-                                <div>
-                                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: DS.emerald, marginBottom: 12 }}>
-                                        Other
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Ctrl+?</kbd>
-                                            <span style={{ fontSize: 12, color: DS.textSub }}>Show this help</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                                            <kbd style={{ fontSize: 11, color: DS.textMuted, background: 'rgba(255,255,255,0.05)', border: `1px solid ${DS.border}`, padding: '4px 8px', borderRadius: 4, fontFamily: DS.fontMono }}>Esc</kbd>
-                                            <span style={{ fontSize: 12, color: DS.textSub }}>Close this dialog</span>
-                                        </div>
-                                    </div>
+                                <div
+                                    style={{
+                                        background: DS.surface,
+                                        borderRadius: 12,
+                                        overflow: 'hidden',
+                                        border: `1px solid ${SEV_COLORS[latestAlert.severity] || DS.cyan}50`,
+                                        boxShadow: `${DS.shadowCard}, 0 0 20px ${SEV_COLORS[latestAlert.severity] || DS.cyan}20`,
+                                    }}
+                                >
+                                    <div
+                                        style={{ height: 2.5, background: SEV_COLORS[latestAlert.severity] || DS.cyan }}
+                                    />
+                                    <AlertBanner alert={latestAlert} onDismiss={() => setLatestAlert(null)} />
                                 </div>
                             </div>
+                        )}
 
-                            <div style={{ marginTop: 20, padding: '12px 14px', background: `${DS.cyan}10`, border: `1px solid ${DS.cyan}30`, borderRadius: 8 }}>
-                                <p style={{ margin: 0, fontSize: 12, color: DS.textSub, lineHeight: 1.5 }}>
-                                    Tip: Use the search bar (Ctrl+K) to quickly find tabs by name.
-                                </p>
+                        <div style={{ padding: '28px 32px', width: '100%', minHeight: '100%', position: 'relative' }}>
+                            <ErrorBoundary key={activeTab}>
+                                <Suspense
+                                    fallback={
+                                        <div style={{ animation: 'fadeUp 0.3s ease-out' }}>
+                                            {/* Enhanced loading state with skeleton cards */}
+                                            <div
+                                                style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                                                    gap: 16,
+                                                    marginBottom: 24,
+                                                }}
+                                            >
+                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        style={{
+                                                            height: 160,
+                                                            borderRadius: 12,
+                                                            background: `linear-gradient(90deg, ${DS.surface} 0%, ${DS.surfaceHover} 50%, ${DS.surface} 100%)`,
+                                                            backgroundSize: '200% 100%',
+                                                            animation: 'shimmer 2s infinite',
+                                                            border: `1px solid ${DS.border}`,
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    height: 300,
+                                                    borderRadius: 12,
+                                                    background: `linear-gradient(90deg, ${DS.surface} 0%, ${DS.surfaceHover} 50%, ${DS.surface} 100%)`,
+                                                    backgroundSize: '200% 100%',
+                                                    animation: 'shimmer 2s infinite',
+                                                    border: `1px solid ${DS.border}`,
+                                                }}
+                                            />
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    marginTop: 24,
+                                                    gap: 12,
+                                                    color: DS.textMuted,
+                                                    fontFamily: DS.fontUI,
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: 22,
+                                                        height: 22,
+                                                        borderRadius: '50%',
+                                                        border: `2px solid ${DS.border}`,
+                                                        borderTopColor: DS.cyan,
+                                                        animation: 'rotate 0.9s linear infinite',
+                                                    }}
+                                                />
+                                                <span style={{ fontSize: 13 }}>Loading tab…</span>
+                                            </div>
+                                        </div>
+                                    }
+                                >
+                                    <div
+                                        key={activeTab}
+                                        className="tab-mount"
+                                        role="tabpanel"
+                                        aria-labelledby={`${activeTab}-tab`}
+                                    >
+                                        <SectionErrorBoundary
+                                            sectionName={activeTabMeta?.label || activeTab}
+                                            key={activeTab}
+                                        >
+                                            {ActiveComponent && <ActiveComponent tabId={activeTab} />}
+                                        </SectionErrorBoundary>
+                                    </div>
+                                </Suspense>
+                            </ErrorBoundary>
+                        </div>
+                    </div>
+                </main>
+
+                {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} initialSection={activeTab} />}
+                {showProfile && (
+                    <ProfileModal
+                        user={profileUser}
+                        onClose={() => setShowProfile(false)}
+                        onSave={(u) => setProfileUser(u)}
+                    />
+                )}
+
+                {/* Keyboard Shortcuts Help Modal */}
+                {showKeyboardHelp && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(0,0,0,0.75)',
+                            backdropFilter: 'blur(8px)',
+                            zIndex: 2000,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            animation: 'fadeIn 0.2s ease-out',
+                        }}
+                        onClick={(e) => e.target === e.currentTarget && setShowKeyboardHelp(false)}
+                    >
+                        <div
+                            style={{
+                                background: DS.surface,
+                                border: `1px solid ${DS.borderAccent}`,
+                                borderRadius: 16,
+                                width: 520,
+                                maxWidth: '90vw',
+                                maxHeight: '80vh',
+                                boxShadow: `${DS.shadowDeep}`,
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                animation: 'slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both',
+                            }}
+                        >
+                            {/* Header */}
+                            <div
+                                style={{
+                                    padding: '20px 26px 18px',
+                                    borderBottom: `1px solid ${DS.border}`,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <div>
+                                    <h3
+                                        style={{
+                                            margin: '0 0 4px',
+                                            fontSize: 17,
+                                            fontWeight: 700,
+                                            color: DS.textPrimary,
+                                            letterSpacing: '-0.02em',
+                                        }}
+                                    >
+                                        Keyboard Shortcuts
+                                    </h3>
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            fontSize: 11,
+                                            color: DS.textMuted,
+                                            fontFamily: DS.fontMono,
+                                            letterSpacing: '0.05em',
+                                        }}
+                                    >
+                                        Press Ctrl+? anytime to toggle this dialog
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowKeyboardHelp(false)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.04)',
+                                        border: `1px solid ${DS.border}`,
+                                        color: DS.textSub,
+                                        cursor: 'pointer',
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: 8,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        transition: 'all 0.15s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(251,113,133,0.12)';
+                                        e.currentTarget.style.color = DS.rose;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                        e.currentTarget.style.color = DS.textSub;
+                                    }}
+                                >
+                                    <X size={15} strokeWidth={2} />
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 26px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                                    {/* Navigation */}
+                                    <div>
+                                        <div
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 700,
+                                                letterSpacing: '0.1em',
+                                                textTransform: 'uppercase',
+                                                color: DS.cyan,
+                                                marginBottom: 12,
+                                            }}
+                                        >
+                                            Navigation
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                                <kbd
+                                                    style={{
+                                                        fontSize: 11,
+                                                        color: DS.textMuted,
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: `1px solid ${DS.border}`,
+                                                        padding: '4px 8px',
+                                                        borderRadius: 4,
+                                                        fontFamily: DS.fontMono,
+                                                    }}
+                                                >
+                                                    Ctrl+B
+                                                </kbd>
+                                                <span style={{ fontSize: 12, color: DS.textSub }}>Toggle sidebar</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                                <kbd
+                                                    style={{
+                                                        fontSize: 11,
+                                                        color: DS.textMuted,
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: `1px solid ${DS.border}`,
+                                                        padding: '4px 8px',
+                                                        borderRadius: 4,
+                                                        fontFamily: DS.fontMono,
+                                                    }}
+                                                >
+                                                    Ctrl+K
+                                                </kbd>
+                                                <span style={{ fontSize: 12, color: DS.textSub }}>Focus search</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                                <kbd
+                                                    style={{
+                                                        fontSize: 11,
+                                                        color: DS.textMuted,
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: `1px solid ${DS.border}`,
+                                                        padding: '4px 8px',
+                                                        borderRadius: 4,
+                                                        fontFamily: DS.fontMono,
+                                                    }}
+                                                >
+                                                    Ctrl+O
+                                                </kbd>
+                                                <span style={{ fontSize: 12, color: DS.textSub }}>Go to Overview</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Info */}
+                                    <div>
+                                        <div
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 700,
+                                                letterSpacing: '0.1em',
+                                                textTransform: 'uppercase',
+                                                color: DS.emerald,
+                                                marginBottom: 12,
+                                            }}
+                                        >
+                                            Other
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                                <kbd
+                                                    style={{
+                                                        fontSize: 11,
+                                                        color: DS.textMuted,
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: `1px solid ${DS.border}`,
+                                                        padding: '4px 8px',
+                                                        borderRadius: 4,
+                                                        fontFamily: DS.fontMono,
+                                                    }}
+                                                >
+                                                    Ctrl+?
+                                                </kbd>
+                                                <span style={{ fontSize: 12, color: DS.textSub }}>Show this help</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                                                <kbd
+                                                    style={{
+                                                        fontSize: 11,
+                                                        color: DS.textMuted,
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: `1px solid ${DS.border}`,
+                                                        padding: '4px 8px',
+                                                        borderRadius: 4,
+                                                        fontFamily: DS.fontMono,
+                                                    }}
+                                                >
+                                                    Esc
+                                                </kbd>
+                                                <span style={{ fontSize: 12, color: DS.textSub }}>
+                                                    Close this dialog
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style={{
+                                        marginTop: 20,
+                                        padding: '12px 14px',
+                                        background: `${DS.cyan}10`,
+                                        border: `1px solid ${DS.cyan}30`,
+                                        borderRadius: 8,
+                                    }}
+                                >
+                                    <p style={{ margin: 0, fontSize: 12, color: DS.textSub, lineHeight: 1.5 }}>
+                                        Tip: Use the search bar (Ctrl+K) to quickly find tabs by name.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
         </NavigationContext.Provider>
     );
 };
@@ -2658,31 +4263,70 @@ const DashboardInner = ({ onLogout }) => {
    LOADING SCREEN
    ───────────────────────────────────────────────────────────────── */
 const LoadingScreen = () => (
-    <div style={{
-        height: '100vh', background: DS.bg,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        gap: 20, color: DS.textPrimary, fontFamily: DS.fontUI,
-    }}>
+    <div
+        style={{
+            height: '100vh',
+            background: DS.bg,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 20,
+            color: DS.textPrimary,
+            fontFamily: DS.fontUI,
+        }}
+    >
         <div style={{ position: 'relative', width: 56, height: 56 }}>
             {/* Spinning ring */}
-            <div style={{
-                position: 'absolute', inset: 0, borderRadius: '50%',
-                border: `2px solid ${DS.border}`,
-                borderTopColor: DS.cyan,
-                animation: 'rotate 1.1s linear infinite',
-            }} />
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    border: `2px solid ${DS.border}`,
+                    borderTopColor: DS.cyan,
+                    animation: 'rotate 1.1s linear infinite',
+                }}
+            />
             {/* Inner logo */}
-            <div style={{
-                position: 'absolute', inset: 8, borderRadius: '50%',
-                background: `linear-gradient(135deg, ${DS.cyan}30, ${DS.violet}30)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: 8,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${DS.cyan}30, ${DS.violet}30)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
                 <Database color={DS.cyan} size={18} />
             </div>
         </div>
         <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: DS.textPrimary, textAlign: 'center', letterSpacing: '-0.01em' }}>Vigil</div>
-            <div style={{ fontSize: 11, color: DS.textMuted, textAlign: 'center', marginTop: 4, fontFamily: DS.fontMono, letterSpacing: '0.1em' }}>INITIALIZING…</div>
+            <div
+                style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: DS.textPrimary,
+                    textAlign: 'center',
+                    letterSpacing: '-0.01em',
+                }}
+            >
+                Vigil
+            </div>
+            <div
+                style={{
+                    fontSize: 11,
+                    color: DS.textMuted,
+                    textAlign: 'center',
+                    marginTop: 4,
+                    fontFamily: DS.fontMono,
+                    letterSpacing: '0.1em',
+                }}
+            >
+                INITIALIZING…
+            </div>
         </div>
     </div>
 );
@@ -2749,24 +4393,23 @@ const AuthConsumer = () => {
                     {/* 1. Login Route: redirect immediately to dashboard if already logged in */}
                     <Route
                         path="/login"
-                        element={(!currentUser && !isDemo) ? <LoginPage /> : <Navigate to="/" replace />}
+                        element={!currentUser && !isDemo ? <LoginPage /> : <Navigate to="/" replace />}
                     />
 
                     {/* 2. SSO Callback Route */}
-                    <Route
-                        path="/auth/callback"
-                        element={<SSOCallback />}
-                    />
+                    <Route path="/auth/callback" element={<SSOCallback />} />
 
                     {/* 3. Connection Onboarding Wizard */}
                     <Route
                         path="/onboarding"
                         element={
-                            (currentUser || isDemo)
-                                ? <NavigationContext.Provider value={{ goToTab: () => window.location.href = '/' }}>
-                                      <ConnectionWizard />
-                                  </NavigationContext.Provider>
-                                : <Navigate to="/login" replace />
+                            currentUser || isDemo ? (
+                                <NavigationContext.Provider value={{ goToTab: () => (window.location.href = '/') }}>
+                                    <ConnectionWizard />
+                                </NavigationContext.Provider>
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )
                         }
                     />
 
@@ -2778,20 +4421,38 @@ const AuthConsumer = () => {
                                 <ErrorBoundary>
                                     {/* Full-screen fade overlay shown during logout */}
                                     {loggingOut && (
-                                        <div style={{
-                                            position: 'fixed', inset: 0, zIndex: 500,
-                                            background: DS.bg,
-                                            animation: 'fadeIn 0.4s ease-out both',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            flexDirection: 'column', gap: 16,
-                                        }}>
-                                            <div style={{
-                                                width: 44, height: 44, borderRadius: '50%',
-                                                border: `2px solid ${DS.border}`,
-                                                borderTopColor: DS.cyan,
-                                                animation: 'rotate 0.9s linear infinite',
-                                            }} />
-                                            <span style={{ fontSize: 12, color: DS.textMuted, fontFamily: DS.fontMono, letterSpacing: '0.08em' }}>
+                                        <div
+                                            style={{
+                                                position: 'fixed',
+                                                inset: 0,
+                                                zIndex: 500,
+                                                background: DS.bg,
+                                                animation: 'fadeIn 0.4s ease-out both',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexDirection: 'column',
+                                                gap: 16,
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    width: 44,
+                                                    height: 44,
+                                                    borderRadius: '50%',
+                                                    border: `2px solid ${DS.border}`,
+                                                    borderTopColor: DS.cyan,
+                                                    animation: 'rotate 0.9s linear infinite',
+                                                }}
+                                            />
+                                            <span
+                                                style={{
+                                                    fontSize: 12,
+                                                    color: DS.textMuted,
+                                                    fontFamily: DS.fontMono,
+                                                    letterSpacing: '0.08em',
+                                                }}
+                                            >
                                                 SIGNING OUT…
                                             </span>
                                         </div>
