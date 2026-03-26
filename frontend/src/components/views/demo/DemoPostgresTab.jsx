@@ -87,6 +87,11 @@ function DemoPostgresTab({ tabId }) {
     const [perfTab, setPerfTab] = useState('activity');
     const [alertsTab, setAlertsTab] = useState('active');
     const [queryTab, setQueryTab] = useState('optimizer');
+    const [resourcesTab, setResourcesTab] = useState('inventory');
+    const [bloatTab, setBloatTab] = useState('table-bloat');
+    const [logTab, setLogTab] = useState('wait-events');
+    const [repoTab, setRepoTab] = useState('code');
+    const [tableTab, setTableTab] = useState('findings');
 
     const demoData = useMemo(() => {
         const base24h = generateChartData(24);
@@ -1224,190 +1229,366 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'overview' && itemKey === 'resources') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
-                        }}
-                        className="dpg-stagger"
-                    >
-                        <MetricCard
-                            icon={Cpu}
-                            label="CPU Load"
-                            value="38%"
-                            sub="Normal"
-                            color={THEME.primary}
-                            spark={Array.from({ length: 12 }, () => 25 + Math.random() * 30)}
-                            trend="+3.2%"
-                        />
-                        <MetricCard
-                            icon={HardDrive}
-                            label="Memory Usage"
-                            value="72%"
-                            sub="12 GB / 16 GB"
-                            color={THEME.warning}
-                            spark={Array.from({ length: 12 }, () => 60 + Math.random() * 20)}
-                            trend="+1.8%"
-                        />
-                        <MetricCard
-                            icon={HardDrive}
-                            label="Disk I/O"
-                            value="44%"
-                            sub="Normal"
-                            color={THEME.ai}
-                            spark={Array.from({ length: 12 }, () => 30 + Math.random() * 30)}
-                        />
-                        <MetricCard
-                            icon={Network}
-                            label="Network"
-                            value="340 MB/s"
-                            sub="Egress"
-                            color={THEME.success}
-                            spark={Array.from({ length: 12 }, () => Math.random() * 100)}
-                            trend="+12 MB/s"
-                        />
-                        <MetricCard
-                            icon={Container}
-                            label="Context Switches"
-                            value="28.4K"
-                            sub="per sec"
-                            color={THEME.textMuted}
-                            spark={Array.from({ length: 12 }, () => 20 + Math.random() * 10)}
-                        />
-                        <MetricCard
-                            icon={Droplets}
-                            label="System Load"
-                            value="2.8"
-                            sub="4 cores"
-                            color={THEME.primary}
-                            spark={Array.from({ length: 12 }, () => 2 + Math.random() * 2)}
-                        />
-                    </div>
+                    <TabPills
+                        tabs={[
+                            { key: 'inventory', label: 'Table Inventory' },
+                            { key: 'analytics', label: 'Analytics' },
+                            { key: 'storage', label: 'Storage & I/O' },
+                            { key: 'dead-code', label: 'Dead Code' },
+                            { key: 'retention', label: 'Retention' },
+                            { key: 'maintenance', label: 'Maintenance' },
+                        ]}
+                        active={resourcesTab}
+                        onChange={setResourcesTab}
+                        accentColor={THEME.primary}
+                    />
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
-                        <Panel title="CPU Load" icon={Cpu} accentColor={THEME.primary}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-                                <RingGauge value={38} color={THEME.primary} size={100} label="Usage" />
-                                <div style={{ width: '100%', fontSize: 9, color: THEME.textDim, lineHeight: 1.6 }}>
-                                    <div>4 cores active</div>
-                                    <div>Load avg: 1.8</div>
-                                    <div>I/O Wait: 22%</div>
-                                </div>
+                    {/* ── TAB 1: Table Inventory ── */}
+                    {resourcesTab === 'inventory' && (
+                        <>
+                            <Panel title="Table Inventory & Metrics" icon={Database} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'table', label: 'Table' },
+                                        { key: 'size', label: 'Size' },
+                                        { key: 'toastRatio', label: 'TOAST Ratio' },
+                                        { key: 'indexRatio', label: 'Index Ratio' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            table: 'users',
+                                            size: '845 MB',
+                                            toastRatio: '12%',
+                                            indexRatio: '65%',
+                                        },
+                                        {
+                                            table: 'orders',
+                                            size: '2.1 GB',
+                                            toastRatio: '8%',
+                                            indexRatio: '72%',
+                                        },
+                                        {
+                                            table: 'products',
+                                            size: '123 MB',
+                                            toastRatio: '5%',
+                                            indexRatio: '58%',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 2: Analytics ── */}
+                    {resourcesTab === 'analytics' && (
+                        <>
+                            <Panel title="Table Growth Trends" icon={TrendingUp} accentColor={THEME.primary}>
+                                <ResponsiveContainer width="100%" height={240}>
+                                    <AreaChart data={demoData.cpuMemory}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Legend />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="cpu"
+                                            stroke={THEME.primary}
+                                            fill={`${THEME.primary}15`}
+                                            name="Users Table"
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="memory"
+                                            stroke={THEME.warning}
+                                            fill={`${THEME.warning}15`}
+                                            name="Orders Table"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </Panel>
+                            <Panel title="Table Analytics" icon={Database} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'table', label: 'Table' },
+                                        { key: 'rows', label: 'Rows' },
+                                        { key: 'growth', label: 'Monthly Growth' },
+                                        { key: 'health', label: 'Health' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            table: 'users',
+                                            rows: '2.3M',
+                                            growth: '+14K',
+                                            health: 'Good',
+                                        },
+                                        {
+                                            table: 'orders',
+                                            rows: '8.9M',
+                                            growth: '+245K',
+                                            health: 'Good',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 3: Storage & I/O ── */}
+                    {resourcesTab === 'storage' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                                    gap: '12px',
+                                }}
+                                className="dpg-stagger"
+                            >
+                                <MetricCard
+                                    icon={Cpu}
+                                    label="CPU Load"
+                                    value="38%"
+                                    sub="Normal"
+                                    color={THEME.primary}
+                                    spark={Array.from({ length: 12 }, () => 25 + Math.random() * 30)}
+                                    trend="+3.2%"
+                                />
+                                <MetricCard
+                                    icon={HardDrive}
+                                    label="Memory Usage"
+                                    value="72%"
+                                    sub="12 GB / 16 GB"
+                                    color={THEME.warning}
+                                    spark={Array.from({ length: 12 }, () => 60 + Math.random() * 20)}
+                                    trend="+1.8%"
+                                />
+                                <MetricCard
+                                    icon={HardDrive}
+                                    label="Disk I/O"
+                                    value="44%"
+                                    sub="Normal"
+                                    color={THEME.ai}
+                                    spark={Array.from({ length: 12 }, () => 30 + Math.random() * 30)}
+                                />
+                                <MetricCard
+                                    icon={Network}
+                                    label="Network"
+                                    value="340 MB/s"
+                                    sub="Egress"
+                                    color={THEME.success}
+                                    spark={Array.from({ length: 12 }, () => Math.random() * 100)}
+                                    trend="+12 MB/s"
+                                />
                             </div>
-                        </Panel>
 
-                        <Panel title="Memory Usage" icon={HardDrive} accentColor={THEME.warning}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-                                <RingGauge value={72} color={THEME.warning} size={100} label="Allocated" />
-                                <div style={{ width: '100%', fontSize: 9, color: THEME.textDim, lineHeight: 1.6 }}>
-                                    <div>12 GB / 16 GB</div>
-                                    <div>Shared Buf: 55%</div>
-                                    <div>Swap: 0 GB</div>
-                                </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+                                <Panel title="CPU Load" icon={Cpu} accentColor={THEME.primary}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 12,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <RingGauge value={38} color={THEME.primary} size={100} label="Usage" />
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                fontSize: 9,
+                                                color: THEME.textDim,
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            <div>4 cores active</div>
+                                            <div>Load avg: 1.8</div>
+                                            <div>I/O Wait: 22%</div>
+                                        </div>
+                                    </div>
+                                </Panel>
+
+                                <Panel title="Memory Usage" icon={HardDrive} accentColor={THEME.warning}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 12,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <RingGauge value={72} color={THEME.warning} size={100} label="Allocated" />
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                fontSize: 9,
+                                                color: THEME.textDim,
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            <div>12 GB / 16 GB</div>
+                                            <div>Shared Buf: 55%</div>
+                                            <div>Swap: 0 GB</div>
+                                        </div>
+                                    </div>
+                                </Panel>
+
+                                <Panel title="Disk I/O" icon={HardDrive} accentColor={THEME.ai}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 12,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <RingGauge value={44} color={THEME.ai} size={100} label="Utilization" />
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                fontSize: 9,
+                                                color: THEME.textDim,
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            <div>0 GB / 200 GB SSD</div>
+                                            <div>Write Amp: 30%</div>
+                                            <div>IOPS: 2,847</div>
+                                        </div>
+                                    </div>
+                                </Panel>
                             </div>
-                        </Panel>
 
-                        <Panel title="Disk I/O" icon={HardDrive} accentColor={THEME.ai}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-                                <RingGauge value={44} color={THEME.ai} size={100} label="Utilization" />
-                                <div style={{ width: '100%', fontSize: 9, color: THEME.textDim, lineHeight: 1.6 }}>
-                                    <div>0 GB / 200 GB SSD</div>
-                                    <div>Write Amp: 30%</div>
-                                    <div>IOPS: 2,847</div>
-                                </div>
+                            <Panel title="IOPS & Latency" icon={BarChart2} accentColor={THEME.ai}>
+                                <ResponsiveContainer width="100%" height={240}>
+                                    <LineChart data={demoData.iopsLatency}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Legend />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="iops"
+                                            stroke={THEME.ai}
+                                            strokeWidth={2}
+                                            name="IOPS"
+                                            yAxisId="left"
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="latency"
+                                            stroke={THEME.warning}
+                                            strokeWidth={2}
+                                            name="Latency (ms)"
+                                            yAxisId="right"
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 4: Dead Code ── */}
+                    {resourcesTab === 'dead-code' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard icon={Database} label="Unused Tables" value="3" color={THEME.warning} />
+                                <MetricCard icon={Layers} label="Unused Indexes" value="8" color={THEME.danger} />
+                                <MetricCard icon={HardDrive} label="Wasted Space" value="245 MB" color={THEME.danger} />
                             </div>
-                        </Panel>
-                    </div>
+                            <Panel title="Unused Tables & Indexes" icon={Database} accentColor={THEME.warning}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'name', label: 'Name' },
+                                        { key: 'type', label: 'Type' },
+                                        { key: 'size', label: 'Size' },
+                                        { key: 'action', label: 'Recommendation' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            name: 'legacy_users',
+                                            type: 'Table',
+                                            size: '124 MB',
+                                            action: 'Archive',
+                                        },
+                                        {
+                                            name: 'idx_old_timestamp',
+                                            type: 'Index',
+                                            size: '45 MB',
+                                            action: 'Drop',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
 
-                    <Panel title="CPU & Memory Trends" icon={TrendingUp} accentColor={THEME.primary}>
-                        <ResponsiveContainer width="100%" height={240}>
-                            <LineChart data={demoData.cpuMemory}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                <Tooltip content={<ChartTip />} />
-                                <Legend />
-                                <Line
-                                    type="monotone"
-                                    dataKey="cpu"
-                                    stroke={THEME.primary}
-                                    strokeWidth={2.5}
-                                    name="CPU %"
+                    {/* ── TAB 5: Retention ── */}
+                    {resourcesTab === 'retention' && (
+                        <>
+                            <Panel title="Retention Policies" icon={Archive} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'table', label: 'Table' },
+                                        { key: 'policy', label: 'Policy' },
+                                        { key: 'retention', label: 'Retention Period' },
+                                        { key: 'nextRun', label: 'Next Cleanup' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            table: 'logs',
+                                            policy: 'Time-based',
+                                            retention: '30 days',
+                                            nextRun: 'In 2d',
+                                        },
+                                        {
+                                            table: 'audit_trail',
+                                            policy: 'Size-based',
+                                            retention: '1 GB',
+                                            nextRun: 'In 5d',
+                                        },
+                                    ]}
                                 />
-                                <Line
-                                    type="monotone"
-                                    dataKey="memory"
-                                    stroke={THEME.warning}
-                                    strokeWidth={2}
-                                    name="Memory %"
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Panel>
+                            </Panel>
+                        </>
+                    )}
 
-                    <Panel title="IOPS & Latency" icon={BarChart2} accentColor={THEME.ai}>
-                        <ResponsiveContainer width="100%" height={240}>
-                            <LineChart data={demoData.iopsLatency}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                <Tooltip content={<ChartTip />} />
-                                <Legend />
-                                <Line
-                                    type="monotone"
-                                    dataKey="iops"
-                                    stroke={THEME.ai}
-                                    strokeWidth={2}
-                                    name="IOPS"
-                                    yAxisId="left"
+                    {/* ── TAB 6: Maintenance ── */}
+                    {resourcesTab === 'maintenance' && (
+                        <>
+                            <Panel title="Maintenance Logs" icon={RefreshCw} accentColor={THEME.success}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'operation', label: 'Operation' },
+                                        { key: 'table', label: 'Table' },
+                                        { key: 'duration', label: 'Duration' },
+                                        { key: 'status', label: 'Status' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            operation: 'VACUUM ANALYZE',
+                                            table: 'users',
+                                            duration: '2m 34s',
+                                            status: 'Success',
+                                        },
+                                        {
+                                            operation: 'REINDEX',
+                                            table: 'orders',
+                                            duration: '5m 12s',
+                                            status: 'Success',
+                                        },
+                                    ]}
                                 />
-                                <Line
-                                    type="monotone"
-                                    dataKey="latency"
-                                    stroke={THEME.warning}
-                                    strokeWidth={2}
-                                    name="Latency (ms)"
-                                    yAxisId="right"
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Panel>
-
-                    <Panel title="Top Resource Consumers" icon={BarChart3} accentColor={THEME.danger}>
-                        <DataTable
-                            columns={[
-                                { key: 'pid', label: 'PID', width: '15%' },
-                                { key: 'user', label: 'USER', width: '20%' },
-                                { key: 'query', label: 'QUERY', width: '45%' },
-                                { key: 'cpu', label: 'CPU', width: '10%' },
-                                { key: 'mem', label: 'MEM', width: '10%' },
-                            ]}
-                            rows={[
-                                {
-                                    pid: '12845',
-                                    user: 'app_user',
-                                    query: 'SELECT * FROM orders o LEFT...',
-                                    cpu: '18%',
-                                    mem: '2.3 GB',
-                                },
-                                {
-                                    pid: '12901',
-                                    user: 'analytics',
-                                    query: 'INSERT INTO logs SELECT...',
-                                    cpu: '12%',
-                                    mem: '1.8 GB',
-                                },
-                                {
-                                    pid: '12756',
-                                    user: 'system',
-                                    query: 'VACUUM ANALYZE public.users',
-                                    cpu: '8%',
-                                    mem: '0.9 GB',
-                                },
-                            ]}
-                        />
-                    </Panel>
+                            </Panel>
+                        </>
+                    )}
                 </div>
             );
         }
@@ -1824,109 +2005,202 @@ function DemoPostgresTab({ tabId }) {
                     </div>
 
                     <TabPills
-                        tabs={['ACTIVE 5', 'CONFIG', 'HISTORY']}
+                        tabs={[
+                            { key: 'active', label: 'Active' },
+                            { key: 'config', label: 'Config' },
+                            { key: 'history', label: 'History', icon: Clock },
+                        ]}
                         active={alertsTab}
                         onChange={setAlertsTab}
                         accentColor={THEME.danger}
                     />
 
-                    <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.danger}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <AlertRow
-                                severity="critical"
-                                title="High Database Load"
-                                time="5m ago"
-                                source="prod_main"
-                                color={THEME.danger}
-                            />
-                            <AlertRow
-                                severity="critical"
-                                title="Replication Lag Exceeded"
-                                time="12m ago"
-                                source="replica-01"
-                                color={THEME.danger}
-                            />
-                            <AlertRow
-                                severity="warning"
-                                title="Connection Pool Usage"
-                                time="23m ago"
-                                source="app-pool"
-                                color={THEME.warning}
-                            />
-                            <AlertRow
-                                severity="warning"
-                                title="Slow Query Detected"
-                                time="31m ago"
-                                source="query-monitor"
-                                color={THEME.warning}
-                            />
-                            <AlertRow
-                                severity="warning"
-                                title="WAL Segment Backlog"
-                                time="45m ago"
-                                source="wal-manager"
-                                color={THEME.warning}
-                            />
-                        </div>
-                    </Panel>
+                    {/* ── TAB 1: Active ── */}
+                    {alertsTab === 'active' && (
+                        <>
+                            <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.danger}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <AlertRow
+                                        severity="critical"
+                                        title="High Database Load"
+                                        time="5m ago"
+                                        source="prod_main"
+                                        color={THEME.danger}
+                                    />
+                                    <AlertRow
+                                        severity="critical"
+                                        title="Replication Lag Exceeded"
+                                        time="12m ago"
+                                        source="replica-01"
+                                        color={THEME.danger}
+                                    />
+                                    <AlertRow
+                                        severity="warning"
+                                        title="Connection Pool Usage"
+                                        time="23m ago"
+                                        source="app-pool"
+                                        color={THEME.warning}
+                                    />
+                                    <AlertRow
+                                        severity="warning"
+                                        title="Slow Query Detected"
+                                        time="31m ago"
+                                        source="query-monitor"
+                                        color={THEME.warning}
+                                    />
+                                    <AlertRow
+                                        severity="warning"
+                                        title="WAL Segment Backlog"
+                                        time="45m ago"
+                                        source="wal-manager"
+                                        color={THEME.warning}
+                                    />
+                                </div>
+                            </Panel>
 
-                    <Panel title="Alert Trend (24h)" icon={TrendingUp} accentColor={THEME.ai}>
-                        <ResponsiveContainer width="100%" height={220}>
-                            <AreaChart data={demoData.clusterVelocity}>
-                                <defs>
-                                    <linearGradient id="alert-grad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={THEME.danger} stopOpacity={0.3} />
-                                        <stop offset="100%" stopColor={THEME.danger} stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                <Tooltip content={<ChartTip />} />
-                                <Area
-                                    type="monotone"
-                                    dataKey="qps"
-                                    stroke={THEME.danger}
-                                    fill="url(#alert-grad)"
-                                    name="Alert Count"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </Panel>
+                            <Panel title="Alert Trend (24h)" icon={TrendingUp} accentColor={THEME.ai}>
+                                <ResponsiveContainer width="100%" height={220}>
+                                    <AreaChart data={demoData.clusterVelocity}>
+                                        <defs>
+                                            <linearGradient id="alert-grad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor={THEME.danger} stopOpacity={0.3} />
+                                                <stop offset="100%" stopColor={THEME.danger} stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="qps"
+                                            stroke={THEME.danger}
+                                            fill="url(#alert-grad)"
+                                            name="Alert Count"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </Panel>
 
-                    <Panel title="Notification Channels" icon={Bell} accentColor={THEME.primary}>
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                                gap: '10px',
-                            }}
-                        >
-                            {[
-                                { channel: 'Email', status: 'Active', count: '12' },
-                                { channel: 'Slack', status: 'Active', count: '28' },
-                                { channel: 'PagerDuty', status: 'Active', count: '5' },
-                                { channel: 'SMS', status: 'Inactive', count: '0' },
-                            ].map((ch, i) => (
+                            <Panel title="Notification Channels" icon={Bell} accentColor={THEME.primary}>
                                 <div
-                                    key={i}
                                     style={{
-                                        padding: '10px 12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8,
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                                        gap: '10px',
                                     }}
                                 >
-                                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMain }}>
-                                        {ch.channel}
-                                    </div>
-                                    <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
-                                        {ch.status} {ch.status === 'Active' && `(${ch.count})`}
+                                    {[
+                                        { channel: 'Email', status: 'Active', count: '12' },
+                                        { channel: 'Slack', status: 'Active', count: '28' },
+                                        { channel: 'PagerDuty', status: 'Active', count: '5' },
+                                        { channel: 'SMS', status: 'Inactive', count: '0' },
+                                    ].map((ch, i) => (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                padding: '10px 12px',
+                                                background: THEME.glass,
+                                                border: `1px solid ${THEME.glassBorder}`,
+                                                borderRadius: 8,
+                                            }}
+                                        >
+                                            <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMain }}>
+                                                {ch.channel}
+                                            </div>
+                                            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
+                                                {ch.status} {ch.status === 'Active' && `(${ch.count})`}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 2: Config ── */}
+                    {alertsTab === 'config' && (
+                        <>
+                            <Panel title="Alert Rule Simulator" icon={Radar} accentColor={THEME.primary}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    <div style={{ fontSize: 12, color: THEME.textDim }}>
+                                        Test alert rules with sample data to verify threshold settings
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </Panel>
+                            </Panel>
+                            <Panel title="Alert Configuration" icon={Bell} accentColor={THEME.danger}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'rule', label: 'Rule' },
+                                        { key: 'condition', label: 'Condition' },
+                                        { key: 'severity', label: 'Severity' },
+                                        { key: 'enabled', label: 'Enabled' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            rule: 'High CPU Usage',
+                                            condition: 'cpu > 80%',
+                                            severity: 'Critical',
+                                            enabled: 'Yes',
+                                        },
+                                        {
+                                            rule: 'Memory Alert',
+                                            condition: 'memory > 85%',
+                                            severity: 'Warning',
+                                            enabled: 'Yes',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 3: History ── */}
+                    {alertsTab === 'history' && (
+                        <>
+                            <Panel title="Historical Alerts" icon={Clock} accentColor={THEME.warning}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'alert', label: 'Alert' },
+                                        { key: 'triggered', label: 'Triggered' },
+                                        { key: 'resolved', label: 'Resolved' },
+                                        { key: 'duration', label: 'Duration' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            alert: 'High Database Load',
+                                            triggered: '2h ago',
+                                            resolved: '1h ago',
+                                            duration: '1h 23m',
+                                        },
+                                        {
+                                            alert: 'Connection Pool Usage',
+                                            triggered: '4h ago',
+                                            resolved: '3h 45m ago',
+                                            duration: '15m',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                            <Panel title="Resolution Time Trend" icon={TrendingUp} accentColor={THEME.primary}>
+                                <ResponsiveContainer width="100%" height={220}>
+                                    <LineChart data={demoData.cpuMemory}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="cpu"
+                                            stroke={THEME.success}
+                                            strokeWidth={2}
+                                            name="Avg Resolution Time (min)"
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </Panel>
+                        </>
+                    )}
                 </div>
             );
         }
@@ -2283,35 +2557,151 @@ function DemoPostgresTab({ tabId }) {
             ];
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
-                        }}
-                    >
-                        <MetricCard icon={HardDrive} label="Avg Bloat" value="15.3%" color={THEME.warning} />
-                        <MetricCard icon={Database} label="Total Wasted" value="578 MB" color={THEME.danger} />
-                        <MetricCard icon={AlertTriangle} label="Tables" value="3" color={THEME.warning} />
-                    </div>
-                    <Panel title="Bloat Analysis" icon={HardDrive} accentColor={THEME.warning}>
-                        <DataTable
-                            columns={[
-                                { key: 'table', label: 'Table' },
-                                { key: 'bloat', label: 'Bloat %' },
-                                { key: 'bloatSize', label: 'Wasted Space' },
-                                { key: 'recommendation', label: 'Action' },
-                            ]}
-                            rows={bloatData.map((b) => ({
-                                ...b,
-                                bloat: (
-                                    <span style={{ color: b.bloat > 20 ? THEME.danger : THEME.warning }}>
-                                        {b.bloat}%
-                                    </span>
-                                ),
-                            }))}
-                        />
-                    </Panel>
+                    <TabPills
+                        tabs={[
+                            { key: 'table-bloat', label: 'Table Bloat' },
+                            { key: 'index-bloat', label: 'Index Bloat' },
+                            { key: 'growth', label: 'Growth Predictor' },
+                        ]}
+                        active={bloatTab}
+                        onChange={setBloatTab}
+                        accentColor={THEME.warning}
+                    />
+
+                    {/* ── TAB 1: Table Bloat ── */}
+                    {bloatTab === 'table-bloat' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard icon={HardDrive} label="Avg Bloat" value="15.3%" color={THEME.warning} />
+                                <MetricCard icon={Database} label="Total Wasted" value="578 MB" color={THEME.danger} />
+                                <MetricCard icon={AlertTriangle} label="Tables" value="3" color={THEME.warning} />
+                            </div>
+                            <Panel title="Table Bloat Analysis" icon={HardDrive} accentColor={THEME.warning}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'table', label: 'Table' },
+                                        { key: 'bloat', label: 'Bloat %' },
+                                        { key: 'bloatSize', label: 'Wasted Space' },
+                                        { key: 'recommendation', label: 'Action' },
+                                    ]}
+                                    rows={bloatData.map((b) => ({
+                                        ...b,
+                                        bloat: (
+                                            <span style={{ color: b.bloat > 20 ? THEME.danger : THEME.warning }}>
+                                                {b.bloat}%
+                                            </span>
+                                        ),
+                                    }))}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 2: Index Bloat ── */}
+                    {bloatTab === 'index-bloat' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard icon={Layers} label="Bloated Indexes" value="4" color={THEME.warning} />
+                                <MetricCard icon={HardDrive} label="Index Bloat" value="8.2%" color={THEME.success} />
+                                <MetricCard icon={Database} label="Total Wasted" value="102 MB" color={THEME.danger} />
+                            </div>
+                            <Panel title="Index Bloat Details" icon={Layers} accentColor={THEME.warning}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'index', label: 'Index' },
+                                        { key: 'table', label: 'Table' },
+                                        { key: 'bloat', label: 'Bloat %' },
+                                        { key: 'wasted', label: 'Wasted' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            index: 'idx_users_email',
+                                            table: 'users',
+                                            bloat: '12%',
+                                            wasted: '45 MB',
+                                        },
+                                        {
+                                            index: 'idx_orders_date',
+                                            table: 'orders',
+                                            bloat: '8%',
+                                            wasted: '34 MB',
+                                        },
+                                        {
+                                            index: 'idx_products_sku',
+                                            table: 'products',
+                                            bloat: '3%',
+                                            wasted: '8 MB',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 3: Growth Predictor ── */}
+                    {bloatTab === 'growth' && (
+                        <>
+                            <Panel title="Growth Forecast" icon={TrendingUp} accentColor={THEME.primary}>
+                                <ResponsiveContainer width="100%" height={240}>
+                                    <AreaChart data={demoData.cpuMemory}>
+                                        <defs>
+                                            <linearGradient id="growth-grad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.8} />
+                                                <stop offset="95%" stopColor={THEME.primary} stopOpacity={0.1} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="cpu"
+                                            stroke={THEME.primary}
+                                            fill="url(#growth-grad)"
+                                            name="Projected Bloat %"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </Panel>
+                            <Panel title="Growth Projections" icon={BarChart3} accentColor={THEME.ai}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'table', label: 'Table' },
+                                        { key: 'current', label: 'Current Bloat' },
+                                        { key: 'week', label: '1 Week' },
+                                        { key: 'month', label: '1 Month' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            table: 'users',
+                                            current: '23%',
+                                            week: '25%',
+                                            month: '32%',
+                                        },
+                                        {
+                                            table: 'orders',
+                                            current: '18%',
+                                            week: '19%',
+                                            month: '24%',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
                 </div>
             );
         }
@@ -2320,32 +2710,108 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'query-analysis' && itemKey === 'table-analysis') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
-                        }}
-                    >
-                        <MetricCard icon={Database} label="Total Tables" value="45" color={THEME.primary} />
-                        <MetricCard icon={Layers} label="Partitions" value="12" color={THEME.ai} />
-                        <MetricCard icon={HardDrive} label="Total Size" value="4.2 GB" color={THEME.textMuted} />
-                    </div>
-                    <Panel title="Table Stats" icon={Database} accentColor={THEME.primary}>
-                        <DataTable
-                            columns={[
-                                { key: 'name', label: 'Table' },
-                                { key: 'rows', label: 'Rows' },
-                                { key: 'size', label: 'Size' },
-                                { key: 'indexes', label: 'Indexes' },
-                            ]}
-                            rows={[
-                                { name: 'users', rows: '2.3M', size: '845 MB', indexes: 4 },
-                                { name: 'orders', rows: '8.9M', size: '2.1 GB', indexes: 6 },
-                                { name: 'products', rows: '450K', size: '123 MB', indexes: 3 },
-                            ]}
-                        />
-                    </Panel>
+                    <TabPills
+                        tabs={[
+                            { key: 'findings', label: 'Findings' },
+                            { key: 'ask-claude', label: 'Ask Claude', icon: Brain },
+                        ]}
+                        active={tableTab}
+                        onChange={setTableTab}
+                        accentColor={THEME.primary}
+                    />
+
+                    {/* ── TAB 1: Findings ── */}
+                    {tableTab === 'findings' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard icon={Database} label="Total Tables" value="45" color={THEME.primary} />
+                                <MetricCard icon={Layers} label="Partitions" value="12" color={THEME.ai} />
+                                <MetricCard
+                                    icon={HardDrive}
+                                    label="Total Size"
+                                    value="4.2 GB"
+                                    color={THEME.textMuted}
+                                />
+                            </div>
+                            <Panel title="Table Stats" icon={Database} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'name', label: 'Table' },
+                                        { key: 'rows', label: 'Rows' },
+                                        { key: 'size', label: 'Size' },
+                                        { key: 'indexes', label: 'Indexes' },
+                                    ]}
+                                    rows={[
+                                        { name: 'users', rows: '2.3M', size: '845 MB', indexes: 4 },
+                                        { name: 'orders', rows: '8.9M', size: '2.1 GB', indexes: 6 },
+                                        { name: 'products', rows: '450K', size: '123 MB', indexes: 3 },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 2: Ask Claude ── */}
+                    {tableTab === 'ask-claude' && (
+                        <>
+                            <Panel title="Ask Claude AI" icon={Brain} accentColor={THEME.ai}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    <div
+                                        style={{
+                                            padding: '12px',
+                                            background: THEME.glass,
+                                            borderRadius: 6,
+                                            borderLeft: `3px solid ${THEME.ai}`,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                color: THEME.textMain,
+                                                marginBottom: 4,
+                                            }}
+                                        >
+                                            Q: Why is the users table growing faster than expected?
+                                        </div>
+                                        <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                            A: The users table is experiencing linear growth due to increased signups
+                                            (14K/month). Consider implementing archival policies for soft-deleted users.
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            padding: '12px',
+                                            background: THEME.glass,
+                                            borderRadius: 6,
+                                            borderLeft: `3px solid ${THEME.success}`,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                color: THEME.textMain,
+                                                marginBottom: 4,
+                                            }}
+                                        >
+                                            Q: Should we partition the orders table?
+                                        </div>
+                                        <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                            A: Yes, partitioning by date (monthly) would improve query performance for
+                                            recent data and enable efficient archival of historical orders.
+                                        </div>
+                                    </div>
+                                </div>
+                            </Panel>
+                        </>
+                    )}
                 </div>
             );
         }
@@ -3209,99 +3675,242 @@ function DemoPostgresTab({ tabId }) {
 
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
-                        }}
-                    >
-                        <MetricCard
-                            icon={FileSearch}
-                            label="Log Patterns"
-                            value="234"
-                            color={THEME.warning}
-                            trend="+3.2%"
-                            spark={Array.from({ length: 12 }, () => Math.random() * 250)}
-                        />
-                        <MetricCard
-                            icon={AlertTriangle}
-                            label="Error Rate"
-                            value="2.3%"
-                            color={THEME.danger}
-                            trend="-0.5%"
-                            spark={Array.from({ length: 12 }, () => 1 + Math.random() * 4)}
-                        />
-                        <MetricCard
-                            icon={Zap}
-                            label="New Patterns"
-                            value="8"
-                            color={THEME.ai}
-                            trend="+1.1%"
-                            spark={Array.from({ length: 12 }, () => 4 + Math.random() * 8)}
-                        />
-                        <MetricCard
-                            icon={Database}
-                            label="Log Volume"
-                            value="892K"
-                            color={THEME.primary}
-                            trend="+4.8%"
-                            spark={Array.from({ length: 12 }, () => 600 + Math.random() * 400)}
-                        />
-                    </div>
+                    <TabPills
+                        tabs={[
+                            { key: 'wait-events', label: 'Wait Events' },
+                            { key: 'slow-queries', label: 'Slow Queries' },
+                            { key: 'db-activity', label: 'DB Activity' },
+                        ]}
+                        active={logTab}
+                        onChange={setLogTab}
+                        accentColor={THEME.warning}
+                    />
 
-                    <Panel title="Log Pattern Distribution" icon={FileSearch} accentColor={THEME.warning}>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <PieChart>
-                                <Pie
-                                    data={[
-                                        { name: 'Connection Timeout', value: 324, fill: THEME.warning },
-                                        { name: 'Query Slow', value: 156, fill: THEME.ai },
-                                        { name: 'Auth Failed', value: 42, fill: THEME.danger },
-                                        { name: 'Other', value: 28, fill: THEME.primary },
+                    {/* ── TAB 1: Wait Events ── */}
+                    {logTab === 'wait-events' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard icon={Clock} label="Total Wait Events" value="1.2K" color={THEME.warning} />
+                                <MetricCard
+                                    icon={AlertTriangle}
+                                    label="Avg Wait Time"
+                                    value="23ms"
+                                    color={THEME.danger}
+                                />
+                                <MetricCard icon={Database} label="Lock Waits" value="234" color={THEME.ai} />
+                            </div>
+                            <Panel title="Wait Events Distribution" icon={FileSearch} accentColor={THEME.warning}>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <PieChart>
+                                        <Pie
+                                            data={[
+                                                { name: 'Lock', value: 324, fill: THEME.danger },
+                                                { name: 'I/O', value: 156, fill: THEME.ai },
+                                                { name: 'CPU', value: 42, fill: THEME.primary },
+                                                { name: 'Other', value: 28, fill: THEME.warning },
+                                            ]}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={40}
+                                            outerRadius={70}
+                                            paddingAngle={2}
+                                            dataKey="value"
+                                        >
+                                            {[THEME.danger, THEME.ai, THEME.primary, THEME.warning].map(
+                                                (color, idx) => (
+                                                    <Cell key={`cell-${idx}`} fill={color} />
+                                                ),
+                                            )}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </Panel>
+                            <Panel title="Wait Event Frequency" icon={FileSearch} accentColor={THEME.warning}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'event', label: 'Event Type' },
+                                        { key: 'count', label: 'Count' },
+                                        { key: 'avgTime', label: 'Avg Time' },
                                     ]}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={40}
-                                    outerRadius={70}
-                                    paddingAngle={2}
-                                    dataKey="value"
-                                >
-                                    {[THEME.warning, THEME.ai, THEME.danger, THEME.primary].map((color, idx) => (
-                                        <Cell key={`cell-${idx}`} fill={color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </Panel>
+                                    rows={[
+                                        {
+                                            event: 'Lock waits',
+                                            count: '324',
+                                            avgTime: '34ms',
+                                        },
+                                        {
+                                            event: 'I/O waits',
+                                            count: '156',
+                                            avgTime: '12ms',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
 
-                    <Panel title="Pattern Frequency" icon={FileSearch} accentColor={THEME.warning}>
-                        <DataTable
-                            columns={[
-                                { key: 'pattern', label: 'Pattern' },
-                                { key: 'count', label: 'Occurrences' },
-                                { key: 'severity', label: 'Severity' },
-                            ]}
-                            rows={[
-                                {
-                                    pattern: 'Connection timeout',
-                                    count: '324',
-                                    severity: <StatusBadge label="Warning" color={THEME.warning} />,
-                                },
-                                {
-                                    pattern: 'Query slow',
-                                    count: '156',
-                                    severity: <StatusBadge label="Info" color={THEME.primary} />,
-                                },
-                                {
-                                    pattern: 'Connection refused',
-                                    count: '8',
-                                    severity: <StatusBadge label="Error" color={THEME.danger} />,
-                                },
-                            ]}
-                        />
-                    </Panel>
+                    {/* ── TAB 2: Slow Queries ── */}
+                    {logTab === 'slow-queries' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard
+                                    icon={FileSearch}
+                                    label="Slow Query Patterns"
+                                    value="234"
+                                    color={THEME.warning}
+                                    trend="+3.2%"
+                                    spark={Array.from({ length: 12 }, () => Math.random() * 250)}
+                                />
+                                <MetricCard
+                                    icon={AlertTriangle}
+                                    label="Error Rate"
+                                    value="2.3%"
+                                    color={THEME.danger}
+                                    trend="-0.5%"
+                                    spark={Array.from({ length: 12 }, () => 1 + Math.random() * 4)}
+                                />
+                                <MetricCard
+                                    icon={Zap}
+                                    label="New Patterns"
+                                    value="8"
+                                    color={THEME.ai}
+                                    trend="+1.1%"
+                                    spark={Array.from({ length: 12 }, () => 4 + Math.random() * 8)}
+                                />
+                                <MetricCard
+                                    icon={Database}
+                                    label="Log Volume"
+                                    value="892K"
+                                    color={THEME.primary}
+                                    trend="+4.8%"
+                                    spark={Array.from({ length: 12 }, () => 600 + Math.random() * 400)}
+                                />
+                            </div>
+
+                            <Panel title="Log Pattern Distribution" icon={FileSearch} accentColor={THEME.warning}>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <PieChart>
+                                        <Pie
+                                            data={[
+                                                { name: 'Connection Timeout', value: 324, fill: THEME.warning },
+                                                { name: 'Query Slow', value: 156, fill: THEME.ai },
+                                                { name: 'Auth Failed', value: 42, fill: THEME.danger },
+                                                { name: 'Other', value: 28, fill: THEME.primary },
+                                            ]}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={40}
+                                            outerRadius={70}
+                                            paddingAngle={2}
+                                            dataKey="value"
+                                        >
+                                            {[THEME.warning, THEME.ai, THEME.danger, THEME.primary].map(
+                                                (color, idx) => (
+                                                    <Cell key={`cell-${idx}`} fill={color} />
+                                                ),
+                                            )}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </Panel>
+
+                            <Panel title="Slow Query Patterns" icon={FileSearch} accentColor={THEME.warning}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'pattern', label: 'Pattern' },
+                                        { key: 'count', label: 'Occurrences' },
+                                        { key: 'severity', label: 'Severity' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            pattern: 'Connection timeout',
+                                            count: '324',
+                                            severity: <StatusBadge label="Warning" color={THEME.warning} />,
+                                        },
+                                        {
+                                            pattern: 'Query slow',
+                                            count: '156',
+                                            severity: <StatusBadge label="Info" color={THEME.primary} />,
+                                        },
+                                        {
+                                            pattern: 'Connection refused',
+                                            count: '8',
+                                            severity: <StatusBadge label="Error" color={THEME.danger} />,
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 3: DB Activity ── */}
+                    {logTab === 'db-activity' && (
+                        <>
+                            <Panel title="Database Activity Patterns" icon={Activity} accentColor={THEME.primary}>
+                                <ResponsiveContainer width="100%" height={240}>
+                                    <LineChart data={demoData.connectionTrends}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip content={<ChartTip />} />
+                                        <Legend />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="active"
+                                            stroke={THEME.primary}
+                                            strokeWidth={2}
+                                            name="Connections"
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="idle"
+                                            stroke={THEME.textMuted}
+                                            strokeWidth={2}
+                                            name="Idle"
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </Panel>
+                            <Panel title="Activity Summary" icon={Database} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'activity', label: 'Activity' },
+                                        { key: 'current', label: 'Current' },
+                                        { key: 'peak', label: 'Peak' },
+                                        { key: 'avg', label: 'Avg' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            activity: 'Active Connections',
+                                            current: '42',
+                                            peak: '128',
+                                            avg: '67',
+                                        },
+                                        {
+                                            activity: 'Queries/sec',
+                                            current: '1,234',
+                                            peak: '3,456',
+                                            avg: '2,100',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
                 </div>
             );
         }
@@ -3825,37 +4434,210 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'developer' && itemKey === 'repository') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <MetricCard icon={FolderGit2} label="Commits" value="1,234" color={THEME.primary} />
-                    <Panel title="Recent Changes" icon={FolderGit2} accentColor={THEME.primary}>
-                        <DataTable
-                            columns={[
-                                { key: 'commit', label: 'Commit' },
-                                { key: 'message', label: 'Message' },
-                                { key: 'author', label: 'Author' },
-                                { key: 'date', label: 'Date' },
-                            ]}
-                            rows={[
-                                {
-                                    commit: 'a3f9e2c',
-                                    message: 'Fix query optimizer',
-                                    author: 'John Doe',
-                                    date: '2h ago',
-                                },
-                                {
-                                    commit: 'f7d4c89',
-                                    message: 'Add replication monitoring',
-                                    author: 'Jane Smith',
-                                    date: '4h ago',
-                                },
-                                {
-                                    commit: 'e1b2d45',
-                                    message: 'Update schema browser',
-                                    author: 'John Doe',
-                                    date: '6h ago',
-                                },
-                            ]}
-                        />
-                    </Panel>
+                    <TabPills
+                        tabs={[
+                            { key: 'code', label: 'Code' },
+                            { key: 'insights', label: 'Insights' },
+                            { key: 'cicd', label: 'CI/CD' },
+                            { key: 'prs', label: 'Pull Requests' },
+                            { key: 'database', label: 'Database' },
+                        ]}
+                        active={repoTab}
+                        onChange={setRepoTab}
+                        accentColor={THEME.primary}
+                    />
+
+                    {/* ── TAB 1: Code ── */}
+                    {repoTab === 'code' && (
+                        <>
+                            <MetricCard icon={FolderGit2} label="Commits" value="1,234" color={THEME.primary} />
+                            <Panel title="Recent Changes" icon={FolderGit2} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'commit', label: 'Commit' },
+                                        { key: 'message', label: 'Message' },
+                                        { key: 'author', label: 'Author' },
+                                        { key: 'date', label: 'Date' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            commit: 'a3f9e2c',
+                                            message: 'Fix query optimizer',
+                                            author: 'John Doe',
+                                            date: '2h ago',
+                                        },
+                                        {
+                                            commit: 'f7d4c89',
+                                            message: 'Add replication monitoring',
+                                            author: 'Jane Smith',
+                                            date: '4h ago',
+                                        },
+                                        {
+                                            commit: 'e1b2d45',
+                                            message: 'Update schema browser',
+                                            author: 'John Doe',
+                                            date: '6h ago',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 2: Insights ── */}
+                    {repoTab === 'insights' && (
+                        <>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                    gap: '12px',
+                                }}
+                            >
+                                <MetricCard
+                                    icon={TrendingUp}
+                                    label="Code Changes"
+                                    value="342"
+                                    sub="This Month"
+                                    color={THEME.primary}
+                                />
+                                <MetricCard icon={GitBranch} label="Active Branches" value="12" color={THEME.ai} />
+                                <MetricCard icon={Users} label="Contributors" value="8" color={THEME.success} />
+                            </div>
+                            <Panel title="Code Metrics" icon={BarChart3} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'metric', label: 'Metric' },
+                                        { key: 'value', label: 'Value' },
+                                        { key: 'trend', label: 'Trend' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            metric: 'Code Coverage',
+                                            value: '78%',
+                                            trend: '+2%',
+                                        },
+                                        {
+                                            metric: 'Average PR Size',
+                                            value: '145 lines',
+                                            trend: '-5%',
+                                        },
+                                        {
+                                            metric: 'Build Time',
+                                            value: '4.2 min',
+                                            trend: '-0.3min',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 3: CI/CD ── */}
+                    {repoTab === 'cicd' && (
+                        <>
+                            <Panel title="Pipeline Status" icon={Workflow} accentColor={THEME.success}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'stage', label: 'Stage' },
+                                        { key: 'status', label: 'Status' },
+                                        { key: 'duration', label: 'Duration' },
+                                        { key: 'lastRun', label: 'Last Run' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            stage: 'Build',
+                                            status: 'Success',
+                                            duration: '2m 30s',
+                                            lastRun: '5m ago',
+                                        },
+                                        {
+                                            stage: 'Test',
+                                            status: 'Success',
+                                            duration: '1m 45s',
+                                            lastRun: '3m ago',
+                                        },
+                                        {
+                                            stage: 'Deploy',
+                                            status: 'Running',
+                                            duration: '1m 12s',
+                                            lastRun: '1m ago',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                            <Panel title="Build History" icon={BarChart3} accentColor={THEME.success}>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <BarChart data={generateChartData(10)}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
+                                        <YAxis stroke={THEME.textDim} fontSize={9} />
+                                        <Bar dataKey="value" fill={THEME.success} name="Build Time (s)" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 4: Pull Requests ── */}
+                    {repoTab === 'prs' && (
+                        <>
+                            <Panel title="Open Pull Requests" icon={GitBranch} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'title', label: 'Title' },
+                                        { key: 'author', label: 'Author' },
+                                        { key: 'status', label: 'Status' },
+                                        { key: 'reviews', label: 'Reviews' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            title: 'Add query caching layer',
+                                            author: 'Alice Chen',
+                                            status: 'In Review',
+                                            reviews: '2/3',
+                                        },
+                                        {
+                                            title: 'Implement connection pooling',
+                                            author: 'Bob Wilson',
+                                            status: 'Approved',
+                                            reviews: '3/3',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
+
+                    {/* ── TAB 5: Database ── */}
+                    {repoTab === 'database' && (
+                        <>
+                            <Panel title="Schema Connections" icon={Database} accentColor={THEME.primary}>
+                                <DataTable
+                                    columns={[
+                                        { key: 'entity', label: 'Entity' },
+                                        { key: 'type', label: 'Type' },
+                                        { key: 'migrations', label: 'Migrations' },
+                                        { key: 'status', label: 'Status' },
+                                    ]}
+                                    rows={[
+                                        {
+                                            entity: 'users_table',
+                                            type: 'Table',
+                                            migrations: '12',
+                                            status: 'Current',
+                                        },
+                                        {
+                                            entity: 'idx_users_email',
+                                            type: 'Index',
+                                            migrations: '5',
+                                            status: 'Current',
+                                        },
+                                    ]}
+                                />
+                            </Panel>
+                        </>
+                    )}
                 </div>
             );
         }
