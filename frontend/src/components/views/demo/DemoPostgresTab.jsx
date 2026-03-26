@@ -55,6 +55,7 @@ import {
     BarChart3,
     ShieldCheck,
     TableProperties,
+    Dashboard,
 } from 'lucide-react';
 import {
     AreaChart,
@@ -2951,6 +2952,47 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'observability' && itemKey === 'cloudwatch') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Bell}
+                            label="CloudWatch Alarms"
+                            value="24"
+                            color={THEME.warning}
+                            spark={Array.from({ length: 12 }, () => 15 + Math.random() * 30)}
+                            trend="+2.3%"
+                        />
+                        <MetricCard
+                            icon={Radio}
+                            label="Metrics Streams"
+                            value="8"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => 5 + Math.random() * 12)}
+                            trend="+0.8%"
+                        />
+                        <MetricCard
+                            icon={Dashboard}
+                            label="Dashboards"
+                            value="12"
+                            color={THEME.success}
+                            spark={Array.from({ length: 12 }, () => 8 + Math.random() * 18)}
+                            trend="+1.2%"
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Anomaly Detections"
+                            value="156"
+                            color={THEME.ai}
+                            spark={Array.from({ length: 12 }, () => 100 + Math.random() * 100)}
+                            trend="+5.1%"
+                        />
+                    </div>
+
                     <Panel title="CloudWatch Metrics" icon={Cloud} accentColor={THEME.warning}>
                         <ResponsiveContainer width="100%" height={220}>
                             <LineChart data={demoData.clusterVelocity}>
@@ -2963,15 +3005,119 @@ function DemoPostgresTab({ tabId }) {
                             </LineChart>
                         </ResponsiveContainer>
                     </Panel>
+
+                    <Panel title="Alarm History" icon={Bell} accentColor={THEME.warning}>
+                        <DataTable
+                            columns={[
+                                { key: 'timestamp', label: 'TIMESTAMP', width: '20%' },
+                                { key: 'alarm', label: 'ALARM', width: '30%' },
+                                { key: 'reason', label: 'REASON', width: '30%' },
+                                { key: 'action', label: 'ACTION', width: '20%' },
+                            ]}
+                            rows={[
+                                {
+                                    timestamp: '14:32:45',
+                                    alarm: 'High CPU Usage',
+                                    reason: 'CPU > 80%',
+                                    action: <StatusBadge label="Auto-scaled" color={THEME.success} />,
+                                },
+                                {
+                                    timestamp: '12:18:22',
+                                    alarm: 'Memory Pressure',
+                                    reason: 'Memory > 85%',
+                                    action: <StatusBadge label="Notified" color={THEME.warning} />,
+                                },
+                                {
+                                    timestamp: '10:45:10',
+                                    alarm: 'Disk Space Low',
+                                    reason: 'Disk < 10%',
+                                    action: <StatusBadge label="Escalated" color={THEME.danger} />,
+                                },
+                            ]}
+                        />
+                    </Panel>
                 </div>
             );
         }
 
         // LOG PATTERN ANALYSIS
         if (sectionKey === 'observability' && itemKey === 'log-patterns') {
+            const logPatternChartData = generateChartData(12).map((d, i) => ({
+                ...d,
+                connectionTimeout: Math.floor(150 + Math.sin(i / 4) * 50 + Math.random() * 40),
+                querySlow: Math.floor(80 + Math.cos(i / 4) * 30 + Math.random() * 20),
+                other: Math.floor(40 + Math.random() * 25),
+            }));
+
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <MetricCard icon={FileSearch} label="Log Patterns" value="234" color={THEME.warning} />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={FileSearch}
+                            label="Log Patterns"
+                            value="234"
+                            color={THEME.warning}
+                            trend="+3.2%"
+                            spark={Array.from({ length: 12 }, () => Math.random() * 250)}
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Error Rate"
+                            value="2.3%"
+                            color={THEME.danger}
+                            trend="-0.5%"
+                            spark={Array.from({ length: 12 }, () => 1 + Math.random() * 4)}
+                        />
+                        <MetricCard
+                            icon={Zap}
+                            label="New Patterns"
+                            value="8"
+                            color={THEME.ai}
+                            trend="+1.1%"
+                            spark={Array.from({ length: 12 }, () => 4 + Math.random() * 8)}
+                        />
+                        <MetricCard
+                            icon={Database}
+                            label="Log Volume"
+                            value="892K"
+                            color={THEME.primary}
+                            trend="+4.8%"
+                            spark={Array.from({ length: 12 }, () => 600 + Math.random() * 400)}
+                        />
+                    </div>
+
+                    <Panel title="Log Pattern Distribution" icon={FileSearch} accentColor={THEME.warning}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: 'Connection Timeout', value: 324, fill: THEME.warning },
+                                        { name: 'Query Slow', value: 156, fill: THEME.ai },
+                                        { name: 'Auth Failed', value: 42, fill: THEME.danger },
+                                        { name: 'Other', value: 28, fill: THEME.primary },
+                                    ]}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={40}
+                                    outerRadius={70}
+                                    paddingAngle={2}
+                                    dataKey="value"
+                                >
+                                    {[THEME.warning, THEME.ai, THEME.danger, THEME.primary].map((color, idx) => (
+                                        <Cell key={`cell-${idx}`} fill={color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
                     <Panel title="Pattern Frequency" icon={FileSearch} accentColor={THEME.warning}>
                         <DataTable
                             columns={[
@@ -3004,9 +3150,73 @@ function DemoPostgresTab({ tabId }) {
 
         // OPENTELEMETRY
         if (sectionKey === 'observability' && itemKey === 'opentelemetry') {
+            const serviceLatencyChartData = generateChartData(12).map((d, i) => ({
+                ...d,
+                'API Gateway': Math.floor(45 + Math.sin(i / 3) * 20 + Math.random() * 15),
+                'Auth Service': Math.floor(35 + Math.cos(i / 3) * 15 + Math.random() * 12),
+                'DB Service': Math.floor(120 + Math.sin(i / 3) * 40 + Math.random() * 30),
+                'Cache Service': Math.floor(8 + Math.cos(i / 3) * 3 + Math.random() * 2),
+            }));
+
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <MetricCard icon={Radar} label="Active Traces" value="12,456" color={THEME.primary} />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Radar}
+                            label="Active Traces"
+                            value="12,456"
+                            color={THEME.primary}
+                            trend="+2.1%"
+                            spark={Array.from({ length: 12 }, () => 10000 + Math.random() * 5000)}
+                        />
+                        <MetricCard
+                            icon={Network}
+                            label="Spans/sec"
+                            value="8,234"
+                            color={THEME.ai}
+                            trend="+3.4%"
+                            spark={Array.from({ length: 12 }, () => 7000 + Math.random() * 2500)}
+                        />
+                        <MetricCard
+                            icon={Globe}
+                            label="Services"
+                            value="18"
+                            color={THEME.success}
+                            trend="+0.0%"
+                            spark={Array.from({ length: 12 }, () => 15 + Math.random() * 5)}
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Error Rate"
+                            value="0.8%"
+                            color={THEME.danger}
+                            trend="-0.2%"
+                            spark={Array.from({ length: 12 }, () => 0.5 + Math.random() * 1.5)}
+                        />
+                    </div>
+
+                    <Panel title="Service Latency (p50)" icon={BarChart3} accentColor={THEME.primary}>
+                        <ResponsiveContainer width="100%" height={220}>
+                            <BarChart data={serviceLatencyChartData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
+                                <YAxis stroke={THEME.textDim} fontSize={9} />
+                                <Tooltip content={<ChartTip />} />
+                                <Legend />
+                                <Bar dataKey="API Gateway" fill={THEME.primary} />
+                                <Bar dataKey="DB Service" fill={THEME.warning} />
+                                <Bar dataKey="Auth Service" fill={THEME.ai} />
+                                <Bar dataKey="Cache Service" fill={THEME.success} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
                     <Panel title="Trace Waterfall" icon={Radar} accentColor={THEME.primary}>
                         <div
                             style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textDim, lineHeight: 1.8 }}
@@ -3023,8 +3233,92 @@ function DemoPostgresTab({ tabId }) {
 
         // KUBERNETES
         if (sectionKey === 'observability' && itemKey === 'kubernetes') {
+            const kubeResourceChartData = generateChartData(12).map((d, i) => ({
+                ...d,
+                cpuUsage: Math.floor(35 + Math.sin(i / 3) * 20 + Math.random() * 15),
+                memoryUsage: Math.floor(45 + Math.cos(i / 3) * 25 + Math.random() * 18),
+                diskUsage: Math.floor(60 + Math.sin(i / 4) * 15 + Math.random() * 10),
+                networkIn: Math.floor(200 + Math.random() * 150),
+            }));
+
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Container}
+                            label="Total Pods"
+                            value="18"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => 15 + Math.random() * 8)}
+                            trend="+0.0%"
+                        />
+                        <MetricCard
+                            icon={CheckCircle}
+                            label="Healthy Pods"
+                            value="17"
+                            color={THEME.success}
+                            spark={Array.from({ length: 12 }, () => 16 + Math.random() * 2)}
+                            trend="+5.9%"
+                        />
+                        <MetricCard
+                            icon={RefreshCw}
+                            label="Pod Restarts"
+                            value="2"
+                            color={THEME.warning}
+                            spark={Array.from({ length: 12 }, () => 1 + Math.random() * 3)}
+                            trend="+0.0%"
+                        />
+                        <MetricCard
+                            icon={Cpu}
+                            label="Avg CPU Usage"
+                            value="34%"
+                            color={THEME.ai}
+                            spark={Array.from({ length: 12 }, () => 25 + Math.random() * 25)}
+                            trend="+1.3%"
+                        />
+                    </div>
+
+                    <Panel title="Resource Usage" icon={BarChart3} accentColor={THEME.primary}>
+                        <ResponsiveContainer width="100%" height={220}>
+                            <AreaChart data={kubeResourceChartData}>
+                                <defs>
+                                    <linearGradient id="pg-cpu" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.ai} stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor={THEME.ai} stopOpacity={0.1} />
+                                    </linearGradient>
+                                    <linearGradient id="pg-mem" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor={THEME.warning} stopOpacity={0.1} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
+                                <YAxis stroke={THEME.textDim} fontSize={9} />
+                                <Tooltip content={<ChartTip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="cpuUsage"
+                                    stroke={THEME.ai}
+                                    fill="url(#pg-cpu)"
+                                    name="CPU %"
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="memoryUsage"
+                                    stroke={THEME.warning}
+                                    fill="url(#pg-mem)"
+                                    name="Memory %"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
                     <Panel title="Pod Status" icon={Container} accentColor={THEME.primary}>
                         <div
                             style={{
@@ -3064,8 +3358,78 @@ function DemoPostgresTab({ tabId }) {
 
         // STATUS PAGE
         if (sectionKey === 'observability' && itemKey === 'status-page') {
+            const uptimeChartData = generateChartData(24).map((d, i) => ({
+                ...d,
+                uptime: 99 + Math.sin(i / 8) * 0.98 + Math.random() * 0.02,
+            }));
+
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={CheckCircle}
+                            label="System Uptime"
+                            value="99.98%"
+                            color={THEME.success}
+                            spark={Array.from({ length: 12 }, () => 99.9 + Math.random() * 0.1)}
+                            trend="+0.02%"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Avg Response Time"
+                            value="142ms"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => 100 + Math.random() * 100)}
+                            trend="-1.8%"
+                        />
+                        <MetricCard
+                            icon={AlertOctagon}
+                            label="Incidents"
+                            value="0"
+                            color={THEME.success}
+                            spark={Array.from({ length: 12 }, () => Math.random() * 1)}
+                            trend="+0.0%"
+                        />
+                        <MetricCard
+                            icon={Globe}
+                            label="Services"
+                            value="24"
+                            color={THEME.ai}
+                            spark={Array.from({ length: 12 }, () => 20 + Math.random() * 8)}
+                            trend="+0.0%"
+                        />
+                    </div>
+
+                    <Panel title="Uptime History (24h)" icon={TrendingUp} accentColor={THEME.success}>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart data={uptimeChartData}>
+                                <defs>
+                                    <linearGradient id="pg-uptime" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.success} stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor={THEME.success} stopOpacity={0.1} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
+                                <YAxis stroke={THEME.textDim} fontSize={9} domain={[99.8, 100]} />
+                                <Tooltip content={<ChartTip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="uptime"
+                                    stroke={THEME.success}
+                                    fill="url(#pg-uptime)"
+                                    name="Uptime %"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
                     <Panel title="System Status" icon={CheckCircle} accentColor={THEME.success}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {[
@@ -3094,15 +3458,118 @@ function DemoPostgresTab({ tabId }) {
                             ))}
                         </div>
                     </Panel>
+
+                    <Panel title="Recent Incidents" icon={AlertOctagon} accentColor={THEME.warning}>
+                        <DataTable
+                            columns={[
+                                { key: 'date', label: 'DATE', width: '25%' },
+                                { key: 'service', label: 'SERVICE', width: '25%' },
+                                { key: 'duration', label: 'DURATION', width: '25%' },
+                                { key: 'status', label: 'STATUS', width: '25%' },
+                            ]}
+                            rows={[
+                                {
+                                    date: '2024-03-20',
+                                    service: 'API Gateway',
+                                    duration: '12 min',
+                                    status: <StatusBadge label="Resolved" color={THEME.success} />,
+                                },
+                                {
+                                    date: '2024-03-15',
+                                    service: 'Database',
+                                    duration: '8 min',
+                                    status: <StatusBadge label="Resolved" color={THEME.success} />,
+                                },
+                            ]}
+                        />
+                    </Panel>
                 </div>
             );
         }
 
         // AI MONITORING
         if (sectionKey === 'observability' && itemKey === 'ai-monitoring') {
+            const anomalyChartData = generateChartData(24).map((d, i) => ({
+                ...d,
+                anomalyScore: Math.floor(20 + Math.sin(i / 6) * 15 + Math.random() * 10),
+                baseline: 25,
+            }));
+
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <MetricCard icon={Brain} label="Anomalies" value="3" color={THEME.danger} />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Brain}
+                            label="Anomalies"
+                            value="3"
+                            color={THEME.danger}
+                            spark={Array.from({ length: 12 }, () => 1 + Math.random() * 5)}
+                            trend="-1.2%"
+                        />
+                        <MetricCard
+                            icon={CheckCircle}
+                            label="Model Accuracy"
+                            value="96.2%"
+                            color={THEME.success}
+                            spark={Array.from({ length: 12 }, () => 94 + Math.random() * 3)}
+                            trend="+0.8%"
+                        />
+                        <MetricCard
+                            icon={Layers}
+                            label="Active Models"
+                            value="7"
+                            color={THEME.primary}
+                            spark={Array.from({ length: 12 }, () => 5 + Math.random() * 4)}
+                            trend="+0.0%"
+                        />
+                        <MetricCard
+                            icon={Zap}
+                            label="Predictions/hr"
+                            value="24,582"
+                            color={THEME.ai}
+                            spark={Array.from({ length: 12 }, () => 20000 + Math.random() * 10000)}
+                            trend="+3.6%"
+                        />
+                    </div>
+
+                    <Panel title="Anomaly Detection Trends" icon={TrendingUp} accentColor={THEME.ai}>
+                        <ResponsiveContainer width="100%" height={220}>
+                            <AreaChart data={anomalyChartData}>
+                                <defs>
+                                    <linearGradient id="pg-anomaly" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.danger} stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor={THEME.danger} stopOpacity={0.1} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
+                                <YAxis stroke={THEME.textDim} fontSize={9} />
+                                <Tooltip content={<ChartTip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="anomalyScore"
+                                    stroke={THEME.danger}
+                                    fill="url(#pg-anomaly)"
+                                    name="Anomaly Score"
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="baseline"
+                                    stroke={THEME.textDim}
+                                    strokeWidth={1}
+                                    strokeDasharray="3 3"
+                                    name="Baseline"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </Panel>
+
                     <Panel title="AI-Powered Anomaly Detection" icon={Brain} accentColor={THEME.ai}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {[

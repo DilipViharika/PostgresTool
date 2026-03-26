@@ -1041,34 +1041,160 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'databases':
                         return (
-                            <Panel title="Databases" icon={Database} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'name', label: 'Database', width: '25%' },
-                                        { key: 'collections', label: 'Collections', align: 'right' },
-                                        { key: 'size', label: 'Size', align: 'right', mono: true },
-                                        { key: 'indexes', label: 'Indexes', align: 'right' },
-                                        { key: 'doc_count', label: 'Document Count', align: 'right', mono: true },
-                                    ]}
-                                    rows={demoData.databases}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Databases</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Database}
+                                        label="Databases"
+                                        value="8"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 8)}
+                                    />
+                                    <MetricCard
+                                        icon={Layers}
+                                        label="Total Collections"
+                                        value="145"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 130 + Math.random() * 30)}
+                                    />
+                                    <MetricCard
+                                        icon={HardDrive}
+                                        label="Storage"
+                                        value="18.6GB"
+                                        color={THEME.warning}
+                                        spark={Array.from({ length: 12 }, () => 18000 + Math.random() * 1000)}
+                                    />
+                                    <MetricCard
+                                        icon={Copy}
+                                        label="Objects"
+                                        value="2.4M"
+                                        color={THEME.info || THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 2000000 + Math.random() * 500000)}
+                                    />
+                                </div>
+
+                                <Panel title="Size by Database" icon={BarChart3} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <BarChart
+                                            data={generateChartData(12).map((d) => ({
+                                                ...d,
+                                                dbsize: Math.random() * 3000,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Bar dataKey="dbsize" fill={THEME.primary} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Database List" icon={Database} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'name', label: 'Database', width: '25%' },
+                                            { key: 'collections', label: 'Collections', align: 'right' },
+                                            { key: 'size', label: 'Size', align: 'right', mono: true },
+                                            { key: 'indexes', label: 'Indexes', align: 'right' },
+                                            { key: 'doc_count', label: 'Document Count', align: 'right', mono: true },
+                                        ]}
+                                        rows={demoData.databases}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'relationships':
                         return (
-                            <Panel title="Collection Relationships" icon={GitBranch} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'from', label: 'From Collection', width: '25%', mono: true },
-                                        { key: 'to', label: 'To Collection', width: '25%', mono: true },
-                                        { key: 'type', label: 'Type', align: 'center' },
-                                        { key: 'count', label: 'Operations', align: 'right', mono: true },
-                                    ]}
-                                    rows={demoData.collectionRelationships}
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Collection Relationships</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={GitBranch}
+                                        label="References"
+                                        value="156"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 140 + Math.random() * 30)}
+                                    />
+                                    <MetricCard
+                                        icon={Layers}
+                                        label="Embedded"
+                                        value="89"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 80 + Math.random() * 20)}
+                                    />
+                                    <MetricCard
+                                        icon={Copy}
+                                        label="Denormalized"
+                                        value="42"
+                                        color={THEME.warning}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 50)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Orphaned"
+                                        value="3"
+                                        color={THEME.danger}
+                                        trend="-0.5%"
+                                    />
+                                </div>
+
+                                <Panel
+                                    title="Relationship Type Distribution"
+                                    icon={PieChart}
                                     accentColor={THEME.primary}
-                                />
-                            </Panel>
+                                >
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <PieChart>
+                                            <Pie
+                                                data={[
+                                                    { name: 'References', value: 156 },
+                                                    { name: 'Embedded', value: 89 },
+                                                    { name: 'Denormalized', value: 42 },
+                                                ]}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={40}
+                                                outerRadius={70}
+                                                paddingAngle={2}
+                                                dataKey="value"
+                                            >
+                                                <Cell fill={THEME.primary} />
+                                                <Cell fill={THEME.success} />
+                                                <Cell fill={THEME.warning} />
+                                            </Pie>
+                                            <Tooltip />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Reference Data" icon={GitBranch} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'from', label: 'From Collection', width: '25%', mono: true },
+                                            { key: 'to', label: 'To Collection', width: '25%', mono: true },
+                                            { key: 'type', label: 'Type', align: 'center' },
+                                            { key: 'count', label: 'Operations', align: 'right', mono: true },
+                                        ]}
+                                        rows={demoData.collectionRelationships}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     default:
                         return null;
@@ -1242,19 +1368,86 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'namespace':
                         return (
-                            <Panel title="Namespace Insights" icon={Database} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'ns', label: 'Namespace', mono: true },
-                                        { key: 'ops_sec', label: 'Ops/sec', align: 'right' },
-                                        { key: 'avg_latency', label: 'Avg Latency (ms)', align: 'right', mono: true },
-                                        { key: 'size_mb', label: 'Size (MB)', align: 'right', mono: true },
-                                        { key: 'index_count', label: 'Indexes', align: 'right' },
-                                    ]}
-                                    rows={demoData.namespaceMetrics}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Namespace Insights</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Database}
+                                        label="Namespaces"
+                                        value="64"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 60 + Math.random() * 10)}
+                                    />
+                                    <MetricCard
+                                        icon={Activity}
+                                        label="Active"
+                                        value="52"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 50 + Math.random() * 5)}
+                                    />
+                                    <MetricCard
+                                        icon={Zap}
+                                        label="Ops/sec"
+                                        value="2.4K"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 2000 + Math.random() * 800)}
+                                    />
+                                    <MetricCard
+                                        icon={Clock}
+                                        label="Avg Latency"
+                                        value="8.2ms"
+                                        color={THEME.warning}
+                                        trend="-1.5%"
+                                    />
+                                </div>
+
+                                <Panel title="Namespace Activity" icon={Activity} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <LineChart
+                                            data={generateChartData(24).map((d) => ({
+                                                ...d,
+                                                activity: Math.random() * 3000,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="activity"
+                                                stroke={THEME.primary}
+                                                strokeWidth={2}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Top Namespaces" icon={Database} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'ns', label: 'Namespace', mono: true },
+                                            { key: 'ops_sec', label: 'Ops/sec', align: 'right' },
+                                            {
+                                                key: 'avg_latency',
+                                                label: 'Avg Latency (ms)',
+                                                align: 'right',
+                                                mono: true,
+                                            },
+                                            { key: 'size_mb', label: 'Size (MB)', align: 'right', mono: true },
+                                            { key: 'index_count', label: 'Indexes', align: 'right' },
+                                        ]}
+                                        rows={demoData.namespaceMetrics}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'explain':
                         return (
@@ -1454,18 +1647,75 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'profiler':
                         return (
-                            <Panel title="Query Profiler" icon={Radar} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'timestamp', label: 'Timestamp', mono: true },
-                                        { key: 'ns', label: 'Namespace', mono: true },
-                                        { key: 'millis', label: 'Duration (ms)', align: 'right', mono: true },
-                                        { key: 'docs', label: 'Docs', align: 'right' },
-                                    ]}
-                                    rows={demoData.profiledQueries}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Query Profiler</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Radar}
+                                        label="Profiled Ops"
+                                        value="1.2K"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 1500)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Slow Ops"
+                                        value="34"
+                                        color={THEME.danger}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 50)}
+                                    />
+                                    <MetricCard
+                                        icon={Clock}
+                                        label="Avg Time"
+                                        value="23.4ms"
+                                        color={THEME.warning}
+                                        trend="+2.1%"
+                                    />
+                                    <MetricCard
+                                        icon={Database}
+                                        label="Collection Coverage"
+                                        value="94%"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 90 + Math.random() * 10)}
+                                    />
+                                </div>
+
+                                <Panel title="Operation Time Distribution" icon={BarChart3} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <BarChart
+                                            data={generateChartData(12).map((d) => ({
+                                                ...d,
+                                                duration: Math.random() * 100,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Bar dataKey="duration" fill={THEME.primary} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Slow Operations" icon={Radar} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'timestamp', label: 'Timestamp', mono: true },
+                                            { key: 'ns', label: 'Namespace', mono: true },
+                                            { key: 'millis', label: 'Duration (ms)', align: 'right', mono: true },
+                                            { key: 'docs', label: 'Docs', align: 'right' },
+                                        ]}
+                                        rows={demoData.profiledQueries}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'costestimator':
                         return (
@@ -1719,50 +1969,236 @@ function DemoMongoDBTab({ tabId }) {
                 switch (itemKey) {
                     case 'indexadvisor':
                         return (
-                            <Panel title="Index Advisor Recommendations" icon={Lightbulb} accentColor={THEME.warning}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'collection', label: 'Collection', mono: true },
-                                        { key: 'field', label: 'Field', mono: true },
-                                        { key: 'selectivity', label: 'Selectivity', align: 'right' },
-                                        { key: 'est_size', label: 'Est. Size', align: 'right', mono: true },
-                                        { key: 'potential_save', label: 'Potential Save', align: 'right', mono: true },
-                                    ]}
-                                    rows={demoData.indexRecommendations}
-                                    accentColor={THEME.warning}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Index Advisor</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Lightbulb}
+                                        label="Recommendations"
+                                        value="23"
+                                        color={THEME.warning}
+                                        spark={Array.from({ length: 12 }, () => 20 + Math.random() * 10)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Missing Indexes"
+                                        value="15"
+                                        color={THEME.danger}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 20)}
+                                    />
+                                    <MetricCard
+                                        icon={Eye}
+                                        label="Unused Indexes"
+                                        value="7"
+                                        color={THEME.info || THEME.primary}
+                                        trend="+0.5%"
+                                    />
+                                    <MetricCard
+                                        icon={Zap}
+                                        label="Impact Score"
+                                        value="8.4/10"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 5 + Math.random() * 10)}
+                                    />
+                                </div>
+
+                                <Panel title="Index Usage" icon={BarChart3} accentColor={THEME.warning}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <BarChart
+                                            data={generateChartData(12).map((d) => ({
+                                                ...d,
+                                                usage: Math.random() * 100,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Bar dataKey="usage" fill={THEME.warning} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Recommendations" icon={Lightbulb} accentColor={THEME.warning}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'collection', label: 'Collection', mono: true },
+                                            { key: 'field', label: 'Field', mono: true },
+                                            { key: 'selectivity', label: 'Selectivity', align: 'right' },
+                                            { key: 'est_size', label: 'Est. Size', align: 'right', mono: true },
+                                            {
+                                                key: 'potential_save',
+                                                label: 'Potential Save',
+                                                align: 'right',
+                                                mono: true,
+                                            },
+                                        ]}
+                                        rows={demoData.indexRecommendations}
+                                        accentColor={THEME.warning}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'schemaanalyzer':
                         return (
-                            <Panel title="Schema Analysis" icon={Code} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'collection', label: 'Collection', mono: true },
-                                        { key: 'field_count', label: 'Fields', align: 'right' },
-                                        { key: 'avg_doc_size', label: 'Avg Doc Size (KB)', align: 'right', mono: true },
-                                        { key: 'type_consistency', label: 'Type Consistency', align: 'right' },
-                                    ]}
-                                    rows={demoData.schemaAnalysis}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Schema Analysis</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Code}
+                                        label="Collections Analyzed"
+                                        value="28"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 25 + Math.random() * 8)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Schema Violations"
+                                        value="14"
+                                        color={THEME.danger}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 20)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertCircle}
+                                        label="Type Mismatches"
+                                        value="8"
+                                        color={THEME.warning}
+                                        trend="-1.3%"
+                                    />
+                                    <MetricCard
+                                        icon={CheckCircle}
+                                        label="Coverage"
+                                        value="96%"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 92 + Math.random() * 8)}
+                                    />
+                                </div>
+
+                                <Panel title="Violation Trend" icon={TrendingUp} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <LineChart
+                                            data={generateChartData(24).map((d) => ({
+                                                ...d,
+                                                violations: Math.random() * 20,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="violations"
+                                                stroke={THEME.danger}
+                                                strokeWidth={2}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Analysis Data" icon={Code} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'collection', label: 'Collection', mono: true },
+                                            { key: 'field_count', label: 'Fields', align: 'right' },
+                                            {
+                                                key: 'avg_doc_size',
+                                                label: 'Avg Doc Size (KB)',
+                                                align: 'right',
+                                                mono: true,
+                                            },
+                                            { key: 'type_consistency', label: 'Type Consistency', align: 'right' },
+                                        ]}
+                                        rows={demoData.schemaAnalysis}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'collectionstats':
                         return (
-                            <Panel title="Collection Statistics" icon={Database} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'name', label: 'Collection', mono: true },
-                                        { key: 'docs', label: 'Documents', align: 'right', mono: true },
-                                        { key: 'size', label: 'Size', align: 'right', mono: true },
-                                        { key: 'indexes', label: 'Indexes', align: 'right' },
-                                        { key: 'avgDocSize', label: 'Avg Doc Size', align: 'right', mono: true },
-                                    ]}
-                                    rows={demoData.collectionStats}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Collection Statistics</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Database}
+                                        label="Collections"
+                                        value="32"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 30 + Math.random() * 5)}
+                                    />
+                                    <MetricCard
+                                        icon={HardDrive}
+                                        label="Total Size"
+                                        value="4.2GB"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 4000 + Math.random() * 500)}
+                                    />
+                                    <MetricCard
+                                        icon={Copy}
+                                        label="Avg Doc Size"
+                                        value="12.8KB"
+                                        color={THEME.warning}
+                                        trend="+0.3%"
+                                    />
+                                    <MetricCard
+                                        icon={Layers}
+                                        label="Indexes"
+                                        value="89"
+                                        color={THEME.info || THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 85 + Math.random() * 10)}
+                                    />
+                                </div>
+
+                                <Panel title="Size Distribution" icon={BarChart3} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <BarChart
+                                            data={generateChartData(12).map((d) => ({
+                                                ...d,
+                                                size: Math.random() * 500,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Bar dataKey="size" fill={THEME.success} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Collection Stats" icon={Database} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'name', label: 'Collection', mono: true },
+                                            { key: 'docs', label: 'Documents', align: 'right', mono: true },
+                                            { key: 'size', label: 'Size', align: 'right', mono: true },
+                                            { key: 'indexes', label: 'Indexes', align: 'right' },
+                                            { key: 'avgDocSize', label: 'Avg Doc Size', align: 'right', mono: true },
+                                        ]}
+                                        rows={demoData.collectionStats}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'wiredtiger':
                         return (
@@ -2124,19 +2560,87 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'importexport':
                         return (
-                            <Panel title="Import / Export Operations" icon={Download} accentColor={THEME.success}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'timestamp', label: 'Timestamp', mono: true },
-                                        { key: 'operation', label: 'Operation', align: 'center' },
-                                        { key: 'records', label: 'Records', align: 'right', mono: true },
-                                        { key: 'status', label: 'Status', align: 'center' },
-                                        { key: 'duration', label: 'Duration', align: 'right', mono: true },
-                                    ]}
-                                    rows={demoData.importExportOps}
-                                    accentColor={THEME.success}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Import / Export Operations</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Activity}
+                                        label="Active Jobs"
+                                        value="3"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 5)}
+                                    />
+                                    <MetricCard
+                                        icon={Download}
+                                        label="Docs Imported"
+                                        value="1.2M"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 1500000)}
+                                    />
+                                    <MetricCard
+                                        icon={Upload}
+                                        label="Docs Exported"
+                                        value="850K"
+                                        color={THEME.info || THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 900000)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Failed"
+                                        value="2"
+                                        color={THEME.danger}
+                                        trend="-0.3%"
+                                    />
+                                </div>
+
+                                <Panel title="Job History" icon={Download} accentColor={THEME.success}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'timestamp', label: 'Timestamp', mono: true },
+                                            { key: 'operation', label: 'Operation', align: 'center' },
+                                            { key: 'records', label: 'Records', align: 'right', mono: true },
+                                            { key: 'status', label: 'Status', align: 'center' },
+                                            { key: 'duration', label: 'Duration', align: 'right', mono: true },
+                                        ]}
+                                        rows={demoData.importExportOps}
+                                        accentColor={THEME.success}
+                                    />
+                                </Panel>
+
+                                <Panel title="Throughput" icon={Activity} accentColor={THEME.success}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <AreaChart
+                                            data={generateChartData(24).map((d) => ({
+                                                ...d,
+                                                throughput: Math.random() * 2000,
+                                            }))}
+                                        >
+                                            <defs>
+                                                <linearGradient id="mongo-importexport" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="throughput"
+                                                stroke={THEME.success}
+                                                fill="url(#mongo-importexport)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+                            </div>
                         );
                     case 'sqltranslator':
                         return (
@@ -2228,18 +2732,75 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'geospatial':
                         return (
-                            <Panel title="Geo-spatial Data" icon={Map} accentColor={THEME.success}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'location', label: 'Location', width: '30%' },
-                                        { key: 'documents', label: 'Documents', align: 'right', mono: true },
-                                        { key: 'avg_lat', label: 'Avg Latitude', align: 'right', mono: true },
-                                        { key: 'avg_lng', label: 'Avg Longitude', align: 'right', mono: true },
-                                    ]}
-                                    rows={demoData.geoMetrics}
-                                    accentColor={THEME.success}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Geo-spatial Data</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Map}
+                                        label="Geo Indexes"
+                                        value="18"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 15 + Math.random() * 5)}
+                                    />
+                                    <MetricCard
+                                        icon={Zap}
+                                        label="Queries/sec"
+                                        value="124"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 100 + Math.random() * 50)}
+                                    />
+                                    <MetricCard
+                                        icon={Compass}
+                                        label="Avg Radius"
+                                        value="8.3km"
+                                        color={THEME.info || THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 5 + Math.random() * 10)}
+                                    />
+                                    <MetricCard
+                                        icon={Database}
+                                        label="Collections"
+                                        value="12"
+                                        color={THEME.warning}
+                                        spark={Array.from({ length: 12 }, () => 10 + Math.random() * 5)}
+                                    />
+                                </div>
+
+                                <Panel title="Query Distribution" icon={BarChart3} accentColor={THEME.success}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <BarChart
+                                            data={generateChartData(12).map((d) => ({
+                                                ...d,
+                                                queries: Math.random() * 200,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Bar dataKey="queries" fill={THEME.success} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Geo Index Data" icon={Map} accentColor={THEME.success}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'location', label: 'Location', width: '30%' },
+                                            { key: 'documents', label: 'Documents', align: 'right', mono: true },
+                                            { key: 'avg_lat', label: 'Avg Latitude', align: 'right', mono: true },
+                                            { key: 'avg_lng', label: 'Avg Longitude', align: 'right', mono: true },
+                                        ]}
+                                        rows={demoData.geoMetrics}
+                                        accentColor={THEME.success}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     default:
                         return null;
@@ -2290,18 +2851,80 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'clustercompare':
                         return (
-                            <Panel title="Cluster Comparison" icon={GitBranch} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'metric', label: 'Metric', width: '40%' },
-                                        { key: 'prod', label: 'Production', align: 'right', mono: true },
-                                        { key: 'staging', label: 'Staging', align: 'right', mono: true },
-                                        { key: 'diff_pct', label: 'Difference', align: 'right', mono: true },
-                                    ]}
-                                    rows={demoData.clusterComparison}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Cluster Comparison</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Server}
+                                        label="Clusters"
+                                        value="2"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 2)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Differences"
+                                        value="7"
+                                        color={THEME.warning}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 10)}
+                                    />
+                                    <MetricCard
+                                        icon={Settings}
+                                        label="Config Drift"
+                                        value="3.2%"
+                                        color={THEME.danger}
+                                        trend="+1.1%"
+                                    />
+                                    <MetricCard
+                                        icon={Clock}
+                                        label="Last Sync"
+                                        value="2m ago"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 5)}
+                                    />
+                                </div>
+
+                                <Panel title="Comparison Data" icon={GitBranch} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'metric', label: 'Metric', width: '40%' },
+                                            { key: 'prod', label: 'Production', align: 'right', mono: true },
+                                            { key: 'staging', label: 'Staging', align: 'right', mono: true },
+                                            { key: 'diff_pct', label: 'Difference', align: 'right', mono: true },
+                                        ]}
+                                        rows={demoData.clusterComparison}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+
+                                <Panel title="Drift Timeline" icon={TrendingUp} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <LineChart
+                                            data={generateChartData(24).map((d) => ({
+                                                ...d,
+                                                drift: Math.random() * 5,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="drift"
+                                                stroke={THEME.warning}
+                                                strokeWidth={2}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+                            </div>
                         );
                     case 'historicaltrends':
                         return (
@@ -2628,17 +3251,80 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'prometheus':
                         return (
-                            <Panel title="Prometheus Export" icon={Radio} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'metric', label: 'Metric', mono: true, width: '50%' },
-                                        { key: 'value', label: 'Value', align: 'right', mono: true },
-                                        { key: 'timestamp', label: 'Timestamp', align: 'center', mono: true },
-                                    ]}
-                                    rows={demoData.prometheusMetrics}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Prometheus Export</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Radio}
+                                        label="Scrapers"
+                                        value="24"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 24)}
+                                    />
+                                    <MetricCard
+                                        icon={Gauge}
+                                        label="Targets"
+                                        value="156"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 140 + Math.random() * 20)}
+                                    />
+                                    <MetricCard
+                                        icon={Zap}
+                                        label="Series"
+                                        value="8.4K"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 8000)}
+                                    />
+                                    <MetricCard
+                                        icon={Activity}
+                                        label="Ingestion Rate"
+                                        value="2.1M"
+                                        sub="samples/min"
+                                        color={THEME.warning}
+                                        trend="+3.2%"
+                                    />
+                                </div>
+
+                                <Panel title="Metrics Ingestion" icon={Activity} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <LineChart
+                                            data={generateChartData(24).map((d) => ({
+                                                ...d,
+                                                rate: Math.random() * 3000,
+                                            }))}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="rate"
+                                                stroke={THEME.primary}
+                                                strokeWidth={2}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Target Status" icon={Radio} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'metric', label: 'Metric', mono: true, width: '50%' },
+                                            { key: 'value', label: 'Value', align: 'right', mono: true },
+                                            { key: 'timestamp', label: 'Timestamp', align: 'center', mono: true },
+                                        ]}
+                                        rows={demoData.prometheusMetrics}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'auth':
                         return (
@@ -2690,18 +3376,91 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'atlasapi':
                         return (
-                            <Panel title="Atlas API Bridge" icon={Network} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'endpoint', label: 'Endpoint', mono: true, width: '50%' },
-                                        { key: 'calls', label: 'Calls', align: 'right' },
-                                        { key: 'avg_response', label: 'Avg Response (ms)', align: 'right', mono: true },
-                                        { key: 'errors', label: 'Errors', align: 'right' },
-                                    ]}
-                                    rows={demoData.atlasAPIMetrics}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Atlas API Bridge</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Network}
+                                        label="API Calls/hr"
+                                        value="15.2K"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 15000)}
+                                    />
+                                    <MetricCard
+                                        icon={Clock}
+                                        label="Latency"
+                                        value="142ms"
+                                        color={THEME.success}
+                                        spark={Array.from({ length: 12 }, () => 100 + Math.random() * 100)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Errors"
+                                        value="8"
+                                        color={THEME.danger}
+                                        trend="-1.2%"
+                                    />
+                                    <MetricCard
+                                        icon={Filter}
+                                        label="Endpoints"
+                                        value="47"
+                                        color={THEME.info || THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => 40 + Math.random() * 10)}
+                                    />
+                                </div>
+
+                                <Panel title="API Usage" icon={Activity} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <AreaChart
+                                            data={generateChartData(24).map((d) => ({
+                                                ...d,
+                                                calls: Math.random() * 20000,
+                                            }))}
+                                        >
+                                            <defs>
+                                                <linearGradient id="mongo-atlasapi" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="calls"
+                                                stroke={THEME.primary}
+                                                fill="url(#mongo-atlasapi)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Recent API Calls" icon={Network} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'endpoint', label: 'Endpoint', mono: true, width: '50%' },
+                                            { key: 'calls', label: 'Calls', align: 'right' },
+                                            {
+                                                key: 'avg_response',
+                                                label: 'Avg Response (ms)',
+                                                align: 'right',
+                                                mono: true,
+                                            },
+                                            { key: 'errors', label: 'Errors', align: 'right' },
+                                        ]}
+                                        rows={demoData.atlasAPIMetrics}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'dashboards':
                         return (
@@ -2761,18 +3520,86 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'auditlog':
                         return (
-                            <Panel title="Audit Log" icon={Inbox} accentColor={THEME.primary}>
-                                <DataTable
-                                    columns={[
-                                        { key: 'timestamp', label: 'Timestamp', mono: true },
-                                        { key: 'action', label: 'Action', mono: true },
-                                        { key: 'user', label: 'User', mono: true },
-                                        { key: 'status', label: 'Status', align: 'center' },
-                                    ]}
-                                    rows={demoData.auditLog}
-                                    accentColor={THEME.primary}
-                                />
-                            </Panel>
+                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <h1>Audit Log</h1>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
+                                    <MetricCard
+                                        icon={Activity}
+                                        label="Events Today"
+                                        value="342"
+                                        color={THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 400)}
+                                    />
+                                    <MetricCard
+                                        icon={AlertTriangle}
+                                        label="Auth Failures"
+                                        value="12"
+                                        color={THEME.danger}
+                                        trend="-0.8%"
+                                    />
+                                    <MetricCard
+                                        icon={Code}
+                                        label="Schema Changes"
+                                        value="5"
+                                        color={THEME.warning}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 8)}
+                                    />
+                                    <MetricCard
+                                        icon={Users}
+                                        label="Admin Actions"
+                                        value="28"
+                                        color={THEME.info || THEME.primary}
+                                        spark={Array.from({ length: 12 }, () => Math.random() * 35)}
+                                    />
+                                </div>
+
+                                <Panel title="Event Volume" icon={Activity} accentColor={THEME.primary}>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <AreaChart
+                                            data={generateChartData(24).map((d) => ({
+                                                ...d,
+                                                events: Math.random() * 500,
+                                            }))}
+                                        >
+                                            <defs>
+                                                <linearGradient id="mongo-auditlog" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                            <XAxis dataKey="time" stroke={THEME.textDim} />
+                                            <YAxis stroke={THEME.textDim} />
+                                            <Tooltip content={<ChartTip />} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="events"
+                                                stroke={THEME.primary}
+                                                fill="url(#mongo-auditlog)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </Panel>
+
+                                <Panel title="Recent Events" icon={Inbox} accentColor={THEME.primary}>
+                                    <DataTable
+                                        columns={[
+                                            { key: 'timestamp', label: 'Timestamp', mono: true },
+                                            { key: 'action', label: 'Action', mono: true },
+                                            { key: 'user', label: 'User', mono: true },
+                                            { key: 'status', label: 'Status', align: 'center' },
+                                        ]}
+                                        rows={demoData.auditLog}
+                                        accentColor={THEME.primary}
+                                    />
+                                </Panel>
+                            </div>
                         );
                     case 'users':
                         return (
