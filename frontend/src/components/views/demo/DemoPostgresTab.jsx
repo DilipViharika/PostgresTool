@@ -55,7 +55,7 @@ import {
     BarChart3,
     ShieldCheck,
     TableProperties,
-    Dashboard,
+    LayoutDashboard,
 } from 'lucide-react';
 import {
     AreaChart,
@@ -2976,7 +2976,7 @@ function DemoPostgresTab({ tabId }) {
                             trend="+0.8%"
                         />
                         <MetricCard
-                            icon={Dashboard}
+                            icon={LayoutDashboard}
                             label="Dashboards"
                             value="12"
                             color={THEME.success}
