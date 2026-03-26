@@ -1,4 +1,7 @@
-import React from 'react';
+// ==========================================================================
+//  DemoMongoDBTab — Self-contained MongoDB demo dashboard
+// ==========================================================================
+import React, { useMemo } from 'react';
 import {
     LineChart,
     Line,
@@ -6,1329 +9,470 @@ import {
     Area,
     BarChart,
     Bar,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    Legend,
     PieChart,
     Pie,
     Cell,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
 } from 'recharts';
-import {
-    AlertCircle,
-    CheckCircle,
-    TrendingUp,
-    Database,
-    Clock,
-    HardDrive,
-    Zap,
-    Lock,
-    GitBranch,
-    Grid3x3,
-} from 'lucide-react';
-import { GlassCard, MetricCard, BentoMetric, DataTable, ResourceGauge, ChipBadge } from '../../ui/SharedComponents.jsx';
 import { getDS } from '../../../config/designTokens.js';
 
-const DS = getDS();
-
-const DemoMongoDBTab = ({ tabId }) => {
-    // Chart colors
-    const colors = {
-        cyan: DS.cyan,
-        violet: '#818cf8',
-        emerald: '#34d399',
-        amber: '#fbbf24',
-        rose: '#fb7185',
-    };
-
-    // Helper function to create chart data
-    const createChartData = (values, label = 'value') => {
-        return values.map((v, i) => ({
-            time: `${i}h`,
-            [label]: v,
-        }));
-    };
-
-    const createMultiChartData = (datasets) => {
-        const length = Object.values(datasets)[0].length;
-        return Array.from({ length }, (_, i) => {
-            const point = { time: `${i}h` };
-            Object.entries(datasets).forEach(([key, values]) => {
-                point[key] = values[i];
-            });
-            return point;
-        });
-    };
-
-    // ============ SECTION 1: HEALTH OVERVIEW ============
-    const healthData = createChartData([92], 'score')[0];
-    const serverInfo = {
-        version: 'MongoDB 7.0.8',
-        host: 'mongo-prod-01.vigil.demo',
-        uptime: '62 days',
-        engine: 'WiredTiger',
-    };
-
-    // ============ SECTION 2: OPERATIONS ============
-    const opsData = createMultiChartData({
-        Total: [
-            6500, 7000, 7500, 8000, 8420, 8800, 8600, 8200, 7800, 7400, 7000, 6500, 6200, 6500, 7000, 7500, 8000, 8420,
-            8800, 8600, 8200, 7800, 7400, 7000,
-        ],
-        Read: [
-            4000, 4300, 4600, 4900, 5200, 5500, 5400, 5100, 4800, 4500, 4300, 4000, 3800, 4000, 4300, 4600, 4900, 5200,
-            5500, 5400, 5100, 4800, 4500, 4300,
-        ],
-        Write: [
-            1800, 2000, 2100, 2300, 2400, 2500, 2450, 2350, 2250, 2150, 2000, 1800, 1700, 1800, 2000, 2100, 2300, 2400,
-            2500, 2450, 2350, 2250, 2150, 2000,
-        ],
-    });
-
-    // ============ SECTION 3: LATENCY ============
-    const latencyData = createMultiChartData({
-        p50: [
-            0.6, 0.7, 0.8, 0.9, 1.0, 0.9, 0.8, 0.7, 0.6, 0.7, 0.8, 0.9, 1.0, 0.9, 0.8, 0.7, 0.6, 0.7, 0.8, 0.9, 1.0,
-            0.9, 0.8, 0.7,
-        ],
-        p95: [
-            4.0, 4.5, 5.0, 5.2, 5.5, 5.8, 5.5, 5.2, 4.8, 4.5, 5.0, 5.2, 5.5, 5.8, 5.5, 5.2, 4.8, 4.5, 5.0, 5.2, 5.5,
-            5.8, 5.5, 5.2,
-        ],
-        p99: [
-            14.0, 16.0, 18.0, 18.4, 20.0, 22.0, 20.0, 18.4, 16.0, 15.0, 16.0, 18.0, 18.4, 20.0, 22.0, 20.0, 18.4, 16.0,
-            15.0, 16.0, 18.0, 18.4, 20.0, 22.0,
-        ],
-    });
-
-    // ============ SECTION 4: SYSTEM RESOURCES ============
-    const cpuData = createChartData(
-        [32, 35, 38, 40, 42, 45, 44, 42, 40, 38, 36, 34, 32, 34, 36, 38, 40, 42, 45, 44, 42, 40, 38, 36],
-        'CPU',
-    );
-    const memoryData = createChartData(
-        [68, 70, 71, 72, 74, 76, 75, 74, 73, 72, 71, 70, 68, 70, 71, 72, 74, 76, 75, 74, 73, 72, 71, 70],
-        'Memory',
-    );
-
-    // ============ SECTION 5: WIREDTIGER CACHE ============
-    const cacheData = createChartData(
-        [80, 82, 84, 85, 86, 88, 87, 86, 85, 84, 83, 82, 80, 82, 84, 85, 86, 88, 87, 86, 85, 84, 83, 82],
-        'Cache',
-    );
-
-    // ============ SECTION 6: SLOW QUERIES ============
-    const slowQueriesColumns = [
-        { key: 'namespace', label: 'Namespace', width: 150 },
-        { key: 'operation', label: 'Operation', width: 100 },
-        { key: 'duration', label: 'Duration (ms)', width: 120, align: 'right' },
-        { key: 'scanned', label: 'Docs Scanned', width: 140, align: 'right' },
-        { key: 'query', label: 'Query', width: 250 },
-    ];
-
-    const slowQueriesData = [
-        {
-            id: '1',
-            namespace: 'ecommerce.orders',
-            operation: 'find',
-            duration: '12,800',
-            scanned: '4,500,000',
-            query: "{ status: 'pending'...",
-        },
-        {
-            id: '2',
-            namespace: 'analytics.events',
-            operation: 'aggregate',
-            duration: '8,400',
-            scanned: '12,000,000',
-            query: "[{ $match: { type: 'page'...",
-        },
-        {
-            id: '3',
-            namespace: 'ecommerce.products',
-            operation: 'find',
-            duration: '3,200',
-            scanned: '800,000',
-            query: '{ $text: { $search...',
-        },
-        {
-            id: '4',
-            namespace: 'social.posts',
-            operation: 'aggregate',
-            duration: '2,800',
-            scanned: '2,000,000',
-            query: "[{ $lookup: { from: 'users'...",
-        },
-    ];
-
-    // ============ SECTION 7: REPLICATION ============
-    const replicationColumns = [
-        { key: 'member', label: 'Member', width: 200 },
-        { key: 'state', label: 'State', width: 100 },
-        { key: 'uptime', label: 'Uptime', width: 120 },
-        { key: 'lag', label: 'Lag (ms)', width: 100, align: 'right' },
-        { key: 'oplog', label: 'Oplog (GB)', width: 120, align: 'right' },
-    ];
-
-    const replicationData = [
-        {
-            id: '1',
-            member: 'mongo-prod-01:27017',
-            state: 'PRIMARY',
-            uptime: '62 days',
-            lag: '0',
-            oplog: '12',
-        },
-        {
-            id: '2',
-            member: 'mongo-prod-02:27017',
-            state: 'SECONDARY',
-            uptime: '62 days',
-            lag: '300',
-            oplog: '12',
-        },
-        {
-            id: '3',
-            member: 'mongo-prod-03:27017',
-            state: 'SECONDARY',
-            uptime: '60 days',
-            lag: '450',
-            oplog: '12',
-        },
-    ];
-
-    // ============ SECTION 8: SHARDING ============
-    const shardDistributionData = [
-        { name: 'shard-01', value: 85, label: '85M' },
-        { name: 'shard-02', value: 82, label: '82M' },
-        { name: 'shard-03', value: 83, label: '83M' },
-    ];
-
-    const shardingColumns = [
-        { key: 'shard', label: 'Shard', width: 120 },
-        { key: 'dbs', label: 'DBs', width: 80, align: 'right' },
-        { key: 'collections', label: 'Collections', width: 120, align: 'right' },
-        { key: 'documents', label: 'Documents', width: 150, align: 'right' },
-        { key: 'size', label: 'Size (GB)', width: 120, align: 'right' },
-    ];
-
-    const shardingData = [
-        {
-            id: '1',
-            shard: 'shard-01',
-            dbs: '3',
-            collections: '42',
-            documents: '85,000,000',
-            size: '120',
-        },
-        {
-            id: '2',
-            shard: 'shard-02',
-            dbs: '3',
-            collections: '42',
-            documents: '82,000,000',
-            size: '115',
-        },
-        {
-            id: '3',
-            shard: 'shard-03',
-            dbs: '3',
-            collections: '42',
-            documents: '83,000,000',
-            size: '118',
-        },
-    ];
-
-    // ============ SECTION 9: STORAGE ============
-    const storageDistributionData = [
-        { name: 'ecommerce', value: 180, label: '180GB' },
-        { name: 'analytics', value: 95, label: '95GB' },
-        { name: 'social', value: 45, label: '45GB' },
-        { name: 'logs', value: 25, label: '25GB' },
-        { name: 'config', value: 5, label: '5GB' },
-        { name: 'admin', value: 3, label: '3GB' },
-    ];
-
-    const storageColumns = [
-        { key: 'database', label: 'Database', width: 120 },
-        { key: 'size', label: 'Size (GB)', width: 120, align: 'right' },
-        { key: 'collections', label: 'Collections', width: 130, align: 'right' },
-        { key: 'documents', label: 'Documents', width: 150, align: 'right' },
-    ];
-
-    const storageData = [
-        {
-            id: '1',
-            database: 'ecommerce',
-            size: '180',
-            collections: '18',
-            documents: '125,000,000',
-        },
-        {
-            id: '2',
-            database: 'analytics',
-            size: '95',
-            collections: '32',
-            documents: '85,000,000',
-        },
-        {
-            id: '3',
-            database: 'social',
-            size: '45',
-            collections: '12',
-            documents: '32,000,000',
-        },
-        {
-            id: '4',
-            database: 'logs',
-            size: '25',
-            collections: '8',
-            documents: '5,000,000',
-        },
-        {
-            id: '5',
-            database: 'config',
-            size: '5',
-            collections: '4',
-            documents: '2,000,000',
-        },
-        {
-            id: '6',
-            database: 'admin',
-            size: '3',
-            collections: '2',
-            documents: '1,000,000',
-        },
-    ];
-
-    // ============ SECTION 10: ALERTS ============
-    const alertsData = [
-        {
-            id: '1',
-            severity: 'warning',
-            message: 'Replication lag exceeded 500ms on mongo-prod-03',
-            time: '13:45',
-        },
-        {
-            id: '2',
-            severity: 'info',
-            message: 'Cache utilization above 85% threshold',
-            time: '14:10',
-        },
-    ];
-
-    const ChartTooltip = ({ active, payload, label }) => {
-        if (!active || !payload) return null;
-        return (
-            <div
-                style={{
-                    backgroundColor: DS.bgSecondary,
-                    border: `1px solid ${DS.border}`,
-                    borderRadius: '6px',
-                    padding: '8px 12px',
-                    color: DS.text,
-                }}
-            >
-                <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: DS.textMuted }}>{label}</p>
-                {payload.map((entry, idx) => (
-                    <p key={idx} style={{ margin: '0', fontSize: '12px', color: entry.color }}>
-                        {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
-                    </p>
-                ))}
-            </div>
-        );
-    };
-
-    const AlertCard = ({ alert }) => {
-        const isWarning = alert.severity === 'warning';
-        const bgColor = isWarning ? `${colors.rose}11` : `${colors.cyan}11`;
-        const borderColor = isWarning ? colors.rose : colors.cyan;
-        const Icon = isWarning ? AlertCircle : CheckCircle;
-
-        return (
-            <div
-                style={{
-                    backgroundColor: bgColor,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: '8px',
-                    padding: '16px',
-                    display: 'flex',
-                    gap: '12px',
-                    alignItems: 'flex-start',
-                }}
-            >
-                <Icon size={20} color={borderColor} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                    <p
-                        style={{
-                            margin: '0 0 4px 0',
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            color: DS.text,
-                        }}
-                    >
-                        {alert.message}
-                    </p>
-                    <p
-                        style={{
-                            margin: 0,
-                            fontSize: '12px',
-                            color: DS.textMuted,
-                        }}
-                    >
-                        {alert.time}
-                    </p>
-                </div>
-            </div>
-        );
-    };
-
+/* ── tiny inline helpers (no external deps) ─────────────────────────── */
+const Card = ({ children, style }) => {
+    const DS = getDS();
     return (
         <div
             style={{
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '24px',
+                background: DS.surface,
+                border: `1px solid ${DS.border}`,
+                borderRadius: 14,
+                padding: 20,
+                ...style,
             }}
         >
-            {/* ============ SECTION 1: HEALTH OVERVIEW ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.emerald,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Health Overview
-                    </h2>
-                    <ChipBadge label="DEMO DATA" variant="amber" />
-                </div>
-
-                <GlassCard>
-                    <div
-                        style={{
-                            display: 'flex',
-                            gap: '24px',
-                            alignItems: 'center',
-                            marginBottom: '24px',
-                        }}
-                    >
-                        <div style={{ flex: 1 }}>
-                            <p
-                                style={{
-                                    margin: '0 0 4px 0',
-                                    fontSize: '12px',
-                                    fontWeight: 600,
-                                    color: DS.textMuted,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                MongoDB Demo Dashboard
-                            </p>
-                            <p
-                                style={{
-                                    margin: 0,
-                                    fontSize: '24px',
-                                    fontWeight: 700,
-                                    color: DS.text,
-                                }}
-                            >
-                                System Healthy
-                            </p>
-                        </div>
-                        <ResourceGauge label="Health Score" value={92} max={100} color={colors.emerald} size="lg" />
-                    </div>
-
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '16px',
-                            marginBottom: '24px',
-                        }}
-                    >
-                        <MetricCard
-                            icon={<Zap size={20} color={colors.cyan} />}
-                            label="Connections"
-                            value="184"
-                            unit=""
-                            trend="stable"
-                        />
-                        <MetricCard
-                            icon={<TrendingUp size={20} color={colors.violet} />}
-                            label="Ops/sec"
-                            value="8,420"
-                            unit=""
-                            trend="up"
-                        />
-                        <MetricCard
-                            icon={<Clock size={20} color={colors.amber} />}
-                            label="Avg Latency"
-                            value="1.8"
-                            unit="ms"
-                            trend="stable"
-                        />
-                        <MetricCard
-                            icon={<GitBranch size={20} color={colors.rose} />}
-                            label="Repl Lag"
-                            value="0.3"
-                            unit="s"
-                            trend="down"
-                        />
-                    </div>
-
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '12px',
-                            paddingTop: '16px',
-                            borderTop: `1px solid ${DS.border}`,
-                        }}
-                    >
-                        {Object.entries(serverInfo).map(([key, value]) => (
-                            <div key={key}>
-                                <p
-                                    style={{
-                                        margin: '0 0 4px 0',
-                                        fontSize: '11px',
-                                        fontWeight: 600,
-                                        color: DS.textMuted,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.5px',
-                                    }}
-                                >
-                                    {key}
-                                </p>
-                                <p
-                                    style={{
-                                        margin: 0,
-                                        fontSize: '13px',
-                                        color: DS.text,
-                                        fontFamily: 'monospace',
-                                    }}
-                                >
-                                    {value}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </GlassCard>
-            </section>
-
-            {/* ============ SECTION 2: OPERATIONS ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.violet,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Operations
-                    </h2>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <p
-                            style={{
-                                margin: '0 0 16px 0',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: DS.text,
-                            }}
-                        >
-                            Operations History
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={opsData}>
-                                <defs>
-                                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={colors.cyan} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={colors.cyan} stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="colorRead" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={colors.emerald} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={colors.emerald} stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="colorWrite" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={colors.rose} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={colors.rose} stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <XAxis
-                                    dataKey="time"
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <YAxis
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <Tooltip content={<ChartTooltip />} />
-                                <Legend wrapperStyle={{ paddingTop: '16px' }} iconType="line" />
-                                <Area
-                                    type="monotone"
-                                    dataKey="Total"
-                                    stackId="1"
-                                    stroke={colors.cyan}
-                                    fillOpacity={0.4}
-                                    fill="url(#colorTotal)"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="Read"
-                                    stackId="1"
-                                    stroke={colors.emerald}
-                                    fillOpacity={0.4}
-                                    fill="url(#colorRead)"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="Write"
-                                    stackId="1"
-                                    stroke={colors.rose}
-                                    fillOpacity={0.4}
-                                    fill="url(#colorWrite)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <BentoMetric
-                            metrics={[
-                                { label: 'Total', value: '8,420', unit: '/s' },
-                                { label: 'Reads', value: '5,200', unit: '/s' },
-                                { label: 'Writes', value: '2,400', unit: '/s' },
-                                { label: 'Commands', value: '820', unit: '/s' },
-                            ]}
-                        />
-                    </GlassCard>
-                </div>
-            </section>
-
-            {/* ============ SECTION 3: LATENCY ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.amber,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Latency
-                    </h2>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <p
-                            style={{
-                                margin: '0 0 16px 0',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: DS.text,
-                            }}
-                        >
-                            Latency Percentiles
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={latencyData}>
-                                <XAxis
-                                    dataKey="time"
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <YAxis
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <Tooltip content={<ChartTooltip />} />
-                                <Legend wrapperStyle={{ paddingTop: '16px' }} />
-                                <Line
-                                    type="monotone"
-                                    dataKey="p50"
-                                    stroke={colors.emerald}
-                                    dot={false}
-                                    strokeWidth={2}
-                                />
-                                <Line type="monotone" dataKey="p95" stroke={colors.amber} dot={false} strokeWidth={2} />
-                                <Line type="monotone" dataKey="p99" stroke={colors.rose} dot={false} strokeWidth={2} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <BentoMetric
-                            metrics={[
-                                { label: 'p50', value: '0.8', unit: 'ms' },
-                                { label: 'p95', value: '5.2', unit: 'ms' },
-                                { label: 'p99', value: '18.4', unit: 'ms' },
-                                { label: 'Active Ops', value: '24', unit: '' },
-                            ]}
-                        />
-                    </GlassCard>
-                </div>
-            </section>
-
-            {/* ============ SECTION 4: SYSTEM RESOURCES ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.rose,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        System Resources
-                    </h2>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <div
-                            style={{
-                                display: 'flex',
-                                gap: '16px',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            <ResourceGauge label="CPU" value={42} max={100} color={colors.rose} size="md" />
-                            <ResourceGauge label="Memory" value={74} max={100} color={colors.violet} size="md" />
-                            <ResourceGauge label="Cache Fill" value={86} max={100} color={colors.cyan} size="md" />
-                        </div>
-                    </GlassCard>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <p
-                            style={{
-                                margin: '0 0 16px 0',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: DS.text,
-                            }}
-                        >
-                            CPU Usage
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={cpuData}>
-                                <defs>
-                                    <linearGradient id="colorCPU" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={colors.rose} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={colors.rose} stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <XAxis
-                                    dataKey="time"
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <YAxis
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <Tooltip content={<ChartTooltip />} />
-                                <Area
-                                    type="monotone"
-                                    dataKey="CPU"
-                                    stroke={colors.rose}
-                                    fillOpacity={0.4}
-                                    fill="url(#colorCPU)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <p
-                            style={{
-                                margin: '0 0 16px 0',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: DS.text,
-                            }}
-                        >
-                            Memory Usage
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={memoryData}>
-                                <defs>
-                                    <linearGradient id="colorMemory" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={colors.violet} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={colors.violet} stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <XAxis
-                                    dataKey="time"
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <YAxis
-                                    stroke={DS.textMuted}
-                                    style={{ fontSize: '12px' }}
-                                    tick={{ fill: DS.textMuted }}
-                                />
-                                <Tooltip content={<ChartTooltip />} />
-                                <Area
-                                    type="monotone"
-                                    dataKey="Memory"
-                                    stroke={colors.violet}
-                                    fillOpacity={0.4}
-                                    fill="url(#colorMemory)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-                </div>
-            </section>
-
-            {/* ============ SECTION 5: WIREDTIGER CACHE ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.cyan,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        WiredTiger Cache
-                    </h2>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <div
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            <ResourceGauge
-                                label="Cache"
-                                value={86}
-                                max={100}
-                                color={colors.cyan}
-                                size="lg"
-                                subtitle="7,045 / 8,192 MB"
-                            />
-                        </div>
-                    </GlassCard>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <MetricCard
-                        icon={<TrendingUp size={20} color={colors.emerald} />}
-                        label="Hit Ratio"
-                        value="99.2"
-                        unit="%"
-                        trend="up"
-                    />
-                    <MetricCard
-                        icon={<Zap size={20} color={colors.rose} />}
-                        label="Eviction Rate"
-                        value="45"
-                        unit="/s"
-                        trend="stable"
-                    />
-                    <MetricCard
-                        icon={<HardDrive size={20} color={colors.amber} />}
-                        label="Dirty Pages"
-                        value="3.2"
-                        unit="%"
-                        trend="down"
-                    />
-                    <MetricCard
-                        icon={<Clock size={20} color={colors.violet} />}
-                        label="Checkpoint"
-                        value="2.4"
-                        unit="s"
-                        trend="stable"
-                    />
-                    <MetricCard
-                        icon={<Database size={20} color={colors.cyan} />}
-                        label="Journal"
-                        value="180"
-                        unit="/s"
-                        trend="up"
-                    />
-                    <MetricCard
-                        icon={<Grid3x3 size={20} color={colors.emerald} />}
-                        label="Compression"
-                        value="3.2"
-                        unit="x"
-                        trend="stable"
-                    />
-                </div>
-
-                <GlassCard>
-                    <p
-                        style={{
-                            margin: '0 0 16px 0',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: DS.text,
-                        }}
-                    >
-                        Cache Performance
-                    </p>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <AreaChart data={cacheData}>
-                            <defs>
-                                <linearGradient id="colorCache" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors.cyan} stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor={colors.cyan} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <XAxis
-                                dataKey="time"
-                                stroke={DS.textMuted}
-                                style={{ fontSize: '12px' }}
-                                tick={{ fill: DS.textMuted }}
-                            />
-                            <YAxis stroke={DS.textMuted} style={{ fontSize: '12px' }} tick={{ fill: DS.textMuted }} />
-                            <Tooltip content={<ChartTooltip />} />
-                            <Area
-                                type="monotone"
-                                dataKey="Cache"
-                                stroke={colors.cyan}
-                                fillOpacity={0.4}
-                                fill="url(#colorCache)"
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </GlassCard>
-            </section>
-
-            {/* ============ SECTION 6: SLOW QUERIES ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.rose,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Slow Queries
-                    </h2>
-                </div>
-
-                <GlassCard>
-                    <DataTable columns={slowQueriesColumns} data={slowQueriesData} />
-                </GlassCard>
-            </section>
-
-            {/* ============ SECTION 7: REPLICATION ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.emerald,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Replication
-                    </h2>
-                </div>
-
-                <GlassCard>
-                    <DataTable columns={replicationColumns} data={replicationData} />
-                </GlassCard>
-            </section>
-
-            {/* ============ SECTION 8: SHARDING ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.violet,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Sharding
-                    </h2>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <p
-                            style={{
-                                margin: '0 0 16px 0',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: DS.text,
-                            }}
-                        >
-                            Shard Distribution
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie
-                                    data={shardDistributionData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
-                                    paddingAngle={2}
-                                    dataKey="value"
-                                    label={({ label }) => label}
-                                >
-                                    <Cell fill={colors.cyan} />
-                                    <Cell fill={colors.violet} />
-                                    <Cell fill={colors.emerald} />
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <BentoMetric
-                            metrics={[
-                                { label: 'Total Shards', value: '3', unit: '' },
-                                { label: 'Total Documents', value: '250M', unit: '' },
-                                { label: 'Chunk Count', value: '842', unit: '' },
-                                { label: 'Shard Key', value: 'user_id', unit: '' },
-                            ]}
-                        />
-                    </GlassCard>
-                </div>
-
-                <GlassCard>
-                    <DataTable columns={shardingColumns} data={shardingData} />
-                </GlassCard>
-            </section>
-
-            {/* ============ SECTION 9: STORAGE ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.amber,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Storage
-                    </h2>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <p
-                            style={{
-                                margin: '0 0 16px 0',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: DS.text,
-                            }}
-                        >
-                            Database Distribution
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie
-                                    data={storageDistributionData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
-                                    paddingAngle={2}
-                                    dataKey="value"
-                                    label={({ label }) => label}
-                                >
-                                    <Cell fill={colors.cyan} />
-                                    <Cell fill={colors.violet} />
-                                    <Cell fill={colors.emerald} />
-                                    <Cell fill={colors.amber} />
-                                    <Cell fill={colors.rose} />
-                                    <Cell fill={colors.cyan} />
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <BentoMetric
-                            metrics={[
-                                { label: 'Total Size', value: '353', unit: 'GB' },
-                                { label: 'Databases', value: '6', unit: '' },
-                                { label: 'Collections', value: '76', unit: '' },
-                                { label: 'Documents', value: '250M', unit: '' },
-                            ]}
-                        />
-                    </GlassCard>
-                </div>
-
-                <GlassCard>
-                    <DataTable columns={storageColumns} data={storageData} />
-                </GlassCard>
-            </section>
-
-            {/* ============ SECTION 10: ALERTS ============ */}
-            <section>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: colors.amber,
-                        }}
-                    />
-                    <h2
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            color: DS.text,
-                            margin: 0,
-                        }}
-                    >
-                        Alerts & Events
-                    </h2>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '12px',
-                    }}
-                >
-                    {alertsData.map((alert) => (
-                        <AlertCard key={alert.id} alert={alert} />
-                    ))}
-                </div>
-            </section>
+            {children}
         </div>
     );
 };
 
-export default DemoMongoDBTab;
+const Metric = ({ label, value, sub, color }) => {
+    const DS = getDS();
+    return (
+        <div style={{ textAlign: 'center' }}>
+            <div style={{ color: DS.textSecondary, fontSize: 12, marginBottom: 4 }}>{label}</div>
+            <div style={{ color: color || DS.cyan, fontSize: 28, fontWeight: 700 }}>{value}</div>
+            {sub && <div style={{ color: DS.textSecondary, fontSize: 11, marginTop: 2 }}>{sub}</div>}
+        </div>
+    );
+};
+
+const SectionTitle = ({ children, color }) => {
+    const DS = getDS();
+    return (
+        <h3
+            style={{
+                color: color || DS.emerald,
+                fontSize: 16,
+                fontWeight: 600,
+                margin: '28px 0 12px',
+                letterSpacing: 0.5,
+            }}
+        >
+            {children}
+        </h3>
+    );
+};
+
+const ChartTooltip = ({ active, payload, label }) => {
+    const DS = getDS();
+    if (!active || !payload?.length) return null;
+    return (
+        <div
+            style={{
+                background: DS.surfaceAlt || DS.surface,
+                border: `1px solid ${DS.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            <div style={{ color: DS.textSecondary, marginBottom: 4 }}>{label}</div>
+            {payload.map((p, i) => (
+                <div key={i} style={{ color: p.color }}>
+                    {p.name}: {p.value}
+                </div>
+            ))}
+        </div>
+    );
+};
+
+/* ── demo data ──────────────────────────────────────────────────────── */
+const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+
+const opsData = hours.map((t) => ({
+    time: t,
+    queries: 3200 + Math.round(Math.random() * 1500),
+    inserts: 800 + Math.round(Math.random() * 400),
+    updates: 450 + Math.round(Math.random() * 250),
+    deletes: 90 + Math.round(Math.random() * 60),
+}));
+
+const connData = hours.map((t) => ({
+    time: t,
+    current: 120 + Math.round(Math.random() * 60),
+    available: 800 - Math.round(Math.random() * 60),
+}));
+
+const latencyData = hours.map((t) => ({
+    time: t,
+    read: +(0.5 + Math.random() * 3).toFixed(2),
+    write: +(1 + Math.random() * 5).toFixed(2),
+}));
+
+const memoryData = hours.map((t) => ({
+    time: t,
+    resident: 4.2 + +(Math.random() * 0.8).toFixed(2),
+    virtual: 8.1 + +(Math.random() * 1.2).toFixed(2),
+    mapped: 3.8 + +(Math.random() * 0.5).toFixed(2),
+}));
+
+const replData = hours.map((t) => ({
+    time: t,
+    lag: +(Math.random() * 1.8).toFixed(2),
+    oplogWindow: +(48 - Math.random() * 6).toFixed(1),
+}));
+
+const collectionSizes = [
+    { name: 'orders', value: 42 },
+    { name: 'products', value: 18 },
+    { name: 'users', value: 12 },
+    { name: 'sessions', value: 15 },
+    { name: 'logs', value: 13 },
+];
+
+const shardData = [
+    { shard: 'shard-0', chunks: 256, docs: '12.4M', storage: '8.2 GB', status: 'PRIMARY' },
+    { shard: 'shard-1', chunks: 241, docs: '11.8M', storage: '7.9 GB', status: 'PRIMARY' },
+    { shard: 'shard-2', chunks: 248, docs: '12.1M', storage: '8.0 GB', status: 'PRIMARY' },
+];
+
+const slowOps = [
+    { op: 'find', ns: 'ecommerce.orders', duration: '3.2s', plan: 'COLLSCAN', docs: '2.4M' },
+    { op: 'aggregate', ns: 'ecommerce.analytics', duration: '2.8s', plan: 'IXSCAN', docs: '1.1M' },
+    { op: 'update', ns: 'ecommerce.inventory', duration: '1.9s', plan: 'IXSCAN', docs: '340K' },
+    { op: 'find', ns: 'ecommerce.users', duration: '1.4s', plan: 'COLLSCAN', docs: '890K' },
+    { op: 'mapReduce', ns: 'ecommerce.logs', duration: '1.1s', plan: 'COLLSCAN', docs: '5.6M' },
+];
+
+const PIE_COLORS = ['#38bdf8', '#818cf8', '#fbbf24', '#34d399', '#fb7185'];
+
+/* ── main component ─────────────────────────────────────────────────── */
+export default function DemoMongoDBTab() {
+    const DS = useMemo(() => getDS(), []);
+    const grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 };
+
+    return (
+        <div style={{ padding: 24, color: DS.text, minHeight: '100vh' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: DS.emerald, marginBottom: 4 }}>
+                MongoDB Demo Dashboard
+            </h2>
+            <p style={{ color: DS.textSecondary, fontSize: 13, marginBottom: 24 }}>
+                Sample metrics for a MongoDB 7.0 sharded cluster — ecommerce (replica set rs0)
+            </p>
+
+            {/* ── Health Overview ────────────────────────────────────── */}
+            <SectionTitle color={DS.cyan}>Cluster Health</SectionTitle>
+            <div style={grid}>
+                <Card>
+                    <Metric label="Uptime" value="89d" sub="Since restart" color={DS.emerald} />
+                </Card>
+                <Card>
+                    <Metric label="Ops/sec" value="4,820" sub="All operations" color={DS.cyan} />
+                </Card>
+                <Card>
+                    <Metric label="Connections" value="182" sub="of 800 max" color={DS.amber} />
+                </Card>
+                <Card>
+                    <Metric label="Resident Mem" value="4.6 GB" sub="WiredTiger cache" color={DS.violet} />
+                </Card>
+                <Card>
+                    <Metric label="Repl Lag" value="0.3s" sub="Max secondary" color={DS.emerald} />
+                </Card>
+                <Card>
+                    <Metric label="Slow Ops" value="8" sub="Last 24 h" color={DS.rose} />
+                </Card>
+            </div>
+
+            {/* ── Operations ─────────────────────────────────────────── */}
+            <SectionTitle color={DS.violet}>Operations / sec (24 h)</SectionTitle>
+            <Card>
+                <ResponsiveContainer width="100%" height={260}>
+                    <AreaChart data={opsData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                        <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Legend />
+                        <Area
+                            type="monotone"
+                            dataKey="queries"
+                            stackId="1"
+                            stroke={DS.cyan}
+                            fill={DS.cyan}
+                            fillOpacity={0.3}
+                        />
+                        <Area
+                            type="monotone"
+                            dataKey="inserts"
+                            stackId="1"
+                            stroke={DS.emerald}
+                            fill={DS.emerald}
+                            fillOpacity={0.3}
+                        />
+                        <Area
+                            type="monotone"
+                            dataKey="updates"
+                            stackId="1"
+                            stroke={DS.amber}
+                            fill={DS.amber}
+                            fillOpacity={0.3}
+                        />
+                        <Area
+                            type="monotone"
+                            dataKey="deletes"
+                            stackId="1"
+                            stroke={DS.rose}
+                            fill={DS.rose}
+                            fillOpacity={0.3}
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </Card>
+
+            {/* ── Latency ────────────────────────────────────────────── */}
+            <SectionTitle color={DS.amber}>Read / Write Latency</SectionTitle>
+            <Card>
+                <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={latencyData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                        <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} unit=" ms" />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Legend />
+                        <Line
+                            type="monotone"
+                            dataKey="read"
+                            stroke={DS.cyan}
+                            strokeWidth={2}
+                            dot={false}
+                            name="Read (ms)"
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="write"
+                            stroke={DS.rose}
+                            strokeWidth={2}
+                            dot={false}
+                            name="Write (ms)"
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </Card>
+
+            {/* ── Connections & Memory ───────────────────────────────── */}
+            <SectionTitle color={DS.emerald}>Connections & Memory</SectionTitle>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Card>
+                    <div style={{ textAlign: 'center', fontSize: 13, color: DS.textSecondary, marginBottom: 8 }}>
+                        Connections
+                    </div>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <AreaChart data={connData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                            <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                            <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Area
+                                type="monotone"
+                                dataKey="current"
+                                stroke={DS.cyan}
+                                fill={DS.cyan}
+                                fillOpacity={0.25}
+                                name="Current"
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
+                <Card>
+                    <div style={{ textAlign: 'center', fontSize: 13, color: DS.textSecondary, marginBottom: 8 }}>
+                        Memory Usage (GB)
+                    </div>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <LineChart data={memoryData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                            <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                            <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Legend />
+                            <Line type="monotone" dataKey="resident" stroke={DS.cyan} strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="virtual" stroke={DS.violet} strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="mapped" stroke={DS.amber} strokeWidth={2} dot={false} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Card>
+            </div>
+
+            {/* ── Collection Storage ─────────────────────────────────── */}
+            <SectionTitle color={DS.amber}>Collection Storage Distribution</SectionTitle>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Card>
+                    <ResponsiveContainer width="100%" height={240}>
+                        <PieChart>
+                            <Pie
+                                data={collectionSizes}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={50}
+                                outerRadius={90}
+                                dataKey="value"
+                                label={({ name, value }) => `${name} (${value} GB)`}
+                            >
+                                {collectionSizes.map((_, i) => (
+                                    <Cell key={i} fill={PIE_COLORS[i]} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </Card>
+                <Card>
+                    <div style={{ fontSize: 13, color: DS.textSecondary, marginBottom: 12 }}>Shard Distribution</div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                            <tr style={{ borderBottom: `1px solid ${DS.border}` }}>
+                                {['Shard', 'Chunks', 'Documents', 'Storage', 'Role'].map((h) => (
+                                    <th
+                                        key={h}
+                                        style={{
+                                            padding: '6px 8px',
+                                            textAlign: 'left',
+                                            color: DS.textSecondary,
+                                            fontWeight: 500,
+                                        }}
+                                    >
+                                        {h}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {shardData.map((s, i) => (
+                                <tr key={i} style={{ borderBottom: `1px solid ${DS.border}22` }}>
+                                    <td
+                                        style={{
+                                            padding: '6px 8px',
+                                            color: DS.cyan,
+                                            fontFamily: 'JetBrains Mono, monospace',
+                                        }}
+                                    >
+                                        {s.shard}
+                                    </td>
+                                    <td style={{ padding: '6px 8px', color: DS.text }}>{s.chunks}</td>
+                                    <td style={{ padding: '6px 8px', color: DS.amber }}>{s.docs}</td>
+                                    <td style={{ padding: '6px 8px', color: DS.text }}>{s.storage}</td>
+                                    <td style={{ padding: '6px 8px' }}>
+                                        <span
+                                            style={{
+                                                padding: '2px 8px',
+                                                borderRadius: 6,
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                background: `${DS.emerald}22`,
+                                                color: DS.emerald,
+                                            }}
+                                        >
+                                            {s.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </Card>
+            </div>
+
+            {/* ── Replication ────────────────────────────────────────── */}
+            <SectionTitle color={DS.rose}>Replication Lag & Oplog</SectionTitle>
+            <Card>
+                <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={replData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                        <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis yAxisId="left" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis yAxisId="right" orientation="right" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Legend />
+                        <Line
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="lag"
+                            stroke={DS.rose}
+                            strokeWidth={2}
+                            dot={false}
+                            name="Lag (s)"
+                        />
+                        <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="oplogWindow"
+                            stroke={DS.violet}
+                            strokeWidth={2}
+                            dot={false}
+                            name="Oplog Window (h)"
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </Card>
+
+            {/* ── Slow Operations ────────────────────────────────────── */}
+            <SectionTitle color={DS.rose}>Top Slow Operations</SectionTitle>
+            <Card>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <thead>
+                        <tr style={{ borderBottom: `1px solid ${DS.border}` }}>
+                            {['Operation', 'Namespace', 'Duration', 'Plan', 'Docs Examined'].map((h) => (
+                                <th
+                                    key={h}
+                                    style={{
+                                        padding: '8px 10px',
+                                        textAlign: 'left',
+                                        color: DS.textSecondary,
+                                        fontWeight: 500,
+                                    }}
+                                >
+                                    {h}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {slowOps.map((q, i) => (
+                            <tr key={i} style={{ borderBottom: `1px solid ${DS.border}22` }}>
+                                <td style={{ padding: '8px 10px', color: DS.cyan, fontWeight: 600 }}>{q.op}</td>
+                                <td
+                                    style={{
+                                        padding: '8px 10px',
+                                        fontFamily: 'JetBrains Mono, monospace',
+                                        color: DS.text,
+                                    }}
+                                >
+                                    {q.ns}
+                                </td>
+                                <td style={{ padding: '8px 10px', color: DS.rose, fontWeight: 600 }}>{q.duration}</td>
+                                <td style={{ padding: '8px 10px' }}>
+                                    <span
+                                        style={{
+                                            padding: '2px 8px',
+                                            borderRadius: 6,
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            background: q.plan === 'COLLSCAN' ? `${DS.rose}22` : `${DS.emerald}22`,
+                                            color: q.plan === 'COLLSCAN' ? DS.rose : DS.emerald,
+                                        }}
+                                    >
+                                        {q.plan}
+                                    </span>
+                                </td>
+                                <td style={{ padding: '8px 10px', color: DS.amber }}>{q.docs}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
+        </div>
+    );
+}

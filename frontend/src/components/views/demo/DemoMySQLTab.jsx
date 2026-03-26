@@ -1,662 +1,421 @@
-import React from 'react';
-import { GlassCard, MetricCard, BentoMetric, DataTable, ResourceGauge, ChipBadge } from '../../ui/SharedComponents.jsx';
-import { getDS } from '../../../config/designTokens.js';
+// ==========================================================================
+//  DemoMySQLTab — Self-contained MySQL demo dashboard
+// ==========================================================================
+import React, { useMemo } from 'react';
 import {
     LineChart,
     Line,
     AreaChart,
     Area,
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    Legend,
     PieChart,
     Pie,
     Cell,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
 } from 'recharts';
-import { Activity, Database, Lock, AlertCircle, TrendingUp, Server, Settings } from 'lucide-react';
+import { getDS } from '../../../config/designTokens.js';
 
-const DS = getDS();
-
-// Demo data generators
-const generateChartData = (values) => {
-    return values.map((value, i) => ({
-        time: `${i}h`,
-        value,
-    }));
-};
-
-const DemoMySQLTab = ({ tabId }) => {
-    // Section 1: Server Vitals Data
-    const qpsHistoryData = generateChartData([
-        3800, 4000, 4200, 4500, 4820, 5100, 4900, 4600, 4400, 4200, 4000, 3800, 3600, 3800, 4000, 4200, 4500, 4820,
-        5100, 4900, 4600, 4400, 4200, 4000,
-    ]);
-
-    const tpsHistoryData = generateChartData([
-        1200, 1300, 1400, 1500, 1580, 1650, 1600, 1520, 1450, 1380, 1300, 1200, 1150, 1200, 1300, 1400, 1500, 1580,
-        1650, 1600, 1520, 1450, 1380, 1300,
-    ]);
-
-    const latencyHistoryData = generateChartData([
-        2.8, 3.0, 3.2, 3.4, 3.6, 3.4, 3.2, 3.0, 2.8, 3.0, 3.2, 3.4, 3.6, 3.4, 3.2, 3.0, 2.8, 3.0, 3.2, 3.4, 3.6, 3.4,
-        3.2, 3.0,
-    ]);
-
-    // Section 3: Command Breakdown Data
-    const commandData = [
-        { name: 'SELECT', value: 3200, fill: DS.cyan },
-        { name: 'INSERT', value: 820, fill: '#34d399' },
-        { name: 'UPDATE', value: 580, fill: '#818cf8' },
-        { name: 'DELETE', value: 220, fill: '#fb7185' },
-    ];
-
-    const commandBarData = [
-        { name: 'SELECT', value: 3200 },
-        { name: 'INSERT', value: 820 },
-        { name: 'UPDATE', value: 580 },
-        { name: 'DELETE', value: 220 },
-    ];
-
-    // Section 4: InnoDB Buffer Pool Data
-    const bufferPoolData = generateChartData([
-        78, 79, 80, 81, 82, 84, 83, 82, 81, 80, 79, 78, 77, 78, 79, 80, 81, 82, 84, 83, 82, 81, 80, 79,
-    ]);
-
-    // Section 5: System Resources Data
-    const cpuHistoryData = generateChartData([
-        25, 28, 30, 32, 35, 38, 36, 34, 32, 30, 28, 25, 24, 26, 28, 30, 32, 35, 38, 36, 34, 32, 30, 28,
-    ]);
-
-    const memoryHistoryData = generateChartData([
-        62, 64, 65, 66, 68, 70, 69, 68, 67, 66, 65, 63, 62, 63, 64, 65, 66, 68, 70, 69, 68, 67, 66, 65,
-    ]);
-
-    const connectionsHistoryData = generateChartData([
-        70, 75, 80, 85, 90, 95, 100, 98, 92, 88, 85, 80, 75, 78, 82, 86, 90, 95, 100, 98, 92, 88, 85, 80,
-    ]);
-
-    // Section 6: Slow Queries
-    const slowQueriesData = [
-        {
-            query: 'SELECT c.*, COUNT(o.id) order_count, SUM...',
-            avgTime: '1,240ms',
-            calls: 480,
-            rowsExamined: '5,200,000',
-        },
-        {
-            query: 'SELECT p.*, GROUP_CONCAT(t.name) tags...',
-            avgTime: '780ms',
-            calls: 1200,
-            rowsExamined: '2,800,000',
-        },
-        {
-            query: 'INSERT INTO analytics_events...',
-            avgTime: '2,100ms',
-            calls: 24,
-            rowsExamined: '4,000,000',
-        },
-    ];
-
-    // Section 7: Replication
-    const replicationData = [
-        {
-            name: 'mysql-replica-01',
-            lag: '0.5s',
-            state: 'Running',
-            gtid: 'a1b2...458920',
-        },
-        {
-            name: 'mysql-replica-02',
-            lag: '0.8s',
-            state: 'Running',
-            gtid: 'a1b2...458918',
-        },
-    ];
-
+/* ── tiny inline helpers (no external deps) ─────────────────────────── */
+const Card = ({ children, style }) => {
+    const DS = getDS();
     return (
         <div
             style={{
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '24px',
-                backgroundColor: DS.bg,
-                color: DS.text,
+                background: DS.surface,
+                border: `1px solid ${DS.border}`,
+                borderRadius: 14,
+                padding: 20,
+                ...style,
             }}
         >
-            {/* Section 1: Server Vitals */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: DS.cyan,
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Server Vitals</h2>
-                    <ChipBadge label="DEMO DATA" color="amber" />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <MetricCard label="QPS" value="4,820" unit="queries/s" />
-                    <MetricCard label="TPS" value="1,580" unit="transactions/s" />
-                    <MetricCard label="Connections" value="95/300" unit="active" />
-                    <MetricCard label="Uptime" value="34" unit="days" />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <ResourceGauge label="CPU" value={35} unit="%" color={DS.cyan} />
-                    <ResourceGauge label="Memory" value={68} unit="%" color="#34d399" />
-                </div>
-            </div>
-
-            {/* Section 2: Query Performance */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#818cf8',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Query Performance</h2>
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>QPS History</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={qpsHistoryData}>
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke={DS.cyan}
-                                    strokeWidth={2}
-                                    dot={false}
-                                    isAnimationActive={false}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>TPS History</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={tpsHistoryData}>
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke="#34d399"
-                                    strokeWidth={2}
-                                    dot={false}
-                                    isAnimationActive={false}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Latency History</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={latencyHistoryData}>
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke="#818cf8"
-                                    strokeWidth={2}
-                                    dot={false}
-                                    isAnimationActive={false}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <BentoMetric
-                        metrics={[
-                            { label: 'Avg Query', value: '3.2ms' },
-                            { label: 'p95', value: '15.4ms' },
-                            { label: 'Slow Queries', value: '22' },
-                            { label: 'Full Scans', value: '6.8%' },
-                        ]}
-                    />
-                </div>
-            </div>
-
-            {/* Section 3: Command Breakdown */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#34d399',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Command Breakdown</h2>
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Distribution</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie
-                                    data={commandData}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    label={({ name, value }) => `${name}: ${value}/s`}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {commandData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Commands/sec</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={commandBarData}>
-                                <XAxis
-                                    dataKey="name"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Bar dataKey="value" fill={DS.cyan} isAnimationActive={false} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-                </div>
-            </div>
-
-            {/* Section 4: InnoDB Engine */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#fbbf24',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>InnoDB Engine</h2>
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <ResourceGauge label="Buffer Pool" value={82} unit="%" color="#34d399" />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <MetricCard label="Cache Hit" value="99.6" unit="%" />
-                    <MetricCard label="Log Writes" value="450" unit="/s" />
-                    <MetricCard label="Page Reads" value="1,200" unit="/s" />
-                    <MetricCard label="Page Writes" value="380" unit="/s" />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Buffer Pool History</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={bufferPoolData}>
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    fill={`${DS.cyan}33`}
-                                    stroke={DS.cyan}
-                                    strokeWidth={2}
-                                    isAnimationActive={false}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-                </div>
-            </div>
-
-            {/* Section 5: System Resources */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#fb7185',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>System Resources</h2>
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <ResourceGauge label="CPU" value={35} unit="%" color={DS.cyan} />
-                    <ResourceGauge label="Memory" value={68} unit="%" color="#34d399" />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>CPU Usage</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={cpuHistoryData}>
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    fill={`${DS.cyan}33`}
-                                    stroke={DS.cyan}
-                                    strokeWidth={2}
-                                    isAnimationActive={false}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Memory Usage</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={memoryHistoryData}>
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    fill={`#34d39933`}
-                                    stroke="#34d399"
-                                    strokeWidth={2}
-                                    isAnimationActive={false}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-
-                    <GlassCard>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Active Connections</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={connectionsHistoryData}>
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: DS.textMuted, fontSize: 12 }}
-                                    stroke={`${DS.border}44`}
-                                />
-                                <YAxis tick={{ fill: DS.textMuted, fontSize: 12 }} stroke={`${DS.border}44`} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: DS.bgHover,
-                                        border: `1px solid ${DS.border}`,
-                                        borderRadius: '8px',
-                                    }}
-                                    labelStyle={{ color: DS.text }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke="#818cf8"
-                                    strokeWidth={2}
-                                    dot={false}
-                                    isAnimationActive={false}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </GlassCard>
-                </div>
-            </div>
-
-            {/* Section 6: Slow Queries */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#f59e0b',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Slow Queries</h2>
-                </div>
-                <DataTable
-                    columns={['Query', 'Avg Time', 'Calls', 'Rows Examined']}
-                    data={slowQueriesData.map((q) => [q.query, q.avgTime, q.calls, q.rowsExamined])}
-                />
-            </div>
-
-            {/* Section 7: Replication */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#ec4899',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Replication</h2>
-                </div>
-                <DataTable
-                    columns={['Replica', 'Lag', 'State', 'GTID']}
-                    data={replicationData.map((r) => [r.name, r.lag, r.state, r.gtid])}
-                />
-            </div>
+            {children}
         </div>
     );
 };
 
-export default DemoMySQLTab;
+const Metric = ({ label, value, sub, color }) => {
+    const DS = getDS();
+    return (
+        <div style={{ textAlign: 'center' }}>
+            <div style={{ color: DS.textSecondary, fontSize: 12, marginBottom: 4 }}>{label}</div>
+            <div style={{ color: color || DS.cyan, fontSize: 28, fontWeight: 700 }}>{value}</div>
+            {sub && <div style={{ color: DS.textSecondary, fontSize: 11, marginTop: 2 }}>{sub}</div>}
+        </div>
+    );
+};
+
+const SectionTitle = ({ children, color }) => {
+    const DS = getDS();
+    return (
+        <h3
+            style={{
+                color: color || DS.amber,
+                fontSize: 16,
+                fontWeight: 600,
+                margin: '28px 0 12px',
+                letterSpacing: 0.5,
+            }}
+        >
+            {children}
+        </h3>
+    );
+};
+
+const ChartTooltip = ({ active, payload, label }) => {
+    const DS = getDS();
+    if (!active || !payload?.length) return null;
+    return (
+        <div
+            style={{
+                background: DS.surfaceAlt || DS.surface,
+                border: `1px solid ${DS.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            <div style={{ color: DS.textSecondary, marginBottom: 4 }}>{label}</div>
+            {payload.map((p, i) => (
+                <div key={i} style={{ color: p.color }}>
+                    {p.name}: {p.value}
+                </div>
+            ))}
+        </div>
+    );
+};
+
+/* ── demo data generators ───────────────────────────────────────────── */
+const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+
+const qpsData = hours.map((t) => ({
+    time: t,
+    selects: 1200 + Math.round(Math.random() * 800),
+    inserts: 300 + Math.round(Math.random() * 200),
+    updates: 180 + Math.round(Math.random() * 120),
+    deletes: 40 + Math.round(Math.random() * 30),
+}));
+
+const connData = hours.map((t) => ({
+    time: t,
+    active: 45 + Math.round(Math.random() * 30),
+    idle: 20 + Math.round(Math.random() * 15),
+    max: 151,
+}));
+
+const bufferData = hours.map((t) => ({
+    time: t,
+    hitRate: +(99 + Math.random() * 0.9).toFixed(2),
+}));
+
+const replicationData = hours.map((t) => ({
+    time: t,
+    lag: +(Math.random() * 2.5).toFixed(2),
+}));
+
+const slowQueries = [
+    {
+        query: 'SELECT * FROM orders WHERE created_at > ? ORDER BY total DESC',
+        time: '4.82s',
+        rows: '1.2M',
+        fullScan: true,
+    },
+    {
+        query: 'UPDATE inventory SET qty = qty - ? WHERE sku IN (SELECT ...)',
+        time: '3.15s',
+        rows: '89K',
+        fullScan: false,
+    },
+    {
+        query: 'SELECT u.*, COUNT(o.id) FROM users u LEFT JOIN orders o ...',
+        time: '2.67s',
+        rows: '450K',
+        fullScan: true,
+    },
+    {
+        query: 'DELETE FROM sessions WHERE last_active < NOW() - INTERVAL 30 DAY',
+        time: '1.94s',
+        rows: '2.1M',
+        fullScan: false,
+    },
+    {
+        query: 'INSERT INTO analytics_daily SELECT DATE(ts), COUNT(*) ...',
+        time: '1.53s',
+        rows: '680K',
+        fullScan: false,
+    },
+];
+
+const enginePie = [
+    { name: 'InnoDB', value: 87 },
+    { name: 'MyISAM', value: 8 },
+    { name: 'MEMORY', value: 5 },
+];
+
+const innodbData = hours.map((t) => ({
+    time: t,
+    reads: 4500 + Math.round(Math.random() * 2000),
+    writes: 1200 + Math.round(Math.random() * 800),
+}));
+
+const PIE_COLORS = ['#38bdf8', '#818cf8', '#fbbf24'];
+
+/* ── main component ─────────────────────────────────────────────────── */
+export default function DemoMySQLTab() {
+    const DS = useMemo(() => getDS(), []);
+    const grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 };
+
+    return (
+        <div style={{ padding: 24, color: DS.text, minHeight: '100vh' }}>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: DS.amber, marginBottom: 4 }}>MySQL Demo Dashboard</h2>
+            <p style={{ color: DS.textSecondary, fontSize: 13, marginBottom: 24 }}>
+                Sample metrics for a MySQL 8.0 instance — demo_ecommerce (read-write primary)
+            </p>
+
+            {/* ── Health Overview ────────────────────────────────────── */}
+            <SectionTitle color={DS.cyan}>Health Overview</SectionTitle>
+            <div style={grid}>
+                <Card>
+                    <Metric label="Uptime" value="142d" sub="Since last restart" color={DS.emerald} />
+                </Card>
+                <Card>
+                    <Metric label="QPS" value="2,340" sub="Queries / sec" color={DS.cyan} />
+                </Card>
+                <Card>
+                    <Metric label="Threads Running" value="48" sub="of 151 max" color={DS.amber} />
+                </Card>
+                <Card>
+                    <Metric label="Buffer Pool Hit" value="99.7%" sub="InnoDB cache" color={DS.emerald} />
+                </Card>
+                <Card>
+                    <Metric label="Slow Queries" value="12" sub="Last 24 h" color={DS.rose} />
+                </Card>
+                <Card>
+                    <Metric label="Repl Lag" value="0.4s" sub="Replica avg" color={DS.violet} />
+                </Card>
+            </div>
+
+            {/* ── QPS Breakdown ──────────────────────────────────────── */}
+            <SectionTitle color={DS.violet}>QPS Breakdown (24 h)</SectionTitle>
+            <Card>
+                <ResponsiveContainer width="100%" height={260}>
+                    <AreaChart data={qpsData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                        <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Legend />
+                        <Area
+                            type="monotone"
+                            dataKey="selects"
+                            stackId="1"
+                            stroke={DS.cyan}
+                            fill={DS.cyan}
+                            fillOpacity={0.3}
+                        />
+                        <Area
+                            type="monotone"
+                            dataKey="inserts"
+                            stackId="1"
+                            stroke={DS.emerald}
+                            fill={DS.emerald}
+                            fillOpacity={0.3}
+                        />
+                        <Area
+                            type="monotone"
+                            dataKey="updates"
+                            stackId="1"
+                            stroke={DS.amber}
+                            fill={DS.amber}
+                            fillOpacity={0.3}
+                        />
+                        <Area
+                            type="monotone"
+                            dataKey="deletes"
+                            stackId="1"
+                            stroke={DS.rose}
+                            fill={DS.rose}
+                            fillOpacity={0.3}
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </Card>
+
+            {/* ── Connections ────────────────────────────────────────── */}
+            <SectionTitle color={DS.emerald}>Connections</SectionTitle>
+            <Card>
+                <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={connData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                        <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Legend />
+                        <Line type="monotone" dataKey="active" stroke={DS.cyan} strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="idle" stroke={DS.amber} strokeWidth={2} dot={false} />
+                        <Line
+                            type="monotone"
+                            dataKey="max"
+                            stroke={DS.rose}
+                            strokeWidth={1}
+                            strokeDasharray="5 5"
+                            dot={false}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </Card>
+
+            {/* ── InnoDB & Storage Engines ───────────────────────────── */}
+            <SectionTitle color={DS.amber}>InnoDB I/O & Storage Engines</SectionTitle>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+                <Card>
+                    <ResponsiveContainer width="100%" height={220}>
+                        <AreaChart data={innodbData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                            <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                            <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Legend />
+                            <Area type="monotone" dataKey="reads" stroke={DS.cyan} fill={DS.cyan} fillOpacity={0.25} />
+                            <Area
+                                type="monotone"
+                                dataKey="writes"
+                                stroke={DS.violet}
+                                fill={DS.violet}
+                                fillOpacity={0.25}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
+                <Card>
+                    <div style={{ textAlign: 'center', fontSize: 13, color: DS.textSecondary, marginBottom: 8 }}>
+                        Storage Engine Mix
+                    </div>
+                    <ResponsiveContainer width="100%" height={190}>
+                        <PieChart>
+                            <Pie
+                                data={enginePie}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={45}
+                                outerRadius={75}
+                                dataKey="value"
+                                label={({ name, value }) => `${name} ${value}%`}
+                            >
+                                {enginePie.map((_, i) => (
+                                    <Cell key={i} fill={PIE_COLORS[i]} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </Card>
+            </div>
+
+            {/* ── Buffer Pool Hit Rate ──────────────────────────────── */}
+            <SectionTitle color={DS.cyan}>Buffer Pool Hit Rate</SectionTitle>
+            <Card>
+                <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={bufferData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                        <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis domain={[99, 100]} stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Line
+                            type="monotone"
+                            dataKey="hitRate"
+                            stroke={DS.emerald}
+                            strokeWidth={2}
+                            dot={false}
+                            name="Hit Rate %"
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </Card>
+
+            {/* ── Replication Lag ────────────────────────────────────── */}
+            <SectionTitle color={DS.rose}>Replication Lag</SectionTitle>
+            <Card>
+                <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={replicationData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={DS.border} />
+                        <XAxis dataKey="time" stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <YAxis stroke={DS.textSecondary} tick={{ fontSize: 10 }} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Area
+                            type="monotone"
+                            dataKey="lag"
+                            stroke={DS.rose}
+                            fill={DS.rose}
+                            fillOpacity={0.2}
+                            name="Lag (s)"
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </Card>
+
+            {/* ── Slow Queries ───────────────────────────────────────── */}
+            <SectionTitle color={DS.rose}>Top Slow Queries</SectionTitle>
+            <Card>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <thead>
+                        <tr style={{ borderBottom: `1px solid ${DS.border}` }}>
+                            {['Query', 'Time', 'Rows Examined', 'Full Scan'].map((h) => (
+                                <th
+                                    key={h}
+                                    style={{
+                                        padding: '8px 10px',
+                                        textAlign: 'left',
+                                        color: DS.textSecondary,
+                                        fontWeight: 500,
+                                    }}
+                                >
+                                    {h}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {slowQueries.map((q, i) => (
+                            <tr key={i} style={{ borderBottom: `1px solid ${DS.border}22` }}>
+                                <td
+                                    style={{
+                                        padding: '8px 10px',
+                                        fontFamily: 'JetBrains Mono, monospace',
+                                        color: DS.text,
+                                        maxWidth: 420,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {q.query}
+                                </td>
+                                <td style={{ padding: '8px 10px', color: DS.rose, fontWeight: 600 }}>{q.time}</td>
+                                <td style={{ padding: '8px 10px', color: DS.amber }}>{q.rows}</td>
+                                <td style={{ padding: '8px 10px' }}>
+                                    <span
+                                        style={{
+                                            display: 'inline-block',
+                                            padding: '2px 8px',
+                                            borderRadius: 6,
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            background: q.fullScan ? `${DS.rose}22` : `${DS.emerald}22`,
+                                            color: q.fullScan ? DS.rose : DS.emerald,
+                                        }}
+                                    >
+                                        {q.fullScan ? 'YES' : 'NO'}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
+        </div>
+    );
+}
