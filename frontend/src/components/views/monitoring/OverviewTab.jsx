@@ -2528,4 +2528,872 @@ const OverviewTab = () => {
                                                 }}
                                             />
                                         </div>
-                         
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </Panel>
+
+                    {/* Connection Pool */}
+                    <Panel title="Connection Pool" icon={Network} accentColor={connColor}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                            <RingGauge value={connPct} color={connColor} size={68} strokeWidth={6} />
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                    {[
+                                        { label: 'Active', value: activeConns, color: THEME.primary },
+                                        {
+                                            label: 'Idle',
+                                            value: Math.max(0, maxConns - activeConns - 5),
+                                            color: THEME.textDim,
+                                        },
+                                        { label: 'Waiting', value: connPct > 80 ? 3 : 0, color: THEME.warning },
+                                        { label: 'Max', value: maxConns, color: THEME.textMuted },
+                                    ].map((s, i) => (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                padding: '8px 12px',
+                                                borderRadius: 10,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.grid}40`,
+                                                boxShadow:
+                                                    '0 0 0 1px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.08)',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontSize: 9,
+                                                    color: THEME.textDim,
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.04em',
+                                                    marginBottom: 2,
+                                                }}
+                                            >
+                                                {s.label}
+                                            </div>
+                                            <div
+                                                className="ov-mono"
+                                                style={{ fontSize: 14, fontWeight: 800, color: s.color, lineHeight: 1 }}
+                                            >
+                                                {s.value}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </Panel>
+                </div>
+            </div>
+
+            {/* ═══════ Row 4: Txn Latency Percentiles (new) ═══════ */}
+            <Panel
+                title="Transaction Latency Percentiles"
+                icon={Gauge}
+                accentColor={THEME.secondary}
+                rightNode={
+                    <div style={{ display: 'flex', gap: 12, fontSize: 9.5, color: THEME.textDim }}>
+                        {[
+                            ['P50', '#34d399'],
+                            ['P95', THEME.warning],
+                            ['P99', THEME.danger],
+                        ].map(([l, c]) => (
+                            <span key={l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <span style={{ width: 10, height: 3, borderRadius: 2, background: c }} />{' '}
+                                <span className="ov-mono">{l}</span>
+                            </span>
+                        ))}
+                    </div>
+                }
+            >
+                <div style={{ height: 160 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={txnLatencyData} margin={{ top: 8, right: 10, bottom: 0, left: -16 }}>
+                            <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="i" hide />
+                            <YAxis
+                                tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: THEME.fontMono }}
+                                axisLine={false}
+                                tickLine={false}
+                                width={28}
+                                unit="ms"
+                            />
+                            <Tooltip content={<ChartTooltip />} />
+                            <ReferenceLine
+                                y={10}
+                                stroke={`${THEME.warning}40`}
+                                strokeDasharray="4 4"
+                                label={{ value: 'SLA', fontSize: 9, fill: THEME.warning, position: 'right' }}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="p50"
+                                name="P50"
+                                stroke="#34d399"
+                                strokeWidth={2}
+                                dot={false}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="p95"
+                                name="P95"
+                                stroke={THEME.warning}
+                                strokeWidth={1.5}
+                                dot={false}
+                                strokeDasharray="5 3"
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="p99"
+                                name="P99"
+                                stroke={THEME.danger}
+                                strokeWidth={1.5}
+                                dot={false}
+                                strokeDasharray="3 3"
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+                {/* Latency stats */}
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: 0,
+                        marginTop: 10,
+                        paddingTop: 10,
+                        borderTop: `1px solid ${THEME.glassBorder}`,
+                    }}
+                >
+                    {[
+                        { label: 'P50 avg', value: '1.4 ms', color: '#34d399' },
+                        { label: 'P95 avg', value: '9.2 ms', color: THEME.warning },
+                        { label: 'P99 avg', value: '24.8 ms', color: THEME.danger },
+                        { label: 'SLA breach', value: '0', color: THEME.success },
+                        { label: 'Timeout (5m)', value: '2', color: THEME.warning },
+                    ].map((s, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                flex: 1,
+                                paddingRight: 12,
+                                borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none',
+                                paddingLeft: i > 0 ? 12 : 0,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: 9,
+                                    color: THEME.textDim,
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.04em',
+                                    marginBottom: 3,
+                                }}
+                            >
+                                {s.label}
+                            </div>
+                            <div
+                                className="ov-mono"
+                                style={{ fontSize: 14, fontWeight: 700, color: s.color, lineHeight: 1 }}
+                            >
+                                {s.value}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Panel>
+
+            {/* ═══════ Row 5: Workload + Throughput + Ops ═══════ */}
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 1.3fr', gap: 20 }}>
+                {/* Workload Split */}
+                <Panel title="Workload Split" icon={BarChart3}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 14,
+                            height: '100%',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <div style={{ position: 'relative', width: 130, height: 130 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={workloadData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={42}
+                                        outerRadius={58}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        strokeWidth={0}
+                                    >
+                                        {workloadData.map((d, i) => (
+                                            <Cell key={i} fill={d.color} opacity={0.88} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip content={<ChartTooltip />} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    pointerEvents: 'none',
+                                }}
+                            >
+                                <span
+                                    className="ov-mono"
+                                    style={{ fontSize: 21, fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}
+                                >
+                                    {readPct}%
+                                </span>
+                                <span
+                                    style={{
+                                        fontSize: 8,
+                                        color: THEME.textDim,
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em',
+                                        marginTop: 2,
+                                    }}
+                                >
+                                    READS
+                                </span>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 18 }}>
+                            {workloadData.map((d, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color }} />
+                                    <span style={{ fontSize: 11, color: THEME.textMuted }}>{d.name}</span>
+                                    <span className="ov-mono" style={{ fontSize: 11, fontWeight: 700, color: d.color }}>
+                                        {d.value}%
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        <div
+                            style={{
+                                fontSize: 10,
+                                color: THEME.textDim,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4,
+                            }}
+                        >
+                            <Layers size={10} /> Total:{' '}
+                            <strong className="ov-mono" style={{ color: THEME.textMuted }}>
+                                {fmtNum(totalOps)}
+                            </strong>
+                        </div>
+                    </div>
+                </Panel>
+
+                {/* Throughput Breakdown */}
+                <Panel title="Throughput Breakdown" icon={TrendingUp} noPad>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {throughputRows.map((row, i) => {
+                            const pct = (row.raw / maxThroughput) * 100;
+                            return (
+                                <div
+                                    key={i}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 14,
+                                        padding: '14px 18px',
+                                        borderBottom:
+                                            i < throughputRows.length - 1 ? `1px solid ${THEME.grid}22` : 'none',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: 10,
+                                            flexShrink: 0,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: `${row.color}12`,
+                                            border: `1px solid ${row.color}20`,
+                                            boxShadow: `0 0 8px ${row.color}25`,
+                                        }}
+                                    >
+                                        <row.icon size={14} color={row.color} />
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                marginBottom: 6,
+                                            }}
+                                        >
+                                            <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textMuted }}>
+                                                {row.label}
+                                            </span>
+                                            <span
+                                                className="ov-mono"
+                                                style={{ fontSize: 11.5, fontWeight: 800, color: row.color }}
+                                            >
+                                                {fmtNum(row.raw)}
+                                            </span>
+                                        </div>
+                                        <div
+                                            style={{
+                                                height: 4,
+                                                borderRadius: 3,
+                                                background: `${THEME.grid}45`,
+                                                overflow: 'hidden',
+                                            }}
+                                        >
+                                            <div
+                                                className="ov-bar-animate"
+                                                style={{
+                                                    width: `${pct}%`,
+                                                    height: '100%',
+                                                    borderRadius: 3,
+                                                    background: `linear-gradient(90deg, ${row.color}65, ${row.color})`,
+                                                    boxShadow: `0 0 8px ${row.color}30`,
+                                                    animationDelay: `${i * 0.1}s`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            padding: '11px 18px',
+                            borderTop: `1px solid ${THEME.glassBorder}`,
+                        }}
+                    >
+                        <Layers size={11} color={THEME.textDim} />
+                        <span
+                            style={{
+                                fontSize: 10,
+                                color: THEME.textDim,
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.04em',
+                            }}
+                        >
+                            Total Ops
+                        </span>
+                        <span
+                            className="ov-mono"
+                            style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginLeft: 'auto' }}
+                        >
+                            {fmtNum(totalOps)}
+                        </span>
+                    </div>
+                </Panel>
+
+                {/* Ops/sec */}
+                <Panel
+                    title="Ops / Second (today)"
+                    icon={Gauge}
+                    rightNode={
+                        <div style={{ display: 'flex', gap: 8, fontSize: 9.5, color: THEME.textDim }}>
+                            {[
+                                ['Reads', THEME.primary],
+                                ['Writes', THEME.success],
+                                ['Commits', THEME.secondary],
+                            ].map(([l, c]) => (
+                                <span key={l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    <span style={{ width: 8, height: 3, borderRadius: 1, background: c }} /> {l}
+                                </span>
+                            ))}
+                        </div>
+                    }
+                >
+                    <div style={{ height: 185 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={opsPerSec} margin={{ top: 8, right: 4, bottom: 0, left: -20 }}>
+                                <CartesianGrid stroke={`${THEME.grid}35`} strokeDasharray="3 3" vertical={false} />
+                                <XAxis
+                                    dataKey="t"
+                                    tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: THEME.fontMono }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <YAxis
+                                    tick={{ fontSize: 9, fill: THEME.textDim, fontFamily: THEME.fontMono }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={30}
+                                />
+                                <Tooltip content={<ChartTooltip />} />
+                                <Bar
+                                    dataKey="reads"
+                                    name="Reads"
+                                    fill={THEME.primary}
+                                    radius={[2, 2, 0, 0]}
+                                    opacity={0.85}
+                                />
+                                <Bar
+                                    dataKey="writes"
+                                    name="Writes"
+                                    fill={THEME.success}
+                                    radius={[2, 2, 0, 0]}
+                                    opacity={0.85}
+                                />
+                                <Bar
+                                    dataKey="commits"
+                                    name="Commits"
+                                    fill={THEME.secondary}
+                                    radius={[2, 2, 0, 0]}
+                                    opacity={0.85}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </Panel>
+            </div>
+
+            {/* ═══════ Row 6: System Resources ═══════ */}
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+                {[
+                    {
+                        label: 'CPU Load',
+                        value: 38,
+                        color: THEME.primary,
+                        icon: Cpu,
+                        detail: '4 cores • 1.8 load avg',
+                        status: 'Normal',
+                        secondary: 22,
+                        secondaryLabel: 'I/O Wait',
+                    },
+                    {
+                        label: 'Memory Usage',
+                        value: 72,
+                        color: THEME.secondary,
+                        icon: MemoryStick || Server,
+                        detail: '12 GB / 16 GB allocated',
+                        status: 'Moderate',
+                        secondary: 55,
+                        secondaryLabel: 'Shared Buf',
+                    },
+                    {
+                        label: 'Disk I/O',
+                        value: Math.round((diskGB / 200) * 100),
+                        color: THEME.warning,
+                        icon: HardDrive,
+                        detail: `${diskGB} GB / 200 GB SSD`,
+                        status: diskGB > 160 ? 'High' : 'Normal',
+                        secondary: 30,
+                        secondaryLabel: 'Write Amp',
+                    },
+                ].map((r, i) => (
+                    <Panel key={i} accentColor={r.color}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                            <RingGauge
+                                value={r.value}
+                                color={r.color}
+                                size={60}
+                                strokeWidth={5}
+                                secondaryValue={r.secondary}
+                                secondaryColor={`${r.color}80`}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                                    <r.icon size={12} color={r.color} style={{ flexShrink: 0 }} />
+                                    <span
+                                        className="ov-display"
+                                        style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}
+                                    >
+                                        {r.label}
+                                    </span>
+                                    <StatusBadge
+                                        label={r.status}
+                                        color={
+                                            r.status === 'Normal'
+                                                ? THEME.success
+                                                : r.status === 'Moderate'
+                                                  ? THEME.warning
+                                                  : THEME.danger
+                                        }
+                                    />
+                                </div>
+                                <div style={{ fontSize: 10.5, color: THEME.textDim, marginBottom: 6 }}>{r.detail}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <span className="ov-mono" style={{ fontSize: 9.5, color: THEME.textDim }}>
+                                        {r.secondaryLabel}:
+                                    </span>
+                                    <span
+                                        className="ov-mono"
+                                        style={{ fontSize: 9.5, color: r.color, fontWeight: 700 }}
+                                    >
+                                        {r.secondary}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </Panel>
+                ))}
+            </div>
+
+            {/* ═══════ Row 7: Replication + Tables + WAL ═══════ */}
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.4fr 1.2fr', gap: 20 }}>
+                {/* Replication & Locks */}
+                <Panel
+                    title="Replication & Locks"
+                    icon={GitBranch}
+                    accentColor={THEME.secondary}
+                    rightNode={
+                        <div style={{ display: 'flex', gap: 10, fontSize: 9.5, color: THEME.textDim }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <Radio size={9} color={THEME.success} /> Primary
+                            </span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <Radio size={9} color={THEME.secondary} /> Replicas
+                            </span>
+                        </div>
+                    }
+                >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div
+                                style={{
+                                    padding: '8px 12px',
+                                    borderRadius: 10,
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.grid}50`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    minWidth: 115,
+                                    boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.08)',
+                                }}
+                            >
+                                <Server size={13} color={THEME.primary} />
+                                <div>
+                                    <span
+                                        className="ov-mono"
+                                        style={{
+                                            fontSize: 10.5,
+                                            fontWeight: 700,
+                                            color: THEME.textMain,
+                                            display: 'block',
+                                        }}
+                                    >
+                                        primary-1
+                                    </span>
+                                    <span className="ov-mono" style={{ fontSize: 9, color: THEME.textDim }}>
+                                        lag: 0 ms
+                                    </span>
+                                </div>
+                            </div>
+                            <ChevronRight size={13} color={THEME.textDim} />
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                {[
+                                    { name: 'replica-1', lagMs: 120 },
+                                    { name: 'replica-2', lagMs: 480 },
+                                ].map((r, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            padding: '8px 12px',
+                                            borderRadius: 10,
+                                            background: THEME.surface,
+                                            border: `1px solid ${r.lagMs > 300 ? `${THEME.warning}40` : `${THEME.grid}50`}`,
+                                            minWidth: 112,
+                                            boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.08)',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                            <Server size={12} color={THEME.secondary} />
+                                            <div>
+                                                <span
+                                                    className="ov-mono"
+                                                    style={{
+                                                        fontSize: 10.5,
+                                                        fontWeight: 700,
+                                                        color: THEME.textMain,
+                                                        display: 'block',
+                                                    }}
+                                                >
+                                                    {r.name}
+                                                </span>
+                                                <span
+                                                    className="ov-mono"
+                                                    style={{
+                                                        fontSize: 9,
+                                                        color: r.lagMs > 300 ? THEME.warning : THEME.textDim,
+                                                    }}
+                                                >
+                                                    lag: {r.lagMs} ms
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <Divider />
+
+                        <div
+                            style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 12, alignItems: 'center' }}
+                        >
+                            <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                    <span
+                                        style={{
+                                            fontSize: 9.5,
+                                            color: THEME.textDim,
+                                            fontWeight: 600,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.04em',
+                                        }}
+                                    >
+                                        Blocked queries
+                                    </span>
+                                    <span
+                                        className="ov-mono"
+                                        style={{ fontSize: 12, fontWeight: 800, color: THEME.danger }}
+                                    >
+                                        3
+                                    </span>
+                                </div>
+                                <div
+                                    style={{
+                                        height: 5,
+                                        borderRadius: 3,
+                                        background: `${THEME.grid}50`,
+                                        overflow: 'hidden',
+                                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
+                                    }}
+                                >
+                                    <div
+                                        className="ov-bar-animate"
+                                        style={{
+                                            width: '60%',
+                                            height: '100%',
+                                            borderRadius: 3,
+                                            background: `linear-gradient(90deg, ${THEME.danger}75, ${THEME.danger})`,
+                                            boxShadow: `0 0 8px ${THEME.danger}40`,
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ marginTop: 4, fontSize: 9.5, color: THEME.textDim }}>
+                                    3 blocked, 5 waiting on row/page locks.
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Lock size={10} color={THEME.warning} />
+                                    <span style={{ fontSize: 10.5, color: THEME.textMuted }}>Lock contention</span>
+                                    <StatusBadge label="Elevated" color={THEME.warning} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Unlock size={10} color={THEME.success} />
+                                    <span style={{ fontSize: 10.5, color: THEME.textMuted }}>Deadlocks (5m)</span>
+                                    <span
+                                        className="ov-mono"
+                                        style={{ fontSize: 11, fontWeight: 700, color: THEME.success }}
+                                    >
+                                        0
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Panel>
+
+                {/* Top Impacted Tables */}
+                <Panel title="Top Impacted Tables" icon={BarChart3} noPad>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {[
+                            { name: 'public.orders', reads: 42000, writes: 9000 },
+                            { name: 'public.events', reads: 31000, writes: 14000 },
+                            { name: 'public.sessions', reads: 26000, writes: 6000 },
+                            { name: 'audit.log_entries', reads: 18000, writes: 3000 },
+                            { name: 'public.users', reads: 15000, writes: 1200 },
+                        ].map((t, i, arr) => {
+                            const total = t.reads + t.writes;
+                            const rp = total > 0 ? Math.round((t.reads / total) * 100) : 50;
+                            return (
+                                <div
+                                    key={t.name}
+                                    style={{
+                                        padding: '10px 18px',
+                                        borderBottom: i < arr.length - 1 ? `1px solid ${THEME.grid}22` : 'none',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            gap: 8,
+                                            marginBottom: 5,
+                                        }}
+                                    >
+                                        <span
+                                            className="ov-mono"
+                                            style={{
+                                                fontSize: 10.5,
+                                                color: THEME.textMuted,
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                maxWidth: '62%',
+                                            }}
+                                            title={t.name}
+                                        >
+                                            {t.name}
+                                        </span>
+                                        <span style={{ fontSize: 10.5, color: THEME.textDim }}>
+                                            {fmtNum(total)} ops
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            height: 6,
+                                            borderRadius: 4,
+                                            background: `${THEME.grid}50`,
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
+                                        }}
+                                    >
+                                        <div
+                                            className="ov-bar-animate"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                display: 'flex',
+                                                transformOrigin: 'left',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    width: `${rp}%`,
+                                                    background: `linear-gradient(90deg, ${THEME.primary}80, ${THEME.primary})`,
+                                                    boxShadow: `0 0 6px ${THEME.primary}40`,
+                                                }}
+                                            />
+                                            <div
+                                                style={{
+                                                    flex: 1,
+                                                    background: `linear-gradient(90deg, ${THEME.secondary}80, ${THEME.secondary})`,
+                                                    boxShadow: `0 0 6px ${THEME.secondary}40`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            fontSize: 9.5,
+                                            color: THEME.textDim,
+                                            marginTop: 4,
+                                        }}
+                                    >
+                                        <span>R: {fmtNum(t.reads)}</span>
+                                        <span>W: {fmtNum(t.writes)}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </Panel>
+
+                {/* WAL & Checkpoints */}
+                <Panel title="WAL & Checkpoints" icon={Gauge} accentColor={THEME.info}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 14 }}>
+                            <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                    <span
+                                        style={{
+                                            fontSize: 9.5,
+                                            color: THEME.textDim,
+                                            fontWeight: 600,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.04em',
+                                        }}
+                                    >
+                                        WAL generation
+                                    </span>
+                                    <span
+                                        className="ov-mono"
+                                        style={{ fontSize: 12, fontWeight: 800, color: THEME.textMain }}
+                                    >
+                                        12.4 MB/s
+                                    </span>
+                                </div>
+                                <MiniSparkline data={genSparkline(16)} color={THEME.primary} width={140} height={32} />
+                                <div style={{ marginTop: 4, fontSize: 9.5, color: THEME.textDim }}>
+                                    Last 5 minutes across cluster.
+                                </div>
+                            </div>
+                            <div
+                                style={{
+                                    padding: '10px 12px',
+                                    borderRadius: 10,
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.grid}50`,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 8,
+                                    justifyContent: 'center',
+                                    boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.08)',
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <Timer size={12} color={THEME.secondary} />
+                                    <span style={{ fontSize: 10.5, color: THEME.textMuted }}>Checkpoint avg</span>
+                                    <span
+                                        className="ov-mono"
+                                        style={{
+                                            marginLeft: 'auto',
+                                            fontSize: 12,
+                                            fontWeight: 800,
+                                            color: THEME.secondary,
+                                        }}
+                                    >
+                                        420 ms
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <AlertTriangle size={11} color={THEME.warning} />
+                                    <span style={{ fontSize: 9.5, color: THEME.textDim }}>
+                                        2 exceeded 1s in 10 min.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Divider />
+
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            <StatusBadge label="WAL archive: OK" color={THEME.success} />
+                            <StatusBadge label="Checkpoint: Normal" color={THEME.primary} />
+                            <StatusBadge label="Autovacuum on" color={THEME.secondary} />
+                        </div>
+                    </div>
+                </Panel>
+            </div>
+        </div>
+    );
+};
+
+export default OverviewTab;
