@@ -1,14 +1,9 @@
-// ==========================================================================
-//  DemoMongoDBTab — Self-contained MongoDB demo dashboard
-// ==========================================================================
 import React, { useMemo } from 'react';
 import {
     LineChart,
     Line,
     AreaChart,
     Area,
-    BarChart,
-    Bar,
     PieChart,
     Pie,
     Cell,
@@ -21,7 +16,6 @@ import {
 } from 'recharts';
 import { getDS } from '../../../config/designTokens.js';
 
-/* ── tiny inline helpers (no external deps) ─────────────────────────── */
 const Card = ({ children, style }) => {
     const DS = getDS();
     return (
@@ -90,9 +84,7 @@ const ChartTooltip = ({ active, payload, label }) => {
     );
 };
 
-/* ── demo data ──────────────────────────────────────────────────────── */
 const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
-
 const opsData = hours.map((t) => ({
     time: t,
     queries: 3200 + Math.round(Math.random() * 1500),
@@ -100,32 +92,27 @@ const opsData = hours.map((t) => ({
     updates: 450 + Math.round(Math.random() * 250),
     deletes: 90 + Math.round(Math.random() * 60),
 }));
-
 const connData = hours.map((t) => ({
     time: t,
     current: 120 + Math.round(Math.random() * 60),
     available: 800 - Math.round(Math.random() * 60),
 }));
-
 const latencyData = hours.map((t) => ({
     time: t,
     read: +(0.5 + Math.random() * 3).toFixed(2),
     write: +(1 + Math.random() * 5).toFixed(2),
 }));
-
 const memoryData = hours.map((t) => ({
     time: t,
     resident: 4.2 + +(Math.random() * 0.8).toFixed(2),
     virtual: 8.1 + +(Math.random() * 1.2).toFixed(2),
     mapped: 3.8 + +(Math.random() * 0.5).toFixed(2),
 }));
-
 const replData = hours.map((t) => ({
     time: t,
     lag: +(Math.random() * 1.8).toFixed(2),
     oplogWindow: +(48 - Math.random() * 6).toFixed(1),
 }));
-
 const collectionSizes = [
     { name: 'orders', value: 42 },
     { name: 'products', value: 18 },
@@ -133,13 +120,11 @@ const collectionSizes = [
     { name: 'sessions', value: 15 },
     { name: 'logs', value: 13 },
 ];
-
 const shardData = [
     { shard: 'shard-0', chunks: 256, docs: '12.4M', storage: '8.2 GB', status: 'PRIMARY' },
     { shard: 'shard-1', chunks: 241, docs: '11.8M', storage: '7.9 GB', status: 'PRIMARY' },
     { shard: 'shard-2', chunks: 248, docs: '12.1M', storage: '8.0 GB', status: 'PRIMARY' },
 ];
-
 const slowOps = [
     { op: 'find', ns: 'ecommerce.orders', duration: '3.2s', plan: 'COLLSCAN', docs: '2.4M' },
     { op: 'aggregate', ns: 'ecommerce.analytics', duration: '2.8s', plan: 'IXSCAN', docs: '1.1M' },
@@ -147,10 +132,8 @@ const slowOps = [
     { op: 'find', ns: 'ecommerce.users', duration: '1.4s', plan: 'COLLSCAN', docs: '890K' },
     { op: 'mapReduce', ns: 'ecommerce.logs', duration: '1.1s', plan: 'COLLSCAN', docs: '5.6M' },
 ];
-
 const PIE_COLORS = ['#38bdf8', '#818cf8', '#fbbf24', '#34d399', '#fb7185'];
 
-/* ── main component ─────────────────────────────────────────────────── */
 export default function DemoMongoDBTab() {
     const DS = useMemo(() => getDS(), []);
     const grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 };
@@ -164,7 +147,6 @@ export default function DemoMongoDBTab() {
                 Sample metrics for a MongoDB 7.0 sharded cluster — ecommerce (replica set rs0)
             </p>
 
-            {/* ── Health Overview ────────────────────────────────────── */}
             <SectionTitle color={DS.cyan}>Cluster Health</SectionTitle>
             <div style={grid}>
                 <Card>
@@ -187,7 +169,6 @@ export default function DemoMongoDBTab() {
                 </Card>
             </div>
 
-            {/* ── Operations ─────────────────────────────────────────── */}
             <SectionTitle color={DS.violet}>Operations / sec (24 h)</SectionTitle>
             <Card>
                 <ResponsiveContainer width="100%" height={260}>
@@ -233,7 +214,6 @@ export default function DemoMongoDBTab() {
                 </ResponsiveContainer>
             </Card>
 
-            {/* ── Latency ────────────────────────────────────────────── */}
             <SectionTitle color={DS.amber}>Read / Write Latency</SectionTitle>
             <Card>
                 <ResponsiveContainer width="100%" height={220}>
@@ -263,8 +243,7 @@ export default function DemoMongoDBTab() {
                 </ResponsiveContainer>
             </Card>
 
-            {/* ── Connections & Memory ───────────────────────────────── */}
-            <SectionTitle color={DS.emerald}>Connections & Memory</SectionTitle>
+            <SectionTitle color={DS.emerald}>Connections and Memory</SectionTitle>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <Card>
                     <div style={{ textAlign: 'center', fontSize: 13, color: DS.textSecondary, marginBottom: 8 }}>
@@ -306,7 +285,6 @@ export default function DemoMongoDBTab() {
                 </Card>
             </div>
 
-            {/* ── Collection Storage ─────────────────────────────────── */}
             <SectionTitle color={DS.amber}>Collection Storage Distribution</SectionTitle>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <Card>
@@ -385,8 +363,7 @@ export default function DemoMongoDBTab() {
                 </Card>
             </div>
 
-            {/* ── Replication ────────────────────────────────────────── */}
-            <SectionTitle color={DS.rose}>Replication Lag & Oplog</SectionTitle>
+            <SectionTitle color={DS.rose}>Replication Lag and Oplog</SectionTitle>
             <Card>
                 <ResponsiveContainer width="100%" height={220}>
                     <LineChart data={replData}>
@@ -418,7 +395,6 @@ export default function DemoMongoDBTab() {
                 </ResponsiveContainer>
             </Card>
 
-            {/* ── Slow Operations ────────────────────────────────────── */}
             <SectionTitle color={DS.rose}>Top Slow Operations</SectionTitle>
             <Card>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>

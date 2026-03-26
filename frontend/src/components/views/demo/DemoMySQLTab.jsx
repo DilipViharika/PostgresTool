@@ -1,6 +1,3 @@
-// ==========================================================================
-//  DemoMySQLTab — Self-contained MySQL demo dashboard
-// ==========================================================================
 import React, { useMemo } from 'react';
 import {
     LineChart,
@@ -19,7 +16,6 @@ import {
 } from 'recharts';
 import { getDS } from '../../../config/designTokens.js';
 
-/* ── tiny inline helpers (no external deps) ─────────────────────────── */
 const Card = ({ children, style }) => {
     const DS = getDS();
     return (
@@ -88,9 +84,7 @@ const ChartTooltip = ({ active, payload, label }) => {
     );
 };
 
-/* ── demo data generators ───────────────────────────────────────────── */
 const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
-
 const qpsData = hours.map((t) => ({
     time: t,
     selects: 1200 + Math.round(Math.random() * 800),
@@ -98,24 +92,19 @@ const qpsData = hours.map((t) => ({
     updates: 180 + Math.round(Math.random() * 120),
     deletes: 40 + Math.round(Math.random() * 30),
 }));
-
 const connData = hours.map((t) => ({
     time: t,
     active: 45 + Math.round(Math.random() * 30),
     idle: 20 + Math.round(Math.random() * 15),
     max: 151,
 }));
-
-const bufferData = hours.map((t) => ({
+const bufferData = hours.map((t) => ({ time: t, hitRate: +(99 + Math.random() * 0.9).toFixed(2) }));
+const replicationData = hours.map((t) => ({ time: t, lag: +(Math.random() * 2.5).toFixed(2) }));
+const innodbData = hours.map((t) => ({
     time: t,
-    hitRate: +(99 + Math.random() * 0.9).toFixed(2),
+    reads: 4500 + Math.round(Math.random() * 2000),
+    writes: 1200 + Math.round(Math.random() * 800),
 }));
-
-const replicationData = hours.map((t) => ({
-    time: t,
-    lag: +(Math.random() * 2.5).toFixed(2),
-}));
-
 const slowQueries = [
     {
         query: 'SELECT * FROM orders WHERE created_at > ? ORDER BY total DESC',
@@ -148,22 +137,13 @@ const slowQueries = [
         fullScan: false,
     },
 ];
-
 const enginePie = [
     { name: 'InnoDB', value: 87 },
     { name: 'MyISAM', value: 8 },
     { name: 'MEMORY', value: 5 },
 ];
-
-const innodbData = hours.map((t) => ({
-    time: t,
-    reads: 4500 + Math.round(Math.random() * 2000),
-    writes: 1200 + Math.round(Math.random() * 800),
-}));
-
 const PIE_COLORS = ['#38bdf8', '#818cf8', '#fbbf24'];
 
-/* ── main component ─────────────────────────────────────────────────── */
 export default function DemoMySQLTab() {
     const DS = useMemo(() => getDS(), []);
     const grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 };
@@ -175,7 +155,6 @@ export default function DemoMySQLTab() {
                 Sample metrics for a MySQL 8.0 instance — demo_ecommerce (read-write primary)
             </p>
 
-            {/* ── Health Overview ────────────────────────────────────── */}
             <SectionTitle color={DS.cyan}>Health Overview</SectionTitle>
             <div style={grid}>
                 <Card>
@@ -198,7 +177,6 @@ export default function DemoMySQLTab() {
                 </Card>
             </div>
 
-            {/* ── QPS Breakdown ──────────────────────────────────────── */}
             <SectionTitle color={DS.violet}>QPS Breakdown (24 h)</SectionTitle>
             <Card>
                 <ResponsiveContainer width="100%" height={260}>
@@ -244,7 +222,6 @@ export default function DemoMySQLTab() {
                 </ResponsiveContainer>
             </Card>
 
-            {/* ── Connections ────────────────────────────────────────── */}
             <SectionTitle color={DS.emerald}>Connections</SectionTitle>
             <Card>
                 <ResponsiveContainer width="100%" height={220}>
@@ -268,8 +245,7 @@ export default function DemoMySQLTab() {
                 </ResponsiveContainer>
             </Card>
 
-            {/* ── InnoDB & Storage Engines ───────────────────────────── */}
-            <SectionTitle color={DS.amber}>InnoDB I/O & Storage Engines</SectionTitle>
+            <SectionTitle color={DS.amber}>InnoDB I/O and Storage Engines</SectionTitle>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
                 <Card>
                     <ResponsiveContainer width="100%" height={220}>
@@ -315,7 +291,6 @@ export default function DemoMySQLTab() {
                 </Card>
             </div>
 
-            {/* ── Buffer Pool Hit Rate ──────────────────────────────── */}
             <SectionTitle color={DS.cyan}>Buffer Pool Hit Rate</SectionTitle>
             <Card>
                 <ResponsiveContainer width="100%" height={200}>
@@ -336,7 +311,6 @@ export default function DemoMySQLTab() {
                 </ResponsiveContainer>
             </Card>
 
-            {/* ── Replication Lag ────────────────────────────────────── */}
             <SectionTitle color={DS.rose}>Replication Lag</SectionTitle>
             <Card>
                 <ResponsiveContainer width="100%" height={200}>
@@ -357,7 +331,6 @@ export default function DemoMySQLTab() {
                 </ResponsiveContainer>
             </Card>
 
-            {/* ── Slow Queries ───────────────────────────────────────── */}
             <SectionTitle color={DS.rose}>Top Slow Queries</SectionTitle>
             <Card>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
