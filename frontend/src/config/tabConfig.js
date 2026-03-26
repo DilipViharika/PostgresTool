@@ -347,9 +347,7 @@ export function buildTabConfig() {
         //  `group` key so the sidebar nests them under a DB parent.
         // ══════════════════════════════════════════════════════════════
 
-        // ┌─────────────────────────────────────────────────────────┐
-        // │  Demo › PostgreSQL  (mirrors real PG sections exactly)  │
-        // └─────────────────────────────────────────────────────────┘
+        // ── Demo › PostgreSQL ──────────────────────────────────────
         { section: 'Overview', accent: DS.cyan, group: 'Demo PostgreSQL' },
         {
             id: 'demo-pg-fleet',
@@ -620,9 +618,7 @@ export function buildTabConfig() {
             badge: null,
         },
 
-        // ┌─────────────────────────────────────────────────────────┐
-        // │  Demo › MySQL  (mirrors real PG sections for MySQL)     │
-        // └─────────────────────────────────────────────────────────┘
+        // ── Demo › MySQL ───────────────────────────────────────────
         { section: 'Overview', accent: DS.cyan, group: 'Demo MySQL' },
         {
             id: 'demo-mysql-fleet',
@@ -893,9 +889,7 @@ export function buildTabConfig() {
             badge: null,
         },
 
-        // ┌─────────────────────────────────────────────────────────┐
-        // │  Demo › MongoDB  (mirrors uploaded HTML sidebar)        │
-        // └─────────────────────────────────────────────────────────┘
+        // ── Demo › MongoDB ─────────────────────────────────────────
         { section: 'Overview', accent: DS.cyan, group: 'Demo MongoDB' },
         {
             id: 'demo-mongo-exec-dash',
