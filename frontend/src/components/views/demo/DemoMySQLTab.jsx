@@ -619,19 +619,14 @@ const DemoMySQLTab = ({ tabId }) => {
                             width: '8px',
                             height: '8px',
                             borderRadius: '50%',
-                            backgroundColor: DS.cyan,
+                            backgroundColor: '#f59e0b',
                         }}
                     />
                     <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Slow Queries</h2>
                 </div>
                 <DataTable
-                    columns={[
-                        { header: 'Query', key: 'query', width: '40%' },
-                        { header: 'Avg Time (ms)', key: 'avgTime', width: '20%' },
-                        { header: 'Calls', key: 'calls', width: '20%' },
-                        { header: 'Rows Examined', key: 'rowsExamined', width: '20%' },
-                    ]}
-                    data={slowQueriesData}
+                    columns={['Query', 'Avg Time', 'Calls', 'Rows Examined']}
+                    data={slowQueriesData.map((q) => [q.query, q.avgTime, q.calls, q.rowsExamined])}
                 />
             </div>
 
@@ -650,159 +645,15 @@ const DemoMySQLTab = ({ tabId }) => {
                             width: '8px',
                             height: '8px',
                             borderRadius: '50%',
-                            backgroundColor: '#34d399',
+                            backgroundColor: '#ec4899',
                         }}
                     />
                     <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Replication</h2>
                 </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <DataTable
-                        columns={[
-                            { header: 'Replica', key: 'name', width: '30%' },
-                            { header: 'Lag', key: 'lag', width: '20%' },
-                            { header: 'State', key: 'state', width: '20%' },
-                            { header: 'GTID', key: 'gtid', width: '30%' },
-                        ]}
-                        data={replicationData}
-                    />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <BentoMetric
-                        metrics={[
-                            { label: 'Lag', value: '0.5s' },
-                            { label: 'Workers', value: '4' },
-                            { label: 'GTID', value: 'ON' },
-                            { label: 'Semi-sync', value: 'YES' },
-                        ]}
-                    />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <MetricCard label="Binlog Size" value="2.4" unit="GB" />
-                    <MetricCard label="Purge Age" value="7" unit="days" />
-                </div>
-            </div>
-
-            {/* Section 8: Schema & Security */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#818cf8',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Schema & Security</h2>
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <BentoMetric
-                        metrics={[
-                            { label: 'Databases', value: '8' },
-                            { label: 'Tables', value: '342' },
-                            { label: 'Views', value: '28' },
-                            { label: 'Procedures', value: '15' },
-                            { label: 'Triggers', value: '22' },
-                            { label: 'Foreign Keys', value: '89' },
-                        ]}
-                    />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <MetricCard label="Users" value="24" unit="" />
-                    <MetricCard label="Roles" value="6" unit="" />
-                    <MetricCard label="Failed Logins" value="3" unit="" />
-                    <MetricCard label="DDL Changes" value="2" unit="" />
-                </div>
-            </div>
-
-            {/* Section 9: Indexes & Reliability */}
-            <div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: '#fbbf24',
-                        }}
-                    />
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Indexes & Reliability</h2>
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <MetricCard label="Total Indexes" value="485" unit="" />
-                    <MetricCard label="Unused" value="18" unit="" />
-                    <MetricCard label="Duplicate" value="5" unit="" />
-                    <MetricCard label="Hit Ratio" value="98.7" unit="%" />
-                </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <BentoMetric
-                        metrics={[
-                            { label: 'Error Rate', value: '0.02%' },
-                            { label: 'Availability', value: '99.97%' },
-                            { label: 'Recovery Time', value: '12s' },
-                        ]}
-                    />
-                </div>
+                <DataTable
+                    columns={['Replica', 'Lag', 'State', 'GTID']}
+                    data={replicationData.map((r) => [r.name, r.lag, r.state, r.gtid])}
+                />
             </div>
         </div>
     );

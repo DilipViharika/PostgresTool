@@ -1008,7 +1008,7 @@ const DemoMongoDBTab = ({ tabId }) => {
                             color: DS.text,
                         }}
                     >
-                        Cache Utilization
+                        Cache Performance
                     </p>
                     <ResponsiveContainer width="100%" height={300}>
                         <AreaChart data={cacheData}>
@@ -1103,51 +1103,9 @@ const DemoMongoDBTab = ({ tabId }) => {
                     </h2>
                 </div>
 
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}
-                >
-                    <GlassCard>
-                        <DataTable columns={replicationColumns} data={replicationData} />
-                    </GlassCard>
-
-                    <GlassCard>
-                        <BentoMetric
-                            metrics={[
-                                { label: 'Set Name', value: 'rs-prod', unit: '' },
-                                { label: 'Oplog Window', value: '72', unit: 'h' },
-                                { label: 'Sync Source', value: 'mongo-prod-01', unit: '' },
-                            ]}
-                        />
-                    </GlassCard>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <MetricCard
-                        icon={<Lock size={20} color={colors.amber} />}
-                        label="Lock Queue"
-                        value="2"
-                        unit=""
-                        trend="stable"
-                    />
-                    <MetricCard
-                        icon={<Zap size={20} color={colors.cyan} />}
-                        label="Tickets"
-                        value="42"
-                        unit="/128"
-                        trend="stable"
-                    />
-                </div>
+                <GlassCard>
+                    <DataTable columns={replicationColumns} data={replicationData} />
+                </GlassCard>
             </section>
 
             {/* ============ SECTION 8: SHARDING ============ */}
@@ -1195,10 +1153,9 @@ const DemoMongoDBTab = ({ tabId }) => {
                                 fontSize: '14px',
                                 fontWeight: 600,
                                 color: DS.text,
-                                textAlign: 'center',
                             }}
                         >
-                            Shard Distribution (Documents)
+                            Shard Distribution
                         </p>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
@@ -1206,35 +1163,35 @@ const DemoMongoDBTab = ({ tabId }) => {
                                     data={shardDistributionData}
                                     cx="50%"
                                     cy="50%"
-                                    labelLine={false}
-                                    label={({ name, label }) => `${name} ${label}`}
-                                    outerRadius={80}
-                                    fill="#8884d8"
+                                    innerRadius={60}
+                                    outerRadius={100}
+                                    paddingAngle={2}
                                     dataKey="value"
+                                    label={({ label }) => label}
                                 >
                                     <Cell fill={colors.cyan} />
                                     <Cell fill={colors.violet} />
                                     <Cell fill={colors.emerald} />
                                 </Pie>
-                                <Tooltip content={<ChartTooltip />} />
+                                <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
                     </GlassCard>
 
                     <GlassCard>
-                        <DataTable columns={shardingColumns} data={shardingData} />
+                        <BentoMetric
+                            metrics={[
+                                { label: 'Total Shards', value: '3', unit: '' },
+                                { label: 'Total Documents', value: '250M', unit: '' },
+                                { label: 'Chunk Count', value: '842', unit: '' },
+                                { label: 'Shard Key', value: 'user_id', unit: '' },
+                            ]}
+                        />
                     </GlassCard>
                 </div>
 
                 <GlassCard>
-                    <BentoMetric
-                        metrics={[
-                            { label: 'Chunks', value: '2,048', unit: '' },
-                            { label: 'Balanced', value: 'YES', unit: '' },
-                            { label: 'Avg Chunk', value: '64', unit: 'MB' },
-                            { label: 'Migrating', value: '0', unit: '' },
-                        ]}
-                    />
+                    <DataTable columns={shardingColumns} data={shardingData} />
                 </GlassCard>
             </section>
 
@@ -1283,7 +1240,6 @@ const DemoMongoDBTab = ({ tabId }) => {
                                 fontSize: '14px',
                                 fontWeight: 600,
                                 color: DS.text,
-                                textAlign: 'center',
                             }}
                         >
                             Database Distribution
@@ -1294,86 +1250,39 @@ const DemoMongoDBTab = ({ tabId }) => {
                                     data={storageDistributionData}
                                     cx="50%"
                                     cy="50%"
-                                    labelLine={false}
-                                    label={({ name, label }) => `${name} ${label}`}
-                                    outerRadius={80}
-                                    fill="#8884d8"
+                                    innerRadius={60}
+                                    outerRadius={100}
+                                    paddingAngle={2}
                                     dataKey="value"
+                                    label={({ label }) => label}
                                 >
                                     <Cell fill={colors.cyan} />
                                     <Cell fill={colors.violet} />
                                     <Cell fill={colors.emerald} />
                                     <Cell fill={colors.amber} />
                                     <Cell fill={colors.rose} />
-                                    <Cell fill={colors.amber} />
+                                    <Cell fill={colors.cyan} />
                                 </Pie>
-                                <Tooltip content={<ChartTooltip />} />
+                                <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
                     </GlassCard>
 
                     <GlassCard>
-                        <DataTable columns={storageColumns} data={storageData} />
-                    </GlassCard>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    <GlassCard>
                         <BentoMetric
                             metrics={[
-                                { label: 'Total', value: '353', unit: 'GB' },
-                                { label: 'Collections', value: '126', unit: '' },
-                                { label: 'Documents', value: '250', unit: 'M' },
-                                { label: 'Growth', value: '8.5', unit: 'GB/week' },
+                                { label: 'Total Size', value: '353', unit: 'GB' },
+                                { label: 'Databases', value: '6', unit: '' },
+                                { label: 'Collections', value: '76', unit: '' },
+                                { label: 'Documents', value: '250M', unit: '' },
                             ]}
                         />
                     </GlassCard>
-
-                    <GlassCard>
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '12px',
-                            }}
-                        >
-                            <MetricCard
-                                icon={<Grid3x3 size={20} color={colors.cyan} />}
-                                label="Indexes"
-                                value="380"
-                                unit=""
-                                trend="stable"
-                            />
-                            <MetricCard
-                                icon={<AlertCircle size={20} color={colors.rose} />}
-                                label="Unused"
-                                value="15"
-                                unit=""
-                                trend="down"
-                            />
-                            <MetricCard
-                                icon={<HardDrive size={20} color={colors.amber} />}
-                                label="Bloated"
-                                value="4"
-                                unit=""
-                                trend="stable"
-                            />
-                            <MetricCard
-                                icon={<TrendingUp size={20} color={colors.emerald} />}
-                                label="Efficiency"
-                                value="97.8"
-                                unit="%"
-                                trend="up"
-                            />
-                        </div>
-                    </GlassCard>
                 </div>
+
+                <GlassCard>
+                    <DataTable columns={storageColumns} data={storageData} />
+                </GlassCard>
             </section>
 
             {/* ============ SECTION 10: ALERTS ============ */}
@@ -1391,7 +1300,7 @@ const DemoMongoDBTab = ({ tabId }) => {
                             width: '8px',
                             height: '8px',
                             borderRadius: '50%',
-                            backgroundColor: colors.rose,
+                            backgroundColor: colors.amber,
                         }}
                     />
                     <h2
@@ -1410,24 +1319,13 @@ const DemoMongoDBTab = ({ tabId }) => {
                     style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '16px',
+                        gap: '12px',
                     }}
                 >
                     {alertsData.map((alert) => (
                         <AlertCard key={alert.id} alert={alert} />
                     ))}
                 </div>
-
-                <GlassCard>
-                    <BentoMetric
-                        metrics={[
-                            { label: 'Active', value: '2', unit: '' },
-                            { label: 'Rules', value: '45', unit: '' },
-                            { label: 'Triggered Today', value: '5', unit: '' },
-                        ]}
-                    />
-                </GlassCard>
             </section>
         </div>
     );
