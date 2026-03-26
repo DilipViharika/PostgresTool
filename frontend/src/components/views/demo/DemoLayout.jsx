@@ -608,7 +608,10 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
 );
 
 /* ── MetricCard — matches the actual app's KPI card design exactly ── */
-export const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend, trendUp = true, warn }) => (
+export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spark, trend, trendUp = true, warn }) => {
+    const subText = sub || subtitle;
+    const isUp = trendUp !== undefined ? trendUp : (typeof trend === 'string' && !trend.startsWith('-'));
+    return (
     <div
         className={`dpg-metric ${warn ? 'dpg-glow-warn' : 'dpg-glow'}`}
         style={{
@@ -682,13 +685,13 @@ export const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend,
                 >
                     {value}
                 </span>
-                {sub && <span style={{ fontSize: 10, color: THEME.textDim }}>{sub}</span>}
+                {subText && <span style={{ fontSize: 10, color: THEME.textDim }}>{subText}</span>}
             </div>
         </div>
         {/* Trend Indicator */}
         {trend && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                {trendUp ? (
+                {isUp ? (
                     <ArrowUpRight size={10} color={THEME.success} />
                 ) : (
                     <ArrowDownRight size={10} color={THEME.danger} />
@@ -698,7 +701,7 @@ export const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend,
                         fontSize: 10,
                         fontWeight: 700,
                         fontFamily: THEME.fontMono,
-                        color: trendUp ? THEME.success : THEME.danger,
+                        color: isUp ? THEME.success : THEME.danger,
                     }}
                 >
                     {trend}
@@ -707,7 +710,8 @@ export const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend,
             </div>
         )}
     </div>
-);
+    );
+};
 
 /* ── LiveMetric — compact metric with sparkline + progress bar (like Alerts page) ── */
 export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progress }) => (
@@ -810,30 +814,31 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: 6,
-                        fontSize: 11,
+                        fontSize: 11.5,
                         fontWeight: isActive ? 700 : 500,
-                        padding: '6px 14px',
-                        borderRadius: 20,
-                        background: isActive ? `${ac}20` : 'transparent',
-                        color: isActive ? ac : THEME.textMuted,
-                        border: `1px solid ${isActive ? `${ac}40` : THEME.glassBorder}`,
+                        padding: '8px 18px',
+                        borderRadius: 22,
+                        background: isActive ? ac : 'transparent',
+                        color: isActive ? '#fff' : THEME.textMuted,
+                        border: `1px solid ${isActive ? ac : THEME.glassBorder}`,
+                        boxShadow: isActive ? `0 2px 12px ${ac}40, 0 0 0 1px ${ac}20` : 'none',
                         cursor: 'pointer',
                         fontFamily: THEME.fontBody,
-                        transition: 'all 0.15s ease',
+                        transition: 'all 0.2s ease',
                         letterSpacing: '0.02em',
                     }}
                 >
-                    {t.icon && <t.icon size={12} />}
+                    {t.icon && <t.icon size={13} />}
                     {t.label}
                     {t.badge && (
                         <span
                             style={{
                                 fontSize: 9,
                                 fontWeight: 700,
-                                padding: '1px 5px',
+                                padding: '2px 7px',
                                 borderRadius: 8,
-                                background: `${t.badgeColor || ac}25`,
-                                color: t.badgeColor || ac,
+                                background: isActive ? 'rgba(255,255,255,0.25)' : `${t.badgeColor || ac}25`,
+                                color: isActive ? '#fff' : (t.badgeColor || ac),
                             }}
                         >
                             {t.badge}
@@ -1000,6 +1005,46 @@ export const ChartTip = ({ active, payload, label }) => {
         </div>
     );
 };
+
+/* ── ConnectionBar — mimics the real app's connection/refresh status bar ── */
+export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
+    <div
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 16px',
+            background: THEME.glass,
+            border: `1px solid ${THEME.glassBorder}`,
+            borderRadius: 10,
+            fontSize: 11,
+            color: THEME.textDim,
+            marginBottom: 4,
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, boxShadow: `0 0 6px ${THEME.success}80` }} />
+                <span style={{ fontWeight: 600, color: THEME.textMuted }}>Connected</span>
+            </span>
+            <span>Last sync {lastSync} ago</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                Auto-refresh:
+                {['10s', '30s', '1m', '5m', 'Off'].map((v, i) => (
+                    <span key={i} style={{
+                        padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600,
+                        background: v === refreshInterval ? THEME.primary : 'transparent',
+                        color: v === refreshInterval ? '#fff' : THEME.textDim,
+                        cursor: 'pointer',
+                    }}>{v}</span>
+                ))}
+            </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: THEME.primary, fontWeight: 600, cursor: 'pointer', fontSize: 11 }}>
+            ↻ Refresh Now
+        </div>
+    </div>
+);
 
 export const generateChartData = (hours = 24) =>
     Array.from({ length: hours }, (_, i) => ({ time: `${String(i).padStart(2, '0')}:00` }));

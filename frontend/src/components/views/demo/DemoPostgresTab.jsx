@@ -11,6 +11,7 @@ import DemoLayout, {
     AlertRow,
     DataTable,
     ChartTip,
+    ConnectionBar,
     generateChartData,
 } from './DemoLayout.jsx';
 import {
@@ -798,6 +799,7 @@ function DemoPostgresTab({ tabId }) {
             const perfTabKey = perfTab || 'activity';
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <ConnectionBar />
                     <TabPills
                         tabs={[
                             { key: 'activity', label: 'Activity & Queries', icon: Zap },
@@ -1229,14 +1231,15 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'overview' && itemKey === 'resources') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <ConnectionBar lastSync="3s" refreshInterval="30s" />
                     <TabPills
                         tabs={[
-                            { key: 'inventory', label: 'Table Inventory' },
+                            { key: 'inventory', label: 'Table Inventory', badge: '6' },
                             { key: 'analytics', label: 'Analytics' },
                             { key: 'storage', label: 'Storage & I/O' },
-                            { key: 'dead-code', label: 'Dead Code' },
-                            { key: 'retention', label: 'Retention' },
-                            { key: 'maintenance', label: 'Maintenance' },
+                            { key: 'dead-code', label: 'Dead Code', badge: '5', badgeColor: THEME.warning },
+                            { key: 'retention', label: 'Retention', badge: '3' },
+                            { key: 'maintenance', label: 'Maintenance', badge: '6' },
                         ]}
                         active={resourcesTab}
                         onChange={setResourcesTab}
