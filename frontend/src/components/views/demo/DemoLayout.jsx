@@ -101,7 +101,7 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                 </div>
 
                 {/* nav sections */}
-                <nav style={{ flex: 1, padding: '8px 0' }}>
+                <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto', overflowX: 'hidden' }}>
                     {sections.map((section, si) => {
                         const isOpen = openSections.has(section.key);
                         const SIcon = section.icon;

@@ -64,6 +64,7 @@ import {
     Calendar,
     Code,
     Download,
+    Share2,
 } from 'lucide-react';
 import {
     AreaChart,
@@ -4767,63 +4768,81 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'schema' && itemKey === 'schema-visualizer') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                        <MetricCard icon={Database} label="Tables" value="45" color={THEME.primary} />
+                        <MetricCard icon={Link2} label="Relationships" value="28" color={THEME.success} />
+                        <MetricCard icon={Layers} label="Schemas" value="4" color={THEME.ai} />
+                        <MetricCard icon={AlertTriangle} label="Circular Deps" value="0" color={THEME.success} />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        {['All', 'Public', 'Warehouse', 'Analytics'].map((filter) => (
+                            <button
+                                key={filter}
+                                style={{
+                                    padding: '6px 12px',
+                                    background: THEME.glass,
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                    borderRadius: 4,
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    color: THEME.textMain,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                }}
+                            >
+                                {filter}
+                            </button>
+                        ))}
+                    </div>
+
                     <Panel title="Entity Relationship Diagram" icon={Blocks} accentColor={THEME.warning}>
-                        <div
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'space-around',
-                                padding: '40px',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    padding: '16px',
-                                    background: THEME.glass,
-                                    border: `2px solid ${THEME.primary}30`,
-                                    borderRadius: 8,
-                                    minWidth: '120px',
-                                    textAlign: 'center',
-                                    fontSize: 12,
-                                    color: THEME.textMain,
-                                }}
-                            >
-                                <div style={{ fontWeight: 700, marginBottom: 8 }}>users</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>id, email, name</div>
-                            </div>
-                            <div style={{ color: THEME.textMuted }}>─→</div>
-                            <div
-                                style={{
-                                    padding: '16px',
-                                    background: THEME.glass,
-                                    border: `2px solid ${THEME.primary}30`,
-                                    borderRadius: 8,
-                                    minWidth: '120px',
-                                    textAlign: 'center',
-                                    fontSize: 12,
-                                    color: THEME.textMain,
-                                }}
-                            >
-                                <div style={{ fontWeight: 700, marginBottom: 8 }}>orders</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>id, user_id, total</div>
-                            </div>
-                            <div style={{ color: THEME.textMuted }}>─→</div>
-                            <div
-                                style={{
-                                    padding: '16px',
-                                    background: THEME.glass,
-                                    border: `2px solid ${THEME.primary}30`,
-                                    borderRadius: 8,
-                                    minWidth: '120px',
-                                    textAlign: 'center',
-                                    fontSize: 12,
-                                    color: THEME.textMain,
-                                }}
-                            >
-                                <div style={{ fontWeight: 700, marginBottom: 8 }}>products</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>id, name, price</div>
-                            </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', padding: '24px' }}>
+                            {[
+                                { name: 'users', cols: 'id, email, name' },
+                                { name: 'orders', cols: 'id, user_id, total' },
+                                { name: 'products', cols: 'id, name, price' },
+                                { name: 'sessions', cols: 'id, user_id, token' },
+                                { name: 'payments', cols: 'id, order_id, status' },
+                                { name: 'inventory', cols: 'id, product_id, qty' },
+                            ].map((table) => (
+                                <div
+                                    key={table.name}
+                                    style={{
+                                        padding: '16px',
+                                        background: THEME.glass,
+                                        border: `2px solid ${THEME.primary}30`,
+                                        borderRadius: 8,
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 12, color: THEME.textMain }}>{table.name}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim }}>{table.cols}</div>
+                                </div>
+                            ))}
                         </div>
+                        <div style={{ height: '2px', background: `linear-gradient(90deg, ${THEME.glassBorder}, transparent)`, marginTop: '16px' }}></div>
+                    </Panel>
+
+                    <Panel title="Relationship Details" icon={Link2} accentColor={THEME.primary}>
+                        <DataTable
+                            columns={[
+                                { key: 'source_table', label: 'Source Table' },
+                                { key: 'source_col', label: 'Source Column' },
+                                { key: 'target_table', label: 'Target Table' },
+                                { key: 'target_col', label: 'Target Column' },
+                                { key: 'on_delete', label: 'On Delete' },
+                                { key: 'cardinality', label: 'Cardinality' },
+                            ]}
+                            rows={[
+                                { source_table: 'orders', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
+                                { source_table: 'payments', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
+                                { source_table: 'inventory', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'SET NULL', cardinality: '1:N' },
+                                { source_table: 'sessions', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
+                                { source_table: 'order_items', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
+                                { source_table: 'order_items', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'RESTRICT', cardinality: '1:N' },
+                            ]}
+                        />
                     </Panel>
                 </div>
             );
@@ -4833,69 +4852,62 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'schema' && itemKey === 'table-dependencies') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <Panel title="Dependency Graph" icon={Layers} accentColor={THEME.warning}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div
-                                    style={{
-                                        width: '100px',
-                                        padding: '8px',
-                                        background: THEME.glass,
-                                        borderRadius: 4,
-                                        fontSize: 11,
-                                        color: THEME.textMain,
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    users
-                                </div>
-                                <div style={{ flex: 1, height: '1px', background: THEME.glassBorder }}></div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>references</div>
-                                <div style={{ flex: 1, height: '1px', background: THEME.glassBorder }}></div>
-                                <div
-                                    style={{
-                                        width: '100px',
-                                        padding: '8px',
-                                        background: THEME.glass,
-                                        borderRadius: 4,
-                                        fontSize: 11,
-                                        color: THEME.textMain,
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    orders
-                                </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                        <MetricCard icon={Database} label="Total Tables" value="45" color={THEME.primary} />
+                        <MetricCard icon={Link2} label="Foreign Keys" value="28" color={THEME.success} />
+                        <MetricCard icon={AlertTriangle} label="Circular Deps" value="0" color={THEME.success} />
+                        <MetricCard icon={Layers} label="Max Depth" value="4" color={THEME.ai} />
+                    </div>
+
+                    <Panel title="Dependency Graph" icon={TreePine} accentColor={THEME.warning}>
+                        <div style={{ padding: '16px', fontFamily: THEME.fontMono, fontSize: 11, lineHeight: '1.8', color: THEME.textMain }}>
+                            <div>public/</div>
+                            <div style={{ paddingLeft: '20px', color: THEME.textDim }}>├─ users (referenced by 8 tables)</div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  ├─ orders</div>
+                            <div style={{ paddingLeft: '60px', color: THEME.textDim }}>│  │  ├─ order_items</div>
+                            <div style={{ paddingLeft: '80px', color: THEME.textDim }}>│  │  └─ payments</div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  └─ sessions</div>
+                            <div style={{ paddingLeft: '20px', color: THEME.textDim }}>├─ products</div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  ├─ inventory</div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  └─ order_items</div>
+                            <div style={{ paddingLeft: '20px', color: THEME.textDim }}>└─ audit_logs</div>
+                        </div>
+                    </Panel>
+
+                    <Panel title="Foreign Key Map" icon={Link2} accentColor={THEME.primary}>
+                        <DataTable
+                            columns={[
+                                { key: 'source_table', label: 'Source Table' },
+                                { key: 'source_col', label: 'Source Column' },
+                                { key: 'target_table', label: 'Target Table' },
+                                { key: 'target_col', label: 'Target Column' },
+                                { key: 'on_delete', label: 'On Delete' },
+                                { key: 'on_update', label: 'On Update' },
+                            ]}
+                            rows={[
+                                { source_table: 'orders', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
+                                { source_table: 'order_items', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
+                                { source_table: 'order_items', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'RESTRICT', on_update: 'CASCADE' },
+                                { source_table: 'payments', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
+                                { source_table: 'inventory', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'SET NULL', on_update: 'CASCADE' },
+                                { source_table: 'sessions', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
+                            ]}
+                        />
+                    </Panel>
+
+                    <Panel title="Dependency Analysis" icon={BarChart2} accentColor={THEME.success}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: THEME.glass, borderRadius: 4 }}>
+                                <span style={{ fontSize: 11, color: THEME.textMain }}>Most Referenced Table</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.primary }}>users (8 refs)</span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div
-                                    style={{
-                                        width: '100px',
-                                        padding: '8px',
-                                        background: THEME.glass,
-                                        borderRadius: 4,
-                                        fontSize: 11,
-                                        color: THEME.textMain,
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    orders
-                                </div>
-                                <div style={{ flex: 1, height: '1px', background: THEME.glassBorder }}></div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>has</div>
-                                <div style={{ flex: 1, height: '1px', background: THEME.glassBorder }}></div>
-                                <div
-                                    style={{
-                                        width: '100px',
-                                        padding: '8px',
-                                        background: THEME.glass,
-                                        borderRadius: 4,
-                                        fontSize: 11,
-                                        color: THEME.textMain,
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    products
-                                </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: THEME.glass, borderRadius: 4 }}>
+                                <span style={{ fontSize: 11, color: THEME.textMain }}>Deepest Dependency Chain</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.warning }}>orders → items → shipping → tracking</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: THEME.glass, borderRadius: 4 }}>
+                                <span style={{ fontSize: 11, color: THEME.textMain }}>Orphan Tables</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.danger }}>2 (temp_data, staging)</span>
                             </div>
                         </div>
                     </Panel>
@@ -4907,8 +4919,15 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'schema' && itemKey === 'chart-builder') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                        <MetricCard icon={LayoutDashboard} label="Saved Charts" value="12" color={THEME.primary} />
+                        <MetricCard icon={Gauge} label="Dashboards" value="4" color={THEME.success} />
+                        <MetricCard icon={Share2} label="Shared" value="8" color={THEME.ai} />
+                        <MetricCard icon={Clock} label="Last Updated" value="2m ago" color={THEME.warning} />
+                    </div>
+
                     <Panel title="Chart Configuration" icon={BarChart2} accentColor={THEME.warning}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', padding: '16px' }}>
                             <div>
                                 <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>
                                     Chart Type
@@ -4927,6 +4946,7 @@ function DemoPostgresTab({ tabId }) {
                                     <option>Line Chart</option>
                                     <option>Bar Chart</option>
                                     <option>Pie Chart</option>
+                                    <option>Area Chart</option>
                                 </select>
                             </div>
                             <div>
@@ -4947,20 +4967,112 @@ function DemoPostgresTab({ tabId }) {
                                     <option>users</option>
                                     <option>orders</option>
                                     <option>products</option>
+                                    <option>payments</option>
+                                </select>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>
+                                    Time Range
+                                </div>
+                                <select
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 4,
+                                        color: THEME.textMain,
+                                        fontSize: 11,
+                                    }}
+                                >
+                                    <option>Last 24h</option>
+                                    <option>Last 7d</option>
+                                    <option>Last 30d</option>
+                                    <option>Custom</option>
+                                </select>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>
+                                    Aggregation
+                                </div>
+                                <select
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 4,
+                                        color: THEME.textMain,
+                                        fontSize: 11,
+                                    }}
+                                >
+                                    <option>Sum</option>
+                                    <option>Average</option>
+                                    <option>Count</option>
+                                    <option>Max</option>
                                 </select>
                             </div>
                         </div>
                     </Panel>
+
                     <Panel title="Preview" icon={Eye} accentColor={THEME.primary}>
-                        <ResponsiveContainer width="100%" height={200}>
+                        <ResponsiveContainer width="100%" height={240}>
                             <BarChart data={demoData.clusterVelocity.slice(0, 8)}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Bar dataKey="qps" fill={THEME.ai} />
+                                <Bar dataKey="qps" fill={THEME.ai} name="QPS" />
+                                <Bar dataKey="tps" fill={THEME.primary} name="TPS" />
                             </BarChart>
                         </ResponsiveContainer>
+                    </Panel>
+
+                    <Panel title="Saved Charts" icon={FileText} accentColor={THEME.ai}>
+                        <DataTable
+                            columns={[
+                                { key: 'name', label: 'Chart Name' },
+                                { key: 'type', label: 'Type' },
+                                { key: 'data_source', label: 'Data Source' },
+                                { key: 'created', label: 'Created' },
+                                { key: 'shared', label: 'Shared' },
+                            ]}
+                            rows={[
+                                { name: 'Query Performance', type: 'Line Chart', data_source: 'pg_stat_statements', created: '2h ago', shared: <StatusBadge label="Yes" color={THEME.success} /> },
+                                { name: 'Table Growth', type: 'Area Chart', data_source: 'pg_tables', created: '1d ago', shared: <StatusBadge label="No" color={THEME.textDim} /> },
+                                { name: 'Index Usage', type: 'Bar Chart', data_source: 'pg_indexes', created: '3d ago', shared: <StatusBadge label="Yes" color={THEME.success} /> },
+                                { name: 'Connection Distribution', type: 'Pie Chart', data_source: 'pg_stat_activity', created: '1w ago', shared: <StatusBadge label="Yes" color={THEME.success} /> },
+                                { name: 'Cache Hit Ratio', type: 'Line Chart', data_source: 'pg_stat_database', created: '2w ago', shared: <StatusBadge label="No" color={THEME.textDim} /> },
+                            ]}
+                        />
+                    </Panel>
+
+                    <Panel title="Export Options" icon={Download} accentColor={THEME.success}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', padding: '16px' }}>
+                            {['PNG', 'SVG', 'PDF', 'Share Link'].map((option) => (
+                                <button
+                                    key={option}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 4,
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        color: THEME.textMain,
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 6,
+                                    }}
+                                >
+                                    <Download size={14} />
+                                    {option}
+                                </button>
+                            ))}
+                        </div>
                     </Panel>
                 </div>
             );
@@ -6656,7 +6768,7 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'observability' && itemKey === 'status-page') {
             const uptimeChartData = generateChartData(24).map((d, i) => ({
                 ...d,
-                uptime: 99 + Math.sin(i / 8) * 0.98 + Math.random() * 0.02,
+                uptime: 99.9 + Math.sin(i / 8) * 0.08 + Math.random() * 0.02,
             }));
 
             return (
@@ -6713,7 +6825,7 @@ function DemoPostgresTab({ tabId }) {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
-                                <YAxis stroke={THEME.textDim} fontSize={9} domain={[99.8, 100]} />
+                                <YAxis stroke={THEME.textDim} fontSize={9} domain={[99.8, 100]} tickFormatter={(v) => v.toFixed(2)} />
                                 <Tooltip content={<ChartTip />} />
                                 <Area
                                     type="monotone"
