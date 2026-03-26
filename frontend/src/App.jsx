@@ -518,12 +518,59 @@ const AppStyles = () => (
             } !important;
         }
 
+        @keyframes meshGradient {
+            0%, 100% { background-position: 0% 0%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        @keyframes subtleFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+        }
+
         body {
             margin: 0;
             font-family: ${DS.fontUI};
             background: ${DS.bg};
             color: ${DS.textPrimary};
             -webkit-font-smoothing: antialiased;
+        }
+
+        /* ═══ ANIMATED MESH BACKGROUND ═══ */
+        #root > div > div[style*="flex"] > div:last-child,
+        main, [role="main"] {
+            position: relative;
+        }
+
+        /* ── Ambient floating orbs in main content ── */
+        #root::before {
+            content: '';
+            position: fixed;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, ${DS._dark ? 'rgba(56,189,248,0.04)' : 'rgba(56,189,248,0.03)'} 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: subtleFloat 20s ease-in-out infinite;
+        }
+
+        #root::after {
+            content: '';
+            position: fixed;
+            bottom: -200px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, ${DS._dark ? 'rgba(167,139,250,0.03)' : 'rgba(167,139,250,0.02)'} 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: subtleFloat 25s ease-in-out infinite reverse;
         }
 
         /* ── Sidebar scroll ── */
@@ -2780,18 +2827,19 @@ const Sidebar = ({
                 {/* Icon mark */}
                 <div
                     style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 8,
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
                         flexShrink: 0,
-                        background: DS.logoBg,
+                        background: `linear-gradient(135deg, ${DS.cyan}, ${DS.violet || '#8b5cf6'})`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 0 20px rgba(56,189,248,0.4), 0 0 40px rgba(56,189,248,0.15)',
+                        boxShadow: `0 0 24px ${DS.cyan}60, 0 0 48px ${DS.cyan}20, 0 4px 12px rgba(0,0,0,0.3)`,
+                        border: `1px solid ${DS.cyan}40`,
                     }}
                 >
-                    <Database color="#fff" size={15} strokeWidth={2.5} />
+                    <Database color="#fff" size={16} strokeWidth={2.5} />
                 </div>
 
                 {/* Wordmark — hidden when collapsed */}
@@ -2866,10 +2914,11 @@ const Sidebar = ({
                                           ? `8px 14px 8px ${basePadLeft - 3}px`
                                           : `8px 14px 8px ${basePadLeft}px`,
                                     background: isActive
-                                        ? `linear-gradient(90deg, ${accent}1a 0%, ${accent}08 100%)`
+                                        ? `linear-gradient(90deg, ${accent}25 0%, ${accent}08 60%, transparent 100%)`
                                         : 'transparent',
                                     border: 'none',
                                     borderLeft: isActive ? `3px solid ${accent}` : '3px solid transparent',
+                                    boxShadow: isActive ? `inset 0 0 24px ${accent}10, 0 0 12px ${accent}08` : 'none',
                                     cursor: 'pointer',
                                     color: isActive ? accent : DS.sidebarText,
                                     fontWeight: isActive ? 600 : 400,

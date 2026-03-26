@@ -558,18 +558,19 @@ export const ChipBadge = ({ label, color = _AT.primary, micro = false, animated 
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: micro ? '0.5px' : '1.2px',
-            padding: micro ? '1px 6px' : '2px 9px',
-            borderRadius: 2,
-            background: `${color}12`,
+            padding: micro ? '2px 7px' : '3px 10px',
+            borderRadius: 6,
+            background: `linear-gradient(135deg, ${color}18, ${color}0a)`,
             color,
-            border: `1px solid ${color}28`,
+            border: `1px solid ${color}30`,
             fontFamily: _AT.fontDisplay,
             whiteSpace: 'nowrap',
             display: 'inline-flex',
             alignItems: 'center',
             gap: 4,
             animation: animated ? 'plasmaGlow 2s ease-in-out infinite' : 'none',
-            boxShadow: animated ? `0 0 8px ${color}30` : 'none',
+            boxShadow: animated ? `0 0 12px ${color}40, 0 0 4px ${color}20` : `0 1px 4px ${color}10`,
+            backdropFilter: 'blur(8px)',
         }}
     >
         {dot && (
@@ -674,10 +675,12 @@ export const GlassCard = ({
             {...hoverProps}
             style={{
                 background: v.bg,
-                backdropFilter: 'blur(24px) saturate(200%)',
-                borderRadius: 12,
-                border: `1px solid ${hovered ? _AT.glassBorderHover : v.border}`,
-                boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,189,248,0.1)' : _AT.shadowMd,
+                backdropFilter: 'blur(24px) saturate(180%)',
+                borderRadius: 16,
+                border: `1px solid ${hovered ? accent + '40' : v.border}`,
+                boxShadow: hovered
+                    ? `0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px ${accent}25, 0 0 30px ${accent}10`
+                    : '0 4px 24px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
                 display: 'flex',
                 flexDirection: 'column',
                 position: maximized ? 'fixed' : 'relative',
@@ -685,15 +688,24 @@ export const GlassCard = ({
                 zIndex: maximized ? 1000 : undefined,
                 overflow: 'hidden',
                 animation: glitching ? 'glitchShift 0.2s ease' : 'scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards',
-                transition: 'border-color 0.3s, box-shadow 0.3s',
+                transition: 'border-color 0.35s, box-shadow 0.35s, transform 0.35s',
+                transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
                 ...style,
             }}
         >
+            {/* ── Gradient top accent bar ── */}
+            <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+                background: `linear-gradient(90deg, ${accent}, ${accent}80, transparent)`,
+                opacity: hovered ? 1 : 0.5,
+                transition: 'opacity 0.3s ease',
+                zIndex: 5,
+            }} />
             {showScanlines && <ScanlineOverlay />}
             {showHex && <HexPattern color={accent} opacity={0.04} />}
             {showGrid && <GridPattern color={accent} opacity={0.03} />}
             {corners && <CornerBrackets color={accent} animated={hovered} glowing={variant === 'elevated'} />}
-            <GlowOrb color={accent} opacity={0.05} />
+            <GlowOrb color={accent} opacity={hovered ? 0.1 : 0.05} />
             <NoiseTexture opacity={0.015} />
 
             {/* Header */}
@@ -844,9 +856,13 @@ export const MetricCard = ({
             {...hoverProps}
             onClick={onClick}
             style={{
-                background: active ? `linear-gradient(145deg, ${color}20 0%, ${color}08 100%)` : _AT.surface,
-                borderRadius: 12,
-                border: `1px solid ${active || hovered ? color + '40' : _AT.glassBorder}`,
+                background: active
+                    ? `linear-gradient(145deg, ${color}22 0%, ${color}0a 100%)`
+                    : hovered
+                        ? `linear-gradient(145deg, ${color}0c 0%, ${_AT.surface} 100%)`
+                        : _AT.surface,
+                borderRadius: 16,
+                border: `1px solid ${active || hovered ? color + '50' : _AT.glassBorder}`,
                 padding: isCompact ? 14 : 20,
                 position: 'relative',
                 overflow: 'hidden',
@@ -854,23 +870,46 @@ export const MetricCard = ({
                 flexDirection: 'column',
                 gap: isCompact ? 8 : 12,
                 cursor: onClick ? 'pointer' : 'default',
-                transition: 'border-color 0.2s, transform 0.2s',
-                transform: hovered && onClick ? 'translateY(-2px) scale(1.01)' : 'none',
+                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: hovered && onClick ? 'translateY(-3px) scale(1.02)' : 'none',
+                boxShadow: hovered
+                    ? `0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px ${color}20, 0 0 30px ${color}15`
+                    : active
+                        ? `0 4px 20px ${color}20, 0 0 0 1px ${color}15`
+                        : '0 2px 12px rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(16px) saturate(150%)',
             }}
         >
+            {/* ── Gradient top accent line ── */}
+            <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+                background: `linear-gradient(90deg, ${color}, ${color}60, transparent)`,
+                opacity: hovered || active ? 1 : 0.4,
+                transition: 'opacity 0.35s ease',
+                zIndex: 5,
+            }} />
+            {/* ── Corner glow orb ── */}
+            <div style={{
+                position: 'absolute', top: -30, right: -30,
+                width: 80, height: 80, borderRadius: '50%',
+                background: `radial-gradient(circle, ${color}${hovered ? '18' : '08'} 0%, transparent 70%)`,
+                transition: 'background 0.35s ease',
+                pointerEvents: 'none',
+            }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div
                     style={{
                         width: isCompact ? 36 : 44,
                         height: isCompact ? 36 : 44,
-                        borderRadius: 8,
-                        background: `${color}10`,
+                        borderRadius: 12,
+                        background: `linear-gradient(135deg, ${color}18, ${color}08)`,
                         color,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        border: `1px solid ${color}25`,
+                        border: `1px solid ${color}30`,
                         flexShrink: 0,
+                        boxShadow: `0 0 16px ${color}15`,
                     }}
                 >
                     <Icon size={isCompact ? 17 : 21} />
@@ -946,12 +985,18 @@ export const MetricCard = ({
                                 style={{
                                     fontSize: isCompact ? 24 : 30,
                                     fontWeight: 800,
-                                    color: _AT.textMain,
                                     fontFamily: _AT.fontMono,
                                     letterSpacing: '-0.04em',
                                     lineHeight: 1,
                                     animation: 'countUp 0.6s ease backwards',
-                                    textShadow: hovered ? '0 0 20px rgba(56,189,248,0.3)' : 'none',
+                                    background: hovered
+                                        ? `linear-gradient(135deg, ${color}, ${_AT.textMain})`
+                                        : 'none',
+                                    WebkitBackgroundClip: hovered ? 'text' : 'unset',
+                                    WebkitTextFillColor: hovered ? 'transparent' : _AT.textMain,
+                                    color: _AT.textMain,
+                                    textShadow: hovered ? `0 0 24px ${color}40` : 'none',
+                                    transition: 'text-shadow 0.3s ease',
                                 }}
                             >
                                 {value}
@@ -4893,30 +4938,45 @@ export const BentoMetric = ({
             {...hoverProps}
             onClick={onClick}
             style={{
-                background: 'linear-gradient(145deg, rgba(7,15,36,0.82) 0%, rgba(2,6,20,0.97) 100%)',
-                borderRadius: 14,
+                background: hovered
+                    ? `linear-gradient(145deg, rgba(7,15,36,0.9) 0%, ${color}08 50%, rgba(2,6,20,0.97) 100%)`
+                    : 'linear-gradient(145deg, rgba(7,15,36,0.82) 0%, rgba(2,6,20,0.97) 100%)',
+                borderRadius: 16,
                 padding: 22,
-                border: `1px solid ${hovered ? color + '45' : _AT.glassBorder}`,
+                border: `1px solid ${hovered ? color + '50' : _AT.glassBorder}`,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 animation: `fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s backwards`,
                 position: 'relative',
                 overflow: 'hidden',
-                transition: 'border-color 0.3s, transform 0.3s',
-                transform: hovered ? 'translateY(-2px)' : 'none',
+                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: hovered ? 'translateY(-4px) scale(1.01)' : 'none',
+                boxShadow: hovered
+                    ? `0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px ${color}20, 0 0 40px ${color}12`
+                    : '0 4px 16px rgba(0,0,0,0.3)',
                 minHeight: 140,
                 cursor: onClick ? 'pointer' : 'default',
+                backdropFilter: 'blur(20px) saturate(160%)',
             }}
         >
-            <GlowOrb color={color} x="100%" y="0%" size={180} opacity={hovered ? 0.12 : 0.05} />
+            {/* ── Gradient top accent line ── */}
+            <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+                background: `linear-gradient(90deg, ${color}, ${color}60, transparent)`,
+                opacity: hovered ? 1 : 0.35,
+                transition: 'opacity 0.35s ease',
+                zIndex: 5,
+            }} />
+            <GlowOrb color={color} x="100%" y="0%" size={180} opacity={hovered ? 0.15 : 0.06} />
             <div
                 style={{
                     position: 'absolute',
                     bottom: -12,
                     right: -12,
-                    opacity: hovered ? 0.14 : 0.05,
-                    transition: 'opacity 0.3s',
+                    opacity: hovered ? 0.18 : 0.06,
+                    transition: 'opacity 0.35s ease',
+                    filter: hovered ? `drop-shadow(0 0 20px ${color}40)` : 'none',
                 }}
             >
                 <Icon size={90} color={color} />
@@ -4941,11 +5001,12 @@ export const BentoMetric = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div
                     style={{
-                        padding: 7,
-                        borderRadius: 6,
-                        background: `${color}14`,
+                        padding: 8,
+                        borderRadius: 10,
+                        background: `linear-gradient(135deg, ${color}20, ${color}0a)`,
                         color,
-                        border: `1px solid ${color}28`,
+                        border: `1px solid ${color}35`,
+                        boxShadow: `0 0 16px ${color}15`,
                     }}
                 >
                     <Icon size={15} />
@@ -4967,13 +5028,19 @@ export const BentoMetric = ({
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
                     <span
                         style={{
-                            fontSize: 32,
+                            fontSize: 34,
                             fontWeight: 800,
-                            color: '#fff',
                             lineHeight: 1,
                             fontFamily: _AT.fontMono,
-                            textShadow: hovered ? `0 0 28px ${color}90` : 'none',
-                            transition: 'text-shadow 0.3s',
+                            background: hovered
+                                ? `linear-gradient(135deg, #fff, ${color})`
+                                : 'none',
+                            WebkitBackgroundClip: hovered ? 'text' : 'unset',
+                            WebkitTextFillColor: hovered ? 'transparent' : '#fff',
+                            color: '#fff',
+                            textShadow: hovered ? `0 0 32px ${color}80` : `0 0 12px ${color}20`,
+                            transition: 'text-shadow 0.35s ease',
+                            filter: hovered ? `drop-shadow(0 0 8px ${color}50)` : 'none',
                         }}
                     >
                         {value}
