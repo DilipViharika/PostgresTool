@@ -579,4 +579,114 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                       
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    Global Tickets
+                                </div>
+                                <div style={{ fontSize: 14, color: DARK_THEME.text }}>
+                                    {lockStats.globalTicketsUsed} / {lockStats.globalTickets}
+                                </div>
+                                <div
+                                    style={{
+                                        height: 6,
+                                        background: DARK_THEME.border,
+                                        borderRadius: 10,
+                                        overflow: 'hidden',
+                                        marginTop: 4,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${(lockStats.globalTicketsUsed / lockStats.globalTickets) * 100}%`,
+                                            background: DARK_THEME.accent,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* WiredTiger State */}
+                <div className="mongo-section">
+                    <h3 className="mongo-section-title">
+                        <TrendingUp size={16} /> WiredTiger State
+                    </h3>
+                    <div className="mongo-card">
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    Cache Size
+                                </div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
+                                    {fmt(wiredTiger.cacheSize)} MB
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    Cache Filled
+                                </div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
+                                    {fmt(wiredTiger.cacheFilled)} MB
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    Cache Hit Ratio
+                                </div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.success }}>
+                                    {(wiredTiger.cacheHitRatio * 100).toFixed(1)}%
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    Eviction Rate
+                                </div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.warning }}>
+                                    {fmt(wiredTiger.evictionRate)}/sec
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}

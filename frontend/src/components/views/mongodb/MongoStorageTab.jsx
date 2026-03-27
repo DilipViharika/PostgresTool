@@ -553,4 +553,71 @@ export default function MongoStorageTab() {
 
                 {/* Capacity Planning */}
                 <div className="mongo-section">
-               
+                    <h3 className="mongo-section-title">
+                        <TrendingUp size={16} /> Capacity Planning
+                    </h3>
+                    <div className="mongo-card">
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                                marginBottom: 16,
+                            }}
+                        >
+                            <div className="mongo-metric-box">
+                                <div className="mongo-metric-label">Growth Rate</div>
+                                <div className="mongo-metric-value">{fmt(capacityPlan.growthRate)} MB/month</div>
+                            </div>
+                            <div className="mongo-metric-box">
+                                <div className="mongo-metric-label">Days Until Full</div>
+                                <div
+                                    className="mongo-metric-value"
+                                    style={{
+                                        color: capacityPlan.daysUntilFull < 30 ? DARK_THEME.danger : DARK_THEME.success,
+                                    }}
+                                >
+                                    {capacityPlan.daysUntilFull}
+                                </div>
+                            </div>
+                            <div className="mongo-metric-box">
+                                <div className="mongo-metric-label">Disk Used</div>
+                                <div className="mongo-metric-value">
+                                    {((capacityPlan.diskUsed / capacityPlan.diskTotal) * 100).toFixed(0)}%
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ fontSize: 12, color: DARK_THEME.text, lineHeight: 1.6 }}>
+                            <div style={{ marginBottom: 12 }}>
+                                <strong>Current Usage:</strong> {fmt(capacityPlan.diskUsed)} /{' '}
+                                {fmt(capacityPlan.diskTotal)} GB
+                            </div>
+                            <div
+                                style={{
+                                    height: 12,
+                                    background: DARK_THEME.border,
+                                    borderRadius: 6,
+                                    overflow: 'hidden',
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        width: `${(capacityPlan.diskUsed / capacityPlan.diskTotal) * 100}%`,
+                                        background: `linear-gradient(90deg, ${DARK_THEME.success} 0%, ${DARK_THEME.warning} 70%, ${DARK_THEME.danger} 100%)`,
+                                    }}
+                                />
+                            </div>
+                            <div style={{ fontSize: 11, color: DARK_THEME.textMuted }}>
+                                At current growth rate of {fmt(capacityPlan.growthRate)} MB/month, your storage will
+                                reach capacity in approximately {capacityPlan.daysUntilFull} days.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}

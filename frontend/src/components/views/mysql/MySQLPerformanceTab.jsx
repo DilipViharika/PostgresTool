@@ -440,4 +440,18 @@ export default function MySQLPerformanceTab() {
                                                 </span>
                                             </td>
                                             <td style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-          
+                                                {lock.threadId}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="mysql-empty">No active locks. No contention detected.</div>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}

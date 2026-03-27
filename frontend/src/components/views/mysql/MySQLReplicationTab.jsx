@@ -461,4 +461,49 @@ export default function MySQLReplicationTab() {
                                             {replication?.replIgnoreDb !== undefined && (
                                                 <tr>
                                                     <td style={{ fontWeight: 600 }}>Ignore Database</td>
-                                                    <td>{replication.replIgnoreDb || 'None'}</td
+                                                    <td>{replication.replIgnoreDb || 'None'}</td>
+                                                </tr>
+                                            )}
+                                            {replication?.replDoTable !== undefined && (
+                                                <tr>
+                                                    <td style={{ fontWeight: 600 }}>Do Table</td>
+                                                    <td style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
+                                                        {replication.replDoTable || 'All tables'}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {replication?.replIgnoreTable !== undefined && (
+                                                <tr>
+                                                    <td style={{ fontWeight: 600 }}>Ignore Table</td>
+                                                    <td style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
+                                                        {replication.replIgnoreTable || 'No tables'}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {replication?.replWildDoTable !== undefined && (
+                                                <tr>
+                                                    <td style={{ fontWeight: 600 }}>Do Wildcard Table</td>
+                                                    <td style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
+                                                        {replication.replWildDoTable || 'None'}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {replication?.replWildIgnoreTable !== undefined && (
+                                                <tr>
+                                                    <td style={{ fontWeight: 600 }}>Ignore Wildcard Table</td>
+                                                    <td style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
+                                                        {replication.replWildIgnoreTable || 'None'}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </>
+    );
+}

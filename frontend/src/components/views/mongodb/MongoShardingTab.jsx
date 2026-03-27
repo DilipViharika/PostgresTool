@@ -575,4 +575,63 @@ export default function MongoShardingTab() {
                                             >
                                                 {mig.status.toUpperCase()}
                                             </span>
-                                        </d
+                                        </div>
+                                        <div style={{ fontSize: 11, color: DARK_THEME.textMuted }}>
+                                            <strong>Chunks:</strong> {mig.chunks.join(', ')} ({mig.chunks.length} total)
+                                        </div>
+                                        <div style={{ fontSize: 11, color: DARK_THEME.textMuted, marginTop: 4 }}>
+                                            {new Date(mig.startTime).toLocaleString()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Collection Sharding Info */}
+                <div className="mongo-section">
+                    <h3 className="mongo-section-title">
+                        <Database size={16} style={{ display: 'none' }} /> Sharded Collections
+                    </h3>
+                    <div className="mongo-card" style={{ padding: 0, overflow: 'hidden' }}>
+                        <table className="mongo-table">
+                            <thead className="mongo-table-head">
+                                <tr>
+                                    <th>Namespace</th>
+                                    <th>Shard Key</th>
+                                    <th>Chunks</th>
+                                    <th>Docs</th>
+                                    <th>Size (MB)</th>
+                                </tr>
+                            </thead>
+                            <tbody className="mongo-table-body">
+                                <tr>
+                                    <td style={{ fontFamily: 'monospace' }}>mydb.users</td>
+                                    <td style={{ fontFamily: 'monospace' }}>{'{ _id: 1 }'}</td>
+                                    <td>245</td>
+                                    <td>{fmt(2500000)}</td>
+                                    <td>{fmt(2048)}</td>
+                                </tr>
+                                <tr>
+                                    <td style={{ fontFamily: 'monospace' }}>mydb.products</td>
+                                    <td style={{ fontFamily: 'monospace' }}>{'{ category: 1, _id: 1 }'}</td>
+                                    <td>254</td>
+                                    <td>{fmt(1800000)}</td>
+                                    <td>{fmt(2112)}</td>
+                                </tr>
+                                <tr>
+                                    <td style={{ fontFamily: 'monospace' }}>mydb.orders</td>
+                                    <td style={{ fontFamily: 'monospace' }}>{'{ date: 1 }'}</td>
+                                    <td>251</td>
+                                    <td>{fmt(5600000)}</td>
+                                    <td>{fmt(2080)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}

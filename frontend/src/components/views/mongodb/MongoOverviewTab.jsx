@@ -581,4 +581,74 @@ export default function MongoOverviewTab() {
                                         key={idx}
                                         style={{
                                             padding: 12,
-                                           
+                                            background: DARK_THEME.bg,
+                                            border: `1px solid ${DARK_THEME.border}`,
+                                            borderRadius: 8,
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                                            <div
+                                                className={`mongo-status-indicator mongo-status-${member.state === 'PRIMARY' ? 'healthy' : 'healthy'}`}
+                                            />
+                                            <span style={{ fontWeight: 600, color: DARK_THEME.text, fontSize: 13 }}>
+                                                {member.name}
+                                            </span>
+                                        </div>
+                                        <div style={{ fontSize: 12, color: DARK_THEME.textMuted, marginBottom: 4 }}>
+                                            State: <span style={{ color: DARK_THEME.accent }}>{member.state}</span>
+                                        </div>
+                                        <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
+                                            Lag: <span style={{ color: DARK_THEME.accent }}>{fmt(member.lag)}s</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div
+                                style={{
+                                    marginTop: 16,
+                                    paddingTop: 16,
+                                    borderTop: `1px solid ${DARK_THEME.border}`,
+                                    fontSize: 12,
+                                    color: DARK_THEME.textMuted,
+                                }}
+                            >
+                                Oplog Window:{' '}
+                                <span style={{ color: DARK_THEME.accent, fontWeight: 600 }}>
+                                    {replicationStatus.oplogWindow} seconds
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Active Alerts */}
+                {alerts.length > 0 && (
+                    <div className="mongo-section">
+                        <h3 className="mongo-section-title">
+                            <AlertTriangle size={16} /> Active Alerts ({alerts.length})
+                        </h3>
+                        <div>
+                            {alerts.map((alert) => (
+                                <div key={alert.id} className="mongo-card" style={{ marginBottom: 12 }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                        <div className={`mongo-alert-badge mongo-alert-${alert.severity}`}>
+                                            {alert.severity.toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>
+                                                {alert.message}
+                                            </div>
+                                            <div style={{ fontSize: 11, color: DARK_THEME.textMuted, marginTop: 4 }}>
+                                                {new Date(alert.time).toLocaleTimeString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
+    );
+}
