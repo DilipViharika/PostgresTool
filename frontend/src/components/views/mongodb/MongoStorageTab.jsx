@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
 import {
-    BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    Legend, PieChart, Pie, Cell
+    BarChart,
+    Bar,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    PieChart,
+    Pie,
+    Cell,
 } from 'recharts';
-import {
-    HardDrive, AlertTriangle, TrendingUp, AlertCircle, Zap, Check, Eye, EyeOff
-} from 'lucide-react';
+import { HardDrive, AlertTriangle, TrendingUp, AlertCircle, Zap, Check, Eye, EyeOff } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* THEME & CONSTANTS */
@@ -179,14 +187,16 @@ const fmt = (n) => {
 const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -219,47 +229,41 @@ export default function MongoStorageTab() {
                 fetchData('/api/mongodb/growth-chart').catch(() => null),
             ]);
 
-            setIndexStats(idx || {
-                totalIndexes: 456,
-                unusedIndexes: 34,
-                collscanPercent: 2.5,
-                indexSize: 1280,
-                indexMaintenance: 45,
-            });
+            setIndexStats(
+                idx || {
+                    totalIndexes: 0,
+                    unusedIndexes: 0,
+                    collscanPercent: 0,
+                    indexSize: 0,
+                    indexMaintenance: 0,
+                },
+            );
 
-            setCollections(coll || [
-                { name: 'users', size: 2048, count: 125000, avgDocSize: 1640, indexes: 8 },
-                { name: 'products', size: 3200, count: 85000, avgDocSize: 3755, indexes: 12 },
-                { name: 'orders', size: 1536, count: 250000, avgDocSize: 614, indexes: 5 },
-                { name: 'sessions', size: 512, count: 45000, avgDocSize: 1138, indexes: 3 },
-            ]);
+            setCollections(coll || []);
 
-            setWiredTiger(wt || {
-                cacheSize: 2048,
-                cacheFilled: 1728,
-                cacheDirty: 256,
-                cacheHitRatio: 0.94,
-                pageReadCount: 1250000,
-                pageWriteCount: 890000,
-                evictionRate: 12.5,
-            });
+            setWiredTiger(
+                wt || {
+                    cacheSize: 0,
+                    cacheFilled: 0,
+                    cacheDirty: 0,
+                    cacheHitRatio: 0,
+                    pageReadCount: 0,
+                    pageWriteCount: 0,
+                    evictionRate: 0,
+                },
+            );
 
-            setCapacityPlan(cap || {
-                totalSize: 8192,
-                growthRate: 512,
-                daysUntilFull: 45,
-                diskTotal: 100000,
-                diskUsed: 45000,
-            });
+            setCapacityPlan(
+                cap || {
+                    totalSize: 0,
+                    growthRate: 0,
+                    daysUntilFull: 0,
+                    diskTotal: 0,
+                    diskUsed: 0,
+                },
+            );
 
-            setGrowthChart(growth || [
-                { date: '2024-01', size: 4096 },
-                { date: '2024-02', size: 4608 },
-                { date: '2024-03', size: 5120 },
-                { date: '2024-04', size: 5632 },
-                { date: '2024-05', size: 6144 },
-                { date: '2024-06', size: 6656 },
-            ]);
+            setGrowthChart(growth || []);
         } catch (err) {
             setError(err.message || 'Failed to load storage data');
         } finally {
@@ -305,7 +309,14 @@ export default function MongoStorageTab() {
                         <Zap size={16} /> Index Analysis
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                gap: 16,
+                                marginBottom: 16,
+                            }}
+                        >
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Total Indexes</div>
                                 <div className="mongo-metric-value">{indexStats.totalIndexes}</div>
@@ -329,8 +340,13 @@ export default function MongoStorageTab() {
                         </div>
                         {indexStats.unusedIndexes > 0 && (
                             <div className="mongo-info-box">
-                                <AlertTriangle size={14} style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'text-top' }} />
-                                {indexStats.unusedIndexes} unused indexes consuming {Math.round(indexStats.unusedIndexes / indexStats.totalIndexes * 100)}% of index storage. Consider dropping them to improve write performance.
+                                <AlertTriangle
+                                    size={14}
+                                    style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'text-top' }}
+                                />
+                                {indexStats.unusedIndexes} unused indexes consuming{' '}
+                                {Math.round((indexStats.unusedIndexes / indexStats.totalIndexes) * 100)}% of index
+                                storage. Consider dropping them to improve write performance.
                             </div>
                         )}
                     </div>
@@ -373,45 +389,83 @@ export default function MongoStorageTab() {
                         <Zap size={16} /> WiredTiger Cache
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                                marginBottom: 16,
+                            }}
+                        >
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Size
                                 </div>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent, marginBottom: 8 }}>
+                                <div
+                                    style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent, marginBottom: 8 }}
+                                >
                                     {fmt(wiredTiger.cacheFilled)} / {fmt(wiredTiger.cacheSize)} MB
                                 </div>
-                                <div style={{
-                                    height: 8,
-                                    background: DARK_THEME.border,
-                                    borderRadius: 14,
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${(wiredTiger.cacheFilled / wiredTiger.cacheSize) * 100}%`,
-                                        background: DARK_THEME.success
-                                    }} />
+                                <div
+                                    style={{
+                                        height: 8,
+                                        background: DARK_THEME.border,
+                                        borderRadius: 14,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${(wiredTiger.cacheFilled / wiredTiger.cacheSize) * 100}%`,
+                                            background: DARK_THEME.success,
+                                        }}
+                                    />
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Dirty Pages
                                 </div>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.warning, marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 18,
+                                        fontWeight: 700,
+                                        color: DARK_THEME.warning,
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     {fmt(wiredTiger.cacheDirty)} MB
                                 </div>
-                                <div style={{
-                                    height: 8,
-                                    background: DARK_THEME.border,
-                                    borderRadius: 14,
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${(wiredTiger.cacheDirty / wiredTiger.cacheSize) * 100}%`,
-                                        background: DARK_THEME.warning
-                                    }} />
+                                <div
+                                    style={{
+                                        height: 8,
+                                        background: DARK_THEME.border,
+                                        borderRadius: 14,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${(wiredTiger.cacheDirty / wiredTiger.cacheSize) * 100}%`,
+                                            background: DARK_THEME.warning,
+                                        }}
+                                    />
                                 </div>
                             </div>
                             <div className="mongo-metric-box">
@@ -426,9 +480,22 @@ export default function MongoStorageTab() {
                             </div>
                         </div>
                         <div style={{ paddingTop: 16, borderTop: `1px solid ${DARK_THEME.border}` }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                    gap: 16,
+                                }}
+                            >
                                 <div>
-                                    <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 4 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            color: DARK_THEME.textMuted,
+                                            textTransform: 'uppercase',
+                                            marginBottom: 4,
+                                        }}
+                                    >
                                         Page Reads
                                     </div>
                                     <div style={{ fontSize: 16, fontWeight: 700, color: DARK_THEME.text }}>
@@ -436,7 +503,14 @@ export default function MongoStorageTab() {
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 4 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            color: DARK_THEME.textMuted,
+                                            textTransform: 'uppercase',
+                                            marginBottom: 4,
+                                        }}
+                                    >
                                         Page Writes
                                     </div>
                                     <div style={{ fontSize: 16, fontWeight: 700, color: DARK_THEME.text }}>
@@ -465,7 +539,13 @@ export default function MongoStorageTab() {
                                 <XAxis dataKey="date" stroke={DARK_THEME.textMuted} />
                                 <YAxis stroke={DARK_THEME.textMuted} />
                                 <Tooltip content={<ChartTooltip />} />
-                                <Line type="monotone" dataKey="size" stroke={DARK_THEME.accent} strokeWidth={2} name="Size (MB)" />
+                                <Line
+                                    type="monotone"
+                                    dataKey="size"
+                                    stroke={DARK_THEME.accent}
+                                    strokeWidth={2}
+                                    name="Size (MB)"
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -477,16 +557,26 @@ export default function MongoStorageTab() {
                         <TrendingUp size={16} /> Capacity Planning
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                                marginBottom: 16,
+                            }}
+                        >
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Growth Rate</div>
                                 <div className="mongo-metric-value">{fmt(capacityPlan.growthRate)} MB/month</div>
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Days Until Full</div>
-                                <div className="mongo-metric-value" style={{
-                                    color: capacityPlan.daysUntilFull < 30 ? DARK_THEME.danger : DARK_THEME.success
-                                }}>
+                                <div
+                                    className="mongo-metric-value"
+                                    style={{
+                                        color: capacityPlan.daysUntilFull < 30 ? DARK_THEME.danger : DARK_THEME.success,
+                                    }}
+                                >
                                     {capacityPlan.daysUntilFull}
                                 </div>
                             </div>
@@ -500,23 +590,29 @@ export default function MongoStorageTab() {
 
                         <div style={{ fontSize: 12, color: DARK_THEME.text, lineHeight: 1.6 }}>
                             <div style={{ marginBottom: 12 }}>
-                                <strong>Current Usage:</strong> {fmt(capacityPlan.diskUsed)} / {fmt(capacityPlan.diskTotal)} GB
+                                <strong>Current Usage:</strong> {fmt(capacityPlan.diskUsed)} /{' '}
+                                {fmt(capacityPlan.diskTotal)} GB
                             </div>
-                            <div style={{
-                                height: 12,
-                                background: DARK_THEME.border,
-                                borderRadius: 6,
-                                overflow: 'hidden',
-                                marginBottom: 12
-                            }}>
-                                <div style={{
-                                    height: '100%',
-                                    width: `${(capacityPlan.diskUsed / capacityPlan.diskTotal) * 100}%`,
-                                    background: `linear-gradient(90deg, ${DARK_THEME.success} 0%, ${DARK_THEME.warning} 70%, ${DARK_THEME.danger} 100%)`
-                                }} />
+                            <div
+                                style={{
+                                    height: 12,
+                                    background: DARK_THEME.border,
+                                    borderRadius: 6,
+                                    overflow: 'hidden',
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        width: `${(capacityPlan.diskUsed / capacityPlan.diskTotal) * 100}%`,
+                                        background: `linear-gradient(90deg, ${DARK_THEME.success} 0%, ${DARK_THEME.warning} 70%, ${DARK_THEME.danger} 100%)`,
+                                    }}
+                                />
                             </div>
                             <div style={{ fontSize: 11, color: DARK_THEME.textMuted }}>
-                                At current growth rate of {fmt(capacityPlan.growthRate)} MB/month, your storage will reach capacity in approximately {capacityPlan.daysUntilFull} days.
+                                At current growth rate of {fmt(capacityPlan.growthRate)} MB/month, your storage will
+                                reach capacity in approximately {capacityPlan.daysUntilFull} days.
                             </div>
                         </div>
                     </div>

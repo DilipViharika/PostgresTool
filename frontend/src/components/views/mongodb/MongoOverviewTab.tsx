@@ -292,49 +292,28 @@ const MongoOverviewTab: React.FC = () => {
             ]);
 
             setOverview(ovData || {
-                connections: 247,
-                opsPerSec: 1234,
-                avgLatency: 5.2,
-                replicationLag: 0.8,
-                cpuUsage: 42,
-                memoryUsage: 68,
-                diskIOPS: 890,
-                cacheFillRatio: 85,
-                healthScore: 87,
+                connections: 0,
+                opsPerSec: 0,
+                avgLatency: 0,
+                replicationLag: 0,
+                cpuUsage: 0,
+                memoryUsage: 0,
+                diskIOPS: 0,
+                cacheFillRatio: 0,
+                healthScore: 0,
             });
 
-            setOpsChart(ops || [
-                { time: '00:00', ops: 1200 },
-                { time: '04:00', ops: 950 },
-                { time: '08:00', ops: 2100 },
-                { time: '12:00', ops: 1850 },
-                { time: '16:00', ops: 2400 },
-                { time: '20:00', ops: 1600 },
-            ]);
+            setOpsChart(ops || []);
 
-            setLatencyChart(lat || [
-                { time: '00:00', p50: 2, p95: 8, p99: 15 },
-                { time: '04:00', p50: 3, p95: 9, p99: 18 },
-                { time: '08:00', p50: 4, p95: 12, p99: 22 },
-                { time: '12:00', p50: 5, p95: 11, p99: 20 },
-                { time: '16:00', p50: 4, p95: 10, p99: 19 },
-                { time: '20:00', p50: 3, p95: 8, p99: 16 },
-            ]);
+            setLatencyChart(lat || []);
 
             setReplicationStatus(rep || {
-                isPrimary: true,
-                members: [
-                    { name: 'primary', state: 'PRIMARY', lag: 0 },
-                    { name: 'secondary-1', state: 'SECONDARY', lag: 0.8 },
-                    { name: 'secondary-2', state: 'SECONDARY', lag: 1.2 },
-                ],
-                oplogWindow: 7200,
+                isPrimary: false,
+                members: [],
+                oplogWindow: 0,
             });
 
-            setAlerts(alrt || [
-                { id: 1, severity: 'warning', message: 'Replication lag > 1 second', time: new Date() },
-                { id: 2, severity: 'info', message: 'Memory usage at 68%', time: new Date() },
-            ]);
+            setAlerts(alrt || []);
         } catch (err) {
             setError((err as Error).message || 'Failed to load MongoDB overview');
         } finally {

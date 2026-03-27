@@ -279,46 +279,28 @@ const MongoPerformanceTab: React.FC = () => {
                 fetchData('/api/mongodb/wiredtiger').catch(() => null),
             ]);
 
-            setLatencyStats(lat || [
-                { time: '00:00', p50: 2, p95: 8, p99: 15 },
-                { time: '04:00', p50: 3, p95: 9, p99: 18 },
-                { time: '08:00', p50: 4, p95: 12, p99: 22 },
-            ]);
+            setLatencyStats(lat || []);
 
-            setOpsBreakdown(ops || {
-                find: 45,
-                insert: 25,
-                update: 20,
-                delete: 5,
-                aggregate: 5,
-            });
+            setOpsBreakdown(ops || {});
 
-            setActiveOps(active || [
-                { opid: 123, ns: 'mydb.users', operation: 'find', duration: 245, status: 'running' },
-                { opid: 124, ns: 'mydb.products', operation: 'insert', duration: 78, status: 'running' },
-                { opid: 125, ns: 'mydb.orders', operation: 'update', duration: 156, status: 'running' },
-            ]);
+            setActiveOps(active || []);
 
-            setSlowQueries(slow || [
-                { _id: 'q1', query: '{"status":"active"}', collection: 'users', duration: 2341, count: 12500 },
-                { _id: 'q2', query: '{"date":{"$gte":1234}}', collection: 'orders', duration: 1823, count: 5600 },
-                { _id: 'q3', query: '{"tags":{"$in":[]}}', collection: 'products', duration: 1456, count: 1200 },
-            ]);
+            setSlowQueries(slow || []);
 
             setLockStats(lock || {
-                globalQueueDepth: 2,
-                dbQueueDepth: 1,
+                globalQueueDepth: 0,
+                dbQueueDepth: 0,
                 collectionQueueDepth: 0,
-                globalTickets: 128,
-                globalTicketsUsed: 98,
+                globalTickets: 0,
+                globalTicketsUsed: 0,
             });
 
             setWiredTiger(wt || {
-                cacheSize: 2048,
-                cacheFilled: 1728,
-                cacheDirty: 256,
-                cacheHitRatio: 0.94,
-                evictionRate: 12.5,
+                cacheSize: 0,
+                cacheFilled: 0,
+                cacheDirty: 0,
+                cacheHitRatio: 0,
+                evictionRate: 0,
             });
         } catch (err) {
             setError((err as Error).message || 'Failed to load performance data');

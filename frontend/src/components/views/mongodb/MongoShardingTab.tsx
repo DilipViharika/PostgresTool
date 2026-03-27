@@ -295,40 +295,29 @@ const MongoShardingTab: React.FC = () => {
                 fetchData('/api/mongodb/migrations').catch(() => null),
             ]);
 
-            setShards(shard || [
-                { _id: 'shard1', host: 'shard1-rs/host1:27017,host2:27017', state: 'READY', chunks: 245, size: 2048 },
-                { _id: 'shard2', host: 'shard2-rs/host3:27017,host4:27017', state: 'READY', chunks: 254, size: 2112 },
-                { _id: 'shard3', host: 'shard3-rs/host5:27017,host6:27017', state: 'READY', chunks: 251, size: 2080 },
-            ]);
+            setShards(shard || []);
 
             setShardStats(stats || {
-                totalShards: 3,
-                totalChunks: 750,
-                totalSize: 6240,
-                databaseCount: 8,
-                collectionCount: 42,
-                imbalancePercent: 2.3,
+                totalShards: 0,
+                totalChunks: 0,
+                totalSize: 0,
+                databaseCount: 0,
+                collectionCount: 0,
+                imbalancePercent: 0,
             });
 
-            setChunkDistribution(chunk || [
-                { shard: 'shard1', chunks: 245 },
-                { shard: 'shard2', chunks: 254 },
-                { shard: 'shard3', chunks: 251 },
-            ]);
+            setChunkDistribution(chunk || []);
 
             setBalancerStatus(balancer || {
-                enabled: true,
+                enabled: false,
                 running: false,
-                balanceStarted: new Date(Date.now() - 86400000),
-                balanceCompleted: new Date(Date.now() - 82800000),
-                balanceRound: 15,
-                autoBalance: true,
+                balanceStarted: new Date(),
+                balanceCompleted: new Date(),
+                balanceRound: 0,
+                autoBalance: false,
             });
 
-            setMigrations(mig || [
-                { _id: 'mig1', ns: 'mydb.users', shard: 'shard1', chunks: [1, 2, 3], status: 'completed', startTime: new Date(Date.now() - 3600000) },
-                { _id: 'mig2', ns: 'mydb.products', shard: 'shard2', chunks: [100, 101], status: 'completed', startTime: new Date(Date.now() - 7200000) },
-            ]);
+            setMigrations(mig || []);
         } catch (err: any) {
             setError(err.message || 'Failed to load sharding data');
         } finally {

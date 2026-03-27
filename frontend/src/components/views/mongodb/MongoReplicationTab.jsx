@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
-import {
-    LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
-    AreaChart, Area
-} from 'recharts';
-import {
-    Server, Clock, AlertTriangle, AlertCircle, TrendingUp, CheckCircle,
-    RefreshCw, Activity
-} from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from 'recharts';
+import { Server, Clock, AlertTriangle, AlertCircle, TrendingUp, CheckCircle, RefreshCw, Activity } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* THEME & CONSTANTS */
@@ -204,14 +198,16 @@ const fmt = (n) => {
 const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -244,46 +240,35 @@ export default function MongoReplicationTab() {
                 fetchData('/api/mongodb/oplog-stats').catch(() => null),
             ]);
 
-            setMembers(mem || [
-                { _id: 0, name: 'primary', host: 'mongo-0:27017', state: 1, stateStr: 'PRIMARY', uptime: 864000, lag: 0, health: 1 },
-                { _id: 1, name: 'secondary-1', host: 'mongo-1:27017', state: 2, stateStr: 'SECONDARY', uptime: 864000, lag: 0.8, health: 1 },
-                { _id: 2, name: 'secondary-2', host: 'mongo-2:27017', state: 2, stateStr: 'SECONDARY', uptime: 864000, lag: 1.2, health: 1 },
-            ]);
+            setMembers(mem || []);
 
-            setReplicationStatus(rep || {
-                set: 'rs0',
-                ismaster: true,
-                secondary: false,
-                primary: 'mongo-0:27017',
-                me: 'mongo-0:27017',
-                term: 42,
-                electionDate: new Date(Date.now() - 7*24*3600000),
-                ok: 1,
-            });
+            setReplicationStatus(
+                rep || {
+                    set: '',
+                    ismaster: false,
+                    secondary: false,
+                    primary: '',
+                    me: '',
+                    term: 0,
+                    electionDate: null,
+                    ok: 0,
+                },
+            );
 
-            setLagChart(lag || [
-                { time: '00:00', secondary1: 0.2, secondary2: 0.3 },
-                { time: '04:00', secondary1: 0.5, secondary2: 0.8 },
-                { time: '08:00', secondary1: 0.8, secondary2: 1.2 },
-                { time: '12:00', secondary1: 0.6, secondary2: 0.9 },
-                { time: '16:00', secondary1: 0.4, secondary2: 0.6 },
-                { time: '20:00', secondary1: 0.3, secondary2: 0.5 },
-            ]);
+            setLagChart(lag || []);
 
-            setElectionHistory(elec || [
-                { term: 42, type: 'election', winner: 'mongo-0', timestamp: new Date(Date.now() - 7*24*3600000), reason: 'Initial election' },
-                { term: 41, type: 'election', winner: 'mongo-0', timestamp: new Date(Date.now() - 14*24*3600000), reason: 'Primary crash' },
-                { term: 40, type: 'stepdown', winner: 'mongo-1', timestamp: new Date(Date.now() - 21*24*3600000), reason: 'Maintenance' },
-            ]);
+            setElectionHistory(elec || []);
 
-            setOplogStats(oplog || {
-                oplogSize: 5120,
-                oplogUsed: 2048,
-                oplogWindow: 7200,
-                firstOpTime: new Date(Date.now() - 7200000),
-                lastOpTime: new Date(),
-                opsCaptured: 1250000,
-            });
+            setOplogStats(
+                oplog || {
+                    oplogSize: 0,
+                    oplogUsed: 0,
+                    oplogWindow: 0,
+                    firstOpTime: null,
+                    lastOpTime: null,
+                    opsCaptured: 0,
+                },
+            );
         } catch (err) {
             setError(err.message || 'Failed to load replication data');
         } finally {
@@ -335,10 +320,18 @@ export default function MongoReplicationTab() {
                         <Server size={16} /> Replica Set Overview
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Replica Set</div>
-                                <div className="mongo-metric-value" style={{ fontSize: 16 }}>{replicationStatus.set || 'rs0'}</div>
+                                <div className="mongo-metric-value" style={{ fontSize: 16 }}>
+                                    {replicationStatus.set || 'rs0'}
+                                </div>
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Replication Term</div>
@@ -363,37 +356,64 @@ export default function MongoReplicationTab() {
                     <h3 className="mongo-section-title">
                         <Activity size={16} /> Replica Set Members
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                            gap: 16,
+                        }}
+                    >
                         {members.map((member) => (
-                            <div key={member._id} className={`mongo-member-card ${member.stateStr === 'PRIMARY' ? 'primary' : 'secondary'}`}>
+                            <div
+                                key={member._id}
+                                className={`mongo-member-card ${member.stateStr === 'PRIMARY' ? 'primary' : 'secondary'}`}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                                    <div className={`mongo-member-status ${member.stateStr.toLowerCase().replace('_', '-')}`} />
+                                    <div
+                                        className={`mongo-member-status ${member.stateStr.toLowerCase().replace('_', '-')}`}
+                                    />
                                     <div>
                                         <div style={{ fontWeight: 700, color: DARK_THEME.text, fontSize: 14 }}>
                                             {member.name}
                                         </div>
-                                        <div style={{ fontSize: 12, color: DARK_THEME.textMuted, fontFamily: 'monospace' }}>
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                color: DARK_THEME.textMuted,
+                                                fontFamily: 'monospace',
+                                            }}
+                                        >
                                             {member.host}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div style={{ marginBottom: 12 }}>
-                                    <span className={`mongo-badge mongo-badge-${member.health === 1 ? 'success' : 'danger'}`}>
+                                    <span
+                                        className={`mongo-badge mongo-badge-${member.health === 1 ? 'success' : 'danger'}`}
+                                    >
                                         {member.health === 1 ? 'HEALTHY' : 'DOWN'}
                                     </span>
-                                    <span className={`mongo-badge mongo-badge-${member.stateStr === 'PRIMARY' ? 'success' : 'warning'}`}>
+                                    <span
+                                        className={`mongo-badge mongo-badge-${member.stateStr === 'PRIMARY' ? 'success' : 'warning'}`}
+                                    >
                                         {member.stateStr}
                                     </span>
                                 </div>
 
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted, marginBottom: 4 }}>
-                                    Uptime: <span style={{ color: DARK_THEME.accent }}>{Math.round(member.uptime / 86400)}d</span>
+                                    Uptime:{' '}
+                                    <span style={{ color: DARK_THEME.accent }}>
+                                        {Math.round(member.uptime / 86400)}d
+                                    </span>
                                 </div>
 
                                 {member.lag > 0 && (
                                     <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                        Replication Lag: <span style={{ color: member.lag > 1 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                        Replication Lag:{' '}
+                                        <span
+                                            style={{ color: member.lag > 1 ? DARK_THEME.warning : DARK_THEME.success }}
+                                        >
                                             {fmt(member.lag)}s
                                         </span>
                                     </div>
@@ -412,11 +432,26 @@ export default function MongoReplicationTab() {
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={lagChart}>
                                 <XAxis dataKey="time" stroke={DARK_THEME.textMuted} />
-                                <YAxis label={{ value: 'Lag (seconds)', angle: -90, position: 'insideLeft' }} stroke={DARK_THEME.textMuted} />
+                                <YAxis
+                                    label={{ value: 'Lag (seconds)', angle: -90, position: 'insideLeft' }}
+                                    stroke={DARK_THEME.textMuted}
+                                />
                                 <Tooltip content={<ChartTooltip />} />
                                 <Legend />
-                                <Line type="monotone" dataKey="secondary1" stroke={DARK_THEME.success} name="Secondary 1" strokeWidth={2} />
-                                <Line type="monotone" dataKey="secondary2" stroke={DARK_THEME.warning} name="Secondary 2" strokeWidth={2} />
+                                <Line
+                                    type="monotone"
+                                    dataKey="secondary1"
+                                    stroke={DARK_THEME.success}
+                                    name="Secondary 1"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="secondary2"
+                                    stroke={DARK_THEME.warning}
+                                    name="Secondary 2"
+                                    strokeWidth={2}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -428,25 +463,45 @@ export default function MongoReplicationTab() {
                         <TrendingUp size={16} /> Oplog Status
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                                marginBottom: 16,
+                            }}
+                        >
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Oplog Size
                                 </div>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent, marginBottom: 8 }}>
+                                <div
+                                    style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent, marginBottom: 8 }}
+                                >
                                     {fmt(oplogStats.oplogUsed)} / {fmt(oplogStats.oplogSize)} MB
                                 </div>
-                                <div style={{
-                                    height: 8,
-                                    background: DARK_THEME.border,
-                                    borderRadius: 14,
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${(oplogStats.oplogUsed / oplogStats.oplogSize) * 100}%`,
-                                        background: DARK_THEME.accent
-                                    }} />
+                                <div
+                                    style={{
+                                        height: 8,
+                                        background: DARK_THEME.border,
+                                        borderRadius: 14,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${(oplogStats.oplogUsed / oplogStats.oplogSize) * 100}%`,
+                                            background: DARK_THEME.accent,
+                                        }}
+                                    />
                                 </div>
                             </div>
                             <div className="mongo-metric-box">
@@ -466,17 +521,34 @@ export default function MongoReplicationTab() {
 
                         {oplogStats.oplogWindow < 3600 && (
                             <div className="mongo-info-box">
-                                <AlertTriangle size={14} style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'text-top' }} />
-                                Oplog window is less than 1 hour. Secondary nodes may struggle to catch up during extended outages.
+                                <AlertTriangle
+                                    size={14}
+                                    style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'text-top' }}
+                                />
+                                Oplog window is less than 1 hour. Secondary nodes may struggle to catch up during
+                                extended outages.
                             </div>
                         )}
 
-                        <div style={{ paddingTop: 16, borderTop: `1px solid ${DARK_THEME.border}`, fontSize: 12, color: DARK_THEME.textMuted }}>
+                        <div
+                            style={{
+                                paddingTop: 16,
+                                borderTop: `1px solid ${DARK_THEME.border}`,
+                                fontSize: 12,
+                                color: DARK_THEME.textMuted,
+                            }}
+                        >
                             <div style={{ marginBottom: 4 }}>
-                                First entry: <span style={{ color: DARK_THEME.accent }}>{new Date(oplogStats.firstOpTime).toLocaleString()}</span>
+                                First entry:{' '}
+                                <span style={{ color: DARK_THEME.accent }}>
+                                    {new Date(oplogStats.firstOpTime).toLocaleString()}
+                                </span>
                             </div>
                             <div>
-                                Last entry: <span style={{ color: DARK_THEME.accent }}>{new Date(oplogStats.lastOpTime).toLocaleString()}</span>
+                                Last entry:{' '}
+                                <span style={{ color: DARK_THEME.accent }}>
+                                    {new Date(oplogStats.lastOpTime).toLocaleString()}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -493,8 +565,12 @@ export default function MongoReplicationTab() {
                                 <div key={idx} className="mongo-timeline-item">
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                         <div>
-                                            <span style={{ fontWeight: 700, color: DARK_THEME.text }}>Term {event.term}</span>
-                                            <span className={`mongo-badge mongo-badge-${event.type === 'election' ? 'success' : 'warning'}`}>
+                                            <span style={{ fontWeight: 700, color: DARK_THEME.text }}>
+                                                Term {event.term}
+                                            </span>
+                                            <span
+                                                className={`mongo-badge mongo-badge-${event.type === 'election' ? 'success' : 'warning'}`}
+                                            >
                                                 {event.type.toUpperCase()}
                                             </span>
                                         </div>
@@ -520,18 +596,39 @@ export default function MongoReplicationTab() {
                         <AlertTriangle size={16} /> Failover Readiness
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                                     <CheckCircle size={16} style={{ color: DARK_THEME.success, marginRight: 8 }} />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Healthy Secondaries</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                    {members.filter(m => m.stateStr === 'SECONDARY' && m.health === 1).length} / {members.filter(m => m.stateStr === 'SECONDARY').length}
+                                    {members.filter((m) => m.stateStr === 'SECONDARY' && m.health === 1).length} /{' '}
+                                    {members.filter((m) => m.stateStr === 'SECONDARY').length}
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                                     <CheckCircle size={16} style={{ color: DARK_THEME.success, marginRight: 8 }} />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Oplog Available</span>
@@ -541,13 +638,20 @@ export default function MongoReplicationTab() {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                                     <CheckCircle size={16} style={{ color: DARK_THEME.success, marginRight: 8 }} />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Low Lag</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                    Max: {fmt(Math.max(...members.map(m => m.lag || 0)))}s
+                                    Max: {fmt(Math.max(...members.map((m) => m.lag || 0)))}s
                                 </div>
                             </div>
                         </div>

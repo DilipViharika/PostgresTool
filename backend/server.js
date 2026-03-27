@@ -44,6 +44,14 @@ import schemaRoutes    from './routes/schemaRoutes.js';
 import metricsRoutes   from './routes/metricsRoutes.js';
 import observabilityRoutes from './routes/observabilityRoutes.js';
 import reportRoutes    from './routes/reportRoutes.js';
+import mysqlRoutes     from './routes/mysqlRoutes.js';
+import mongoRoutes     from './routes/mongoRoutes.js';
+
+// ── Optional DB drivers (graceful fallback if not installed) ──
+let mysql2 = null;
+let mongodb = null;
+try { mysql2 = await import('mysql2/promise'); } catch { /* mysql2 not installed */ }
+try { mongodb = await import('mongodb'); } catch { /* mongodb not installed */ }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -203,31 +211,23 @@ const pool = HAS_ADMIN_DB
 
 if (pool) pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
 
-// Map<connectionId, pg.Pool> — pools created on demand for dynamic connections
+// Map<connectionId, pg.Pool|mysql2.Pool> — pools created on demand for dynamic connections
 const connectionPools = new Map();
+// Map<connectionId, { client: MongoClient, db: Db }> — MongoDB clients
+const mongoClients = new Map();
 
 // ID of the currently active dynamic connection (null = no connection selected)
 let activeConnectionId = null;
 
 /**
- * Return the pool for a given connectionId.
- * - If connectionId is null/undefined → use the active user connection.
- * - Otherwise look up (or create) a pool for that CONNECTIONS entry.
- * - NEVER falls back to the admin pool — monitoring data must come from
- *   user-added connections only.
+ * Resolve a connection object from the cache (or DB refresh).
  */
-async function getPool(connectionId) {
+async function resolveConnection(connectionId) {
     if (!connectionId) {
-        // Use the active user-added connection if one is selected
-        if (activeConnectionId) return getPool(activeConnectionId);
-        // No active connection — do NOT fall back to admin pool
+        if (activeConnectionId) return resolveConnection(activeConnectionId);
         throw new Error('No database connection configured. Please add a connection in the Connection Pool settings.');
     }
     const id = parseInt(connectionId, 10);
-    if (connectionPools.has(id)) return connectionPools.get(id);
-
-    // Find connection config — if not in cache (e.g. Vercel cold start where
-    // startup() never ran), do a one-time lazy refresh from the DB before giving up.
     let conn = CONNECTIONS.find(c => c.id === id);
     if (!conn) {
         await ensureConnectionsTable().catch(() => {});
@@ -235,7 +235,49 @@ async function getPool(connectionId) {
         conn = CONNECTIONS.find(c => c.id === id);
     }
     if (!conn) throw new Error(`Connection ${id} not found`);
+    return conn;
+}
 
+/**
+ * Return the pool for a given connectionId.
+ * Supports PostgreSQL (pg.Pool) and MySQL (mysql2 pool).
+ * For MongoDB, use getMongoClient() instead.
+ */
+async function getPool(connectionId) {
+    const conn = await resolveConnection(connectionId);
+    const id = conn.id;
+
+    if (connectionPools.has(id)) return connectionPools.get(id);
+
+    const dbType = (conn.dbType || 'postgresql').toLowerCase();
+
+    if (dbType === 'mongodb') {
+        throw new Error('MongoDB connections must use getMongoClient() — pool-based access is not supported. Use /api/mongodb/* endpoints instead.');
+    }
+
+    if (dbType === 'mysql' || dbType === 'mariadb') {
+        // ── MySQL / MariaDB ──
+        if (!mysql2) throw new Error('MySQL driver (mysql2) not installed on the server. Run: npm install mysql2');
+        const cfg = await resolvePoolConfig(conn);
+        const mysqlPool = mysql2.createPool({
+            host:     cfg.host,
+            port:     cfg.port,
+            database: cfg.database,
+            user:     cfg.user,
+            password: cfg.password,
+            ssl:      conn.ssl ? { rejectUnauthorized: false } : undefined,
+            waitForConnections: true,
+            connectionLimit: 8,
+            queueLimit: 0,
+            enableKeepAlive: true,
+            connectTimeout: 15000,
+        });
+        connectionPools.set(id, mysqlPool);
+        log('INFO', `Created MySQL pool for connection ${id} (${conn.name})`);
+        return mysqlPool;
+    }
+
+    // ── PostgreSQL (default) ──
     const cfg = await resolvePoolConfig(conn);
     const newPool = new Pool({
         ...cfg,
@@ -246,20 +288,58 @@ async function getPool(connectionId) {
     });
     newPool.on('error', (err) => log('ERROR', `Pool [conn:${id}] background error`, { err: err.message }));
     connectionPools.set(id, newPool);
-    log('INFO', `Created pool for connection ${id} (${conn.name})`);
+    log('INFO', `Created PG pool for connection ${id} (${conn.name})`);
     return newPool;
 }
 
 /**
- * Destroy the cached pool for a connection (called on delete/update).
+ * Return a MongoDB client + db for a given connectionId.
+ */
+async function getMongoClient(connectionId) {
+    const conn = await resolveConnection(connectionId);
+    const id = conn.id;
+
+    if (mongoClients.has(id)) return mongoClients.get(id);
+
+    if (!mongodb) throw new Error('MongoDB driver not installed on the server. Run: npm install mongodb');
+
+    const cfg = await resolvePoolConfig(conn);
+    // Build MongoDB connection string
+    const userPart = cfg.user ? `${encodeURIComponent(cfg.user)}:${encodeURIComponent(cfg.password || '')}@` : '';
+    const sslParam = conn.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
+    const connStr = `mongodb://${userPart}${cfg.host}:${cfg.port || 27017}/${cfg.database || 'admin'}${sslParam}`;
+
+    const client = new mongodb.MongoClient(connStr, {
+        serverSelectionTimeoutMS: 8000,
+        connectTimeoutMS: 15000,
+    });
+    await client.connect();
+    const db = client.db(cfg.database || 'admin');
+
+    const entry = { client, db };
+    mongoClients.set(id, entry);
+    log('INFO', `Created MongoDB client for connection ${id} (${conn.name})`);
+    return entry;
+}
+
+/**
+ * Destroy the cached pool/client for a connection (called on delete/update).
  */
 async function destroyPool(connectionId) {
     const id = parseInt(connectionId, 10);
+    // PG / MySQL pool
     const p = connectionPools.get(id);
     if (p) {
         connectionPools.delete(id);
         await p.end().catch(() => {});
         log('INFO', `Destroyed pool for connection ${id}`);
+    }
+    // MongoDB client
+    const m = mongoClients.get(id);
+    if (m) {
+        mongoClients.delete(id);
+        await m.client.close().catch(() => {});
+        log('INFO', `Destroyed MongoDB client for connection ${id}`);
     }
 }
 
@@ -269,6 +349,31 @@ async function destroyPool(connectionId) {
  */
 async function reqPool(req) {
     return getPool(req.query.connectionId || null);
+}
+
+/**
+ * Resolve the dbType for the current request's active connection.
+ * Returns 'postgresql', 'mysql', 'mariadb', or 'mongodb'.
+ */
+async function reqDbType(req) {
+    try {
+        const conn = await resolveConnection(req.query.connectionId || null);
+        return (conn.dbType || 'postgresql').toLowerCase();
+    } catch {
+        return 'postgresql'; // default if no connection
+    }
+}
+
+/**
+ * Execute a query that works for both PG and MySQL pools.
+ * PG returns { rows }, MySQL returns [rows, fields].
+ * This normalizes to always return { rows }.
+ */
+async function execQuery(poolOrResult, sql, params) {
+    const result = await poolOrResult.query(sql, params);
+    // MySQL returns [rows, fields] array; PG returns { rows }
+    if (Array.isArray(result)) return { rows: result[0] };
+    return result;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1197,6 +1302,10 @@ for (const prefix of modularMounts) {
     app.use(prefix, schemaRoutes(pool, authenticate));
     app.use(prefix, observabilityRoutes(pool, authenticate, requireScreen));
     app.use(prefix, reportRoutes(pool, authenticate, requireScreen));
+
+    // ── MySQL & MongoDB routes ────────────────────────────────────────────────
+    app.use(prefix, mysqlRoutes(pool, authenticate, getPool, CONNECTIONS));
+    app.use(prefix, mongoRoutes(pool, authenticate, getMongoClient, CONNECTIONS));
 }
 
 // ── Enterprise routes (hidden — uncomment when ready) ────────────────────────
@@ -1204,7 +1313,49 @@ for (const prefix of modularMounts) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POSTGRES MONITORING ROUTES
+//
+// These endpoints query PostgreSQL-specific system tables (pg_stat_*, pg_locks,
+// pg_settings, pg_extension, etc.).  When the active connection is MySQL or
+// MongoDB these queries are meaningless, so we intercept early and return
+// sensible empty responses so the frontend degrades gracefully.
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** Paths that are PG-specific and should return empty for other DB types */
+const PG_ONLY_PREFIXES = [
+    '/api/overview/', '/api/performance/', '/api/reliability/',
+    '/api/resources/', '/api/bloat/', '/api/regression/',
+    '/api/logs/', '/api/tables/', '/api/indexes/',
+    '/api/optimizer/', '/api/admin/settings', '/api/admin/extensions',
+    '/api/admin/hba', '/api/admin/connections', '/api/pool/',
+    '/api/replication/', '/api/security/', '/api/schema/',
+    '/api/observability/', '/api/checkpoint/', '/api/maintenance/',
+    '/api/backup/', '/api/capacity/', '/api/wal/', '/api/vacuum/',
+];
+
+/**
+ * Middleware: for PG-specific endpoints, check the connection dbType.
+ * If not PostgreSQL, return an appropriate empty response instead of
+ * crashing with PG system-table queries on MySQL/MongoDB.
+ */
+app.use('/api', async (req, res, next) => {
+    // Only guard GET/POST to PG-specific paths
+    const path = req.path; // path relative to /api mount = /overview/stats etc.
+    const fullPath = '/api' + path;
+    const isPgOnly = PG_ONLY_PREFIXES.some(p => fullPath.startsWith(p));
+    if (!isPgOnly) return next();
+
+    try {
+        const dbType = await reqDbType(req);
+        if (dbType === 'postgresql') return next();
+        // Non-PG connection → return empty (matches frontend .catch(() => null) pattern)
+        const method = req.method.toUpperCase();
+        if (method === 'GET') return res.json([]);
+        return res.json({ error: `This endpoint is PostgreSQL-specific. Connected database type: ${dbType}` });
+    } catch {
+        return next(); // Can't determine type — let the handler try
+    }
+});
+
 app.get('/api/overview/stats', authenticate, cached('ov:stats', CONFIG.CACHE_TTL.STATS), async (req, res) => {
     try {
         const { rows: [d] } = await (await reqPool(req)).query(`
@@ -1697,13 +1848,35 @@ app.post('/api/connections', authenticate, async (req, res) => {
 
         // Auto-test the new connection so the user gets immediate feedback
         let testResult = null;
+        const connDbType = (newConn.dbType || 'postgresql').toLowerCase();
         try {
             const cfg = await resolvePoolConfig(newConn);
-            const testPool = new Pool({ ...cfg, connectionTimeoutMillis: 8000 });
-            const client = await testPool.connect();
-            await client.query('SELECT 1');
-            client.release();
-            await testPool.end();
+            if (connDbType === 'mongodb') {
+                if (!mongodb) throw new Error('MongoDB driver not installed');
+                const userPart = cfg.user ? `${encodeURIComponent(cfg.user)}:${encodeURIComponent(cfg.password || '')}@` : '';
+                const sslParam = newConn.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
+                const connStr = `mongodb://${userPart}${cfg.host}:${cfg.port || 27017}/${cfg.database || 'admin'}${sslParam}`;
+                const testClient = new mongodb.MongoClient(connStr, { serverSelectionTimeoutMS: 8000 });
+                await testClient.connect();
+                await testClient.db(cfg.database || 'admin').command({ ping: 1 });
+                await testClient.close();
+            } else if (connDbType === 'mysql' || connDbType === 'mariadb') {
+                if (!mysql2) throw new Error('MySQL driver not installed');
+                const testConn = await mysql2.createConnection({
+                    host: cfg.host, port: cfg.port, database: cfg.database,
+                    user: cfg.user, password: cfg.password,
+                    ssl: newConn.ssl ? { rejectUnauthorized: false } : undefined,
+                    connectTimeout: 8000,
+                });
+                await testConn.query('SELECT 1');
+                await testConn.end();
+            } else {
+                const testPool = new Pool({ ...cfg, connectionTimeoutMillis: 8000 });
+                const client = await testPool.connect();
+                await client.query('SELECT 1');
+                client.release();
+                await testPool.end();
+            }
             await dbUpdateConnection(newConn.id, { status: 'success', lastTested: new Date().toISOString() });
             testResult = { success: true, message: 'Connection verified' };
         } catch (testErr) {
@@ -1815,12 +1988,39 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
             return res.json({ success: false, error: `SSH tunnel error: ${tunnelErr.message}` });
         }
 
-        const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 8000 });
+        const dbType = (c.dbType || 'postgresql').toLowerCase();
+
         try {
-            const client = await testPool.connect();
-            await client.query('SELECT 1');
-            client.release();
-            await testPool.end();
+            if (dbType === 'mongodb') {
+                // ── MongoDB test ──
+                if (!mongodb) throw new Error('MongoDB driver (mongodb) not installed on the server');
+                const userPart = poolCfg.user ? `${encodeURIComponent(poolCfg.user)}:${encodeURIComponent(poolCfg.password || '')}@` : '';
+                const sslParam = c.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
+                const connStr = `mongodb://${userPart}${poolCfg.host}:${poolCfg.port || 27017}/${poolCfg.database || 'admin'}${sslParam}`;
+                const testClient = new mongodb.MongoClient(connStr, { serverSelectionTimeoutMS: 8000, connectTimeoutMS: 8000 });
+                await testClient.connect();
+                await testClient.db(poolCfg.database || 'admin').command({ ping: 1 });
+                await testClient.close();
+            } else if (dbType === 'mysql' || dbType === 'mariadb') {
+                // ── MySQL / MariaDB test ──
+                if (!mysql2) throw new Error('MySQL driver (mysql2) not installed on the server');
+                const testConn = await mysql2.createConnection({
+                    host: poolCfg.host, port: poolCfg.port, database: poolCfg.database,
+                    user: poolCfg.user, password: poolCfg.password,
+                    ssl: c.ssl ? { rejectUnauthorized: false } : undefined,
+                    connectTimeout: 8000,
+                });
+                await testConn.query('SELECT 1');
+                await testConn.end();
+            } else {
+                // ── PostgreSQL test ──
+                const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 8000 });
+                const client = await testPool.connect();
+                await client.query('SELECT 1');
+                client.release();
+                await testPool.end();
+            }
+
             await dbUpdateConnection(id, { status: 'success', lastTested: new Date().toISOString() });
             await syncConnectionsCache();
             res.json({
@@ -1830,7 +2030,6 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
         } catch (e) {
             await dbUpdateConnection(id, { status: 'failed', lastTested: new Date().toISOString() });
             await syncConnectionsCache();
-            await testPool.end().catch(() => {});
             res.json({ success: false, error: e.message });
         }
     } catch (e) { res.json({}); }
@@ -1844,11 +2043,22 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
         if (!c) return res.status(404).json({ error: 'Connection not found' });
 
         try {
-            // Eagerly create / warm-up the pool so we fail fast on bad config
-            const p = await getPool(id);
-            const client = await p.connect();
-            await client.query('SELECT 1');
-            client.release();
+            const dbType = (c.dbType || 'postgresql').toLowerCase();
+            if (dbType === 'mongodb') {
+                // Warm-up MongoDB client
+                const { db } = await getMongoClient(id);
+                await db.command({ ping: 1 });
+            } else {
+                // Warm-up PG or MySQL pool
+                const p = await getPool(id);
+                if (dbType === 'mysql' || dbType === 'mariadb') {
+                    const [rows] = await p.query('SELECT 1');
+                } else {
+                    const client = await p.connect();
+                    await client.query('SELECT 1');
+                    client.release();
+                }
+            }
         } catch (err) {
             return res.status(400).json({ success: false, error: `Cannot switch: ${err.message}` });
         }
@@ -1888,34 +2098,50 @@ app.get('/api/connections/health', authenticate, async (req, res) => {
         const healthResults = [];
 
         for (const conn of conns) {
+            const dbType = (conn.dbType || 'postgresql').toLowerCase();
             try {
                 const poolCfg = await resolvePoolConfig(conn);
-                const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 5000 });
-
                 const startTime = Date.now();
-                const client = await testPool.connect();
-                await client.query('SELECT 1');
-                client.release();
-                await testPool.end();
+
+                if (dbType === 'mongodb') {
+                    if (!mongodb) throw new Error('MongoDB driver not installed');
+                    const userPart = poolCfg.user ? `${encodeURIComponent(poolCfg.user)}:${encodeURIComponent(poolCfg.password || '')}@` : '';
+                    const sslParam = conn.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
+                    const connStr = `mongodb://${userPart}${poolCfg.host}:${poolCfg.port || 27017}/${poolCfg.database || 'admin'}${sslParam}`;
+                    const testClient = new mongodb.MongoClient(connStr, { serverSelectionTimeoutMS: 5000 });
+                    await testClient.connect();
+                    await testClient.db(poolCfg.database || 'admin').command({ ping: 1 });
+                    await testClient.close();
+                } else if (dbType === 'mysql' || dbType === 'mariadb') {
+                    if (!mysql2) throw new Error('MySQL driver not installed');
+                    const testConn = await mysql2.createConnection({
+                        host: poolCfg.host, port: poolCfg.port, database: poolCfg.database,
+                        user: poolCfg.user, password: poolCfg.password,
+                        ssl: conn.ssl ? { rejectUnauthorized: false } : undefined,
+                        connectTimeout: 5000,
+                    });
+                    await testConn.query('SELECT 1');
+                    await testConn.end();
+                } else {
+                    const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 5000 });
+                    const client = await testPool.connect();
+                    await client.query('SELECT 1');
+                    client.release();
+                    await testPool.end();
+                }
 
                 const latencyMs = Date.now() - startTime;
-
                 healthResults.push({
-                    id: conn.id,
-                    name: conn.name,
+                    id: conn.id, name: conn.name,
                     dbType: conn.dbType || 'postgresql',
-                    status: 'ok',
-                    latencyMs,
+                    status: 'ok', latencyMs,
                     lastChecked: new Date().toISOString(),
                 });
             } catch (err) {
-                // Connection failed
                 healthResults.push({
-                    id: conn.id,
-                    name: conn.name,
+                    id: conn.id, name: conn.name,
                     dbType: conn.dbType || 'postgresql',
-                    status: 'error',
-                    latencyMs: null,
+                    status: 'error', latencyMs: null,
                     lastChecked: new Date().toISOString(),
                     error: err.message,
                 });
@@ -4598,6 +4824,16 @@ async function startup() {
 async function shutdown(signal) {
     log('INFO', `${signal} — shutting down`);
     if (alerts) alerts.stopMonitoring();
+    // Close all MongoDB clients
+    for (const [id, m] of mongoClients) {
+        await m.client.close().catch(() => {});
+    }
+    mongoClients.clear();
+    // Close all PG/MySQL pools
+    for (const [id, p] of connectionPools) {
+        await p.end().catch(() => {});
+    }
+    connectionPools.clear();
     await closeAllTunnels().catch(() => {});
     server.close(() => (pool ? pool.end(() => process.exit(0)) : process.exit(0)));
 }

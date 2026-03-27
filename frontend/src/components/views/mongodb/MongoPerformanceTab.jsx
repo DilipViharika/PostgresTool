@@ -1,12 +1,30 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
 import {
-    LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    Legend, ScatterChart, Scatter, Cell
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    ScatterChart,
+    Scatter,
+    Cell,
 } from 'recharts';
 import {
-    Zap, Clock, AlertTriangle, Activity, Lock, TrendingUp, RefreshCw,
-    AlertCircle, ChevronDown, ChevronUp
+    Zap,
+    Clock,
+    AlertTriangle,
+    Activity,
+    Lock,
+    TrendingUp,
+    RefreshCw,
+    AlertCircle,
+    ChevronDown,
+    ChevronUp,
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -180,14 +198,16 @@ const fmt = (n) => {
 const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -223,47 +243,41 @@ export default function MongoPerformanceTab() {
                 fetchData('/api/mongodb/wiredtiger').catch(() => null),
             ]);
 
-            setLatencyStats(lat || [
-                { time: '00:00', p50: 2, p95: 8, p99: 15 },
-                { time: '04:00', p50: 3, p95: 9, p99: 18 },
-                { time: '08:00', p50: 4, p95: 12, p99: 22 },
-            ]);
+            setLatencyStats(lat || []);
 
-            setOpsBreakdown(ops || {
-                find: 45,
-                insert: 25,
-                update: 20,
-                delete: 5,
-                aggregate: 5,
-            });
+            setOpsBreakdown(
+                ops || {
+                    find: 0,
+                    insert: 0,
+                    update: 0,
+                    delete: 0,
+                    aggregate: 0,
+                },
+            );
 
-            setActiveOps(active || [
-                { opid: 123, ns: 'mydb.users', operation: 'find', duration: 245, status: 'running' },
-                { opid: 124, ns: 'mydb.products', operation: 'insert', duration: 78, status: 'running' },
-                { opid: 125, ns: 'mydb.orders', operation: 'update', duration: 156, status: 'running' },
-            ]);
+            setActiveOps(active || []);
 
-            setSlowQueries(slow || [
-                { _id: 'q1', query: '{"status":"active"}', collection: 'users', duration: 2341, count: 12500 },
-                { _id: 'q2', query: '{"date":{"$gte":1234}}', collection: 'orders', duration: 1823, count: 5600 },
-                { _id: 'q3', query: '{"tags":{"$in":[]}}', collection: 'products', duration: 1456, count: 1200 },
-            ]);
+            setSlowQueries(slow || []);
 
-            setLockStats(lock || {
-                globalQueueDepth: 2,
-                dbQueueDepth: 1,
-                collectionQueueDepth: 0,
-                globalTickets: 128,
-                globalTicketsUsed: 98,
-            });
+            setLockStats(
+                lock || {
+                    globalQueueDepth: 0,
+                    dbQueueDepth: 0,
+                    collectionQueueDepth: 0,
+                    globalTickets: 0,
+                    globalTicketsUsed: 0,
+                },
+            );
 
-            setWiredTiger(wt || {
-                cacheSize: 2048,
-                cacheFilled: 1728,
-                cacheDirty: 256,
-                cacheHitRatio: 0.94,
-                evictionRate: 12.5,
-            });
+            setWiredTiger(
+                wt || {
+                    cacheSize: 0,
+                    cacheFilled: 0,
+                    cacheDirty: 0,
+                    cacheHitRatio: 0,
+                    evictionRate: 0,
+                },
+            );
         } catch (err) {
             setError(err.message || 'Failed to load performance data');
         } finally {
@@ -278,9 +292,9 @@ export default function MongoPerformanceTab() {
     }, [loadData]);
 
     const toggleRowExpand = (key) => {
-        setExpandedRows(prev => ({
+        setExpandedRows((prev) => ({
             ...prev,
-            [key]: !prev[key]
+            [key]: !prev[key],
         }));
     };
 
@@ -300,7 +314,7 @@ export default function MongoPerformanceTab() {
 
     const opsChartData = Object.entries(opsBreakdown).map(([key, value]) => ({
         name: key,
-        value
+        value,
     }));
 
     return (
@@ -352,9 +366,27 @@ export default function MongoPerformanceTab() {
                                 <YAxis stroke={DARK_THEME.textMuted} />
                                 <Tooltip content={<ChartTooltip />} />
                                 <Legend />
-                                <Line type="monotone" dataKey="p50" stroke={DARK_THEME.success} name="P50" strokeWidth={2} />
-                                <Line type="monotone" dataKey="p95" stroke={DARK_THEME.warning} name="P95" strokeWidth={2} />
-                                <Line type="monotone" dataKey="p99" stroke={DARK_THEME.danger} name="P99" strokeWidth={2} />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p50"
+                                    stroke={DARK_THEME.success}
+                                    name="P50"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p95"
+                                    stroke={DARK_THEME.warning}
+                                    name="P95"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p99"
+                                    stroke={DARK_THEME.danger}
+                                    name="P99"
+                                    strokeWidth={2}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -398,7 +430,11 @@ export default function MongoPerformanceTab() {
                                     <tr key={op.opid}>
                                         <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{op.opid}</td>
                                         <td>{op.ns}</td>
-                                        <td><span className="mongo-badge mongo-badge-normal">{op.operation.toUpperCase()}</span></td>
+                                        <td>
+                                            <span className="mongo-badge mongo-badge-normal">
+                                                {op.operation.toUpperCase()}
+                                            </span>
+                                        </td>
                                         <td>{fmt(op.duration)}</td>
                                         <td style={{ color: DARK_THEME.success }}>{op.status}</td>
                                     </tr>
@@ -417,14 +453,32 @@ export default function MongoPerformanceTab() {
                         {slowQueries.map((query, idx) => (
                             <div key={query._id} className="mongo-card" style={{ marginBottom: 12 }}>
                                 <div
-                                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                                    style={{
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                    }}
                                     onClick={() => toggleRowExpand(query._id)}
                                 >
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text, marginBottom: 4 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                fontWeight: 600,
+                                                color: DARK_THEME.text,
+                                                marginBottom: 4,
+                                            }}
+                                        >
                                             {query.collection}
                                         </div>
-                                        <div style={{ fontSize: 12, color: DARK_THEME.textMuted, fontFamily: 'monospace' }}>
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                color: DARK_THEME.textMuted,
+                                                fontFamily: 'monospace',
+                                            }}
+                                        >
                                             {query.query.substring(0, 60)}...
                                         </div>
                                     </div>
@@ -441,8 +495,21 @@ export default function MongoPerformanceTab() {
                                     </div>
                                 </div>
                                 {expandedRows[query._id] && (
-                                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${DARK_THEME.border}` }}>
-                                        <div style={{ fontSize: 12, fontFamily: 'monospace', color: DARK_THEME.textMuted, wordBreak: 'break-word' }}>
+                                    <div
+                                        style={{
+                                            marginTop: 12,
+                                            paddingTop: 12,
+                                            borderTop: `1px solid ${DARK_THEME.border}`,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                fontFamily: 'monospace',
+                                                color: DARK_THEME.textMuted,
+                                                wordBreak: 'break-word',
+                                            }}
+                                        >
                                             {query.query}
                                         </div>
                                     </div>
@@ -458,42 +525,85 @@ export default function MongoPerformanceTab() {
                         <Lock size={16} /> Lock Analysis
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Global Queue Depth
                                 </div>
-                                <div style={{ fontSize: 24, fontWeight: 700, color: lockStats.globalQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                <div
+                                    style={{
+                                        fontSize: 24,
+                                        fontWeight: 700,
+                                        color: lockStats.globalQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success,
+                                    }}
+                                >
                                     {lockStats.globalQueueDepth}
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     DB Queue Depth
                                 </div>
-                                <div style={{ fontSize: 24, fontWeight: 700, color: lockStats.dbQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                <div
+                                    style={{
+                                        fontSize: 24,
+                                        fontWeight: 700,
+                                        color: lockStats.dbQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success,
+                                    }}
+                                >
                                     {lockStats.dbQueueDepth}
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Global Tickets
                                 </div>
                                 <div style={{ fontSize: 14, color: DARK_THEME.text }}>
                                     {lockStats.globalTicketsUsed} / {lockStats.globalTickets}
                                 </div>
-                                <div style={{
-                                    height: 6,
-                                    background: DARK_THEME.border,
-                                    borderRadius: 10,
-                                    overflow: 'hidden',
-                                    marginTop: 4
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${(lockStats.globalTicketsUsed / lockStats.globalTickets) * 100}%`,
-                                        background: DARK_THEME.accent
-                                    }} />
+                                <div
+                                    style={{
+                                        height: 6,
+                                        background: DARK_THEME.border,
+                                        borderRadius: 10,
+                                        overflow: 'hidden',
+                                        marginTop: 4,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${(lockStats.globalTicketsUsed / lockStats.globalTickets) * 100}%`,
+                                            background: DARK_THEME.accent,
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -506,9 +616,22 @@ export default function MongoPerformanceTab() {
                         <TrendingUp size={16} /> WiredTiger State
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Cache Size
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
@@ -516,7 +639,14 @@ export default function MongoPerformanceTab() {
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Cache Filled
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
@@ -524,7 +654,14 @@ export default function MongoPerformanceTab() {
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Cache Hit Ratio
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.success }}>
@@ -532,7 +669,14 @@ export default function MongoPerformanceTab() {
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Eviction Rate
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.warning }}>

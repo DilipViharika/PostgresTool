@@ -107,6 +107,11 @@ const DemoPostgresTab = lazyRetry(() => import('./components/views/demo/DemoPost
 const DemoMySQLTab = lazyRetry(() => import('./components/views/demo/DemoMySQLTab.jsx'));
 const DemoMongoDBTab = lazyRetry(() => import('./components/views/demo/DemoMongoDBTab.jsx'));
 
+// MySQL features
+const MySQLOverviewTab = lazyRetry(() => import('./components/views/mysql/MySQLOverviewTab.jsx'));
+const MySQLPerformanceTab = lazyRetry(() => import('./components/views/mysql/MySQLPerformanceTab.jsx'));
+const MySQLReplicationTab = lazyRetry(() => import('./components/views/mysql/MySQLReplicationTab.jsx'));
+
 // MongoDB features
 const MongoOverviewTab = lazyRetry(() => import('./components/views/mongodb/MongoOverviewTab.jsx'));
 const MongoPerformanceTab = lazyRetry(() => import('./components/views/mongodb/MongoPerformanceTab.jsx'));
@@ -241,6 +246,9 @@ registerComponents({
     TerraformExportTab,
     ReportBuilderTab,
     CustomDashboardTab,
+    MySQLOverviewTab,
+    MySQLPerformanceTab,
+    MySQLReplicationTab,
     MongoOverviewTab,
     MongoPerformanceTab,
     MongoStorageTab,
@@ -2772,6 +2780,9 @@ const Sidebar = ({
     // Determine which DB-specific sections to show based on active connection
     const connDbType = activeConnection?.dbType || null;
 
+    // Sections that are specific to PostgreSQL and should be hidden for MySQL/MongoDB
+    const PG_ONLY_SECTIONS = ['Query Analysis', 'Schema & Data', 'Infrastructure'];
+
     const visibleGroups = useMemo(
         () =>
             SECTION_GROUPS.map((g) => ({ ...g, tabs: g.tabs.filter((t) => allowedTabIds.includes(t.id)) }))
@@ -2779,6 +2790,9 @@ const Sidebar = ({
                 // Hide DB-specific sections unless that DB type is connected
                 .filter((g) => {
                     if (g.section === 'MongoDB') return connDbType === 'mongodb';
+                    if (g.section === 'MySQL') return connDbType === 'mysql' || connDbType === 'mariadb';
+                    // Hide PG-specific deep-dive sections when non-PG is connected
+                    if (connDbType && connDbType !== 'postgresql' && PG_ONLY_SECTIONS.includes(g.section)) return false;
                     return true;
                 }),
         [allowedTabIds, connDbType],

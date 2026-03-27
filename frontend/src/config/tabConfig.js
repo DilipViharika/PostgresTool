@@ -296,6 +296,30 @@ export function buildTabConfig() {
             badge: null,
         },
 
+        // ── MySQL ────────────────────────────────────────────────────
+        { section: 'MySQL', accent: DS.amber },
+        {
+            id: 'mysql-overview',
+            icon: Database,
+            label: 'MySQL Overview',
+            component: _components.MySQLOverviewTab,
+            badge: null,
+        },
+        {
+            id: 'mysql-performance',
+            icon: Gauge,
+            label: 'MySQL Performance',
+            component: _components.MySQLPerformanceTab,
+            badge: null,
+        },
+        {
+            id: 'mysql-replication',
+            icon: GitMerge,
+            label: 'MySQL Replication',
+            component: _components.MySQLReplicationTab,
+            badge: null,
+        },
+
         // ── MongoDB ──────────────────────────────────────────────────
         { section: 'MongoDB', accent: DS.emerald },
         {

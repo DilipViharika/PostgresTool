@@ -220,6 +220,17 @@ const AIQueryAdvisorTab = lazyRetry(() =>
   import('./components/views/database/AIQueryAdvisorTab.jsx')
 );
 
+// MySQL features
+const MySQLOverviewTab = lazyRetry(() =>
+  import('./components/views/mysql/MySQLOverviewTab.jsx')
+);
+const MySQLPerformanceTab = lazyRetry(() =>
+  import('./components/views/mysql/MySQLPerformanceTab.jsx')
+);
+const MySQLReplicationTab = lazyRetry(() =>
+  import('./components/views/mysql/MySQLReplicationTab.jsx')
+);
+
 // MongoDB features
 const MongoOverviewTab = lazyRetry(() =>
   import('./components/views/mongodb/MongoOverviewTab.jsx')
@@ -398,6 +409,9 @@ registerComponents({
   ReportBuilderTab,
   UserProfileTab,
   CustomDashboardTab,
+  MySQLOverviewTab,
+  MySQLPerformanceTab,
+  MySQLReplicationTab,
   MongoOverviewTab,
   MongoPerformanceTab,
   MongoStorageTab,

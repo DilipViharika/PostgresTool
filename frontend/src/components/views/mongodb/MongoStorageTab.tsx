@@ -124,19 +124,11 @@ const MongoStorageTab: React.FC = () => {
                 fetchData('/api/mongodb/growth-chart').catch(() => null),
             ]);
 
-            setIndexStats(idx || { totalIndexes: 456, unusedIndexes: 34, collscanPercent: 2.5, indexSize: 1280, indexMaintenance: 45 });
-            setCollections(coll || [
-                { name: 'users', size: 2048, count: 125000, avgDocSize: 1640, indexes: 8 },
-                { name: 'products', size: 3200, count: 85000, avgDocSize: 3755, indexes: 12 },
-                { name: 'orders', size: 1536, count: 250000, avgDocSize: 614, indexes: 5 },
-                { name: 'sessions', size: 512, count: 45000, avgDocSize: 1138, indexes: 3 },
-            ]);
-            setWiredTiger(wt || { cacheSize: 2048, cacheFilled: 1728, cacheDirty: 256, cacheHitRatio: 0.94, pageReadCount: 1250000, pageWriteCount: 890000, evictionRate: 12.5 });
-            setCapacityPlan(cap || { totalSize: 8192, growthRate: 512, daysUntilFull: 45, diskTotal: 100000, diskUsed: 45000 });
-            setGrowthChart(growth || [
-                { date: '2024-01', size: 4096 }, { date: '2024-02', size: 4608 }, { date: '2024-03', size: 5120 },
-                { date: '2024-04', size: 5632 }, { date: '2024-05', size: 6144 }, { date: '2024-06', size: 6656 },
-            ]);
+            setIndexStats(idx || { totalIndexes: 0, unusedIndexes: 0, collscanPercent: 0, indexSize: 0, indexMaintenance: 0 });
+            setCollections(coll || []);
+            setWiredTiger(wt || { cacheSize: 0, cacheFilled: 0, cacheDirty: 0, cacheHitRatio: 0, pageReadCount: 0, pageWriteCount: 0, evictionRate: 0 });
+            setCapacityPlan(cap || { totalSize: 0, growthRate: 0, daysUntilFull: 0, diskTotal: 0, diskUsed: 0 });
+            setGrowthChart(growth || []);
         } catch (err) {
             setError((err as Error).message || 'Failed to load storage data');
         } finally {

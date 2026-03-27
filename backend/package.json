@@ -2,7 +2,7 @@
     "name": "postgrestool-backend",
     "version": "1.0.0",
     "type": "module",
-    "description": "VIGIL — PostgreSQL Monitoring & Administration Backend",
+    "description": "VIGIL — Universal Database Monitoring & Administration Backend",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
@@ -23,6 +23,8 @@
         "jsonwebtoken": "^9.0.3",
         "node-cron": "^4.2.1",
         "nodemailer": "^8.0.1",
+        "mongodb": "^6.12.0",
+        "mysql2": "^3.11.0",
         "pg": "^8.18.0",
         "uuid": "^13.0.0",
         "ws": "^8.19.0",

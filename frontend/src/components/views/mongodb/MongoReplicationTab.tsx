@@ -298,45 +298,30 @@ const MongoReplicationTab: React.FC = () => {
                 fetchData('/api/mongodb/oplog-stats').catch(() => null),
             ]);
 
-            setMembers(mem || [
-                { _id: 0, name: 'primary', host: 'mongo-0:27017', state: 1, stateStr: 'PRIMARY', uptime: 864000, lag: 0, health: 1 },
-                { _id: 1, name: 'secondary-1', host: 'mongo-1:27017', state: 2, stateStr: 'SECONDARY', uptime: 864000, lag: 0.8, health: 1 },
-                { _id: 2, name: 'secondary-2', host: 'mongo-2:27017', state: 2, stateStr: 'SECONDARY', uptime: 864000, lag: 1.2, health: 1 },
-            ]);
+            setMembers(mem || []);
 
             setReplicationStatus(rep || {
-                set: 'rs0',
-                ismaster: true,
+                set: '',
+                ismaster: false,
                 secondary: false,
-                primary: 'mongo-0:27017',
-                me: 'mongo-0:27017',
-                term: 42,
-                electionDate: new Date(Date.now() - 7*24*3600000),
-                ok: 1,
+                primary: '',
+                me: '',
+                term: 0,
+                electionDate: new Date(),
+                ok: 0,
             });
 
-            setLagChart(lag || [
-                { time: '00:00', secondary1: 0.2, secondary2: 0.3 },
-                { time: '04:00', secondary1: 0.5, secondary2: 0.8 },
-                { time: '08:00', secondary1: 0.8, secondary2: 1.2 },
-                { time: '12:00', secondary1: 0.6, secondary2: 0.9 },
-                { time: '16:00', secondary1: 0.4, secondary2: 0.6 },
-                { time: '20:00', secondary1: 0.3, secondary2: 0.5 },
-            ]);
+            setLagChart(lag || []);
 
-            setElectionHistory(elec || [
-                { term: 42, type: 'election', winner: 'mongo-0', timestamp: new Date(Date.now() - 7*24*3600000), reason: 'Initial election' },
-                { term: 41, type: 'election', winner: 'mongo-0', timestamp: new Date(Date.now() - 14*24*3600000), reason: 'Primary crash' },
-                { term: 40, type: 'stepdown', winner: 'mongo-1', timestamp: new Date(Date.now() - 21*24*3600000), reason: 'Maintenance' },
-            ]);
+            setElectionHistory(elec || []);
 
             setOplogStats(oplog || {
-                oplogSize: 5120,
-                oplogUsed: 2048,
-                oplogWindow: 7200,
-                firstOpTime: new Date(Date.now() - 7200000),
+                oplogSize: 0,
+                oplogUsed: 0,
+                oplogWindow: 0,
+                firstOpTime: new Date(),
                 lastOpTime: new Date(),
-                opsCaptured: 1250000,
+                opsCaptured: 0,
             });
         } catch (err: any) {
             setError(err.message || 'Failed to load replication data');

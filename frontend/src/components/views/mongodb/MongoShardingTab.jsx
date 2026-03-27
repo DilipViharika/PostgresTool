@@ -1,12 +1,28 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
 import {
-    BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    Legend, PieChart, Pie, Cell
+    BarChart,
+    Bar,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    PieChart,
+    Pie,
+    Cell,
 } from 'recharts';
 import {
-    Network, TrendingUp, AlertTriangle, Activity, AlertCircle, CheckCircle,
-    RefreshCw, ArrowRight
+    Network,
+    TrendingUp,
+    AlertTriangle,
+    Activity,
+    AlertCircle,
+    CheckCircle,
+    RefreshCw,
+    ArrowRight,
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -205,14 +221,16 @@ const fmt = (n) => {
 const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -245,40 +263,33 @@ export default function MongoShardingTab() {
                 fetchData('/api/mongodb/migrations').catch(() => null),
             ]);
 
-            setShards(shard || [
-                { _id: 'shard1', host: 'shard1-rs/host1:27017,host2:27017', state: 'READY', chunks: 245, size: 2048 },
-                { _id: 'shard2', host: 'shard2-rs/host3:27017,host4:27017', state: 'READY', chunks: 254, size: 2112 },
-                { _id: 'shard3', host: 'shard3-rs/host5:27017,host6:27017', state: 'READY', chunks: 251, size: 2080 },
-            ]);
+            setShards(shard || []);
 
-            setShardStats(stats || {
-                totalShards: 3,
-                totalChunks: 750,
-                totalSize: 6240,
-                databaseCount: 8,
-                collectionCount: 42,
-                imbalancePercent: 2.3,
-            });
+            setShardStats(
+                stats || {
+                    totalShards: 0,
+                    totalChunks: 0,
+                    totalSize: 0,
+                    databaseCount: 0,
+                    collectionCount: 0,
+                    imbalancePercent: 0,
+                },
+            );
 
-            setChunkDistribution(chunk || [
-                { shard: 'shard1', chunks: 245 },
-                { shard: 'shard2', chunks: 254 },
-                { shard: 'shard3', chunks: 251 },
-            ]);
+            setChunkDistribution(chunk || []);
 
-            setBalancerStatus(balancer || {
-                enabled: true,
-                running: false,
-                balanceStarted: new Date(Date.now() - 86400000),
-                balanceCompleted: new Date(Date.now() - 82800000),
-                balanceRound: 15,
-                autoBalance: true,
-            });
+            setBalancerStatus(
+                balancer || {
+                    enabled: false,
+                    running: false,
+                    balanceStarted: null,
+                    balanceCompleted: null,
+                    balanceRound: 0,
+                    autoBalance: false,
+                },
+            );
 
-            setMigrations(mig || [
-                { _id: 'mig1', ns: 'mydb.users', shard: 'shard1', chunks: [1, 2, 3], status: 'completed', startTime: new Date(Date.now() - 3600000) },
-                { _id: 'mig2', ns: 'mydb.products', shard: 'shard2', chunks: [100, 101], status: 'completed', startTime: new Date(Date.now() - 7200000) },
-            ]);
+            setMigrations(mig || []);
         } catch (err) {
             setError(err.message || 'Failed to load sharding data');
         } finally {
@@ -339,7 +350,13 @@ export default function MongoShardingTab() {
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Imbalance</div>
-                                <div className="mongo-metric-value" style={{ color: shardStats.imbalancePercent > 5 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                <div
+                                    className="mongo-metric-value"
+                                    style={{
+                                        color:
+                                            shardStats.imbalancePercent > 5 ? DARK_THEME.warning : DARK_THEME.success,
+                                    }}
+                                >
                                     {shardStats.imbalancePercent}%
                                 </div>
                             </div>
@@ -369,7 +386,9 @@ export default function MongoShardingTab() {
                                         <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>{shard._id}</td>
                                         <td style={{ fontSize: 12, fontFamily: 'monospace' }}>{shard.host}</td>
                                         <td>
-                                            <span className={`mongo-badge mongo-badge-${shard.state === 'READY' ? 'active' : 'inactive'}`}>
+                                            <span
+                                                className={`mongo-badge mongo-badge-${shard.state === 'READY' ? 'active' : 'inactive'}`}
+                                            >
                                                 {shard.state}
                                             </span>
                                         </td>
@@ -406,15 +425,24 @@ export default function MongoShardingTab() {
                     </h3>
                     <div className="mongo-card">
                         <div className="mongo-grid">
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                                    <div style={{
-                                        width: 12,
-                                        height: 12,
-                                        borderRadius: '50%',
-                                        background: balancerStatus.enabled ? DARK_THEME.green : DARK_THEME.danger,
-                                        marginRight: 8
-                                    }} />
+                                    <div
+                                        style={{
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: '50%',
+                                            background: balancerStatus.enabled ? DARK_THEME.green : DARK_THEME.danger,
+                                            marginRight: 8,
+                                        }}
+                                    />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Status</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
@@ -422,15 +450,26 @@ export default function MongoShardingTab() {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                                    <div style={{
-                                        width: 12,
-                                        height: 12,
-                                        borderRadius: '50%',
-                                        background: balancerStatus.running ? DARK_THEME.warning : DARK_THEME.success,
-                                        marginRight: 8
-                                    }} />
+                                    <div
+                                        style={{
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: '50%',
+                                            background: balancerStatus.running
+                                                ? DARK_THEME.warning
+                                                : DARK_THEME.success,
+                                            marginRight: 8,
+                                        }}
+                                    />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Running</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
@@ -438,8 +477,22 @@ export default function MongoShardingTab() {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 4 }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 4,
+                                    }}
+                                >
                                     Balance Rounds
                                 </div>
                                 <div style={{ fontSize: 20, fontWeight: 700, color: DARK_THEME.accent }}>
@@ -447,8 +500,22 @@ export default function MongoShardingTab() {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 4 }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 4,
+                                    }}
+                                >
                                     Last Balanced
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.accent }}>
@@ -459,7 +526,8 @@ export default function MongoShardingTab() {
 
                         {balancerStatus.autoBalance && (
                             <div className="mongo-info-box" style={{ marginTop: 16 }}>
-                                Auto-balancing is enabled. The balancer will automatically distribute chunks to maintain cluster balance.
+                                Auto-balancing is enabled. The balancer will automatically distribute chunks to maintain
+                                cluster balance.
                             </div>
                         )}
                     </div>
@@ -472,23 +540,39 @@ export default function MongoShardingTab() {
                     </h3>
                     <div className="mongo-card">
                         {migrations.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: 20, color: DARK_THEME.textMuted, fontSize: 13 }}>
+                            <div
+                                style={{ textAlign: 'center', padding: 20, color: DARK_THEME.textMuted, fontSize: 13 }}
+                            >
                                 No recent migrations
                             </div>
                         ) : (
                             <div>
                                 {migrations.map((mig) => (
                                     <div key={mig._id} className="mongo-migration-item">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'flex-start',
+                                                marginBottom: 8,
+                                            }}
+                                        >
                                             <div>
-                                                <div style={{ fontWeight: 700, color: DARK_THEME.text, marginBottom: 4 }}>
+                                                <div
+                                                    style={{ fontWeight: 700, color: DARK_THEME.text, marginBottom: 4 }}
+                                                >
                                                     {mig.ns}
                                                 </div>
                                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                                    To: <span style={{ fontFamily: 'monospace', color: DARK_THEME.accent }}>{mig.shard}</span>
+                                                    To:{' '}
+                                                    <span style={{ fontFamily: 'monospace', color: DARK_THEME.accent }}>
+                                                        {mig.shard}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <span className={`mongo-badge mongo-badge-${mig.status === 'completed' ? 'active' : 'balancing'}`}>
+                                            <span
+                                                className={`mongo-badge mongo-badge-${mig.status === 'completed' ? 'active' : 'balancing'}`}
+                                            >
                                                 {mig.status.toUpperCase()}
                                             </span>
                                         </div>
@@ -524,21 +608,21 @@ export default function MongoShardingTab() {
                             <tbody className="mongo-table-body">
                                 <tr>
                                     <td style={{ fontFamily: 'monospace' }}>mydb.users</td>
-                                    <td style={{ fontFamily: 'monospace' }}>{"{ _id: 1 }"}</td>
+                                    <td style={{ fontFamily: 'monospace' }}>{'{ _id: 1 }'}</td>
                                     <td>245</td>
                                     <td>{fmt(2500000)}</td>
                                     <td>{fmt(2048)}</td>
                                 </tr>
                                 <tr>
                                     <td style={{ fontFamily: 'monospace' }}>mydb.products</td>
-                                    <td style={{ fontFamily: 'monospace' }}>{"{ category: 1, _id: 1 }"}</td>
+                                    <td style={{ fontFamily: 'monospace' }}>{'{ category: 1, _id: 1 }'}</td>
                                     <td>254</td>
                                     <td>{fmt(1800000)}</td>
                                     <td>{fmt(2112)}</td>
                                 </tr>
                                 <tr>
                                     <td style={{ fontFamily: 'monospace' }}>mydb.orders</td>
-                                    <td style={{ fontFamily: 'monospace' }}>{"{ date: 1 }"}</td>
+                                    <td style={{ fontFamily: 'monospace' }}>{'{ date: 1 }'}</td>
                                     <td>251</td>
                                     <td>{fmt(5600000)}</td>
                                     <td>{fmt(2080)}</td>
