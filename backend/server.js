@@ -1487,7 +1487,7 @@ app.get('/api/connections', authenticate, ensureConnections, async (req, res) =>
     } catch (e) { res.json([]); }
 });
 
-app.get('/api/connections/:id', authenticate, async (req, res) => {
+app.get('/api/connections/:id(\\d+)', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -1540,7 +1540,7 @@ app.post('/api/connections', authenticate, async (req, res) => {
     }
 });
 
-app.put('/api/connections/:id', authenticate, async (req, res) => {
+app.put('/api/connections/:id(\\d+)', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -1583,7 +1583,7 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
     }
 });
 
-app.delete('/api/connections/:id', authenticate, async (req, res) => {
+app.delete('/api/connections/:id(\\d+)', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -1609,7 +1609,7 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/connections/:id/default', authenticate, async (req, res) => {
+app.post('/api/connections/:id(\\d+)/default', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -1620,7 +1620,7 @@ app.post('/api/connections/:id/default', authenticate, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/connections/:id/test', authenticate, async (req, res) => {
+app.post('/api/connections/:id(\\d+)/test', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -1657,7 +1657,7 @@ app.post('/api/connections/:id/test', authenticate, async (req, res) => {
     } catch (e) { res.json({}); }
 });
 
-app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
+app.post('/api/connections/:id(\\d+)/switch', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
