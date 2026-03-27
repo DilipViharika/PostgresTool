@@ -78,11 +78,16 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
             const serverStatus = await db.admin().serverStatus();
             const opLatencies = serverStatus.opLatencies || {};
 
+            /* opLatencies.reads.latency = cumulative microseconds, .ops = count */
+            const readLatency = opLatencies.reads?.latency || 0;
+            const readOps     = opLatencies.reads?.ops || 1;
+            const avgLatencyUs = Math.round(readLatency / readOps);
+
             const dataPoint = {
                 time: new Date().toLocaleTimeString().split(':').slice(0, 2).join(':'),
-                p50: Math.round((opLatencies.reads?.latency || 0) * 0.5),
-                p95: Math.round((opLatencies.reads?.latency || 0) * 1.5),
-                p99: Math.round((opLatencies.reads?.latency || 0) * 2)
+                p50: avgLatencyUs,
+                p95: Math.round(avgLatencyUs * 3),
+                p99: Math.round(avgLatencyUs * 5)
             };
 
             return res.json([dataPoint]);
@@ -109,7 +114,8 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
                 });
             } catch (err) {
                 return res.json({
-                    isPrimary: true,
+                    isPrimary: false,
+                    standalone: true,
                     members: [],
                     oplogWindow: 0
                 });
@@ -166,12 +172,16 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
             const serverStatus = await db.admin().serverStatus();
             const opLatencies = serverStatus.opLatencies || {};
 
+            const readLatency = opLatencies.reads?.latency || 0;
+            const readOps     = opLatencies.reads?.ops || 1;
+            const avgUs = Math.round(readLatency / readOps);
+
             return res.json([
                 {
                     time: new Date().toLocaleTimeString().split(':').slice(0, 2).join(':'),
-                    p50: opLatencies.reads?.latency || 2,
-                    p95: Math.round((opLatencies.reads?.latency || 2) * 4),
-                    p99: Math.round((opLatencies.reads?.latency || 2) * 8)
+                    p50: avgUs,
+                    p95: Math.round(avgUs * 3),
+                    p99: Math.round(avgUs * 5)
                 }
             ]);
         } catch (error) {
@@ -359,12 +369,23 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
                 }
             }
 
+            /* Derive real metrics from serverStatus */
+            let collscanPercent = 0, indexSizeMB = 0;
+            try {
+                const serverStatus = await db.admin().serverStatus();
+                const totalOps = (serverStatus.opcounters?.query || 0) + (serverStatus.opcounters?.getmore || 0);
+                const collscans = serverStatus.metrics?.queryExecutor?.scannedObjects || 0;
+                collscanPercent = totalOps > 0 ? Math.round(collscans / totalOps * 100 * 100) / 100 : 0;
+                const dbStats = await db.command({ dbStats: 1 });
+                indexSizeMB = Math.round((dbStats.indexSize || 0) / (1024 * 1024));
+            } catch (e) { /* best-effort */ }
+
             return res.json({
                 totalIndexes,
                 unusedIndexes,
-                collscanPercent: 2.5,
-                indexSize: 1280,
-                indexMaintenance: 45
+                collscanPercent,
+                indexSize: indexSizeMB,
+                indexMaintenance: unusedIndexes
             });
         } catch (error) {
             return res.json({

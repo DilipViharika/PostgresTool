@@ -1706,23 +1706,43 @@ app.post('/api/query', authenticate, requireRole('admin', 'super_admin'), async 
     const validationError = validateConsoleQuery(rawSql, req.user.role);
     if (validationError) return res.status(400).json({ error: validationError });
 
+    const dbType = await reqDbType(req);
+    if (dbType === 'mongodb') {
+        return res.status(400).json({ error: 'SQL console is not available for MongoDB connections. Use the MongoDB Data Tools tab instead.' });
+    }
+
     const safeSql = String(rawSql).slice(0, 50_000);
     try {
         const dynPool = await reqPool(req);
-        const client = await dynPool.connect();
-        const r = await client.query(safeSql);
-        client.release();
-        queryHistory.add({ sql: safeSql, success: true, by: req.user.username });
-        await writeAudit(pool, {
-            actorId:      req.user.id,
-            actorUsername: req.user.username,
-            action:       'SQL_CONSOLE_EXEC',
-            resourceType: 'sql_console',
-            level:        'warn',
-            detail:       `Executed SQL (${safeSql.length} chars): ${safeSql.slice(0, 200)}${safeSql.length > 200 ? '…' : ''}`,
-            ip:           req.ip,
-        });
-        res.json({ rows: r.rows, rowCount: r.rowCount, fields: r.fields.map(f => ({ name: f.name })) });
+        if (dbType === 'mysql' || dbType === 'mariadb') {
+            const [rows, fields] = await dynPool.query(safeSql);
+            queryHistory.add({ sql: safeSql, success: true, by: req.user.username });
+            await writeAudit(pool, {
+                actorId:      req.user.id,
+                actorUsername: req.user.username,
+                action:       'SQL_CONSOLE_EXEC',
+                resourceType: 'sql_console',
+                level:        'warn',
+                detail:       `Executed SQL (${safeSql.length} chars): ${safeSql.slice(0, 200)}${safeSql.length > 200 ? '…' : ''}`,
+                ip:           req.ip,
+            });
+            res.json({ rows: Array.isArray(rows) ? rows : [], rowCount: Array.isArray(rows) ? rows.length : 0, fields: (fields || []).map(f => ({ name: f.name })) });
+        } else {
+            const client = await dynPool.connect();
+            const r = await client.query(safeSql);
+            client.release();
+            queryHistory.add({ sql: safeSql, success: true, by: req.user.username });
+            await writeAudit(pool, {
+                actorId:      req.user.id,
+                actorUsername: req.user.username,
+                action:       'SQL_CONSOLE_EXEC',
+                resourceType: 'sql_console',
+                level:        'warn',
+                detail:       `Executed SQL (${safeSql.length} chars): ${safeSql.slice(0, 200)}${safeSql.length > 200 ? '…' : ''}`,
+                ip:           req.ip,
+            });
+            res.json({ rows: r.rows, rowCount: r.rowCount, fields: r.fields.map(f => ({ name: f.name })) });
+        }
     } catch (e) {
         queryHistory.add({ sql: safeSql, success: false, error: e.message, by: req.user.username });
         res.status(400).json({ error: e.message });
@@ -1804,7 +1824,7 @@ async function resolvePoolConfig(c) {
         database: c.database,
         user:     c.username,
         password: c.password,
-        ssl: c.ssl ? { rejectUnauthorized: false } : { rejectUnauthorized: false },
+        ssl: c.ssl ? { rejectUnauthorized: false } : false,
     };
 }
 
@@ -2228,7 +2248,7 @@ app.get('/api/health', async (req, res) => {
 
         res.json({
             controlPlane: 'ok',
-            activeConnections: Object.keys(poolCache).length,
+            activeConnections: connectionPools.size,
             uptime: Math.round(uptime),
             memoryMB,
             timestamp: new Date().toISOString(),
@@ -2839,6 +2859,7 @@ const alertEventStore = [];
 const MAX_ALERT_EVENTS = 500;
 
 async function captureAlertSnapshot() {
+    if (!pool) return;
     try {
         const [conns, locks, waits, repl, bgwriter] = await Promise.all([
             pool.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER(WHERE state='active') AS active,
