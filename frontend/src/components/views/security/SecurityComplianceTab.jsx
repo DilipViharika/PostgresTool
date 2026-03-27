@@ -388,9 +388,9 @@ const ChartTooltip = ({ active, payload, label }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Threat Monitor ─────────────────────────────────────────────────────── */
-const ThreatMonitor = ({ search }) => {
+const ThreatMonitor = ({ search, threatLogs = [] }) => {
     const [expanded, setExpanded] = useState(null);
-    const filtered = THREAT_LOGS.filter(t =>
+    const filtered = threatLogs.filter(t =>
         !search || t.type.toLowerCase().includes(search.toLowerCase()) ||
         t.user.toLowerCase().includes(search.toLowerCase())
     );
@@ -517,18 +517,18 @@ const GeoThreatPanel = () => (
 );
 
 /* ── Compliance Panel ───────────────────────────────────────────────────── */
-const CompliancePanel = () => {
+const CompliancePanel = ({ complianceChecks = [] }) => {
     const [filter, setFilter] = useState('all');
     const standards = ['all', 'SOC2', 'GDPR', 'HIPAA', 'ISO27001', 'CIS'];
-    const filtered = filter === 'all' ? COMPLIANCE_CHECKS : COMPLIANCE_CHECKS.filter(c => c.standard === filter);
-    const passCount = COMPLIANCE_CHECKS.filter(c => c.status === 'pass').length;
+    const filtered = filter === 'all' ? complianceChecks : complianceChecks.filter(c => c.standard === filter);
+    const passCount = complianceChecks.filter(c => c.status === 'pass').length;
 
     return (
         <div className="card">
             <SectionHeader icon={FileCheck} title="Compliance Posture"
                            right={
                                <div className="mono" style={{ fontSize: 12, color: '#4ade80', fontWeight: 700 }}>
-                                   {passCount}/{COMPLIANCE_CHECKS.length} Pass
+                                   {passCount}/{complianceChecks.length} Pass
                                </div>
                            }
             />
@@ -657,12 +657,12 @@ const KeyVault = () => {
 };
 
 /* ── Audit Timeline ─────────────────────────────────────────────────────── */
-const AuditTimeline = () => (
+const AuditTimeline = ({ auditEvents = [] }) => (
     <div className="card" style={{ padding: 0 }}>
         <SectionHeader icon={Clock} title="Audit Events" iconColor="#63d7ff"
                        right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
         <div style={{ padding: '16px 20px' }}>
-            {AUDIT_EVENTS.map((ev, i) => {
+            {auditEvents.map((ev, i) => {
                 const color = SEV_COLORS[ev.severity] || '#888';
                 return (
                     <div key={i} className="timeline-event">
@@ -932,6 +932,31 @@ const SecurityComplianceTab = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [search, setSearch] = useState('');
     const [score] = useState(88);
+    const [threatLogs, setThreatLogs] = useState([]);
+    const [complianceChecks, setComplianceChecks] = useState([]);
+    const [auditEvents, setAuditEvents] = useState([]);
+    const [superuserActivity, setSuperuserActivity] = useState({});
+
+    // Fetch security data from API
+    useEffect(() => {
+        const loadSecurityData = async () => {
+            try {
+                const [threats, compliance, audit, superuser] = await Promise.all([
+                    fetchData('/api/security/threats').catch(() => []),
+                    fetchData('/api/security/compliance').catch(() => []),
+                    fetchData('/api/security/audit-events').catch(() => []),
+                    fetchData('/api/security/superuser-activity').catch(() => ({})),
+                ]);
+                setThreatLogs(threats || []);
+                setComplianceChecks(compliance || []);
+                setAuditEvents(audit || []);
+                setSuperuserActivity(superuser || {});
+            } catch (err) {
+                console.error('Failed to load security data:', err);
+            }
+        };
+        loadSecurityData();
+    }, []);
 
     const tabs = [
         { id: 'overview',   label: 'Overview' },
@@ -998,7 +1023,7 @@ const SecurityComplianceTab = () => {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 18 }}>
-                        <ThreatMonitor search={search} />
+                        <ThreatMonitor search={search} threatLogs={threatLogs} />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 18, alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1027,7 +1052,7 @@ const SecurityComplianceTab = () => {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                             <GeoThreatPanel />
-                            <AuditTimeline />
+                            <AuditTimeline auditEvents={auditEvents} />
                         </div>
                     </div>
                 </div>
@@ -1037,7 +1062,7 @@ const SecurityComplianceTab = () => {
             {activeTab === 'compliance' && (
                 <div style={{ padding: '0 24px' }} className="fade-in">
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 18 }}>
-                        <CompliancePanel />
+                        <CompliancePanel complianceChecks={complianceChecks} />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                             <SecurityRadar />
                             <PIIAccessLog />

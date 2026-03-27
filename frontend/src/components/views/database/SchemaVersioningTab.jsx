@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { fetchData } from '../../../utils/api';
 
 import {
     GitBranch, GitCommit, GitPullRequest, History, ArrowLeftRight,
@@ -348,9 +349,9 @@ const Styles = () => { useAdaptiveTheme(); ensureSvStyles(); return null; };
 /* ═══════════════════════════════════════════════════════════════════════════
    MOCK DATA (unchanged)
    ═══════════════════════════════════════════════════════════════════════════ */
-const MIGRATIONS = [];
+const MIGRATIONS_INITIAL = [];
 
-const PENDING_MIGRATIONS = [];
+const PENDING_MIGRATIONS_INITIAL = [];
 
 const SCHEMA_DIFF = [
     {
@@ -862,20 +863,39 @@ const SchemaVersioningTab = () => {
     const [expandedMigrations, setExpandedMigrations] = useState([]);
     const [selectedMigration, setSelectedMigration] = useState(null);
     const [favorites, setFavorites] = useLocalStorage('vigil_favorite_migrations', []);
+    const [migrations, setMigrations] = useState([]);
+    const [pendingMigrations, setPendingMigrations] = useState([]);
+    const [schemaMessage, setSchemaMessage] = useState('');
 
     const debouncedSearch = useDebounce(searchQuery, 300);
+
+    // Fetch schema migrations from API
+    useEffect(() => {
+        const loadMigrations = async () => {
+            try {
+                const data = await fetchData('/api/schema/migrations');
+                setMigrations(data.migrations || []);
+                setPendingMigrations(data.pending || []);
+                if (data.message) setSchemaMessage(data.message);
+            } catch (err) {
+                console.error('Failed to load migrations:', err);
+                setSchemaMessage('Failed to load schema migrations.');
+            }
+        };
+        loadMigrations();
+    }, []);
 
     const wsUrl = (import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app').replace(/^http/, 'ws');
     const { isConnected } = useWebSocket(wsUrl, () => {});
 
     const allTags = useMemo(() => {
         const tags = new Set();
-        [...MIGRATIONS, ...PENDING_MIGRATIONS].forEach(m => m.tags?.forEach(t => tags.add(t)));
+        [...migrations, ...pendingMigrations].forEach(m => m.tags?.forEach(t => tags.add(t)));
         return Array.from(tags);
-    }, []);
+    }, [migrations, pendingMigrations]);
 
     const filteredMigrations = useMemo(() => {
-        let filtered = [...MIGRATIONS, ...PENDING_MIGRATIONS];
+        let filtered = [...migrations, ...pendingMigrations];
         if (debouncedSearch) {
             filtered = filtered.filter(m =>
                 m.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -887,7 +907,7 @@ const SchemaVersioningTab = () => {
             filtered = filtered.filter(m => m.tags?.some(t => filterTags.includes(t)));
         }
         return filtered;
-    }, [debouncedSearch, filterTags]);
+    }, [debouncedSearch, filterTags, migrations, pendingMigrations]);
 
     const toggleExpanded = useCallback((id) => {
         setExpandedMigrations(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -994,6 +1014,18 @@ const SchemaVersioningTab = () => {
             ══════════════════════════════════════════════════════════════ */}
             {view === 'timeline' && (
                 <div>
+                    {/* Schema Message */}
+                    {schemaMessage && (
+                        <div style={{
+                            padding: '12px 16px', marginBottom: 16, borderRadius: 8,
+                            background: `${THEME.info}12`, border: `1px solid ${THEME.info}30`,
+                            fontSize: 12, color: THEME.textMuted, display: 'flex', alignItems: 'center', gap: 8
+                        }}>
+                            <Info size={14} color={THEME.info} />
+                            {schemaMessage}
+                        </div>
+                    )}
+
                     {/* Search + filters */}
                     <div style={{ marginBottom: 16 }}>
                         <div style={{ position: 'relative', marginBottom: 10 }}>

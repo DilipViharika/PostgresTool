@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
-import { postData } from '../../../utils/api';
+import { postData, fetchData } from '../../../utils/api';
 import {
     Zap, Search, Play, Clock, Database, Server,
     AlertTriangle, CheckCircle, ArrowRight, Activity,
@@ -223,25 +223,25 @@ const generateMockPlan = (query) => {
     };
 };
 
-const MOCK_INDEXES = [];
+const indexes = [];
 
-const MOCK_TABLE_STATS = [];
+const tableStats = [];
 
 const SAMPLE_QUERIES = [];
 
-const MOCK_SLOW_QUERIES = [];
+const slowQueries = [];
 
-const MOCK_LOCKS = [];
+const locks = [];
 
-const MOCK_MAINTENANCE = [];
+const maintenance = [];
 
-const MOCK_PG_CONFIG = [];
+const pgConfig = [];
 
 // NEW: Mock service attribution data
-const MOCK_SERVICE_ATTRIBUTION = [];
+const serviceAttribution = [];
 
 // NEW: Mock parameterization advisor data
-const MOCK_PARAM_ISSUES = [];
+const paramIssues = [];
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ANALYSIS ENGINE
@@ -904,8 +904,8 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
 const ServiceAttributionPanel = () => {
     const [sortBy, setSortBy] = useState('cost_share');
     const [view, setView] = useState('chart');
-    const sorted = [...MOCK_SERVICE_ATTRIBUTION].sort((a, b) => b[sortBy] - a[sortBy]);
-    const totalTime = MOCK_SERVICE_ATTRIBUTION.reduce((s, r) => s + r.total_time_ms, 0);
+    const sorted = [...serviceAttribution].sort((a, b) => b[sortBy] - a[sortBy]);
+    const totalTime = serviceAttribution.reduce((s, r) => s + r.total_time_ms, 0);
     const maxCostShare = Math.max(...sorted.map(s => s.cost_share));
 
     const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: '#a78bfa', Growth: '#34d399', Search: '#f472b6' };
@@ -915,9 +915,9 @@ const ServiceAttributionPanel = () => {
             {/* Summary row */}
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Services Tracked', value: MOCK_SERVICE_ATTRIBUTION.length, color: THEME.textMain },
+                    { label: 'Services Tracked', value: serviceAttribution.length, color: THEME.textMain },
                     { label: 'Total DB Time', value: formatDuration(totalTime), color: THEME.primary },
-                    { label: 'Slowest Avg (ms)', value: formatDuration(Math.max(...MOCK_SERVICE_ATTRIBUTION.map(s => s.avg_time))), color: THEME.danger },
+                    { label: 'Slowest Avg (ms)', value: formatDuration(Math.max(...serviceAttribution.map(s => s.avg_time))), color: THEME.danger },
                     { label: 'Top Offender', value: sorted[0]?.service, color: THEME.warning },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
@@ -1085,15 +1085,15 @@ const ParameterizationAdvisorPanel = () => {
     const riskColor = (r) => r === 'CRITICAL' ? THEME.danger : r === 'HIGH' ? '#f97316' : THEME.warning;
     const riskIcon = (r) => r === 'CRITICAL' ? <AlertOctagon size={12} color={THEME.danger} /> : r === 'HIGH' ? <ShieldAlert size={12} color="#f97316" /> : <AlertTriangle size={12} color={THEME.warning} />;
 
-    const totalCalls = MOCK_PARAM_ISSUES.reduce((s, q) => s + q.calls, 0);
-    const criticalCount = MOCK_PARAM_ISSUES.filter(q => q.risk === 'CRITICAL').length;
+    const totalCalls = paramIssues.reduce((s, q) => s + q.calls, 0);
+    const criticalCount = paramIssues.filter(q => q.risk === 'CRITICAL').length;
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {/* Summary */}
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Unparameterized', value: MOCK_PARAM_ISSUES.length, color: THEME.warning, icon: AlertTriangle },
+                    { label: 'Unparameterized', value: paramIssues.length, color: THEME.warning, icon: AlertTriangle },
                     { label: 'Critical (Security)', value: criticalCount, color: THEME.danger, icon: ShieldAlert },
                     { label: 'Affected Calls', value: totalCalls.toLocaleString(), color: THEME.textMain, icon: Database },
                     { label: 'Cache Waste Avg', value: '89%', color: THEME.danger, icon: Gauge },
@@ -1121,7 +1121,7 @@ const ParameterizationAdvisorPanel = () => {
             <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                 {/* Query list */}
                 <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
-                    {MOCK_PARAM_ISSUES.map((q, i) => (
+                    {paramIssues.map((q, i) => (
                         <div key={q.id}
                              onClick={() => setSelected(selected === q.id ? null : q.id)}
                              className="opt-row-hover"
@@ -1152,7 +1152,7 @@ const ParameterizationAdvisorPanel = () => {
 
                 {/* Detail panel */}
                 {selected ? (() => {
-                    const q = MOCK_PARAM_ISSUES.find(p => p.id === selected);
+                    const q = paramIssues.find(p => p.id === selected);
                     if (!q) return null;
                     return (
                         <div className="opt-scroll" style={{ width: 380, borderLeft: `1px solid ${THEME.grid}`, overflowY: 'auto', padding: 16, flexShrink: 0 }}>
@@ -1239,8 +1239,8 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
     const [searchText, setSearchText] = useState('');
     const [tagFilter, setTagFilter] = useState(null);
 
-    const allTags = [...new Set(MOCK_SLOW_QUERIES.flatMap(q => q.tags))];
-    const filtered = MOCK_SLOW_QUERIES
+    const allTags = [...new Set(slowQueries.flatMap(q => q.tags))];
+    const filtered = slowQueries
         .filter(q => !searchText || q.query.toLowerCase().includes(searchText.toLowerCase()))
         .filter(q => !tagFilter || q.tags.includes(tagFilter))
         .sort((a, b) => b[sortBy] - a[sortBy]);
@@ -1360,18 +1360,18 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
 // Lock Monitor Panel
 const LockMonitorPanel = () => {
     const [selected, setSelected] = useState(null);
-    const blockedCount = MOCK_LOCKS.filter(l => l.blocked_by).length;
-    const blockingCount = MOCK_LOCKS.filter(l => l.blocking?.length > 0).length;
+    const blockedCount = locks.filter(l => l.blocked_by).length;
+    const blockingCount = locks.filter(l => l.blocking?.length > 0).length;
     const stateColor = (s) => s === 'active' ? THEME.success : s === 'idle in transaction' ? THEME.danger : THEME.warning;
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Total Locks', value: MOCK_LOCKS.length, color: THEME.textMain, icon: Lock },
+                    { label: 'Total Locks', value: locks.length, color: THEME.textMain, icon: Lock },
                     { label: 'Blocked', value: blockedCount, color: blockedCount > 0 ? THEME.danger : THEME.success, icon: XCircle },
                     { label: 'Blocking', value: blockingCount, color: blockingCount > 0 ? THEME.warning : THEME.success, icon: ShieldAlert },
-                    { label: 'Idle in Txn', value: MOCK_LOCKS.filter(l => l.state === 'idle in transaction').length, color: THEME.warning, icon: Hourglass },
+                    { label: 'Idle in Txn', value: locks.filter(l => l.state === 'idle in transaction').length, color: THEME.warning, icon: Hourglass },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 10 }}>
                         <k.icon size={16} color={k.color} />
@@ -1389,7 +1389,7 @@ const LockMonitorPanel = () => {
                         <Siren size={12} /> Lock Chain Detected
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        {MOCK_LOCKS.filter(l => l.blocking?.length > 0).map(blocker => (
+                        {locks.filter(l => l.blocking?.length > 0).map(blocker => (
                             <React.Fragment key={blocker.pid}>
                                 <div style={{ padding: '4px 10px', borderRadius: 6, background: `${THEME.danger}20`, border: `1px solid ${THEME.danger}40`, fontSize: 10, color: THEME.danger, fontFamily: 'monospace', fontWeight: 700 }}>
                                     PID {blocker.pid}
@@ -1422,7 +1422,7 @@ const LockMonitorPanel = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {MOCK_LOCKS.map((lock, i) => (
+                    {locks.map((lock, i) => (
                         <tr key={i} onClick={() => setSelected(selected === lock.pid ? null : lock.pid)}
                             className="opt-row-hover"
                             style={{ borderBottom: `1px solid ${THEME.grid}25`, cursor: 'pointer', background: selected === lock.pid ? `${THEME.primary}08` : lock.blocked_by ? `${THEME.danger}05` : 'transparent' }}>
@@ -1466,10 +1466,10 @@ const MaintenancePanel = () => {
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Tables Monitored', value: MOCK_MAINTENANCE.length, color: THEME.textMain },
-                    { label: 'Need Vacuum', value: MOCK_MAINTENANCE.filter(t => urgency(t) !== 'ok').length, color: THEME.warning },
-                    { label: 'Critical Bloat', value: MOCK_MAINTENANCE.filter(t => urgency(t) === 'critical').length, color: THEME.danger },
-                    { label: 'Total Dead Tuples', value: formatRows(MOCK_MAINTENANCE.reduce((s, t) => s + t.dead_tuples, 0)), color: THEME.textMuted },
+                    { label: 'Tables Monitored', value: maintenance.length, color: THEME.textMain },
+                    { label: 'Need Vacuum', value: maintenance.filter(t => urgency(t) !== 'ok').length, color: THEME.warning },
+                    { label: 'Critical Bloat', value: maintenance.filter(t => urgency(t) === 'critical').length, color: THEME.danger },
+                    { label: 'Total Dead Tuples', value: formatRows(maintenance.reduce((s, t) => s + t.dead_tuples, 0)), color: THEME.textMuted },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
                         <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{k.label}</div>
@@ -1488,7 +1488,7 @@ const MaintenancePanel = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {MOCK_MAINTENANCE.map((t, i) => {
+                    {maintenance.map((t, i) => {
                         const u = urgency(t);
                         const uc = urgencyColor(u);
                         const isRunning = running[t.table];
@@ -1539,8 +1539,8 @@ const MaintenancePanel = () => {
 // Config Advisor Panel
 const ConfigAdvisorPanel = () => {
     const [category, setCategory] = useState('All');
-    const categories = ['All', ...new Set(MOCK_PG_CONFIG.map(c => c.category))];
-    const filtered = category === 'All' ? MOCK_PG_CONFIG : MOCK_PG_CONFIG.filter(c => c.category === category);
+    const categories = ['All', ...new Set(pgConfig.map(c => c.category))];
+    const filtered = category === 'All' ? pgConfig : pgConfig.filter(c => c.category === category);
     const [copiedKey, setCopiedKey] = useState(null);
     const copy = (text, key) => { navigator.clipboard?.writeText(text).catch(() => {}); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1800); };
     const impactColor = (i) => i === 'HIGH' ? THEME.danger : i === 'MEDIUM' ? THEME.warning : THEME.success;
@@ -1616,7 +1616,7 @@ const ConfigAdvisorPanel = () => {
 // Index Advisor
 const IndexAdvisorPanel = () => {
     const [filter, setFilter] = useState('all');
-    const filtered = filter === 'all' ? MOCK_INDEXES : MOCK_INDEXES.filter(i => i.status === filter);
+    const filtered = filter === 'all' ? indexes : indexes.filter(i => i.status === filter);
     const statusColor = (s) => s === 'healthy' ? THEME.success : s === 'bloated' ? THEME.warning : THEME.danger;
 
     return (
@@ -1660,7 +1660,7 @@ const IndexAdvisorPanel = () => {
 
 // Table Stats
 const TableStatsPanel = () => {
-    const maxRows = Math.max(...MOCK_TABLE_STATS.map(t => t.rows));
+    const maxRows = Math.max(...tableStats.map(t => t.rows));
     return (
         <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
@@ -1673,7 +1673,7 @@ const TableStatsPanel = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {MOCK_TABLE_STATS.map((t, i) => {
+                    {tableStats.map((t, i) => {
                         const total = t.seq_scans + t.idx_scans;
                         const idxPct = total > 0 ? (t.idx_scans / total) * 100 : 0;
                         const deadRatio = t.dead_tuples / (t.rows || 1);
@@ -1805,9 +1805,54 @@ const QueryOptimizerTab = () => {
     const [activeTab, setActiveTab] = useState('plan');
     const [copiedQuery, setCopiedQuery] = useState(false);
 
+    // Optimizer data state
+    const [indexes, setIndexes] = useState([]);
+    const [tableStats, setTableStats] = useState([]);
+    const [slowQueries, setSlowQueries] = useState([]);
+    const [locks, setLocks] = useState([]);
+    const [maintenance, setMaintenance] = useState([]);
+    const [pgConfig, setPgConfig] = useState([]);
+    const [serviceAttribution, setServiceAttribution] = useState([]);
+    const [paramIssues, setParamIssues] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const loadQuery = useCallback((sql) => {
         setQuery(sql);
         setActiveTab('plan');
+    }, []);
+
+    // Fetch optimizer data from API endpoints
+    useEffect(() => {
+        const loadOptimizerData = async () => {
+            setLoading(true);
+            try {
+                const results = await Promise.allSettled([
+                    fetchData('/api/optimizer/indexes'),
+                    fetchData('/api/optimizer/table-stats'),
+                    fetchData('/api/optimizer/slow-queries'),
+                    fetchData('/api/optimizer/locks'),
+                    fetchData('/api/optimizer/maintenance'),
+                    fetchData('/api/optimizer/config'),
+                    fetchData('/api/optimizer/service-attribution'),
+                    fetchData('/api/optimizer/param-issues'),
+                ]);
+
+                if (results[0].status === 'fulfilled') setIndexes(Array.isArray(results[0].value) ? results[0].value : []);
+                if (results[1].status === 'fulfilled') setTableStats(Array.isArray(results[1].value) ? results[1].value : []);
+                if (results[2].status === 'fulfilled') setSlowQueries(Array.isArray(results[2].value) ? results[2].value : []);
+                if (results[3].status === 'fulfilled') setLocks(Array.isArray(results[3].value) ? results[3].value : []);
+                if (results[4].status === 'fulfilled') setMaintenance(Array.isArray(results[4].value) ? results[4].value : []);
+                if (results[5].status === 'fulfilled') setPgConfig(Array.isArray(results[5].value) ? results[5].value : []);
+                if (results[6].status === 'fulfilled') setServiceAttribution(Array.isArray(results[6].value) ? results[6].value : []);
+                if (results[7].status === 'fulfilled') setParamIssues(Array.isArray(results[7].value) ? results[7].value : []);
+            } catch (e) {
+                console.error('Failed to load optimizer data:', e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadOptimizerData();
     }, []);
 
     const handleAnalyze = async () => {
@@ -1983,7 +2028,7 @@ const QueryOptimizerTab = () => {
                                     <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.danger, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{insights.length}</span>
                                 )}
                                 {t.id === 'parameterization' && (
-                                    <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.danger, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{MOCK_PARAM_ISSUES.length}</span>
+                                    <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.danger, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{paramIssues.length}</span>
                                 )}
                             </button>
                         ))}

@@ -445,6 +445,26 @@ const UptimeHeatmap = ({ days }) => {
 const OnCallWidget = () => {
     const statusColor = (s) => s === 'active' ? THEME.success : s === 'standby' ? THEME.warning : THEME.textDim;
     const statusLabel = (s) => s === 'active' ? 'On duty' : s === 'standby' ? 'Standby' : 'Off shift';
+
+    if (MOCK_ONCALL.length === 0) {
+        return (
+            <Panel title="On-Call Rotation" icon={Users} accent={THEME.primary}>
+                <div style={{
+                    padding: '24px 16px', textAlign: 'center',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+                }}>
+                    <Users size={28} color={THEME.textDim} />
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>On-call rotation not configured</div>
+                        <div style={{ fontSize: 11, color: THEME.textDim }}>
+                            Set up team schedules in Settings → Team Management.
+                        </div>
+                    </div>
+                </div>
+            </Panel>
+        );
+    }
+
     return (
         <Panel title="On-Call Rotation" icon={Users} accent={THEME.primary}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -660,7 +680,26 @@ const AlertGroupView = ({ alerts }) => {
 const SloBurnRatePanel = ({ burnData }) => {
     const [selectedSlo, setSelectedSlo] = useState(0);
     const slo = MOCK_SLOs[selectedSlo];
-    const burnColor = slo.burnRate6h > 3 ? THEME.danger : slo.burnRate6h > 1.5 ? THEME.warning : THEME.success;
+    const burnColor = slo?.burnRate6h > 3 ? THEME.danger : slo?.burnRate6h > 1.5 ? THEME.warning : THEME.success;
+
+    if (MOCK_SLOs.length === 0) {
+        return (
+            <div style={{
+                padding: '40px 24px', textAlign: 'center', background: THEME.surface,
+                border: `1px solid ${THEME.grid}`, borderRadius: 12,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12
+            }}>
+                <Gauge size={32} color={THEME.textDim} />
+                <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>No Service Level Objectives</div>
+                    <div style={{ fontSize: 12, color: THEME.textDim, maxWidth: 360 }}>
+                        No Service Level Objectives configured. Define SLOs in Settings to track uptime and latency targets.
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* SLO selector row */}
@@ -757,6 +796,32 @@ const SloBurnRatePanel = ({ burnData }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const ChangeFreezePanel = () => {
     const [showAdd, setShowAdd] = useState(false);
+
+    if (MOCK_FREEZE_WINDOWS.length === 0 && !showAdd) {
+        return (
+            <Panel title="Change Freeze Windows" icon={Snowflake} accent={THEME.info} rightNode={
+                <button onClick={() => setShowAdd(!showAdd)} style={{
+                    padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    fontSize: 10, fontWeight: 700, background: `${THEME.primary}15`, color: THEME.primary,
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                }}>+ Add Window</button>
+            }>
+                <div style={{
+                    padding: '32px 24px', textAlign: 'center',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+                }}>
+                    <Snowflake size={28} color={THEME.textDim} />
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>No freeze windows scheduled</div>
+                        <div style={{ fontSize: 11, color: THEME.textDim }}>
+                            Configure freeze windows for maintenance periods.
+                        </div>
+                    </div>
+                </div>
+            </Panel>
+        );
+    }
+
     return (
         <Panel title="Change Freeze Windows" icon={Snowflake} accent={THEME.info} rightNode={
             <button onClick={() => setShowAdd(!showAdd)} style={{

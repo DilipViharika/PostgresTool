@@ -3429,6 +3429,114 @@ app.get('/api/resources/maintenance-logs', authenticate, cached('res:maint', 30_
 // SECURITY ROUTES
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Schema migrations endpoint
+app.get('/api/schema/migrations', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        // Try to find a migrations table (common patterns)
+        const { rows: tables } = await pool.query(`
+            SELECT table_name FROM information_schema.tables
+            WHERE table_schema = 'public'
+            AND (table_name LIKE '%migration%' OR table_name LIKE '%schema_version%' OR table_name = 'flyway_schema_history' OR table_name = 'schema_migrations')
+            LIMIT 1
+        `);
+        if (tables.length === 0) {
+            return res.json({ migrations: [], pending: [], message: 'No migration tracking table found. Schema versioning data will appear if you use a migration tool (Flyway, Knex, Prisma, etc.).' });
+        }
+        const tableName = tables[0].table_name;
+        const { rows } = await pool.query(`SELECT * FROM "${tableName}" ORDER BY 1 DESC LIMIT 50`);
+        res.json({ migrations: rows, pending: [], tableName });
+    } catch (e) { res.json({ migrations: [], pending: [], message: e.message }); }
+});
+
+// Schema browser endpoint
+app.get('/api/schema/browser', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT t.table_schema, t.table_name, c.column_name, c.data_type, c.is_nullable,
+                   c.column_default, c.character_maximum_length
+            FROM information_schema.tables t
+            JOIN information_schema.columns c ON t.table_name = c.table_name AND t.table_schema = c.table_schema
+            WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema', 'pgmonitoringtool')
+            AND t.table_type = 'BASE TABLE'
+            ORDER BY t.table_schema, t.table_name, c.ordinal_position
+        `);
+        // Group by schema.table
+        const schemas = {};
+        rows.forEach(r => {
+            const key = r.table_schema;
+            if (!schemas[key]) schemas[key] = {};
+            if (!schemas[key][r.table_name]) schemas[key][r.table_name] = [];
+            schemas[key][r.table_name].push({ name: r.column_name, type: r.data_type, nullable: r.is_nullable === 'YES', default: r.column_default });
+        });
+        res.json(schemas);
+    } catch (e) { res.json({}); }
+});
+
+// Threats endpoint
+app.get('/api/security/threats', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT pid, usename as user, client_addr as source, query, state,
+                   backend_start, query_start,
+                   CASE
+                       WHEN query ~* 'DROP|TRUNCATE|DELETE FROM.*WHERE 1|UPDATE pg_' THEN 'critical'
+                       WHEN query ~* 'GRANT|ALTER ROLE|CREATE ROLE' THEN 'high'
+                       WHEN query ~* 'COPY.*TO|pg_dump|information_schema' THEN 'medium'
+                       ELSE 'low'
+                   END as severity
+            FROM pg_stat_activity
+            WHERE state != 'idle' AND query != ''
+            AND pid != pg_backend_pid()
+            ORDER BY query_start DESC LIMIT 20
+        `);
+        res.json(rows);
+    } catch (e) { res.json([]); }
+});
+
+// Compliance checks endpoint
+app.get('/api/security/compliance', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const checks = [];
+        // Check SSL
+        const ssl = await pool.query("SELECT setting FROM pg_settings WHERE name = 'ssl'");
+        checks.push({ id: 'ssl', cat: 'Encryption', label: 'SSL Enabled', status: ssl.rows[0]?.setting === 'on' ? 'pass' : 'fail', standard: 'SOC2', score: ssl.rows[0]?.setting === 'on' ? 100 : 0 });
+        // Check password encryption
+        const enc = await pool.query("SELECT setting FROM pg_settings WHERE name = 'password_encryption'");
+        checks.push({ id: 'enc', cat: 'Encryption', label: 'Password Encryption', status: enc.rows[0]?.setting === 'scram-sha-256' ? 'pass' : 'warn', standard: 'SOC2', score: enc.rows[0]?.setting === 'scram-sha-256' ? 100 : 50 });
+        // Check log connections
+        const logConn = await pool.query("SELECT setting FROM pg_settings WHERE name = 'log_connections'");
+        checks.push({ id: 'logc', cat: 'Logging', label: 'Connection Logging', status: logConn.rows[0]?.setting === 'on' ? 'pass' : 'warn', standard: 'SOC2', score: logConn.rows[0]?.setting === 'on' ? 100 : 30 });
+        // Check log disconnections
+        const logDisc = await pool.query("SELECT setting FROM pg_settings WHERE name = 'log_disconnections'");
+        checks.push({ id: 'logd', cat: 'Logging', label: 'Disconnection Logging', status: logDisc.rows[0]?.setting === 'on' ? 'pass' : 'warn', standard: 'SOC2', score: logDisc.rows[0]?.setting === 'on' ? 100 : 30 });
+        // Check row level security enabled tables
+        const rls = await pool.query("SELECT count(*) as cnt FROM pg_class WHERE relrowsecurity = true");
+        checks.push({ id: 'rls', cat: 'Access Control', label: 'Row Level Security', status: parseInt(rls.rows[0]?.cnt) > 0 ? 'pass' : 'warn', standard: 'GDPR', score: parseInt(rls.rows[0]?.cnt) > 0 ? 100 : 0 });
+        res.json(checks);
+    } catch (e) { res.json([]); }
+});
+
+// Audit events endpoint
+app.get('/api/security/audit-events', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        // Try to read from audit_log if it exists, or fallback to pg_stat_activity
+        const { rows } = await pool.query(`
+            SELECT pid, usename as user, application_name as app,
+                   query as action, client_addr as source,
+                   query_start as ts, state
+            FROM pg_stat_activity
+            WHERE query != '' AND pid != pg_backend_pid()
+            ORDER BY query_start DESC LIMIT 30
+        `);
+        res.json(rows);
+    } catch (e) { res.json([]); }
+});
+
 app.get('/api/security/superuser-activity', authenticate, requireScreen('security'), cached('sec:superuser', 15_000), async (req, res) => {
     try {
         const _p = await reqPool(req);
@@ -4151,6 +4259,193 @@ app.post('/api/retention/cleanup', authenticate, async (_req, res) => {
 
 // Note: PUT /api/retention/policy is handled by retentionRoutes middleware
 // This endpoint persists to the retention_policies table in the database
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUERY OPTIMIZER ENDPOINTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+app.get('/api/optimizer/indexes', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT schemaname, tablename, indexname,
+                   pg_size_pretty(pg_relation_size(indexrelid)) as size,
+                   idx_scan, idx_tup_read, idx_tup_fetch
+            FROM pg_stat_user_indexes
+            JOIN pg_index ON pg_stat_user_indexes.indexrelid = pg_index.indexrelid
+            ORDER BY idx_scan ASC LIMIT 50
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/indexes] ${e.message}`);
+        res.json([]);
+    }
+});
+
+app.get('/api/optimizer/table-stats', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT schemaname, relname as table_name,
+                   n_live_tup, n_dead_tup,
+                   seq_scan, seq_tup_read, idx_scan, idx_tup_fetch,
+                   n_tup_ins, n_tup_upd, n_tup_del,
+                   last_vacuum, last_autovacuum, last_analyze, last_autoanalyze,
+                   pg_size_pretty(pg_total_relation_size(relid)) as total_size
+            FROM pg_stat_user_tables
+            ORDER BY n_dead_tup DESC LIMIT 50
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/table-stats] ${e.message}`);
+        res.json([]);
+    }
+});
+
+app.get('/api/optimizer/slow-queries', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        // Check if pg_stat_statements extension exists
+        const ext = await pool.query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace=n.oid WHERE e.extname='pg_stat_statements'");
+        if (ext.rowCount === 0) {
+            return res.json([]);
+        }
+        const schema = ext.rows[0].nspname;
+        const { rows } = await pool.query(`
+            SELECT queryid, query, calls, total_exec_time, mean_exec_time,
+                   min_exec_time, max_exec_time, stddev_exec_time,
+                   rows, shared_blks_hit, shared_blks_read
+            FROM "${schema}".pg_stat_statements
+            WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
+            ORDER BY mean_exec_time DESC LIMIT 30
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/slow-queries] ${e.message}`);
+        res.json([]);
+    }
+});
+
+app.get('/api/optimizer/locks', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT l.pid, l.locktype, l.mode, l.granted, l.waitstart,
+                   a.usename, a.application_name, a.client_addr,
+                   a.query, a.state, a.wait_event_type, a.wait_event,
+                   l.relation::regclass as table_name
+            FROM pg_locks l
+            JOIN pg_stat_activity a ON l.pid = a.pid
+            WHERE NOT l.granted OR l.mode LIKE '%Exclusive%'
+            ORDER BY l.waitstart NULLS LAST LIMIT 30
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/locks] ${e.message}`);
+        res.json([]);
+    }
+});
+
+app.get('/api/optimizer/maintenance', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT schemaname, relname as table_name,
+                   n_dead_tup, n_live_tup,
+                   CASE WHEN n_live_tup > 0
+                        THEN round(100.0 * n_dead_tup / n_live_tup, 1)
+                        ELSE 0 END as bloat_pct,
+                   last_vacuum, last_autovacuum,
+                   pg_size_pretty(pg_total_relation_size(relid)) as size
+            FROM pg_stat_user_tables
+            WHERE n_dead_tup > 0
+            ORDER BY n_dead_tup DESC LIMIT 30
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/maintenance] ${e.message}`);
+        res.json([]);
+    }
+});
+
+app.get('/api/optimizer/config', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT name, setting, unit, category, short_desc,
+                   min_val, max_val, boot_val, reset_val, source
+            FROM pg_settings
+            WHERE category IN (
+                'Autovacuum', 'Resource Usage / Memory',
+                'Write-Ahead Log', 'Query Tuning / Planner Cost Constants',
+                'Query Tuning / Planner Method Configuration',
+                'Resource Usage / Disk', 'Connections and Authentication / Connection Settings'
+            )
+            ORDER BY category, name
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/config] ${e.message}`);
+        res.json([]);
+    }
+});
+
+app.get('/api/optimizer/service-attribution', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        const { rows } = await pool.query(`
+            SELECT
+                application_name,
+                count(*) as call_count,
+                round(avg(total_time)::numeric, 2) as avg_time,
+                round(max(total_time)::numeric, 2) as max_time,
+                round(sum(total_time)::numeric, 2) as total_time,
+                round(avg(total_time) * count(*)::numeric, 2) as total_time_ms
+            FROM pg_stat_activity
+            WHERE state = 'active' OR state = 'idle in transaction'
+            GROUP BY application_name
+            ORDER BY total_time_ms DESC LIMIT 20
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/service-attribution] ${e.message}`);
+        res.json([]);
+    }
+});
+
+app.get('/api/optimizer/param-issues', authenticate, async (req, res) => {
+    try {
+        const pool = await reqPool(req);
+        // Check if pg_stat_statements extension exists
+        const ext = await pool.query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace=n.oid WHERE e.extname='pg_stat_statements'");
+        if (ext.rowCount === 0) {
+            return res.json([]);
+        }
+        const schema = ext.rows[0].nspname;
+        const { rows } = await pool.query(`
+            SELECT
+                queryid,
+                query,
+                calls,
+                mean_exec_time,
+                CASE
+                    WHEN query LIKE '%\$%' THEN 'parameterized'
+                    WHEN calls > 10 AND mean_exec_time > 100 THEN 'CRITICAL'
+                    WHEN calls > 5 THEN 'HIGH'
+                    ELSE 'MEDIUM'
+                END as risk
+            FROM "${schema}".pg_stat_statements
+            WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
+            AND query NOT LIKE 'SELECT%pg_stat_statements%'
+            AND calls > 2
+            ORDER BY calls DESC LIMIT 30
+        `);
+        res.json(rows);
+    } catch (e) {
+        log('ERROR', `[/api/optimizer/param-issues] ${e.message}`);
+        res.json([]);
+    }
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WEBSOCKET  (local / traditional server only — not supported on Vercel)
