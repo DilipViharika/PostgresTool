@@ -39,103 +39,15 @@ const METRICS = {
 
 const CATEGORIES = ['performance', 'security', 'reliability', 'resources', 'maintenance', 'network'];
 
-const TEAM_MEMBERS = [
-  { id: 'u1', name: 'jane.doe',   avatar: 'JD', role: 'SRE Lead',     online: true  },
-  { id: 'u2', name: 'john.smith', avatar: 'JS', role: 'Backend Eng',  online: true  },
-  { id: 'u3', name: 'alex.kim',   avatar: 'AK', role: 'Platform Eng', online: false },
-  { id: 'u4', name: 'sam.wilson', avatar: 'SW', role: 'Security Eng', online: true  },
-  { id: 'u5', name: 'riley.chen', avatar: 'RC', role: 'Incident Mgr', online: false },
-];
+const TEAM_MEMBERS = [];
 
-const MOCK_ALERTS = [
-  {
-    id: 'alr-001', severity: 'critical', category: 'security',
-    message: 'Unauthorized root access attempt detected on prod-auth-02',
-    timestamp: Date.now() - 120000, acknowledged: false,
-    source: '192.168.1.105', rule: 'Security Breach Detector', tags: ['auth', 'prod'], count: 7,
-    comments: [
-      { id: 'c1', author: 'jane.doe', avatar: 'JD', text: 'Reviewing auth logs now — looks like brute force from Tor exit node', timestamp: Date.now() - 90000 },
-      { id: 'c2', author: 'sam.wilson', avatar: 'SW', text: 'IP blocked via firewall rule #4421. @john.smith can you check if any sessions were established?', timestamp: Date.now() - 60000, mentions: ['john.smith'] },
-    ],
-    pendingApproval: { requestedBy: 'john.smith', requestedAt: Date.now() - 30000 },
-    impactRadius: { users: 12400, services: ['auth-service', 'api-gateway', 'user-portal'], severity_score: 9.2 },
-  },
-  {
-    id: 'alr-002', severity: 'critical', category: 'reliability',
-    message: 'Database connection pool exhaustion — 0/200 connections free',
-    timestamp: Date.now() - 300000, acknowledged: false,
-    source: 'db-primary-01', rule: 'DB Pool Monitor', tags: ['database', 'prod'], count: 1,
-    comments: [],
-    impactRadius: { users: 84000, services: ['all-services'], severity_score: 9.8 },
-  },
-  {
-    id: 'alr-003', severity: 'warning', category: 'performance',
-    message: 'High memory usage (87%) sustained on node-04 for >15m',
-    timestamp: Date.now() - 2700000, acknowledged: false,
-    source: 'node-04', rule: 'Memory High', tags: ['memory', 'k8s'], count: 3,
-    comments: [
-      { id: 'c3', author: 'alex.kim', avatar: 'AK', text: 'Scaling up the node pool. Should resolve in ~10m', timestamp: Date.now() - 1800000 },
-    ],
-    impactRadius: { users: 3200, services: ['worker-service', 'batch-processor'], severity_score: 5.4 },
-  },
-  {
-    id: 'alr-004', severity: 'warning', category: 'resources',
-    message: 'Disk utilization exceeding 78% on /var/log partition',
-    timestamp: Date.now() - 5400000, acknowledged: false,
-    source: 'log-collector', rule: 'Disk Space Low', tags: ['disk', 'logs'], count: 2,
-    comments: [],
-    impactRadius: { users: 0, services: ['log-collector'], severity_score: 3.1 },
-  },
-  {
-    id: 'alr-005', severity: 'info', category: 'maintenance',
-    message: 'Scheduled backup completed — 2.4 TB archived successfully',
-    timestamp: Date.now() - 7200000, acknowledged: true,
-    source: 'backup-service', rule: 'Backup Status', tags: ['backup'], acknowledged_by: 'System', count: 1,
-    comments: [],
-    impactRadius: { users: 0, services: ['backup-service'], severity_score: 0.5 },
-  },
-  {
-    id: 'alr-006', severity: 'warning', category: 'network',
-    message: 'Packet loss 3.2% detected between us-east and eu-west',
-    timestamp: Date.now() - 900000, acknowledged: false,
-    source: 'network-probe', rule: 'Packet Loss', tags: ['network', 'cross-region'], count: 5,
-    comments: [],
-    impactRadius: { users: 28000, services: ['cdn', 'api-gateway', 'asset-service'], severity_score: 6.7 },
-  },
-  {
-    id: 'alr-007', severity: 'info', category: 'performance',
-    message: 'API p99 latency elevated to 412ms — within acceptable range',
-    timestamp: Date.now() - 10800000, acknowledged: true,
-    source: 'api-gateway', rule: 'Latency Monitor', tags: ['api'], acknowledged_by: 'jane.doe', count: 1,
-    comments: [],
-    impactRadius: { users: 5100, services: ['api-gateway'], severity_score: 2.3 },
-  },
-];
+const MOCK_ALERTS = [];
 
-const MOCK_RULES = [
-  { id: 'rule-001', name: 'Security Breach Detector', metric: 'error_rate',   condition: 'gt', threshold: 5,   severity: 'critical', active: true,  category: 'security',    duration: 1,  channels: { email: true, slack: true, pagerduty: true  }, triggerCount: 12, lastTriggered: Date.now() - 120000 },
-  { id: 'rule-002', name: 'High CPU Load',            metric: 'cpu_usage',    condition: 'gt', threshold: 90,  severity: 'critical', active: true,  category: 'performance', duration: 5,  channels: { email: true, slack: true, pagerduty: false }, triggerCount: 8,  lastTriggered: Date.now() - 3600000 },
-  { id: 'rule-003', name: 'Memory High',              metric: 'memory_usage', condition: 'gt', threshold: 85,  severity: 'warning',  active: true,  category: 'performance', duration: 15, channels: { email: true, slack: false, pagerduty: false }, triggerCount: 3,  lastTriggered: Date.now() - 2700000 },
-  { id: 'rule-004', name: 'Disk Space Low',           metric: 'disk_free',    condition: 'lt', threshold: 20,  severity: 'warning',  active: true,  category: 'resources',   duration: 10, channels: { email: true, slack: false, pagerduty: false }, triggerCount: 6,  lastTriggered: Date.now() - 86400000 },
-  { id: 'rule-005', name: 'API Latency Spike',        metric: 'api_latency',  condition: 'gt', threshold: 500, severity: 'warning',  active: false, category: 'performance', duration: 2,  channels: { email: false, slack: true, pagerduty: false }, triggerCount: 21, lastTriggered: Date.now() - 172800000 },
-  { id: 'rule-006', name: 'DB Pool Monitor',          metric: 'throughput',   condition: 'lt', threshold: 10,  severity: 'critical', active: true,  category: 'reliability', duration: 3,  channels: { email: true, slack: true, pagerduty: true  }, triggerCount: 2,  lastTriggered: Date.now() - 300000 },
-  { id: 'rule-007', name: 'Packet Loss',              metric: 'network_in',   condition: 'lt', threshold: 100, severity: 'warning',  active: true,  category: 'network',     duration: 5,  channels: { email: false, slack: true, pagerduty: false }, triggerCount: 5,  lastTriggered: Date.now() - 900000 },
-];
+const MOCK_RULES = [];
 
-const MOCK_HISTORY = [
-  { id: 'hist-001', message: 'High CPU Load — prod-web-cluster sustained 94% for 12m',  timestamp: Date.now() - 86400000,  severity: 'critical', duration: '45m', rule: 'High CPU Load',   resolvedBy: 'k8s-autoscaler' },
-  { id: 'hist-002', message: 'API Latency Spike — gateway p99 >500ms',                  timestamp: Date.now() - 172800000, severity: 'warning',  duration: '8m',  rule: 'API Latency Spike', resolvedBy: 'john.smith' },
-  { id: 'hist-003', message: 'Memory High — node-02 at 89%',                            timestamp: Date.now() - 259200000, severity: 'warning',  duration: '22m', rule: 'Memory High',       resolvedBy: 'auto-restart' },
-  { id: 'hist-004', message: 'SSL Certificate expiring in 7 days on api.example.com',   timestamp: Date.now() - 345600000, severity: 'info',     duration: '1d',  rule: 'Cert Expiry',       resolvedBy: 'cert-bot' },
-  { id: 'hist-005', message: 'Unauthorized login attempt from 185.220.101.x (Tor exit)',timestamp: Date.now() - 432000000, severity: 'critical', duration: '2m',  rule: 'Security Breach',   resolvedBy: 'firewall-auto-block' },
-  { id: 'hist-006', message: 'Disk Space Low — /var/log at 82%',                        timestamp: Date.now() - 518400000, severity: 'warning',  duration: '35m', rule: 'Disk Space Low',    resolvedBy: 'log-rotation' },
-];
+const MOCK_HISTORY = [];
 
-const MOCK_SUPPRESSION = [
-  { id: 'sw-001', name: 'Weekly DB Maintenance', schedule: 'Sun 02:00–04:00 UTC', active: true,  nextRun: 'Sun Mar 2, 02:00', rules: ['DB Pool Monitor', 'Disk Space Low'], suppressCount: 14 },
-  { id: 'sw-002', name: 'Deployment Window',     schedule: 'Wed 18:00–20:00 UTC', active: true,  nextRun: 'Wed Feb 26, 18:00', rules: ['High CPU Load', 'API Latency Spike', 'Memory High'], suppressCount: 38 },
-  { id: 'sw-003', name: 'Monthly Backup',        schedule: '1st of month 03:00',  active: false, nextRun: 'Mar 1, 03:00', rules: ['Backup Status'], suppressCount: 6 },
-];
+const MOCK_SUPPRESSION = [];
 
 const CHANNEL_STATUS = [
   { id: 'ch-001', name: 'PagerDuty',      icon: '⚡', status: 'operational', deliveryRate: 99.8, lastAlert: Date.now() - 120000,  latency: 320,  quota: null },
@@ -370,7 +282,7 @@ const VIGILDashboard = () => {
   };
 
   const approveAck = (id) => {
-    setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true, acknowledged_by: 'jane.doe (approved)' } : a));
+    setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true, acknowledged_by: 'current user' } : a));
     setApprovalState(prev => { const n = {...prev}; delete n[id]; return n; });
     showToast('Acknowledgment approved and applied');
   };

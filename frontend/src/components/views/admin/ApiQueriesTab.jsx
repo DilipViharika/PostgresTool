@@ -728,7 +728,7 @@ const ApiQueriesTab = () => {
                     { name: 'Redis: Session Lookup',  duration: 6,           type: 'cache', meta: `GET user:session:1024 → ${isErr ? 'MISS' : 'HIT'} · TTL 3600s` },
                     { name: 'PG: SELECT users',       duration: avg * 0.55,  type: 'db',    meta: 'SELECT id, email, role FROM users WHERE id = $1 · Read Replica' },
                     isErr
-                        ? { name: 'PG: UPDATE users', duration: 118, type: 'db', meta: 'UPDATE users SET last_login = NOW()', error: 'Lock Wait Timeout (InnoDB)' }
+                        ? { name: 'PG: Query', duration: 118, type: 'db', meta: '', error: '' }
                         : { name: 'Serialize + Gzip', duration: 14,         type: 'app',   meta: `JSON.stringify · gzip → ${(Math.random()*3+1).toFixed(1)}KB` },
                 ];
 
@@ -736,7 +736,7 @@ const ApiQueriesTab = () => {
                     { time: '14:20:01.102', level: 'INFO',  msg: `→ ${method} ${'/api/v1/'+['users','orders','inventory','auth','analytics'][i%5]}/${i+100}` },
                     { time: '14:20:01.106', level: 'INFO',  msg: 'Auth: JWT verified · user_id=1024 · role=user' },
                     isErr
-                        ? { time: '14:20:01.224', level: 'ERROR', msg: 'db.query() error: Lock Wait Timeout after 118ms on table users' }
+                        ? { time: '14:20:01.224', level: 'ERROR', msg: '' }
                         : { time: '14:20:01.224', level: 'DEBUG', msg: 'Cache HIT: user:session:1024 · skipped DB read' },
                     { time: '14:20:01.240', level: isErr ? 'ERROR' : 'INFO', msg: `← ${isErr?500:200} · ${fmtMs(avg)} · gzip 2.1KB` },
                 ];
@@ -786,7 +786,7 @@ const ApiQueriesTab = () => {
                         response: { status: isErr?500:200, success: !isErr, data: { processed_at: new Date().toISOString() }, meta: { took_ms: avg } },
                     },
                     ai_insight: isErr
-                        ? 'High-confidence anomaly detected. Lock Wait Timeout on `users` table (span #5) correlates with elevated WAF activity — possible hot-row contention from a concurrent UPDATE storm, or a coordinated slow-loris variant. Recommend: advisory locks + exponential backoff.'
+                        ? ''
                         : avg > 400
                             ? `P99 latency (${fmtMs(avg*2.1)}) is dominated by the PG SELECT span. EXPLAIN ANALYZE reveals a sequential scan on ${Math.floor(Math.random()*5000+1000)} rows. Immediate fix: partial index on user_id WHERE status = \'active\'.`
                             : `Trace is healthy. Cache HIT rate 96.2% · DB P99 under SLO (< 200ms) · No WAF events in last 24h. Minor observation: Serialize+Gzip span occasionally spikes on payloads >50KB — consider streaming JSON.`,

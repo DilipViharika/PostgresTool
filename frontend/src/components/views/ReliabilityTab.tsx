@@ -390,43 +390,15 @@ const genSloBurnRate = () => Array.from({ length: 30 }, (_, i) => {
 });
 
 /* MOCK DATA */
-const MOCK_ALERTS: Alert[] = [
-    { id: 1, severity: 'critical', category: 'connection', title: 'Connection pool exhausted', message: 'Active connections reached 98/100 max limit. New connections are being rejected.', created_at: new Date(Date.now() - 180000).toISOString(), acknowledged: false, source: 'pg_stat_activity', metric_value: '98/100', threshold: '> 90', runbook: 'https://runbooks.internal/connection-pool-exhausted', rootCauseGroup: 'connection-saturation', autoResolved: false },
-    { id: 2, severity: 'critical', category: 'replication', title: 'Replication lag exceeding threshold', message: 'Replica lag is 45MB behind primary, exceeding 10MB threshold.', created_at: new Date(Date.now() - 600000).toISOString(), acknowledged: false, source: 'pg_stat_replication', metric_value: '45 MB', threshold: '> 10 MB', runbook: 'https://runbooks.internal/replication-lag', rootCauseGroup: 'replication-health', autoResolved: false },
-    { id: 3, severity: 'warning', category: 'disk', title: 'Disk usage above 80%', message: 'Storage volume /pgdata is at 84% capacity.', created_at: new Date(Date.now() - 1800000).toISOString(), acknowledged: false, source: 'system_monitor', metric_value: '84%', threshold: '> 80%', runbook: 'https://runbooks.internal/disk-cleanup', rootCauseGroup: 'storage-pressure', autoResolved: false },
-    { id: 4, severity: 'warning', category: 'vacuum', title: 'Autovacuum long-running on audit_events', message: 'Autovacuum has been running for 47 minutes on audit_events (12.8M dead tuples).', created_at: new Date(Date.now() - 2820000).toISOString(), acknowledged: true, source: 'pg_stat_activity', metric_value: '47m', threshold: '> 30m', runbook: 'https://runbooks.internal/vacuum-stuck', rootCauseGroup: 'vacuum-bloat', autoResolved: false },
-    { id: 5, severity: 'warning', category: 'query', title: 'Slow query spike detected', message: 'Average query time jumped from 12ms to 340ms in the last 5 minutes.', created_at: new Date(Date.now() - 3600000).toISOString(), acknowledged: false, source: 'pg_stat_statements', metric_value: '340ms avg', threshold: '> 100ms', runbook: 'https://runbooks.internal/slow-queries', rootCauseGroup: 'query-perf', autoResolved: false },
-    { id: 6, severity: 'warning', category: 'lock', title: 'Lock contention on user_sessions', message: '14 transactions waiting for locks on user_sessions table.', created_at: new Date(Date.now() - 5400000).toISOString(), acknowledged: true, source: 'pg_locks', metric_value: '14 waiting', threshold: '> 10', runbook: 'https://runbooks.internal/lock-contention', rootCauseGroup: 'connection-saturation', autoResolved: false },
-    { id: 7, severity: 'info', category: 'cpu', title: 'CPU usage elevated', message: 'System CPU at 72% — elevated but within acceptable range.', created_at: new Date(Date.now() - 7200000).toISOString(), acknowledged: true, source: 'system_monitor', metric_value: '72%', threshold: '> 70%', runbook: undefined, rootCauseGroup: 'resource-pressure', autoResolved: true },
-    { id: 8, severity: 'info', category: 'memory', title: 'Shared buffers cache miss rate increased', message: 'Cache hit ratio dropped to 97.2% from 99.8% in the last hour.', created_at: new Date(Date.now() - 10800000).toISOString(), acknowledged: true, source: 'pg_stat_bgwriter', metric_value: '97.2%', threshold: '< 98%', runbook: undefined, rootCauseGroup: 'resource-pressure', autoResolved: true },
-    { id: 9, severity: 'info', category: 'connection', title: 'New connection burst detected', message: '23 new connections opened within 10 seconds from app-server-03.', created_at: new Date(Date.now() - 14400000).toISOString(), acknowledged: true, source: 'pg_stat_activity', metric_value: '23 conns', threshold: '> 15/10s', runbook: 'https://runbooks.internal/connection-burst', rootCauseGroup: 'connection-saturation', autoResolved: true },
-];
+const MOCK_ALERTS: Alert[] = [];
 
-const MOCK_INCIDENTS: Incident[] = [
-    { id: 'INC-001', title: 'Database failover triggered', severity: 'critical', started: '2026-02-07T14:23:00Z', resolved: '2026-02-07T14:41:00Z', duration: '18m', impact: 'Full service interruption — writes unavailable for 18 minutes', root_cause: 'Primary node OOM kill due to runaway analytical query', rca_tag: 'resource-exhaustion', runbook: 'https://runbooks.internal/failover-playbook' },
-    { id: 'INC-002', title: 'Replication lag spike', severity: 'warning', started: '2026-02-05T08:10:00Z', resolved: '2026-02-05T08:34:00Z', duration: '24m', impact: 'Read replicas serving stale data — API latency +200ms', root_cause: 'VACUUM FULL on 14GB table blocking WAL sender', rca_tag: 'vacuum-bloat', runbook: 'https://runbooks.internal/replication-lag' },
-    { id: 'INC-003', title: 'Connection pool saturation', severity: 'critical', started: '2026-02-01T22:05:00Z', resolved: '2026-02-01T22:18:00Z', duration: '13m', impact: 'New connections rejected — 503 errors for 13 minutes', root_cause: 'Leaked connections from microservice deployment v2.4.1', rca_tag: 'connection-leak', runbook: 'https://runbooks.internal/connection-pool-exhausted' },
-    { id: 'INC-004', title: 'High lock contention', severity: 'warning', started: '2026-01-28T11:30:00Z', resolved: '2026-01-28T11:42:00Z', duration: '12m', impact: 'Write latency +5x on orders table', root_cause: 'Concurrent schema migration and bulk insert conflict', rca_tag: 'lock-contention', runbook: 'https://runbooks.internal/lock-contention' },
-];
+const MOCK_INCIDENTS: Incident[] = [];
 
-const MOCK_ONCALL: OnCallMember[] = [
-    { name: 'Maya Okonkwo', role: 'Primary', avatar: 'MO', status: 'active', since: '08:00', until: '20:00', tz: 'UTC', contact: '@maya-o' },
-    { name: 'Daniel Reyes', role: 'Secondary', avatar: 'DR', status: 'standby', since: '08:00', until: '20:00', tz: 'UTC', contact: '@d-reyes' },
-    { name: 'Priya Khatri', role: 'Escalation', avatar: 'PK', status: 'off', since: '20:00', until: '08:00', tz: 'UTC', contact: '@pkhatri' },
-];
+const MOCK_ONCALL: OnCallMember[] = [];
 
-const MOCK_SLOs: SLO[] = [
-    { name: 'API Availability', target: 99.9, current: 99.92, budgetRemaining: 72, window: '30d', burnRate1h: 0.8, burnRate6h: 1.2, alert: false },
-    { name: 'Query P99 Latency', target: 99.5, current: 99.31, budgetRemaining: 28, window: '30d', burnRate1h: 3.4, burnRate6h: 2.1, alert: true },
-    { name: 'Write Durability', target: 99.99, current: 99.99, budgetRemaining: 91, window: '30d', burnRate1h: 0.2, burnRate6h: 0.4, alert: false },
-    { name: 'Replication Freshness', target: 99.5, current: 99.41, budgetRemaining: 44, window: '30d', burnRate1h: 1.8, burnRate6h: 2.8, alert: true },
-];
+const MOCK_SLOs: SLO[] = [];
 
-const MOCK_FREEZE_WINDOWS: FreezeWindow[] = [
-    { id: 1, label: 'End-of-Month Freeze', start: '2026-02-28T00:00:00Z', end: '2026-03-01T06:00:00Z', reason: 'Month-end reporting — no schema changes', active: false, color: THEME.info },
-    { id: 2, label: 'Peak Traffic Window', start: '2026-02-24T18:00:00Z', end: '2026-02-24T23:59:00Z', reason: 'High user traffic expected — production freeze', active: true, color: THEME.danger },
-    { id: 3, label: 'Release Blackout', start: '2026-03-05T08:00:00Z', end: '2026-03-05T18:00:00Z', reason: 'Major v3.0 release — no infra changes during deploy', active: false, color: THEME.warning },
-];
+const MOCK_FREEZE_WINDOWS: FreezeWindow[] = [];
 
 const RCA_TAGS = [
     { tag: 'resource-exhaustion', color: THEME.danger },

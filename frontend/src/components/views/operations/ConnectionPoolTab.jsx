@@ -548,11 +548,7 @@ const LeakDetector = () => {
             }
         } catch {
             // Use sample data when endpoint unavailable
-            setSuspects([
-                { pid: 14821, usename: 'app_user',  state: 'idle',                 duration_sec: 5400, query: 'SELECT 1',                  application_name: 'node-pg-pool' },
-                { pid: 14890, usename: 'analytics', state: 'idle in transaction',  duration_sec: 7200, query: 'BEGIN',                      application_name: 'analytics-svc' },
-                { pid: 15001, usename: 'app_user',  state: 'idle',                 duration_sec: 3600, query: 'SELECT id FROM users LIMIT 1', application_name: 'node-pg-pool' },
-            ]);
+            setSuspects([]);
         } finally {
             setLoading(false);
         }

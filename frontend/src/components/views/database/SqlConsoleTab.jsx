@@ -197,21 +197,8 @@ const SNIPPETS = [
     { id:'s8', name:'LATERAL Join', tag:'advanced', sql:`SELECT t.*, agg.*\nFROM :table t\nCROSS JOIN LATERAL (\n  SELECT COUNT(*) AS related_count,\n    MAX(:col) AS max_val\n  FROM :related_table r\n  WHERE r.:fk_col = t.id\n) agg\nORDER BY agg.related_count DESC\nLIMIT :n;` },
 ];
 
-const SCHEMA_MOCK = [
-    { name:'public', tables:[
-            { name:'users', cols:[{n:'id',t:'uuid'},{n:'email',t:'text'},{n:'name',t:'text'},{n:'created_at',t:'timestamptz'},{n:'role',t:'text'},{n:'status',t:'text'},{n:'metadata',t:'jsonb'}] },
-            { name:'orders', cols:[{n:'id',t:'bigint'},{n:'user_id',t:'uuid'},{n:'total',t:'numeric'},{n:'status',t:'text'},{n:'created_at',t:'timestamptz'},{n:'updated_at',t:'timestamptz'}] },
-            { name:'products', cols:[{n:'id',t:'bigint'},{n:'name',t:'text'},{n:'price',t:'numeric'},{n:'stock',t:'int'},{n:'category_id',t:'int'},{n:'description',t:'text'}] },
-            { name:'events', cols:[{n:'id',t:'bigint'},{n:'type',t:'text'},{n:'payload',t:'jsonb'},{n:'created_at',t:'timestamptz'},{n:'user_id',t:'uuid'},{n:'session_id',t:'text'}] },
-        ]},
-    { name:'analytics', tables:[
-            { name:'metrics', cols:[{n:'id',t:'bigint'},{n:'name',t:'text'},{n:'value',t:'float8'},{n:'ts',t:'timestamptz'},{n:'tags',t:'jsonb'}] },
-            { name:'sessions', cols:[{n:'id',t:'text'},{n:'user_id',t:'uuid'},{n:'started_at',t:'timestamptz'},{n:'ended_at',t:'timestamptz'},{n:'page_count',t:'int'}] },
-        ]},
-    { name:'audit', tables:[
-            { name:'changelog', cols:[{n:'id',t:'bigint'},{n:'table_name',t:'text'},{n:'operation',t:'text'},{n:'old_val',t:'jsonb'},{n:'new_val',t:'jsonb'},{n:'changed_by',t:'text'},{n:'changed_at',t:'timestamptz'}] },
-        ]},
-];
+const SCHEMA_MOCK = [];
+// Empty state: "Schema browser will populate when connected to a database."
 
 const TYPE_COLOR_MAP = {
     uuid: THEME.secondary, text: THEME.textDim, varchar: THEME.textDim,

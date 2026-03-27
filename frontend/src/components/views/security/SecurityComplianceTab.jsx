@@ -265,51 +265,20 @@ const SecStyles = () => (
 /* ═══════════════════════════════════════════════════════════════════════════
    DATA
    ═══════════════════════════════════════════════════════════════════════════ */
-const THREAT_LOGS = [
-    { id: 1, type: 'SQL Injection', source: '192.168.1.105', user: 'app_service', severity: 'critical', time: '10:42 AM', mitre: 'T1190', query: "SELECT * FROM users WHERE id='1' OR '1'='1'", geo: 'US', blocked: true },
-    { id: 2, type: 'Privilege Escalation', source: 'internal', user: 'bob_dba', severity: 'high', time: '09:15 AM', mitre: 'T1078', query: "GRANT SUPERUSER TO bob_dba", geo: 'INT', blocked: false },
-    { id: 3, type: 'Anomalous Data Export', source: '10.0.5.22', user: 'analytics', severity: 'medium', time: '08:30 AM', mitre: 'T1048', query: "COPY users TO STDOUT (FORMAT CSV)", geo: 'DE', blocked: false },
-    { id: 4, type: 'Brute Force Auth', source: '45.33.22.11', user: 'unknown', severity: 'medium', time: '03:22 AM', mitre: 'T1110', query: "AUTH FAIL (50 attempts/min)", geo: 'RU', blocked: true },
-    { id: 5, type: 'Schema Enumeration', source: '10.0.2.14', user: 'read_only', severity: 'low', time: '01:05 AM', mitre: 'T1082', query: "SELECT table_name FROM information_schema.tables", geo: 'US', blocked: false },
-];
+const THREAT_LOGS = [];
 
-const COMPLIANCE_CHECKS = [
-    { id: 'c1', cat: 'Encryption', label: 'Data at Rest Encryption', status: 'pass', standard: 'SOC2', score: 100 },
-    { id: 'c2', cat: 'Encryption', label: 'TLS 1.3 In Transit', status: 'pass', standard: 'HIPAA', score: 100 },
-    { id: 'c3', cat: 'Access Control', label: 'Row Level Security', status: 'warn', standard: 'GDPR', score: 60 },
-    { id: 'c4', cat: 'Logging', label: 'Audit Log Retention (90d)', status: 'pass', standard: 'SOC2', score: 100 },
-    { id: 'c5', cat: 'Data Privacy', label: 'PII Retention Policy', status: 'fail', standard: 'GDPR', score: 0 },
-    { id: 'c6', cat: 'Network', label: 'IP Allowlist Enforced', status: 'pass', standard: 'ISO27001', score: 100 },
-    { id: 'c7', cat: 'Access Control', label: 'MFA on Privileged Roles', status: 'warn', standard: 'SOC2', score: 50 },
-    { id: 'c8', cat: 'Patching', label: 'PostgreSQL Latest Patch', status: 'pass', standard: 'CIS', score: 100 },
-];
+const COMPLIANCE_CHECKS = [];
+// Empty state: "Compliance checks will load when security policies are configured."
 
-const ENCRYPTION_KEYS = [
-    { name: 'Master Key (KMS)', algo: 'AES-256-GCM', rotated: '14 days ago', daysLeft: 351, total: 365, status: 'active' },
-    { name: 'App Signing Key', algo: 'RSA-4096', rotated: '360 days ago', daysLeft: 5, total: 365, status: 'expiring' },
-    { name: 'Backup Encryption Key', algo: 'AES-256-CBC', rotated: '45 days ago', daysLeft: 320, total: 365, status: 'active' },
-    { name: 'JWT Secret', algo: 'HS512', rotated: '7 days ago', daysLeft: 23, total: 30, status: 'warning' },
-];
+const ENCRYPTION_KEYS = [];
+// Empty state: "Encryption key inventory will load from your security configuration."
 
-const PII_ACCESS = [
-    { table: 'customers', col: 'credit_card', user: 'payment_svc', hits: 1450, trend: 12, risk: 'high' },
-    { table: 'users', col: 'ssn_hash', user: 'admin', hits: 5, trend: 0, risk: 'critical' },
-    { table: 'patients', col: 'diagnosis', user: 'dr_smith', hits: 24, trend: -5, risk: 'medium' },
-    { table: 'employees', col: 'salary', user: 'hr_api', hits: 88, trend: 3, risk: 'medium' },
-];
+const PII_ACCESS = [];
+// Empty state: "PII access logs will appear from audit trail data."
 
-const GEO_THREATS = [
-    { country: 'Russia', code: 'RU', count: 142, pct: 38, color: '#ff465a' },
-    { country: 'China', code: 'CN', count: 98, pct: 26, color: '#ff8c42' },
-    { country: 'USA', code: 'US', count: 44, pct: 12, color: '#f5c518' },
-    { country: 'Germany', code: 'DE', count: 31, pct: 8, color: '#63d7ff' },
-    { country: 'Other', code: '—', count: 60, pct: 16, color: '#888' },
-];
+const GEO_THREATS = [];
 
-const THREAT_TIMELINE = Array.from({ length: 24 }, (_, i) => ({
-    h: `${i}:00`, threats: Math.floor(Math.random() * 18 + 2),
-    blocked: Math.floor(Math.random() * 10 + 1),
-}));
+const THREAT_TIMELINE = [];
 
 const RADAR_DATA = [
     { axis: 'Access Ctrl', val: 78 },
@@ -320,13 +289,7 @@ const RADAR_DATA = [
     { axis: 'Data Privacy', val: 55 },
 ];
 
-const AUDIT_EVENTS = [
-    { ts: '10:44 AM', user: 'admin', action: 'Role Modified', target: 'analyst_role', severity: 'high' },
-    { ts: '10:12 AM', user: 'deploy_bot', action: 'Schema Migration', target: 'public.orders', severity: 'info' },
-    { ts: '09:55 AM', user: 'bob_dba', action: 'Grant Attempted', target: 'SUPERUSER', severity: 'critical' },
-    { ts: '09:20 AM', user: 'backup_svc', action: 'Backup Created', target: 'pg_dump v16', severity: 'info' },
-    { ts: '08:01 AM', user: 'app_service', action: 'Failed Login x12', target: 'auth endpoint', severity: 'medium' },
-];
+const AUDIT_EVENTS = [];
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HELPERS
@@ -725,14 +688,8 @@ const AuditTimeline = () => (
 /* ═══════════════════════════════════════════════════════════════════════════
    ★ NEW HIGH: SUPERUSER ACTIVITY MONITOR
    ═══════════════════════════════════════════════════════════════════════════ */
-const SUPERUSER_SAMPLE = [
-    { pid: 13421, user: 'postgres',    db: 'prod_db',   query: 'ALTER TABLE orders ADD COLUMN archived BOOL', duration_sec: 0.12, state: 'idle',              app: 'psql',         risk: 'high',   ts: '2 min ago' },
-    { pid: 13089, user: 'dba_admin',   db: 'analytics', query: 'COPY users TO \'/tmp/export.csv\' CSV HEADER', duration_sec: 3.45, state: 'active',            app: 'psql',         risk: 'high',   ts: '5 min ago' },
-    { pid: 12774, user: 'superuser1',  db: 'prod_db',   query: 'SELECT * FROM pg_shadow',                     duration_sec: 0.03, state: 'idle',              app: 'DataGrip',     risk: 'medium', ts: '11 min ago' },
-    { pid: 11342, user: 'postgres',    db: 'template1', query: 'CREATE ROLE new_readonly LOGIN',               duration_sec: 0.01, state: 'idle',              app: 'pgAdmin 4',    risk: 'medium', ts: '22 min ago' },
-    { pid: 10901, user: 'dba_admin',   db: 'prod_db',   query: 'VACUUM FULL orders',                          duration_sec: 47.2, state: 'idle in transaction', app: 'cron-job',    risk: 'low',    ts: '48 min ago' },
-    { pid: 10455, user: 'superuser1',  db: 'prod_db',   query: 'UPDATE pg_authid SET rolsuper=true WHERE ...',duration_sec: 0.05, state: 'idle',              app: 'psql',         risk: 'critical', ts: '1 hr ago' },
-];
+const SUPERUSER_SAMPLE = [];
+// Empty state: "Superuser activity will load from pg_stat_activity."
 
 const RISK_COLOR = { critical: '#ff2d55', high: '#ff465a', medium: '#f5c518', low: '#4ade80' };
 
@@ -857,12 +814,7 @@ const SuperuserMonitor = () => {
 /* ═══════════════════════════════════════════════════════════════════════════
    ★ NEW HIGH: COMPLIANCE REPORT GENERATOR
    ═══════════════════════════════════════════════════════════════════════════ */
-const FRAMEWORKS = [
-    { id: 'soc2',   label: 'SOC 2 Type II', icon: '🛡️', checks: 34, passed: 31, color: '#4ade80' },
-    { id: 'pci',    label: 'PCI-DSS v4.0',  icon: '💳', checks: 28, passed: 22, color: '#f5c518' },
-    { id: 'hipaa',  label: 'HIPAA',         icon: '🏥', checks: 22, passed: 20, color: '#63d7ff' },
-    { id: 'gdpr',   label: 'GDPR',          icon: '🇪🇺', checks: 18, passed: 17, color: '#a78bfa' },
-];
+const FRAMEWORKS = [];
 
 const ComplianceReportGenerator = () => {
     const [selected, setSelected] = useState('soc2');
@@ -1155,11 +1107,7 @@ const SecurityComplianceTab = () => {
                     <div className="card" style={{ padding: 20, marginTop: 18 }}>
                         <SectionHeader icon={Shield} title="Superuser Role Summary" iconColor="#63d7ff" />
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 14 }}>
-                            {[
-                                { role: 'postgres',    sessions: 3, queries_24h: 124, last_seen: '2 min ago',  critical: 1 },
-                                { role: 'dba_admin',   sessions: 1, queries_24h: 57,  last_seen: '5 min ago',  critical: 1 },
-                                { role: 'superuser1',  sessions: 2, queries_24h: 18,  last_seen: '11 min ago', critical: 1 },
-                            ].map(r => (
+                            {(SUPERUSER_SAMPLE.length > 0 ? SUPERUSER_SAMPLE.map(s => ({ role: s.user, sessions: 1, queries_24h: 0, last_seen: s.ts, critical: s.risk === 'critical' ? 1 : 0 })) : []).map(r => (
                                 <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? '1px solid rgba(255,70,90,0.3)' : `1px solid ${THEME.border}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                         <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{r.role}</span>

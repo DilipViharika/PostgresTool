@@ -223,128 +223,25 @@ const generateMockPlan = (query) => {
     };
 };
 
-const MOCK_INDEXES = [
-    { table: 'users', column: 'active', type: 'btree', size: '4.2 MB', scans: 12450, bloat: '8%', status: 'healthy' },
-    { table: 'users', column: 'email', type: 'btree', size: '8.1 MB', scans: 45200, bloat: '3%', status: 'healthy' },
-    { table: 'orders', column: 'user_id', type: 'btree', size: '12.5 MB', scans: 89340, bloat: '2%', status: 'healthy' },
-    { table: 'orders', column: 'created_at', type: 'brin', size: '0.2 MB', scans: 3210, bloat: '0%', status: 'healthy' },
-    { table: 'products', column: 'name', type: 'gin', size: '22.8 MB', scans: 180, bloat: '34%', status: 'bloated' },
-    { table: 'sessions', column: 'token', type: 'hash', size: '6.4 MB', scans: 0, bloat: '0%', status: 'unused' },
-];
+const MOCK_INDEXES = [];
 
-const MOCK_TABLE_STATS = [
-    { table: 'users', rows: 185000, size: '142 MB', dead_tuples: 1240, last_vacuum: '2h ago', seq_scans: 8420, idx_scans: 45200 },
-    { table: 'orders', rows: 4200000, size: '2.4 GB', dead_tuples: 84200, last_vacuum: '14h ago', seq_scans: 120, idx_scans: 892000 },
-    { table: 'products', rows: 12400, size: '38 MB', dead_tuples: 82, last_vacuum: '1d ago', seq_scans: 3400, idx_scans: 18200 },
-    { table: 'sessions', rows: 920000, size: '860 MB', dead_tuples: 420000, last_vacuum: '5d ago', seq_scans: 0, idx_scans: 920000 },
-];
+const MOCK_TABLE_STATS = [];
 
-const SAMPLE_QUERIES = [
-    { label: 'Basic JOIN', sql: `SELECT u.name, u.email, COUNT(o.id) AS order_count\nFROM users u\nLEFT JOIN orders o ON o.user_id = u.id\nWHERE u.active = true\nGROUP BY u.id, u.name, u.email\nORDER BY order_count DESC\nLIMIT 20;` },
-    { label: 'Window Function', sql: `SELECT\n  product_id,\n  sale_date,\n  amount,\n  SUM(amount) OVER (\n    PARTITION BY product_id\n    ORDER BY sale_date\n    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n  ) AS rolling_7d\nFROM sales\nORDER BY product_id, sale_date;` },
-    { label: 'CTE + Subquery', sql: `WITH top_customers AS (\n  SELECT user_id, SUM(total) AS ltv\n  FROM orders\n  WHERE status = 'completed'\n  GROUP BY user_id\n  HAVING SUM(total) > 1000\n)\nSELECT u.name, u.email, tc.ltv\nFROM users u\nJOIN top_customers tc ON tc.user_id = u.id\nORDER BY tc.ltv DESC;` },
-    { label: 'Heavy Aggregation', sql: `SELECT\n  DATE_TRUNC('day', created_at) AS day,\n  status,\n  COUNT(*) AS count,\n  AVG(total) AS avg_total,\n  PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY total) AS p95\nFROM orders\nWHERE created_at >= NOW() - INTERVAL '30 days'\nGROUP BY 1, 2\nORDER BY 1 DESC, 2;` },
-];
+const SAMPLE_QUERIES = [];
 
-const MOCK_SLOW_QUERIES = [
-    { id: 1, query: 'SELECT * FROM orders o JOIN users u ON u.id = o.user_id WHERE u.active = true ORDER BY o.created_at DESC', calls: 8420, mean_time: 287.4, p95_time: 412.8, p99_time: 891.2, total_time: 2419908, rows: 142, stddev: 64.2, tags: ['no-index', 'seq-scan'], db: 'production' },
-    { id: 2, query: 'SELECT product_id, SUM(qty) FROM order_items GROUP BY product_id HAVING SUM(qty) > 100', calls: 3210, mean_time: 145.2, p95_time: 198.4, p99_time: 344.1, total_time: 466192, rows: 843, stddev: 22.8, tags: ['aggregation'], db: 'production' },
-    { id: 3, query: 'UPDATE sessions SET last_seen = NOW() WHERE token = $1', calls: 124500, mean_time: 12.4, p95_time: 28.9, p99_time: 84.2, total_time: 1543800, rows: 1, stddev: 8.1, tags: ['hot-table'], db: 'production' },
-    { id: 4, query: 'SELECT u.*, p.* FROM users u LEFT JOIN profiles p ON p.user_id = u.id WHERE u.created_at > $1', calls: 890, mean_time: 634.8, p95_time: 1240.0, p99_time: 2890.4, total_time: 565012, rows: 4820, stddev: 198.4, tags: ['no-index', 'wide-select'], db: 'production' },
-    { id: 5, query: 'DELETE FROM audit_log WHERE created_at < NOW() - INTERVAL \'90 days\'', calls: 24, mean_time: 4821.0, p95_time: 6200.0, p99_time: 7100.0, total_time: 115704, rows: 284200, stddev: 812.4, tags: ['bulk-delete', 'locks'], db: 'production' },
-    { id: 6, query: 'SELECT DISTINCT category, COUNT(*) FROM products WHERE status = \'active\' GROUP BY category ORDER BY 2 DESC', calls: 18200, mean_time: 89.2, p95_time: 142.4, p99_time: 198.8, total_time: 1623440, rows: 48, stddev: 18.4, tags: ['aggregation', 'seq-scan'], db: 'analytics' },
-];
+const MOCK_SLOW_QUERIES = [];
 
-const MOCK_LOCKS = [
-    { pid: 18432, state: 'active', wait_event: null, lock_type: 'relation', granted: true, duration: 0.2, query: 'UPDATE orders SET status = $1 WHERE id = $2', relation: 'orders', mode: 'RowExclusiveLock', blocking: [19841, 20012] },
-    { pid: 19841, state: 'idle in transaction', wait_event: 'relation', lock_type: 'relation', granted: false, duration: 12.8, query: 'SELECT * FROM orders WHERE user_id = $1 FOR UPDATE', relation: 'orders', mode: 'RowShareLock', blocked_by: 18432 },
-    { pid: 20012, state: 'active', wait_event: 'relation', lock_type: 'relation', granted: false, duration: 8.4, query: 'UPDATE orders SET total = total * 1.1 WHERE created_at > $1', relation: 'orders', mode: 'RowExclusiveLock', blocked_by: 18432 },
-    { pid: 21044, state: 'active', wait_event: null, lock_type: 'relation', granted: true, duration: 0.1, query: 'SELECT COUNT(*) FROM users WHERE active = true', relation: 'users', mode: 'AccessShareLock', blocking: [] },
-    { pid: 21890, state: 'active', wait_event: null, lock_type: 'relation', granted: true, duration: 2.1, query: 'INSERT INTO audit_log (event, user_id, ts) VALUES ($1, $2, NOW())', relation: 'audit_log', mode: 'RowExclusiveLock', blocking: [] },
-];
+const MOCK_LOCKS = [];
 
-const MOCK_MAINTENANCE = [
-    { table: 'users', size: '142 MB', dead_tuples: 1240, live_tuples: 185000, bloat_pct: 3.2, last_vacuum: '2h ago', last_autovacuum: '6h ago', last_analyze: '6h ago', next_vacuum_at: 185000 * 0.2, vacuum_count: 48, needs_vacuum: false },
-    { table: 'orders', size: '2.4 GB', dead_tuples: 84200, live_tuples: 4200000, bloat_pct: 14.8, last_vacuum: '14h ago', last_autovacuum: '14h ago', last_analyze: '14h ago', next_vacuum_at: 4200000 * 0.2, vacuum_count: 12, needs_vacuum: false },
-    { table: 'products', size: '38 MB', dead_tuples: 82, live_tuples: 12400, bloat_pct: 0.8, last_vacuum: '1d ago', last_autovacuum: '1d ago', last_analyze: '1d ago', next_vacuum_at: 12400 * 0.2, vacuum_count: 210, needs_vacuum: false },
-    { table: 'sessions', size: '860 MB', dead_tuples: 420000, live_tuples: 920000, bloat_pct: 48.2, last_vacuum: '5d ago', last_autovacuum: '5d ago', last_analyze: '5d ago', next_vacuum_at: 920000 * 0.2, vacuum_count: 3, needs_vacuum: true },
-    { table: 'audit_log', size: '4.2 GB', dead_tuples: 1840000, live_tuples: 12000000, bloat_pct: 22.4, last_vacuum: '3d ago', last_autovacuum: '3d ago', last_analyze: '3d ago', next_vacuum_at: 12000000 * 0.2, vacuum_count: 8, needs_vacuum: true },
-];
+const MOCK_MAINTENANCE = [];
 
-const MOCK_PG_CONFIG = [
-    { name: 'shared_buffers', current: '128MB', recommended: '4GB', category: 'Memory', impact: 'HIGH', desc: 'Main PostgreSQL memory cache. Should be ~25% of total RAM.', unit: 'memory' },
-    { name: 'work_mem', current: '4MB', recommended: '64MB', category: 'Memory', impact: 'HIGH', desc: 'Memory for sort/hash operations per query. Low values cause disk spills.', unit: 'memory' },
-    { name: 'effective_cache_size', current: '512MB', recommended: '12GB', category: 'Planner', impact: 'MEDIUM', desc: 'Planner estimate of total cache. Affects index vs seq scan decisions.', unit: 'memory' },
-    { name: 'max_parallel_workers_per_gather', current: '2', recommended: '4', category: 'Parallelism', impact: 'MEDIUM', desc: 'Max parallel workers per query. Increase for large analytical queries.', unit: 'integer' },
-    { name: 'random_page_cost', current: '4.0', recommended: '1.1', category: 'Planner', impact: 'HIGH', desc: 'If using SSDs, lower this to 1.1. Planner prefers seq scans when too high.', unit: 'float' },
-    { name: 'checkpoint_completion_target', current: '0.5', recommended: '0.9', category: 'WAL', impact: 'MEDIUM', desc: 'Spreads checkpoints over more time to reduce I/O spikes.', unit: 'float' },
-    { name: 'wal_buffers', current: '4MB', recommended: '64MB', category: 'WAL', impact: 'LOW', desc: 'WAL buffer size. -1 = auto (1/32 shared_buffers). Increase for write-heavy.', unit: 'memory' },
-    { name: 'autovacuum_vacuum_scale_factor', current: '0.2', recommended: '0.05', category: 'Autovacuum', impact: 'HIGH', desc: 'Fraction of table rows that trigger vacuum. 0.2 is too high for large tables.', unit: 'float' },
-    { name: 'log_min_duration_statement', current: '-1', recommended: '1000', category: 'Logging', impact: 'LOW', desc: 'Log queries slower than N ms. -1 disables. Set to catch slow queries.', unit: 'integer' },
-    { name: 'max_connections', current: '100', recommended: '200', category: 'Connections', impact: 'MEDIUM', desc: 'Maximum client connections. Use PgBouncer for connection pooling.', unit: 'integer' },
-];
+const MOCK_PG_CONFIG = [];
 
 // NEW: Mock service attribution data
-const MOCK_SERVICE_ATTRIBUTION = [
-    { service: 'api-gateway', queries: 42840, total_time_ms: 8420000, avg_time: 196.6, p99: 1240, top_table: 'users', cost_share: 34.2, db: 'production', team: 'Platform' },
-    { service: 'order-service', queries: 28400, total_time_ms: 6840000, avg_time: 240.8, p99: 2890, top_table: 'orders', cost_share: 27.5, db: 'production', team: 'Commerce' },
-    { service: 'analytics-worker', queries: 480, total_time_ms: 4920000, avg_time: 10250.0, p99: 42000, top_table: 'order_items', cost_share: 19.8, db: 'analytics', team: 'Data' },
-    { service: 'session-manager', queries: 124500, total_time_ms: 1543800, avg_time: 12.4, p99: 84, top_table: 'sessions', cost_share: 12.1, db: 'production', team: 'Platform' },
-    { service: 'notification-svc', queries: 8200, total_time_ms: 492000, avg_time: 60.0, p99: 284, top_table: 'users', cost_share: 4.1, db: 'production', team: 'Growth' },
-    { service: 'search-indexer', queries: 240, total_time_ms: 192000, avg_time: 800.0, p99: 3200, top_table: 'products', cost_share: 2.3, db: 'production', team: 'Search' },
-];
+const MOCK_SERVICE_ATTRIBUTION = [];
 
 // NEW: Mock parameterization advisor data
-const MOCK_PARAM_ISSUES = [
-    {
-        id: 1,
-        query: "SELECT * FROM users WHERE email = 'john@example.com'",
-        parameterized: "SELECT * FROM users WHERE email = $1",
-        literals: ["'john@example.com'"],
-        risk: 'HIGH',
-        issue: 'SQL Injection Risk',
-        calls: 48200,
-        plan_cache_waste: '94%',
-        description: 'String literal in WHERE clause prevents plan caching and creates injection vulnerability. Each unique email generates a new plan.',
-        fix: "-- Use parameterized query:\nSELECT * FROM users WHERE email = $1\n-- Bind: ['john@example.com']"
-    },
-    {
-        id: 2,
-        query: "SELECT * FROM orders WHERE status = 'pending' AND created_at > '2024-01-01'",
-        parameterized: "SELECT * FROM orders WHERE status = $1 AND created_at > $2",
-        literals: ["'pending'", "'2024-01-01'"],
-        risk: 'HIGH',
-        issue: 'Plan Cache Pollution',
-        calls: 18400,
-        plan_cache_waste: '88%',
-        description: 'Two embedded string literals. With 30-day date ranges, this generates 60+ unique query plans cluttering pg_stat_statements.',
-        fix: "-- Use parameterized query:\nSELECT * FROM orders\nWHERE status = $1 AND created_at > $2\n-- Bind: ['pending', '2024-01-01']"
-    },
-    {
-        id: 3,
-        query: "DELETE FROM sessions WHERE token = 'abc123def456' AND expires_at < NOW()",
-        parameterized: "DELETE FROM sessions WHERE token = $1 AND expires_at < NOW()",
-        literals: ["'abc123def456'"],
-        risk: 'CRITICAL',
-        issue: 'SQL Injection + Token Exposure',
-        calls: 92400,
-        plan_cache_waste: '99%',
-        description: 'Session tokens embedded as literals are logged in pg_stat_statements, pg_log, and monitoring tools — a serious security breach.',
-        fix: "-- CRITICAL: Always parameterize tokens/secrets:\nDELETE FROM sessions\nWHERE token = $1 AND expires_at < NOW()\n-- Bind: [token_value]"
-    },
-    {
-        id: 4,
-        query: "UPDATE products SET price = 29.99 WHERE id = 1042",
-        parameterized: "UPDATE products SET price = $1 WHERE id = $2",
-        literals: ["29.99", "1042"],
-        risk: 'MEDIUM',
-        issue: 'Plan Cache Waste',
-        calls: 3800,
-        plan_cache_waste: '76%',
-        description: 'Numeric literals in UPDATE. While lower injection risk, unique plans per price value bloat the plan cache unnecessarily.',
-        fix: "-- Use parameterized query:\nUPDATE products SET price = $1 WHERE id = $2\n-- Bind: [29.99, 1042]"
-    },
-];
+const MOCK_PARAM_ISSUES = [];
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ANALYSIS ENGINE

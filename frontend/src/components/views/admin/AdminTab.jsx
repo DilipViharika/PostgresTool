@@ -234,77 +234,17 @@ const validateSettingValue = (setting, value) => {
 };
 
 /* ── Mock Data ── */
-const MOCK_EXTENSIONS = [
-    { name: 'pg_stat_statements', version: '1.10', description: 'Track planning and execution statistics of SQL statements', installed: true,  active: true,  superuser: false, category: 'monitoring',    downloads: '2.1M', rating: 4.9 },
-    { name: 'pgcrypto',           version: '1.3',  description: 'Cryptographic functions including hashing and encryption',  installed: true,  active: true,  superuser: false, category: 'security',      downloads: '1.8M', rating: 4.8 },
-    { name: 'uuid-ossp',          version: '1.1',  description: 'Generate universally unique identifiers (UUIDs)',           installed: true,  active: true,  superuser: false, category: 'utility',       downloads: '3.2M', rating: 4.7 },
-    { name: 'pg_trgm',            version: '1.6',  description: 'Text similarity measurement and fuzzy string matching',     installed: true,  active: false, superuser: false, category: 'search',        downloads: '950K', rating: 4.6 },
-    { name: 'postgis',            version: '3.4',  description: 'Spatial database extender for geographic objects',          installed: false, active: false, superuser: true,  category: 'geospatial',    downloads: '780K', rating: 4.9 },
-    { name: 'pg_partman',         version: '5.0',  description: 'Manage time-based and serial-based table partition sets',   installed: false, active: false, superuser: false, category: 'partitioning',  downloads: '420K', rating: 4.5 },
-    { name: 'timescaledb',        version: '2.13', description: 'Time-series data management for PostgreSQL',                installed: false, active: false, superuser: true,  category: 'timeseries',    downloads: '1.1M', rating: 4.8 },
-    { name: 'pgvector',           version: '0.6',  description: 'Open-source vector similarity search for Postgres',        installed: false, active: false, superuser: false, category: 'ai',            downloads: '890K', rating: 4.9 },
-    { name: 'pg_cron',            version: '1.6',  description: 'Run periodic jobs in the database',                        installed: false, active: false, superuser: true,  category: 'utility',       downloads: '640K', rating: 4.4 },
-    { name: 'pg_repack',          version: '1.5',  description: 'Reorganize tables with minimal locks',                     installed: false, active: false, superuser: true,  category: 'maintenance',   downloads: '280K', rating: 4.7 },
-];
+const MOCK_EXTENSIONS = [];
 
-const MOCK_SETTINGS = [
-    { name: 'shared_buffers',                setting: '4GB',     unit: '', source: 'configuration file', short_desc: 'Number of shared memory buffers used by the server.',            category: 'Resource Usage / Memory',                boot_val: '128MB', pending_restart: false, riskLevel: 'low'    },
-    { name: 'work_mem',                      setting: '64MB',    unit: '', source: 'configuration file', short_desc: 'Maximum memory for query ops like sorts and hash joins.',          category: 'Resource Usage / Memory',                boot_val: '4MB',   pending_restart: false, riskLevel: 'low'    },
-    { name: 'maintenance_work_mem',          setting: '512MB',   unit: '', source: 'configuration file', short_desc: 'Maximum memory for maintenance operations (VACUUM, CREATE INDEX).', category: 'Resource Usage / Memory',              boot_val: '64MB',  pending_restart: false, riskLevel: 'low'    },
-    { name: 'effective_cache_size',          setting: '12GB',    unit: '', source: 'configuration file', short_desc: 'Planner estimate of the effective size of the disk cache.',         category: 'Query Tuning / Planner Cost Constants', boot_val: '4GB',   pending_restart: false, riskLevel: 'low'    },
-    { name: 'max_connections',               setting: '100',     unit: '', source: 'configuration file', short_desc: 'Maximum number of concurrent connections to the database.',          category: 'Connections and Authentication',         boot_val: '100',   pending_restart: true,  riskLevel: 'medium' },
-    { name: 'max_worker_processes',          setting: '8',       unit: '', source: 'configuration file', short_desc: 'Maximum number of concurrent worker processes.',                    category: 'Resource Usage / Asynchronous Behavior', boot_val: '8',     pending_restart: true,  riskLevel: 'low'    },
-    { name: 'random_page_cost',              setting: '1.1',     unit: '', source: 'configuration file', short_desc: 'Planner estimate of the cost of a non-sequentially fetched page.',  category: 'Query Tuning / Planner Cost Constants', boot_val: '4',     pending_restart: false, riskLevel: 'low'    },
-    { name: 'wal_level',                     setting: 'replica', unit: '', source: 'configuration file', short_desc: 'WAL logging level to support replication and recovery.',            category: 'Write-Ahead Log / Settings',            boot_val: 'replica', pending_restart: true, riskLevel: 'medium' },
-    { name: 'fsync',                         setting: 'on',      unit: '', source: 'configuration file', short_desc: 'Forces synchronization of updates to disk.',                        category: 'Write-Ahead Log / Settings',            boot_val: 'on',    pending_restart: false, riskLevel: 'high'   },
-    { name: 'synchronous_commit',            setting: 'on',      unit: '', source: 'configuration file', short_desc: "Sets the current transaction's synchronization level.",             category: 'Write-Ahead Log / Settings',            boot_val: 'on',    pending_restart: false, riskLevel: 'medium' },
-    { name: 'autovacuum',                    setting: 'on',      unit: '', source: 'configuration file', short_desc: 'Starts the autovacuum subprocess.',                                 category: 'Autovacuum',                            boot_val: 'on',    pending_restart: false, riskLevel: 'low'    },
-    { name: 'autovacuum_max_workers',        setting: '3',       unit: '', source: 'configuration file', short_desc: 'Max number of simultaneously running autovacuum workers.',           category: 'Autovacuum',                            boot_val: '3',     pending_restart: true,  riskLevel: 'low'    },
-    { name: 'log_min_duration_statement',    setting: '1000',    unit: 'ms', source: 'configuration file', short_desc: 'Log statements whose execution time exceeds this threshold.',   category: 'Reporting and Logging',                 boot_val: '-1',    pending_restart: false, riskLevel: 'low'    },
-    { name: 'checkpoint_completion_target',  setting: '0.9',     unit: '', source: 'configuration file', short_desc: 'Fraction of checkpoint interval used to flush dirty buffers.',       category: 'Write-Ahead Log / Checkpoints',         boot_val: '0.5', pending_restart: false, riskLevel: 'low'   },
-    { name: 'effective_io_concurrency',      setting: '200',     unit: '', source: 'configuration file', short_desc: 'Number of simultaneous requests that can be issued for disk access.', category: 'Resource Usage / Asynchronous Behavior', boot_val: '1', pending_restart: false, riskLevel: 'low'  },
-    { name: 'ssl',                           setting: 'on',      unit: '', source: 'configuration file', short_desc: 'Enables SSL connections.',                                           category: 'Connections and Authentication / SSL',  boot_val: 'off',   pending_restart: true,  riskLevel: 'high'   },
-];
+const MOCK_SETTINGS = [];
 
-const MOCK_CACHE = {
-    size: 847, maxSize: 1024, entries: 156, hitRate: 94.7, missRate: 5.3, evictions: 23, avgTtl: '4m 32s', lastCleared: '2026-02-08T14:30:00Z',
-    history: [72, 76, 78, 81, 80, 83, 85, 84, 87, 89, 91, 93, 92, 94, 94.7],
-    recentHits: [88, 91, 89, 93, 94, 92, 95, 94, 96, 94, 95, 94.7],
-    breakdown: [
-        { label: 'Query Plans',  size: 340, count: 64, color: '#3b82f6', pct: 40 },
-        { label: 'Schema Cache', size: 210, count: 28, color: '#818cf8', pct: 25 },
-        { label: 'Stats Cache',  size: 180, count: 42, color: '#10b981', pct: 21 },
-        { label: 'Auth Cache',   size: 80,  count: 14, color: '#f59e0b', pct: 9  },
-        { label: 'Misc',         size: 37,  count: 8,  color: '#64748b', pct: 5  },
-    ]
-};
+const MOCK_CACHE = { hitRate: 0, missRate: 0, size: '—', evictions: 0, history: [] };
 
-const MOCK_CONNECTIONS = [
-    { pid: 12401, user: 'vigil_app',  db: 'vigil_prod', state: 'active',              query: 'SELECT * FROM pg_stat_activity WHERE state = $1', duration: '0.3s',  durationMs: 300,     client: '10.0.1.42:52400', wait: null,   appName: 'node_app',  cpu: 0.2  },
-    { pid: 12407, user: 'vigil_app',  db: 'vigil_prod', state: 'idle in transaction', query: 'UPDATE user_sessions SET last_seen = NOW() WHERE id = $1', duration: '4.8s', durationMs: 4800, client: '10.0.1.44:51200', wait: 'Lock', appName: 'node_app',  cpu: 0.0  },
-    { pid: 12410, user: 'analytics',  db: 'vigil_dw',   state: 'active',              query: "SELECT date_trunc('hour', created_at), count(*) FROM events GROUP BY 1", duration: '12m 4s', durationMs: 724000, client: '10.0.1.55:48200', wait: 'IO', appName: 'metabase', cpu: 41.2 },
-    { pid: 12415, user: 'pg_backup',  db: 'vigil_prod', state: 'idle',                query: '--',                                                 duration: '0s',    durationMs: 0,       client: '10.0.1.10:52100', wait: null,   appName: 'pg_dump',   cpu: 0.0  },
-    { pid: 12418, user: 'replicator', db: 'vigil_prod', state: 'active',              query: 'START_REPLICATION SLOT vigil_replica1 LOGICAL 0/3A12F0', duration: '1h 2m', durationMs: 3720000, client: '10.0.2.5:55000', wait: null, appName: 'pg_repl',  cpu: 1.8  },
-    { pid: 12422, user: 'vigil_app',  db: 'vigil_prod', state: 'active',              query: 'INSERT INTO events (user_id, type, created_at) VALUES ($1, $2, NOW())', duration: '0.1s', durationMs: 100, client: '10.0.1.46:54100', wait: null, appName: 'node_app', cpu: 0.1 },
-];
+const MOCK_CONNECTIONS = [];
 
-const MOCK_SERVER = {
-    version: 'PostgreSQL 16.1', uptime: '14d 6h 22m', os: 'Ubuntu 24.04', arch: 'x86_64',
-    cpu: { pct: 12, cores: 8, freq: '3.2 GHz', history: [8,10,9,12,14,11,13,12,10,14,12,11] },
-    ram: { usedGB: 11.2, totalGB: 16, history: [68,70,72,70,71,73,74,70,72,73,74,70] },
-    disk: { usedGB: 142, totalGB: 500, iopsRead: 124, iopsWrite: 38, readMBs: 42, writeMBs: 18 },
-    replication: { lag: '0.3s', slots: 2, streaming: true },
-    network: { inKBs: 284, outKBs: 122 },
-    tps: { current: 1847, history: [1620,1780,1840,1720,1900,1850,1820,1847] },
-};
+const MOCK_SERVER = { version: '—', uptime: '—', cpu: 0, ram: 0, disk: 0, maxConns: 0, activeConns: 0 };
 
-const MOCK_CHANGE_LOG = [
-    { id: 1, ts: '2026-02-17T09:15:00Z', user: 'admin',    param: 'shared_buffers',     before: '2GB',  after: '4GB',  source: 'tuning_wizard' },
-    { id: 2, ts: '2026-02-17T09:15:00Z', user: 'admin',    param: 'work_mem',            before: '32MB', after: '64MB', source: 'tuning_wizard' },
-    { id: 3, ts: '2026-02-15T14:22:00Z', user: 'devops',   param: 'log_min_duration_statement', before: '-1', after: '1000', source: 'manual' },
-    { id: 4, ts: '2026-02-12T11:30:00Z', user: 'admin',    param: 'max_connections',     before: '200',  after: '100',  source: 'manual' },
-    { id: 5, ts: '2026-02-10T08:00:00Z', user: 'ci-deploy',param: 'random_page_cost',    before: '4.0',  after: '1.1',  source: 'api' },
-];
+const MOCK_CHANGE_LOG = [];
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MICRO COMPONENTS
@@ -832,6 +772,13 @@ const ChangeLogModal = ({ onClose }) => (
                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 4 }}><X size={16} /></button>
             </div>
             <div className="adm-scrollbar" style={{ padding: '20px 22px', overflowY: 'auto' }}>
+                {MOCK_CHANGE_LOG.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '32px 16px', color: T.textDim }}>
+                        <History size={28} color={T.textDim} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.6 }} />
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>No configuration changes recorded</div>
+                        <div style={{ fontSize: 11, marginTop: 6, color: T.textMuted }}>Configuration change history will appear here as changes are made.</div>
+                    </div>
+                )}
                 {MOCK_CHANGE_LOG.map((entry, i) => (
                     <div key={entry.id} style={{ display: 'flex', gap: 14, marginBottom: 20, position: 'relative' }}>
                         {i < MOCK_CHANGE_LOG.length - 1 && <div style={{ position: 'absolute', left: 11, top: 22, bottom: -20, width: 1, background: `${T.grid}40` }} />}
@@ -865,6 +812,17 @@ const ChangeLogModal = ({ onClose }) => (
    ═══════════════════════════════════════════════════════════════════════════ */
 const CacheView = ({ onClear }) => {
     const c = MOCK_CACHE;
+
+    if (!c || c.history.length === 0) {
+        return (
+            <div style={{ textAlign: 'center', padding: '48px 32px', color: T.textDim }}>
+                <Gauge size={32} color={T.textDim} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.6 }} />
+                <div style={{ fontSize: 14, fontWeight: 600 }}>Cache statistics unavailable</div>
+                <div style={{ fontSize: 12, marginTop: 6, color: T.textMuted }}>Ensure the database connection is active. Cache data will load automatically.</div>
+            </div>
+        );
+    }
+
     const usedPct = Math.round((c.size / c.maxSize) * 100);
 
     return (
@@ -1057,6 +1015,13 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
             </div>
 
             <Panel title={`Active Connections (${sorted.length})`} icon={Network} noPad>
+                {sorted.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '48px 32px', color: T.textDim }}>
+                        <Network size={32} color={T.textDim} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.6 }} />
+                        <div style={{ fontSize: 14, fontWeight: 600 }}>No active connections</div>
+                        <div style={{ fontSize: 12, marginTop: 6, color: T.textMuted }}>Active connections will show from pg_stat_activity when database is in use.</div>
+                    </div>
+                ) : (
                 <div className="adm-scrollbar" style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 780 }}>
                         <thead>
@@ -1122,6 +1087,7 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
                         </tbody>
                     </table>
                 </div>
+                )}
             </Panel>
         </div>
     );
@@ -1178,6 +1144,15 @@ const ExtensionsView = ({ extData, onInstall }) => {
                 ))}
                 <div style={{ marginLeft: 'auto', fontSize: 11, color: T.textDim }}>{filtered.length} shown</div>
             </div>
+
+            {/* Empty State */}
+            {filtered.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '48px 32px', color: T.textDim }}>
+                    <Package size={32} color={T.textDim} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.6 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>No extensions found</div>
+                    <div style={{ fontSize: 12, marginTop: 6, color: T.textMuted }}>Extension data will load from pg_available_extensions when connected to a database.</div>
+                </div>
+            )}
 
             {/* Category grids */}
             {cats.map(cat => {
@@ -1239,14 +1214,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── ★ NEW HIGH: pg_hba.conf VISUAL EDITOR ── */
-const HBA_SAMPLE = [
-    { id: 1, type: 'local',   database: 'all',      user: 'all',        address: '',             method: 'trust',         comment: '' },
-    { id: 2, type: 'host',    database: 'all',      user: 'all',        address: '127.0.0.1/32', method: 'scram-sha-256', comment: 'IPv4 loopback' },
-    { id: 3, type: 'host',    database: 'all',      user: 'all',        address: '::1/128',      method: 'scram-sha-256', comment: 'IPv6 loopback' },
-    { id: 4, type: 'host',    database: 'prod_db',  user: 'app_user',   address: '10.0.1.0/24',  method: 'scram-sha-256', comment: 'App servers' },
-    { id: 5, type: 'hostssl', database: 'all',      user: '+staff',     address: '0.0.0.0/0',    method: 'ldap',          comment: 'Staff via LDAP+SSL' },
-    { id: 6, type: 'host',    database: 'repl_db',  user: 'replicator', address: '10.0.2.10/32', method: 'md5',           comment: 'Replication standby' },
-];
+const HBA_SAMPLE = [];
 const HBA_METHODS  = ['trust','reject','md5','scram-sha-256','password','gss','sspi','ident','peer','ldap','radius','cert','pam'];
 const HBA_TYPES    = ['local','host','hostssl','hostnossl','hostgssenc','hostnogssenc'];
 const METHOD_CLR   = { trust:'#ff465a', reject:'#64748b', md5:'#f5c518', 'scram-sha-256':'#4ade80', ldap:'#63d7ff', cert:'#a78bfa' };

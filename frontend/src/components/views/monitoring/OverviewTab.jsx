@@ -727,13 +727,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: NOTIFICATION BELL
    ═══════════════════════════════════════════════════════════════════════════ */
-const MOCK_ALERTS = [
-    { id: 1, severity: 'critical', title: 'High replication lag on replica-2', time: '2m ago', read: false },
-    { id: 2, severity: 'warning', title: '5 tables require urgent VACUUM', time: '8m ago', read: false },
-    { id: 3, severity: 'warning', title: 'Checkpoint duration exceeded 1s (×2)', time: '15m ago', read: false },
-    { id: 4, severity: 'info', title: 'Autovacuum ran on public.orders', time: '34m ago', read: true },
-    { id: 5, severity: 'info', title: 'Cache hit ratio dipped to 97.2%', time: '1h ago', read: true },
-];
+const MOCK_ALERTS = [];
 
 const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#38bdf8' };
 const SEVERITY_ICON = { critical: AlertCircle, warning: AlertTriangle, info: Info };

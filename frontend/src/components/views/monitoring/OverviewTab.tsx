@@ -1760,7 +1760,7 @@ const OverviewTab: React.FC = () => {
                             </div>
                             <ChevronRight size={13} color={THEME.textDim} />
                             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                {[{ name: 'replica-1', lagMs: 120 }, { name: 'replica-2', lagMs: 480 }].map((r, i) => (
+                                {[].map((r, i) => (
                                     <div key={i} style={{ padding: '7px 10px', borderRadius: 9, background: THEME.surface, border: `1px solid ${r.lagMs > 300 ? `${THEME.warning}35` : `${THEME.grid}45`}`, minWidth: 108 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                             <Server size={12} color={THEME.secondary} />

@@ -837,7 +837,7 @@ const LockBlockingTree = ({ locks, conns }) => {
             role: 'holder',
             lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock'][i % 3],
             relation: ['orders', 'users', 'inventory'][i % 3],
-            query: h.query || 'BEGIN; UPDATE users SET last_login = NOW() WHERE id = ?',
+            query: h.query || '',
             waitTime: null,
             blockees: locks.slice(i * 2, i * 2 + 2).map((w, j) => ({
                 pid: w.pid || (8800 + i * 10 + j),
@@ -1262,7 +1262,7 @@ const LockWaitDetails = ({ locks, conns }) => {
         const waiters = locks.slice(0, 5);
         return waiters.map((w, i) => ({
             waiter: { pid: w.pid || 8800 + i, query: w.query || 'SELECT FOR UPDATE...', waitTime: Math.round(Math.random() * 30) + 's' },
-            holder: holders[i % holders.length] || { pid: 9000 + i, query: 'UPDATE users SET...', application_name: 'pgadmin4' },
+            holder: holders[i % holders.length] || { pid: 9000 + i, query: '', application_name: '' },
             lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock', 'RowShareLock'][i % 4],
             relation: ['orders', 'users', 'products', 'inventory', 'sessions'][i % 5]
         }));
@@ -1293,7 +1293,7 @@ const LockWaitDetails = ({ locks, conns }) => {
                         </div>
                         <div style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
                             <div style={{ fontSize: 10, color: THEME.warning, fontWeight: 700, marginBottom: 4 }}>HOLDING — PID {chain.holder.pid} ({chain.holder.application_name || 'app'})</div>
-                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || 'BEGIN; UPDATE...'}</div>
+                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || ''}</div>
                         </div>
                     </div>
                 </div>
