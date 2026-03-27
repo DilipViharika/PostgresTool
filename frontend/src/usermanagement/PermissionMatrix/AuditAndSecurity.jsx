@@ -175,30 +175,12 @@ var RISK_COLOR = {
     critical: '#ff2d6b',
 };
 
-/* ─── Mock data ──────────────────────────────────────────────────── */
-var AUDIT_EVENTS = [
-    { id:1, user:'Alex Morgan',  action:'ROLE_CHANGED',         resource:'user:jamie_chen',    level:'warn',     ts:'2025-02-17T14:32:00Z', detail:'admin -> super_admin' },
-    { id:2, user:'System',       action:'ANOMALY_DETECTED',      resource:'auth:suspicious_ip', level:'critical', ts:'2025-02-17T13:15:00Z', detail:'12 failed logins from 45.22.19.112' },
-    { id:3, user:'Jamie Chen',   action:'DATA_EXPORT',           resource:'db:production',      level:'warn',     ts:'2025-02-17T12:01:00Z', detail:'Exported 28,450 rows' },
-    { id:4, user:'Admin',        action:'USER_CREATED',          resource:'user:sam_rivera',    level:'info',     ts:'2025-02-17T11:40:00Z', detail:'Role: Analyst' },
-    { id:5, user:'Sam Rivera',   action:'API_KEY_GENERATED',     resource:'api:prod_key_7',     level:'info',     ts:'2025-02-17T10:20:00Z', detail:'Scope: read:all' },
-    { id:6, user:'Jordan Park',  action:'SQL_EXEC',              resource:'db:prod',            level:'warn',     ts:'2025-02-17T09:55:00Z', detail:'DROP TABLE attempted -- blocked' },
-    { id:7, user:'System',       action:'AUTO_BACKUP',           resource:'backup:2025-02-17',  level:'success',  ts:'2025-02-17T00:00:00Z', detail:'1.4 GB -- 100% integrity' },
-    { id:8, user:'Taylor Kim',   action:'PERMISSION_ESCALATION', resource:'schema:finance',     level:'critical', ts:'2025-02-16T22:10:00Z', detail:'Unauthorized access attempt' },
-];
+/* ─── Data (loaded from API when available) ──────────────────────── */
+var AUDIT_EVENTS = [];
 
-var INITIAL_SESSIONS = [
-    { id:1, user:'Alex Morgan', ip:'192.168.1.42',  device:'Chrome 120 / macOS',      location:'San Francisco, US', active:true,  risk:'low' },
-    { id:2, user:'Jamie Chen',  ip:'45.22.19.112',  device:'Firefox 121 / Windows 11', location:'London, UK',        active:false, risk:'high' },
-    { id:3, user:'System API',  ip:'10.0.0.5',      device:'Python SDK 3.11',          location:'AWS us-east-1',     active:true,  risk:'low' },
-    { id:4, user:'Unknown',     ip:'117.45.22.188', device:'Unknown browser',           location:'Shenzhen, CN',      active:true,  risk:'critical' },
-];
+var INITIAL_SESSIONS = [];
 
-var INITIAL_API_KEYS = [
-    { id:1, name:'Production Backend', prefix:'pk_live_Yz9k', scope:'read:all write:data', created:'2024-08-15', calls:128440, status:'active' },
-    { id:2, name:'Data Pipeline',      prefix:'pk_pipe_3jHm', scope:'read:all',            created:'2025-01-10', calls:9820,   status:'active' },
-    { id:3, name:'Test Runner',        prefix:'pk_test_7xNa', scope:'read:staging',        created:'2025-02-01', calls:344,    status:'active' },
-];
+var INITIAL_API_KEYS = [];
 
 /* ─── Audit Log ──────────────────────────────────────────────────── */
 export var AuditLog = function AuditLog() {

@@ -49,13 +49,7 @@ const MOCK_HISTORY = [];
 
 const MOCK_SUPPRESSION = [];
 
-const CHANNEL_STATUS = [
-  { id: 'ch-001', name: 'PagerDuty',      icon: '⚡', status: 'operational', deliveryRate: 99.8, lastAlert: Date.now() - 120000,  latency: 320,  quota: null },
-  { id: 'ch-002', name: 'Slack',          icon: '#',  status: 'operational', deliveryRate: 98.2, lastAlert: Date.now() - 120000,  latency: 180,  quota: null },
-  { id: 'ch-003', name: 'Email',          icon: '✉',  status: 'degraded',    deliveryRate: 91.4, lastAlert: Date.now() - 3600000, latency: 4200, quota: null },
-  { id: 'ch-004', name: 'AWS CloudWatch', icon: '☁',  status: 'operational', deliveryRate: 100,  lastAlert: Date.now() - 60000,   latency: 95,   quota: { used: 8200, limit: 10000, unit: 'API calls/hr' } },
-  { id: 'ch-005', name: 'Datadog',        icon: '⬡',  status: 'operational', deliveryRate: 99.5, lastAlert: Date.now() - 300000,  latency: 210,  quota: { used: 42000, limit: 50000, unit: 'events/day' } },
-];
+const CHANNEL_STATUS = [];
 
 const genSparkData = (points = 20, base = 50, variance = 20) =>
     Array.from({ length: points }, (_, i) => ({

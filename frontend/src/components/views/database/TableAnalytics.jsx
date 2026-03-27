@@ -680,11 +680,7 @@ function S_Temp() {
 
 function S_Schema() {
     const f = useContext(FilterCtx);
-    const MOCK = [
-        { ts: '2025-02-26', type: 'ALTER TABLE',  obj: 'users',             schema: 'public', detail: 'ADD COLUMN last_login timestamptz',     risk: 'medium' },
-        { ts: '2025-02-25', type: 'CREATE INDEX', obj: 'idx_orders_status', schema: 'public', detail: 'CONCURRENTLY ON orders(status)',        risk: 'low' },
-        { ts: '2025-02-24', type: 'DROP COLUMN',  obj: 'orders',            schema: 'public', detail: 'removed deprecated field: legacy_ref', risk: 'high' },
-    ];
+    const MOCK = [];
     const rows = MOCK.filter(e => (!f.schema || e.schema === f.schema) && (!f.table || e.obj === f.table));
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
