@@ -590,9 +590,9 @@ async function dbLoadConnections(userId, role) {
 async function dbInsertConnection(conn) {
     // Encrypt sensitive fields before storing
     const encryptedPassword = conn.password ? encrypt(conn.password) : null;
-    const encryptedSshPrivateKey = (conn.sshPrivateKey && conn.sshPrivateKey.trim()) ? encrypt(conn.sshPrivateKey) : null;
-    const encryptedSshPassphrase = (conn.sshPassphrase && conn.sshPassphrase.trim()) ? encrypt(conn.sshPassphrase) : null;
-    const encryptedSshPassword = (conn.sshPassword && conn.sshPassword.trim()) ? encrypt(conn.sshPassword) : null;
+    const encryptedSshPrivateKey = (conn.sshPrivateKey && conn.sshPrivateKey.trim()) ? encrypt(conn.sshPrivateKey) : '';
+    const encryptedSshPassphrase = (conn.sshPassphrase && conn.sshPassphrase.trim()) ? encrypt(conn.sshPassphrase) : '';
+    const encryptedSshPassword = (conn.sshPassword && conn.sshPassword.trim()) ? encrypt(conn.sshPassword) : '';
 
     const { rows } = await pool.query(`
         INSERT INTO pgmonitoringtool.vigil_connections
@@ -618,6 +618,7 @@ async function dbUpdateConnection(id, fields) {
     const encryptedSshPrivateKey = (fields.sshPrivateKey && fields.sshPrivateKey.trim()) ? encrypt(fields.sshPrivateKey) : null;
     const encryptedSshPassphrase = (fields.sshPassphrase && fields.sshPassphrase.trim()) ? encrypt(fields.sshPassphrase) : null;
     const encryptedSshPassword = (fields.sshPassword && fields.sshPassword.trim()) ? encrypt(fields.sshPassword) : null;
+    // Note: null here is intentional for UPDATE — COALESCE($14, ssh_private_key) preserves existing value
 
     const { rows } = await pool.query(`
         UPDATE pgmonitoringtool.vigil_connections SET
