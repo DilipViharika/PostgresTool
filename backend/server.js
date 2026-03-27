@@ -1476,7 +1476,7 @@ async function resolvePoolConfig(c) {
         database: c.database,
         user:     c.username,
         password: c.password,
-        ssl: c.ssl ? { rejectUnauthorized: false } : undefined,
+        ssl: c.ssl ? { rejectUnauthorized: false } : { rejectUnauthorized: false },
     };
 }
 
