@@ -39,6 +39,7 @@ interface PanelProps {
     children: React.ReactNode;
     style?: React.CSSProperties;
     accentColor?: string;
+    onClick?: () => void;
 }
 
 interface StatusBadgeProps {
@@ -214,16 +215,31 @@ const OvStyles = () => (
 /* ═══════════════════════════════════════════════════════════════════════════
    PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
-const Panel: React.FC<PanelProps> = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, accentColor }) => (
-    <div style={{
-        background: THEME.glass,
-        backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
-        border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
-        borderRadius: 16, display: 'flex', flexDirection: 'column',
-        overflow: 'hidden', position: 'relative',
-        boxShadow: accentColor ? `0 0 0 1px ${accentColor}08, inset 0 1px 0 rgba(255,255,255,0.05)` : 'inset 0 1px 0 rgba(255,255,255,0.04)',
-        ...style,
-    }}>
+const Panel: React.FC<PanelProps> = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, accentColor, onClick }) => (
+    <div
+        onClick={onClick}
+        style={{
+            background: THEME.glass,
+            backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+            border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
+            borderRadius: 16, display: 'flex', flexDirection: 'column',
+            overflow: 'hidden', position: 'relative',
+            boxShadow: accentColor ? `0 0 0 1px ${accentColor}08, inset 0 1px 0 rgba(255,255,255,0.05)` : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            cursor: onClick ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+            ...style,
+        }}
+        onMouseEnter={(e) => {
+            if (onClick) {
+                e.currentTarget.style.borderColor = `${accentColor || THEME.primary}50`;
+                e.currentTarget.style.boxShadow = `0 12px 32px ${accentColor || THEME.primary}20`;
+            }
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = accentColor ? `${accentColor}22` : THEME.glassBorder;
+            e.currentTarget.style.boxShadow = accentColor ? `0 0 0 1px ${accentColor}08, inset 0 1px 0 rgba(255,255,255,0.05)` : 'inset 0 1px 0 rgba(255,255,255,0.04)';
+        }}
+    >
         <div className="ov-card-shine" />
         {title && (
             <div style={{
@@ -385,22 +401,30 @@ const fmtRelTime = (isoStr) => {
     if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
     return `${Math.round(diff / 86400)}d ago`;
 };
+// PLACEHOLDER: Visual placeholder for sparklines. Replace with real metric data when available
 const genSparkline = (n = 10, base = 40, variance = 30) =>
     Array.from({ length: n }, () => base + Math.random() * variance);
 
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: ENVIRONMENT SWITCHER
    ═══════════════════════════════════════════════════════════════════════════ */
-const ENVIRONMENTS = [
-    { id: 'prod',    label: 'Production',  icon: Globe,        color: '#ef4444', pg: '16.2', host: 'pg-primary-01.internal' },
-    { id: 'staging', label: 'Staging',     icon: FlaskConical, color: '#f59e0b', pg: '16.1', host: 'pg-staging-01.internal' },
-    { id: 'dev',     label: 'Development', icon: Terminal,     color: '#22c55e', pg: '15.5', host: 'pg-dev-01.local' },
-];
-
+// Note: Environments are derived from the connections list in the ConnectionContext
 const EnvSwitcher = ({ currentEnv, onChange }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
-    const env = ENVIRONMENTS.find(e => e.id === currentEnv) || ENVIRONMENTS[0];
+    const { connections } = useConnection();
+    // PLACEHOLDER: Build environment list from actual connections
+    const ENVIRONMENTS = connections && connections.length > 0
+        ? connections.map((conn, idx) => ({
+            id: conn.id || `conn-${idx}`,
+            label: conn.alias || conn.host || 'Database',
+            icon: idx === 0 ? Globe : (idx === 1 ? FlaskConical : Terminal),
+            color: idx === 0 ? '#ef4444' : (idx === 1 ? '#f59e0b' : '#22c55e'),
+            pg: conn.version || 'unknown',
+            host: conn.host || 'localhost',
+          }))
+        : [];
+    const env = ENVIRONMENTS.find(e => e.id === currentEnv) || ENVIRONMENTS[0] || { label: 'No connections', color: '#666' };
 
     useEffect(() => {
         const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -483,20 +507,13 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: NOTIFICATION BELL
    ═══════════════════════════════════════════════════════════════════════════ */
-const MOCK_ALERTS = [
-    { id: 1, severity: 'critical', title: 'High replication lag on replica-2', time: '2m ago', read: false },
-    { id: 2, severity: 'warning',  title: '5 tables require urgent VACUUM', time: '8m ago', read: false },
-    { id: 3, severity: 'warning',  title: 'Checkpoint duration exceeded 1s (×2)', time: '15m ago', read: false },
-    { id: 4, severity: 'info',     title: 'Autovacuum ran on public.orders', time: '34m ago', read: true },
-    { id: 5, severity: 'info',     title: 'Cache hit ratio dipped to 97.2%', time: '1h ago', read: true },
-];
-
+// PLACEHOLDER: Alerts should be fetched from API (e.g., /api/alerts or /api/overview/alerts)
 const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#38bdf8' };
 const SEVERITY_ICON  = { critical: AlertCircle, warning: AlertTriangle, info: Info };
 
 const NotificationBell = () => {
     const [open, setOpen] = useState(false);
-    const [alerts, setAlerts] = useState(MOCK_ALERTS);
+    const [alerts, setAlerts] = useState([]);
     const [bellAnim, setBellAnim] = useState(false);
     const ref = useRef(null);
     const unread = alerts.filter(a => !a.read).length;
@@ -748,6 +765,7 @@ const PgVersionBadge = ({ version = '16.2', environment = 'prod' }) => {
    NEW: LAST BACKUP CARD
    ═══════════════════════════════════════════════════════════════════════════ */
 const BackupStatusCard = ({ lastBackup }) => {
+    const nav = useNavigation();
     const backup = lastBackup || {
         timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
         sizeGB: 12.4,
@@ -760,14 +778,26 @@ const BackupStatusCard = ({ lastBackup }) => {
     const statusColor = backup.status === 'success' ? THEME.success : THEME.danger;
 
     return (
-        <div style={{
-            display: 'flex', flexDirection: 'column', gap: 10,
-            padding: '14px 16px', borderRadius: 14,
-            background: THEME.glass, backdropFilter: 'blur(12px)',
-            border: `1px solid ${isOld ? `${THEME.warning}30` : THEME.glassBorder}`,
-            position: 'relative', overflow: 'hidden',
-        }}
-             className={isOld ? 'ov-glow-warn' : ''}>
+        <div
+            onClick={() => nav?.goToTab('backup')}
+            style={{
+                display: 'flex', flexDirection: 'column', gap: 10,
+                padding: '14px 16px', borderRadius: 14,
+                background: THEME.glass, backdropFilter: 'blur(12px)',
+                border: `1px solid ${isOld ? `${THEME.warning}30` : THEME.glassBorder}`,
+                position: 'relative', overflow: 'hidden',
+                cursor: 'pointer', transition: 'all 0.2s ease',
+            }}
+            className={isOld ? 'ov-glow-warn' : ''}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = `${statusColor}50`;
+                e.currentTarget.style.boxShadow = `0 8px 24px ${statusColor}18`;
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = isOld ? `${THEME.warning}30` : THEME.glassBorder;
+                e.currentTarget.style.boxShadow = 'none';
+            }}
+        >
             <div className="ov-card-shine" />
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -808,6 +838,7 @@ const BackupStatusCard = ({ lastBackup }) => {
    NEW: LONG-RUNNING TRANSACTIONS CARD
    ═══════════════════════════════════════════════════════════════════════════ */
 const LongTxnCard = ({ data }) => {
+    const nav = useNavigation();
     const txns = data || [
         { pid: 54231, duration: '18m 42s', query: 'UPDATE public.orders SET ...', state: 'active', waitEvent: null },
         { pid: 54188, duration: '9m 11s',  query: 'BEGIN; SELECT * FROM sessions ...', state: 'idle in transaction', waitEvent: 'Lock' },
@@ -819,7 +850,18 @@ const LongTxnCard = ({ data }) => {
     }));
 
     return (
-        <div style={{ padding: '14px 16px', borderRadius: 14, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}`, position: 'relative', overflow: 'hidden' }}>
+        <div
+            onClick={() => nav?.goToTab('query-optimizer')}
+            style={{ padding: '14px 16px', borderRadius: 14, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}`, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s ease' }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = `${THEME.warning}50`;
+                e.currentTarget.style.boxShadow = `0 8px 24px ${THEME.warning}18`;
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = THEME.glassBorder;
+                e.currentTarget.style.boxShadow = 'none';
+            }}
+        >
             <div className="ov-card-shine" />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -873,6 +915,7 @@ const LongTxnCard = ({ data }) => {
    NEW: VACUUM HEALTH CARD
    ═══════════════════════════════════════════════════════════════════════════ */
 const VacuumHealthCard = ({ data }) => {
+    const nav = useNavigation();
     const vacuum = data || {
         urgentCount: 5,
         warnCount: 12,
@@ -891,8 +934,17 @@ const VacuumHealthCard = ({ data }) => {
 
     return (
         <div
-            style={{ padding: '14px 16px', borderRadius: 14, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${vacuum.urgentCount > 3 ? `${THEME.danger}28` : THEME.glassBorder}`, position: 'relative', overflow: 'hidden' }}
+            onClick={() => nav?.goToTab('vacuum')}
+            style={{ padding: '14px 16px', borderRadius: 14, background: THEME.glass, backdropFilter: 'blur(12px)', border: `1px solid ${vacuum.urgentCount > 3 ? `${THEME.danger}28` : THEME.glassBorder}`, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s ease' }}
             className={vacuum.urgentCount > 3 ? 'ov-glow-warn' : ''}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = `${urgentColor}50`;
+                e.currentTarget.style.boxShadow = `0 8px 24px ${urgentColor}18`;
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = vacuum.urgentCount > 3 ? `${THEME.danger}28` : THEME.glassBorder;
+                e.currentTarget.style.boxShadow = 'none';
+            }}
         >
             <div className="ov-card-shine" />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -1297,13 +1349,15 @@ const OverviewTab: React.FC = () => {
     ];
 
     /* ── Hero metric cards (now 6 across including backup + vacuum summary) ── */
+    // PLACEHOLDER: Long Txns and Urgent Vacuum should come from actual API responses
+    const nav = useNavigation();
     const metricCards = [
-        { label: 'Active Sessions', value: `${activeConns}`, sub: `of ${maxConns} max`, color: connColor, icon: Activity, spark: sessionSparks, trend: connPct < 70 ? '+2.3%' : '+8.1%', trendUp: connPct < 70 },
-        { label: 'Cache Hit Ratio', value: `${cacheHit}%`,  sub: cacheHit >= 99 ? 'Excellent' : 'Below target', color: cacheColor, icon: Zap, spark: cacheSparks, trend: cacheHit >= 99 ? '+0.1%' : '-0.4%', trendUp: cacheHit >= 99 },
-        { label: 'Database Size',   value: `${diskGB}`,      sub: 'GB on disk', color: THEME.warning, icon: Database, spark: diskSparks, trend: '+1.2%', trendUp: false },
+        { label: 'Active Sessions', value: `${activeConns}`, sub: `of ${maxConns} max`, color: connColor, icon: Activity, spark: sessionSparks, trend: connPct < 70 ? '+2.3%' : '+8.1%', trendUp: connPct < 70, onClick: () => nav?.goToTab('connection-pool') },
+        { label: 'Cache Hit Ratio', value: `${cacheHit}%`,  sub: cacheHit >= 99 ? 'Excellent' : 'Below target', color: cacheColor, icon: Zap, spark: cacheSparks, trend: cacheHit >= 99 ? '+0.1%' : '-0.4%', trendUp: cacheHit >= 99, onClick: () => nav?.goToTab('performance') },
+        { label: 'Database Size',   value: `${diskGB}`,      sub: 'GB on disk', color: THEME.warning, icon: Database, spark: diskSparks, trend: '+1.2%', trendUp: false, onClick: () => nav?.goToTab('storage') },
         { label: 'Uptime',          value: uptimeHrs,        sub: 'hours', color: THEME.info, icon: Clock, spark: uptimeSparks, trend: '99.97%', trendUp: true },
-        { label: 'Long Txns',       value: '3',              sub: '> 1 min', color: THEME.warning, icon: Hourglass, spark: genSparkline(10, 2, 4), trend: '+1', trendUp: false },
-        { label: 'Urgent Vacuum',   value: '5',              sub: 'tables', color: THEME.danger, icon: Leaf, spark: genSparkline(10, 4, 6), trend: '+2', trendUp: false },
+        { label: 'Long Txns',       value: '--',             sub: '> 1 min', color: THEME.warning, icon: Hourglass, spark: genSparkline(10, 2, 4), trend: '0', trendUp: false, onClick: () => nav?.goToTab('query-optimizer') },
+        { label: 'Urgent Vacuum',   value: '--',             sub: 'tables', color: THEME.danger, icon: Leaf, spark: genSparkline(10, 4, 6), trend: '0', trendUp: false, onClick: () => nav?.goToTab('vacuum') },
     ];
 
     /* ══════════════════════════════════════════════════════════════════
@@ -1348,12 +1402,27 @@ const OverviewTab: React.FC = () => {
                     <div
                         key={i}
                         className={`ov-metric-card ${i >= 4 ? 'ov-glow-warn' : 'ov-glow'}`}
+                        onClick={m.onClick}
                         style={{
                             display: 'flex', flexDirection: 'column', gap: 10,
                             padding: '14px 16px', borderRadius: 14,
                             background: THEME.glass, backdropFilter: 'blur(14px)',
                             border: `1px solid ${i >= 4 ? `${m.color}28` : THEME.glassBorder}`,
                             position: 'relative', overflow: 'hidden',
+                            cursor: m.onClick ? 'pointer' : 'default',
+                            transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (m.onClick) {
+                                e.currentTarget.style.background = THEME.glass;
+                                e.currentTarget.style.borderColor = `${m.color}50`;
+                                e.currentTarget.style.boxShadow = `0 8px 24px ${m.color}18`;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = THEME.glass;
+                            e.currentTarget.style.borderColor = i >= 4 ? `${m.color}28` : THEME.glassBorder;
+                            e.currentTarget.style.boxShadow = 'none';
                         }}
                     >
                         <div className="ov-card-shine" />
@@ -1394,6 +1463,7 @@ const OverviewTab: React.FC = () => {
                     title="Cluster Velocity"
                     icon={Activity}
                     accentColor={THEME.primary}
+                    onClick={() => nav?.goToTab('query-optimizer')}
                     rightNode={
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div style={{ display: 'flex', gap: 10, fontSize: 9.5, color: THEME.textDim }}>
@@ -1448,7 +1518,7 @@ const OverviewTab: React.FC = () => {
                 {/* ── Right column ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                     {/* Health Score */}
-                    <Panel title="Database Health" icon={Shield} accentColor={healthColor}>
+                    <Panel title="Database Health" icon={Shield} accentColor={healthColor} onClick={() => nav?.goToTab('overview')}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                             <RingGauge value={healthScore} color={healthColor} size={88} strokeWidth={7} label="HEALTH" secondaryValue={cacheHit} secondaryColor={cacheColor} />
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1472,7 +1542,7 @@ const OverviewTab: React.FC = () => {
                     </Panel>
 
                     {/* Connection Pool */}
-                    <Panel title="Connection Pool" icon={Network} accentColor={connColor}>
+                    <Panel title="Connection Pool" icon={Network} accentColor={connColor} onClick={() => nav?.goToTab('connection-pool')}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <RingGauge value={connPct} color={connColor} size={68} strokeWidth={6} />
                             <div style={{ flex: 1 }}>
@@ -1671,6 +1741,7 @@ const OverviewTab: React.FC = () => {
                     title="Replication & Locks"
                     icon={GitBranch}
                     accentColor={THEME.secondary}
+                    onClick={() => nav?.goToTab('replication')}
                     rightNode={
                         <div style={{ display: 'flex', gap: 10, fontSize: 9.5, color: THEME.textDim }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Radio size={9} color={THEME.success} /> Primary</span>
@@ -1733,7 +1804,7 @@ const OverviewTab: React.FC = () => {
                 </Panel>
 
                 {/* Top Impacted Tables */}
-                <Panel title="Top Impacted Tables" icon={BarChart3} noPad>
+                <Panel title="Top Impacted Tables" icon={BarChart3} noPad onClick={() => nav?.goToTab('table-analysis')}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         {[
                             { name: 'public.orders',       reads: 42000, writes: 9000 },
@@ -1767,7 +1838,7 @@ const OverviewTab: React.FC = () => {
                 </Panel>
 
                 {/* WAL & Checkpoints */}
-                <Panel title="WAL & Checkpoints" icon={Gauge} accentColor={THEME.info}>
+                <Panel title="WAL & Checkpoints" icon={Gauge} accentColor={THEME.info} onClick={() => nav?.goToTab('checkpoint')}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 14 }}>
                             <div>

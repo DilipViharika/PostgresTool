@@ -1133,7 +1133,7 @@ const ReliabilityTab: FC = () => {
                 <Icon size={13} />
                 {label}
                 {count != null && count > 0 && (
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.danger}20`, color: active ? '#fff' : THEME.danger }}>{count}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.6)' : `${THEME.danger}20`, color: active ? '#fff' : THEME.danger }}>{count}</span>
                 )}
             </button>
         );

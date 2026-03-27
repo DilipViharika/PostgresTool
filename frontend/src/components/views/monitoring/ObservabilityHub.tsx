@@ -15,7 +15,7 @@ import {
     DownloadCloud, Eye, Filter, Gauge, Globe, Info,
     Package, RefreshCw, Search, TrendingDown, TrendingUp,
     X, AlertOctagon, Zap, Users, Cpu, Code, Calendar,
-    GitBranch, Shield, Radio, Workflow, Server,
+    GitBranch, Shield, Radio, Workflow, Server, Cloud,
 } from 'lucide-react';
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -71,6 +71,30 @@ interface JobData {
     successRate: number;
 }
 
+interface TraceSpan {
+    name: string;
+    service: string;
+    duration: number;
+    status: 'success' | 'error' | 'slow';
+    startTime: number;
+}
+
+interface LogEntry {
+    timestamp: string;
+    level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+    message: string;
+    service?: string;
+    traceId?: string;
+}
+
+interface ServiceHealth {
+    name: string;
+    status: 'healthy' | 'degraded' | 'down';
+    latency: number;
+    lastCheck: string;
+    uptime: number;
+}
+
 
 const Styles = () => (
     <style>{`
@@ -105,18 +129,60 @@ const Styles = () => (
         .oh-status-critical { background:${T.danger}20; color:${T.danger}; }
         .oh-status-neutral { background:${T.border}; color:${T.text2}; }
         .oh-expandable { cursor:pointer; user-select:none; }
-        .oh-expandable-content { display:none; padding-top:8px; border-top:1px solid ${T.border}; margin-top:8px; }
-        .oh-expandable.expanded .oh-expandable-content { display:block; }
+        .oh-expandable-content { max-height:0; overflow:hidden; opacity:0; padding-top:0; border-top:1px solid ${T.border}; margin-top:0; transition:max-height 0.3s ease, opacity 0.3s ease, padding-top 0.3s ease, margin-top 0.3s ease; }
+        .oh-expandable.expanded .oh-expandable-content { max-height:500px; opacity:1; padding-top:8px; margin-top:8px; }
         .oh-badge { display:inline-block; padding:4px 10px; background:${T.primary}20; color:${T.primary}; border-radius:4px; font-size:11px; font-weight:600; }
         .oh-loading { text-align:center; padding:40px; }
         .oh-spinner { animation:spin 1s linear infinite; display:inline-block; }
         @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         .oh-icon-small { display:inline-block; vertical-align:middle; margin-right:6px; }
+        .oh-metrics-overview { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px; animation:fadeIn 0.5s ease-in; }
+        .oh-metric-stat { background:${T.raised}; border:1px solid ${T.border}; border-radius:10px; padding:20px; position:relative; overflow:hidden; }
+        .oh-metric-stat::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, ${T.primary}, ${T.success}, ${T.warning}); }
+        .oh-metric-stat-label { font-size:11px; color:${T.text2}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+        .oh-metric-stat-value { font-size:32px; font-weight:700; color:${T.primary}; }
+        .oh-metric-stat-subtitle { font-size:11px; color:${T.text3}; margin-top:8px; }
+        .oh-trace-waterfall { margin-bottom:16px; background:${T.surface}; border:1px solid ${T.border}; border-radius:8px; padding:12px; }
+        .oh-trace-bar { display:flex; align-items:center; margin-bottom:12px; }
+        .oh-trace-label { width:140px; font-size:11px; font-weight:500; color:${T.text1}; overflow:hidden; text-overflow:ellipsis; }
+        .oh-trace-duration { width:60px; text-align:right; font-size:11px; color:${T.text2}; margin-right:12px; font-family:${THEME.fontMono}; }
+        .oh-trace-bar-bg { flex:1; height:20px; background:${T.border}; border-radius:4px; position:relative; overflow:hidden; }
+        .oh-trace-segment { height:100%; position:absolute; display:flex; align-items:center; justify-content:center; font-size:9px; color:white; font-weight:600; }
+        .oh-trace-success { background:${T.success}; }
+        .oh-trace-error { background:${T.danger}; }
+        .oh-trace-slow { background:${T.warning}; }
+        .oh-log-filter { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+        .oh-log-level-btn { padding:6px 12px; border:1px solid ${T.border}; background:${T.surface}; color:${T.text2}; border-radius:6px; cursor:pointer; font-size:11px; font-weight:600; transition:all 0.2s; }
+        .oh-log-level-btn:hover { background:${T.raised}; }
+        .oh-log-level-btn.active { background:${T.primary}; color:white; border-color:${T.primary}; }
+        .oh-log-entry { padding:12px; background:${T.raised}; border-radius:6px; margin-bottom:8px; border-left:3px solid ${T.border}; }
+        .oh-log-entry.error { border-left-color:${T.danger}; }
+        .oh-log-entry.warn { border-left-color:${T.warning}; }
+        .oh-log-entry.info { border-left-color:${T.primary}; }
+        .oh-log-entry.debug { border-left-color:${T.text3}; }
+        .oh-log-time { font-size:10px; color:${T.text3}; font-family:${THEME.fontMono}; }
+        .oh-service-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:16px; }
+        .oh-service-card { background:${T.raised}; border:1px solid ${T.border}; border-radius:8px; padding:16px; display:flex; align-items:center; gap:12px; }
+        .oh-service-indicator { width:12px; height:12px; border-radius:50%; }
+        .oh-service-info { flex:1; }
+        .oh-service-name { font-size:12px; font-weight:600; color:${T.text1}; }
+        .oh-service-meta { font-size:10px; color:${T.text2}; margin-top:4px; }
+        .oh-integration-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
+        .oh-integration-item { background:${T.raised}; border:1px solid ${T.border}; border-radius:8px; padding:16px; display:flex; align-items:center; justify-content:space-between; }
+        .oh-integration-name { font-size:12px; font-weight:600; color:${T.text1}; }
+        .oh-integration-status { font-size:11px; padding:4px 8px; border-radius:4px; background:${T.success}20; color:${T.success}; }
+        .oh-integration-status.disconnected { background:${T.danger}20; color:${T.danger}; }
+        .oh-empty-state { text-align:center; padding:40px 20px; color:${T.text2}; }
+        .oh-empty-state-icon { font-size:32px; margin-bottom:12px; opacity:0.5; }
         @media (max-width: 1200px) {
             .oh-grid-3 { grid-template-columns:1fr 1fr; }
+            .oh-metrics-overview { grid-template-columns:repeat(2, 1fr); }
+            .oh-integration-grid { grid-template-columns:1fr; }
         }
         @media (max-width: 768px) {
             .oh-grid-2, .oh-grid-3, .oh-grid-6 { grid-template-columns:1fr; }
+            .oh-metrics-overview { grid-template-columns:1fr; }
+            .oh-integration-grid { grid-template-columns:1fr; }
         }
     `}</style>
 );
@@ -160,6 +226,302 @@ const ChartTooltip = ({ active, payload, label }) => {
     );
 };
 
+const MetricsOverview: React.FC<{ metrics: any }> = ({ metrics }) => {
+    if (!metrics) return null;
+
+    const statBoxes = [
+        {
+            label: 'Total Metrics Tracked',
+            value: metrics.totalMetricsTracked || 284,
+            unit: '',
+            icon: Gauge,
+        },
+        {
+            label: 'Active Alerts',
+            value: metrics.activeAlerts || 3,
+            unit: '',
+            icon: AlertTriangle,
+            color: metrics.activeAlerts > 0 ? T.warning : T.success,
+        },
+        {
+            label: 'Data Sources Connected',
+            value: metrics.dataSourcesConnected || 12,
+            unit: '',
+            icon: Database,
+        },
+        {
+            label: 'Avg Response Time',
+            value: metrics.averageResponseTime || 142,
+            unit: 'ms',
+            icon: Clock,
+        },
+    ];
+
+    return (
+        <div className="oh-metrics-overview">
+            {statBoxes.map((stat, i) => {
+                const Icon = stat.icon;
+                const color = stat.color || T.primary;
+                return (
+                    <div key={i} className="oh-metric-stat">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <div className="oh-metric-stat-label">{stat.label}</div>
+                            <Icon size={16} color={color} />
+                        </div>
+                        <div className="oh-metric-stat-value" style={{ color }}>
+                            {stat.value}{stat.unit}
+                        </div>
+                        <div className="oh-metric-stat-subtitle">
+                            {i === 0 && 'across all services'}
+                            {i === 1 && 'requiring attention'}
+                            {i === 2 && 'active connections'}
+                            {i === 3 && 'p95 latency'}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+const TraceVisualization: React.FC<{ spans?: TraceSpan[] }> = ({ spans }) => {
+    if (!spans || spans.length === 0) {
+        return (
+            <div className="oh-empty-state">
+                <div className="oh-empty-state-icon">📡</div>
+                <div>No trace spans available</div>
+                <div style={{ fontSize: 11, marginTop: 4 }}>Enable OpenTelemetry to view request traces</div>
+            </div>
+        );
+    }
+
+    const maxDuration = Math.max(...spans.map(s => s.duration), 1);
+    const minStartTime = Math.min(...spans.map(s => s.startTime), 0);
+
+    return (
+        <div>
+            {spans.map((span, i) => {
+                const position = ((span.startTime - minStartTime) / maxDuration) * 100;
+                const width = (span.duration / maxDuration) * 100;
+                let statusClass = 'oh-trace-success';
+                if (span.status === 'error') statusClass = 'oh-trace-error';
+                else if (span.status === 'slow') statusClass = 'oh-trace-slow';
+
+                return (
+                    <div key={i} className="oh-trace-waterfall">
+                        <div className="oh-trace-bar">
+                            <div className="oh-trace-label" title={span.name}>{span.service}</div>
+                            <div className="oh-trace-duration">{span.duration}ms</div>
+                            <div className="oh-trace-bar-bg">
+                                <div
+                                    className={`oh-trace-segment ${statusClass}`}
+                                    style={{
+                                        left: `${position}%`,
+                                        width: `${width}%`,
+                                        minWidth: 20,
+                                    }}
+                                >
+                                    {span.name}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+const LogCorrelationPanel: React.FC<{ logs?: LogEntry[] }> = ({ logs = [] }) => {
+    const [selectedLevel, setSelectedLevel] = React.useState<string>('');
+    const [expandedLog, setExpandedLog] = React.useState<number | null>(null);
+
+    const filteredLogs = selectedLevel
+        ? logs.filter(log => log.level === selectedLevel)
+        : logs;
+
+    const levelCounts = {
+        DEBUG: logs.filter(l => l.level === 'DEBUG').length,
+        INFO: logs.filter(l => l.level === 'INFO').length,
+        WARN: logs.filter(l => l.level === 'WARN').length,
+        ERROR: logs.filter(l => l.level === 'ERROR').length,
+    };
+
+    if (logs.length === 0) {
+        return (
+            <div className="oh-empty-state">
+                <div className="oh-empty-state-icon">📋</div>
+                <div>No logs available</div>
+                <div style={{ fontSize: 11, marginTop: 4 }}>Logs will appear here as your application generates them</div>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <div className="oh-log-filter">
+                {(['DEBUG', 'INFO', 'WARN', 'ERROR'] as const).map(level => (
+                    <button
+                        key={level}
+                        className={`oh-log-level-btn ${selectedLevel === level ? 'active' : ''}`}
+                        onClick={() => setSelectedLevel(selectedLevel === level ? '' : level)}
+                    >
+                        {level} ({levelCounts[level]})
+                    </button>
+                ))}
+            </div>
+            <div style={{ marginBottom: 12, fontSize: 11, color: T.text2 }}>
+                Showing {filteredLogs.length} of {logs.length} entries
+            </div>
+            {filteredLogs.slice(0, 20).map((log, i) => (
+                <div
+                    key={i}
+                    className={`oh-log-entry ${log.level.toLowerCase()}`}
+                    onClick={() => setExpandedLog(expandedLog === i ? null : i)}
+                    style={{ cursor: 'pointer' }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                        <div>
+                            <div style={{ fontSize: 12, color: T.text1, marginBottom: 4 }}>
+                                {log.message}
+                            </div>
+                            <div style={{ display: 'flex', gap: 12 }}>
+                                <span className="oh-log-time">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                {log.service && <span style={{ fontSize: 10, color: T.text2 }}>Service: {log.service}</span>}
+                                {log.traceId && <span style={{ fontSize: 10, color: T.text2, fontFamily: THEME.fontMono }}>Trace: {log.traceId.slice(0, 8)}...</span>}
+                            </div>
+                        </div>
+                        <span style={{ fontSize: 11, color: T.text2 }}>▾</span>
+                    </div>
+                    {expandedLog === i && (
+                        <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}`, fontSize: 10 }}>
+                            <div style={{ background: T.surface, padding: 8, borderRadius: 4, fontFamily: THEME.fontMono, color: T.text2, wordBreak: 'break-all' }}>
+                                {log.message}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const ServiceHealthMap: React.FC<{ services?: ServiceHealth[] }> = ({ services = [] }) => {
+    if (services.length === 0) {
+        return (
+            <div className="oh-empty-state">
+                <div className="oh-empty-state-icon">🔗</div>
+                <div>No services connected</div>
+                <div style={{ fontSize: 11, marginTop: 4 }}>Configure database and service connections to view health</div>
+            </div>
+        );
+    }
+
+    const totalUptime = services.reduce((sum, s) => sum + s.uptime, 0) / services.length;
+
+    return (
+        <div>
+            <div style={{ marginBottom: 20, padding: 16, background: T.raised, borderRadius: 8, border: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 11, color: T.text2, marginBottom: 8 }}>Overall Service Health</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: totalUptime >= 99 ? T.success : T.warning }}>
+                        {totalUptime.toFixed(2)}%
+                    </div>
+                    <div style={{ flex: 1, height: 8, background: T.border, borderRadius: 4, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${totalUptime}%`, background: totalUptime >= 99 ? T.success : T.warning, transition: 'width 0.3s ease' }} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="oh-service-grid">
+                {services.map((service, i) => {
+                    let statusColor = T.success;
+                    if (service.status === 'degraded') statusColor = T.warning;
+                    else if (service.status === 'down') statusColor = T.danger;
+
+                    return (
+                        <div key={i} className="oh-service-card">
+                            <div className="oh-service-indicator" style={{ background: statusColor }} />
+                            <div className="oh-service-info">
+                                <div className="oh-service-name">{service.name}</div>
+                                <div className="oh-service-meta">
+                                    ↔ {service.latency}ms • {service.uptime.toFixed(1)}% uptime
+                                </div>
+                                <div style={{ fontSize: 9, color: T.text3, marginTop: 4 }}>
+                                    Last check: {new Date(service.lastCheck).toLocaleTimeString()}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const IntegrationStatus: React.FC<{ integrations?: any }> = ({ integrations }) => {
+    const defaultIntegrations = {
+        opentelemetry: { connected: false, version: 'Not configured' },
+        cloudwatch: { connected: false, version: 'Not configured' },
+        prometheus: { connected: false, version: 'Not configured' },
+        customMetrics: { connected: false, endpoints: 0 },
+    };
+
+    const integrationsData = integrations || defaultIntegrations;
+
+    const items = [
+        {
+            name: 'OpenTelemetry',
+            key: 'opentelemetry',
+            icon: Radio,
+        },
+        {
+            name: 'CloudWatch',
+            key: 'cloudwatch',
+            icon: Cloud,
+        },
+        {
+            name: 'Prometheus',
+            key: 'prometheus',
+            icon: TrendingUp,
+        },
+        {
+            name: 'Custom Metrics',
+            key: 'customMetrics',
+            icon: Zap,
+        },
+    ];
+
+    return (
+        <div className="oh-integration-grid">
+            {items.map((item, i) => {
+                const integration = integrationsData[item.key];
+                const isConnected = integration?.connected || integration?.endpoints > 0;
+                const Icon = item.icon;
+
+                return (
+                    <div key={i} className="oh-integration-item">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Icon size={16} color={isConnected ? T.success : T.text2} />
+                            <div>
+                                <div className="oh-integration-name">{item.name}</div>
+                                <div style={{ fontSize: 10, color: T.text2, marginTop: 2 }}>
+                                    {item.key === 'customMetrics'
+                                        ? `${integration?.endpoints || 0} endpoints`
+                                        : integration?.version || 'v1.0'}
+                                </div>
+                            </div>
+                        </div>
+                        <div className={`oh-integration-status ${isConnected ? '' : 'disconnected'}`}>
+                            {isConnected ? 'Connected' : 'Not configured'}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 // ═════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═════════════════════════════════════════════════════════════════════════
@@ -172,6 +534,10 @@ const ObservabilityHub: React.FC = () => {
     const [uptime, setUptime] = useState(null);
     const [auditLog, setAuditLog] = useState(null);
     const [jobs, setJobs] = useState(null);
+    const [traces, setTraces] = useState<TraceSpan[] | null>(null);
+    const [logs, setLogs] = useState<LogEntry[] | null>(null);
+    const [services, setServices] = useState<ServiceHealth[] | null>(null);
+    const [integrations, setIntegrations] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [expandedRows, setExpandedRows] = useState(new Set());
@@ -183,18 +549,26 @@ const ObservabilityHub: React.FC = () => {
         const loadData = async () => {
             try {
                 setLoading(true);
-                const [api, exc, up, audit, job] = await Promise.all([
+                const [api, exc, up, audit, job, trace, log, svc, integ] = await Promise.all([
                     fetchData('/api/observability/api-metrics'),
                     fetchData('/api/observability/exceptions'),
                     fetchData('/api/observability/uptime'),
                     fetchData('/api/observability/audit-log'),
                     fetchData('/api/observability/jobs'),
+                    fetchData('/api/observability/traces').catch(() => null),
+                    fetchData('/api/observability/logs').catch(() => null),
+                    fetchData('/api/observability/services').catch(() => null),
+                    fetchData('/api/observability/integrations').catch(() => null),
                 ]);
                 setApiMetrics(api);
                 setExceptions(exc);
                 setUptime(up);
                 setAuditLog(audit);
                 setJobs(job);
+                setTraces(trace?.spans || null);
+                setLogs(log?.entries || null);
+                setServices(svc?.services || null);
+                setIntegrations(integ);
                 setError(null);
             } catch (err) {
                 setError(err.message);
@@ -275,6 +649,10 @@ const ObservabilityHub: React.FC = () => {
             <div className="oh-tab-buttons">
                 {[
                     { id: 'api', label: 'API Monitoring', icon: Cpu },
+                    { id: 'traces', label: 'Request Traces', icon: Radio },
+                    { id: 'logs', label: 'Log Correlation', icon: Code },
+                    { id: 'services', label: 'Service Health', icon: Server },
+                    { id: 'integrations', label: 'Integrations', icon: Package },
                     { id: 'exceptions', label: 'Exception Tracker', icon: AlertTriangle },
                     { id: 'uptime', label: 'Uptime Monitor', icon: Globe },
                     { id: 'audit', label: 'Audit Log', icon: Shield },
@@ -293,6 +671,9 @@ const ObservabilityHub: React.FC = () => {
             {/* API Monitoring Panel */}
             {activeTab === 'api' && apiMetrics && (
                 <div>
+                    {/* Enhanced Metrics Overview */}
+                    <MetricsOverview metrics={apiMetrics} />
+
                     <div className="oh-subtitle">Key Metrics</div>
                     <div className="oh-grid-6">
                         <MetricCard label="Avg Response" value={apiMetrics.averageResponseTime} unit="ms" icon={Clock} />
@@ -373,6 +754,58 @@ const ObservabilityHub: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Request Traces Panel */}
+            {activeTab === 'traces' && (
+                <div>
+                    <div className="oh-card">
+                        <div className="oh-subtitle">Request Trace Waterfall</div>
+                        <div style={{ fontSize: 11, color: T.text2, marginBottom: 16 }}>
+                            Visualize distributed trace spans across microservices with timing information
+                        </div>
+                        <TraceVisualization spans={traces} />
+                    </div>
+                </div>
+            )}
+
+            {/* Log Correlation Panel */}
+            {activeTab === 'logs' && (
+                <div>
+                    <div className="oh-card">
+                        <div className="oh-subtitle">Log Correlation</div>
+                        <div style={{ fontSize: 11, color: T.text2, marginBottom: 16 }}>
+                            Recent logs filtered by severity level with trace correlation
+                        </div>
+                        <LogCorrelationPanel logs={logs} />
+                    </div>
+                </div>
+            )}
+
+            {/* Service Health Panel */}
+            {activeTab === 'services' && (
+                <div>
+                    <div className="oh-card">
+                        <div className="oh-subtitle">Connected Services & Databases</div>
+                        <div style={{ fontSize: 11, color: T.text2, marginBottom: 16 }}>
+                            Status and latency metrics for all connected services
+                        </div>
+                        <ServiceHealthMap services={services} />
+                    </div>
+                </div>
+            )}
+
+            {/* Integration Status Panel */}
+            {activeTab === 'integrations' && (
+                <div>
+                    <div className="oh-card">
+                        <div className="oh-subtitle">Active Integrations</div>
+                        <div style={{ fontSize: 11, color: T.text2, marginBottom: 16 }}>
+                            Status of observability platform integrations and configurations
+                        </div>
+                        <IntegrationStatus integrations={integrations} />
                     </div>
                 </div>
             )}

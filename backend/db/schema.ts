@@ -57,6 +57,8 @@ export const users = pgmonitoringtool.table(
     mfaEnabled: boolean('mfa_enabled').notNull().default(true),
     apiAccess: boolean('api_access').notNull().default(false),
     status: varchar('status', { length: 20 }).notNull().default('active'),
+    mustChangePassword: boolean('must_change_password').notNull().default(false),
+    passwordChangedAt: timestamp('password_changed_at').notNull().defaultNow(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
     lastLoginAt: timestamp('last_login_at'),
@@ -66,6 +68,26 @@ export const users = pgmonitoringtool.table(
     uniqueIndex('users_username_unique').on(table.username),
     uniqueIndex('users_email_unique').on(table.email),
     index('users_status_idx').on(table.status),
+  ]
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Password Reset Tokens
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const passwordResetTokens = pgmonitoringtool.table(
+  'password_reset_tokens',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').notNull().references(() => users.id),
+    token: varchar('token', { length: 255 }).notNull().unique(),
+    expiresAt: timestamp('expires_at').notNull(),
+    usedAt: timestamp('used_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('password_reset_user_idx').on(table.userId),
+    index('password_reset_token_idx').on(table.token),
   ]
 );
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, FC } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, putData, postData } from '../../../utils/api';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Database, HardDrive, Trash2, TrendingDown, Save, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Database, HardDrive, Trash2, TrendingDown, Save, AlertTriangle, RefreshCw, RotateCcw } from 'lucide-react';
 
 /* ── TYPE DEFINITIONS ───────────────────────────────────────────────────── */
 interface RetentionPolicy {
@@ -94,6 +94,7 @@ const RetentionManagementTab: FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     useEffect(() => {
         const load = async () => {
@@ -158,6 +159,41 @@ const RetentionManagementTab: FC = () => {
         }
     };
 
+    const handleResetDefaults = async () => {
+        setFormValues({ metrics: 30, logs: 7, alerts: 90, audit: 365 });
+        setSuccess('Retention policy reset to defaults');
+        setTimeout(() => setSuccess(null), 3000);
+    };
+
+    const handleSaveSinglePolicy = async (category: string, days: number) => {
+        setSaving(true);
+        try {
+            const payload: any = {};
+            const categoryMap: any = {
+                Metrics: 'metricsRetentionDays',
+                Logs: 'logsRetentionDays',
+                Alerts: 'alertsRetentionDays',
+                Audit: 'auditRetentionDays',
+            };
+            payload[categoryMap[category]] = days;
+            payload.metricsRetentionDays = payload.metricsRetentionDays || Number(formValues.metrics);
+            payload.logsRetentionDays = payload.logsRetentionDays || Number(formValues.logs);
+            payload.alertsRetentionDays = payload.alertsRetentionDays || Number(formValues.alerts);
+            payload.auditRetentionDays = payload.auditRetentionDays || Number(formValues.audit);
+
+            const result = await putData('/api/retention/policy', payload);
+            setPolicy(result);
+            setEditingIndex(null);
+            setSuccess(`${category} retention updated to ${days} days`);
+            setError(null);
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (e) {
+            setError((e as Error).message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (loading) {
         return (
             <div style={{ padding:'40px 20px', textAlign:'center' }}>
@@ -204,6 +240,81 @@ const RetentionManagementTab: FC = () => {
                     {success}
                 </div>
             )}
+
+            {/* New Retention Policies Table */}
+            <div className="rm-card" style={{ marginBottom:20 }}>
+                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:20 }}>
+                    <Database size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
+                    Retention Policies
+                </div>
+
+                <div style={{ overflowX:'auto' }}>
+                    <table style={{
+                        width:'100%',
+                        borderCollapse:'collapse',
+                        fontSize:13
+                    }}>
+                        <thead>
+                            <tr style={{ borderBottom:`1px solid ${THEME.grid}` }}>
+                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Category</th>
+                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Current</th>
+                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Custom Retention</th>
+                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[
+                                { label: 'Metrics', key: 'metrics', current: policy?.metricsRetentionDays || 30 },
+                                { label: 'Logs', key: 'logs', current: policy?.logsRetentionDays || 7 },
+                                { label: 'Alerts', key: 'alerts', current: policy?.alertsRetentionDays || 90 },
+                                { label: 'Audit', key: 'audit', current: policy?.auditRetentionDays || 365 }
+                            ].map((item, idx) => (
+                                <tr key={idx} style={{ borderBottom:`1px solid ${THEME.grid}` }}>
+                                    <td style={{ padding:'12px', color:THEME.textMain }}>{item.label}</td>
+                                    <td style={{ padding:'12px', color:THEME.textMuted }}>{item.current} days</td>
+                                    <td style={{ padding:'12px' }}>
+                                        <input
+                                            type="number"
+                                            className="rm-input"
+                                            min="1"
+                                            max="3650"
+                                            value={formValues[item.key as keyof FormValues]}
+                                            onChange={(e) => setFormValues({ ...formValues, [item.key]: e.target.value })}
+                                            style={{ width:'100px', padding:'6px 8px', fontSize:12 }}
+                                        />
+                                    </td>
+                                    <td style={{ padding:'12px' }}>
+                                        <button
+                                            className="rm-button"
+                                            onClick={() => handleSaveSinglePolicy(item.label, Number(formValues[item.key as keyof FormValues]))}
+                                            disabled={saving}
+                                            style={{ padding:'6px 12px', fontSize:12, background: THEME.primary }}
+                                        >
+                                            {saving ? <RefreshCw size={12} style={{ display:'inline', marginRight:4 }} className="rm-spinner" /> : <Save size={12} style={{ display:'inline', marginRight:4 }} />}
+                                            Save
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style={{ display:'flex', gap:10, marginTop:20 }}>
+                    <button className="rm-button" onClick={handleSavePolicy} disabled={saving} style={{ marginTop:0 }}>
+                        {saving ? <RefreshCw size={14} className="rm-spinner" style={{ marginRight:6, display:'inline' }} /> : <Save size={14} style={{ marginRight:6, display:'inline' }} />}
+                        {saving ? 'Saving All...' : 'Save All Policies'}
+                    </button>
+                    <button
+                        className="rm-button"
+                        onClick={handleResetDefaults}
+                        style={{ background: THEME.secondary, marginTop:0 }}
+                    >
+                        <RotateCcw size={14} style={{ marginRight:6, display:'inline' }} />
+                        Reset to Defaults
+                    </button>
+                </div>
+            </div>
 
             <div className="rm-card" style={{ marginBottom:20 }}>
                 <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:20 }}>

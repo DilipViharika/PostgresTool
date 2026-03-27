@@ -194,6 +194,9 @@ const TerraformExportTab = lazyRetry(() =>
 const ReportBuilderTab = lazyRetry(() =>
   import('./components/views/admin/ReportBuilderTab.jsx')
 );
+const UserProfileTab = lazyRetry(() =>
+  import('./components/views/admin/UserProfileTab.tsx')
+);
 
 // Gap features — Monitoring
 const OpenTelemetryTab = lazyRetry(() =>
@@ -393,6 +396,7 @@ registerComponents({
   RetentionManagementTab,
   TerraformExportTab,
   ReportBuilderTab,
+  UserProfileTab,
   CustomDashboardTab,
   MongoOverviewTab,
   MongoPerformanceTab,
@@ -1892,11 +1896,27 @@ const AuthConsumer: FC = () => {
   const [readyToEnter, setReadyToEnter] = useState(!!currentUser || isDemo);
   const prevUser = useRef(currentUser);
 
+  // Password change modal state
+  const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
   useEffect(() => {
     // User just logged in or demo activated → enter immediately
     if ((!prevUser.current && currentUser) || isDemo) {
       setReadyToEnter(true);
       prevUser.current = currentUser;
+
+      // Check if password needs to be changed
+      const mustChange = localStorage.getItem('vigil_must_change_password');
+      if (mustChange === 'true' && !isDemo) {
+        setShowPasswordChangeModal(true);
+        localStorage.removeItem('vigil_must_change_password');
+      }
       return;
     }
     // User logged out and not demo → reset gate for next login
@@ -1905,6 +1925,63 @@ const AuthConsumer: FC = () => {
     }
     prevUser.current = currentUser;
   }, [currentUser, isDemo]);
+
+  // ── Password Change Handler ──────────────────────────────────────
+  const handleChangePassword = useCallback(async () => {
+    setPasswordError('');
+    setPasswordMessage('');
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('All fields are required');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+      setPasswordError('Password must contain lowercase, uppercase, and numbers');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const token = localStorage.getItem('vigil_token');
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setPasswordMessage('Password changed successfully!');
+        setTimeout(() => {
+          setShowPasswordChangeModal(false);
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+        }, 1500);
+      } else {
+        setPasswordError(data.error || 'Failed to change password');
+      }
+    } catch (err) {
+      setPasswordError('Unable to reach server');
+    } finally {
+      setChangingPassword(false);
+    }
+  }, [currentPassword, newPassword, confirmPassword]);
 
   // ── Logout fade-out ──────────────────────────────────────────
   const [loggingOut, setLoggingOut] = useState(false);
@@ -1921,8 +1998,146 @@ const AuthConsumer: FC = () => {
 
   if (loading) return <LoadingScreen />;
 
+  // Password Change Modal
+  const PasswordChangeModal = () => (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,.6)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+      }}
+    >
+      <div
+        style={{
+          background: THEME.surface,
+          borderRadius: 16,
+          padding: '32px',
+          maxWidth: '420px',
+          width: '90%',
+          border: `1px solid ${THEME.grid}`,
+          boxShadow: '0 20px 60px rgba(0,0,0,.5)',
+        }}
+      >
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>
+          Change Password
+        </h2>
+        <p style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 20 }}>
+          Your account requires a new password. Please set a strong password with uppercase, lowercase, and numbers.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <input
+            type="password"
+            placeholder="Current password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            disabled={changingPassword}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: `1px solid ${THEME.grid}`,
+              background: THEME.bg,
+              color: THEME.textMain,
+              fontSize: 13,
+              fontFamily: 'inherit',
+              outline: 'none',
+            }}
+          />
+          <input
+            type="password"
+            placeholder="New password (min 8 chars)"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            disabled={changingPassword}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: `1px solid ${THEME.grid}`,
+              background: THEME.bg,
+              color: THEME.textMain,
+              fontSize: 13,
+              fontFamily: 'inherit',
+              outline: 'none',
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={changingPassword}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: `1px solid ${THEME.grid}`,
+              background: THEME.bg,
+              color: THEME.textMain,
+              fontSize: 13,
+              fontFamily: 'inherit',
+              outline: 'none',
+            }}
+          />
+
+          {passwordError && (
+            <div
+              style={{
+                padding: '10px 12px',
+                borderRadius: 8,
+                background: `${THEME.danger}15`,
+                color: THEME.danger,
+                fontSize: 12,
+                fontFamily: 'inherit',
+              }}
+            >
+              {passwordError}
+            </div>
+          )}
+
+          {passwordMessage && (
+            <div
+              style={{
+                padding: '10px 12px',
+                borderRadius: 8,
+                background: `${THEME.success}15`,
+                color: THEME.success,
+                fontSize: 12,
+                fontFamily: 'inherit',
+              }}
+            >
+              {passwordMessage}
+            </div>
+          )}
+
+          <button
+            onClick={handleChangePassword}
+            disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+            style={{
+              padding: '10px 16px',
+              borderRadius: 8,
+              border: 'none',
+              background: (!currentPassword || !newPassword || !confirmPassword || changingPassword) ? THEME.surfaceHover : '#00D4FF',
+              color: (!currentPassword || !newPassword || !confirmPassword || changingPassword) ? THEME.textMuted : '#000',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: (!currentPassword || !newPassword || !confirmPassword || changingPassword) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            {changingPassword ? 'Updating...' : 'Change Password'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <Router>
+    <>
+      {showPasswordChangeModal && <PasswordChangeModal />}
+      <Router>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           {/* 1. Login Route: redirect immediately to dashboard if already logged in */}
@@ -2007,7 +2222,8 @@ const AuthConsumer: FC = () => {
           />
         </Routes>
       </Suspense>
-    </Router>
+      </Router>
+    </>
   );
 };
 

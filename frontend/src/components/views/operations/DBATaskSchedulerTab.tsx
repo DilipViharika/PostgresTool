@@ -10,6 +10,7 @@ import {
     Edit2,
     MessageSquare,
     AlertCircle,
+    Bell,
     type LucideIcon
 } from 'lucide-react';
 import { fetchData } from '../../../utils/api';
@@ -26,6 +27,11 @@ interface DBTask {
     dueDate?: string;
     notes?: string;
     done?: boolean;
+    notificationsEnabled?: boolean;
+    notificationMethod?: 'email' | 'slack' | 'both';
+    notificationEmail?: string;
+    notificationSlackChannel?: string;
+    notificationSent?: boolean;
 }
 
 interface FormData {
@@ -36,6 +42,10 @@ interface FormData {
     assignee: string;
     dueDate: string;
     notes: string;
+    notificationsEnabled?: boolean;
+    notificationMethod?: 'email' | 'slack' | 'both';
+    notificationEmail?: string;
+    notificationSlackChannel?: string;
 }
 
 interface ExecutionHistoryEntry {
@@ -765,6 +775,11 @@ const TaskRow: React.FC<TaskRowProps> = ({
                         >
                             {task.title}
                         </div>
+                        {task.notificationsEnabled && (
+                            <div style={{ display: 'flex', alignItems: 'center' }} title="Notifications enabled">
+                                <Bell size={14} color={THEME.primary} />
+                            </div>
+                        )}
                         {requiresApproval && (
                             <span style={{ fontSize: 11, color: THEME.danger, fontWeight: 600 }}>
                                 ⚠️ Requires Approval
@@ -802,6 +817,20 @@ const TaskRow: React.FC<TaskRowProps> = ({
                     >
                         <MessageSquare size={16} />
                     </button>
+                )}
+
+                {task.done && task.notificationsEnabled && task.notificationSent && (
+                    <div style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: `${THEME.success}15`,
+                        fontSize: '11px',
+                        color: THEME.success,
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap'
+                    }} title="Notification sent">
+                        ✓ Notified
+                    </div>
                 )}
 
                 <button onClick={onEdit} style={styles.editButton}>
@@ -849,6 +878,10 @@ const DBATaskSchedulerTab: React.FC = () => {
         assignee: '',
         dueDate: '',
         notes: '',
+        notificationsEnabled: false,
+        notificationMethod: 'email',
+        notificationEmail: '',
+        notificationSlackChannel: '',
     });
 
     useEffect(() => { loadTasks(); }, []);
@@ -890,6 +923,10 @@ const DBATaskSchedulerTab: React.FC = () => {
                     assignee: formData.assignee || undefined,
                     dueDate: formData.dueDate || undefined,
                     notes: formData.notes || undefined,
+                    notificationsEnabled: formData.notificationsEnabled || false,
+                    notificationMethod: formData.notificationMethod || 'email',
+                    notificationEmail: formData.notificationEmail || undefined,
+                    notificationSlackChannel: formData.notificationSlackChannel || undefined,
                 }),
             });
 
@@ -963,6 +1000,10 @@ const DBATaskSchedulerTab: React.FC = () => {
             assignee: '',
             dueDate: '',
             notes: '',
+            notificationsEnabled: false,
+            notificationMethod: 'email',
+            notificationEmail: '',
+            notificationSlackChannel: '',
         });
     };
 
@@ -1244,6 +1285,72 @@ const DBATaskSchedulerTab: React.FC = () => {
                                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                     style={{ ...styles.formInput, gridColumn: '1 / -1', minHeight: 80 }}
                                 />
+                            </div>
+
+                            <div style={{
+                                padding: '12px',
+                                borderRadius: '8px',
+                                backgroundColor: `${THEME.primary}08`,
+                                border: `1px solid ${THEME.primary}20`,
+                                marginBottom: '16px'
+                            }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '12px' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.notificationsEnabled || false}
+                                        onChange={(e) => setFormData({ ...formData, notificationsEnabled: e.target.checked })}
+                                    />
+                                    <span style={{ fontSize: 13, color: THEME.textMain, fontWeight: 600 }}>Send notifications when task is due</span>
+                                </label>
+
+                                {formData.notificationsEnabled && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                                        <div>
+                                            <label style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, display: 'block', marginBottom: '6px' }}>
+                                                Notification Method
+                                            </label>
+                                            <select
+                                                value={formData.notificationMethod || 'email'}
+                                                onChange={(e) => setFormData({ ...formData, notificationMethod: e.target.value as any })}
+                                                style={styles.formSelect}
+                                            >
+                                                <option value="email">Email</option>
+                                                <option value="slack">Slack</option>
+                                                <option value="both">Both Email and Slack</option>
+                                            </select>
+                                        </div>
+
+                                        {(formData.notificationMethod === 'email' || formData.notificationMethod === 'both') && (
+                                            <div>
+                                                <label style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, display: 'block', marginBottom: '6px' }}>
+                                                    Email Recipients (comma-separated)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="user@example.com"
+                                                    value={formData.notificationEmail || ''}
+                                                    onChange={(e) => setFormData({ ...formData, notificationEmail: e.target.value })}
+                                                    style={styles.formInput}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {(formData.notificationMethod === 'slack' || formData.notificationMethod === 'both') && (
+                                            <div>
+                                                <label style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, display: 'block', marginBottom: '6px' }}>
+                                                    Slack Channel
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="#alerts"
+                                                    value={formData.notificationSlackChannel || ''}
+                                                    onChange={(e) => setFormData({ ...formData, notificationSlackChannel: e.target.value })}
+                                                    style={styles.formInput}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <div style={styles.formActions}>

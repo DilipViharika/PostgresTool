@@ -72,14 +72,26 @@ const SCREEN_CATEGORIES: ScreenCategory[] = [
       { id: 'regression',   label: 'Plan Regression', icon: '📉' },
     ],
   },
+  {
+    label: 'MongoDB',
+    color: '#13AA52',
+    screens: [
+      { id: 'mongodb-overview',    label: 'MongoDB Overview',    icon: '🍃' },
+      { id: 'mongodb-performance', label: 'MongoDB Performance', icon: '⚡' },
+      { id: 'mongodb-replication', label: 'MongoDB Replication', icon: '🔄' },
+      { id: 'mongodb-sharding',    label: 'MongoDB Sharding',    icon: '🔀' },
+      { id: 'mongodb-storage',     label: 'MongoDB Storage',     icon: '💾' },
+      { id: 'mongodb-data-tools',  label: 'MongoDB Data Tools',  icon: '🛠️' },
+    ],
+  },
 ];
 
 const ROLE_SCREEN_PRESETS: Record<string, string[]> = {
   super_admin: SCREEN_CATEGORIES.flatMap(c => c.screens.map(s => s.id)),
   admin:       SCREEN_CATEGORIES.flatMap(c => c.screens.map(s => s.id)).filter(id => id !== 'UserManagement'),
-  developer:   ['connections','overview','performance','sql','optimizer','indexes','api','schema','regression','bloat','replication','checkpoint','pool','repository'],
-  analyst:     ['connections','overview','performance','resources','reliability','sql','optimizer','indexes','capacity','bloat','alerts'],
-  viewer:      ['connections','overview','performance','resources','reliability'],
+  developer:   ['connections','overview','performance','sql','optimizer','indexes','api','schema','regression','bloat','replication','checkpoint','pool','repository','mongodb-overview','mongodb-performance','mongodb-replication','mongodb-sharding','mongodb-storage','mongodb-data-tools'],
+  analyst:     ['connections','overview','performance','resources','reliability','sql','optimizer','indexes','capacity','bloat','alerts','mongodb-overview','mongodb-performance','mongodb-storage'],
+  viewer:      ['connections','overview','performance','resources','reliability','mongodb-overview','mongodb-performance'],
 };
 
 const DATA_ACCESS_LEVELS = [

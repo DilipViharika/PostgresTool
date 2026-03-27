@@ -1189,6 +1189,10 @@ const LoginPage = () => {
     const [serverStatus, setServerStatus] = useState({ status: 'checking' });
     const [shake, setShake] = useState(false);
     const [btnHover, setBtnHover] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetMessage, setResetMessage] = useState('');
     const userRef = useRef(null);
     const pwdRef = useRef(null);
 
@@ -1249,6 +1253,35 @@ const LoginPage = () => {
             await login(username, password);
         },
         [username, password, rememberMe, login],
+    );
+
+    const handleForgotPassword = useCallback(
+        async (e) => {
+            e?.preventDefault();
+            if (!resetEmail.trim()) return;
+            setResetLoading(true);
+            setResetMessage('');
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: resetEmail }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setResetMessage('If an account with this email exists, a reset link has been sent.');
+                    setResetEmail('');
+                    setTimeout(() => setShowForgotPassword(false), 2000);
+                } else {
+                    setResetMessage(data.error || 'Failed to process request');
+                }
+            } catch (err) {
+                setResetMessage('Unable to reach server. Please try again.');
+            } finally {
+                setResetLoading(false);
+            }
+        },
+        [resetEmail]
     );
 
     const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading;
@@ -1654,6 +1687,7 @@ const LoginPage = () => {
                                 </div>
                                 <button
                                     type="button"
+                                    onClick={() => setShowForgotPassword(true)}
                                     style={{
                                         background: 'none',
                                         border: 'none',
@@ -1832,6 +1866,118 @@ const LoginPage = () => {
                         </span>
                     </div>
                 </div>
+
+                {/* Forgot Password Modal */}
+                {showForgotPassword && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(0,0,0,.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 1000,
+                            animation: 'fadeIn .3s ease',
+                        }}
+                        onClick={() => setShowForgotPassword(false)}
+                    >
+                        <div
+                            style={{
+                                background: THEME.surface,
+                                borderRadius: 16,
+                                padding: '32px',
+                                maxWidth: '400px',
+                                width: '90%',
+                                border: `1px solid ${THEME.grid}`,
+                                boxShadow: '0 20px 60px rgba(0,0,0,.4)',
+                                animation: 'slideDown .3s ease',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h2 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>
+                                Reset Password
+                            </h2>
+                            <p style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 20 }}>
+                                Enter your email address and we'll send you a reset link.
+                            </p>
+
+                            <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <input
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    style={{
+                                        padding: '10px 12px',
+                                        borderRadius: 8,
+                                        border: `1px solid ${THEME.grid}`,
+                                        background: THEME.bg,
+                                        color: THEME.textMain,
+                                        fontSize: 13,
+                                        fontFamily: THEME.fontBody,
+                                        outline: 'none',
+                                    }}
+                                    disabled={resetLoading}
+                                />
+
+                                {resetMessage && (
+                                    <div
+                                        style={{
+                                            padding: '10px 12px',
+                                            borderRadius: 8,
+                                            background: resetMessage.includes('failed') ? `${THEME.danger}15` : `${THEME.success}15`,
+                                            color: resetMessage.includes('failed') ? THEME.danger : THEME.success,
+                                            fontSize: 12,
+                                            fontFamily: THEME.fontBody,
+                                        }}
+                                    >
+                                        {resetMessage}
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                                    <button
+                                        type="submit"
+                                        disabled={!resetEmail.trim() || resetLoading}
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px 16px',
+                                            borderRadius: 8,
+                                            border: 'none',
+                                            background: resetEmail.trim() && !resetLoading ? '#00D4FF' : THEME.surfaceHover,
+                                            color: resetEmail.trim() && !resetLoading ? '#000' : THEME.textMuted,
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            cursor: resetEmail.trim() && !resetLoading ? 'pointer' : 'not-allowed',
+                                            fontFamily: THEME.fontBody,
+                                        }}
+                                    >
+                                        {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForgotPassword(false)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px 16px',
+                                            borderRadius: 8,
+                                            border: `1px solid ${THEME.grid}`,
+                                            background: 'transparent',
+                                            color: THEME.textMuted,
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            fontFamily: THEME.fontBody,
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
 
                 {/* Theme Toggle */}
                 <button

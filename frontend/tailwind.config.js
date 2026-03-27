@@ -23,7 +23,7 @@ export default {
             },
 
             fontFamily: {
-                ui: ['DM Sans', 'system-ui', 'sans-serif'],
+                ui: ['Inter', 'system-ui', 'sans-serif'],
                 mono: ['JetBrains Mono', 'monospace'],
             },
 

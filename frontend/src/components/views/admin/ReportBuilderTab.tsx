@@ -5,7 +5,8 @@ import { fetchData, postData } from '../../../utils/api';
 import {
   FileText, Download, Eye, Calendar, Settings, CheckCircle,
   AlertTriangle, TrendingUp, Database, Lock, Zap, HardDrive,
-  Clock, ChevronDown, ChevronUp, Plus, Trash2, Save, RefreshCw
+  Clock, ChevronDown, ChevronUp, Plus, Trash2, Save, RefreshCw,
+  Mail, Slack
 } from 'lucide-react';
 
 /* ── TYPE DEFINITIONS ───────────────────────────────────────────────────── */
@@ -24,6 +25,11 @@ interface ReportConfig {
     dateRange: 'week' | 'month' | 'quarter' | 'year';
     includeCharts: boolean;
     includeRecommendations: boolean;
+    deliveryMethod?: 'download' | 'email' | 'slack';
+    emailRecipients?: string;
+    slackChannel?: string;
+    scheduleFrequency?: 'manual' | 'daily' | 'weekly' | 'monthly';
+    scheduleTime?: string;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -82,6 +88,11 @@ const ReportBuilderTab: FC = () => {
         dateRange: 'month',
         includeCharts: true,
         includeRecommendations: true,
+        deliveryMethod: 'download',
+        emailRecipients: '',
+        slackChannel: '',
+        scheduleFrequency: 'manual',
+        scheduleTime: '09:00',
     });
     const [loading, setLoading] = useState(true);
 
@@ -208,6 +219,93 @@ const ReportBuilderTab: FC = () => {
                                     />
                                     <span style={{ fontSize: 13, color: THEME.textMain, fontWeight: 600 }}>Include Recommendations</span>
                                 </label>
+                            </div>
+
+                            <div className="rb-section-title">Delivery Configuration</div>
+
+                            <div className="rb-row">
+                                <div>
+                                    <label style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, display: 'block', marginBottom: '8px' }}>
+                                        Delivery Method
+                                    </label>
+                                    <select
+                                        value={config.deliveryMethod || 'download'}
+                                        onChange={(e) => setConfig({ ...config, deliveryMethod: e.target.value as any })}
+                                        className="rb-input"
+                                        style={{ marginBottom: 0 }}
+                                    >
+                                        <option value="download">Download</option>
+                                        <option value="email">Email</option>
+                                        <option value="slack">Slack</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {config.deliveryMethod === 'email' && (
+                                <div className="rb-row">
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, display: 'block', marginBottom: '8px' }}>
+                                            Email Recipients (comma-separated)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="user@example.com, admin@example.com"
+                                            value={config.emailRecipients || ''}
+                                            onChange={(e) => setConfig({ ...config, emailRecipients: e.target.value })}
+                                            className="rb-input"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {config.deliveryMethod === 'slack' && (
+                                <div className="rb-row">
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, display: 'block', marginBottom: '8px' }}>
+                                            Slack Channel
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="#dba-alerts"
+                                            value={config.slackChannel || ''}
+                                            onChange={(e) => setConfig({ ...config, slackChannel: e.target.value })}
+                                            className="rb-input"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="rb-row">
+                                <div>
+                                    <label style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, display: 'block', marginBottom: '8px' }}>
+                                        Schedule Frequency
+                                    </label>
+                                    <select
+                                        value={config.scheduleFrequency || 'manual'}
+                                        onChange={(e) => setConfig({ ...config, scheduleFrequency: e.target.value as any })}
+                                        className="rb-input"
+                                        style={{ marginBottom: 0 }}
+                                    >
+                                        <option value="manual">Manual</option>
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                {config.scheduleFrequency !== 'manual' && (
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, display: 'block', marginBottom: '8px' }}>
+                                            Time
+                                        </label>
+                                        <input
+                                            type="time"
+                                            value={config.scheduleTime || '09:00'}
+                                            onChange={(e) => setConfig({ ...config, scheduleTime: e.target.value })}
+                                            className="rb-input"
+                                            style={{ marginBottom: 0 }}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{ display: 'flex', gap: '10px' }}>

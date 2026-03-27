@@ -133,8 +133,11 @@ export const AuthProvider = ({ children }) => {
 
             localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
             localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+            if (data.mustChangePassword) {
+                localStorage.setItem('vigil_must_change_password', 'true');
+            }
             setCurrentUser(data.user);
-            return data.user;
+            return { ...data.user, mustChangePassword: data.mustChangePassword };
         } catch (err) {
             const msg = err instanceof TypeError ? 'Unable to reach server. Check your connection.' : err.message;
             setError(msg);

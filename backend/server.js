@@ -903,7 +903,11 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             }),
         ]).catch(err => log('WARN', 'Post-login side effects failed', { error: err.message }));
 
-        res.json({ token, user: payload });
+        res.json({
+            token,
+            user: payload,
+            mustChangePassword: user.must_change_password || false
+        });
 
     } catch (err) {
         log('ERROR', 'Login error', { error: err.message, stack: err.stack, code: err.code });
@@ -989,6 +993,179 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
     } catch (err) {
         log('ERROR', 'SSO Callback processing failed', { error: err.message });
         res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Internal server error during SSO`);
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD MANAGEMENT — Change Password
+// ─────────────────────────────────────────────────────────────────────────────
+app.post('/api/auth/change-password', requireScreen('*'), async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    }
+
+    if (newPassword.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+        return res.status(400).json({ error: 'Password must contain lowercase, uppercase, and numbers' });
+    }
+
+    try {
+        const user = await getUserByUsername(pool, req.user.username);
+        if (!user || !(await bcrypt.compare(currentPassword, user.password_hash))) {
+            return res.status(401).json({ error: 'Current password is incorrect' });
+        }
+
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        const result = await pool.query(
+            'UPDATE pgmonitoringtool.users SET password_hash = $1, must_change_password = false, password_changed_at = NOW() WHERE id = $2 RETURNING id, username, email',
+            [newPasswordHash, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        log('INFO', 'Password changed', { userId, username: req.user.username });
+        await writeAudit(pool, {
+            actorId:       userId,
+            actorUsername: req.user.username,
+            action:        'PASSWORD_CHANGED',
+            level:         'info',
+            detail:        'User changed their password',
+            ip:            req.ip,
+        }).catch(() => {});
+
+        res.json({ success: true, message: 'Password changed successfully' });
+    } catch (err) {
+        log('ERROR', 'Change password error', { error: err.message, userId });
+        res.status(500).json({ error: 'Failed to change password' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD MANAGEMENT — Forgot Password (Request Reset)
+// ─────────────────────────────────────────────────────────────────────────────
+const resetTokens = new Map(); // In-memory store: token -> { userId, expiresAt }
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+    const { email, username } = req.body;
+
+    if (!email && !username) {
+        return res.status(400).json({ error: 'Email or username is required' });
+    }
+
+    try {
+        // Find user by email or username
+        let user;
+        if (email) {
+            const result = await pool.query(
+                'SELECT id, username, email FROM pgmonitoringtool.users WHERE email = $1 AND status = $2',
+                [email, 'active']
+            );
+            user = result.rows[0];
+        } else {
+            user = await getUserByUsername(pool, username);
+        }
+
+        // Always return success for security (don't reveal if account exists)
+        if (!user) {
+            log('INFO', 'Password reset requested for non-existent account', { email, username });
+            return res.json({ success: true, message: 'If the account exists, a reset link has been sent.' });
+        }
+
+        // Generate reset token
+        const token = uuid();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+        resetTokens.set(token, { userId: user.id, expiresAt });
+
+        log('INFO', 'Password reset token generated', { userId: user.id, username: user.username });
+
+        // In production, send email here with reset link
+        // For now, just store in-memory token
+        res.json({
+            success: true,
+            message: 'If the account exists, a reset link has been sent.',
+            // Debug only - remove in production
+            ...(process.env.NODE_ENV !== 'production' && { resetToken: token })
+        });
+
+    } catch (err) {
+        log('ERROR', 'Forgot password error', { error: err.message });
+        res.status(500).json({ error: 'Failed to process reset request' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD MANAGEMENT — Reset Password (Using Token)
+// ─────────────────────────────────────────────────────────────────────────────
+app.post('/api/auth/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+        return res.status(400).json({ error: 'token and newPassword are required' });
+    }
+
+    if (newPassword.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+        return res.status(400).json({ error: 'Password must contain lowercase, uppercase, and numbers' });
+    }
+
+    try {
+        const tokenData = resetTokens.get(token);
+
+        if (!tokenData) {
+            log('WARN', 'Invalid password reset token', {});
+            return res.status(400).json({ error: 'Invalid or expired reset token' });
+        }
+
+        if (new Date() > tokenData.expiresAt) {
+            resetTokens.delete(token);
+            log('WARN', 'Password reset token expired', { userId: tokenData.userId });
+            return res.status(400).json({ error: 'Reset token has expired' });
+        }
+
+        // Update password
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        const result = await pool.query(
+            'UPDATE pgmonitoringtool.users SET password_hash = $1, must_change_password = false, password_changed_at = NOW() WHERE id = $2 RETURNING id, username',
+            [newPasswordHash, tokenData.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Invalidate token
+        resetTokens.delete(token);
+
+        log('INFO', 'Password reset completed', { userId: tokenData.userId, username: result.rows[0].username });
+        await writeAudit(pool, {
+            actorId:       tokenData.userId,
+            actorUsername: result.rows[0].username,
+            action:        'PASSWORD_RESET',
+            level:         'info',
+            detail:        'Password reset via token',
+            ip:            req.ip,
+        }).catch(() => {});
+
+        res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+
+    } catch (err) {
+        log('ERROR', 'Reset password error', { error: err.message });
+        res.status(500).json({ error: 'Failed to reset password' });
     }
 });
 
@@ -1885,13 +2062,13 @@ app.post('/api/feedback', authenticate, async (req, res) => {
     try {
         const parsed = parseFeedbackBody(req.body);
         if (!parsed.valid) return res.status(400).json({ error: parsed.error });
-        const { type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, user_metadata } = parsed.fields;
-        const result = await (await reqPool(req)).query(
+        const { type, rating, comment, remarks, section, feature_title, feature_priority, user_metadata } = parsed.fields;
+        const result = await pool.query(
             `INSERT INTO pgmonitoringtool.user_feedback
-             (username, feedback_type, rating, comment, remarks, section, feature_title, feature_priority, section_feedback, status, user_metadata)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'new',$10) RETURNING id, created_at`,
+             (username, feedback_type, rating, comment, remarks, section, feature_title, feature_priority, status, user_metadata)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'new',$9) RETURNING id, created_at`,
             [req.user.username, type, rating, comment, remarks || null, section, feature_title || null,
-                feature_priority || null, section_feedback ? JSON.stringify(section_feedback) : null, JSON.stringify(user_metadata)]
+                feature_priority || null, JSON.stringify(user_metadata)]
         );
         res.status(201).json({ success: true, feedbackId: result.rows[0].id, created_at: result.rows[0].created_at });
     } catch (e) { res.status(500).json({ error: 'Failed to submit feedback' }); }
@@ -1922,7 +2099,7 @@ app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req,
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         params.push(limit, offset);
         const [rows, countRow] = await Promise.all([
-            pool.query(`SELECT id,username,feedback_type,rating,comment,remarks,section,feature_title,feature_priority,section_feedback,status,created_at,user_metadata FROM pgmonitoringtool.user_feedback ${where} ORDER BY created_at DESC LIMIT $${params.length-1} OFFSET $${params.length}`, params),
+            pool.query(`SELECT id,username,feedback_type,rating,comment,remarks,section,feature_title,feature_priority,status,created_at,user_metadata FROM pgmonitoringtool.user_feedback ${where} ORDER BY created_at DESC LIMIT $${params.length-1} OFFSET $${params.length}`, params),
             pool.query(`SELECT COUNT(*) AS total FROM pgmonitoringtool.user_feedback ${where}`, params.slice(0,-2)),
         ]);
         res.json({ rows: rows.rows, total: parseInt(countRow.rows[0].total), limit, offset });
@@ -3972,10 +4149,8 @@ app.post('/api/retention/cleanup', authenticate, async (_req, res) => {
     }
 });
 
-app.put('/api/retention/policy', authenticate, async (req, res) => {
-    // Policy is stored in-memory for now (no retention_policies table needed)
-    res.json({ success: true, ...req.body });
-});
+// Note: PUT /api/retention/policy is handled by retentionRoutes middleware
+// This endpoint persists to the retention_policies table in the database
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WEBSOCKET  (local / traditional server only — not supported on Vercel)

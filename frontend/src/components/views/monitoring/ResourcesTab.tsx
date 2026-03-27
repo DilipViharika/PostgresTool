@@ -1254,10 +1254,10 @@ const ResourcesTab: React.FC = () => {
                 <Icon size={13} style={{ flexShrink: 0 }} />
                 {label}
                 {count != null && (
-                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`, color: active ? '#fff' : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.6)' : `${THEME.primary}15`, color: active ? '#fff' : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
                 )}
                 {badge && (
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.danger}15`, color: active ? '#fff' : THEME.danger }}>{badge}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.6)' : `${THEME.danger}15`, color: active ? '#fff' : THEME.danger }}>{badge}</span>
                 )}
             </button>
         );

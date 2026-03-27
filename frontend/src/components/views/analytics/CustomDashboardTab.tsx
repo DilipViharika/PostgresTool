@@ -97,13 +97,17 @@ const Styles: FC = () => (
         .cd-health-dot { fontSize:32px; marginBottom:8px; }
         .cd-health-label { fontSize:11px; color:${THEME.textMuted}; }
         .cd-spinner { animation:spin 1s linear infinite; display:inline-block; }
-        .cd-templateGallery { display:grid; gridTemplateColumns:'repeat(2, 1fr)'; gap:12px; }
-        .cd-templateCard { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; borderRadius:8px; padding:16px; cursor:pointer; transition:all .2s ease; }
-        .cd-templateCard:hover { borderColor:${THEME.primary}40; background:${THEME.surface}; }
-        .cd-templateCard.selected { borderColor:${THEME.primary}; background:${THEME.primary}15; }
-        .cd-templateIcon { fontSize:24px; marginBottom:8px; }
-        .cd-templateName { fontSize:13px; fontWeight:700; color:${THEME.textMain}; marginBottom:4px; }
-        .cd-templateDesc { fontSize:11px; color:${THEME.textMuted}; }
+        .cd-templateGallery { display:grid; gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))'; gap:16px; }
+        .cd-templateCard { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; borderRadius:8px; padding:16px; cursor:pointer; transition:all .2s ease; position:relative; overflow:hidden; }
+        .cd-templateCard::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:linear-gradient(135deg, ${THEME.primary}00 0%, ${THEME.primary}10 100%); opacity:0; transition:opacity .2s ease; pointer-events:none; }
+        .cd-templateCard:hover { borderColor:${THEME.primary}; background:${THEME.surface}; box-shadow:0 4px 12px ${THEME.primary}15; }
+        .cd-templateCard:hover::before { opacity:1; }
+        .cd-templateCard.selected { borderColor:${THEME.primary}; background:${THEME.primary}15; box-shadow:0 0 0 2px ${THEME.primary}40; }
+        .cd-templateIcon { fontSize:28px; marginBottom:12px; display:block; }
+        .cd-templateName { fontSize:13px; fontWeight:700; color:${THEME.textMain}; marginBottom:8px; }
+        .cd-templateDesc { fontSize:11px; color:${THEME.textMuted}; lineHeight:1.4; }
+        .cd-templateBadge { display:inline-block; background:${THEME.primary}20; color:${THEME.primary}; fontSize:10px; fontWeight:700; padding:4px 8px; borderRadius:4px; marginTop:12px; }
+        .cd-templateCount { fontSize:10px; color:${THEME.textDim}; marginTop:8px; }
     `}</style>
 );
 
@@ -119,19 +123,28 @@ interface DashboardWidgetProps {
 const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, data, loading }) => {
     const [showMenu, setShowMenu] = useState(false);
 
+    const handleEditClick = () => onEdit(widget);
+
     const renderContent = (): ReactNode => {
         if (loading) return <div style={{ color:THEME.textDim, textAlign:'center', padding:'20px 0' }}>
             <RefreshCw size={16} className="cd-spinner" style={{ marginRight:8 }} />
             Loading...
         </div>;
-        if (!data) return <div style={{ color:THEME.textDim, textAlign:'center', padding:'20px 0' }}>No data</div>;
 
         if (widget.type === 'stat_card') {
+            if (!data && !widget.metricId) {
+                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px 0', fontSize:12 }}>
+                    <div style={{ marginBottom:8 }}>Configure metric</div>
+                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
+                        Edit Widget
+                    </button>
+                </div>;
+            }
             const healthColor = widget.status === 'critical' ? THEME.danger : widget.status === 'warning' ? THEME.warning : THEME.success;
             return (
                 <div style={{ textAlign:'center', padding:'20px 0' }}>
                     <div style={{ fontSize:28, fontWeight:800, color:healthColor, marginBottom:8 }}>
-                        {data.value !== undefined ? data.value : 'N/A'} {widget.unit}
+                        {data !== undefined && data !== null ? (typeof data === 'object' ? data.value || 'N/A' : data) : 'N/A'} {widget.unit || ''}
                     </div>
                     <div style={{ fontSize:12, color:THEME.textMuted }}>{widget.metricLabel}</div>
                 </div>
@@ -139,9 +152,18 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'metric_chart') {
+            if (!data && !widget.metricId) {
+                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'40px 20px', fontSize:12 }}>
+                    <div style={{ marginBottom:8 }}>Configure metric to display chart</div>
+                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
+                        Edit Widget
+                    </button>
+                </div>;
+            }
+            const chartData = Array.isArray(data) ? data : [];
             return (
                 <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={Array.isArray(data) ? data : []}>
+                    <LineChart data={chartData}>
                         <XAxis dataKey="timestamp" stroke={THEME.textDim} style={{ fontSize:10 }} />
                         <YAxis stroke={THEME.textDim} style={{ fontSize:10 }} />
                         <Tooltip />
@@ -152,6 +174,14 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'gauge') {
+            if (!data && !widget.metricId) {
+                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'40px 20px', fontSize:12 }}>
+                    <div style={{ marginBottom:8 }}>Configure metric for gauge</div>
+                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
+                        Edit Widget
+                    </button>
+                </div>;
+            }
             const percentage = typeof data === 'number' ? Math.min(Math.max(data, 0), 100) : 0;
             const gaugeColor = percentage > (widget.thresholdCritical || 95) ? THEME.danger : percentage > (widget.thresholdWarning || 80) ? THEME.warning : THEME.success;
             return (
@@ -197,9 +227,15 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'alert_feed') {
+            const alerts = Array.isArray(data) ? data : [];
+            if (alerts.length === 0 && !data) {
+                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
+                    No alerts to display
+                </div>;
+            }
             return (
                 <div style={{ maxHeight:'250px', overflowY:'auto' }}>
-                    {(data || []).slice(0, 5).map((alert: AlertFeed, i: number) => (
+                    {alerts.slice(0, 5).map((alert: AlertFeed, i: number) => (
                         <div key={i} style={{
                             padding:'8px',
                             borderLeft:`3px solid ${alert.severity === 'critical' ? THEME.danger : alert.severity === 'warning' ? THEME.warning : THEME.success}`,
@@ -217,9 +253,15 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'sparkline') {
+            if (!data && !widget.metricId) {
+                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
+                    Configure metric for sparkline
+                </div>;
+            }
+            const chartData = Array.isArray(data) ? data : [];
             return (
                 <ResponsiveContainer width="100%" height={60}>
-                    <LineChart data={Array.isArray(data) ? data : []}>
+                    <LineChart data={chartData}>
                         <Line type="monotone" dataKey="value" stroke={THEME.primary} dot={false} isAnimationActive={false} strokeWidth={2} />
                     </LineChart>
                 </ResponsiveContainer>
@@ -227,14 +269,24 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'text_note') {
+            if (!widget.content) {
+                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
+                    <div style={{ marginBottom:8 }}>No content added</div>
+                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
+                        Edit Widget
+                    </button>
+                </div>;
+            }
             return (
                 <div style={{ fontSize:13, color:THEME.textDim, lineHeight:'1.6', fontFamily:'monospace' }}>
-                    {widget.content || 'No content'}
+                    {widget.content}
                 </div>
             );
         }
 
-        return <div style={{ color:THEME.textDim }}>Unknown widget type</div>;
+        return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
+            Unknown widget type: {widget.type}
+        </div>;
     };
 
     return (
@@ -509,47 +561,114 @@ interface TemplateGalleryModalProps {
 const TemplateGalleryModal: FC<TemplateGalleryModalProps> = ({ isOpen, onClose, onApply }) => {
     const templates: Template[] = [
         {
+            id:'blank',
+            name:'Blank Canvas',
+            icon:'📋',
+            description:'Start from scratch with an empty dashboard',
+            widgets:[]
+        },
+        {
+            id:'dba-overview',
+            name:'DBA Overview',
+            icon:'🗄️',
+            description:'Essential metrics for database administrators',
+            widgets:[
+                { id:1, type:'stat_card', title:'Active Connections', metricId:'connections_active', size:'medium' },
+                { id:2, type:'stat_card', title:'Cache Hit Ratio', metricId:'cache_hit_ratio', size:'medium' },
+                { id:3, type:'stat_card', title:'Transactions/sec', metricId:'tps', size:'medium' },
+                { id:4, type:'stat_card', title:'Replication Lag', metricId:'replication_lag', size:'medium' },
+                { id:5, type:'metric_chart', title:'Query Performance', metricId:'query_time_avg', size:'large' },
+                { id:6, type:'metric_chart', title:'Connection Pool', metricId:'connections_active', size:'large' },
+                { id:7, type:'alert_feed', title:'Recent Alerts', size:'large' },
+                { id:8, type:'health_grid', title:'System Health', size:'large' },
+            ]
+        },
+        {
             id:'performance',
-            name:'Performance Overview',
+            name:'Performance Monitor',
             icon:'⚡',
-            description:'Cache, TPS, and query metrics',
+            description:'Deep-dive into query and system performance',
             widgets:[
-                { id:1, type:'stat_card', title:'Cache Hit Ratio', metricId:'cache_hit_ratio', size:'medium' },
-                { id:2, type:'stat_card', title:'Active Connections', metricId:'active_connections', size:'medium' },
-                { id:3, type:'metric_chart', title:'Transactions/sec', metricId:'transactions_per_sec', size:'large' },
+                { id:1, type:'gauge', title:'CPU Usage', metricId:'cpu_usage', size:'medium' },
+                { id:2, type:'gauge', title:'Memory Usage', metricId:'memory_usage', size:'medium' },
+                { id:3, type:'gauge', title:'Disk I/O', metricId:'disk_io', size:'medium' },
+                { id:4, type:'gauge', title:'Cache Hit', metricId:'cache_hit_ratio', size:'medium' },
+                { id:5, type:'metric_chart', title:'Query Latency (P99)', metricId:'query_time_p99', size:'large' },
+                { id:6, type:'metric_chart', title:'Throughput', metricId:'tps', size:'large' },
+                { id:7, type:'sparkline', title:'Slow Queries', metricId:'slow_queries', size:'large' },
+                { id:8, type:'sparkline', title:'Lock Waits', metricId:'lock_waits', size:'large' },
             ]
         },
         {
-            id:'health',
-            name:'Connection Health',
-            icon:'💚',
-            description:'Connection and lock monitoring',
-            widgets:[
-                { id:1, type:'health_grid', title:'System Health', size:'large' },
-                { id:2, type:'gauge', title:'Connection Usage', metricId:'active_connections', size:'medium' },
-                { id:3, type:'alert_feed', title:'Recent Alerts', size:'medium' },
-            ]
-        },
-        {
-            id:'storage',
-            name:'Storage Analysis',
+            id:'capacity',
+            name:'Capacity Planning',
             icon:'💾',
-            description:'Database and table growth',
+            description:'Storage, growth trends and resource utilization',
             widgets:[
                 { id:1, type:'stat_card', title:'Database Size', metricId:'db_size', size:'medium' },
-                { id:2, type:'stat_card', title:'Dead Tuples', metricId:'dead_tuples_ratio', size:'medium' },
-                { id:3, type:'metric_chart', title:'Maintenance Activity', metricId:'vacuum_running', size:'large' },
+                { id:2, type:'stat_card', title:'Table Count', metricId:'table_count', size:'medium' },
+                { id:3, type:'stat_card', title:'Index Size', metricId:'index_size', size:'medium' },
+                { id:4, type:'stat_card', title:'Dead Tuples', metricId:'dead_tuples', size:'medium' },
+                { id:5, type:'metric_chart', title:'Storage Growth', metricId:'db_size', size:'large' },
+                { id:6, type:'health_grid', title:'Table Health', size:'large' },
+                { id:7, type:'metric_chart', title:'Bloat Trend', metricId:'bloat_ratio', size:'large' },
+            ]
+        },
+        {
+            id:'security',
+            name:'Security & Compliance',
+            icon:'🔒',
+            description:'Authentication events, access patterns and alerts',
+            widgets:[
+                { id:1, type:'stat_card', title:'Failed Logins', metricId:'failed_logins', size:'medium' },
+                { id:2, type:'stat_card', title:'Active Users', metricId:'active_users', size:'medium' },
+                { id:3, type:'stat_card', title:'Open Alerts', metricId:'open_alerts', size:'medium' },
+                { id:4, type:'stat_card', title:'Compliance Score', metricId:'compliance_score', size:'medium' },
+                { id:5, type:'alert_feed', title:'Security Alerts', size:'large' },
+                { id:6, type:'metric_chart', title:'Auth Events', metricId:'auth_events', size:'large' },
             ]
         },
         {
             id:'replication',
             name:'Replication Monitor',
             icon:'🔄',
-            description:'Replication lag and WAL metrics',
+            description:'Monitor replica health, lag and WAL metrics',
             widgets:[
-                { id:1, type:'gauge', title:'Replication Lag', metricId:'replication_lag', size:'medium' },
-                { id:2, type:'sparkline', title:'WAL Rate', metricId:'wal_generation_rate', size:'medium' },
-                { id:3, type:'metric_chart', title:'Lag Trend', metricId:'replication_lag', size:'large' },
+                { id:1, type:'stat_card', title:'Replicas', metricId:'replica_count', size:'medium' },
+                { id:2, type:'stat_card', title:'Max Lag', metricId:'replication_lag', size:'medium' },
+                { id:3, type:'stat_card', title:'WAL Rate', metricId:'wal_rate', size:'medium' },
+                { id:4, type:'stat_card', title:'Sync Status', metricId:'sync_state', size:'medium' },
+                { id:5, type:'metric_chart', title:'Replication Lag History', metricId:'replication_lag', size:'large' },
+                { id:6, type:'health_grid', title:'Replica Health', size:'large' },
+                { id:7, type:'metric_chart', title:'WAL Generation', metricId:'wal_rate', size:'large' },
+            ]
+        },
+        {
+            id:'executive',
+            name:'Executive Summary',
+            icon:'📊',
+            description:'High-level KPIs for management reporting',
+            widgets:[
+                { id:1, type:'stat_card', title:'Uptime', metricId:'uptime', size:'medium' },
+                { id:2, type:'stat_card', title:'Avg Response', metricId:'query_time_avg', size:'medium' },
+                { id:3, type:'stat_card', title:'Error Rate', metricId:'error_rate', size:'medium' },
+                { id:4, type:'stat_card', title:'SLA Status', metricId:'sla_score', size:'medium' },
+                { id:5, type:'gauge', title:'Overall Health', metricId:'health_score', size:'large' },
+                { id:6, type:'metric_chart', title:'Availability Trend', metricId:'uptime', size:'large' },
+            ]
+        },
+        {
+            id:'mongodb',
+            name:'MongoDB Monitor',
+            icon:'🍃',
+            description:'Monitor MongoDB connections, operations and storage',
+            widgets:[
+                { id:1, type:'stat_card', title:'Connections', metricId:'connections_active', size:'medium' },
+                { id:2, type:'stat_card', title:'Ops/sec', metricId:'tps', size:'medium' },
+                { id:3, type:'stat_card', title:'Data Size', metricId:'db_size', size:'medium' },
+                { id:4, type:'stat_card', title:'Cache Usage', metricId:'cache_hit_ratio', size:'medium' },
+                { id:5, type:'metric_chart', title:'Operation Types', metricId:'tps', size:'large' },
+                { id:6, type:'metric_chart', title:'WiredTiger Cache', metricId:'cache_hit_ratio', size:'large' },
             ]
         },
     ];
@@ -558,8 +677,14 @@ const TemplateGalleryModal: FC<TemplateGalleryModalProps> = ({ isOpen, onClose, 
 
     return (
         <div className="cd-modal" onClick={onClose}>
-            <div className="cd-modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="cd-modal-title">Dashboard Templates</div>
+            <div className="cd-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth:900, maxHeight:'85vh' }}>
+                <div className="cd-modal-title" style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
+                    <Grid size={20} />
+                    Dashboard Templates
+                </div>
+                <div style={{ fontSize:12, color:THEME.textMuted, marginBottom:20 }}>
+                    Choose a template to pre-populate your dashboard with relevant widgets, or start with a blank canvas.
+                </div>
                 <div className="cd-templateGallery">
                     {templates.map(t => (
                         <div
@@ -569,14 +694,18 @@ const TemplateGalleryModal: FC<TemplateGalleryModalProps> = ({ isOpen, onClose, 
                                 onApply(t.widgets);
                                 onClose();
                             }}
+                            title={t.description}
                         >
                             <div className="cd-templateIcon">{t.icon}</div>
                             <div className="cd-templateName">{t.name}</div>
                             <div className="cd-templateDesc">{t.description}</div>
+                            <div className="cd-templateCount">
+                                {t.widgets.length === 0 ? 'Empty template' : `${t.widgets.length} widget${t.widgets.length !== 1 ? 's' : ''}`}
+                            </div>
                         </div>
                     ))}
                 </div>
-                <div style={{ marginTop:20 }}>
+                <div style={{ marginTop:24, display:'flex', justifyContent:'flex-end', gap:10 }}>
                     <button className="cd-button" style={{ background:THEME.surfaceHover }} onClick={onClose}>Close</button>
                 </div>
             </div>

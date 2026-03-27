@@ -50,6 +50,33 @@ interface QueryResult {
     error?: string;
 }
 
+interface Recommendation {
+    id: string;
+    severity: 'critical' | 'warning' | 'info';
+    title: string;
+    description: string;
+    estimatedImprovement: string;
+    category: 'Performance' | 'Security' | 'Maintenance' | 'Optimization';
+    suggestedAction?: string;
+}
+
+interface PredictiveInsight {
+    id: string;
+    title: string;
+    value: string;
+    confidence: number;
+    recommendation: string;
+    status: 'low' | 'medium' | 'high';
+}
+
+interface QueryOptimization {
+    id: string;
+    query: string;
+    estimatedImprovement: string;
+    suggestedIndex?: string;
+    suggestedRewrite?: string;
+}
+
 const fmt = (n: number | null) => n === null ? '—' : Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
 
 const ChartTooltip: FC<any> = ({ active, payload }) => {
@@ -77,6 +104,9 @@ const AIMonitoringTab: FC = () => {
     const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [patterns, setPatterns] = useState<Pattern[]>([]);
+    const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+    const [predictiveInsights, setPredictiveInsights] = useState<PredictiveInsight[]>([]);
+    const [queryOptimizations, setQueryOptimizations] = useState<QueryOptimization[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -94,17 +124,23 @@ const AIMonitoringTab: FC = () => {
         const loadInitialData = async () => {
             try {
                 setLoading(true);
-                const [h, a, s, p] = await Promise.all([
+                const [h, a, s, p, rec, pred, qopt] = await Promise.all([
                     fetchData('/api/ai-monitoring/health-score'),
                     fetchData('/api/ai-monitoring/anomalies'),
                     fetchData('/api/ai-monitoring/suggestions'),
                     fetchData('/api/ai-monitoring/patterns'),
+                    fetchData('/api/ai-monitoring/recommendations').catch(() => ({ recommendations: [] })),
+                    fetchData('/api/ai-monitoring/predictive-insights').catch(() => ({ insights: [] })),
+                    fetchData('/api/ai-monitoring/query-optimizations').catch(() => ({ optimizations: [] })),
                 ]);
 
                 setHealthScore(h);
                 setAnomalies(a?.anomalies || []);
                 setSuggestions(s?.suggestions || []);
                 setPatterns(p?.patterns || []);
+                setRecommendations(rec?.recommendations || []);
+                setPredictiveInsights(pred?.insights || []);
+                setQueryOptimizations(qopt?.optimizations || []);
                 setError(null);
             } catch (err: any) {
                 setError(err.message || 'Failed to load monitoring data');
@@ -243,6 +279,121 @@ const AIMonitoringTab: FC = () => {
                         ))}
                     </div>
                 </div>
+            </div>
+
+            {/* Smart Recommendations Panel */}
+            <div className="aim-section">
+                <div className="aim-section-title text-vigil-text">
+                    <Lightbulb size={16} /> Smart Recommendations
+                </div>
+                {recommendations.length === 0 ? (
+                    <div className="aim-card text-center p-7 text-vigil-muted">
+                        <CheckCircle size={32} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+                        <div>No recommendations at this time</div>
+                    </div>
+                ) : (
+                    <div>
+                        {recommendations.slice(0, 5).map((rec) => (
+                            <div key={rec.id} className="aim-suggestion-card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div className="aim-suggestion-title text-vigil-text">
+                                            {rec.severity === 'critical' && <AlertTriangle size={14} style={{ color: '#ff3344', display: 'inline-block', marginRight: 8 }} />}
+                                            {rec.severity === 'warning' && <AlertTriangle size={14} style={{ color: '#ffaa00', display: 'inline-block', marginRight: 8 }} />}
+                                            {rec.severity === 'info' && <Lightbulb size={14} style={{ color: '#00d4ff', display: 'inline-block', marginRight: 8 }} />}
+                                            {rec.title}
+                                        </div>
+                                        <div className="aim-suggestion-desc text-vigil-muted">{rec.description}</div>
+                                        <div className="text-xs text-vigil-cyan mb-3">
+                                            <strong>Estimated Improvement:</strong> {rec.estimatedImprovement}
+                                        </div>
+                                        <div className="aim-action-tag text-vigil-muted">{rec.category}</div>
+                                    </div>
+                                    <button className="aim-btn" style={{ marginLeft: 16, whiteSpace: 'nowrap' }}>
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Predictive Insights */}
+            <div className="aim-section">
+                <div className="aim-section-title text-vigil-text">
+                    <TrendingUp size={16} /> Predictive Insights
+                </div>
+                {predictiveInsights.length === 0 ? (
+                    <div className="aim-card text-center p-7 text-vigil-muted">
+                        No predictive insights available
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+                        {predictiveInsights.map((insight) => (
+                            <div key={insight.id} className="aim-card">
+                                <div className="font-bold text-vigil-text mb-3">{insight.title}</div>
+                                <div style={{ fontSize: 20, fontWeight: 700, color: THEME.primary, marginBottom: 8 }}>
+                                    {insight.value}
+                                </div>
+                                <div className="text-xs text-vigil-muted mb-4">
+                                    <strong>Confidence:</strong> {Math.round(insight.confidence * 100)}%
+                                </div>
+                                <div style={{
+                                    background: insight.status === 'high' ? '#ff334420' : insight.status === 'medium' ? '#ffaa0020' : '#00d4ff20',
+                                    borderRadius: 6,
+                                    padding: 8,
+                                    marginBottom: 12,
+                                    fontSize: 12,
+                                    color: insight.status === 'high' ? '#ff3344' : insight.status === 'medium' ? '#ffaa00' : '#00d4ff'
+                                }}>
+                                    Status: <strong>{insight.status.toUpperCase()}</strong>
+                                </div>
+                                <div className="text-xs text-vigil-cyan">
+                                    <strong>Action:</strong> {insight.recommendation}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Query Optimization Suggestions */}
+            <div className="aim-section">
+                <div className="aim-section-title text-vigil-text">
+                    <Zap size={16} /> Query Optimization Suggestions
+                </div>
+                {queryOptimizations.length === 0 ? (
+                    <div className="aim-card text-center p-7 text-vigil-muted">
+                        All queries are well-optimized
+                    </div>
+                ) : (
+                    <div>
+                        {queryOptimizations.slice(0, 5).map((qopt, idx) => (
+                            <div key={qopt.id} className="aim-card mb-3">
+                                <div className="font-bold text-vigil-text mb-2">
+                                    Query {idx + 1}
+                                </div>
+                                <div style={{ background: THEME.surface, borderRadius: 6, padding: 12, marginBottom: 12, fontSize: 12, fontFamily: 'monospace', color: THEME.textMuted, overflow: 'auto', maxHeight: 100 }}>
+                                    {qopt.query}
+                                </div>
+                                <div className="text-xs text-vigil-cyan mb-2">
+                                    <strong>Estimated Improvement:</strong> {qopt.estimatedImprovement}
+                                </div>
+                                {qopt.suggestedIndex && (
+                                    <div className="text-xs text-vigil-muted mb-2 p-2 bg-vigil-accent/10 rounded">
+                                        <strong>Suggested Index:</strong> {qopt.suggestedIndex}
+                                    </div>
+                                )}
+                                {qopt.suggestedRewrite && (
+                                    <div className="text-xs text-vigil-muted p-2 bg-vigil-accent/10 rounded">
+                                        <strong>Query Rewrite:</strong> {qopt.suggestedRewrite}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Anomalies Feed */}
