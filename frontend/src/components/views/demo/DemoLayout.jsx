@@ -507,57 +507,61 @@ const DemoLayout = ({
                         >
                             Refresh data
                         </button>
-                        <button
-                            onClick={onExport}
-                            style={{
-                                width: '100%',
-                                padding: '6px 10px',
-                                fontSize: 11,
-                                fontWeight: 500,
-                                borderRadius: 6,
-                                border: `1px solid ${LT.border}`,
-                                background: LT.buttonBg,
-                                color: LT.textMuted,
-                                cursor: onExport ? 'pointer' : 'not-allowed',
-                                fontFamily: THEME.fontBody,
-                                transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                                if (onExport) {
-                                    e.currentTarget.style.background = LT.buttonHoverBg;
-                                    e.currentTarget.style.color = LT.text;
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = LT.buttonBg;
-                                e.currentTarget.style.color = LT.textMuted;
-                            }}
-                        >
-                            Export JSON
-                        </button>
-                        <button
-                            style={{
-                                width: '100%',
-                                padding: '8px 10px',
-                                fontSize: 11,
-                                fontWeight: 600,
-                                borderRadius: 6,
-                                border: 'none',
-                                background: LT.accentGradient,
-                                color: '#ffffff',
-                                cursor: 'pointer',
-                                fontFamily: THEME.fontBody,
-                                transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.opacity = '0.9';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.opacity = '1';
-                            }}
-                        >
-                            + Add cluster
-                        </button>
+                        {activeDemo === 'demo-mongodb' && (
+                            <>
+                                <button
+                                    onClick={onExport}
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 10px',
+                                        fontSize: 11,
+                                        fontWeight: 500,
+                                        borderRadius: 6,
+                                        border: `1px solid ${LT.border}`,
+                                        background: LT.buttonBg,
+                                        color: LT.textMuted,
+                                        cursor: onExport ? 'pointer' : 'not-allowed',
+                                        fontFamily: THEME.fontBody,
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (onExport) {
+                                            e.currentTarget.style.background = LT.buttonHoverBg;
+                                            e.currentTarget.style.color = LT.text;
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = LT.buttonBg;
+                                        e.currentTarget.style.color = LT.textMuted;
+                                    }}
+                                >
+                                    Export JSON
+                                </button>
+                                <button
+                                    style={{
+                                        width: '100%',
+                                        padding: '8px 10px',
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        borderRadius: 6,
+                                        border: 'none',
+                                        background: LT.accentGradient,
+                                        color: '#ffffff',
+                                        cursor: 'pointer',
+                                        fontFamily: THEME.fontBody,
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.opacity = '0.9';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.opacity = '1';
+                                    }}
+                                >
+                                    + Add cluster
+                                </button>
+                            </>
+                        )}
                     </div>
                 </aside>
 
