@@ -3870,13 +3870,9 @@ const DashboardInner = ({ onLogout }) => {
     // This ensures users see the right dashboard after switching databases
     // Also redirects to demo tab when no connection exists and user is on a connection-dependent tab
     useEffect(() => {
-        // No connection → only demo tabs and the demo-home overview are allowed
+        // No connection → only demo tabs are allowed
         if (!activeConnection) {
-            // Demo tabs don't need a connection
             if (activeTab?.startsWith('demo-')) return;
-            // Allow 'overview' tab without connection — it shows the main sidebar with Demo section
-            if (activeTab === 'overview') return;
-            // Any other non-demo tab requires a connection — redirect to demo
             setActiveTab('demo-postgres');
             try {
                 localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'demo-postgres');

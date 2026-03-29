@@ -153,33 +153,7 @@ const DemoLayout = ({
                             flexShrink: 0,
                         }}
                     >
-                        {goToTab && (
-                            <button
-                                onClick={() => goToTab('overview')}
-                                title="Back to main app"
-                                style={{
-                                    width: 24,
-                                    height: 24,
-                                    borderRadius: 6,
-                                    border: `1px solid ${LT.border}`,
-                                    background: LT.buttonBg,
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexShrink: 0,
-                                    padding: 0,
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = LT.buttonHoverBg;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = LT.buttonBg;
-                                }}
-                            >
-                                <ArrowLeft size={12} color={LT.textMuted} />
-                            </button>
-                        )}
+                        {/* Back button only shown when a real connection exists (there's somewhere to go back to) */}
                         {TitleIcon && (
                             <div
                                 style={{
