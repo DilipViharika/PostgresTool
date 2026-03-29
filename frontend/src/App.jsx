@@ -2776,7 +2776,11 @@ const Sidebar = ({
             next.has(sec) ? next.delete(sec) : next.add(sec);
             return next;
         });
-    }, []);
+        // Auto-navigate into demo when Demo section is clicked
+        if (sec === 'Demo' && onTabChange) {
+            onTabChange('demo-postgres');
+        }
+    }, [onTabChange]);
 
     // Only show DB-specific sections for real connections (demo has its own inner nav)
     const connDbType = activeConnection?.dbType || null;
@@ -3817,9 +3821,9 @@ const DashboardInner = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB);
-            return saved || 'demo-postgres';
+            return saved || 'UserManagement';
         } catch {
-            return 'demo-postgres';
+            return 'UserManagement';
         }
     });
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
