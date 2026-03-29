@@ -1270,3 +1270,88 @@ svg {
         margin: 0 !important;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAILWIND ENHANCEMENT — Sidebar & Navigation with Smooth Transitions
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Smooth page transitions */
+.tab-enter {
+    animation: fadeUp 0.5s ease-out;
+}
+
+/* Glass morphism card */
+.glass-card {
+    @apply rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-md;
+}
+
+/* Metric value animation */
+.metric-value {
+    @apply font-mono text-2xl font-semibold tracking-tight;
+}
+
+/* Status dot */
+.status-dot {
+    @apply w-2 h-2 rounded-full;
+}
+.status-dot-active {
+    @apply bg-emerald-400 animate-pulse;
+}
+.status-dot-warning {
+    @apply bg-amber-400;
+}
+.status-dot-error {
+    @apply bg-rose-400 animate-pulse;
+}
+
+/* Sidebar navigation enhancements */
+.nav-item {
+    @apply transition-all duration-200 ease-in-out;
+}
+
+.nav-item:hover:not(:disabled) {
+    @apply hover:bg-white/5;
+}
+
+.nav-item[aria-selected="true"] {
+    @apply ring-1 ring-white/10;
+}
+
+/* Sidebar container backdrop blur */
+aside {
+    @apply backdrop-blur-xl;
+}
+
+/* Section headers with group hover effects */
+.section-btn {
+    @apply transition-all duration-200 ease-in-out group;
+}
+
+.section-btn:hover {
+    @apply hover:bg-white/5;
+}
+
+/* Enhanced card styles */
+.v-card {
+    @apply transition-shadow duration-300 ease-in-out;
+}
+
+.v-card:hover {
+    @apply hover:shadow-xl;
+}
+
+/* Smooth dropdown animations for connection switcher */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+}

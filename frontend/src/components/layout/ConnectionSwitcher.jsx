@@ -139,7 +139,7 @@ const ConnectionSwitcher = () => {
                     animation: dropdownSlide 0.2s ease-out;
                 }
                 .cs-item {
-                    transition: all 0.15s ease;
+                    transition: all 0.15s ease-in-out;
                 }
                 .cs-item:hover {
                     background: ${THEME.surfaceHover};
@@ -151,6 +151,7 @@ const ConnectionSwitcher = () => {
                 <button
                     onClick={() => setIsOpen(!isOpen)}
                     disabled={isSwitching || connections.length <= 1}
+                    className="transition-all duration-200 ease-in-out hover:bg-white/5 active:ring-1 active:ring-white/10"
                     style={{
                         ...styles.button,
                         opacity: isSwitching ? 0.6 : 1,
@@ -178,7 +179,7 @@ const ConnectionSwitcher = () => {
 
                 {/* Dropdown Menu */}
                 {isOpen && connections.length > 1 && (
-                    <div style={styles.dropdown} className="cs-dropdown">
+                    <div style={styles.dropdown} className="cs-dropdown animate-fadeIn">
                         {/* Search Input */}
                         <div style={styles.searchContainer}>
                             <Search size={14} color={THEME.textMuted} />

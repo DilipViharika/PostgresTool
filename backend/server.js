@@ -85,6 +85,7 @@ const CONFIG = Object.freeze({
         VACUUM: 30_000, PERFORMANCE: 15_000, CACHE_HIT: 15_000,
         EXTENSIONS: 60_000, SEQUENCES: 30_000, BLOAT: 60_000,
         WAL: 10_000, SETTINGS: 120_000, TABLE_STATS: 30_000, SCHEMAS: 60_000,
+        RESOURCES: 15_000, REPLICATION: 10_000, SECURITY: 30_000, POOL: 15_000,
     },
     ALERT_THRESHOLDS: {
         CONNECTION_USAGE_PCT: 80,
@@ -3221,7 +3222,7 @@ app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async
     } catch (e) { res.json([]); }
 });
 
-app.get('/api/tables/temp', authenticate, async (req, res) => {
+app.get('/api/tables/temp', authenticate, cached('tables:temp', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
     try {
         const r = await (await reqPool(req)).query(`
             SELECT
@@ -3360,7 +3361,7 @@ app.get('/api/tables/queries', authenticate, cached('tables:queries', CONFIG.CAC
 });
 
 // ── /api/tables/locks ── active locks & blocking chains from pg_locks ─────────
-app.get('/api/tables/locks', authenticate, async (req, res) => {
+app.get('/api/tables/locks', authenticate, cached('tables:locks', CONFIG.CACHE_TTL.STATS), async (req, res) => {
     try {
         const r = await (await reqPool(req)).query(`
             SELECT
@@ -3677,7 +3678,7 @@ app.get('/api/resources/maintenance-logs', authenticate, cached('res:maint', 30_
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Schema migrations endpoint
-app.get('/api/schema/migrations', authenticate, async (req, res) => {
+app.get('/api/schema/migrations', authenticate, cached('schema:migrations', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
     try {
         const pool = await reqPool(req);
         // Try to find a migrations table (common patterns)
@@ -3697,7 +3698,7 @@ app.get('/api/schema/migrations', authenticate, async (req, res) => {
 });
 
 // Schema browser endpoint
-app.get('/api/schema/browser', authenticate, async (req, res) => {
+app.get('/api/schema/browser', authenticate, cached('schema:browser', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
     try {
         const pool = await reqPool(req);
         const { rows } = await pool.query(`
@@ -3722,7 +3723,7 @@ app.get('/api/schema/browser', authenticate, async (req, res) => {
 });
 
 // Threats endpoint
-app.get('/api/security/threats', authenticate, async (req, res) => {
+app.get('/api/security/threats', authenticate, cached('sec:threats', CONFIG.CACHE_TTL.SECURITY), async (req, res) => {
     try {
         const pool = await reqPool(req);
         const { rows } = await pool.query(`
@@ -3744,7 +3745,7 @@ app.get('/api/security/threats', authenticate, async (req, res) => {
 });
 
 // Compliance checks endpoint
-app.get('/api/security/compliance', authenticate, async (req, res) => {
+app.get('/api/security/compliance', authenticate, cached('sec:compliance', CONFIG.CACHE_TTL.SECURITY), async (req, res) => {
     try {
         const pool = await reqPool(req);
         const checks = [];
@@ -3768,7 +3769,7 @@ app.get('/api/security/compliance', authenticate, async (req, res) => {
 });
 
 // Audit events endpoint
-app.get('/api/security/audit-events', authenticate, async (req, res) => {
+app.get('/api/security/audit-events', authenticate, cached('sec:audit', CONFIG.CACHE_TTL.SECURITY), async (req, res) => {
     try {
         const pool = await reqPool(req);
         // Try to read from audit_log if it exists, or fallback to pg_stat_activity
@@ -4228,7 +4229,7 @@ app.delete('/api/alerts/rules/:id', authenticate, async (req, res) => {
 });
 
 /* ── Pool Metrics ─────────────────────────────────────────────────────────── */
-app.get('/api/pool/metrics', authenticate, async (req, res) => {
+app.get('/api/pool/metrics', authenticate, cached('pool:metrics', CONFIG.CACHE_TTL.POOL), async (req, res) => {
     try {
         const p = await reqPool(req);
         const [connStats, poolConf] = await Promise.all([
@@ -4257,7 +4258,7 @@ app.get('/api/pool/metrics', authenticate, async (req, res) => {
 });
 
 /* ── Schema (for Schema Visualizer & Schema Browser) ──────────────────────── */
-app.get('/api/schema/relationships', authenticate, async (req, res) => {
+app.get('/api/schema/relationships', authenticate, cached('schema:rels', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
     try {
         const p = await reqPool(req);
         const { rows } = await p.query(`
@@ -4282,7 +4283,7 @@ app.get('/api/schema/relationships', authenticate, async (req, res) => {
     }
 });
 
-app.get('/api/schema/dependencies', authenticate, async (req, res) => {
+app.get('/api/schema/dependencies', authenticate, cached('schema:deps', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
     try {
         const p = await reqPool(req);
         const { rows } = await p.query(`
@@ -4306,7 +4307,7 @@ app.get('/api/schema/dependencies', authenticate, async (req, res) => {
     }
 });
 
-app.get('/api/schema/columns/:schema/:table', authenticate, async (req, res) => {
+app.get('/api/schema/columns/:schema/:table', authenticate, cached('schema:cols', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
     try {
         const p = await reqPool(req);
         const { rows } = await p.query(`

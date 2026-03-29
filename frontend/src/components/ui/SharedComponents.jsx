@@ -673,6 +673,7 @@ export const GlassCard = ({
     return (
         <div
             {...hoverProps}
+            className="glass-card transition-all duration-300 ease-in-out hover:shadow-xl"
             style={{
                 background: v.bg,
                 backdropFilter: 'blur(24px) saturate(180%)',
@@ -855,6 +856,7 @@ export const MetricCard = ({
         <div
             {...hoverProps}
             onClick={onClick}
+            className="metric-value transition-all duration-300 ease-in-out hover:shadow-lg"
             style={{
                 background: active
                     ? `linear-gradient(145deg, ${color}22 0%, ${color}0a 100%)`

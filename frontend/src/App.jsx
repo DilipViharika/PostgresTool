@@ -102,10 +102,6 @@ const ObservabilityHub = lazyRetry(() => import('./components/views/monitoring/O
 // Gap features — Database
 const AIQueryAdvisorTab = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
 
-// Demo dashboards
-const DemoPostgresTab = lazyRetry(() => import('./components/views/demo/DemoPostgresTab.jsx'));
-const DemoMySQLTab = lazyRetry(() => import('./components/views/demo/DemoMySQLTab.jsx'));
-const DemoMongoDBTab = lazyRetry(() => import('./components/views/demo/DemoMongoDBTab.jsx'));
 
 // MySQL features
 const MySQLOverviewTab = lazyRetry(() => import('./components/views/mysql/MySQLOverviewTab.jsx'));
@@ -123,6 +119,7 @@ const MongoShardingTab = lazyRetry(() => import('./components/views/mongodb/Mong
 // Other
 const ReliabilityTab = lazyRetry(() => import('./components/views/ReliabilityTab.jsx'));
 const UserManagementTab = lazyRetry(() => import('./usermanagement/UserManagementTab.jsx'));
+const AuditAndSecurityTab = lazyRetry(() => import('./usermanagement/AuditAndSecurityTab.jsx'));
 
 // Phase 1 — Connection Onboarding
 const ConnectionWizard = lazyRetry(() => import('./components/views/onboarding/ConnectionWizard.jsx'));
@@ -241,6 +238,7 @@ registerComponents({
     AIQueryAdvisorTab,
     DBATaskSchedulerTab,
     UserManagementTab,
+    AuditAndSecurityTab,
     AdminTab,
     RetentionManagementTab,
     TerraformExportTab,
@@ -255,10 +253,6 @@ registerComponents({
     MongoReplicationTab,
     MongoDataToolsTab,
     MongoShardingTab,
-    // Demo dashboards
-    DemoPostgresTab,
-    DemoMySQLTab,
-    DemoMongoDBTab,
     // Phase 1–4 new components
     FleetOverviewTab,
     ConnectionWizard,
@@ -2793,6 +2787,8 @@ const Sidebar = ({
                     if (g.section === 'MySQL') return connDbType === 'mysql' || connDbType === 'mariadb';
                     // Hide PG-specific deep-dive sections when non-PG is connected
                     if (connDbType && connDbType !== 'postgresql' && PG_ONLY_SECTIONS.includes(g.section)) return false;
+                    // Developer Tools: SQL Console works for PG and MySQL, not MongoDB
+                    if (g.section === 'Developer Tools' && connDbType === 'mongodb') return false;
                     return true;
                 }),
         [allowedTabIds, connDbType],
@@ -2952,7 +2948,7 @@ const Sidebar = ({
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     fontFamily: DS.fontUI,
-                                    transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                                    transition: 'background 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out',
                                     position: 'relative',
                                 }}
                                 onMouseEnter={(e) => {
@@ -3036,6 +3032,7 @@ const Sidebar = ({
                                 cursor: 'pointer',
                                 borderRadius: 0,
                                 marginTop,
+                                transition: 'all 0.2s ease-in-out',
                             }}
                         >
                             <span
@@ -3351,6 +3348,23 @@ const ConnectionSelector = () => {
         setSwitching(true);
         try {
             await switchConnection(id);
+            // Auto-navigate to appropriate overview tab based on database type
+            const targetConnection = connections.find(c => c.id === id);
+            if (targetConnection && goToTab) {
+                const dbType = targetConnection.dbType?.toLowerCase();
+                let targetTab = 'overview'; // Default to PostgreSQL overview
+
+                if (dbType === 'mysql' || dbType === 'mariadb') {
+                    targetTab = 'mysql-overview';
+                } else if (dbType === 'mongodb') {
+                    targetTab = 'mongo-overview';
+                }
+
+                // Defer navigation to allow state to settle
+                setTimeout(() => {
+                    goToTab(targetTab);
+                }, 100);
+            }
         } catch (err) {
             console.error('Switch failed:', err);
         } finally {
@@ -3424,22 +3438,44 @@ const ConnectionSelector = () => {
                 )}
                 <Database size={12} style={{ color: DS.cyan, flexShrink: 0 }} />
                 {/* Two-line label: name on top, connection string below */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0 }}>
-                    <span
-                        style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: DS.textPrimary,
-                            fontFamily: DS.fontMono,
-                            maxWidth: 160,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            lineHeight: 1.2,
-                        }}
-                    >
-                        {displayName}
-                    </span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
+                        <span
+                            style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: DS.textPrimary,
+                                fontFamily: DS.fontMono,
+                                maxWidth: 140,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                lineHeight: 1.2,
+                            }}
+                        >
+                            {displayName}
+                        </span>
+                        {/* Database type badge */}
+                        {activeConnection && (
+                            <span
+                                style={{
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    color: DS.cyan,
+                                    background: `${DS.cyan}15`,
+                                    border: `1px solid ${DS.cyan}40`,
+                                    borderRadius: 3,
+                                    padding: '2px 6px',
+                                    flexShrink: 0,
+                                    letterSpacing: '0.05em',
+                                    textTransform: 'uppercase',
+                                }}
+                                title={`Database type: ${activeConnection.dbType || 'unknown'}`}
+                            >
+                                {activeConnection.dbType === 'postgresql' ? 'PG' : activeConnection.dbType === 'mysql' ? 'MySQL' : activeConnection.dbType === 'mariadb' ? 'Maria' : activeConnection.dbType === 'mongodb' ? 'Mongo' : 'DB'}
+                            </span>
+                        )}
+                    </div>
                     {connString && (
                         <span
                             style={{
@@ -3786,6 +3822,45 @@ const DashboardInner = ({ onLogout }) => {
     }, []);
 
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
+    const { activeConnection } = useConnection();
+
+    // Auto-navigate to appropriate overview tab when connection changes
+    // This ensures users see the right dashboard after switching databases
+    useEffect(() => {
+        if (!activeConnection) return;
+
+        const dbType = activeConnection.dbType?.toLowerCase();
+        let targetTab = 'overview'; // Default to PostgreSQL overview
+
+        if (dbType === 'mysql' || dbType === 'mariadb') {
+            targetTab = 'mysql-overview';
+        } else if (dbType === 'mongodb') {
+            targetTab = 'mongo-overview';
+        }
+
+        // Only navigate if we're not already on a relevant tab for this connection
+        // This avoids jarring navigation if user is already viewing a universal tab (like Alerts)
+        const isRelevantTab = (tabId) => {
+            // Always allow universal sections
+            const universalSections = ['Overview', 'Alerts & Rules', 'Security', 'Observability', 'Developer Tools', 'User Management', 'Admin'];
+            const currentSection = SECTION_GROUPS.find(g => g.tabs.some(t => t.id === tabId))?.section;
+            if (universalSections.includes(currentSection)) return true;
+
+            // For DB-specific tabs, only allow if they match current connection
+            if (dbType === 'postgresql' && ['Query Analysis', 'Schema & Data', 'Infrastructure'].includes(currentSection)) return true;
+            if ((dbType === 'mysql' || dbType === 'mariadb') && currentSection === 'MySQL') return true;
+            if (dbType === 'mongodb' && currentSection === 'MongoDB') return true;
+            return false;
+        };
+
+        // Only auto-navigate if current tab is not relevant for this connection
+        if (!isRelevantTab(activeTab)) {
+            setActiveTab(targetTab);
+            try {
+                localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, targetTab);
+            } catch {}
+        }
+    }, [activeConnection?.id]); // Only re-run when connection ID changes, not on every re-render
 
     const allowedTabIds = useMemo(
         () =>

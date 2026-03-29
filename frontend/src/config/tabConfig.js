@@ -57,7 +57,6 @@ import {
     ListTree,
     DatabaseZap,
     Blocks,
-    FlaskConical,
 } from 'lucide-react';
 
 import { getDS } from './designTokens.js';
@@ -365,22 +364,21 @@ export function buildTabConfig() {
             badge: null,
         },
 
-        // ── Demo ────────────────────────────────────────────────────
-        //    Interactive demo dashboards with sample data for each DB engine
-        { section: 'Demo', accent: DS.amber },
+        // ── User Management ──────────────────────────────────────────
+        //    User roles, permissions, audit logs, and security
+        { section: 'User Management', accent: DS.indigo || DS.violet },
         {
-            id: 'demo-postgres',
-            icon: Database,
-            label: 'PostgreSQL Demo',
-            component: _components.DemoPostgresTab,
+            id: 'UserManagement',
+            icon: Users,
+            label: 'Users & Roles',
+            component: _components.UserManagementTab,
             badge: null,
         },
-        { id: 'demo-mysql', icon: Database, label: 'MySQL Demo', component: _components.DemoMySQLTab, badge: null },
         {
-            id: 'demo-mongodb',
-            icon: FlaskConical,
-            label: 'MongoDB Demo',
-            component: _components.DemoMongoDBTab,
+            id: 'user-audit',
+            icon: FileText,
+            label: 'Audit & Security',
+            component: _components.AuditAndSecurityTab,
             badge: null,
         },
 
@@ -391,13 +389,6 @@ export function buildTabConfig() {
             icon: CalendarCheck,
             label: 'DBA Task Scheduler',
             component: _components.DBATaskSchedulerTab,
-            badge: null,
-        },
-        {
-            id: 'UserManagement',
-            icon: Users,
-            label: 'User Management',
-            component: _components.UserManagementTab,
             badge: null,
         },
         { id: 'admin', icon: Shield, label: 'Admin Panel', component: _components.AdminTab, badge: null },

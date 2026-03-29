@@ -1,0 +1,55 @@
+{
+  "name": "@vigil/sdk",
+  "version": "1.0.0",
+  "description": "VIGIL Universal Database Monitoring SDK - Universal monitoring integration with external platforms",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./src/core/client.js",
+    "./auth": "./src/core/auth.js",
+    "./logger": "./src/core/logger.js",
+    "./events": "./src/core/events.js",
+    "./salesforce": "./src/connectors/salesforce.js",
+    "./mulesoft": "./src/connectors/mulesoft.js",
+    "./database": "./src/connectors/database.js"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test 'test/**/*.test.js'",
+    "lint": "eslint src/",
+    "docs": "jsdoc -c jsdoc.json"
+  },
+  "keywords": [
+    "vigil",
+    "monitoring",
+    "database",
+    "sdk",
+    "salesforce",
+    "mulesoft",
+    "integration",
+    "metrics",
+    "observability"
+  ],
+  "author": "VIGIL Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vigildb/vigil-sdk-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vigildb/vigil-sdk-js/issues"
+  },
+  "homepage": "https://github.com/vigildb/vigil-sdk-js#readme",
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "jsdoc": "^4.0.0"
+  }
+}
