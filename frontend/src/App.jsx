@@ -2779,12 +2779,8 @@ const Sidebar = ({
         });
     }, []);
 
-    // Determine effective DB type from real connection OR active demo tab
-    const demoDbType = activeTab === 'demo-postgres' ? 'postgresql'
-        : activeTab === 'demo-mysql' ? 'mysql'
-        : activeTab === 'demo-mongodb' ? 'mongodb'
-        : null;
-    const connDbType = activeConnection?.dbType || demoDbType || null;
+    // Only show DB-specific sections for real connections (demo has its own inner nav)
+    const connDbType = activeConnection?.dbType || null;
 
     // Sections shown per database type
     const PG_SECTIONS = ['Overview', 'Alerts & Rules', 'Query Analysis', 'Schema & Data', 'Infrastructure', 'Security', 'Observability', 'Developer Tools', 'Admin'];
