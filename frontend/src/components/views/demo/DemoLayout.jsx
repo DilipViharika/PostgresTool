@@ -1472,3 +1472,125 @@ export const ChartTip = ({ active, payload, label }) => {
         </div>
     );
 };
+
+/* ── ConnectionBar — mimics the real app's connection/refresh status bar ── */
+export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
+    <div
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 16px',
+            background: LT.cardBg,
+            border: `1px solid ${LT.cardBorder}`,
+            borderRadius: 10,
+            fontSize: 11,
+            color: LT.textDim,
+            marginBottom: 4,
+            boxShadow: LT.cardShadow,
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span
+                    style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: LT.success,
+                    }}
+                />
+                <span style={{ fontWeight: 600, color: LT.textMuted }}>Connected</span>
+            </span>
+            <span>Last sync {lastSync} ago</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                Auto-refresh:
+                {['10s', '30s', '1m', '5m', 'Off'].map((v, i) => (
+                    <span
+                        key={i}
+                        style={{
+                            padding: '2px 6px',
+                            borderRadius: 4,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            background: v === refreshInterval ? LT.primary : 'transparent',
+                            color: v === refreshInterval ? '#fff' : LT.textDim,
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {v}
+                    </span>
+                ))}
+            </span>
+        </div>
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                color: LT.primary,
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: 11,
+            }}
+        >
+            ↻ Refresh Now
+        </div>
+    </div>
+);
+
+export const generateChartData = (hours = 24) =>
+    Array.from({ length: hours }, (_, i) => ({ time: `${String(i).padStart(2, '0')}:00` }));
+
+/* ── ExecStatCard — Large hero KPI card ── */
+export const ExecStatCard = ({ value, label, subtitle, color }) => (
+    <div
+        style={{
+            background: LT.cardBg,
+            borderRadius: 16,
+            padding: '24px 20px',
+            border: `1px solid ${LT.cardBorder}`,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: LT.cardShadow,
+        }}
+        onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-3px)';
+            e.currentTarget.style.boxShadow = LT.cardShadowHover;
+            e.currentTarget.style.borderColor = `${color}30`;
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = LT.cardShadow;
+            e.currentTarget.style.borderColor = LT.cardBorder;
+        }}
+    >
+        <div
+            style={{
+                fontSize: 42,
+                fontWeight: 800,
+                letterSpacing: '-0.04em',
+                color,
+                marginBottom: 8,
+                fontFamily: THEME.fontMono,
+            }}
+        >
+            {value}
+        </div>
+        <div
+            style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: LT.textDim,
+                marginBottom: 4,
+            }}
+        >
+            {label}
+        </div>
+        {subtitle && <div style={{ fontSize: 10.5, color: LT.textDim }}>{subtitle}</div>}
+    </div>
+);
