@@ -1,25 +1,47 @@
 import React, { useState } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
-import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DemoLayout — shared sidebar + content wrapper for all demo tabs.
+   DemoLayout — "Obsidian Aurora" MongoDB Monitor design with:
+   - Top header bar (56px) with breadcrumb, title, stats, live badge, notification, avatar
+   - Enhanced sidebar with logo, tier badge, active cluster dropdown, nav badges, bottom buttons
+   - Bottom status bar (24px) with cluster/version info
+   - Full-height layout with independent scrolling
 
    Props:
-     sections:  Array of { key, label, icon, accent, items: [{ key, label }] }
+     sections:  Array of { key, label, icon, accent, items: [{ key, label, badge? }] }
      renderContent: (sectionKey, itemKey) => React.Element
-     title: string — top-left sidebar label (e.g. "PostgreSQL Demo")
-     accentColor: string — primary accent for the sidebar header
+     title: string — top-left sidebar label
+     accentColor: string — primary accent color
+     titleIcon: React.Component — icon for sidebar header
+     headerStats: Array of { value, label, color } — right-side stat pills in header
+     clusterOptions: Array of string — cluster dropdown options (default: ['Local Dev'])
+     statusItems: Array of { label, value, color? } — bottom status bar items
+     onRefresh: Function — callback for Refresh button
+     onExport: Function — callback for Export button
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const SIDEBAR_W = 240;
 
-const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIcon: TitleIcon }) => {
+const DemoLayout = ({
+  sections = [],
+  renderContent,
+  title,
+  accentColor,
+  titleIcon: TitleIcon,
+  headerStats = [],
+  clusterOptions = ['Local Dev'],
+  statusItems = [],
+  onRefresh,
+  onExport,
+}) => {
     useAdaptiveTheme();
 
     const [activeSection, setActiveSection] = useState(sections[0]?.key || '');
     const [activeItem, setActiveItem] = useState(sections[0]?.items?.[0]?.key || '');
     const [openSections, setOpenSections] = useState(() => new Set(sections.map((s) => s.key)));
+    const [activeCluster, setActiveCluster] = useState(clusterOptions[0] || 'Local Dev');
 
     const toggleSection = (key) => {
         setOpenSections((prev) => {
@@ -37,8 +59,12 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
         }
     };
 
+    const activeItemData = sections
+        .find((s) => s.key === activeSection)
+        ?.items?.find((i) => i.key === activeItem);
+
     return (
-        <div style={{ display: 'flex', height: '100%', minHeight: '100vh', position: 'relative', background: '#020810' }}>
+        <div style={{ display: 'flex', height: '100%', minHeight: '100vh', position: 'relative', background: '#020810', flexDirection: 'column' }}>
             <DemoStyles />
 
             {/* Aurora gradient background */}
@@ -55,6 +81,8 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                 backgroundSize: '38px 38px', opacity: 0.45,
             }} />
 
+            {/* Main flex wrapper for sidebar + content */}
+            <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
             {/* ── SIDEBAR ── */}
             <aside
                 style={{
@@ -82,7 +110,8 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                     background: 'linear-gradient(180deg, transparent, rgba(0,229,255,0.2) 25%, rgba(0,255,170,0.15) 60%, rgba(79,172,254,0.2) 80%, transparent)',
                     pointerEvents: 'none',
                 }} />
-                {/* header */}
+
+                {/* Logo + Title Header */}
                 <div
                     style={{
                         padding: '16px 16px 12px',
@@ -90,23 +119,25 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                         background: 'rgba(0,0,0,0.15)',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 8,
+                        gap: 10,
+                        flexShrink: 0,
                     }}
                 >
                     {TitleIcon && (
                         <div
                             style={{
-                                width: 28,
-                                height: 28,
+                                width: 32,
+                                height: 32,
                                 borderRadius: 8,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 background: `${accentColor || THEME.primary}18`,
                                 border: `1px solid ${accentColor || THEME.primary}30`,
+                                boxShadow: `0 0 12px ${accentColor || THEME.primary}30`,
                             }}
                         >
-                            <TitleIcon size={15} color={accentColor || THEME.primary} />
+                            <TitleIcon size={16} color={accentColor || THEME.primary} />
                         </div>
                     )}
                     <span
@@ -120,6 +151,55 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                     >
                         {title}
                     </span>
+                </div>
+
+                {/* Tier Badge (optional gold bar) */}
+                <div
+                    style={{
+                        height: 2,
+                        background: 'linear-gradient(90deg, transparent, rgba(255,204,0,0.3), transparent)',
+                        flexShrink: 0,
+                    }}
+                />
+
+                {/* Active Cluster Dropdown */}
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.055)', flexShrink: 0 }}>
+                    <label
+                        style={{
+                            fontSize: '9px',
+                            fontWeight: 700,
+                            color: THEME.textDim,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.12em',
+                            display: 'block',
+                            marginBottom: 6,
+                            fontFamily: THEME.fontMono,
+                        }}
+                    >
+                        ACTIVE CLUSTER
+                    </label>
+                    <select
+                        value={activeCluster}
+                        onChange={(e) => setActiveCluster(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '6px 8px',
+                            borderRadius: 6,
+                            background: 'rgba(0,229,255,0.05)',
+                            border: '1px solid rgba(0,229,255,0.15)',
+                            color: THEME.textMuted,
+                            fontSize: 11,
+                            fontFamily: THEME.fontBody,
+                            cursor: 'pointer',
+                            fontWeight: 500,
+                        }}
+                    >
+                        {clusterOptions.map((opt) => (
+                            <option key={opt} value={opt}>
+                                {opt}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* nav sections */}
@@ -253,6 +333,24 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                                                     >
                                                         {item.label}
                                                     </span>
+                                                    {item.badge && (
+                                                        <span
+                                                            style={{
+                                                                fontSize: '7.5px',
+                                                                fontWeight: 700,
+                                                                textTransform: 'uppercase',
+                                                                background: 'rgba(0,229,255,0.15)',
+                                                                color: '#00e5ff',
+                                                                borderRadius: 4,
+                                                                padding: '1px 6px',
+                                                                flexShrink: 0,
+                                                                fontFamily: THEME.fontMono,
+                                                                letterSpacing: '0.05em',
+                                                            }}
+                                                        >
+                                                            {item.badge}
+                                                        </span>
+                                                    )}
                                                     {isActive && (
                                                         <div
                                                             style={{
@@ -275,21 +373,340 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                         );
                     })}
                 </nav>
+
+                {/* Sidebar bottom buttons */}
+                <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.055)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <button
+                        onClick={onRefresh}
+                        style={{
+                            width: '100%',
+                            padding: '6px 10px',
+                            fontSize: 11,
+                            fontWeight: 500,
+                            borderRadius: 6,
+                            border: 'none',
+                            background: 'rgba(255,255,255,0.02)',
+                            color: THEME.textDim,
+                            cursor: onRefresh ? 'pointer' : 'not-allowed',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (onRefresh) {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.color = THEME.textMuted;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                            e.currentTarget.style.color = THEME.textDim;
+                        }}
+                    >
+                        Refresh data
+                    </button>
+                    <button
+                        onClick={onExport}
+                        style={{
+                            width: '100%',
+                            padding: '6px 10px',
+                            fontSize: 11,
+                            fontWeight: 500,
+                            borderRadius: 6,
+                            border: 'none',
+                            background: 'rgba(255,255,255,0.02)',
+                            color: THEME.textDim,
+                            cursor: onExport ? 'pointer' : 'not-allowed',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (onExport) {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                e.currentTarget.style.color = THEME.textMuted;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                            e.currentTarget.style.color = THEME.textDim;
+                        }}
+                    >
+                        Export JSON
+                    </button>
+                    <button
+                        style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            fontSize: 11,
+                            fontWeight: 600,
+                            borderRadius: 6,
+                            border: 'none',
+                            background: 'linear-gradient(135deg, #00ffaa, #00e5ff)',
+                            color: '#020810',
+                            cursor: 'pointer',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = '0.9';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = '1';
+                        }}
+                    >
+                        + Add cluster
+                    </button>
+                </div>
             </aside>
 
-            {/* ── CONTENT ── */}
-            <main
+            {/* ── CONTENT COLUMN (header + main) ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                {/* TOP HEADER BAR */}
+                <header
+                    style={{
+                        height: 56,
+                        background: 'rgba(2,6,16,0.88)',
+                        backdropFilter: 'blur(24px)',
+                        WebkitBackdropFilter: 'blur(24px)',
+                        borderBottom: '1px solid rgba(255,255,255,0.055)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 20px',
+                        gap: 24,
+                        position: 'relative',
+                        zIndex: 10,
+                        flexShrink: 0,
+                    }}
+                >
+                    {/* Top gradient border */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 1,
+                            background: 'linear-gradient(90deg, transparent, #00e5ff, #00ffaa, #4facfe, transparent)',
+                            pointerEvents: 'none',
+                        }}
+                    />
+
+                    {/* Left: Breadcrumb + Title */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                            style={{
+                                fontSize: 10,
+                                color: THEME.textDim,
+                                fontFamily: THEME.fontMono,
+                                letterSpacing: '0.05em',
+                                marginBottom: 2,
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {title} {activeSection && <span style={{ color: THEME.textMuted }}>&gt; {sections.find((s) => s.key === activeSection)?.label}</span>}
+                        </div>
+                        <div
+                            style={{
+                                fontSize: 16,
+                                fontWeight: 800,
+                                color: THEME.textMain,
+                                fontFamily: THEME.fontBody,
+                                letterSpacing: '-0.04em',
+                            }}
+                        >
+                            {activeItemData?.label || (sections.find((s) => s.key === activeSection)?.label || 'Dashboard')}
+                        </div>
+                    </div>
+
+                    {/* Right: Stats, Live Badge, Notification, Avatar */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexShrink: 0 }}>
+                        {/* Stat Pills */}
+                        {headerStats && headerStats.length > 0 && (
+                            <div style={{ display: 'flex', gap: 12 }}>
+                                {headerStats.map((stat, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            padding: '6px 12px',
+                                            background: `${stat.color || THEME.primary}12`,
+                                            borderRadius: 8,
+                                            border: `1px solid ${stat.color || THEME.primary}30`,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                fontWeight: 700,
+                                                color: stat.color || THEME.primary,
+                                                fontFamily: THEME.fontMono,
+                                            }}
+                                        >
+                                            {stat.value}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 8,
+                                                color: THEME.textDim,
+                                                fontWeight: 600,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em',
+                                                marginTop: 1,
+                                            }}
+                                        >
+                                            {stat.label}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Live Badge */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '5px 12px',
+                                background: 'rgba(0,255,170,0.1)',
+                                borderRadius: 20,
+                                border: '1px solid rgba(0,255,170,0.25)',
+                                fontSize: 10,
+                                fontWeight: 700,
+                                color: '#00ffaa',
+                                fontFamily: THEME.fontMono,
+                            }}
+                        >
+                            <span
+                                style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: '50%',
+                                    background: '#00ffaa',
+                                    animation: 'live-pulse 1.5s ease-in-out infinite',
+                                    boxShadow: '0 0 6px #00ffaa',
+                                }}
+                            />
+                            Live
+                        </div>
+
+                        {/* Notification Bell */}
+                        <button
+                            style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 8,
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                            }}
+                        >
+                            <Bell size={16} color={THEME.textDim} />
+                        </button>
+
+                        {/* User Avatar */}
+                        <button
+                            style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 50,
+                                background: 'linear-gradient(135deg, #00ffaa, #4facfe)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.boxShadow = '0 0 12px rgba(0,255,170,0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}
+                        >
+                            <User size={16} color="#020810" />
+                        </button>
+                    </div>
+                </header>
+
+                {/* MAIN CONTENT AREA */}
+                <main
+                    style={{
+                        flex: 1,
+                        minHeight: 0,
+                        minWidth: 0,
+                        padding: '20px 22px 24px',
+                        overflowY: 'auto',
+                        position: 'relative',
+                        zIndex: 5,
+                    }}
+                >
+                    {renderContent(activeSection, activeItem)}
+                </main>
+            </div>
+
+            {/* BOTTOM STATUS BAR */}
+            <footer
                 style={{
-                    flex: 1,
-                    minWidth: 0,
-                    padding: '20px 22px 44px',
-                    overflowY: 'auto',
-                    position: 'relative',
-                    zIndex: 5,
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 24,
+                    background: 'rgba(2,6,16,0.9)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    borderTop: '1px solid rgba(255,255,255,0.055)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: SIDEBAR_W,
+                    paddingRight: 20,
+                    gap: 18,
+                    fontSize: 10,
+                    fontFamily: THEME.fontMono,
+                    color: THEME.textDim,
+                    zIndex: 11,
                 }}
             >
-                {renderContent(activeSection, activeItem)}
-            </main>
+                {/* Top gradient border */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 1,
+                        background: 'linear-gradient(90deg, transparent, rgba(0,229,255,0.25), transparent)',
+                        pointerEvents: 'none',
+                    }}
+                />
+
+                {statusItems && statusItems.length > 0 ? (
+                    statusItems.map((item, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ color: item.color || THEME.textDim }}>{item.label}:</span>
+                            <span style={{ fontWeight: 600, color: item.color || THEME.textMuted }}>{item.value}</span>
+                        </div>
+                    ))
+                ) : (
+                    <>
+                        <span>Status: Ready</span>
+                    </>
+                )}
+            </footer>
+            </div>
         </div>
     );
 };

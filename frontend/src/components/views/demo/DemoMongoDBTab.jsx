@@ -749,6 +749,41 @@ function DemoMongoDBTab({ tabId }) {
                     mfa: false,
                 },
             ],
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // EXECUTIVE DASHBOARD ENHANCED DATA
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            execKpi: {
+                connections: { value: 410, max: 800 },
+                opsPerSec: { value: 3105, trend: '+12%' },
+                readLatency: { value: '32ms', p99: '184ms' },
+                replLag: { value: '0.8s', oplog: '48h window' },
+            },
+
+            opsPerSecond30m: Array.from({ length: 16 }, (_, i) => ({
+                time: `${(i + 1) * 2}m`,
+                query: Math.floor(1800 + Math.sin(i / 3) * 500 + Math.random() * 200),
+                write: Math.floor(400 + Math.sin(i / 4) * 100 + Math.random() * 50),
+                delete: Math.floor(50 + Math.random() * 30),
+            })),
+
+            cpuMemory: Array.from({ length: 16 }, (_, i) => ({
+                time: `${(i + 1) * 2}m`,
+                cpu: Math.floor(35 + Math.sin(i / 4) * 20 + Math.random() * 10),
+                memory: Math.floor(62 + Math.sin(i / 5) * 8 + Math.random() * 5),
+            })),
+
+            diskIops: Array.from({ length: 10 }, (_, i) => ({
+                time: ['5m', '10m', '15m', '20m', '25m', '30m', '35m', '40m', '45m', '50m'][i],
+                read: Math.floor(2000 + Math.random() * 1500),
+                write: Math.floor(500 + Math.random() * 400),
+            })),
+
+            cacheFill: [
+                { name: 'Used', value: 72 },
+                { name: 'Free', value: 28 },
+            ],
         };
     }, []);
 
@@ -759,11 +794,11 @@ function DemoMongoDBTab({ tabId }) {
             icon: Database,
             accent: THEME.primary,
             items: [
-                { key: 'executive', label: 'Executive Dashboard' },
+                { key: 'executive', label: 'Executive Dashboard', badge: 'NEW' },
                 { key: 'connection', label: 'Connection' },
                 { key: 'serverinfo', label: 'Server Info' },
                 { key: 'databases', label: 'Databases' },
-                { key: 'relationships', label: 'Collection Relationships' },
+                { key: 'relationships', label: 'Collection Relationships', badge: 'NEW' },
             ],
         },
         {
@@ -774,17 +809,17 @@ function DemoMongoDBTab({ tabId }) {
             items: [
                 { key: 'serverstatus', label: 'Server Status' },
                 { key: 'realtimeops', label: 'Real-time Ops' },
-                { key: 'latency', label: 'Latency Percentiles' },
-                { key: 'namespace', label: 'Namespace Insights' },
-                { key: 'explain', label: 'Explain Plan' },
+                { key: 'latency', label: 'Latency Percentiles', badge: 'NEW' },
+                { key: 'namespace', label: 'Namespace Insights', badge: 'NEW' },
+                { key: 'explain', label: 'Explain Plan', badge: 'NEW' },
                 { key: 'activeops', label: 'Active Operations' },
                 { key: 'slowqueries', label: 'Slow Queries' },
                 { key: 'profiler', label: 'Query Profiler' },
-                { key: 'costestimator', label: 'Query Cost Estimator' },
+                { key: 'costestimator', label: 'Query Cost Estimator', badge: 'NEW' },
                 { key: 'locks', label: 'Lock Analysis' },
-                { key: 'anomaly', label: 'Anomaly Detection' },
+                { key: 'anomaly', label: 'Anomaly Detection', badge: 'NEW' },
                 { key: 'metricspreview', label: 'Metrics Preview' },
-                { key: 'liveagent', label: 'Live Agent' },
+                { key: 'liveagent', label: 'Live Agent', badge: 'NEW' },
             ],
         },
         {
@@ -793,12 +828,12 @@ function DemoMongoDBTab({ tabId }) {
             icon: HardDrive,
             accent: THEME.warning,
             items: [
-                { key: 'indexadvisor', label: 'Index Advisor' },
-                { key: 'schemaanalyzer', label: 'Schema Analyzer' },
+                { key: 'indexadvisor', label: 'Index Advisor', badge: 'NEW' },
+                { key: 'schemaanalyzer', label: 'Schema Analyzer', badge: 'NEW' },
                 { key: 'collectionstats', label: 'Collection Stats' },
                 { key: 'wiredtiger', label: 'WiredTiger Cache' },
-                { key: 'backup', label: 'Backup Monitor' },
-                { key: 'capacity', label: 'Capacity Planning' },
+                { key: 'backup', label: 'Backup Monitor', badge: 'NEW' },
+                { key: 'capacity', label: 'Capacity Planning', badge: 'NEW' },
                 { key: 'network', label: 'Network' },
             ],
         },
@@ -809,12 +844,12 @@ function DemoMongoDBTab({ tabId }) {
             accent: THEME.primary,
             items: [
                 { key: 'editor', label: 'Document Editor' },
-                { key: 'aggregation', label: 'Aggregation Builder' },
-                { key: 'nlquery', label: 'NL Query Generator' },
-                { key: 'importexport', label: 'Import/Export' },
-                { key: 'sqltranslator', label: 'SQL Translator' },
-                { key: 'schemacompare', label: 'Schema Compare' },
-                { key: 'geospatial', label: 'Geo-spatial' },
+                { key: 'aggregation', label: 'Aggregation Builder', badge: 'NEW' },
+                { key: 'nlquery', label: 'NL Query Generator', badge: 'NEW' },
+                { key: 'importexport', label: 'Import/Export', badge: 'NEW' },
+                { key: 'sqltranslator', label: 'SQL Translator', badge: 'NEW' },
+                { key: 'schemacompare', label: 'Schema Compare', badge: 'NEW' },
+                { key: 'geospatial', label: 'Geo-spatial', badge: 'NEW' },
             ],
         },
         {
@@ -826,8 +861,8 @@ function DemoMongoDBTab({ tabId }) {
                 { key: 'aihints', label: 'AI Hints' },
                 { key: 'clustercompare', label: 'Compare Clusters' },
                 { key: 'historicaltrends', label: 'Historical Trends' },
-                { key: 'perfadvisor', label: 'Perf Advisor v2' },
-                { key: 'tracecorrelator', label: 'Trace Correlator' },
+                { key: 'perfadvisor', label: 'Perf Advisor v2', badge: 'NEW' },
+                { key: 'tracecorrelator', label: 'Trace Correlator', badge: 'NEW' },
             ],
         },
         {
@@ -836,7 +871,7 @@ function DemoMongoDBTab({ tabId }) {
             icon: GitBranch,
             accent: THEME.info || THEME.primary,
             items: [
-                { key: 'replicaset', label: 'Replica Set + Failover' },
+                { key: 'replicaset', label: 'Replica Set + Failover', badge: 'NEW' },
                 { key: 'sharding', label: 'Sharding' },
                 { key: 'oplog', label: 'Oplog Tail' },
             ],
@@ -847,10 +882,10 @@ function DemoMongoDBTab({ tabId }) {
             icon: Settings,
             accent: THEME.secondary || THEME.primary,
             items: [
-                { key: 'alerts', label: 'Alert Manager' },
-                { key: 'prometheus', label: 'Prometheus Export' },
-                { key: 'auth', label: 'SSO/Auth' },
-                { key: 'atlasapi', label: 'Atlas API Bridge' },
+                { key: 'alerts', label: 'Alert Manager', badge: 'NEW' },
+                { key: 'prometheus', label: 'Prometheus Export', badge: 'NEW' },
+                { key: 'auth', label: 'SSO/Auth', badge: 'NEW' },
+                { key: 'atlasapi', label: 'Atlas API Bridge', badge: 'NEW' },
                 { key: 'dashboards', label: 'Dashboards' },
                 { key: 'reports', label: 'Reports' },
                 { key: 'auditlog', label: 'Audit Log' },
@@ -867,68 +902,122 @@ function DemoMongoDBTab({ tabId }) {
             case 'overview':
                 switch (itemKey) {
                     case 'executive':
+                        // Executive Dashboard - Large Hero KPI Cards with Enhanced Charts
+                        const ExecStatCard = ({ value, label, subtitle, color }) => (
+                            <div
+                                style={{
+                                    background: `linear-gradient(145deg, rgba(${parseInt(color.slice(1, 3), 16)},${parseInt(color.slice(3, 5), 16)},${parseInt(color.slice(5, 7), 16)},0.06), rgba(6,14,32,0.72))`,
+                                    borderRadius: '16px',
+                                    padding: '24px 20px',
+                                    border: `1px solid ${color}40`,
+                                    backdropFilter: 'blur(8px)',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-3px)';
+                                    e.currentTarget.style.boxShadow = `0 12px 24px ${color}20, 0 0 20px ${color}10`;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                <div style={{ fontSize: '42px', fontWeight: 800, letterSpacing: '-0.04em', textShadow: `0 0 20px ${color}80`, color, marginBottom: 8 }}>
+                                    {value}
+                                </div>
+                                <div style={{ fontSize: '11px', uppercase: true, letterSpacing: '0.1em', color: THEME.textDim, marginBottom: 4 }}>
+                                    {label}
+                                </div>
+                                <div style={{ fontSize: '10.5px', color: THEME.textDim }}>
+                                    {subtitle}
+                                </div>
+                            </div>
+                        );
+
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                    className="dpg-stagger"
-                                >
-                                    <MetricCard
-                                        icon={Database}
-                                        label="Cluster"
-                                        value={demoData.clusterHealth.status}
-                                        sub={`${demoData.clusterHealth.primaryNode}`}
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 100)}
-                                    />
-                                    <MetricCard
-                                        icon={Clock}
-                                        label="Uptime"
-                                        value={demoData.clusterHealth.uptime}
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 90 + Math.random() * 10)}
-                                    />
-                                    <MetricCard
-                                        icon={Server}
-                                        label="Secondaries"
-                                        value={demoData.clusterHealth.secondaries}
-                                        color={THEME.info || THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 2 + Math.random() * 0.2)}
-                                    />
-                                    <MetricCard
-                                        icon={Zap}
-                                        label="Version"
-                                        value={demoData.clusterHealth.version}
-                                        color={THEME.primary}
-                                    />
+                                {/* Row 1: 4 Large Hero KPI Cards */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="410" label="CONNECTIONS" subtitle="of 800 max" color="#00ffaa" />
+                                    <ExecStatCard value="3,105" label="OPS / SEC" subtitle="↑ 12% baseline" color="#4facfe" />
+                                    <ExecStatCard value="32ms" label="AVG READ LATENCY" subtitle="P99: 184ms" color="#ffcc00" />
+                                    <ExecStatCard value="0.8s" label="REPLICATION LAG" subtitle="oplog: 48h window" color="#e2f0ff" />
                                 </div>
 
-                                <Panel title="Cluster Performance" icon={Activity} accentColor={THEME.success}>
-                                    <ResponsiveContainer width="100%" height={240}>
-                                        <AreaChart data={demoData.clusterMetrics}>
-                                            <defs>
-                                                <linearGradient id="colorThroughput" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
-                                            <XAxis dataKey="time" stroke={THEME.textDim} />
-                                            <YAxis stroke={THEME.textDim} />
-                                            <Tooltip content={<ChartTip />} />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="throughput"
-                                                stroke={THEME.success}
-                                                fill="url(#colorThroughput)"
-                                            />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
-                                </Panel>
+                                {/* Row 2: 2 Charts side-by-side */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+                                    <Panel title="Operations per second — 30 min" accentColor={THEME.primary}>
+                                        <ResponsiveContainer width="100%" height={220}>
+                                            <LineChart data={demoData.opsPerSecond30m}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={11} />
+                                                <YAxis stroke={THEME.textDim} fontSize={11} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Legend wrapperStyle={{ paddingTop: '12px' }} />
+                                                <Line type="monotone" dataKey="query" stroke="#00e5ff" strokeWidth={2} dot={false} name="Query" isAnimationActive={false} />
+                                                <Line type="monotone" dataKey="write" stroke="#00ffaa" strokeWidth={2} dot={false} name="Write" isAnimationActive={false} />
+                                                <Line type="monotone" dataKey="delete" stroke="#ff4466" strokeWidth={2} dot={false} name="Delete" isAnimationActive={false} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+
+                                    <Panel title="Latency distribution — P50/P95/P99" accentColor={THEME.warning}>
+                                        <ResponsiveContainer width="100%" height={220}>
+                                            <LineChart data={demoData.latencyPercentiles}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={11} />
+                                                <YAxis stroke={THEME.textDim} fontSize={11} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Legend wrapperStyle={{ paddingTop: '12px' }} />
+                                                <Line type="monotone" dataKey="p99" stroke="#ff4466" strokeWidth={2} dot={false} name="P99" isAnimationActive={false} />
+                                                <Line type="monotone" dataKey="p95" stroke="#ffcc00" strokeWidth={2} dot={false} name="P95" isAnimationActive={false} />
+                                                <Line type="monotone" dataKey="p50" stroke="#00ffaa" strokeWidth={2} dot={false} name="P50" isAnimationActive={false} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                </div>
+
+                                {/* Row 3: 3 Charts */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                                    <Panel title="CPU & memory %" accentColor={THEME.info}>
+                                        <ResponsiveContainer width="100%" height={180}>
+                                            <LineChart data={demoData.cpuMemory}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} domain={[0, 100]} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Line type="monotone" dataKey="cpu" stroke="#4facfe" strokeWidth={2} dot={false} isAnimationActive={false} />
+                                                <Line type="monotone" dataKey="memory" stroke="#b86fff" strokeWidth={2} dot={false} isAnimationActive={false} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+
+                                    <Panel title="Disk IOPS" accentColor={THEME.success}>
+                                        <ResponsiveContainer width="100%" height={180}>
+                                            <BarChart data={demoData.diskIops}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                <Tooltip content={<ChartTip />} />
+                                                <Bar dataKey="read" fill="#4facfe" isAnimationActive={false} />
+                                                <Bar dataKey="write" fill="#00ffaa" isAnimationActive={false} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+
+                                    <Panel title="Cache fill ratio" accentColor={THEME.primary}>
+                                        <ResponsiveContainer width="100%" height={180}>
+                                            <PieChart>
+                                                <Pie data={demoData.cacheFill} cx="50%" cy="50%" innerRadius={35} outerRadius={60} dataKey="value" isAnimationActive={false}>
+                                                    <Cell fill="#00ffaa" />
+                                                    <Cell fill="#2a3f5f" />
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </Panel>
+                                </div>
                             </div>
                         );
                     case 'connection':
@@ -4694,9 +4783,22 @@ function DemoMongoDBTab({ tabId }) {
         <DemoLayout
             sections={sections}
             renderContent={renderContent}
-            title="MongoDB Demo"
+            title="Mongo Monitor"
             accentColor={THEME.primary}
             titleIcon={Database}
+            headerStats={[
+                { value: '419', label: 'CONNECTIONS', color: '#00ffaa' },
+                { value: '3,089', label: 'OPS/SEC', color: '#4facfe' },
+                { value: '26ms', label: 'P50 LATENCY', color: '#ffcc00' },
+            ]}
+            clusterOptions={['Local Dev', 'Production', 'Staging']}
+            statusItems={[
+                { label: 'Cluster', value: 'Local Dev — rs0' },
+                { label: 'MongoDB', value: '7.0.4' },
+                { label: 'Nodes', value: '3/3 healthy', color: '#00ffaa' },
+                { label: 'Uptime', value: '18d 4h' },
+                { label: 'Last sync', value: new Date().toLocaleTimeString() },
+            ]}
         />
     );
 }
