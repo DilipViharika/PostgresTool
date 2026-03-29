@@ -54,3 +54,18 @@ coverage/
 # Source maps in builds (may contain source)
 **/dist/**/*.map
 **/build/**/*.map
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+.pytest_cache/
+.ruff_cache/
+python/.venv/
+python/venv/
+python/.env
+python/.env.*
