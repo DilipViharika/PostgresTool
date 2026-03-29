@@ -1245,6 +1245,11 @@ const LoginPage = () => {
         async (e) => {
             e?.preventDefault();
             if (!username.trim() || !password.trim()) return;
+            // Validate input length to prevent buffer overflow and denial of service attacks
+            if (username.length > 255 || password.length > 1000) {
+                setError('Input too long');
+                return;
+            }
             if (rememberMe) localStorage.setItem('vigil_remembered_user', username.trim());
             else localStorage.removeItem('vigil_remembered_user');
             try {

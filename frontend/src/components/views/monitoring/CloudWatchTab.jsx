@@ -203,10 +203,15 @@ const CW_STYLES = `
     @keyframes cwSlideIn { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: none; } }
 `;
 
-/* ── localStorage helpers ── */
+/* ── sessionStorage helpers ── */
+/* SECURITY WARNING: AWS credentials (accessKeyId, secretAccessKey) are stored in sessionStorage
+ * instead of localStorage to prevent credentials from persisting across browser sessions.
+ * sessionStorage is cleared when the browser tab closes, reducing the window of exposure.
+ * Users should never store long-term credentials in the browser; use temporary credentials
+ * from STS AssumeRole or IAM Identity Center (Cognito) for production systems. */
 function loadInstances() {
     try {
-        const r = localStorage.getItem(STORAGE_KEY);
+        const r = sessionStorage.getItem(STORAGE_KEY);
         return r ? JSON.parse(r) : [];
     } catch {
         return [];
@@ -214,7 +219,7 @@ function loadInstances() {
 }
 function saveInstances(list) {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     } catch {}
 }
 
@@ -663,8 +668,8 @@ const EmptyState = ({ T, onAdd }) => (
                 },
                 {
                     icon: Shield,
-                    title: 'Saved locally',
-                    desc: 'Credentials saved in your browser localStorage, restored on next visit.',
+                    title: 'Session-based storage',
+                    desc: 'Credentials stored in sessionStorage for this browser session only. Automatically cleared when you close the tab.',
                 },
             ].map(({ icon: Icon, title, desc }) => (
                 <div

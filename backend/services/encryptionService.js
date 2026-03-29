@@ -44,7 +44,13 @@ function deriveKey(secret) {
 }
 
 function getEncryptionSecret() {
-    const key = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET;
+    let key = process.env.ENCRYPTION_KEY;
+    if (!key) {
+        key = process.env.JWT_SECRET;
+        if (key) {
+            console.warn('[Encryption] WARNING: Using JWT_SECRET as fallback for encryption key. Set ENCRYPTION_KEY environment variable for production security.');
+        }
+    }
     if (!key) {
         throw new Error(
             'ENCRYPTION_KEY (or JWT_SECRET) environment variable is required. '

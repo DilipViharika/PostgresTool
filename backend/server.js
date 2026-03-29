@@ -499,6 +499,14 @@ const loginAttempts = new Map();
 const LOGIN_MAX_ATTEMPTS  = 5;
 const LOGIN_WINDOW_MS     = 15 * 60 * 1000;
 
+// Cleanup stale login attempt records every 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, record] of loginAttempts) {
+        if (now - record.windowStart > 30 * 60_000) loginAttempts.delete(key);
+    }
+}, 300_000);
+
 function recordLoginAttempt(username, success) {
     const now    = Date.now();
     const record = loginAttempts.get(username) || { count: 0, windowStart: now };
@@ -1163,6 +1171,14 @@ app.post('/api/auth/change-password', requireScreen('*'), async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const resetTokens = new Map(); // In-memory store: token -> { userId, expiresAt }
 
+// Cleanup expired reset tokens every 5 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, data] of resetTokens) {
+        if (now > data.expiresAt.getTime()) resetTokens.delete(token);
+    }
+}, 300_000);
+
 app.post('/api/auth/forgot-password', async (req, res) => {
     const { email, username } = req.body;
 
@@ -1395,6 +1411,10 @@ app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACH
         const ext = await (await reqPool(req)).query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace=n.oid WHERE e.extname='pg_stat_statements'");
         if (ext.rowCount === 0) return res.json({ available: false, slowQueries: [] });
         const schema = ext.rows[0].nspname;
+        // Validate schema name to prevent injection
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schema)) {
+            return res.json({ available: false, error: 'Invalid schema name', slowQueries: [] });
+        }
         const q = await (await reqPool(req)).query(`SELECT query, calls, mean_exec_time AS mean_time_ms, round((shared_blks_hit::numeric/NULLIF(shared_blks_hit+shared_blks_read,0))*100,1) AS cache_hit_pct FROM "${schema}".pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10`);
         res.json({ available: true, slowQueries: q.rows });
     } catch (e) { res.json({ available: false, error: e.message, slowQueries: [] }); }
@@ -1445,8 +1465,18 @@ app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
         if (!query) return res.status(400).json({ error: 'Query is required' });
         const validationError = validateExplainQuery(query);
         if (validationError) return res.status(400).json({ error: validationError });
-        const result = await (await reqPool(req)).query(`EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) ${query}`);
-        res.json(result.rows[0]);
+        const dbPool = await reqPool(req);
+        // Execute EXPLAIN in a read-only transaction with timeout
+        await dbPool.query('BEGIN TRANSACTION READ ONLY');
+        try {
+            await dbPool.query('SET LOCAL statement_timeout = 5000');
+            const result = await dbPool.query(`EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) ${query}`);
+            await dbPool.query('COMMIT');
+            res.json(result.rows[0]);
+        } catch (error) {
+            await dbPool.query('ROLLBACK');
+            throw error;
+        }
     } catch (e) { res.status(400).json({ error: e.message }); }
 });
 
@@ -2568,13 +2598,23 @@ app.post('/api/regression/capture', authenticate, async (req, res) => {
         if (!query) return res.status(400).json({ error: 'query required' });
         const validationError = validateExplainQuery(query);
         if (validationError) return res.status(400).json({ error: validationError });
-        const result = await (await reqPool(req)).query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
-        const plan = result.rows[0]['QUERY PLAN'][0];
-        const cost = plan['Plan']['Total Cost'];
-        const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
-        const safeLabel = typeof label === 'string' ? label.slice(0, 120) : query.slice(0, 60);
-        planBaselines.set(fingerprint, { plan, cost, ts: new Date().toISOString(), query, label: safeLabel });
-        res.json({ fingerprint, cost, plan, message: 'Baseline captured' });
+        const dbPool = await reqPool(req);
+        // Execute EXPLAIN in a read-only transaction with timeout
+        await dbPool.query('BEGIN TRANSACTION READ ONLY');
+        try {
+            await dbPool.query('SET LOCAL statement_timeout = 5000');
+            const result = await dbPool.query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
+            await dbPool.query('COMMIT');
+            const plan = result.rows[0]['QUERY PLAN'][0];
+            const cost = plan['Plan']['Total Cost'];
+            const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
+            const safeLabel = typeof label === 'string' ? label.slice(0, 120) : query.slice(0, 60);
+            planBaselines.set(fingerprint, { plan, cost, ts: new Date().toISOString(), query, label: safeLabel });
+            res.json({ fingerprint, cost, plan, message: 'Baseline captured' });
+        } catch (error) {
+            await dbPool.query('ROLLBACK');
+            throw error;
+        }
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -2587,23 +2627,33 @@ app.post('/api/regression/compare', authenticate, async (req, res) => {
         const fingerprint = Buffer.from(query.trim().toLowerCase()).toString('base64').slice(0, 32);
         const baseline = planBaselines.get(fingerprint);
 
-        const result = await (await reqPool(req)).query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
-        const currentPlan = result.rows[0]['QUERY PLAN'][0];
-        const currentCost = currentPlan['Plan']['Total Cost'];
+        const dbPool = await reqPool(req);
+        // Execute EXPLAIN in a read-only transaction with timeout
+        await dbPool.query('BEGIN TRANSACTION READ ONLY');
+        try {
+            await dbPool.query('SET LOCAL statement_timeout = 5000');
+            const result = await dbPool.query(`EXPLAIN (COSTS, FORMAT JSON) ${query}`);
+            await dbPool.query('COMMIT');
+            const currentPlan = result.rows[0]['QUERY PLAN'][0];
+            const currentCost = currentPlan['Plan']['Total Cost'];
 
-        if (!baseline) {
-            return res.json({ status: 'no_baseline', currentCost, currentPlan, fingerprint });
+            if (!baseline) {
+                return res.json({ status: 'no_baseline', currentCost, currentPlan, fingerprint });
+            }
+
+            const costChange = ((currentCost - baseline.cost) / Math.max(baseline.cost, 0.001)) * 100;
+            const regression = costChange > 20;
+            res.json({
+                status:      regression ? 'regression' : 'ok',
+                fingerprint, costChange: Math.round(costChange * 10) / 10,
+                baseline:    { cost: baseline.cost, plan: baseline.plan, ts: baseline.ts, label: baseline.label },
+                current:     { cost: currentCost, plan: currentPlan },
+                regression,
+            });
+        } catch (error) {
+            await dbPool.query('ROLLBACK');
+            throw error;
         }
-
-        const costChange = ((currentCost - baseline.cost) / Math.max(baseline.cost, 0.001)) * 100;
-        const regression = costChange > 20;
-        res.json({
-            status:      regression ? 'regression' : 'ok',
-            fingerprint, costChange: Math.round(costChange * 10) / 10,
-            baseline:    { cost: baseline.cost, plan: baseline.plan, ts: baseline.ts, label: baseline.label },
-            current:     { cost: currentCost, plan: currentPlan },
-            regression,
-        });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -3692,6 +3742,10 @@ app.get('/api/schema/migrations', authenticate, cached('schema:migrations', CONF
             return res.json({ migrations: [], pending: [], message: 'No migration tracking table found. Schema versioning data will appear if you use a migration tool (Flyway, Knex, Prisma, etc.).' });
         }
         const tableName = tables[0].table_name;
+        // Validate table name to prevent injection
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)) {
+            return res.json({ migrations: [], pending: [], message: 'Invalid table name' });
+        }
         const { rows } = await pool.query(`SELECT * FROM "${tableName}" ORDER BY 1 DESC LIMIT 50`);
         res.json({ migrations: rows, pending: [], tableName });
     } catch (e) { res.json({ migrations: [], pending: [], message: e.message }); }

@@ -146,6 +146,7 @@ export function connectWS(onMessage, intervalMs = 10000) {
         try {
             const res = await fetch(`${API_BASE}/api/alerts/recent?limit=10`, {
                 headers: { Authorization: `Bearer ${token}` },
+                signal: AbortSignal.timeout(10000),
             });
             if (!res.ok) return;
             const data = await res.json();

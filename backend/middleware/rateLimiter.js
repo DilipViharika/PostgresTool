@@ -7,6 +7,7 @@
  */
 
 const buckets = new Map();
+const MAX_BUCKETS = 100000;
 
 /**
  * @param {{ windowMs?: number, maxRequests?: number, keyFn?: Function }} opts
@@ -27,6 +28,16 @@ export function rateLimiter(opts = {}) {
     return function (req, res, next) {
         const key = keyFn(req);
         const now = Date.now();
+
+        // Emergency purge if buckets exceed MAX_BUCKETS
+        if (buckets.size > MAX_BUCKETS) {
+            const sortedEntries = Array.from(buckets.entries())
+                .sort((a, b) => b[1].windowStart - a[1].windowStart)
+                .slice(0, Math.floor(MAX_BUCKETS * 0.8));
+            buckets.clear();
+            sortedEntries.forEach(([k, v]) => buckets.set(k, v));
+            console.warn(`[RateLimiter] Emergency purge triggered: reduced buckets from ${buckets.size} to ${Math.floor(MAX_BUCKETS * 0.8)}`);
+        }
 
         // Tier-based limits: enterprise gets 5x, pro gets 2x
         let max = maxDefault;

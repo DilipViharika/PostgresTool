@@ -38,6 +38,10 @@ const SSOCallback = () => {
                 if (userParam) {
                     // If backend passes user object explicitly
                     userData = JSON.parse(decodeURIComponent(userParam));
+                    // Validate the parsed user data to prevent JSON injection attacks
+                    if (!userData || typeof userData !== 'object' || !userData.id || !userData.username) {
+                        throw new Error('Invalid user data from SSO');
+                    }
                 } else {
                     // Fallback: Decode the JWT token payload to get user data
                     const base64Url = token.split('.')[1];
