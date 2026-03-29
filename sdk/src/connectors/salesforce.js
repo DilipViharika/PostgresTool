@@ -230,6 +230,18 @@ export class SalesforceConnector extends EventEmitter {
     this._ensureAuthenticated();
 
     try {
+      // SOQL validation
+      if (!soql || typeof soql !== 'string') {
+        throw new Error('SOQL query must be a non-empty string');
+      }
+      if (soql.length > 20000) {
+        throw new Error('SOQL query too long');
+      }
+      const forbidden = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|GRANT)\b/i;
+      if (forbidden.test(soql)) {
+        throw new Error('Only SELECT queries are allowed');
+      }
+
       this.logger.debug('Executing SOQL query', { soql: soql.substring(0, 50) });
 
       const params = new URLSearchParams({ q: soql });

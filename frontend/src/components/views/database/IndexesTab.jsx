@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { fetchData } from '../../../utils/api';
 
@@ -311,7 +312,7 @@ const SqlBlock = ({sql}) => {
         </div>
         <pre style={{margin:0,padding:'14px 16px',fontSize:12,lineHeight:1.8,background:C.bg,
             color:C.textPrimary,fontFamily:THEME.fontMono,overflowX:'auto',whiteSpace:'pre-wrap'}}>
-      <code dangerouslySetInnerHTML={{__html:h}}/>
+      <code dangerouslySetInnerHTML={{__html:DOMPurify.sanitize(h)}}/>
     </pre>
     </div>;
 };

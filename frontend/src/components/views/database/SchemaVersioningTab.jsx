@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { fetchData } from '../../../utils/api';
 
@@ -629,7 +630,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                                 <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>SQL</div>
                                 <div
                                     className="sv-code"
-                                    dangerouslySetInnerHTML={{ __html: highlightSQL(mig.sql.slice(0, 300) + (mig.sql.length > 300 ? '…' : '')) }}
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightSQL(mig.sql.slice(0, 300) + (mig.sql.length > 300 ? '…' : ''))) }}
                                     style={{ maxHeight: 150, overflowY: 'auto' }}
                                 />
                             </div>
@@ -722,7 +723,7 @@ const MigrationDetailModal = ({ migration, onClose }) => {
                     {migration.sql && (
                         <div style={{ marginBottom: 20 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>Full SQL</div>
-                            <div className="sv-code" dangerouslySetInnerHTML={{ __html: highlightSQL(migration.sql) }} style={{ maxHeight: 300, overflowY: 'auto' }} />
+                            <div className="sv-code" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightSQL(migration.sql)) }} style={{ maxHeight: 300, overflowY: 'auto' }} />
                         </div>
                     )}
 

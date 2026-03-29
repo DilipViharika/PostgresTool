@@ -250,6 +250,11 @@ async function getPool(connectionId) {
 
     if (connectionPools.has(id)) return connectionPools.get(id);
 
+    // Check connection pool limit
+    if (connectionPools.size >= 20) {
+        throw new Error('Too many active connections. Please close some connections first.');
+    }
+
     const dbType = (conn.dbType || 'postgresql').toLowerCase();
 
     if (dbType === 'mongodb') {
@@ -904,7 +909,8 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
 
     try {
         // ── Fallback demo login when no admin database is configured ──
-        if (!pool && username === 'admin' && password === 'admin123') {
+        // Only allowed in non-production environments
+        if (!pool && process.env.NODE_ENV !== 'production' && username === 'admin' && password === 'admin123') {
             const NEW_SCREENS = [
                 'backup', 'checkpoint', 'maintenance',
                 'replication', 'bloat', 'regression', 'cloudwatch',
@@ -1477,7 +1483,10 @@ app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
             await dbPool.query('ROLLBACK');
             throw error;
         }
-    } catch (e) { res.status(400).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Query parse error', { error: e.message });
+        res.status(400).json({ error: 'Invalid query' });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1485,7 +1494,7 @@ app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/alerts', authenticate, async (req, res) => {
     try {
-        const limit               = parseInt(req.query.limit) || 50;
+        const limit               = parseInt(req.query.limit, 10) || 50;
         const includeAcknowledged = req.query.includeAcknowledged === 'true';
         res.json(await alerts.getRecent(limit, includeAcknowledged));
     } catch (e) { res.json({}); }
@@ -1501,7 +1510,10 @@ app.post('/api/alerts/:id/acknowledge', authenticate, async (req, res) => {
         const result = await alerts.acknowledge(req.params.id, req.user.id, req.user.username);
         if (!result) return res.status(404).json({ error: 'Alert not found' });
         res.json(result);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Alert acknowledge error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.post('/api/alerts/bulk-acknowledge', authenticate, async (req, res) => {
@@ -1510,7 +1522,10 @@ app.post('/api/alerts/bulk-acknowledge', authenticate, async (req, res) => {
         if (!Array.isArray(alertIds) || !alertIds.length) return res.status(400).json({ error: 'Invalid alert IDs' });
         const results = await alerts.bulkAcknowledge(alertIds, req.user.id, req.user.username);
         res.json({ acknowledged: results.length });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Bulk acknowledge alerts error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.post('/api/alerts/manual', authenticate, requireRole('admin', 'super_admin'), async (req, res) => {
@@ -1537,12 +1552,18 @@ app.post('/api/alerts/manual', authenticate, requireRole('admin', 'super_admin')
             { ...data, manual: true, createdBy: req.user.username },
         );
         res.json(alert);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Manual alert creation error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.delete('/api/alerts/cleanup', authenticate, requireScreen('admin'), async (req, res) => {
-    try { res.json({ deleted: await alerts.cleanup(parseInt(req.query.days) || 30) }); }
-    catch (e) { res.status(500).json({ error: e.message }); }
+    try { res.json({ deleted: await alerts.cleanup(parseInt(req.query.days, 10) || 30) }); }
+    catch (e) {
+        log('ERROR', 'Alert cleanup error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // ── Vercel Cron: run monitoring on schedule ───────────────────────────────────
@@ -1557,7 +1578,8 @@ app.post('/api/alerts/run-monitoring', async (req, res) => {
         await alerts.runMonitoring();
         res.json({ success: true, timestamp: new Date().toISOString(), message: 'Monitoring cycle completed' });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        log('ERROR', 'Alert monitoring cycle failed', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -1566,7 +1588,10 @@ app.post('/api/alerts/email/test', authenticate, requireScreen('admin'), async (
         const { recipient } = req.body;
         if (!recipient) return res.status(400).json({ error: 'Recipient email required' });
         res.json(await emailService.sendTestEmail(recipient));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Email test error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // ── Slack: test & config ──────────────────────────────────────────────────
@@ -1576,7 +1601,10 @@ app.post('/api/alerts/slack/test', authenticate, requireScreen('admin'), async (
         if (!webhookUrl) return res.status(400).json({ error: 'SLACK_WEBHOOK_URL is not configured.' });
         await sendSlackMessage(':white_check_mark: *Vigil Slack integration is working!* This is a test message from your Vigil monitoring platform.', webhookUrl);
         res.json({ success: true, message: 'Test message sent to Slack.' });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Slack test error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.get('/api/alerts/slack/config', authenticate, requireScreen('admin'), (req, res) => {
@@ -1706,7 +1734,10 @@ app.post('/api/alerts/email/digest', authenticate, requireScreen('admin'), async
         const { recipients } = req.body;
         const recentAlerts   = await alerts.getRecent(50, false);
         res.json(await emailService.sendDigest(recentAlerts, recipients));
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Email digest error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1939,7 +1970,8 @@ app.post('/api/connections', authenticate, async (req, res) => {
         res.status(201).json({ ...sanitizeConn(newConn), testResult });
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
-        res.status(500).json({ error: e.message });
+        log('ERROR', 'Create connection error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -1982,7 +2014,8 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
         res.json(sanitizeConn(updated));
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
-        res.json({});
+        log('ERROR', 'Update connection error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -2009,18 +2042,24 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
 
         await syncConnectionsCache();
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Delete connection error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.post('/api/connections/:id/default', authenticate, async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id, 10);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         if (!conns.find(c => c.id === id)) return res.status(404).json({ error: 'Connection not found' });
         await dbSetDefault(req.user.id, req.user.role, id);
         await syncConnectionsCache();
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Set default connection error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.post('/api/connections/:id/test', authenticate, async (req, res) => {
@@ -2202,7 +2241,7 @@ app.get('/api/connections/health', authenticate, async (req, res) => {
         res.json(healthResults);
     } catch (e) {
         log('ERROR', `[/api/connections/health] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -2216,7 +2255,7 @@ app.get('/api/connections/count', authenticate, async (req, res) => {
         res.json({ count: conns.length });
     } catch (e) {
         log('ERROR', `[/api/connections/count] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -2262,7 +2301,7 @@ app.post('/api/connections/parse-url', authenticate, async (req, res) => {
         res.json(parsed);
     } catch (e) {
         log('ERROR', `[/api/connections/parse-url] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -2288,7 +2327,7 @@ app.get('/api/health', async (req, res) => {
         log('ERROR', `[/api/health] ${e.message}`);
         res.status(500).json({
             controlPlane: 'error',
-            error: e.message,
+            error: 'Internal server error',
             timestamp: new Date().toISOString(),
         });
     }
@@ -2353,8 +2392,8 @@ app.post('/api/feedback', authenticate, async (req, res) => {
 
 app.get('/api/feedback/mine', authenticate, async (req, res) => {
     try {
-        const limit  = Math.min(parseInt(req.query.limit)  || 20, 100);
-        const offset = Math.max(parseInt(req.query.offset) || 0,  0);
+        const limit  = Math.min(parseInt(req.query.limit, 10)  || 20, 100);
+        const offset = Math.max(parseInt(req.query.offset, 10) || 0,  0);
         const result = await pool.query(
             `SELECT id, feedback_type, rating, comment, remarks, section, feature_title, feature_priority, status, created_at
              FROM pgmonitoringtool.user_feedback WHERE username = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
@@ -2366,8 +2405,8 @@ app.get('/api/feedback/mine', authenticate, async (req, res) => {
 
 app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req, res) => {
     try {
-        const limit  = Math.min(parseInt(req.query.limit)  || 50, 200);
-        const offset = Math.max(parseInt(req.query.offset) || 0,  0);
+        const limit  = Math.min(parseInt(req.query.limit, 10)  || 50, 200);
+        const offset = Math.max(parseInt(req.query.offset, 10) || 0,  0);
         const conditions = []; const params = [];
         if (req.query.type)     { params.push(req.query.type);            conditions.push(`feedback_type = $${params.length}`); }
         if (req.query.status)   { params.push(req.query.status);          conditions.push(`status = $${params.length}`); }
@@ -2393,7 +2432,10 @@ app.patch('/api/admin/feedback/:id/status', authenticate, requireScreen('admin')
         );
         if (!result.rowCount) return res.status(404).json({ error: 'Feedback not found' });
         res.json({ success: true, ...result.rows[0] });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Update feedback error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), async (req, res) => {
@@ -2615,7 +2657,10 @@ app.post('/api/regression/capture', authenticate, async (req, res) => {
             await dbPool.query('ROLLBACK');
             throw error;
         }
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Regression capture error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.post('/api/regression/compare', authenticate, async (req, res) => {
@@ -2654,7 +2699,10 @@ app.post('/api/regression/compare', authenticate, async (req, res) => {
             await dbPool.query('ROLLBACK');
             throw error;
         }
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Regression compare error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.get('/api/regression/baselines', authenticate, (req, res) => {
@@ -3553,7 +3601,10 @@ app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async 
         cache.clear();
         log('INFO', 'Manual VACUUM executed', { schema, table, analyze });
         res.json({ success: true, command: cmd });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'VACUUM command error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3924,7 +3975,10 @@ app.post('/api/admin/hba', authenticate, requireRole('super_admin'), async (req,
         //   fs.writeFileSync(hbaPath, formatHbaRules(rules));
         //   await pool.query('SELECT pg_reload_conf()');
         res.json({ success: true, message: 'HBA rules acknowledged. Apply manually in self-hosted deployments.', rules_count: rules.length });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'HBA rules update error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.get('/api/admin/connections', authenticate, requireRole('admin', 'super_admin'), cached('admin:connections', 5_000), async (req, res) => {
@@ -3978,7 +4032,10 @@ app.post('/api/admin/connections/kill', authenticate, requireRole('admin', 'supe
         const killed = r.rows[0]?.killed;
         log('INFO', 'Connection terminated', { pid, user: conn.usename, by: req.user?.username });
         res.json({ success: killed, pid, message: killed ? `Connection ${pid} terminated` : `Could not terminate ${pid}` });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        log('ERROR', 'Kill connection error', { error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4253,7 +4310,7 @@ app.post('/api/alerts/rules', authenticate, async (req, res) => {
         res.json({ success: true, id: rows[0].id });
     } catch (e) {
         log('ERROR', `[/api/alerts/rules POST] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -4268,7 +4325,7 @@ app.post('/api/alerts/rules/:id', authenticate, async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         log('ERROR', `[/api/alerts/rules/:id POST] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -4278,7 +4335,7 @@ app.delete('/api/alerts/rules/:id', authenticate, async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         log('ERROR', `[/api/alerts/rules/:id DELETE] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -4307,7 +4364,7 @@ app.get('/api/pool/metrics', authenticate, cached('pool:metrics', CONFIG.CACHE_T
         });
     } catch (e) {
         log('ERROR', `[/api/pool/metrics] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -4333,7 +4390,7 @@ app.get('/api/schema/relationships', authenticate, cached('schema:rels', CONFIG.
         res.json(rows);
     } catch (e) {
         log('ERROR', `[/api/schema/relationships] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -4357,7 +4414,7 @@ app.get('/api/schema/dependencies', authenticate, cached('schema:deps', CONFIG.C
         res.json(rows);
     } catch (e) {
         log('ERROR', `[/api/schema/dependencies] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -4780,7 +4837,10 @@ if (process.env.VERCEL !== '1') {
 
             log('INFO', 'WebSocket connection established');
             alerts.addSubscriber(ws);
-            alerts.getRecent(10, false).then(recent => {
+            Promise.race([
+                alerts.getRecent(10, false),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+            ]).then(recent => {
                 if (ws.readyState === 1) {
                     ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
                 }

@@ -2,6 +2,7 @@
 //  VIGIL — ApiQueriesTab  (v8 — Apex Observability)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { fetchData } from '../../../utils/api';
 import {
@@ -454,7 +455,7 @@ const JsonViewer = ({ data, label }) => {
                 </button>
             </div>
             <pre className="scroll-thin" style={{ margin: 0, padding: 14, fontSize: 10, lineHeight: 1.6, overflowX: 'auto', maxHeight: 220 }}
-                 dangerouslySetInnerHTML={{ __html: html }} />
+                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />
         </div>
     );
 };

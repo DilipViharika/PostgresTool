@@ -119,6 +119,10 @@ export class EventEmitter {
           callback(...args);
         } catch (error) {
           console.error(`Error in listener for event '${eventName}':`, error);
+          // Emit error event with guard to prevent infinite recursion
+          if (eventName !== 'error') {
+            this.emit('error', { originalEvent: eventName, error });
+          }
         }
       }
     }
@@ -133,6 +137,10 @@ export class EventEmitter {
           callback(...args);
         } catch (error) {
           console.error(`Error in once listener for event '${eventName}':`, error);
+          // Emit error event with guard to prevent infinite recursion
+          if (eventName !== 'error') {
+            this.emit('error', { originalEvent: eventName, error });
+          }
         }
       }
       this._onceListeners.delete(eventName);

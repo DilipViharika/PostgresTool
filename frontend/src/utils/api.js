@@ -1,6 +1,6 @@
 import { isDemoMode, getDemoData } from './demoData.js';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API_URL not set, using relative URLs'); return ''; })();
 
 // ── Request deduplication ──────────────────────────────────────────────────
 // Prevents duplicate GET requests to the same URL while one is in-flight.
@@ -70,7 +70,7 @@ async function request(path, options = {}) {
 
     // ── Deduplicate identical in-flight GET requests ─────────────────────
     if (isGet && inflightRequests.has(url)) {
-        return inflightRequests.get(url);
+        return inflightRequests.get(url).catch(err => { inflightRequests.delete(url); throw err; });
     }
 
     // ── AbortController with configurable timeout ───────────────────────

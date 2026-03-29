@@ -70,6 +70,21 @@ export class DatabaseConnector extends EventEmitter {
       throw new Error(`Invalid database type. Must be one of: ${validTypes.join(', ')}`);
     }
 
+    // Port validation
+    if (config.port && (config.port < 1 || config.port > 65535)) {
+      throw new Error('Invalid port');
+    }
+
+    // Host validation
+    if (!/^[a-zA-Z0-9._-]+$/.test(config.host)) {
+      throw new Error('Invalid hostname');
+    }
+
+    // Database name validation
+    if (!/^[a-zA-Z0-9_-]+$/.test(config.database)) {
+      throw new Error('Invalid database name');
+    }
+
     this.config = {
       type: config.type,
       host: config.host,

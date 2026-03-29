@@ -13,7 +13,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 //  CONFIG
 // ═══════════════════════════════════════════════════════════════════════════
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API_URL not set, using relative URLs'); return ''; })();
 const STORAGE_KEYS = { TOKEN: 'vigil_token', USER: 'vigil_user' };
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -44,3 +44,13 @@ backend/data/connections.json
 # Test coverage
 coverage/
 **/coverage/
+
+# Credentials and keys
+**/*.pem
+**/*.key
+**/credentials.json
+**/.aws/
+
+# Source maps in builds (may contain source)
+**/dist/**/*.map
+**/build/**/*.map

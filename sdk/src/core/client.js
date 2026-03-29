@@ -217,6 +217,11 @@ export class VigilClient extends EventEmitter {
       throw new Error('Callback must be a function');
     }
 
+    // Check subscription limit
+    if (this.subscriptions.get(event)?.size >= 100) {
+      throw new Error('Maximum subscribers exceeded for event');
+    }
+
     const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     if (!this.subscriptions.has(event)) {

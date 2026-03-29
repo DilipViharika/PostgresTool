@@ -32,7 +32,7 @@ import { useAuth } from '../../context/AuthContext';
 import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
 import { useTheme } from '../../context/ThemeContext.jsx';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API_URL not set, using relative URLs'); return ''; })();
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  DATABASE TYPE DEFINITIONS
@@ -1193,6 +1193,9 @@ const LoginPage = () => {
     const [resetEmail, setResetEmail] = useState('');
     const [resetLoading, setResetLoading] = useState(false);
     const [resetMessage, setResetMessage] = useState('');
+    const [attempts, setAttempts] = useState(0);
+    const [lockoutUntil, setLockoutUntil] = useState(0);
+    const [rateLimitError, setRateLimitError] = useState('');
     const userRef = useRef(null);
     const pwdRef = useRef(null);
 
@@ -1245,9 +1248,15 @@ const LoginPage = () => {
         async (e) => {
             e?.preventDefault();
             if (!username.trim() || !password.trim()) return;
+            // Rate limiting check
+            if (Date.now() < lockoutUntil) {
+                setRateLimitError('Too many attempts. Please wait before trying again.');
+                return;
+            }
+            setRateLimitError('');
             // Validate input length to prevent buffer overflow and denial of service attacks
             if (username.length > 255 || password.length > 1000) {
-                setError('Input too long');
+                setRateLimitError('Input too long');
                 return;
             }
             if (rememberMe) localStorage.setItem('vigil_remembered_user', username.trim());
@@ -1255,9 +1264,22 @@ const LoginPage = () => {
             try {
                 localStorage.removeItem('pg_monitor_active_tab');
             } catch {}
-            await login(username, password);
+            try {
+                await login(username, password);
+                // Clear attempts on successful login
+                setAttempts(0);
+                setLockoutUntil(0);
+            } catch (err) {
+                const newAttempts = attempts + 1;
+                setAttempts(newAttempts);
+                if (newAttempts >= 5) {
+                    setLockoutUntil(Date.now() + 5 * 60 * 1000);
+                    setAttempts(0);
+                }
+                throw err;
+            }
         },
-        [username, password, rememberMe, login],
+        [username, password, rememberMe, login, attempts, lockoutUntil],
     );
 
     const handleForgotPassword = useCallback(

@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { postData } from '../../../utils/api.js';
 import {
@@ -74,7 +75,7 @@ const CodeBlock = ({code, lang='sql', maxH=350}) => {
             <div style={{background:THEME.surface,maxHeight:need&&!exp?300:maxH,overflowY:'auto',overflowX:'auto',position:'relative'}}>
                 <div style={{display:'flex'}}>
                     <div style={{padding:'7px 0',borderRight:`1px solid ${THEME.grid}`,userSelect:'none',flexShrink:0}}>{show.map((_,i)=><div key={i} style={{padding:'0 8px',fontSize:9.5,lineHeight:1.7,color:THEME.textDim,textAlign:'right',fontFamily:THEME.fontMono}}>{i+1}</div>)}</div>
-                    <pre style={{margin:0,padding:'7px 11px',flex:1,fontFamily:THEME.fontMono,fontSize:10,lineHeight:1.7,color:THEME.textMain,whiteSpace:'pre',overflow:'visible'}} dangerouslySetInnerHTML={{__html:hl(show.join('\n'))}}/>
+                    <pre style={{margin:0,padding:'7px 11px',flex:1,fontFamily:THEME.fontMono,fontSize:10,lineHeight:1.7,color:THEME.textMain,whiteSpace:'pre',overflow:'visible'}} dangerouslySetInnerHTML={{__html:DOMPurify.sanitize(hl(show.join('\n')))}}/>
                 </div>
                 {need&&!exp&&<div style={{position:'sticky',bottom:0,left:0,right:0,height:36,background:`linear-gradient(transparent,${THEME.surface})`,display:'flex',alignItems:'flex-end',justifyContent:'center',paddingBottom:5}}><button onClick={()=>setExp(true)} style={{background:THEME.surfaceHover,border:`1px solid ${THEME.grid}`,borderRadius:4,padding:'2px 9px',cursor:'pointer',fontSize:8.5,fontWeight:700,color:THEME.textMuted}}>Show all {lines.length} lines</button></div>}
             </div>
