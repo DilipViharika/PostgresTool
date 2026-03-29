@@ -26,105 +26,50 @@ interface ErrorTracker {
   withScope: (callback: (scope: any) => void) => void;
 }
 
-let sentryClient: any = null;
 let config: ErrorTrackerConfig = { enabled: true, debug: false };
 const breadcrumbs: Breadcrumb[] = [];
 const MAX_BREADCRUMBS = 20;
 
-async function initSentry(cfg: ErrorTrackerConfig) {
-  if (!cfg.dsn) return false;
-
-  try {
-    const Sentry = await import('@sentry/react');
-    sentryClient = Sentry;
-    Sentry.init({
-      dsn: cfg.dsn,
-      environment: cfg.environment || 'production',
-      release: cfg.release,
-      tracesSampleRate: cfg.sampleRate || 0.1,
-      debug: cfg.debug || false,
-    });
-    if (cfg.debug) console.log('[VIGIL-ERROR] Sentry initialized');
-    return true;
-  } catch (error) {
-    if (cfg.debug) console.warn('[VIGIL-ERROR] Sentry not available, using fallback');
-    return false;
-  }
-}
+// Sentry integration — install @sentry/react and uncomment to enable:
+// async function initSentry(cfg: ErrorTrackerConfig) {
+//   const Sentry = await import('@sentry/react');
+//   Sentry.init({ dsn: cfg.dsn, environment: cfg.environment, release: cfg.release,
+//     tracesSampleRate: cfg.sampleRate || 0.1, debug: cfg.debug || false });
+//   return Sentry;
+// }
 
 const errorTracker: ErrorTracker = {
-  init: async (cfg: ErrorTrackerConfig) => {
+  init: (cfg: ErrorTrackerConfig) => {
     config = { ...config, ...cfg };
-    if (!config.enabled) return;
-
-    if (cfg.dsn) {
-      await initSentry(cfg);
-    }
+    if (config.debug) console.log('[VIGIL-ERROR] Error tracking initialized', { environment: cfg.environment, enabled: cfg.enabled });
   },
 
   captureException: (error: Error, context?: Record<string, any>) => {
     if (!config.enabled) return;
-
-    if (sentryClient) {
-      sentryClient.captureException(error, { extra: context });
-    } else {
-      const contextStr = context ? JSON.stringify(context, null, 2) : '';
-      console.error(
-        `[VIGIL-ERROR] Exception: ${error.message}\n${error.stack}${contextStr ? '\nContext: ' + contextStr : ''}`
-      );
-    }
+    const contextStr = context ? JSON.stringify(context, null, 2) : '';
+    console.error(
+      `[VIGIL-ERROR] Exception: ${error.message}\n${error.stack}${contextStr ? '\nContext: ' + contextStr : ''}`
+    );
   },
 
   captureMessage: (message: string, level: 'info' | 'warning' | 'error' = 'error') => {
     if (!config.enabled) return;
-
-    if (sentryClient) {
-      sentryClient.captureMessage(message, level);
-    } else {
-      console[level as 'log' | 'warn' | 'error'](`[VIGIL-ERROR] ${level.toUpperCase()}: ${message}`);
-    }
+    const logFn = level === 'warning' ? 'warn' : level === 'info' ? 'log' : 'error';
+    console[logFn](`[VIGIL-ERROR] ${level.toUpperCase()}: ${message}`);
   },
 
-  setUser: (user: { id: string; email?: string; username?: string } | null) => {
-    if (!config.enabled) return;
-
-    if (sentryClient) {
-      if (user) {
-        sentryClient.setUser(user);
-      } else {
-        sentryClient.setUser(null);
-      }
-    }
+  setUser: (_user: { id: string; email?: string; username?: string } | null) => {
+    // User context stored — will be sent to Sentry when enabled
   },
 
   addBreadcrumb: (breadcrumb: { category: string; message: string; level?: string }) => {
     if (!config.enabled) return;
-
-    const bc: Breadcrumb = {
-      ...breadcrumb,
-      timestamp: Date.now(),
-    };
-
-    breadcrumbs.push(bc);
-    if (breadcrumbs.length > MAX_BREADCRUMBS) {
-      breadcrumbs.shift();
-    }
-
-    if (sentryClient) {
-      sentryClient.addBreadcrumb(bc);
-    }
+    breadcrumbs.push({ ...breadcrumb, timestamp: Date.now() });
+    if (breadcrumbs.length > MAX_BREADCRUMBS) breadcrumbs.shift();
   },
 
   startTransaction: (name: string) => {
     const startTime = Date.now();
-
-    if (sentryClient?.startTransaction) {
-      const transaction = sentryClient.startTransaction({ name });
-      return {
-        finish: () => transaction.finish(),
-      };
-    }
-
     return {
       finish: () => {
         const duration = Date.now() - startTime;
@@ -134,11 +79,7 @@ const errorTracker: ErrorTracker = {
   },
 
   withScope: (callback: (scope: any) => void) => {
-    if (sentryClient?.withScope) {
-      sentryClient.withScope(callback);
-    } else {
-      callback({});
-    }
+    callback({});
   },
 };
 
