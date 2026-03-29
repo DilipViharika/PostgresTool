@@ -621,7 +621,7 @@ export default function CustomDashboardTab() {
     };
 
     const applyTemplate = (templateWidgets) => {
-        setWidgets(templateWidgets.map(w => ({ ...w, id:Date.now() + Math.random() })));
+        setWidgets(templateWidgets.map(w => ({ ...w, id:Date.now() + 0 })));
     };
 
     const exportDashboard = () => {

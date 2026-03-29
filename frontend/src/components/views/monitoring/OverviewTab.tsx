@@ -403,7 +403,7 @@ const fmtRelTime = (isoStr) => {
 };
 // PLACEHOLDER: Visual placeholder for sparklines. Replace with real metric data when available
 const genSparkline = (n = 10, base = 40, variance = 30) =>
-    Array.from({ length: n }, () => base + Math.random() * variance);
+    Array.from({ length: n }, () => base);
 
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: ENVIRONMENT SWITCHER
@@ -414,16 +414,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
     const ref = useRef(null);
     const { connections } = useConnection();
     // PLACEHOLDER: Build environment list from actual connections
-    const ENVIRONMENTS = connections && connections.length > 0
-        ? connections.map((conn, idx) => ({
-            id: conn.id || `conn-${idx}`,
-            label: conn.alias || conn.host || 'Database',
-            icon: idx === 0 ? Globe : (idx === 1 ? FlaskConical : Terminal),
-            color: idx === 0 ? '#ef4444' : (idx === 1 ? '#f59e0b' : '#22c55e'),
-            pg: conn.version || 'unknown',
-            host: conn.host || 'localhost',
-          }))
-        : [];
+    const ENVIRONMENTS = [];
     const env = ENVIRONMENTS.find(e => e.id === currentEnv) || ENVIRONMENTS[0] || { label: 'No connections', color: '#666' };
 
     useEffect(() => {
@@ -1203,8 +1194,8 @@ const OverviewTab: React.FC = () => {
             const t = new Date(now - i * 60000);
             pts.push({
                 time: `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`,
-                qps: Math.round(800 + Math.sin(i * 0.4) * 300 + Math.random() * 200),
-                tps: Math.round(120 + Math.sin(i * 0.3) * 60 + Math.random() * 40),
+                qps: 0,
+                tps: 0,
             });
         }
         return pts;
@@ -1214,18 +1205,18 @@ const OverviewTab: React.FC = () => {
         const labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'];
         return labels.map(t => ({
             t,
-            reads: Math.round(Math.random() * 1200 + 400),
-            writes: Math.round(Math.random() * 600 + 100),
-            commits: Math.round(Math.random() * 800 + 200),
+            reads: 0,
+            writes: 0,
+            commits: 0,
         }));
     }, []);
 
     const txnLatencyData = useMemo(() => {
         return Array.from({ length: 20 }, (_, i) => ({
             i,
-            p50: Math.round(1.2 + Math.sin(i * 0.5) * 0.4 + Math.random() * 0.3),
-            p95: Math.round(8 + Math.sin(i * 0.4) * 3 + Math.random() * 2),
-            p99: Math.round(22 + Math.sin(i * 0.3) * 6 + Math.random() * 4),
+            p50: 0,
+            p95: 0,
+            p99: 0,
         }));
     }, [tick]);
 

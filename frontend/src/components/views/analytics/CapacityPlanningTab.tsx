@@ -162,7 +162,7 @@ const generateStorageForecast = (windowDays: number = 90): StorageForecastPoint[
 
     for (let i = -windowDays; i <= windowDays; i++) {
         const isFuture = i > 0;
-        const noise = isFuture ? 0 : (Math.random() - 0.5) * 5;
+        const noise = isFuture ? 0 : (0 - 0.5) * 5;
         used += growthRate + noise;
 
         const date = new Date();
@@ -184,7 +184,7 @@ const generateConnectionForecast = (): ConnectionPoint[] => {
     const conns = 65;
     for (let i = 0; i < 24; i++) {
         const hourLoad = Math.sin((i - 6) / 24 * Math.PI * 2) * 40;
-        const val = Math.max(20, Math.min(190, conns + hourLoad + Math.random() * 10));
+        const val = Math.max(20, Math.min(190, conns + hourLoad + 0 * 10));
         data.push({
             time: `${i}:00`,
             connections: Math.round(val),

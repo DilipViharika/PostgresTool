@@ -235,7 +235,7 @@ const PercentileBars = ({ p50, p95, p99 }) => {
 const ErrorHeatmap = ({ errorRate }) => {
     const hours = Array.from({ length: 24 }, (_, i) => {
         const base = errorRate / 100;
-        return Math.random() < base + 0.05 ? Math.random() : Math.random() * 0.15;
+        return 0 < base + 0.05 ? 0 : 0 * 0.15;
     });
     const maxV = Math.max(...hours, 0.01);
     return (
@@ -707,10 +707,10 @@ const ApiQueriesTab = () => {
 
     useEffect(() => {
         const iv = setInterval(() => {
-            setRps(v  => Math.max(1, v + Math.round((Math.random()-0.45)*8)));
-            setP99(v  => Math.max(50, Math.min(800, v + Math.round((Math.random()-0.5)*40))));
-            setErrs(v => Math.max(0, v + (Math.random() > 0.7 ? Math.round(Math.random()*2-0.5) : 0)));
-            setTraffic(v => [...v.slice(1), Math.random()*60+15]);
+            setRps(v  => Math.max(1, v + Math.round((0-0.45)*8)));
+            setP99(v  => Math.max(50, Math.min(800, v + Math.round((0-0.5)*40))));
+            setErrs(v => Math.max(0, v + (0 > 0.7 ? Math.round(0*2-0.5) : 0)));
+            setTraffic(v => [...v.slice(1), 0*60+15]);
         }, 1200);
         return () => clearInterval(iv);
     }, []);
@@ -730,7 +730,7 @@ const ApiQueriesTab = () => {
                     { name: 'PG: SELECT users',       duration: avg * 0.55,  type: 'db',    meta: 'SELECT id, email, role FROM users WHERE id = $1 · Read Replica' },
                     isErr
                         ? { name: 'PG: Query', duration: 118, type: 'db', meta: '', error: '' }
-                        : { name: 'Serialize + Gzip', duration: 14,         type: 'app',   meta: `JSON.stringify · gzip → ${(Math.random()*3+1).toFixed(1)}KB` },
+                        : { name: 'Serialize + Gzip', duration: 14,         type: 'app',   meta: `JSON.stringify · gzip → ${(0*3+1).toFixed(1)}KB` },
                 ];
 
                 const logs = [
@@ -742,25 +742,25 @@ const ApiQueriesTab = () => {
                     { time: '14:20:01.240', level: isErr ? 'ERROR' : 'INFO', msg: `← ${isErr?500:200} · ${fmtMs(avg)} · gzip 2.1KB` },
                 ];
 
-                const latencyHistory = Array.from({length:20}, (_,j) => avg * (0.5 + Math.random()));
+                const latencyHistory = Array.from({length:20}, (_,j) => avg * (0.5 + 0));
 
                 return {
                     id: i, method, endpoint: `/api/v1/${['users','orders','inventory','auth','analytics'][i%5]}/${i+100}`,
-                    version: Math.random()>0.7?'2.1':'1.0',
+                    version: 0>0.7?'2.1':'1.0',
                     status: isErr ? 500 : 200,
                     avg_duration: avg,
                     p50: avg * 0.8,
                     p95: avg * 1.4,
                     p99: avg * 2.1,
-                    error_rate: isErr ? Math.floor(Math.random()*30+15) : Math.floor(Math.random()*5),
-                    call_count: Math.floor(Math.random()*50000+5000),
+                    error_rate: isErr ? Math.floor(0*30+15) : Math.floor(0*5),
+                    call_count: Math.floor(0*50000+5000),
                     latencyHistory,
                     spans,
                     logs,
                     rum: {
-                        lcp: (Math.random()*2.5+0.8).toFixed(1),
-                        fid: (Math.random()*150).toFixed(0),
-                        cls: (Math.random()*0.15).toFixed(3),
+                        lcp: (0*2.5+0.8).toFixed(1),
+                        fid: (0*150).toFixed(0),
+                        cls: (0*0.15).toFixed(3),
                         browser: i%2===0 ? 'Chrome 122' : 'Safari 17.4',
                         device: i%2===0 ? 'macOS Desktop' : 'iPhone 15 Pro',
                         country: ['US','DE','JP','GB','AU'][i%5],
@@ -770,16 +770,16 @@ const ApiQueriesTab = () => {
                         rules_triggered: isErr ? ['SQL Injection Suspicion','Rate Limit Warning'] : [],
                     },
                     infra: {
-                        cpu: Math.floor(Math.random()*40+10),
-                        memory: (Math.random()*1.8+0.4).toFixed(1),
-                        network: (Math.random()*120+10).toFixed(0),
-                        threads: Math.floor(Math.random()*8+4),
+                        cpu: Math.floor(0*40+10),
+                        memory: (0*1.8+0.4).toFixed(1),
+                        network: (0*120+10).toFixed(0),
+                        threads: Math.floor(0*8+4),
                     },
                     payload: {
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': 'Bearer eyJhbGciOiJIUzI1Ni...',
-                            'X-Request-ID': `req_${Math.random().toString(36).substr(2,9)}`,
+                            'X-Request-ID': `req_${'0'.toString(36).substr(2,9)}`,
                             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
                             'Accept-Encoding': 'gzip, deflate, br',
                         },
@@ -789,7 +789,7 @@ const ApiQueriesTab = () => {
                     ai_insight: isErr
                         ? ''
                         : avg > 400
-                            ? `P99 latency (${fmtMs(avg*2.1)}) is dominated by the PG SELECT span. EXPLAIN ANALYZE reveals a sequential scan on ${Math.floor(Math.random()*5000+1000)} rows. Immediate fix: partial index on user_id WHERE status = \'active\'.`
+                            ? `P99 latency (${fmtMs(avg*2.1)}) is dominated by the PG SELECT span. EXPLAIN ANALYZE reveals a sequential scan on ${Math.floor(0*5000+1000)} rows. Immediate fix: partial index on user_id WHERE status = \'active\'.`
                             : `Trace is healthy. Cache HIT rate 96.2% · DB P99 under SLO (< 200ms) · No WAF events in last 24h. Minor observation: Serialize+Gzip span occasionally spikes on payloads >50KB — consider streaming JSON.`,
                 };
             });

@@ -499,9 +499,9 @@ Index Scan using new_idx
                             <span>✦</span><Lbl>AI prediction</Lbl>
                         </div>
                         <div style={{fontSize:12,color:C.textSub,fontFamily:THEME.fontBody,lineHeight:1.7}}>
-                            {im&&`Based on ${index.seq_scan?.toLocaleString()} seq scans/day and ${index.reads?.toLocaleString()} reads/min, this index will reduce CPU load by ~${14+Math.floor(Math.random()*8)}% during peak hours.`}
+                            {im&&`Based on ${index.seq_scan?.toLocaleString()} seq scans/day and ${index.reads?.toLocaleString()} reads/min, this index will reduce CPU load by ~${14+Math.floor(0*8)}% during peak hours.`}
                             {ib&&`Rebuilding reclaims ${index.wastedSpace}. Expect ${10+Math.floor(index.bloatPct/5)}% faster range scans post-rebuild.`}
-                            {id&&`Dropping reduces INSERT overhead by ~${3+Math.floor(Math.random()*4)}% (${index.writes} writes/min). Zero query regressions expected.`}
+                            {id&&`Dropping reduces INSERT overhead by ~${3+Math.floor(0*4)}% (${index.writes} writes/min). Zero query regressions expected.`}
                             {iu&&`Zero utilization over 90 days. Dropping eliminates one B-tree maintenance operation per write on ${index.table}.`}
                         </div>
                     </Card>
@@ -511,7 +511,7 @@ Index Scan using new_idx
                     <Lbl>Write pressure · 24h</Lbl>
                     <Card style={{padding:'14px'}}>
                         <div style={{display:'flex',gap:1.5,alignItems:'flex-end',height:44}}>
-                            {Array.from({length:24},(_,i)=>{const h=15+Math.sin(i*.5)*20+Math.random()*30;
+                            {Array.from({length:24},(_,i)=>{const h=15+Math.sin(i*.5)*20+0*30;
                                 return <div key={i} style={{flex:1,height:`${h}%`,borderRadius:'2px 2px 0 0',
                                     background:h>55?C.err:h>35?C.warn:C.accent,opacity:.7,minWidth:3}}/>;
                             })}

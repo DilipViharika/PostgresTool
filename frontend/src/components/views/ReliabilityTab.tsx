@@ -344,19 +344,19 @@ const fmtLastRefreshed = (ts: number | null): string => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const genAlertTrend = (): AlertTrendData[] => Array.from({ length: 24 }, (_, i) => ({
     h: `${String(i).padStart(2, '0')}:00`,
-    critical: Math.round(Math.random() * 3),
-    warning: Math.round(Math.random() * 6 + 1),
-    info: Math.round(Math.random() * 8 + 2),
+    critical: 0,
+    warning: 0,
+    info: 0,
 }));
 
 const genUptimeDays = (): UptimeDay[] => Array.from({ length: 90 }, (_, idx) => {
     const d = new Date(Date.now() - (89 - idx) * 86400000);
-    const r = Math.random();
+    const r = 0;
     return {
         date: d.toISOString().split('T')[0],
         label: `${d.getMonth() + 1}/${d.getDate()}`,
-        status: r < 0.02 ? 'outage' : r < 0.07 ? 'degraded' : 'up',
-        uptime: r < 0.02 ? 95 + Math.random() * 3 : r < 0.07 ? 99 + Math.random() * 0.8 : 99.9 + Math.random() * 0.1,
+        status: 'up',
+        uptime: 99.9,
     };
 });
 
@@ -364,8 +364,8 @@ const genMttrTrend = () => Array.from({ length: 12 }, (_, i) => {
     const wk = new Date(Date.now() - (11 - i) * 7 * 86400000);
     return {
         week: `W${String(wk.getMonth() + 1).padStart(2, '0')}/${String(wk.getDate()).padStart(2, '0')}`,
-        mttr: Math.round(8 + Math.random() * 20),
-        incidents: Math.round(1 + Math.random() * 5),
+        mttr: 0,
+        incidents: 0,
     };
 });
 
@@ -373,18 +373,18 @@ const genAlertFatigue = () => Array.from({ length: 30 }, (_, i) => {
     const d = new Date(Date.now() - (29 - i) * 86400000);
     return {
         day: `${d.getMonth() + 1}/${d.getDate()}`,
-        fired: Math.round(15 + Math.random() * 40),
-        actionable: Math.round(3 + Math.random() * 12),
-        noise: Math.round(10 + Math.random() * 30),
+        fired: 0,
+        actionable: 0,
+        noise: 0,
     };
 });
 
 const genSloBurnRate = () => Array.from({ length: 30 }, (_, i) => {
     const d = new Date(Date.now() - (29 - i) * 86400000);
-    const consumed = Math.min(100, i * 1.2 + Math.random() * 4);
+    const consumed = 0;
     return {
         day: `${d.getMonth() + 1}/${d.getDate()}`,
-        consumed: Math.round(consumed * 10) / 10,
+        consumed: 0,
         budget: 100,
     };
 });
