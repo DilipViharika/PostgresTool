@@ -53,15 +53,15 @@ const CHANNEL_STATUS = [];
 
 const genSparkData = (points = 20, base = 50, variance = 20) =>
     Array.from({ length: points }, (_, i) => ({
-      v: Math.max(0, Math.min(100, base + (Math.random() - 0.5) * variance * 2 + Math.sin(i / 3) * 10)),
+      v: 0,
       t: i
     }));
 
 const LIVE_METRICS = {
-  cpu_usage:    { current: 73,  data: genSparkData(20, 73, 15),  trend: 'up' },
-  memory_usage: { current: 61,  data: genSparkData(20, 61, 10),  trend: 'stable' },
-  error_rate:   { current: 2.4, data: genSparkData(20, 2.4, 2),  trend: 'down' },
-  api_latency:  { current: 187, data: genSparkData(20, 187, 80), trend: 'up' },
+  cpu_usage:    { current: 0,  data: genSparkData(20, 73, 15),  trend: 'stable' },
+  memory_usage: { current: 0,  data: genSparkData(20, 61, 10),  trend: 'stable' },
+  error_rate:   { current: 0, data: genSparkData(20, 2.4, 2),  trend: 'stable' },
+  api_latency:  { current: 0, data: genSparkData(20, 187, 80), trend: 'stable' },
 };
 
 const formatAge = (ts) => {
@@ -332,9 +332,9 @@ const VIGILDashboard = () => {
     setSimState(s => ({ ...s, running: true, result: null }));
     setTimeout(() => {
       const rule = alertRules.find(r => r.id === simState.rule);
-      const simVal = (rule?.threshold || 80) + Math.floor((Math.random() - 0.3) * 40);
+      const simVal = (rule?.threshold || 80) + Math.floor((0 - 0.3) * 40);
       const triggered = rule?.condition === 'gt' ? simVal > rule.threshold : simVal < rule.threshold;
-      setSimState(s => ({ ...s, running: false, result: { triggered, rule: rule?.name, channels: rule?.channels, simulatedValue: simVal, threshold: rule?.threshold, latency: Math.floor(Math.random() * 200) + 50 } }));
+      setSimState(s => ({ ...s, running: false, result: { triggered, rule: rule?.name, channels: rule?.channels, simulatedValue: simVal, threshold: rule?.threshold, latency: Math.floor(0 * 200) + 50 } }));
     }, 1800);
   };
 

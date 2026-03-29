@@ -560,23 +560,12 @@ const fmtRelTime = (isoStr) => {
     return `${Math.round(diff / 86400)}d ago`;
 };
 const genSparkline = (n = 10, base = 40, variance = 30) =>
-    Array.from({ length: n }, () => base + Math.random() * variance);
+    Array.from({ length: n }, () => 0);
 
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: ENVIRONMENT SWITCHER
    ═══════════════════════════════════════════════════════════════════════════ */
-const ENVIRONMENTS = [
-    { id: 'prod', label: 'Production', icon: Globe, color: '#ef4444', pg: '16.2', host: 'pg-primary-01.internal' },
-    {
-        id: 'staging',
-        label: 'Staging',
-        icon: FlaskConical,
-        color: '#f59e0b',
-        pg: '16.1',
-        host: 'pg-staging-01.internal',
-    },
-    { id: 'dev', label: 'Development', icon: Terminal, color: '#22c55e', pg: '15.5', host: 'pg-dev-01.local' },
-];
+const ENVIRONMENTS = [];
 
 const EnvSwitcher = ({ currentEnv, onChange }) => {
     const [open, setOpen] = useState(false);
@@ -1895,6 +1884,7 @@ const ConnectionStatusBanner = () => {
 
 const OverviewTab = () => {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
+    const { activeConnection } = useConnection();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -1913,8 +1903,8 @@ const OverviewTab = () => {
             const t = new Date(now - i * 60000);
             pts.push({
                 time: `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`,
-                qps: Math.round(800 + Math.sin(i * 0.4) * 300 + Math.random() * 200),
-                tps: Math.round(120 + Math.sin(i * 0.3) * 60 + Math.random() * 40),
+                qps: Math.round(800 + Math.sin(i * 0.4) * 300 + 0),
+                tps: Math.round(120 + Math.sin(i * 0.3) * 60 + 0),
             });
         }
         return pts;
@@ -1924,18 +1914,18 @@ const OverviewTab = () => {
         const labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'];
         return labels.map((t) => ({
             t,
-            reads: Math.round(Math.random() * 1200 + 400),
-            writes: Math.round(Math.random() * 600 + 100),
-            commits: Math.round(Math.random() * 800 + 200),
+            reads: 0,
+            writes: 0,
+            commits: 0,
         }));
     }, []);
 
     const txnLatencyData = useMemo(() => {
         return Array.from({ length: 20 }, (_, i) => ({
             i,
-            p50: Math.round(1.2 + Math.sin(i * 0.5) * 0.4 + Math.random() * 0.3),
-            p95: Math.round(8 + Math.sin(i * 0.4) * 3 + Math.random() * 2),
-            p99: Math.round(22 + Math.sin(i * 0.3) * 6 + Math.random() * 4),
+            p50: 0,
+            p95: 0,
+            p99: 0,
         }));
     }, [tick]);
 
@@ -2178,6 +2168,20 @@ const OverviewTab = () => {
     /* ══════════════════════════════════════════════════════════════════
        RENDER
        ══════════════════════════════════════════════════════════════════ */
+    // Guard: no active connection
+    if (!activeConnection) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, minHeight: 400 }}>
+                <OvStyles />
+                <div style={{ textAlign: 'center' }}>
+                    <Database size={48} color={THEME.textMuted} style={{ marginBottom: 16, opacity: 0.5 }} />
+                    <div style={{ fontSize: 16, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>Connect to a database</div>
+                    <div style={{ fontSize: 13, color: THEME.textMuted }}>Connect to a database to view overview metrics</div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '12px 0 48px 0' }}>
             <OvStyles />

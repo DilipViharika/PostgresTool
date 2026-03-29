@@ -281,12 +281,12 @@ const GEO_THREATS = [];
 const THREAT_TIMELINE = [];
 
 const RADAR_DATA = [
-    { axis: 'Access Ctrl', val: 78 },
-    { axis: 'Encryption', val: 95 },
-    { axis: 'Auditing', val: 90 },
-    { axis: 'Patching', val: 82 },
-    { axis: 'Network', val: 88 },
-    { axis: 'Data Privacy', val: 55 },
+    { axis: 'Access Ctrl', val: 0 },
+    { axis: 'Encryption', val: 0 },
+    { axis: 'Auditing', val: 0 },
+    { axis: 'Patching', val: 0 },
+    { axis: 'Network', val: 0 },
+    { axis: 'Data Privacy', val: 0 },
 ];
 
 const AUDIT_EVENTS = [];

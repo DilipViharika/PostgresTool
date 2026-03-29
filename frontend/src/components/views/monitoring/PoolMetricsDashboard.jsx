@@ -104,11 +104,11 @@ const ChartTip = ({ active, payload, label }) => {
    POOL CONFIGURATION SECTION
    ═══════════════════════════════════════════════════════════════════════════ */
 const PoolConfigSection = ({ config, onUpdate }) => {
-    const [localConfig, setLocalConfig] = useState(config || { min: 5, max: 20, idleTimeout: 30 });
+    const [localConfig, setLocalConfig] = useState(config || { min: 0, max: 0, idleTimeout: 0 });
     const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
-        setLocalConfig(config || { min: 5, max: 20, idleTimeout: 30 });
+        setLocalConfig(config || { min: 0, max: 0, idleTimeout: 0 });
     }, [config]);
 
     const handleChange = (field, value) => {
@@ -191,7 +191,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
             {updated && (
                 <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                     <button
-                        onClick={() => setLocalConfig(config || { min: 5, max: 20, idleTimeout: 30 })}
+                        onClick={() => setLocalConfig(config || { min: 0, max: 0, idleTimeout: 0 })}
                         style={{
                             padding: '8px 16px',
                             background: THEME.glassLight,

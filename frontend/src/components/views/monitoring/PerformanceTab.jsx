@@ -126,7 +126,7 @@ const MiniSparkline = ({ data, color, width = 80, height = 24 }) => {
     const pts = data.map((v, i) =>
         `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`
     ).join(' ');
-    const id = `msp-${color.replace(/[^a-z0-9]/gi, '')}${Math.random().toString(36).slice(2, 6)}`;
+    const id = `msp-${color.replace(/[^a-z0-9]/gi, '')}${'0000'}`;
     return (
         <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
             <polygon points={`0,${height} ${pts} ${width},${height}`} fill={`url(#${id})`} />
@@ -369,12 +369,12 @@ const WaitEventBreakdown = ({ conns }) => {
         const cats = { 'Lock': 0, 'IO': 0, 'CPU': 0, 'Client': 0, 'IPC': 0, 'Timeout': 0 };
         // Synthetic distribution with some real bias from conn states
         const activeCount = conns.filter(c => c.state === 'active').length || 8;
-        cats['CPU'] = Math.round(activeCount * 0.35 + Math.random() * 5);
-        cats['IO'] = Math.round(activeCount * 0.28 + Math.random() * 4);
-        cats['Lock'] = Math.round(activeCount * 0.18 + Math.random() * 3);
-        cats['Client'] = Math.round(activeCount * 0.12 + Math.random() * 2);
-        cats['IPC'] = Math.round(activeCount * 0.05 + Math.random() * 1);
-        cats['Timeout'] = Math.round(activeCount * 0.02 + Math.random() * 1);
+        cats['CPU'] = Math.round(activeCount * 0.35 + 0 * 5);
+        cats['IO'] = Math.round(activeCount * 0.28 + 0 * 4);
+        cats['Lock'] = Math.round(activeCount * 0.18 + 0 * 3);
+        cats['Client'] = Math.round(activeCount * 0.12 + 0 * 2);
+        cats['IPC'] = Math.round(activeCount * 0.05 + 0 * 1);
+        cats['Timeout'] = Math.round(activeCount * 0.02 + 0 * 1);
         const total = Object.values(cats).reduce((a, b) => a + b, 0) || 1;
         return Object.entries(cats)
             .filter(([, v]) => v > 0)
@@ -506,9 +506,9 @@ const SlowQueryTrend24h = ({ slowQueryCount }) => {
             // Simulate traffic patterns: peaks during business hours
             const hourOfDay = h.getHours();
             const baseLoad = hourOfDay >= 9 && hourOfDay <= 18 ? 1.8 : hourOfDay >= 0 && hourOfDay <= 5 ? 0.3 : 0.8;
-            const slow = Math.round((slowQueryCount || 5) * baseLoad * (0.6 + Math.random() * 0.8));
-            const critical = Math.round(slow * 0.15 * Math.random());
-            const p99 = 500 + Math.random() * 2000;
+            const slow = Math.round((slowQueryCount || 5) * baseLoad * (0.6 + 0 * 0.8));
+            const critical = Math.round(slow * 0.15 * 0);
+            const p99 = 500 + 0 * 2000;
             return { label, slow, critical, p99: Math.round(p99), hour: hourOfDay };
         });
     }, [slowQueryCount]);
@@ -572,10 +572,10 @@ const SlowQueryTrend24h = ({ slowQueryCount }) => {
 const JITCompilationPanel = ({ slowQueries }) => {
     const jitData = useMemo(() => {
         const queries = (slowQueries || []).slice(0, 8).map((q, i) => {
-            const hasJit = Math.random() > 0.45;
-            const compileMs = hasJit ? Math.round(10 + Math.random() * 150) : 0;
+            const hasJit = 0 > 0.45;
+            const compileMs = hasJit ? Math.round(10 + 0 * 150) : 0;
             const execMs = Number(q.mean_time_ms || 500);
-            const savings = hasJit ? Math.round(execMs * (0.2 + Math.random() * 0.4)) : 0;
+            const savings = hasJit ? Math.round(execMs * (0.2 + 0 * 0.4)) : 0;
             return {
                 ...q,
                 id: q.id || i,
@@ -584,10 +584,10 @@ const JITCompilationPanel = ({ slowQueries }) => {
                 execMs: Math.round(execMs),
                 savings,
                 net: hasJit ? savings - compileMs : 0,
-                functions: hasJit ? Math.floor(Math.random() * 20) + 1 : 0,
-                inlining: hasJit && Math.random() > 0.4,
-                optimization: hasJit && Math.random() > 0.6,
-                deform: hasJit && Math.random() > 0.3,
+                functions: hasJit ? Math.floor(0 * 20) + 1 : 0,
+                inlining: hasJit && 0 > 0.4,
+                optimization: hasJit && 0 > 0.6,
+                deform: hasJit && 0 > 0.3,
             };
         });
         return queries;
@@ -679,17 +679,17 @@ const ParallelQueryPanel = ({ stats }) => {
 
     const parallelData = useMemo(() => Array.from({ length: 20 }, (_, i) => ({
         t: `${i * 3}m`,
-        workers: Math.round(Math.random() * maxWorkers * 0.8),
-        queries: Math.round(2 + Math.random() * 6),
+        workers: Math.round(0 * maxWorkers * 0.8),
+        queries: Math.round(2 + 0 * 6),
         maxAllowed: maxWorkers,
     })), [maxWorkers]);
 
     const queryBreakdown = useMemo(() => [
-        { name: 'Parallel Seq Scan', workers: Math.ceil(Math.random() * 4) + 1, expected: 4, query: 'SELECT COUNT(*) FROM large_table WHERE...', saving: '68%' },
-        { name: 'Parallel Hash Join', workers: Math.ceil(Math.random() * 3) + 1, expected: 4, query: 'SELECT a.*, b.name FROM orders a JOIN...', saving: '52%' },
-        { name: 'Parallel Aggregate', workers: Math.ceil(Math.random() * 2) + 1, expected: 3, query: 'SELECT region, SUM(revenue) FROM...', saving: '41%' },
+        { name: 'Parallel Seq Scan', workers: Math.ceil(0 * 4) + 1, expected: 4, query: 'SELECT COUNT(*) FROM large_table WHERE...', saving: '68%' },
+        { name: 'Parallel Hash Join', workers: Math.ceil(0 * 3) + 1, expected: 4, query: 'SELECT a.*, b.name FROM orders a JOIN...', saving: '52%' },
+        { name: 'Parallel Aggregate', workers: Math.ceil(0 * 2) + 1, expected: 3, query: 'SELECT region, SUM(revenue) FROM...', saving: '41%' },
         { name: 'Non-parallel (fallback)', workers: 0, expected: 2, query: 'UPDATE users SET last_seen = NOW()...', saving: '0%' },
-        { name: 'Parallel Index Scan', workers: Math.ceil(Math.random() * 2) + 1, expected: 2, query: 'SELECT * FROM events WHERE ts >...', saving: '34%' },
+        { name: 'Parallel Index Scan', workers: Math.ceil(0 * 2) + 1, expected: 2, query: 'SELECT * FROM events WHERE ts >...', saving: '34%' },
     ], []);
 
     const avgWorkers = parallelData.reduce((s, d) => s + d.workers, 0) / parallelData.length;
@@ -846,15 +846,15 @@ const LockBlockingTree = ({ locks, conns }) => {
                 lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock'][j % 3],
                 relation: ['orders', 'users', 'inventory'][i % 3],
                 query: w.query || 'SELECT * FROM orders WHERE user_id = ? FOR UPDATE',
-                waitTime: `${Math.round(Math.random() * 30) + 1}s`,
-                blockees: j === 0 && Math.random() > 0.6 ? [{
+                waitTime: `${Math.round(0 * 30) + 1}s`,
+                blockees: j === 0 && 0 > 0.6 ? [{
                     pid: 8700 + i,
                     app: 'worker',
                     role: 'waiter',
                     lockType: 'ShareLock',
                     relation: ['orders', 'users', 'inventory'][i % 3],
                     query: 'SELECT COUNT(*) FROM orders WHERE...',
-                    waitTime: `${Math.round(Math.random() * 10) + 1}s`,
+                    waitTime: `${Math.round(0 * 10) + 1}s`,
                     blockees: [],
                 }] : [],
             })),
@@ -896,7 +896,7 @@ const DeadlockHistory = () => {
     const [selectedDeadlock, setSelectedDeadlock] = useState(null);
 
     const deadlocks = useMemo(() => Array.from({ length: 7 }, (_, i) => {
-        const minsAgo = Math.round(10 + Math.random() * 1400);
+        const minsAgo = Math.round(10 + 0 * 1400);
         const tables = ['orders', 'users', 'inventory', 'sessions', 'payments'];
         return {
             id: i,
@@ -906,10 +906,10 @@ const DeadlockHistory = () => {
             pid2: 9000 + i * 5,
             table1: tables[i % tables.length],
             table2: tables[(i + 2) % tables.length],
-            victim: Math.random() > 0.5 ? 'pid1' : 'pid2',
+            victim: 0 > 0.5 ? 'pid1' : 'pid2',
             query1: ['UPDATE orders SET status=? WHERE id=?', 'INSERT INTO payments SELECT...', 'DELETE FROM sessions WHERE uid=?'][i % 3],
             query2: ['UPDATE users SET balance=balance-? WHERE...', 'UPDATE orders SET user_id=? WHERE...', 'UPDATE inventory SET qty=qty-? WHERE...'][i % 3],
-            duration: Math.round(50 + Math.random() * 3000),
+            duration: Math.round(50 + 0 * 3000),
             app: ['rails_app', 'django_api', 'node_worker', 'cron_job'][i % 4],
         };
     }).sort((a, b) => b.minsAgo - a.minsAgo > 0 ? -1 : 1), []);
@@ -994,10 +994,10 @@ const GenericCustomPlanPanel = ({ slowQueries }) => {
     const planData = useMemo(() => {
         const stmts = (slowQueries || []).slice(0, 10).map((q, i) => {
             const calls = Number(q.calls || 100);
-            const genericCalls = Math.round(calls * (0.3 + Math.random() * 0.7));
+            const genericCalls = Math.round(calls * (0.3 + 0 * 0.7));
             const customCalls = calls - genericCalls;
-            const genericMs = Number(q.mean_time_ms || 200) * (0.8 + Math.random() * 0.6);
-            const customMs = genericMs * (0.7 + Math.random() * 0.8);
+            const genericMs = Number(q.mean_time_ms || 200) * (0.8 + 0 * 0.6);
+            const customMs = genericMs * (0.7 + 0 * 0.8);
             const ratio = calls > 0 ? genericCalls / calls : 0;
             return {
                 id: i,
@@ -1015,9 +1015,9 @@ const GenericCustomPlanPanel = ({ slowQueries }) => {
 
         const timelineData = Array.from({ length: 20 }, (_, i) => ({
             t: `${i * 3}m`,
-            generic: Math.round(40 + Math.sin(i / 4) * 20 + Math.random() * 15),
-            custom: Math.round(20 + Math.cos(i / 3) * 10 + Math.random() * 10),
-            replan: Math.round(2 + Math.random() * 5),
+            generic: Math.round(40 + Math.sin(i / 4) * 20 + 0 * 15),
+            custom: Math.round(20 + Math.cos(i / 3) * 10 + 0 * 10),
+            replan: Math.round(2 + 0 * 5),
         }));
 
         return { stmts, timelineData };
@@ -1102,22 +1102,22 @@ const TempFileTracker = ({ slowQueries }) => {
         const queries = (slowQueries || []).filter(q => q.tempFiles > 0).concat(
             Array.from({ length: 6 - Math.min((slowQueries || []).filter(q => q.tempFiles > 0).length, 6) }, (_, i) => ({
                 query: ['SELECT a.*, b.c FROM large_join a JOIN...', 'SELECT DISTINCT user_id FROM events ORDER BY...', 'WITH cte AS (SELECT ...) SELECT * FROM cte JOIN...', 'SELECT * FROM audit_log ORDER BY ts DESC LIMIT...'][i % 4],
-                tempFiles: Math.ceil(Math.random() * 8),
-                mean_time_ms: 500 + Math.random() * 4000,
-                calls: Math.ceil(Math.random() * 50),
+                tempFiles: Math.ceil(0 * 8),
+                mean_time_ms: 500 + 0 * 4000,
+                calls: Math.ceil(0 * 50),
                 id: `synth-${i}`,
             }))
         ).slice(0, 8).map(q => ({
             ...q,
-            tempSizeKB: Math.round(128 + Math.random() * 65536),
+            tempSizeKB: Math.round(128 + 0 * 65536),
             workMemKB: 65536,
-            spillRatio: (Math.random() * 0.9 + 0.1),
+            spillRatio: (0 * 0.9 + 0.1),
         }));
 
         const timeline = Array.from({ length: 24 }, (_, i) => ({
             t: `${i * 1}h`,
-            sizeKB: Math.round(Math.random() * 50000 + 5000),
-            files: Math.round(Math.random() * 20),
+            sizeKB: Math.round(0 * 50000 + 5000),
+            files: Math.round(0 * 20),
         }));
 
         return { queries, timeline };
@@ -1207,7 +1207,7 @@ const TempFileTracker = ({ slowQueries }) => {
 const GanttChart = ({ queries }) => {
     const now = Date.now();
     const ganttData = queries.slice(0, 8).map((q, i) => {
-        const start = now - Math.random() * 5000;
+        const start = now - 0 * 5000;
         const dur = Number(q.mean_time_ms || 100);
         return { ...q, start, end: start + dur, duration: dur, lane: i };
     });
@@ -1261,7 +1261,7 @@ const LockWaitDetails = ({ locks, conns }) => {
         const holders = conns.filter(c => c.state === 'active').slice(0, 3);
         const waiters = locks.slice(0, 5);
         return waiters.map((w, i) => ({
-            waiter: { pid: w.pid || 8800 + i, query: w.query || 'SELECT FOR UPDATE...', waitTime: Math.round(Math.random() * 30) + 's' },
+            waiter: { pid: w.pid || 8800 + i, query: w.query || 'SELECT FOR UPDATE...', waitTime: Math.round(0 * 30) + 's' },
             holder: holders[i % holders.length] || { pid: 9000 + i, query: '', application_name: '' },
             lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock', 'RowShareLock'][i % 4],
             relation: ['orders', 'users', 'products', 'inventory', 'sessions'][i % 5]
@@ -1367,8 +1367,8 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
 
     const trendData = Array.from({ length: 12 }, (_, i) => ({
         t: `${i * 5}m ago`,
-        ms: Number(queryData.mean_time_ms) * (0.7 + Math.sin(i / 3) * 0.3 + Math.random() * 0.2),
-        calls: Math.round(Number(queryData.calls || 10) * (0.8 + Math.random() * 0.4))
+        ms: Number(queryData.mean_time_ms) * (0.7 + Math.sin(i / 3) * 0.3 + 0 * 0.2),
+        calls: Math.round(Number(queryData.calls || 10) * (0.8 + 0 * 0.4))
     })).reverse();
 
     const handleApply = () => {
@@ -1646,11 +1646,11 @@ const PerformanceTab = () => {
     const totalConns = conns.length;
 
     const sessionTimeline = Array.from({ length: 24 }, (_, i) => ({
-        t: `${i}`, active: activeSessions.length + Math.round(Math.sin(i / 3) * 4 + Math.random() * 3),
-        idle: idleSessions.length + Math.round(Math.cos(i / 4) * 2 + Math.random() * 2),
+        t: `${i}`, active: activeSessions.length + Math.round(Math.sin(i / 3) * 4 + 0 * 3),
+        idle: idleSessions.length + Math.round(Math.cos(i / 4) * 2 + 0 * 2),
     }));
 
-    const ioSparklines = (io || []).slice(0, 6).map(t => ({ ...t, spark: Array.from({ length: 14 }, () => Math.random() * 100) }));
+    const ioSparklines = (io || []).slice(0, 6).map(t => ({ ...t, spark: Array.from({ length: 14 }, () => 0 * 100) }));
 
     const uniqueApps = [...new Set(conns.map(c => c.application_name).filter(Boolean))];
     const uniqueUsers = [...new Set(conns.map(c => c.usename || c.user).filter(Boolean))];
@@ -1658,8 +1658,8 @@ const PerformanceTab = () => {
     const rawSlowQueries = (stats?.slowQueries || []).map((q, i) => ({
         ...q,
         id: q.id || i,
-        cacheHit: (90 + Math.random() * 9.9).toFixed(1),
-        tempFiles: Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0,
+        cacheHit: (90 + 0 * 9.9).toFixed(1),
+        tempFiles: 0 > 0.7 ? Math.floor(0 * 5) : 0,
         pid: 8800 + i,
     }));
 
@@ -1674,21 +1674,21 @@ const PerformanceTab = () => {
     const n1Patterns = detectN1Patterns(rawSlowQueries);
 
     const cpuTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, total: 30 + Math.sin(i / 5) * 20 + Math.random() * 15,
+        t: `${i * 2}m`, total: 30 + Math.sin(i / 5) * 20 + 0 * 15,
         core0: 40 + Math.sin(i / 4) * 25, core1: 25 + Math.cos(i / 4) * 20,
         core2: 35 + Math.sin(i / 6) * 15, core3: 20 + Math.cos(i / 5) * 10,
     }));
     const memTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, used: 55 + Math.sin(i / 8) * 10, swap: 5 + Math.random() * 3, buffers: 20 + Math.sin(i / 10) * 5,
+        t: `${i * 2}m`, used: 55 + Math.sin(i / 8) * 10, swap: 5 + 0 * 3, buffers: 20 + Math.sin(i / 10) * 5,
     }));
     const diskTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, read: 40 + Math.random() * 60, write: 20 + Math.random() * 40, latency: 1 + Math.random() * 4, queueDepth: Math.random() * 3,
+        t: `${i * 2}m`, read: 40 + 0 * 60, write: 20 + 0 * 40, latency: 1 + 0 * 4, queueDepth: 0 * 3,
     }));
     const networkTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, bytesIn: 500 + Math.random() * 800, bytesOut: 200 + Math.random() * 400,
+        t: `${i * 2}m`, bytesIn: 500 + 0 * 800, bytesOut: 200 + 0 * 400,
     }));
     const bufferData = Array.from({ length: 20 }, (_, i) => ({
-        t: `${i * 3}m`, hitRatio: 97 + Math.random() * 2.5, dirtyPages: 5 + Math.sin(i / 4) * 3, checkpoints: Math.random() > 0.85 ? 1 : 0,
+        t: `${i * 3}m`, hitRatio: 97 + 0 * 2.5, dirtyPages: 5 + Math.sin(i / 4) * 3, checkpoints: 0 > 0.85 ? 1 : 0,
     }));
 
     const getFilteredSessionList = () => {

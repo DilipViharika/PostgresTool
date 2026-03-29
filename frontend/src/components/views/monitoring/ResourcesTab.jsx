@@ -248,25 +248,11 @@ const fmtLastRefreshed = (ts) => {
 };
 
 /* ── Synthetic data generators ── */
-const genSparkline = () => Array.from({ length: 8 }, () => Math.random() * 50 + 20);
+const genSparkline = () => Array.from({ length: 8 }, () => 0);
 
-const genGrowthTrend = () => {
-    const months = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
-    let base = 78;
-    return months.map(m => {
-        base += Math.random() * 14 + 3;
-        return { month: m, tables: Math.round(base), indexes: Math.round(base * 0.32), toast: Math.round(base * 0.06) };
-    });
-};
+const genGrowthTrend = () => [];
 
-const genDiskIO = () => {
-    const labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'];
-    return labels.map(t => ({
-        t,
-        reads: Math.round(Math.random() * 800 + 200),
-        writes: Math.round(Math.random() * 400 + 100),
-    }));
-};
+const genDiskIO = () => [];
 
 /* ── NEW: Table Growth Rate (MB/day over 14 days for top 10 tables) ── */
 const genTableGrowthRate = (tables) => {
@@ -285,95 +271,40 @@ const genTableGrowthRate = (tables) => {
     return {
         days,
         series: top10.map((t, i) => {
-            const baseRate = Number(t.total_size_gb || 1) * (Math.random() * 3 + 0.5);
+            const baseRate = Number(t.total_size_gb || 1) * 0;
             return {
                 name: t.table_name,
                 color: COLORS[i % COLORS.length],
-                data: days.map(() => Math.max(0, baseRate + (Math.random() - 0.3) * baseRate * 0.6)),
+                data: days.map(() => Math.max(0, baseRate + 0)),
             };
         }),
     };
 };
 
 /* ── NEW: Tablespace I/O breakdown ── */
-const genTablespaceIO = () => [
-    { name: 'pg_default',    readsMB: 1240, writesMB: 580,  sizePct: 72, tables: 34, status: 'Normal' },
-    { name: 'pg_global',     readsMB: 88,   writesMB: 12,   sizePct: 4,  tables: 5,  status: 'Normal' },
-    { name: 'tbs_archive',   readsMB: 320,  writesMB: 40,   sizePct: 18, tables: 12, status: 'Normal' },
-    { name: 'tbs_audit',     readsMB: 610,  writesMB: 890,  sizePct: 6,  tables: 3,  status: 'High Write' },
-];
+const genTablespaceIO = () => [];
 
 /* ── NEW: Partitioned table hierarchy ── */
-const genPartitions = () => [
-    {
-        parent: 'events_log',
-        total_gb: 48.2,
-        strategy: 'RANGE (created_at)',
-        children: [
-            { name: 'events_log_2025_q1', gb: 14.1, rows: 8_200_000, status: 'detach_ready' },
-            { name: 'events_log_2025_q2', gb: 12.8, rows: 7_600_000, status: 'active' },
-            { name: 'events_log_2025_q3', gb: 11.4, rows: 6_900_000, status: 'active' },
-            { name: 'events_log_2025_q4', gb: 9.9,  rows: 5_800_000, status: 'active' },
-        ],
-    },
-    {
-        parent: 'audit_events',
-        total_gb: 21.7,
-        strategy: 'RANGE (event_date)',
-        children: [
-            { name: 'audit_events_2024',  gb: 9.3,  rows: 3_100_000, status: 'detach_ready' },
-            { name: 'audit_events_2025',  gb: 12.4, rows: 4_200_000, status: 'active' },
-        ],
-    },
-    {
-        parent: 'user_sessions',
-        total_gb: 6.8,
-        strategy: 'HASH (user_id, 4)',
-        children: [
-            { name: 'user_sessions_p0', gb: 1.8, rows: 920_000,  status: 'active' },
-            { name: 'user_sessions_p1', gb: 1.7, rows: 880_000,  status: 'active' },
-            { name: 'user_sessions_p2', gb: 1.6, rows: 850_000,  status: 'active' },
-            { name: 'user_sessions_p3', gb: 1.7, rows: 870_000,  status: 'active' },
-        ],
-    },
-];
+const genPartitions = () => [];
 
 /* ── NEW: Freeze urgency data ── */
 const genFreezeData = (tables) => {
     return tables.map(t => ({
         table_name: t.table_name,
-        oldest_xid_age: Math.round(Math.random() * 1_800_000_000 + 50_000_000),
+        oldest_xid_age: Math.round(0),
         freeze_threshold: 2_000_000_000,
-        last_freeze: `${Math.round(Math.random() * 30 + 1)}d ago`,
+        last_freeze: `${Math.round(0)}d ago`,
     })).sort((a, b) => b.oldest_xid_age - a.oldest_xid_age);
 };
 
 /* ── NEW: Dead code detector ── */
 const genDeadCode = () => ({
-    tables: [
-        { name: 'legacy_sms_queue',      last_read: '97 days ago',  reads_90d: 0,    size_gb: 2.1,  rows: 145_000,   columns: 12, risk: 'High'   },
-        { name: 'temp_migration_2023',   last_read: '190 days ago', reads_90d: 0,    size_gb: 0.8,  rows: 42_000,    columns: 8,  risk: 'High'   },
-        { name: 'deprecated_webhooks',   last_read: '112 days ago', reads_90d: 0,    size_gb: 0.3,  rows: 18_000,    columns: 15, risk: 'Medium' },
-        { name: 'beta_feature_flags_v1', last_read: '65 days ago',  reads_90d: 3,    size_gb: 0.1,  rows: 200,       columns: 6,  risk: 'Medium' },
-        { name: 'ab_test_results_2022',  last_read: '240 days ago', reads_90d: 0,    size_gb: 4.7,  rows: 3_200_000, columns: 22, risk: 'High'   },
-        { name: 'push_notification_log', last_read: '78 days ago',  reads_90d: 2,    size_gb: 1.2,  rows: 890_000,   columns: 9,  risk: 'Low'    },
-    ],
-    columns: [
-        { table: 'user_profiles',      column: 'fax_number',         last_read: '420 days ago', type: 'varchar', nullable: true },
-        { table: 'orders',             column: 'legacy_coupon_code',  last_read: '180 days ago', type: 'varchar', nullable: true },
-        { table: 'products',           column: 'discontinued_at_v1',  last_read: '95 days ago',  type: 'timestamp', nullable: true },
-        { table: 'notification_audit', column: 'sms_fallback_ref',    last_read: '310 days ago', type: 'uuid',    nullable: true },
-        { table: 'events_log',         column: 'geo_deprecated',      last_read: '200 days ago', type: 'jsonb',   nullable: true },
-    ],
+    tables: [],
+    columns: [],
 });
 
 /* ── NEW: Retention policies ── */
-const DEFAULT_POLICIES = [
-    { id: 1, table: 'events_log',           action: 'archive',  age_days: 365,  partition_col: 'created_at',  enabled: true,  last_run: '2026-02-01', runs: 24 },
-    { id: 2, table: 'audit_events',         action: 'archive',  age_days: 730,  partition_col: 'event_date',  enabled: true,  last_run: '2026-01-28', runs: 8  },
-    { id: 3, table: 'temp_migration_2023',  action: 'delete',   age_days: 1,    partition_col: null,          enabled: false, last_run: 'Never',      runs: 0  },
-    { id: 4, table: 'session_tokens',       action: 'delete',   age_days: 30,   partition_col: 'expires_at',  enabled: true,  last_run: '2026-02-10', runs: 60 },
-];
+const DEFAULT_POLICIES = [];
 
 /* ═══════════════════════════════════════════════════════════════════════════
    COUNTDOWN BAR

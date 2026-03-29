@@ -158,69 +158,7 @@ const getSeverityIcon = (type) => {
    MOCK DATA
    ═══════════════════════════════════════════════════════════════════════════ */
 const generateMockPlan = (query) => {
-    const isComplex = query.toLowerCase().includes('join') || query.toLowerCase().includes('group');
-    return {
-        "Plan": {
-            "Node Type": "Limit",
-            "Startup Cost": 0.00,
-            "Total Cost": isComplex ? 342.80 : 124.50,
-            "Plan Rows": 10,
-            "Actual Startup Time": 0.02,
-            "Actual Total Time": isComplex ? 287.4 : 145.2,
-            "Actual Rows": 10,
-            "Shared Hit Blocks": 450,
-            "Shared Read Blocks": 120,
-            "Temp Written Blocks": isComplex ? 34 : 0,
-            "Workers Launched": isComplex ? 2 : 0,
-            "Plans": [{
-                "Node Type": isComplex ? "Hash Join" : "Nested Loop",
-                "Parent Relationship": "Outer",
-                "Startup Cost": 0.00,
-                "Total Cost": isComplex ? 340.00 : 124.50,
-                "Plan Rows": 100,
-                "Actual Startup Time": 0.8,
-                "Actual Total Time": isComplex ? 286.9 : 145.1,
-                "Actual Rows": 100,
-                "Hash Cond": isComplex ? "(o.user_id = u.id)" : null,
-                "Plans": [
-                    {
-                        "Node Type": "Seq Scan",
-                        "Parent Relationship": "Outer",
-                        "Relation Name": "users",
-                        "Alias": "u",
-                        "Startup Cost": 0.00,
-                        "Total Cost": isComplex ? 185.00 : 45.00,
-                        "Plan Rows": isComplex ? 15000 : 5000,
-                        "Actual Rows": isComplex ? 15000 : 5000,
-                        "Actual Total Time": isComplex ? 120.3 : 40.1,
-                        "Filter": "(active = true)",
-                        "Rows Removed by Filter": isComplex ? 3200 : 800,
-                        "Shared Hit Blocks": 180, "Shared Read Blocks": 60,
-                    },
-                    {
-                        "Node Type": "Index Scan",
-                        "Parent Relationship": "Inner",
-                        "Relation Name": "orders",
-                        "Alias": "o",
-                        "Index Name": "orders_user_id_idx",
-                        "Startup Cost": 0.43,
-                        "Total Cost": isComplex ? 12.80 : 0.45,
-                        "Plan Rows": 5, "Actual Rows": 2,
-                        "Actual Total Time": isComplex ? 8.2 : 1.1,
-                        "Index Cond": "(user_id = u.id)",
-                        "Shared Hit Blocks": 12, "Shared Read Blocks": 3,
-                    }
-                ]
-            }]
-        },
-        "Planning Time": isComplex ? 3.4 : 1.2,
-        "Execution Time": isComplex ? 287.4 : 145.2,
-        "Triggers": [],
-        "JIT": {
-            "Worker Number": -1, "Functions": 4,
-            "Options": { "Inlining": false, "Optimization": false, "Expressions": true, "Deforming": true }
-        }
-    };
+    return null;
 };
 
 const indexes = [];
@@ -1859,7 +1797,7 @@ const QueryOptimizerTab = () => {
         if (!query.trim()) return;
         setAnalyzing(true);
         try {
-            await new Promise(r => setTimeout(r, 1100 + Math.random() * 400));
+            await new Promise(r => setTimeout(r, 1100 + 0 * 400));
             const data = generateMockPlan(query);
             setResult(data);
             setHistory(prev => [{ id: Date.now(), query: query.substring(0, 52) + (query.length > 52 ? '…' : ''), fullQuery: query, timestamp: new Date().toLocaleTimeString(), cost: data.Plan["Total Cost"], time: data.Plan["Actual Total Time"] }, ...prev.slice(0, 19)]);

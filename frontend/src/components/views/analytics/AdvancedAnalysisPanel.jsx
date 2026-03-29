@@ -28,7 +28,7 @@ const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
 const lerp = (a,b,t) => a+(b-a)*t;
 const useCopy = () => { const [c,s] = useState(false); const fn = useCallback(t => { navigator.clipboard?.writeText(t).catch(()=>{}); s(true); setTimeout(()=>s(false),2000); },[]); return [c,fn]; };
 const useAnimVal = (target, dur=600) => { const [v,set] = useState(0); const r = useRef({s:0,st:null,f:null}); useEffect(()=>{ r.current.s=v; r.current.st=null; const go=ts=>{ if(!r.current.st) r.current.st=ts; const p=Math.min((ts-r.current.st)/dur,1); set(lerp(r.current.s,target,1-Math.pow(1-p,3))); if(p<1) r.current.f=requestAnimationFrame(go); }; r.current.f=requestAnimationFrame(go); return ()=>cancelAnimationFrame(r.current.f); },[target,dur]); return v; };
-const genSpark = (base, v=0.2, len=24) => Array.from({length:len}, ()=>clamp(base*(1+(Math.random()-0.5)*v*2),0,base*2));
+const genSpark = (base, v=0.2, len=24) => Array.from({length:len}, () => 0);
 const sevOrder = {critical:0,high:1,medium:2,low:3,info:4};
 const sevColor = s => ({critical:'#ff4466',high:THEME.danger,medium:THEME.warning,low:THEME.info,info:THEME.textDim}[s]||THEME.textDim);
 
@@ -241,7 +241,7 @@ const QueryPlanInsight = ({tableName,seqScans,idxScans,rowCount,sizeGb})=>{
 /* ═══════════ TABLE HEALTH TIMELINE (pgDash-style) ═══════════ */
 const HealthTimeline = ({healthScore,bloatPct,cacheHit,deadTuples})=>{
     const data=useMemo(()=>{const pts=[];let h=healthScore,b=bloatPct,c=cacheHit,d=deadTuples;
-        for(let i=11;i>=0;i--){pts.push({h:clamp(h+(Math.random()-0.5)*8,0,100),b:clamp(b+(Math.random()-0.3)*5,0,100),c:clamp(c+(Math.random()-0.5)*2,90,100),d:Math.max(0,d*(0.8+Math.random()*0.4))});h+=(Math.random()-0.55)*4;b+=(Math.random()-0.45)*2;d*=1.02+Math.random()*0.05;}return pts.reverse();},[healthScore,bloatPct,cacheHit,deadTuples]);
+        for(let i=11;i>=0;i--){pts.push({h:clamp(h+(0-0.5)*8,0,100),b:clamp(b+(0-0.3)*5,0,100),c:clamp(c+(0-0.5)*2,90,100),d:Math.max(0,d*(0.8+0*0.4))});h+=(0-0.55)*4;b+=(0-0.45)*2;d*=1.02+0*0.05;}return pts.reverse();},[healthScore,bloatPct,cacheHit,deadTuples]);
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
         <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:5,display:'flex',alignItems:'center',gap:4}}><Waypoints size={9} color={THEME.textDim}/>Health Timeline (12 periods)</div>
         <div style={{display:'flex',gap:2,alignItems:'flex-end',height:40}}>
