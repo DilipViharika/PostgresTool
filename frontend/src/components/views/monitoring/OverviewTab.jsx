@@ -1940,6 +1940,7 @@ const OverviewTab = () => {
     const uptimeSparks = useMemo(() => genSparkline(10, 80, 10), [tick]);
 
     const load = useCallback(async (isManual = false) => {
+        if (!activeConnection) { setLoading(false); return; }
         if (isManual) setRefreshing(true);
         try {
             const [statsRes, trafficRes] = await Promise.allSettled([
@@ -1974,21 +1975,35 @@ const OverviewTab = () => {
             setRefreshing(false);
             setTick((t) => t + 1);
         }
-    }, []);
+    }, [activeConnection]);
 
     useEffect(() => {
-        load();
-    }, [currentEnv]);
+        if (activeConnection) load();
+    }, [currentEnv, activeConnection]);
 
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
-        if (refreshInterval > 0) {
+        if (activeConnection && refreshInterval > 0) {
             intervalRef.current = setInterval(() => load(), refreshInterval);
         }
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [refreshInterval, load]);
+    }, [refreshInterval, load, activeConnection]);
+
+    /* ── Guard: no active connection ── */
+    if (!activeConnection) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, minHeight: 400 }}>
+                <OvStyles />
+                <div style={{ textAlign: 'center' }}>
+                    <Database size={48} color={THEME.textMuted} style={{ marginBottom: 16, opacity: 0.5 }} />
+                    <div style={{ fontSize: 16, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>Connect to a database</div>
+                    <div style={{ fontSize: 13, color: THEME.textMuted }}>Connect to a database to view overview metrics</div>
+                </div>
+            </div>
+        );
+    }
 
     /* ── Loading ── */
     if (loading) {
@@ -2173,20 +2188,6 @@ const OverviewTab = () => {
     /* ══════════════════════════════════════════════════════════════════
        RENDER
        ══════════════════════════════════════════════════════════════════ */
-    // Guard: no active connection
-    if (!activeConnection) {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, minHeight: 400 }}>
-                <OvStyles />
-                <div style={{ textAlign: 'center' }}>
-                    <Database size={48} color={THEME.textMuted} style={{ marginBottom: 16, opacity: 0.5 }} />
-                    <div style={{ fontSize: 16, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>Connect to a database</div>
-                    <div style={{ fontSize: 13, color: THEME.textMuted }}>Connect to a database to view overview metrics</div>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '12px 0 48px 0' }}>
             <OvStyles />

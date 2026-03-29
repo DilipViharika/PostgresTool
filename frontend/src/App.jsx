@@ -3788,9 +3788,10 @@ const DashboardInner = ({ onLogout }) => {
     // Within a session, tab navigation is persisted as before.
     const [activeTab, setActiveTab] = useState(() => {
         try {
-            return localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB) || 'overview';
+            const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB);
+            return saved || 'demo-postgres';
         } catch {
-            return 'overview';
+            return 'demo-postgres';
         }
     });
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
