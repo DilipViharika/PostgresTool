@@ -4,6 +4,15 @@ import './index.css'
 import App from './App'
 import { ThemeProvider } from './context/ThemeContext'
 import { isDemoMode, getDemoData } from './utils/demoData'
+import { initErrorTracking, ErrorTrackingBoundary } from './utils/errorTracking'
+
+// ── Initialize error tracking ──────────────────────────────────────────────
+initErrorTracking({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.MODE,
+  release: import.meta.env.VITE_APP_VERSION || '1.0.0',
+  enabled: import.meta.env.PROD,
+})
 
 // ── Global fetch interceptor for demo mode ──────────────────────────────────
 // Catches ALL fetch calls (including those that bypass api.js) and returns
@@ -27,9 +36,11 @@ window.fetch = function(input, init) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <ErrorTrackingBoundary>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </ErrorTrackingBoundary>
   </StrictMode>,
 )
 
