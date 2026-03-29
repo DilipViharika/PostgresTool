@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
-import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User } from 'lucide-react';
+import { useNavigation } from '../../../context/NavigationContext.jsx';
+import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, ArrowLeft } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    DemoLayout — "Obsidian Aurora" MongoDB Monitor design with:
@@ -37,6 +38,8 @@ const DemoLayout = ({
   onExport,
 }) => {
     useAdaptiveTheme();
+    let goToTab = null;
+    try { const nav = useNavigation(); goToTab = nav?.goToTab; } catch(e) { /* outside NavigationContext */ }
 
     const [activeSection, setActiveSection] = useState(sections[0]?.key || '');
     const [activeItem, setActiveItem] = useState(sections[0]?.items?.[0]?.key || '');
@@ -123,18 +126,33 @@ const DemoLayout = ({
                         flexShrink: 0,
                     }}
                 >
+                    {goToTab && (
+                        <button
+                            onClick={() => goToTab('demo-postgres')}
+                            title="Back to main app"
+                            style={{
+                                width: 24, height: 24, borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'rgba(255,255,255,0.04)', cursor: 'pointer', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0,
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                        >
+                            <ArrowLeft size={12} color={THEME.textMuted} />
+                        </button>
+                    )}
                     {TitleIcon && (
                         <div
                             style={{
                                 width: 32,
                                 height: 32,
-                                borderRadius: 8,
+                                borderRadius: 10,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: `${accentColor || THEME.primary}18`,
+                                background: `linear-gradient(135deg, ${accentColor || THEME.primary}25, rgba(0,229,255,0.15))`,
                                 border: `1px solid ${accentColor || THEME.primary}30`,
-                                boxShadow: `0 0 12px ${accentColor || THEME.primary}30`,
+                                boxShadow: `0 0 16px ${accentColor || THEME.primary}30`,
                             }}
                         >
                             <TitleIcon size={16} color={accentColor || THEME.primary} />
@@ -142,11 +160,11 @@ const DemoLayout = ({
                     )}
                     <span
                         style={{
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: 700,
                             color: THEME.textMain,
                             fontFamily: THEME.fontBody,
-                            letterSpacing: '0.02em',
+                            letterSpacing: '-0.02em',
                         }}
                     >
                         {title}
@@ -237,7 +255,7 @@ const DemoLayout = ({
                                             letterSpacing: '0.1em',
                                             textTransform: 'uppercase',
                                             fontFamily: THEME.fontMono,
-                                            color: '#1e3050',
+                                            color: '#3a5678',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: 6,
@@ -248,7 +266,7 @@ const DemoLayout = ({
                                     </span>
                                     <ChevronDown
                                         size={12}
-                                        color="#1e3050"
+                                        color="#3a5678"
                                         style={{
                                             transition: 'transform 0.2s ease',
                                             transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',

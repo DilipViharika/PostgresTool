@@ -3897,6 +3897,7 @@ const DashboardInner = ({ onLogout }) => {
 
     const activeTabMeta = useMemo(() => TABS_ONLY.find((t) => t.id === activeTab), [activeTab]);
     const accent = useMemo(() => getSectionAccent(activeTab), [activeTab]);
+    const isDemoFullPage = activeTab?.startsWith('demo-');
 
     const handleTabChange = useCallback(
         (id) => {
@@ -3969,8 +3970,8 @@ const DashboardInner = ({ onLogout }) => {
                     display: 'flex',
                     height: '100vh',
                     width: '100%',
-                    background: DS.bg,
-                    color: DS.textPrimary,
+                    background: isDemoFullPage ? '#020810' : DS.bg,
+                    color: isDemoFullPage ? '#e2f0ff' : DS.textPrimary,
                     overflow: 'hidden',
                     fontFamily: DS.fontUI,
                     position: 'relative',
@@ -3981,17 +3982,19 @@ const DashboardInner = ({ onLogout }) => {
                 <ChartDefs />
                 <AmbientOrbs />
 
-                <Sidebar
-                    activeTab={activeTab}
-                    onTabChange={handleTabChange}
-                    onLogout={logout}
-                    currentUser={profileUser}
-                    collapsed={sidebarCollapsed}
-                    onToggleCollapse={handleToggleCollapse}
-                    onOpenFeedback={() => setShowFeedback(true)}
-                    onOpenProfile={() => setShowProfile(true)}
-                    allowedTabIds={allowedTabIds}
-                />
+                {!isDemoFullPage && (
+                    <Sidebar
+                        activeTab={activeTab}
+                        onTabChange={handleTabChange}
+                        onLogout={logout}
+                        currentUser={profileUser}
+                        collapsed={sidebarCollapsed}
+                        onToggleCollapse={handleToggleCollapse}
+                        onOpenFeedback={() => setShowFeedback(true)}
+                        onOpenProfile={() => setShowProfile(true)}
+                        allowedTabIds={allowedTabIds}
+                    />
+                )}
 
                 <main
                     style={{
@@ -4007,10 +4010,10 @@ const DashboardInner = ({ onLogout }) => {
                     {/* ── TOP HEADER ── */}
                     <header
                         style={{
-                            height: 62,
+                            height: isDemoFullPage ? 0 : 62,
                             flexShrink: 0,
-                            borderBottom: `1px solid ${DS.border}`,
-                            display: 'flex',
+                            borderBottom: isDemoFullPage ? 'none' : `1px solid ${DS.border}`,
+                            display: isDemoFullPage ? 'none' : 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             padding: '0 28px',
@@ -4148,7 +4151,7 @@ const DashboardInner = ({ onLogout }) => {
                     </header>
 
                     {/* ── DEMO MODE BANNER ── */}
-                    {isDemo && (
+                    {isDemo && !isDemoFullPage && (
                         <div
                             style={{
                                 padding: '8px 28px',
@@ -4212,7 +4215,7 @@ const DashboardInner = ({ onLogout }) => {
                             flex: 1,
                             overflowY: 'auto',
                             position: 'relative',
-                            background: `linear-gradient(135deg, ${DS.bg} 0%, rgba(56,189,248,0.02) 100%)`,
+                            background: isDemoFullPage ? 'transparent' : `linear-gradient(135deg, ${DS.bg} 0%, rgba(56,189,248,0.02) 100%)`,
                         }}
                     >
                         {/* Floating alert toast */}
@@ -4244,7 +4247,7 @@ const DashboardInner = ({ onLogout }) => {
                             </div>
                         )}
 
-                        <div style={{ padding: '28px 32px', width: '100%', minHeight: '100%', position: 'relative' }}>
+                        <div style={{ padding: isDemoFullPage ? 0 : '28px 32px', width: '100%', minHeight: '100%', position: 'relative' }}>
                             <ErrorBoundary key={activeTab}>
                                 <Suspense
                                     fallback={
