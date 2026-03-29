@@ -6,23 +6,23 @@ and suggest optimizations without external SQL parser dependencies.
 """
 
 import re
-from typing import Dict, List, Any
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
 class QueryAnalysis:
     """Analysis result for a single query."""
     query_type: str = "UNKNOWN"  # SELECT, INSERT, UPDATE, DELETE
-    tables: List[str] = field(default_factory=list)
+    tables: list[str] = field(default_factory=list)
     complexity: str = "simple"  # simple, moderate, complex
     has_subquery: bool = False
     has_join: bool = False
     join_count: int = 0
-    where_conditions: List[str] = field(default_factory=list)
-    suggested_indexes: List[str] = field(default_factory=list)
+    where_conditions: list[str] = field(default_factory=list)
+    suggested_indexes: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "query_type": self.query_type,
@@ -37,7 +37,13 @@ class QueryAnalysis:
 
 
 class QueryAnalyzer:
-    """Analyzes SQL queries for patterns, complexity, and optimization opportunities."""
+    """
+    Analyzes SQL queries for patterns, complexity, and optimization opportunities.
+
+    Provides regex-based SQL parsing to identify table references, WHERE conditions,
+    JOINs, subqueries, and other patterns. Generates complexity ratings and suggests
+    indexes and query rewrites for better performance.
+    """
 
     def __init__(self):
         """Initialize the analyzer with regex patterns."""
@@ -53,7 +59,7 @@ class QueryAnalyzer:
         self.into_pattern = re.compile(r'\bINTO\s+([a-zA-Z0-9_]+)', re.IGNORECASE)
         self.table_ref_pattern = re.compile(r'([a-zA-Z0-9_]+)\s+(?:AS\s+)?([a-zA-Z0-9_]*)', re.IGNORECASE)
 
-    def analyze(self, sql: str) -> Dict[str, Any]:
+    def analyze(self, sql: str) -> dict[str, Any]:
         """
         Parse SQL and return detailed analysis.
 
@@ -108,7 +114,7 @@ class QueryAnalyzer:
 
         return analysis.to_dict()
 
-    def find_slow_patterns(self, queries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def find_slow_patterns(self, queries: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Identify queries with common slow patterns.
 
@@ -154,7 +160,7 @@ class QueryAnalyzer:
 
         return slow_queries
 
-    def suggest_rewrites(self, sql: str) -> List[str]:
+    def suggest_rewrites(self, sql: str) -> list[str]:
         """
         Suggest query improvements and rewrites.
 
@@ -218,8 +224,16 @@ class QueryAnalyzer:
 
         return suggestions
 
-    def _extract_tables(self, sql: str) -> List[str]:
-        """Extract table names from FROM clause."""
+    def _extract_tables(self, sql: str) -> list[str]:
+        """
+        Extract table names from FROM clause.
+
+        Args:
+            sql: SQL query string to parse.
+
+        Returns:
+            List of table names found in the FROM clause.
+        """
         tables = []
         match = self.from_pattern.search(sql)
         if match:
@@ -233,8 +247,16 @@ class QueryAnalyzer:
                     tables.append(parts[0])
         return tables
 
-    def _extract_where_conditions(self, sql: str) -> List[str]:
-        """Extract WHERE clause conditions."""
+    def _extract_where_conditions(self, sql: str) -> list[str]:
+        """
+        Extract WHERE clause conditions.
+
+        Args:
+            sql: SQL query string to parse.
+
+        Returns:
+            List of individual conditions found in the WHERE clause.
+        """
         conditions = []
         match = self.where_pattern.search(sql)
         if match:
@@ -245,7 +267,15 @@ class QueryAnalyzer:
         return conditions
 
     def _calculate_complexity(self, analysis: QueryAnalysis) -> str:
-        """Determine query complexity based on features."""
+        """
+        Determine query complexity based on features.
+
+        Args:
+            analysis: QueryAnalysis object with query attributes.
+
+        Returns:
+            Complexity level: "simple", "moderate", or "complex".
+        """
         score = 0
 
         # Base complexity for query type
@@ -270,8 +300,17 @@ class QueryAnalyzer:
         else:
             return "complex"
 
-    def _suggest_indexes(self, sql: str, analysis: QueryAnalysis) -> List[str]:
-        """Suggest indexes based on query patterns."""
+    def _suggest_indexes(self, sql: str, analysis: QueryAnalysis) -> list[str]:
+        """
+        Suggest indexes based on query patterns.
+
+        Args:
+            sql: SQL query string to analyze.
+            analysis: QueryAnalysis object with query attributes.
+
+        Returns:
+            List of index creation suggestions.
+        """
         suggestions = []
 
         # Suggest indexes for WHERE conditions
@@ -290,7 +329,7 @@ class QueryAnalyzer:
                 suggestions.append(f"Ensure indexes on join columns: {col1}, {col2}")
 
         # Suggest covering index for frequently selected columns
-        if analysis.query_type == "SELECT":
+        if analysis.query_type == "SELECT" and analysis.tables:
             suggestions.append(
                 f"Consider covering index on {analysis.tables[0]} if query is frequently executed"
             )

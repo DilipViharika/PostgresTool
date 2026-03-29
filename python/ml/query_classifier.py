@@ -5,6 +5,7 @@ Classifies query type, complexity, risk level, and resource impact.
 
 from typing import Any
 import re
+import hashlib
 
 
 class QueryClassifier:
@@ -17,7 +18,12 @@ class QueryClassifier:
     """
 
     def __init__(self):
-        """Initialize the query classifier."""
+        """
+        Initialize the query classifier.
+
+        Initializes an empty cache for storing classification results
+        to improve performance on repeated queries.
+        """
         self.query_cache: dict[str, dict[str, Any]] = {}
 
     def classify(self, sql: str) -> dict[str, Any]:
@@ -40,7 +46,7 @@ class QueryClassifier:
         normalized = self._normalize_sql(sql)
 
         # Check cache
-        cache_key = hash(normalized)
+        cache_key = hashlib.md5(normalized.encode()).hexdigest()
         if cache_key in self.query_cache:
             return self.query_cache[cache_key]
 
@@ -294,7 +300,7 @@ class QueryClassifier:
             recommendations.append('Consider adding HAVING clause for early filtering')
 
         # Subquery optimization
-        if 'SELECT' in re.findall(r'\(SELECT', sql_upper):
+        if bool(re.findall(r'\(SELECT', sql_upper)):
             recommendations.append('Verify subqueries cannot be converted to JOINs')
 
         # Default recommendation

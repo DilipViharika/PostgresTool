@@ -18,7 +18,12 @@ class MetricForecaster:
     """
 
     def __init__(self):
-        """Initialize the forecaster."""
+        """
+        Initialize the forecaster.
+
+        Sets up the metric forecasting engine with ensemble methods
+        for time series prediction.
+        """
         self.last_forecast: dict[str, Any] = {}
 
     def forecast(

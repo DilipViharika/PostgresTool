@@ -1,7 +1,5 @@
 """Configuration settings for the VIGIL FastAPI backend."""
 
-from typing import List
-
 from pydantic_settings import BaseSettings
 
 
@@ -13,13 +11,12 @@ class Settings(BaseSettings):
     NODE_BACKEND_URL: str = "http://localhost:3000"
     PORT: int = 8000
     DEBUG: bool = False
-    CORS_ORIGINS: List[str] = ["*"]
+    CORS_ORIGINS: list[str] = ["*"]
 
-    class Config:
-        """Pydantic config."""
-
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True,
+    }
 
 
 settings = Settings()

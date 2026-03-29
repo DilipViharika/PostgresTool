@@ -5,9 +5,9 @@ Analyzes table growth, bloat, index efficiency, and generates
 recommendations for maintenance (vacuum, analyze, reindex).
 """
 
-from typing import Dict, List, Any
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from typing import Any
 
 
 @dataclass
@@ -20,10 +20,10 @@ class TableStats:
     dead_tuple_count: int = 0
     last_vacuum: datetime = None
     last_autovacuum: datetime = None
-    indexes: List[Dict[str, Any]] = field(default_factory=list)
+    indexes: list[dict[str, Any]] = field(default_factory=list)
     bloat_ratio: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "name": self.name,
@@ -39,7 +39,13 @@ class TableStats:
 
 
 class TableStatsAnalyzer:
-    """Analyzes PostgreSQL table statistics and generates optimization recommendations."""
+    """
+    Analyzes PostgreSQL table statistics and generates optimization recommendations.
+
+    Computes table metrics including bloat ratios, dead tuples, row trends, and
+    index efficiency. Provides maintenance recommendations including vacuum, analyze,
+    and index operations based on statistical thresholds.
+    """
 
     def __init__(self):
         """Initialize the analyzer."""
@@ -47,7 +53,7 @@ class TableStatsAnalyzer:
         self.dead_tuple_threshold = 0.15  # 15% dead tuples threshold
         self.vacuum_age_threshold = timedelta(days=7)  # Recommend vacuum if older than 7 days
 
-    def analyze(self, table_data: Dict[str, Any]) -> Dict[str, Any]:
+    def analyze(self, table_data: dict[str, Any]) -> dict[str, Any]:
         """
         Compute statistics for a single table.
 
@@ -107,7 +113,7 @@ class TableStatsAnalyzer:
             "recommendations": recommendations,
         }
 
-    def generate_report(self, tables: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def generate_report(self, tables: list[dict[str, Any]]) -> dict[str, Any]:
         """
         Aggregate statistics across tables.
 
@@ -172,7 +178,12 @@ class TableStatsAnalyzer:
         }
 
     def _analyze_indexes(self, stats: TableStats) -> None:
-        """Analyze index usage and efficiency."""
+        """
+        Analyze index usage and efficiency.
+
+        Args:
+            stats: TableStats object to analyze indexes for.
+        """
         for index in stats.indexes:
             # Calculate index size relative to table
             index_size = index.get("size_bytes", 0)
@@ -186,8 +197,16 @@ class TableStatsAnalyzer:
             index_scans = index.get("idx_scan", 0)
             index["is_unused"] = index_scans == 0
 
-    def _calculate_row_trend(self, history: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Calculate row count trend from historical data."""
+    def _calculate_row_trend(self, history: list[dict[str, Any]]) -> dict[str, Any]:
+        """
+        Calculate row count trend from historical data.
+
+        Args:
+            history: List of historical snapshots with row_count and timestamp.
+
+        Returns:
+            Dictionary with trend direction and change percentage.
+        """
         if not history or len(history) < 2:
             return {
                 "trend": "unknown",
@@ -222,8 +241,16 @@ class TableStatsAnalyzer:
             "data_points": len(history),
         }
 
-    def _calculate_size_growth(self, history: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Calculate table size growth rate."""
+    def _calculate_size_growth(self, history: list[dict[str, Any]]) -> dict[str, Any]:
+        """
+        Calculate table size growth rate.
+
+        Args:
+            history: List of historical snapshots with size_bytes and timestamp.
+
+        Returns:
+            Dictionary with growth rate per day and total growth in bytes.
+        """
         if not history or len(history) < 2:
             return {
                 "growth_rate_percent_per_day": 0,
@@ -264,9 +291,18 @@ class TableStatsAnalyzer:
     def _generate_recommendations(
         self,
         stats: TableStats,
-        row_trend: Dict[str, Any],
-    ) -> List[str]:
-        """Generate table-specific recommendations."""
+        row_trend: dict[str, Any],
+    ) -> list[str]:
+        """
+        Generate table-specific recommendations.
+
+        Args:
+            stats: TableStats object to generate recommendations for.
+            row_trend: Row trend data from _calculate_row_trend.
+
+        Returns:
+            List of maintenance and optimization recommendations.
+        """
         recommendations = []
 
         # Bloat check
@@ -307,9 +343,17 @@ class TableStatsAnalyzer:
 
     def _find_least_used_indexes(
         self,
-        table_analyses: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
-        """Find indexes with low usage."""
+        table_analyses: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """
+        Find indexes with low usage.
+
+        Args:
+            table_analyses: List of table analysis results.
+
+        Returns:
+            List of unused indexes sorted by size (largest first).
+        """
         unused_indexes = []
 
         for table_analysis in table_analyses:
@@ -331,9 +375,17 @@ class TableStatsAnalyzer:
 
     def _compile_priority_recommendations(
         self,
-        table_analyses: List[Dict[str, Any]],
-    ) -> List[str]:
-        """Compile highest priority recommendations across all tables."""
+        table_analyses: list[dict[str, Any]],
+    ) -> list[str]:
+        """
+        Compile highest priority recommendations across all tables.
+
+        Args:
+            table_analyses: List of table analysis results.
+
+        Returns:
+            List of high-priority recommendations for the entire database.
+        """
         priority_recs = []
         bloat_count = 0
         vacuum_needed = 0

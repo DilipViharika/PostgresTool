@@ -19,7 +19,11 @@ class CapacityPredictor:
     """
 
     def __init__(self):
-        """Initialize the capacity predictor."""
+        """
+        Initialize the capacity predictor.
+
+        Sets up the predictor for resource exhaustion forecasting.
+        """
         self.predictions_cache: dict[str, dict[str, Any]] = {}
 
     def predict(
@@ -54,7 +58,7 @@ class CapacityPredictor:
             }
 
         # Extract values and timestamps
-        values = np.array([h.get('value') or h.get('connections') for h in historical], dtype=float)
+        values = np.array([h.get('value') or h.get('connections') or 0.0 for h in historical], dtype=float)
         timestamps = np.array([h['timestamp'] for h in historical], dtype=float)
 
         # Sort by timestamp
@@ -125,6 +129,10 @@ class CapacityPredictor:
         else:
             recommendation = 'Current growth trajectory manageable'
 
+        # Ensure recommendation is always a string
+        if recommendation is None:
+            recommendation = 'Unable to generate recommendation'
+
         return {
             'days_remaining': float(days_remaining),
             'projected_date': projected_date.isoformat(),
@@ -176,7 +184,7 @@ class CapacityPredictor:
         prediction = self.predict(float(current), history, float(max_connections))
 
         # Extract additional metrics
-        values = np.array([h.get('value') or h.get('connections') for h in history], dtype=float)
+        values = np.array([h.get('value') or h.get('connections') or 0.0 for h in history], dtype=float)
         peak = float(np.max(values))
         avg = float(np.mean(values))
         utilization = (current / max_connections * 100) if max_connections > 0 else 0

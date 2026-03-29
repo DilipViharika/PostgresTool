@@ -18,7 +18,12 @@ class AnomalyDetector:
     """
 
     def __init__(self):
-        """Initialize the anomaly detector."""
+        """
+        Initialize the anomaly detector.
+
+        Sets up statistical methods for detecting outliers and trend
+        changes in time series data.
+        """
         self.last_stats: dict[str, Any] = {}
 
     def detect(

@@ -5,9 +5,9 @@ Generates comprehensive performance reports with CPU, memory, and connection
 analysis, period comparisons, and markdown export capability.
 """
 
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -26,7 +26,7 @@ class PerformanceMetrics:
     tps: float = 0.0  # Transactions per second
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "cpu_usage_percent": self.cpu_usage_percent,
@@ -45,7 +45,13 @@ class PerformanceMetrics:
 
 
 class PerformanceReport:
-    """Generates and analyzes PostgreSQL performance reports."""
+    """
+    Generates and analyzes PostgreSQL performance reports.
+
+    Analyzes CPU, memory, connections, and cache metrics to assess database
+    performance. Provides detailed analysis, period comparisons, and markdown
+    exports with actionable recommendations.
+    """
 
     def __init__(self):
         """Initialize the report generator."""
@@ -54,7 +60,7 @@ class PerformanceReport:
         self.connection_threshold_warning = 80  # 80% of max
         self.cache_hit_threshold_warning = 0.99  # Should be >99%
 
-    def generate(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
+    def generate(self, metrics: dict[str, Any]) -> dict[str, Any]:
         """
         Produce a structured performance report.
 
@@ -100,9 +106,9 @@ class PerformanceReport:
 
     def compare_periods(
         self,
-        current: Dict[str, Any],
-        previous: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        current: dict[str, Any],
+        previous: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Compare two time periods and highlight regressions/improvements.
 
@@ -156,38 +162,22 @@ class PerformanceReport:
             }
 
         # Identify regressions
-        regressions = [
-            f"CPU usage increased by {cpu_delta:.1f}%"
-            for _ in [""]
-            if cpu_delta > 10
-        ]
-        regressions.extend([
-            f"Memory usage increased by {memory_delta:.1f}%"
-            for _ in [""]
-            if memory_delta > 10
-        ])
-        regressions.extend([
-            f"Cache hit ratio decreased by {cache_delta:.2%}"
-            for _ in [""]
-            if cache_delta < -0.01
-        ])
+        regressions = []
+        if cpu_delta > 10:
+            regressions.append(f"CPU usage increased by {cpu_delta:.1f}%")
+        if memory_delta > 10:
+            regressions.append(f"Memory usage increased by {memory_delta:.1f}%")
+        if cache_delta < -0.01:
+            regressions.append(f"Cache hit ratio decreased by {cache_delta:.2%}")
 
         # Identify improvements
-        improvements = [
-            f"CPU usage decreased by {abs(cpu_delta):.1f}%"
-            for _ in [""]
-            if cpu_delta < -10
-        ]
-        improvements.extend([
-            f"Memory usage decreased by {abs(memory_delta):.1f}%"
-            for _ in [""]
-            if memory_delta < -10
-        ])
-        improvements.extend([
-            f"Cache hit ratio improved by {cache_delta:.2%}"
-            for _ in [""]
-            if cache_delta > 0.01
-        ])
+        improvements = []
+        if cpu_delta < -10:
+            improvements.append(f"CPU usage decreased by {abs(cpu_delta):.1f}%")
+        if memory_delta < -10:
+            improvements.append(f"Memory usage decreased by {abs(memory_delta):.1f}%")
+        if cache_delta > 0.01:
+            improvements.append(f"Cache hit ratio improved by {cache_delta:.2%}")
 
         return {
             "period_comparison": {
@@ -201,7 +191,7 @@ class PerformanceReport:
             "previous_metrics": prev_perf.to_dict(),
         }
 
-    def export_markdown(self, report: Dict[str, Any]) -> str:
+    def export_markdown(self, report: dict[str, Any]) -> str:
         """
         Convert report to markdown format.
 
@@ -298,8 +288,16 @@ class PerformanceReport:
 
         return "\n".join(lines)
 
-    def _parse_metrics(self, metrics: Dict[str, Any]) -> PerformanceMetrics:
-        """Parse metrics dictionary into PerformanceMetrics object."""
+    def _parse_metrics(self, metrics: dict[str, Any]) -> PerformanceMetrics:
+        """
+        Parse metrics dictionary into PerformanceMetrics object.
+
+        Args:
+            metrics: Dictionary with performance metric values.
+
+        Returns:
+            PerformanceMetrics object with parsed values.
+        """
         perf = PerformanceMetrics()
 
         perf.cpu_usage_percent = float(metrics.get("cpu_usage_percent", 0))
@@ -322,8 +320,16 @@ class PerformanceReport:
 
         return perf
 
-    def _analyze_cpu(self, metrics: PerformanceMetrics) -> Dict[str, Any]:
-        """Analyze CPU usage patterns."""
+    def _analyze_cpu(self, metrics: PerformanceMetrics) -> dict[str, Any]:
+        """
+        Analyze CPU usage patterns.
+
+        Args:
+            metrics: PerformanceMetrics object with CPU data.
+
+        Returns:
+            Dictionary with CPU analysis including status and issues.
+        """
         status = "good"
         issues = []
 
@@ -342,8 +348,16 @@ class PerformanceReport:
             "issues": issues,
         }
 
-    def _analyze_memory(self, metrics: PerformanceMetrics) -> Dict[str, Any]:
-        """Analyze memory usage patterns."""
+    def _analyze_memory(self, metrics: PerformanceMetrics) -> dict[str, Any]:
+        """
+        Analyze memory usage patterns.
+
+        Args:
+            metrics: PerformanceMetrics object with memory data.
+
+        Returns:
+            Dictionary with memory analysis including status and issues.
+        """
         status = "good"
         issues = []
 
@@ -364,8 +378,16 @@ class PerformanceReport:
             "issues": issues,
         }
 
-    def _analyze_connections(self, metrics: PerformanceMetrics) -> Dict[str, Any]:
-        """Analyze connection patterns."""
+    def _analyze_connections(self, metrics: PerformanceMetrics) -> dict[str, Any]:
+        """
+        Analyze connection patterns.
+
+        Args:
+            metrics: PerformanceMetrics object with connection data.
+
+        Returns:
+            Dictionary with connection analysis including status and issues.
+        """
         utilization = 0
         if metrics.max_connections > 0:
             total_connections = metrics.active_connections + metrics.idle_connections
@@ -391,8 +413,16 @@ class PerformanceReport:
             "issues": issues,
         }
 
-    def _analyze_cache(self, metrics: PerformanceMetrics) -> Dict[str, Any]:
-        """Analyze cache performance."""
+    def _analyze_cache(self, metrics: PerformanceMetrics) -> dict[str, Any]:
+        """
+        Analyze cache performance.
+
+        Args:
+            metrics: PerformanceMetrics object with cache data.
+
+        Returns:
+            Dictionary with cache analysis including status and issues.
+        """
         status = "good"
         issues = []
 
@@ -416,12 +446,24 @@ class PerformanceReport:
     def _compile_recommendations(
         self,
         metrics: PerformanceMetrics,
-        cpu_analysis: Dict[str, Any],
-        memory_analysis: Dict[str, Any],
-        connection_analysis: Dict[str, Any],
-        cache_analysis: Dict[str, Any],
-    ) -> List[str]:
-        """Compile actionable recommendations."""
+        cpu_analysis: dict[str, Any],
+        memory_analysis: dict[str, Any],
+        connection_analysis: dict[str, Any],
+        cache_analysis: dict[str, Any],
+    ) -> list[str]:
+        """
+        Compile actionable recommendations.
+
+        Args:
+            metrics: PerformanceMetrics object.
+            cpu_analysis: CPU analysis result dictionary.
+            memory_analysis: Memory analysis result dictionary.
+            connection_analysis: Connection analysis result dictionary.
+            cache_analysis: Cache analysis result dictionary.
+
+        Returns:
+            List of actionable recommendations for performance improvement.
+        """
         recommendations = []
 
         # CPU recommendations
@@ -470,12 +512,23 @@ class PerformanceReport:
 
     def _assess_health(
         self,
-        cpu_analysis: Dict[str, Any],
-        memory_analysis: Dict[str, Any],
-        connection_analysis: Dict[str, Any],
-        cache_analysis: Dict[str, Any],
+        cpu_analysis: dict[str, Any],
+        memory_analysis: dict[str, Any],
+        connection_analysis: dict[str, Any],
+        cache_analysis: dict[str, Any],
     ) -> str:
-        """Assess overall system health."""
+        """
+        Assess overall system health.
+
+        Args:
+            cpu_analysis: CPU analysis result dictionary.
+            memory_analysis: Memory analysis result dictionary.
+            connection_analysis: Connection analysis result dictionary.
+            cache_analysis: Cache analysis result dictionary.
+
+        Returns:
+            Health status: "critical", "warning", or "healthy".
+        """
         statuses = [
             cpu_analysis.get("status", "unknown"),
             memory_analysis.get("status", "unknown"),
@@ -492,12 +545,23 @@ class PerformanceReport:
 
     def _calculate_rating(
         self,
-        cpu_analysis: Dict[str, Any],
-        memory_analysis: Dict[str, Any],
-        connection_analysis: Dict[str, Any],
-        cache_analysis: Dict[str, Any],
+        cpu_analysis: dict[str, Any],
+        memory_analysis: dict[str, Any],
+        connection_analysis: dict[str, Any],
+        cache_analysis: dict[str, Any],
     ) -> float:
-        """Calculate overall performance rating (0-10)."""
+        """
+        Calculate overall performance rating (0-10).
+
+        Args:
+            cpu_analysis: CPU analysis result dictionary.
+            memory_analysis: Memory analysis result dictionary.
+            connection_analysis: Connection analysis result dictionary.
+            cache_analysis: Cache analysis result dictionary.
+
+        Returns:
+            Performance rating from 0 to 10.
+        """
         rating = 10.0
 
         # Deduct points for issues
