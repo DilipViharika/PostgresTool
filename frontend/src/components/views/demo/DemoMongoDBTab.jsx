@@ -906,43 +906,80 @@ function DemoMongoDBTab({ tabId }) {
                         const ExecStatCard = ({ value, label, subtitle, color }) => (
                             <div
                                 style={{
-                                    background: `linear-gradient(145deg, rgba(${parseInt(color.slice(1, 3), 16)},${parseInt(color.slice(3, 5), 16)},${parseInt(color.slice(5, 7), 16)},0.06), rgba(6,14,32,0.72))`,
+                                    background: '#ffffff',
                                     borderRadius: '16px',
                                     padding: '24px 20px',
-                                    border: `1px solid ${color}40`,
-                                    backdropFilter: 'blur(8px)',
+                                    border: '1px solid #e2e8f0',
                                     transition: 'all 0.3s ease',
                                     cursor: 'pointer',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-3px)';
-                                    e.currentTarget.style.boxShadow = `0 12px 24px ${color}20, 0 0 20px ${color}10`;
+                                    e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.10)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
                                 }}
                             >
-                                <div style={{ fontSize: '42px', fontWeight: 800, letterSpacing: '-0.04em', textShadow: `0 0 20px ${color}80`, color, marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: '42px',
+                                        fontWeight: 800,
+                                        letterSpacing: '-0.04em',
+                                        color,
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     {value}
                                 </div>
-                                <div style={{ fontSize: '11px', uppercase: true, letterSpacing: '0.1em', color: THEME.textDim, marginBottom: 4 }}>
+                                <div
+                                    style={{
+                                        fontSize: '11px',
+                                        uppercase: true,
+                                        letterSpacing: '0.1em',
+                                        color: THEME.textDim,
+                                        marginBottom: 4,
+                                    }}
+                                >
                                     {label}
                                 </div>
-                                <div style={{ fontSize: '10.5px', color: THEME.textDim }}>
-                                    {subtitle}
-                                </div>
+                                <div style={{ fontSize: '10.5px', color: THEME.textDim }}>{subtitle}</div>
                             </div>
                         );
 
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {/* Row 1: 4 Large Hero KPI Cards */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="410" label="CONNECTIONS" subtitle="of 800 max" color="#00ffaa" />
-                                    <ExecStatCard value="3,105" label="OPS / SEC" subtitle="↑ 12% baseline" color="#4facfe" />
-                                    <ExecStatCard value="32ms" label="AVG READ LATENCY" subtitle="P99: 184ms" color="#ffcc00" />
-                                    <ExecStatCard value="0.8s" label="REPLICATION LAG" subtitle="oplog: 48h window" color="#e2f0ff" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="410"
+                                        label="CONNECTIONS"
+                                        subtitle="of 800 max"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="3,105"
+                                        label="OPS / SEC"
+                                        subtitle="↑ 12% baseline"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="32ms"
+                                        label="AVG READ LATENCY"
+                                        subtitle="P99: 184ms"
+                                        color="#d97706"
+                                    />
+                                    <ExecStatCard
+                                        value="0.8s"
+                                        label="REPLICATION LAG"
+                                        subtitle="oplog: 48h window"
+                                        color="#64748b"
+                                    />
                                 </div>
 
                                 {/* Row 2: 2 Charts side-by-side */}
@@ -955,9 +992,33 @@ function DemoMongoDBTab({ tabId }) {
                                                 <YAxis stroke={THEME.textDim} fontSize={11} />
                                                 <Tooltip content={<ChartTip />} />
                                                 <Legend wrapperStyle={{ paddingTop: '12px' }} />
-                                                <Line type="monotone" dataKey="query" stroke="#00e5ff" strokeWidth={2} dot={false} name="Query" isAnimationActive={false} />
-                                                <Line type="monotone" dataKey="write" stroke="#00ffaa" strokeWidth={2} dot={false} name="Write" isAnimationActive={false} />
-                                                <Line type="monotone" dataKey="delete" stroke="#ff4466" strokeWidth={2} dot={false} name="Delete" isAnimationActive={false} />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="query"
+                                                    stroke="#0ea5e9"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    name="Query"
+                                                    isAnimationActive={false}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="write"
+                                                    stroke="#16a34a"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    name="Write"
+                                                    isAnimationActive={false}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="delete"
+                                                    stroke="#dc2626"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    name="Delete"
+                                                    isAnimationActive={false}
+                                                />
                                             </LineChart>
                                         </ResponsiveContainer>
                                     </Panel>
@@ -970,9 +1031,33 @@ function DemoMongoDBTab({ tabId }) {
                                                 <YAxis stroke={THEME.textDim} fontSize={11} />
                                                 <Tooltip content={<ChartTip />} />
                                                 <Legend wrapperStyle={{ paddingTop: '12px' }} />
-                                                <Line type="monotone" dataKey="p99" stroke="#ff4466" strokeWidth={2} dot={false} name="P99" isAnimationActive={false} />
-                                                <Line type="monotone" dataKey="p95" stroke="#ffcc00" strokeWidth={2} dot={false} name="P95" isAnimationActive={false} />
-                                                <Line type="monotone" dataKey="p50" stroke="#00ffaa" strokeWidth={2} dot={false} name="P50" isAnimationActive={false} />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="p99"
+                                                    stroke="#dc2626"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    name="P99"
+                                                    isAnimationActive={false}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="p95"
+                                                    stroke="#d97706"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    name="P95"
+                                                    isAnimationActive={false}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="p50"
+                                                    stroke="#16a34a"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    name="P50"
+                                                    isAnimationActive={false}
+                                                />
                                             </LineChart>
                                         </ResponsiveContainer>
                                     </Panel>
@@ -987,8 +1072,22 @@ function DemoMongoDBTab({ tabId }) {
                                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                                 <YAxis stroke={THEME.textDim} fontSize={10} domain={[0, 100]} />
                                                 <Tooltip content={<ChartTip />} />
-                                                <Line type="monotone" dataKey="cpu" stroke="#4facfe" strokeWidth={2} dot={false} isAnimationActive={false} />
-                                                <Line type="monotone" dataKey="memory" stroke="#b86fff" strokeWidth={2} dot={false} isAnimationActive={false} />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="cpu"
+                                                    stroke="#0284c7"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="memory"
+                                                    stroke="#a855f7"
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                />
                                             </LineChart>
                                         </ResponsiveContainer>
                                     </Panel>
@@ -1000,8 +1099,8 @@ function DemoMongoDBTab({ tabId }) {
                                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                                 <Tooltip content={<ChartTip />} />
-                                                <Bar dataKey="read" fill="#4facfe" isAnimationActive={false} />
-                                                <Bar dataKey="write" fill="#00ffaa" isAnimationActive={false} />
+                                                <Bar dataKey="read" fill="#0284c7" isAnimationActive={false} />
+                                                <Bar dataKey="write" fill="#16a34a" isAnimationActive={false} />
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </Panel>
@@ -1009,9 +1108,17 @@ function DemoMongoDBTab({ tabId }) {
                                     <Panel title="Cache fill ratio" accentColor={THEME.primary}>
                                         <ResponsiveContainer width="100%" height={180}>
                                             <PieChart>
-                                                <Pie data={demoData.cacheFill} cx="50%" cy="50%" innerRadius={35} outerRadius={60} dataKey="value" isAnimationActive={false}>
-                                                    <Cell fill="#00ffaa" />
-                                                    <Cell fill="#2a3f5f" />
+                                                <Pie
+                                                    data={demoData.cacheFill}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={35}
+                                                    outerRadius={60}
+                                                    dataKey="value"
+                                                    isAnimationActive={false}
+                                                >
+                                                    <Cell fill="#16a34a" />
+                                                    <Cell fill="#cbd5e1" />
                                                 </Pie>
                                                 <Tooltip />
                                             </PieChart>
@@ -1090,7 +1197,13 @@ function DemoMongoDBTab({ tabId }) {
                     case 'serverinfo':
                         return (
                             <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
                                     <MetricCard label="Uptime" value="142d 7h" sub="+1.2%" icon={Clock} />
                                     <MetricCard label="Version" value="7.0.12" sub="Latest" icon={Server} />
                                     <MetricCard label="Connections" value="847/10000" sub="+8.4%" icon={Users} />
@@ -1134,12 +1247,14 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Resource Utilization" icon={Cpu} accentColor={THEME.warning}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <BarChart data={[
-                                            { name: 'CPU', value: 68 },
-                                            { name: 'Memory', value: 38.8 },
-                                            { name: 'Disk', value: 72 },
-                                            { name: 'Network', value: 45 },
-                                        ]}>
+                                        <BarChart
+                                            data={[
+                                                { name: 'CPU', value: 68 },
+                                                { name: 'Memory', value: 38.8 },
+                                                { name: 'Disk', value: 72 },
+                                                { name: 'Network', value: 45 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-serverinfo-grad1" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.8} />
@@ -1150,7 +1265,11 @@ function DemoMongoDBTab({ tabId }) {
                                             <XAxis dataKey="name" stroke={THEME.textDim} />
                                             <YAxis stroke={THEME.textDim} />
                                             <Tooltip content={<ChartTip />} />
-                                            <Bar dataKey="value" fill="url(#mdb-serverinfo-grad1)" radius={[8, 8, 0, 0]} />
+                                            <Bar
+                                                dataKey="value"
+                                                fill="url(#mdb-serverinfo-grad1)"
+                                                radius={[8, 8, 0, 0]}
+                                            />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </Panel>
@@ -1163,10 +1282,30 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'details', label: 'Details', width: '20%' },
                                         ]}
                                         rows={[
-                                            { time: '14:42:18', event: 'Memory Threshold Alert', severity: 'Warning', details: 'Memory at 85%' },
-                                            { time: '14:38:45', event: 'Connection Pool Full', severity: 'Critical', details: 'Reached 10000/10000' },
-                                            { time: '14:35:22', event: 'Disk Usage Alert', severity: 'Warning', details: 'Disk at 80%' },
-                                            { time: '14:30:10', event: 'Cache Eviction', severity: 'Info', details: 'Evicted 2.4M items' },
+                                            {
+                                                time: '14:42:18',
+                                                event: 'Memory Threshold Alert',
+                                                severity: 'Warning',
+                                                details: 'Memory at 85%',
+                                            },
+                                            {
+                                                time: '14:38:45',
+                                                event: 'Connection Pool Full',
+                                                severity: 'Critical',
+                                                details: 'Reached 10000/10000',
+                                            },
+                                            {
+                                                time: '14:35:22',
+                                                event: 'Disk Usage Alert',
+                                                severity: 'Warning',
+                                                details: 'Disk at 80%',
+                                            },
+                                            {
+                                                time: '14:30:10',
+                                                event: 'Cache Eviction',
+                                                severity: 'Info',
+                                                details: 'Evicted 2.4M items',
+                                            },
                                         ]}
                                         accentColor={THEME.primary}
                                     />
@@ -1476,7 +1615,13 @@ function DemoMongoDBTab({ tabId }) {
                                                     <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
                                                     <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
                                                 </linearGradient>
-                                                <linearGradient id="mongo-realtimeops-write" x1="0" y1="0" x2="0" y2="1">
+                                                <linearGradient
+                                                    id="mongo-realtimeops-write"
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
                                                     <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.3} />
                                                     <stop offset="95%" stopColor={THEME.warning} stopOpacity={0} />
                                                 </linearGradient>
@@ -1761,7 +1906,13 @@ function DemoMongoDBTab({ tabId }) {
                     case 'activeops':
                         return (
                             <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
                                     <MetricCard label="Active Ops" value="23" sub="+3" icon={Activity} />
                                     <MetricCard label="Queued" value="5" sub="-1" icon={Clock} />
                                     <MetricCard label="Avg Duration" value="142ms" sub="-5ms" icon={Clock} />
@@ -1787,8 +1938,12 @@ function DemoMongoDBTab({ tabId }) {
                                                         marginBottom: 6,
                                                     }}
                                                 >
-                                                    <span style={{ fontWeight: 600, color: THEME.textMain }}>{op.id}</span>
-                                                    <span style={{ color: THEME.textDim }}>Active: {op.active_time}</span>
+                                                    <span style={{ fontWeight: 600, color: THEME.textMain }}>
+                                                        {op.id}
+                                                    </span>
+                                                    <span style={{ color: THEME.textDim }}>
+                                                        Active: {op.active_time}
+                                                    </span>
                                                 </div>
                                                 <div
                                                     style={{
@@ -1801,7 +1956,9 @@ function DemoMongoDBTab({ tabId }) {
                                                     <span>Namespace: {op.ns}</span>
                                                     <span>Cmd: {op.cmd}</span>
                                                     {op.blocks && (
-                                                        <span style={{ color: THEME.warning }}>Blocks: {op.blocks}</span>
+                                                        <span style={{ color: THEME.warning }}>
+                                                            Blocks: {op.blocks}
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>
@@ -1810,20 +1967,22 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Operations Over Time" icon={TrendingUp} accentColor={THEME.success}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <LineChart data={[
-                                            { time: '00:00', ops: 18 },
-                                            { time: '02:30', ops: 21 },
-                                            { time: '05:00', ops: 19 },
-                                            { time: '07:30', ops: 25 },
-                                            { time: '10:00', ops: 23 },
-                                            { time: '12:30', ops: 28 },
-                                            { time: '15:00', ops: 26 },
-                                            { time: '17:30', ops: 31 },
-                                            { time: '20:00', ops: 29 },
-                                            { time: '22:30', ops: 24 },
-                                            { time: '23:45', ops: 23 },
-                                            { time: '23:59', ops: 23 },
-                                        ]}>
+                                        <LineChart
+                                            data={[
+                                                { time: '00:00', ops: 18 },
+                                                { time: '02:30', ops: 21 },
+                                                { time: '05:00', ops: 19 },
+                                                { time: '07:30', ops: 25 },
+                                                { time: '10:00', ops: 23 },
+                                                { time: '12:30', ops: 28 },
+                                                { time: '15:00', ops: 26 },
+                                                { time: '17:30', ops: 31 },
+                                                { time: '20:00', ops: 29 },
+                                                { time: '22:30', ops: 24 },
+                                                { time: '23:45', ops: 23 },
+                                                { time: '23:59', ops: 23 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-activeops-grad1" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
@@ -1834,7 +1993,13 @@ function DemoMongoDBTab({ tabId }) {
                                             <XAxis dataKey="time" stroke={THEME.textDim} />
                                             <YAxis stroke={THEME.textDim} />
                                             <Tooltip content={<ChartTip />} />
-                                            <Line type="monotone" dataKey="ops" stroke={THEME.success} dot={false} strokeWidth={2} />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="ops"
+                                                stroke={THEME.success}
+                                                dot={false}
+                                                strokeWidth={2}
+                                            />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </Panel>
@@ -1850,7 +2015,12 @@ function DemoMongoDBTab({ tabId }) {
                                             { type: 'find', count: '12', avgDuration: '128ms', maxDuration: '340ms' },
                                             { type: 'update', count: '8', avgDuration: '156ms', maxDuration: '420ms' },
                                             { type: 'insert', count: '2', avgDuration: '92ms', maxDuration: '180ms' },
-                                            { type: 'aggregate', count: '1', avgDuration: '185ms', maxDuration: '185ms' },
+                                            {
+                                                type: 'aggregate',
+                                                count: '1',
+                                                avgDuration: '185ms',
+                                                maxDuration: '185ms',
+                                            },
                                         ]}
                                         accentColor={THEME.success}
                                     />
@@ -2111,9 +2281,27 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'status', label: 'Status' },
                                         ]}
                                         rows={[
-                                            { lock_id: 'LCK_001', type: 'Shared', wait_ms: '145', holder: 'Thread-42', status: 'Active' },
-                                            { lock_id: 'LCK_002', type: 'Exclusive', wait_ms: '312', holder: 'Thread-51', status: 'Waiting' },
-                                            { lock_id: 'LCK_003', type: 'Shared', wait_ms: '89', holder: 'Thread-38', status: 'Active' },
+                                            {
+                                                lock_id: 'LCK_001',
+                                                type: 'Shared',
+                                                wait_ms: '145',
+                                                holder: 'Thread-42',
+                                                status: 'Active',
+                                            },
+                                            {
+                                                lock_id: 'LCK_002',
+                                                type: 'Exclusive',
+                                                wait_ms: '312',
+                                                holder: 'Thread-51',
+                                                status: 'Waiting',
+                                            },
+                                            {
+                                                lock_id: 'LCK_003',
+                                                type: 'Shared',
+                                                wait_ms: '89',
+                                                holder: 'Thread-38',
+                                                status: 'Active',
+                                            },
                                         ]}
                                         accentColor={THEME.warning}
                                     />
@@ -2162,14 +2350,16 @@ function DemoMongoDBTab({ tabId }) {
                                 </div>
                                 <Panel title="Anomaly Timeline" icon={TrendingUp} accentColor={THEME.danger}>
                                     <ResponsiveContainer width="100%" height={240}>
-                                        <LineChart data={[
-                                            { time: '00:00', high: 0, medium: 1, low: 0 },
-                                            { time: '04:00', high: 1, medium: 0, low: 2 },
-                                            { time: '08:00', high: 0, medium: 2, low: 1 },
-                                            { time: '12:00', high: 2, medium: 1, low: 0 },
-                                            { time: '16:00', high: 1, medium: 2, low: 1 },
-                                            { time: '20:00', high: 1, medium: 1, low: 3 },
-                                        ]}>
+                                        <LineChart
+                                            data={[
+                                                { time: '00:00', high: 0, medium: 1, low: 0 },
+                                                { time: '04:00', high: 1, medium: 0, low: 2 },
+                                                { time: '08:00', high: 0, medium: 2, low: 1 },
+                                                { time: '12:00', high: 2, medium: 1, low: 0 },
+                                                { time: '16:00', high: 1, medium: 2, low: 1 },
+                                                { time: '20:00', high: 1, medium: 1, low: 3 },
+                                            ]}
+                                        >
                                             <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
                                             <XAxis dataKey="time" stroke={THEME.textDim} />
                                             <YAxis stroke={THEME.textDim} />
@@ -2224,8 +2414,8 @@ function DemoMongoDBTab({ tabId }) {
                                                 </div>
                                                 <div style={{ color: THEME.textMuted }}>{a.metric}</div>
                                                 <div style={{ marginTop: 4, fontSize: 10 }}>
-                                                    Current: <span style={{ fontWeight: 600 }}>{a.value}</span> | Baseline:{' '}
-                                                    <span style={{ fontWeight: 600 }}>{a.baseline}</span>
+                                                    Current: <span style={{ fontWeight: 600 }}>{a.value}</span> |
+                                                    Baseline: <span style={{ fontWeight: 600 }}>{a.baseline}</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -2236,7 +2426,13 @@ function DemoMongoDBTab({ tabId }) {
                     case 'metricspreview':
                         return (
                             <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
                                     <MetricCard label="Read Ops" value="8.2K/s" sub="+12%" icon={Eye} />
                                     <MetricCard label="Write Ops" value="3.1K/s" sub="+5%" icon={Zap} />
                                     <MetricCard label="Latency P99" value="12ms" sub="-2ms" icon={Gauge} />
@@ -2246,11 +2442,23 @@ function DemoMongoDBTab({ tabId }) {
                                     <ResponsiveContainer width="100%" height={220}>
                                         <AreaChart data={demoData.metricsPreview}>
                                             <defs>
-                                                <linearGradient id="mdb-metricspreview-grad1" x1="0" y1="0" x2="0" y2="1">
+                                                <linearGradient
+                                                    id="mdb-metricspreview-grad1"
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
                                                     <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
                                                     <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
                                                 </linearGradient>
-                                                <linearGradient id="mdb-metricspreview-grad2" x1="0" y1="0" x2="0" y2="1">
+                                                <linearGradient
+                                                    id="mdb-metricspreview-grad2"
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
                                                     <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
                                                     <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
                                                 </linearGradient>
@@ -2291,7 +2499,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 labelLine={false}
                                                 label={(entry) => entry.name}
                                                 outerRadius={80}
-                                                fill="#8884d8"
+                                                fill="#3b82f6"
                                                 dataKey="value"
                                             >
                                                 <Cell fill={THEME.primary} />
@@ -2312,10 +2520,20 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'peak', label: 'Peak', width: '15%' },
                                         ]}
                                         rows={[
-                                            { metric: 'Throughput', current: '8.2K/s', average: '7.8K/s', peak: '12.4K/s' },
+                                            {
+                                                metric: 'Throughput',
+                                                current: '8.2K/s',
+                                                average: '7.8K/s',
+                                                peak: '12.4K/s',
+                                            },
                                             { metric: 'Read Latency', current: '12ms', average: '14ms', peak: '28ms' },
                                             { metric: 'Write Latency', current: '18ms', average: '20ms', peak: '42ms' },
-                                            { metric: 'Memory Usage', current: '12.4GB', average: '11.2GB', peak: '15.8GB' },
+                                            {
+                                                metric: 'Memory Usage',
+                                                current: '12.4GB',
+                                                average: '11.2GB',
+                                                peak: '15.8GB',
+                                            },
                                         ]}
                                         accentColor={THEME.primary}
                                     />
@@ -2734,7 +2952,13 @@ function DemoMongoDBTab({ tabId }) {
                     case 'backup':
                         return (
                             <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
                                     <MetricCard label="Last Backup" value="2h ago" sub="Success" icon={CheckCircle} />
                                     <MetricCard label="Success Rate" value="99.2%" sub="+0.1%" icon={TrendingUp} />
                                     <MetricCard label="Total Size" value="1.2 TB" sub="20 backups" icon={HardDrive} />
@@ -2789,18 +3013,20 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Backup Size Trend" icon={TrendingUp} accentColor={THEME.success}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <AreaChart data={[
-                                            { name: 'Backup 1', size: 98 },
-                                            { name: 'Backup 2', size: 105 },
-                                            { name: 'Backup 3', size: 112 },
-                                            { name: 'Backup 4', size: 118 },
-                                            { name: 'Backup 5', size: 125 },
-                                            { name: 'Backup 6', size: 130 },
-                                            { name: 'Backup 7', size: 138 },
-                                            { name: 'Backup 8', size: 142 },
-                                            { name: 'Backup 9', size: 150 },
-                                            { name: 'Backup 10', size: 156 },
-                                        ]}>
+                                        <AreaChart
+                                            data={[
+                                                { name: 'Backup 1', size: 98 },
+                                                { name: 'Backup 2', size: 105 },
+                                                { name: 'Backup 3', size: 112 },
+                                                { name: 'Backup 4', size: 118 },
+                                                { name: 'Backup 5', size: 125 },
+                                                { name: 'Backup 6', size: 130 },
+                                                { name: 'Backup 7', size: 138 },
+                                                { name: 'Backup 8', size: 142 },
+                                                { name: 'Backup 9', size: 150 },
+                                                { name: 'Backup 10', size: 156 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-backup-grad1" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
@@ -2830,9 +3056,27 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'status', label: 'Status', width: '20%' },
                                         ]}
                                         rows={[
-                                            { schedule: 'Daily @ 02:00', type: 'Full', retention: '30 days', lastRun: '2h ago', status: 'Success' },
-                                            { schedule: 'Hourly', type: 'Incremental', retention: '7 days', lastRun: '24m ago', status: 'Success' },
-                                            { schedule: 'Weekly', type: 'Full', retention: '52 weeks', lastRun: '6d ago', status: 'Success' },
+                                            {
+                                                schedule: 'Daily @ 02:00',
+                                                type: 'Full',
+                                                retention: '30 days',
+                                                lastRun: '2h ago',
+                                                status: 'Success',
+                                            },
+                                            {
+                                                schedule: 'Hourly',
+                                                type: 'Incremental',
+                                                retention: '7 days',
+                                                lastRun: '24m ago',
+                                                status: 'Success',
+                                            },
+                                            {
+                                                schedule: 'Weekly',
+                                                type: 'Full',
+                                                retention: '52 weeks',
+                                                lastRun: '6d ago',
+                                                status: 'Success',
+                                            },
                                         ]}
                                         accentColor={THEME.success}
                                     />
@@ -2920,7 +3164,13 @@ function DemoMongoDBTab({ tabId }) {
                     case 'network':
                         return (
                             <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                                        gap: 12,
+                                    }}
+                                >
                                     <MetricCard label="Bytes In" value="2.4 GB/s" sub="+5%" icon={Download} />
                                     <MetricCard label="Bytes Out" value="1.8 GB/s" sub="+3%" icon={Upload} />
                                     <MetricCard label="Connections" value="847" sub="Stable" icon={Users} />
@@ -2962,14 +3212,16 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Connection Pool" icon={Layers} accentColor={THEME.success}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <BarChart data={[
-                                            { app: 'Web API', utilization: 78 },
-                                            { app: 'Analytics', utilization: 45 },
-                                            { app: 'Cache Layer', utilization: 62 },
-                                            { app: 'Background', utilization: 34 },
-                                            { app: 'Mobile', utilization: 58 },
-                                            { app: 'Third-party', utilization: 22 },
-                                        ]}>
+                                        <BarChart
+                                            data={[
+                                                { app: 'Web API', utilization: 78 },
+                                                { app: 'Analytics', utilization: 45 },
+                                                { app: 'Cache Layer', utilization: 62 },
+                                                { app: 'Background', utilization: 34 },
+                                                { app: 'Mobile', utilization: 58 },
+                                                { app: 'Third-party', utilization: 22 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-network-grad3" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.success} stopOpacity={0.8} />
@@ -2980,7 +3232,11 @@ function DemoMongoDBTab({ tabId }) {
                                             <XAxis dataKey="app" stroke={THEME.textDim} />
                                             <YAxis stroke={THEME.textDim} />
                                             <Tooltip content={<ChartTip />} />
-                                            <Bar dataKey="utilization" fill="url(#mdb-network-grad3)" radius={[8, 8, 0, 0]} />
+                                            <Bar
+                                                dataKey="utilization"
+                                                fill="url(#mdb-network-grad3)"
+                                                radius={[8, 8, 0, 0]}
+                                            />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </Panel>
@@ -2993,10 +3249,30 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'bytesOut', label: 'Bytes Out', width: '25%' },
                                         ]}
                                         rows={[
-                                            { clientIp: '192.168.1.42', connections: '156', bytesIn: '842 MB', bytesOut: '620 MB' },
-                                            { clientIp: '10.0.0.8', connections: '124', bytesIn: '568 MB', bytesOut: '420 MB' },
-                                            { clientIp: '192.168.2.15', connections: '98', bytesIn: '445 MB', bytesOut: '328 MB' },
-                                            { clientIp: '10.0.0.22', connections: '84', bytesIn: '356 MB', bytesOut: '245 MB' },
+                                            {
+                                                clientIp: '192.168.1.42',
+                                                connections: '156',
+                                                bytesIn: '842 MB',
+                                                bytesOut: '620 MB',
+                                            },
+                                            {
+                                                clientIp: '10.0.0.8',
+                                                connections: '124',
+                                                bytesIn: '568 MB',
+                                                bytesOut: '420 MB',
+                                            },
+                                            {
+                                                clientIp: '192.168.2.15',
+                                                connections: '98',
+                                                bytesIn: '445 MB',
+                                                bytesOut: '328 MB',
+                                            },
+                                            {
+                                                clientIp: '10.0.0.22',
+                                                connections: '84',
+                                                bytesIn: '356 MB',
+                                                bytesOut: '245 MB',
+                                            },
                                         ]}
                                         accentColor={THEME.success}
                                     />
@@ -3015,84 +3291,125 @@ function DemoMongoDBTab({ tabId }) {
                     case 'editor':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="34" label="Collections" subtitle="Available" color="#4facfe" />
-                                    <ExecStatCard value="4.2M" label="Total docs" subtitle="In cluster" color="#00ffaa" />
-                                    <ExecStatCard value="4.2 KB" label="Avg size" subtitle="Per document" color="#00e5ff" />
-                                    <ExecStatCard value="2m ago" label="Last edit" subtitle="Recent change" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="34" label="Collections" subtitle="Available" color="#0284c7" />
+                                    <ExecStatCard
+                                        value="4.2M"
+                                        label="Total docs"
+                                        subtitle="In cluster"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="4.2 KB"
+                                        label="Avg size"
+                                        subtitle="Per document"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard
+                                        value="2m ago"
+                                        label="Last edit"
+                                        subtitle="Recent change"
+                                        color="#d97706"
+                                    />
                                 </div>
                                 <Panel title="Document Editor" icon={FileCode} accentColor={THEME.primary}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-                                    <div>
-                                        <div
-                                            style={{
-                                                fontSize: 10,
-                                                color: THEME.textDim,
-                                                fontWeight: 600,
-                                                letterSpacing: '0.05em',
-                                                marginBottom: 8,
-                                            }}
-                                        >
-                                            COLLECTION
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: 10,
+                                                    color: THEME.textDim,
+                                                    fontWeight: 600,
+                                                    letterSpacing: '0.05em',
+                                                    marginBottom: 8,
+                                                }}
+                                            >
+                                                COLLECTION
+                                            </div>
+                                            <div style={{ fontSize: 13, fontWeight: 600, fontFamily: THEME.fontMono }}>
+                                                {demoData.documentExample.collection}
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: 13, fontWeight: 600, fontFamily: THEME.fontMono }}>
-                                            {demoData.documentExample.collection}
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: 10,
+                                                    color: THEME.textDim,
+                                                    fontWeight: 600,
+                                                    letterSpacing: '0.05em',
+                                                    marginBottom: 8,
+                                                }}
+                                            >
+                                                DOCUMENT ID
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 11,
+                                                    fontWeight: 600,
+                                                    fontFamily: THEME.fontMono,
+                                                    color: THEME.textMuted,
+                                                    wordBreak: 'break-word',
+                                                }}
+                                            >
+                                                {demoData.documentExample._id}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div
-                                            style={{
-                                                fontSize: 10,
-                                                color: THEME.textDim,
-                                                fontWeight: 600,
-                                                letterSpacing: '0.05em',
-                                                marginBottom: 8,
-                                            }}
-                                        >
-                                            DOCUMENT ID
-                                        </div>
-                                        <div
-                                            style={{
-                                                fontSize: 11,
-                                                fontWeight: 600,
-                                                fontFamily: THEME.fontMono,
-                                                color: THEME.textMuted,
-                                                wordBreak: 'break-word',
-                                            }}
-                                        >
-                                            {demoData.documentExample._id}
-                                        </div>
+                                    <div
+                                        style={{
+                                            marginTop: 16,
+                                            padding: 12,
+                                            background: THEME.glass,
+                                            borderRadius: 8,
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            fontFamily: THEME.fontMono,
+                                            fontSize: 10,
+                                            color: THEME.textMuted,
+                                            maxHeight: 300,
+                                            overflow: 'auto',
+                                        }}
+                                    >
+                                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                            {JSON.stringify(demoData.documentExample.doc, null, 2)}
+                                        </pre>
                                     </div>
-                                </div>
-                                <div
-                                    style={{
-                                        marginTop: 16,
-                                        padding: 12,
-                                        background: THEME.glass,
-                                        borderRadius: 8,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                        fontFamily: THEME.fontMono,
-                                        fontSize: 10,
-                                        color: THEME.textMuted,
-                                        maxHeight: 300,
-                                        overflow: 'auto',
-                                    }}
-                                >
-                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                                        {JSON.stringify(demoData.documentExample.doc, null, 2)}
-                                    </pre>
-                                </div>
-                            </Panel>
+                                </Panel>
                             </div>
                         );
                     case 'aggregation':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="47" label="SAVED PIPELINES" subtitle="Active" color="#4facfe" />
-                                    <ExecStatCard value="5.2" label="AVG STAGES" subtitle="Per pipeline" color="#00ffaa" />
-                                    <ExecStatCard value="245ms" label="AVG EXEC TIME" subtitle="Last 24h" color="#ffcc00" />
-                                    <ExecStatCard value="23" label="COLLECTIONS" subtitle="With pipelines" color="#00e5ff" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="47"
+                                        label="SAVED PIPELINES"
+                                        subtitle="Active"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="5.2"
+                                        label="AVG STAGES"
+                                        subtitle="Per pipeline"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="245ms"
+                                        label="AVG EXEC TIME"
+                                        subtitle="Last 24h"
+                                        color="#d97706"
+                                    />
+                                    <ExecStatCard
+                                        value="23"
+                                        label="COLLECTIONS"
+                                        subtitle="With pipelines"
+                                        color="#0ea5e9"
+                                    />
                                 </div>
                                 <Panel title="Pipeline Stages" icon={Workflow} accentColor={THEME.primary}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -3131,11 +3448,41 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'runs', label: 'Runs', align: 'right' },
                                         ]}
                                         rows={[
-                                            { name: 'sales_summary', stages: 4, collection: 'orders', exec_time: '124', runs: '847' },
-                                            { name: 'user_stats', stages: 6, collection: 'users', exec_time: '312', runs: '523' },
-                                            { name: 'inventory_check', stages: 5, collection: 'products', exec_time: '89', runs: '1204' },
-                                            { name: 'revenue_by_region', stages: 7, collection: 'sales', exec_time: '456', runs: '234' },
-                                            { name: 'active_sessions', stages: 3, collection: 'sessions', exec_time: '45', runs: '2145' },
+                                            {
+                                                name: 'sales_summary',
+                                                stages: 4,
+                                                collection: 'orders',
+                                                exec_time: '124',
+                                                runs: '847',
+                                            },
+                                            {
+                                                name: 'user_stats',
+                                                stages: 6,
+                                                collection: 'users',
+                                                exec_time: '312',
+                                                runs: '523',
+                                            },
+                                            {
+                                                name: 'inventory_check',
+                                                stages: 5,
+                                                collection: 'products',
+                                                exec_time: '89',
+                                                runs: '1204',
+                                            },
+                                            {
+                                                name: 'revenue_by_region',
+                                                stages: 7,
+                                                collection: 'sales',
+                                                exec_time: '456',
+                                                runs: '234',
+                                            },
+                                            {
+                                                name: 'active_sessions',
+                                                stages: 3,
+                                                collection: 'sessions',
+                                                exec_time: '45',
+                                                runs: '2145',
+                                            },
                                         ]}
                                         accentColor={THEME.primary}
                                     />
@@ -3145,62 +3492,80 @@ function DemoMongoDBTab({ tabId }) {
                     case 'nlquery':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="1,240" label="QUERIES GENERATED" subtitle="Last 30d" color="#4facfe" />
-                                    <ExecStatCard value="94%" label="ACCURACY" subtitle="Correct syntax" color="#00ffaa" />
-                                    <ExecStatCard value="12ms" label="AVG GENERATION" subtitle="Response time" color="#00e5ff" />
-                                    <ExecStatCard value="8" label="COLLECTIONS" subtitle="Supported" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="1,240"
+                                        label="QUERIES GENERATED"
+                                        subtitle="Last 30d"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="94%"
+                                        label="ACCURACY"
+                                        subtitle="Correct syntax"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="12ms"
+                                        label="AVG GENERATION"
+                                        subtitle="Response time"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard value="8" label="COLLECTIONS" subtitle="Supported" color="#d97706" />
                                 </div>
                                 <Panel title="Natural Language Query Generator" icon={Brain} accentColor={THEME.ai}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                         {demoData.naturalLanguageExamples.map((ex, i) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                padding: 12,
-                                                background: THEME.glass,
-                                                borderRadius: 8,
-                                                border: `1px solid ${THEME.glassBorder}`,
-                                            }}
-                                        >
                                             <div
+                                                key={i}
                                                 style={{
-                                                    fontSize: 10,
-                                                    color: THEME.textDim,
-                                                    fontWeight: 600,
-                                                    marginBottom: 6,
-                                                }}
-                                            >
-                                                NATURAL LANGUAGE INPUT
-                                            </div>
-                                            <div style={{ fontSize: 12, marginBottom: 10, fontStyle: 'italic' }}>
-                                                {ex.input}
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 10,
-                                                    color: THEME.textDim,
-                                                    fontWeight: 600,
-                                                    marginBottom: 6,
-                                                }}
-                                            >
-                                                GENERATED MONGO QUERY
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 10,
-                                                    fontFamily: THEME.fontMono,
-                                                    color: THEME.textMuted,
+                                                    padding: 12,
                                                     background: THEME.glass,
-                                                    padding: 8,
-                                                    borderRadius: 4,
-                                                    wordBreak: 'break-word',
+                                                    borderRadius: 8,
+                                                    border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
-                                                {ex.query}
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        color: THEME.textDim,
+                                                        fontWeight: 600,
+                                                        marginBottom: 6,
+                                                    }}
+                                                >
+                                                    NATURAL LANGUAGE INPUT
+                                                </div>
+                                                <div style={{ fontSize: 12, marginBottom: 10, fontStyle: 'italic' }}>
+                                                    {ex.input}
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        color: THEME.textDim,
+                                                        fontWeight: 600,
+                                                        marginBottom: 6,
+                                                    }}
+                                                >
+                                                    GENERATED MONGO QUERY
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        fontFamily: THEME.fontMono,
+                                                        color: THEME.textMuted,
+                                                        background: THEME.glass,
+                                                        padding: 8,
+                                                        borderRadius: 4,
+                                                        wordBreak: 'break-word',
+                                                    }}
+                                                >
+                                                    {ex.query}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                     </div>
                                 </Panel>
                             </div>
@@ -3208,11 +3573,19 @@ function DemoMongoDBTab({ tabId }) {
                     case 'importexport':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="2.4 GB" label="IMPORTED" subtitle="Last 7d" color="#00ffaa" />
-                                    <ExecStatCard value="1.8 GB" label="EXPORTED" subtitle="Last 7d" color="#4facfe" />
-                                    <ExecStatCard value="142" label="OPERATIONS" subtitle="Last 7d" color="#00e5ff" />
-                                    <ExecStatCard value="99.8%" label="SUCCESS RATE" subtitle="No failures" color="#00ffaa" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="2.4 GB" label="IMPORTED" subtitle="Last 7d" color="#16a34a" />
+                                    <ExecStatCard value="1.8 GB" label="EXPORTED" subtitle="Last 7d" color="#0284c7" />
+                                    <ExecStatCard value="142" label="OPERATIONS" subtitle="Last 7d" color="#0ea5e9" />
+                                    <ExecStatCard
+                                        value="99.8%"
+                                        label="SUCCESS RATE"
+                                        subtitle="No failures"
+                                        color="#16a34a"
+                                    />
                                 </div>
 
                                 <Panel title="Job History" icon={Download} accentColor={THEME.success}>
@@ -3261,11 +3634,29 @@ function DemoMongoDBTab({ tabId }) {
                     case 'sqltranslator':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="840" label="TRANSLATIONS" subtitle="Last 30d" color="#4facfe" />
-                                    <ExecStatCard value="96%" label="ACCURACY" subtitle="Verified" color="#00ffaa" />
-                                    <ExecStatCard value="8ms" label="AVG SPEED" subtitle="Translation time" color="#00e5ff" />
-                                    <ExecStatCard value="12" label="SQL DIALECTS" subtitle="Supported" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="840"
+                                        label="TRANSLATIONS"
+                                        subtitle="Last 30d"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard value="96%" label="ACCURACY" subtitle="Verified" color="#16a34a" />
+                                    <ExecStatCard
+                                        value="8ms"
+                                        label="AVG SPEED"
+                                        subtitle="Translation time"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard
+                                        value="12"
+                                        label="SQL DIALECTS"
+                                        subtitle="Supported"
+                                        color="#d97706"
+                                    />
                                 </div>
                                 <Panel
                                     title="SQL to MongoDB Translator"
@@ -3274,64 +3665,64 @@ function DemoMongoDBTab({ tabId }) {
                                 >
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                         {demoData.sqlToMongoExamples.map((ex, i) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                padding: 12,
-                                                background: THEME.glass,
-                                                borderRadius: 8,
-                                                border: `1px solid ${THEME.glassBorder}`,
-                                            }}
-                                        >
                                             <div
+                                                key={i}
                                                 style={{
-                                                    fontSize: 10,
-                                                    color: THEME.textDim,
-                                                    fontWeight: 600,
-                                                    marginBottom: 6,
-                                                }}
-                                            >
-                                                SQL QUERY
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 10,
-                                                    fontFamily: THEME.fontMono,
-                                                    color: THEME.textMuted,
+                                                    padding: 12,
                                                     background: THEME.glass,
-                                                    padding: 8,
-                                                    borderRadius: 4,
-                                                    marginBottom: 10,
-                                                    wordBreak: 'break-word',
+                                                    borderRadius: 8,
+                                                    border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
-                                                {ex.sql}
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        color: THEME.textDim,
+                                                        fontWeight: 600,
+                                                        marginBottom: 6,
+                                                    }}
+                                                >
+                                                    SQL QUERY
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        fontFamily: THEME.fontMono,
+                                                        color: THEME.textMuted,
+                                                        background: THEME.glass,
+                                                        padding: 8,
+                                                        borderRadius: 4,
+                                                        marginBottom: 10,
+                                                        wordBreak: 'break-word',
+                                                    }}
+                                                >
+                                                    {ex.sql}
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        color: THEME.textDim,
+                                                        fontWeight: 600,
+                                                        marginBottom: 6,
+                                                    }}
+                                                >
+                                                    MONGODB QUERY
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        fontFamily: THEME.fontMono,
+                                                        color: THEME.success,
+                                                        background: THEME.glass,
+                                                        padding: 8,
+                                                        borderRadius: 4,
+                                                        wordBreak: 'break-word',
+                                                    }}
+                                                >
+                                                    {ex.mongo}
+                                                </div>
                                             </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 10,
-                                                    color: THEME.textDim,
-                                                    fontWeight: 600,
-                                                    marginBottom: 6,
-                                                }}
-                                            >
-                                                MONGODB QUERY
-                                            </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 10,
-                                                    fontFamily: THEME.fontMono,
-                                                    color: THEME.success,
-                                                    background: THEME.glass,
-                                                    padding: 8,
-                                                    borderRadius: 4,
-                                                    wordBreak: 'break-word',
-                                                }}
-                                            >
-                                                {ex.mongo}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                     </div>
                                 </Panel>
                             </div>
@@ -3339,11 +3730,29 @@ function DemoMongoDBTab({ tabId }) {
                     case 'schemacompare':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="24" label="FIELDS COMPARED" subtitle="Across collections" color="#4facfe" />
-                                    <ExecStatCard value="18" label="MATCHES" subtitle="Identical fields" color="#00ffaa" />
-                                    <ExecStatCard value="4" label="DIFFERENCES" subtitle="Type mismatches" color="#ffcc00" />
-                                    <ExecStatCard value="2" label="MISSING" subtitle="Not in target" color="#ff4466" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="24"
+                                        label="FIELDS COMPARED"
+                                        subtitle="Across collections"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="18"
+                                        label="MATCHES"
+                                        subtitle="Identical fields"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="4"
+                                        label="DIFFERENCES"
+                                        subtitle="Type mismatches"
+                                        color="#d97706"
+                                    />
+                                    <ExecStatCard value="2" label="MISSING" subtitle="Not in target" color="#dc2626" />
                                 </div>
                                 <Panel title="Schema Comparison Details" icon={Compass} accentColor={THEME.primary}>
                                     <DataTable
@@ -3355,11 +3764,41 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'severity', label: 'Severity' },
                                         ]}
                                         rows={[
-                                            { collection: 'users', prod: '45F / 2.3M', staging: '44F / 2.3M', diff_type: 'Field Missing', severity: 'Medium' },
-                                            { collection: 'orders', prod: '38F / 8.1M', staging: '38F / 8.1M', diff_type: 'Type Mismatch', severity: 'High' },
-                                            { collection: 'products', prod: '62F / 1.4M', staging: '63F / 1.4M', diff_type: 'New Field', severity: 'Low' },
-                                            { collection: 'reviews', prod: '28F / 5.2M', staging: '26F / 5.2M', diff_type: 'Field Missing', severity: 'Medium' },
-                                            { collection: 'inventory', prod: '51F / 3.8M', staging: '51F / 3.8M', diff_type: 'Index Missing', severity: 'High' },
+                                            {
+                                                collection: 'users',
+                                                prod: '45F / 2.3M',
+                                                staging: '44F / 2.3M',
+                                                diff_type: 'Field Missing',
+                                                severity: 'Medium',
+                                            },
+                                            {
+                                                collection: 'orders',
+                                                prod: '38F / 8.1M',
+                                                staging: '38F / 8.1M',
+                                                diff_type: 'Type Mismatch',
+                                                severity: 'High',
+                                            },
+                                            {
+                                                collection: 'products',
+                                                prod: '62F / 1.4M',
+                                                staging: '63F / 1.4M',
+                                                diff_type: 'New Field',
+                                                severity: 'Low',
+                                            },
+                                            {
+                                                collection: 'reviews',
+                                                prod: '28F / 5.2M',
+                                                staging: '26F / 5.2M',
+                                                diff_type: 'Field Missing',
+                                                severity: 'Medium',
+                                            },
+                                            {
+                                                collection: 'inventory',
+                                                prod: '51F / 3.8M',
+                                                staging: '51F / 3.8M',
+                                                diff_type: 'Index Missing',
+                                                severity: 'High',
+                                            },
                                         ]}
                                         accentColor={THEME.primary}
                                     />
@@ -3369,11 +3808,29 @@ function DemoMongoDBTab({ tabId }) {
                     case 'geospatial':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="3" label="GEO INDEXES" subtitle="2dsphere" color="#4facfe" />
-                                    <ExecStatCard value="1,240" label="GEO QUERIES/HR" subtitle="+8% trend" color="#00ffaa" />
-                                    <ExecStatCard value="2.4 km" label="AVG DISTANCE" subtitle="Avg search radius" color="#00e5ff" />
-                                    <ExecStatCard value="89%" label="COVERAGE" subtitle="Indexed area" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="3" label="GEO INDEXES" subtitle="2dsphere" color="#0284c7" />
+                                    <ExecStatCard
+                                        value="1,240"
+                                        label="GEO QUERIES/HR"
+                                        subtitle="+8% trend"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="2.4 km"
+                                        label="AVG DISTANCE"
+                                        subtitle="Avg search radius"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard
+                                        value="89%"
+                                        label="COVERAGE"
+                                        subtitle="Indexed area"
+                                        color="#d97706"
+                                    />
                                 </div>
 
                                 <Panel title="Query Distribution" icon={BarChart3} accentColor={THEME.success}>
@@ -3419,11 +3876,19 @@ function DemoMongoDBTab({ tabId }) {
                     case 'aihints':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="12" label="ACTIVE HINTS" subtitle="+3 new" color="#4facfe" />
-                                    <ExecStatCard value="8" label="APPLIED" subtitle="This week" color="#00ffaa" />
-                                    <ExecStatCard value="2" label="DISMISSED" subtitle="Low priority" color="#ffcc00" />
-                                    <ExecStatCard value="+24%" label="IMPACT" subtitle="Performance gain" color="#00ffaa" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="12" label="ACTIVE HINTS" subtitle="+3 new" color="#0284c7" />
+                                    <ExecStatCard value="8" label="APPLIED" subtitle="This week" color="#16a34a" />
+                                    <ExecStatCard value="2" label="DISMISSED" subtitle="Low priority" color="#d97706" />
+                                    <ExecStatCard
+                                        value="+24%"
+                                        label="IMPACT"
+                                        subtitle="Performance gain"
+                                        color="#16a34a"
+                                    />
                                 </div>
                                 <Panel title="AI Hints & Recommendations" icon={Brain} accentColor={THEME.ai}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -3462,20 +3927,22 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Hint Effectiveness" icon={TrendingUp} accentColor={THEME.ai}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <AreaChart data={[
-                                            { time: '00:00', applied: 2, improvement: 12 },
-                                            { time: '02:00', applied: 3, improvement: 15 },
-                                            { time: '04:00', applied: 5, improvement: 22 },
-                                            { time: '06:00', applied: 7, improvement: 28 },
-                                            { time: '08:00', applied: 8, improvement: 35 },
-                                            { time: '10:00', applied: 10, improvement: 42 },
-                                            { time: '12:00', applied: 12, improvement: 48 },
-                                            { time: '14:00', applied: 15, improvement: 56 },
-                                            { time: '16:00', applied: 18, improvement: 62 },
-                                            { time: '18:00', applied: 22, improvement: 68 },
-                                            { time: '20:00', applied: 28, improvement: 74 },
-                                            { time: '22:00', applied: 34, improvement: 82 },
-                                        ]}>
+                                        <AreaChart
+                                            data={[
+                                                { time: '00:00', applied: 2, improvement: 12 },
+                                                { time: '02:00', applied: 3, improvement: 15 },
+                                                { time: '04:00', applied: 5, improvement: 22 },
+                                                { time: '06:00', applied: 7, improvement: 28 },
+                                                { time: '08:00', applied: 8, improvement: 35 },
+                                                { time: '10:00', applied: 10, improvement: 42 },
+                                                { time: '12:00', applied: 12, improvement: 48 },
+                                                { time: '14:00', applied: 15, improvement: 56 },
+                                                { time: '16:00', applied: 18, improvement: 62 },
+                                                { time: '18:00', applied: 22, improvement: 68 },
+                                                { time: '20:00', applied: 28, improvement: 74 },
+                                                { time: '22:00', applied: 34, improvement: 82 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-aihints-grad1" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.ai} stopOpacity={0.3} />
@@ -3516,10 +3983,30 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'status', label: 'Status', width: '25%' },
                                         ]}
                                         rows={[
-                                            { category: 'Index Optimization', count: '8', avgConfidence: '92%', status: 'Active' },
-                                            { category: 'Query Planning', count: '6', avgConfidence: '88%', status: 'Active' },
-                                            { category: 'Memory Usage', count: '4', avgConfidence: '81%', status: 'Pending' },
-                                            { category: 'Replication', count: '2', avgConfidence: '79%', status: 'Applied' },
+                                            {
+                                                category: 'Index Optimization',
+                                                count: '8',
+                                                avgConfidence: '92%',
+                                                status: 'Active',
+                                            },
+                                            {
+                                                category: 'Query Planning',
+                                                count: '6',
+                                                avgConfidence: '88%',
+                                                status: 'Active',
+                                            },
+                                            {
+                                                category: 'Memory Usage',
+                                                count: '4',
+                                                avgConfidence: '81%',
+                                                status: 'Pending',
+                                            },
+                                            {
+                                                category: 'Replication',
+                                                count: '2',
+                                                avgConfidence: '79%',
+                                                status: 'Applied',
+                                            },
                                         ]}
                                         accentColor={THEME.ai}
                                     />
@@ -3530,11 +4017,19 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Cluster Comparison</h1>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="3" label="CLUSTERS" subtitle="Monitored" color="#4facfe" />
-                                    <ExecStatCard value="99.2%" label="SIMILARITY" subtitle="Config match" color="#00ffaa" />
-                                    <ExecStatCard value="2" label="DIFFERENCES" subtitle="Found" color="#ffcc00" />
-                                    <ExecStatCard value="0" label="CRITICAL" subtitle="Issues" color="#00ffaa" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="3" label="CLUSTERS" subtitle="Monitored" color="#0284c7" />
+                                    <ExecStatCard
+                                        value="99.2%"
+                                        label="SIMILARITY"
+                                        subtitle="Config match"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard value="2" label="DIFFERENCES" subtitle="Found" color="#d97706" />
+                                    <ExecStatCard value="0" label="CRITICAL" subtitle="Issues" color="#16a34a" />
                                 </div>
 
                                 <Panel title="Comparison Data" icon={GitBranch} accentColor={THEME.primary}>
@@ -3576,21 +4071,51 @@ function DemoMongoDBTab({ tabId }) {
                     case 'historicaltrends':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="2.4M" label="DATA POINTS" subtitle="Collected" color="#4facfe" />
-                                    <ExecStatCard value="90d" label="TIME RANGE" subtitle="Historical" color="#00e5ff" />
-                                    <ExecStatCard value="7" label="ANOMALIES" subtitle="Detected" color="#ff4466" />
-                                    <ExecStatCard value="+12%/mo" label="GROWTH RATE" subtitle="Trending up" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="2.4M"
+                                        label="DATA POINTS"
+                                        subtitle="Collected"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="90d"
+                                        label="TIME RANGE"
+                                        subtitle="Historical"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard value="7" label="ANOMALIES" subtitle="Detected" color="#dc2626" />
+                                    <ExecStatCard
+                                        value="+12%/mo"
+                                        label="GROWTH RATE"
+                                        subtitle="Trending up"
+                                        color="#d97706"
+                                    />
                                 </div>
                                 <Panel title="30-Day Trends" icon={TrendingUp} accentColor={THEME.success}>
                                     <ResponsiveContainer width="100%" height={280}>
                                         <AreaChart data={demoData.historicalTrends}>
                                             <defs>
-                                                <linearGradient id="mongo-historical-latency" x1="0" y1="0" x2="0" y2="1">
+                                                <linearGradient
+                                                    id="mongo-historical-latency"
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
                                                     <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.3} />
                                                     <stop offset="95%" stopColor={THEME.warning} stopOpacity={0} />
                                                 </linearGradient>
-                                                <linearGradient id="mongo-historical-throughput" x1="0" y1="0" x2="0" y2="1">
+                                                <linearGradient
+                                                    id="mongo-historical-throughput"
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
                                                     <stop offset="5%" stopColor={THEME.success} stopOpacity={0.2} />
                                                     <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
                                                 </linearGradient>
@@ -3625,11 +4150,19 @@ function DemoMongoDBTab({ tabId }) {
                     case 'perfadvisor':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="8" label="RECOMMENDATIONS" subtitle="Active" color="#4facfe" />
-                                    <ExecStatCard value="2" label="CRITICAL" subtitle="Urgent" color="#ff4466" />
-                                    <ExecStatCard value="+34%" label="EST. IMPROVEMENT" subtitle="If applied" color="#00ffaa" />
-                                    <ExecStatCard value="5" label="APPLIED" subtitle="This month" color="#00e5ff" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="8" label="RECOMMENDATIONS" subtitle="Active" color="#0284c7" />
+                                    <ExecStatCard value="2" label="CRITICAL" subtitle="Urgent" color="#dc2626" />
+                                    <ExecStatCard
+                                        value="+34%"
+                                        label="EST. IMPROVEMENT"
+                                        subtitle="If applied"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard value="5" label="APPLIED" subtitle="This month" color="#0ea5e9" />
                                 </div>
                                 <Panel title="Performance Advisor v2" icon={Lightbulb} accentColor={THEME.warning}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -3672,15 +4205,17 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Performance Score Trend" icon={TrendingUp} accentColor={THEME.warning}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <LineChart data={[
-                                            { day: 'Mon', score: 68 },
-                                            { day: 'Tue', score: 70 },
-                                            { day: 'Wed', score: 72 },
-                                            { day: 'Thu', score: 73 },
-                                            { day: 'Fri', score: 75 },
-                                            { day: 'Sat', score: 76 },
-                                            { day: 'Sun', score: 76 },
-                                        ]}>
+                                        <LineChart
+                                            data={[
+                                                { day: 'Mon', score: 68 },
+                                                { day: 'Tue', score: 70 },
+                                                { day: 'Wed', score: 72 },
+                                                { day: 'Thu', score: 73 },
+                                                { day: 'Fri', score: 75 },
+                                                { day: 'Sat', score: 76 },
+                                                { day: 'Sun', score: 76 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-perfadvisor-grad1" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.3} />
@@ -3691,7 +4226,13 @@ function DemoMongoDBTab({ tabId }) {
                                             <XAxis dataKey="day" stroke={THEME.textDim} />
                                             <YAxis stroke={THEME.textDim} domain={[60, 100]} />
                                             <Tooltip content={<ChartTip />} />
-                                            <Line type="monotone" dataKey="score" stroke={THEME.warning} dot={true} strokeWidth={2} />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="score"
+                                                stroke={THEME.warning}
+                                                dot={true}
+                                                strokeWidth={2}
+                                            />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </Panel>
@@ -3704,10 +4245,30 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'status', label: 'Status', width: '20%' },
                                         ]}
                                         rows={[
-                                            { date: 'Mar 24', action: 'Add composite index on orders', impact: '+12 points', status: 'Applied' },
-                                            { date: 'Mar 22', action: 'Optimize write concern config', impact: '+8 points', status: 'Applied' },
-                                            { date: 'Mar 20', action: 'Enable document validation', impact: '+6 points', status: 'Pending' },
-                                            { date: 'Mar 18', action: 'Increase journal cache size', impact: '+5 points', status: 'Applied' },
+                                            {
+                                                date: 'Mar 24',
+                                                action: 'Add composite index on orders',
+                                                impact: '+12 points',
+                                                status: 'Applied',
+                                            },
+                                            {
+                                                date: 'Mar 22',
+                                                action: 'Optimize write concern config',
+                                                impact: '+8 points',
+                                                status: 'Applied',
+                                            },
+                                            {
+                                                date: 'Mar 20',
+                                                action: 'Enable document validation',
+                                                impact: '+6 points',
+                                                status: 'Pending',
+                                            },
+                                            {
+                                                date: 'Mar 18',
+                                                action: 'Increase journal cache size',
+                                                impact: '+5 points',
+                                                status: 'Applied',
+                                            },
                                         ]}
                                         accentColor={THEME.warning}
                                     />
@@ -3717,63 +4278,73 @@ function DemoMongoDBTab({ tabId }) {
                     case 'tracecorrelator':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="24" label="ACTIVE TRACES" subtitle="Running" color="#4facfe" />
-                                    <ExecStatCard value="84ms" label="AVG DURATION" subtitle="P50" color="#00ffaa" />
-                                    <ExecStatCard value="2.1%" label="ERROR RATE" subtitle="Last 24h" color="#ff4466" />
-                                    <ExecStatCard value="1,240/s" label="THROUGHPUT" subtitle="Current" color="#00e5ff" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="24" label="ACTIVE TRACES" subtitle="Running" color="#0284c7" />
+                                    <ExecStatCard value="84ms" label="AVG DURATION" subtitle="P50" color="#16a34a" />
+                                    <ExecStatCard value="2.1%" label="ERROR RATE" subtitle="Last 24h" color="#dc2626" />
+                                    <ExecStatCard
+                                        value="1,240/s"
+                                        label="THROUGHPUT"
+                                        subtitle="Current"
+                                        color="#0ea5e9"
+                                    />
                                 </div>
                                 <Panel title="Trace Correlator" icon={Radio} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                    {demoData.traceCorrelations.map((trace, i) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                padding: 12,
-                                                background: THEME.glass,
-                                                borderRadius: 6,
-                                                border: `1px solid ${THEME.glassBorder}`,
-                                            }}
-                                        >
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        {demoData.traceCorrelations.map((trace, i) => (
                                             <div
+                                                key={i}
                                                 style={{
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    marginBottom: 8,
+                                                    padding: 12,
+                                                    background: THEME.glass,
+                                                    borderRadius: 6,
+                                                    border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
-                                                <span style={{ fontWeight: 600, fontFamily: THEME.fontMono }}>
-                                                    {trace.trace_id}
-                                                </span>
-                                                <span style={{ color: THEME.textMuted }}>{trace.duration}ms</span>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        marginBottom: 8,
+                                                    }}
+                                                >
+                                                    <span style={{ fontWeight: 600, fontFamily: THEME.fontMono }}>
+                                                        {trace.trace_id}
+                                                    </span>
+                                                    <span style={{ color: THEME.textMuted }}>{trace.duration}ms</span>
+                                                </div>
+                                                <div style={{ fontSize: 11, marginBottom: 6 }}>
+                                                    Operation: {trace.operation}
+                                                </div>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                                    {trace.stages.map((s, si) => (
+                                                        <div
+                                                            key={si}
+                                                            style={{
+                                                                fontSize: 9,
+                                                                padding: '3px 8px',
+                                                                background:
+                                                                    s === trace.bottleneck
+                                                                        ? `${THEME.danger}20`
+                                                                        : `${THEME.primary}15`,
+                                                                borderRadius: 4,
+                                                                color:
+                                                                    s === trace.bottleneck
+                                                                        ? THEME.danger
+                                                                        : THEME.primary,
+                                                                fontWeight: s === trace.bottleneck ? 600 : 500,
+                                                            }}
+                                                        >
+                                                            {s}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                            <div style={{ fontSize: 11, marginBottom: 6 }}>
-                                                Operation: {trace.operation}
-                                            </div>
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                                {trace.stages.map((s, si) => (
-                                                    <div
-                                                        key={si}
-                                                        style={{
-                                                            fontSize: 9,
-                                                            padding: '3px 8px',
-                                                            background:
-                                                                s === trace.bottleneck
-                                                                    ? `${THEME.danger}20`
-                                                                    : `${THEME.primary}15`,
-                                                            borderRadius: 4,
-                                                            color:
-                                                                s === trace.bottleneck ? THEME.danger : THEME.primary,
-                                                            fontWeight: s === trace.bottleneck ? 600 : 500,
-                                                        }}
-                                                    >
-                                                        {s}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
                                 </Panel>
                             </div>
                         );
@@ -3789,11 +4360,34 @@ function DemoMongoDBTab({ tabId }) {
                     case 'replicaset':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="0.8s" label="REPLICATION LAG" subtitle="Below threshold" color="#00ffaa" />
-                                    <ExecStatCard value="48h" label="OPLOG WINDOW" subtitle="Sufficient" color="#4facfe" />
-                                    <ExecStatCard value="0" label="ELECTIONS (7D)" subtitle="Stable topology" color="#00ffaa" />
-                                    <ExecStatCard value="Yes" label="FAILOVER READY" subtitle="2 eligible" color="#00ffaa" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="0.8s"
+                                        label="REPLICATION LAG"
+                                        subtitle="Below threshold"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="48h"
+                                        label="OPLOG WINDOW"
+                                        subtitle="Sufficient"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="0"
+                                        label="ELECTIONS (7D)"
+                                        subtitle="Stable topology"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="Yes"
+                                        label="FAILOVER READY"
+                                        subtitle="2 eligible"
+                                        color="#16a34a"
+                                    />
                                 </div>
                                 <Panel title="Replica Set & Failover" icon={GitBranch} accentColor={THEME.success}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -3859,22 +4453,27 @@ function DemoMongoDBTab({ tabId }) {
                     case 'sharding':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="3" label="SHARDS" subtitle="Active" color="#4facfe" />
-                                    <ExecStatCard value="284" label="CHUNKS" subtitle="Distributed" color="#00ffaa" />
-                                    <ExecStatCard value="Active" label="BALANCER" subtitle="Running" color="#00ffaa" />
-                                    <ExecStatCard value="12" label="MIGRATIONS" subtitle="Last 24h" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="3" label="SHARDS" subtitle="Active" color="#0284c7" />
+                                    <ExecStatCard value="284" label="CHUNKS" subtitle="Distributed" color="#16a34a" />
+                                    <ExecStatCard value="Active" label="BALANCER" subtitle="Running" color="#16a34a" />
+                                    <ExecStatCard value="12" label="MIGRATIONS" subtitle="Last 24h" color="#d97706" />
                                 </div>
                                 <Panel title="Chunk Distribution" icon={BarChart3} accentColor={THEME.primary}>
                                     <ResponsiveContainer width="100%" height={260}>
-                                        <BarChart data={[
-                                            { shard: 'Shard 1', chunks: 215, balance: 0 },
-                                            { shard: 'Shard 2', chunks: 218, balance: 1 },
-                                            { shard: 'Shard 3', chunks: 210, balance: -2 },
-                                            { shard: 'Shard 4', chunks: 220, balance: 3 },
-                                            { shard: 'Shard 5', chunks: 212, balance: -1 },
-                                            { shard: 'Shard 6', chunks: 209, balance: -1 },
-                                        ]}>
+                                        <BarChart
+                                            data={[
+                                                { shard: 'Shard 1', chunks: 215, balance: 0 },
+                                                { shard: 'Shard 2', chunks: 218, balance: 1 },
+                                                { shard: 'Shard 3', chunks: 210, balance: -2 },
+                                                { shard: 'Shard 4', chunks: 220, balance: 3 },
+                                                { shard: 'Shard 5', chunks: 212, balance: -1 },
+                                                { shard: 'Shard 6', chunks: 209, balance: -1 },
+                                            ]}
+                                        >
                                             <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
                                             <XAxis dataKey="shard" stroke={THEME.textDim} />
                                             <YAxis stroke={THEME.textDim} />
@@ -3904,11 +4503,29 @@ function DemoMongoDBTab({ tabId }) {
                     case 'oplog':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="2.4 GB" label="OPLOG SIZE" subtitle="Configured" color="#4facfe" />
-                                    <ExecStatCard value="48h" label="WINDOW" subtitle="Retention" color="#00ffaa" />
-                                    <ExecStatCard value="1,240/s" label="ENTRIES/SEC" subtitle="Current" color="#00e5ff" />
-                                    <ExecStatCard value="47h ago" label="OLDEST ENTRY" subtitle="Within window" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="2.4 GB"
+                                        label="OPLOG SIZE"
+                                        subtitle="Configured"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard value="48h" label="WINDOW" subtitle="Retention" color="#16a34a" />
+                                    <ExecStatCard
+                                        value="1,240/s"
+                                        label="ENTRIES/SEC"
+                                        subtitle="Current"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard
+                                        value="47h ago"
+                                        label="OLDEST ENTRY"
+                                        subtitle="Within window"
+                                        color="#d97706"
+                                    />
                                 </div>
                                 <Panel title="Oplog Tail" icon={Activity} accentColor={THEME.success}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -3952,20 +4569,22 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Oplog Growth" icon={TrendingUp} accentColor={THEME.success}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <AreaChart data={[
-                                            { hour: '00:00', size: 35.2 },
-                                            { hour: '02:00', size: 36.8 },
-                                            { hour: '04:00', size: 38.1 },
-                                            { hour: '06:00', size: 39.6 },
-                                            { hour: '08:00', size: 41.2 },
-                                            { hour: '10:00', size: 42.8 },
-                                            { hour: '12:00', size: 44.1 },
-                                            { hour: '14:00', size: 45.4 },
-                                            { hour: '16:00', size: 46.2 },
-                                            { hour: '18:00', size: 47.1 },
-                                            { hour: '20:00', size: 47.8 },
-                                            { hour: '22:00', size: 48.2 },
-                                        ]}>
+                                        <AreaChart
+                                            data={[
+                                                { hour: '00:00', size: 35.2 },
+                                                { hour: '02:00', size: 36.8 },
+                                                { hour: '04:00', size: 38.1 },
+                                                { hour: '06:00', size: 39.6 },
+                                                { hour: '08:00', size: 41.2 },
+                                                { hour: '10:00', size: 42.8 },
+                                                { hour: '12:00', size: 44.1 },
+                                                { hour: '14:00', size: 45.4 },
+                                                { hour: '16:00', size: 46.2 },
+                                                { hour: '18:00', size: 47.1 },
+                                                { hour: '20:00', size: 47.8 },
+                                                { hour: '22:00', size: 48.2 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-oplog-grad1" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
@@ -3994,10 +4613,30 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'namespace', label: 'Namespace', width: '25%' },
                                         ]}
                                         rows={[
-                                            { operation: 'insert', countPerHr: '4200', avgSize: '2.1 KB', namespace: 'production.*' },
-                                            { operation: 'update', countPerHr: '2840', avgSize: '1.8 KB', namespace: 'production.*' },
-                                            { operation: 'delete', countPerHr: '420', avgSize: '0.5 KB', namespace: 'production.*' },
-                                            { operation: 'command', countPerHr: '180', avgSize: '0.3 KB', namespace: 'admin.*' },
+                                            {
+                                                operation: 'insert',
+                                                countPerHr: '4200',
+                                                avgSize: '2.1 KB',
+                                                namespace: 'production.*',
+                                            },
+                                            {
+                                                operation: 'update',
+                                                countPerHr: '2840',
+                                                avgSize: '1.8 KB',
+                                                namespace: 'production.*',
+                                            },
+                                            {
+                                                operation: 'delete',
+                                                countPerHr: '420',
+                                                avgSize: '0.5 KB',
+                                                namespace: 'production.*',
+                                            },
+                                            {
+                                                operation: 'command',
+                                                countPerHr: '180',
+                                                avgSize: '0.3 KB',
+                                                namespace: 'admin.*',
+                                            },
                                         ]}
                                         accentColor={THEME.success}
                                     />
@@ -4016,11 +4655,19 @@ function DemoMongoDBTab({ tabId }) {
                     case 'alerts':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="12" label="ACTIVE RULES" subtitle="Configured" color="#00ffaa" />
-                                    <ExecStatCard value="7" label="ALERTS FIRED" subtitle="Last 24h" color="#ff4466" />
-                                    <ExecStatCard value="3" label="CHANNELS" subtitle="Connected" color="#4facfe" />
-                                    <ExecStatCard value="12" label="SUPPRESSED" subtitle="Last 24h" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="12"
+                                        label="ACTIVE RULES"
+                                        subtitle="Configured"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard value="7" label="ALERTS FIRED" subtitle="Last 24h" color="#dc2626" />
+                                    <ExecStatCard value="3" label="CHANNELS" subtitle="Connected" color="#0284c7" />
+                                    <ExecStatCard value="12" label="SUPPRESSED" subtitle="Last 24h" color="#d97706" />
                                 </div>
 
                                 <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.danger}>
@@ -4043,11 +4690,29 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Prometheus Export</h1>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="Active" label="ENDPOINT STATUS" subtitle="/metrics" color="#00ffaa" />
-                                    <ExecStatCard value="12s ago" label="LAST SCRAPED" subtitle="On schedule" color="#4facfe" />
-                                    <ExecStatCard value="131" label="METRICS EXPORTED" subtitle="Total" color="#00e5ff" />
-                                    <ExecStatCard value="3" label="TARGETS" subtitle="Registered" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="Active"
+                                        label="ENDPOINT STATUS"
+                                        subtitle="/metrics"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="12s ago"
+                                        label="LAST SCRAPED"
+                                        subtitle="On schedule"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="131"
+                                        label="METRICS EXPORTED"
+                                        subtitle="Total"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard value="3" label="TARGETS" subtitle="Registered" color="#d97706" />
                                 </div>
 
                                 <Panel title="Metrics Ingestion" icon={Activity} accentColor={THEME.primary}>
@@ -4088,11 +4753,29 @@ function DemoMongoDBTab({ tabId }) {
                     case 'auth':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="2" label="SSO PROVIDERS" subtitle="Configured" color="#4facfe" />
-                                    <ExecStatCard value="142" label="ACTIVE SESSIONS" subtitle="Current" color="#00ffaa" />
-                                    <ExecStatCard value="89%" label="MFA ENABLED" subtitle="Compliance" color="#00e5ff" />
-                                    <ExecStatCard value="3" label="FAILED LOGINS" subtitle="Last 24h" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="2"
+                                        label="SSO PROVIDERS"
+                                        subtitle="Configured"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="142"
+                                        label="ACTIVE SESSIONS"
+                                        subtitle="Current"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="89%"
+                                        label="MFA ENABLED"
+                                        subtitle="Compliance"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard value="3" label="FAILED LOGINS" subtitle="Last 24h" color="#d97706" />
                                 </div>
                                 <Panel title="SSO / Auth Configuration" icon={Shield} accentColor={THEME.primary}>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
@@ -4141,16 +4824,18 @@ function DemoMongoDBTab({ tabId }) {
                                 </Panel>
                                 <Panel title="Auth Events" icon={Activity} accentColor={THEME.primary}>
                                     <ResponsiveContainer width="100%" height={220}>
-                                        <BarChart data={[
-                                            { hour: '08:00', success: 142, failure: 2 },
-                                            { hour: '10:00', success: 158, failure: 1 },
-                                            { hour: '12:00', success: 174, failure: 3 },
-                                            { hour: '14:00', success: 168, failure: 2 },
-                                            { hour: '16:00', success: 185, failure: 1 },
-                                            { hour: '18:00', success: 192, failure: 2 },
-                                            { hour: '20:00', success: 178, failure: 0 },
-                                            { hour: '22:00', success: 156, failure: 1 },
-                                        ]}>
+                                        <BarChart
+                                            data={[
+                                                { hour: '08:00', success: 142, failure: 2 },
+                                                { hour: '10:00', success: 158, failure: 1 },
+                                                { hour: '12:00', success: 174, failure: 3 },
+                                                { hour: '14:00', success: 168, failure: 2 },
+                                                { hour: '16:00', success: 185, failure: 1 },
+                                                { hour: '18:00', success: 192, failure: 2 },
+                                                { hour: '20:00', success: 178, failure: 0 },
+                                                { hour: '22:00', success: 156, failure: 1 },
+                                            ]}
+                                        >
                                             <defs>
                                                 <linearGradient id="mdb-auth-grad1" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={THEME.success} stopOpacity={0.8} />
@@ -4180,10 +4865,34 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'ipAddress', label: 'IP Address', width: '25%' },
                                         ]}
                                         rows={[
-                                            { time: '22:42:18', user: 'alex.chen@company.com', action: 'Login with MFA', status: 'Success', ipAddress: '192.168.1.42' },
-                                            { time: '22:38:45', user: 'sarah.johnson@company.com', action: 'Login', status: 'Success', ipAddress: '10.0.0.8' },
-                                            { time: '22:35:22', user: 'failed.user@company.com', action: 'Login attempt', status: 'Failed', ipAddress: '192.168.2.15' },
-                                            { time: '22:30:10', user: 'mike.garcia@company.com', action: 'Logout', status: 'Success', ipAddress: '10.0.0.22' },
+                                            {
+                                                time: '22:42:18',
+                                                user: 'alex.chen@company.com',
+                                                action: 'Login with MFA',
+                                                status: 'Success',
+                                                ipAddress: '192.168.1.42',
+                                            },
+                                            {
+                                                time: '22:38:45',
+                                                user: 'sarah.johnson@company.com',
+                                                action: 'Login',
+                                                status: 'Success',
+                                                ipAddress: '10.0.0.8',
+                                            },
+                                            {
+                                                time: '22:35:22',
+                                                user: 'failed.user@company.com',
+                                                action: 'Login attempt',
+                                                status: 'Failed',
+                                                ipAddress: '192.168.2.15',
+                                            },
+                                            {
+                                                time: '22:30:10',
+                                                user: 'mike.garcia@company.com',
+                                                action: 'Logout',
+                                                status: 'Success',
+                                                ipAddress: '10.0.0.22',
+                                            },
                                         ]}
                                         accentColor={THEME.primary}
                                     />
@@ -4194,11 +4903,24 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Atlas API Bridge</h1>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="2,840" label="API CALLS" subtitle="Last 24h" color="#4facfe" />
-                                    <ExecStatCard value="84ms" label="AVG LATENCY" subtitle="Response" color="#00ffaa" />
-                                    <ExecStatCard value="0.2%" label="ERROR RATE" subtitle="Healthy" color="#00ffaa" />
-                                    <ExecStatCard value="42%" label="QUOTA USED" subtitle="Of daily limit" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="2,840" label="API CALLS" subtitle="Last 24h" color="#0284c7" />
+                                    <ExecStatCard
+                                        value="84ms"
+                                        label="AVG LATENCY"
+                                        subtitle="Response"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard value="0.2%" label="ERROR RATE" subtitle="Healthy" color="#16a34a" />
+                                    <ExecStatCard
+                                        value="42%"
+                                        label="QUOTA USED"
+                                        subtitle="Of daily limit"
+                                        color="#d97706"
+                                    />
                                 </div>
 
                                 <Panel title="API Usage" icon={Activity} accentColor={THEME.primary}>
@@ -4251,11 +4973,19 @@ function DemoMongoDBTab({ tabId }) {
                     case 'dashboards':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="8" label="DASHBOARDS" subtitle="Created" color="#4facfe" />
-                                    <ExecStatCard value="24" label="WIDGETS" subtitle="Total" color="#00ffaa" />
-                                    <ExecStatCard value="3" label="SHARED" subtitle="With team" color="#00e5ff" />
-                                    <ExecStatCard value="2h ago" label="LAST VIEWED" subtitle="Recent" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="8" label="DASHBOARDS" subtitle="Created" color="#0284c7" />
+                                    <ExecStatCard value="24" label="WIDGETS" subtitle="Total" color="#16a34a" />
+                                    <ExecStatCard value="3" label="SHARED" subtitle="With team" color="#0ea5e9" />
+                                    <ExecStatCard
+                                        value="2h ago"
+                                        label="LAST VIEWED"
+                                        subtitle="Recent"
+                                        color="#d97706"
+                                    />
                                 </div>
                                 <Panel title="Dashboard Inventory" icon={BarChart3} accentColor={THEME.primary}>
                                     <DataTable
@@ -4281,11 +5011,19 @@ function DemoMongoDBTab({ tabId }) {
                     case 'reports':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="24" label="REPORTS" subtitle="Generated" color="#4facfe" />
-                                    <ExecStatCard value="8" label="SCHEDULED" subtitle="Active" color="#00ffaa" />
-                                    <ExecStatCard value="12" label="TEMPLATES" subtitle="Available" color="#00e5ff" />
-                                    <ExecStatCard value="2h ago" label="LAST RUN" subtitle="On schedule" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="24" label="REPORTS" subtitle="Generated" color="#0284c7" />
+                                    <ExecStatCard value="8" label="SCHEDULED" subtitle="Active" color="#16a34a" />
+                                    <ExecStatCard value="12" label="TEMPLATES" subtitle="Available" color="#0ea5e9" />
+                                    <ExecStatCard
+                                        value="2h ago"
+                                        label="LAST RUN"
+                                        subtitle="On schedule"
+                                        color="#d97706"
+                                    />
                                 </div>
                                 <Panel title="Report History" icon={FileCog} accentColor={THEME.primary}>
                                     <DataTable
@@ -4297,11 +5035,41 @@ function DemoMongoDBTab({ tabId }) {
                                             { key: 'size', label: 'Size', align: 'right' },
                                         ]}
                                         rows={[
-                                            { name: 'daily_operations', generated: '2 hours ago', recipients: '12', format: 'PDF', size: '2.3 MB' },
-                                            { name: 'weekly_summary', generated: '1 day ago', recipients: '28', format: 'HTML', size: '5.1 MB' },
-                                            { name: 'monthly_analysis', generated: '3 days ago', recipients: '15', format: 'Excel', size: '8.7 MB' },
-                                            { name: 'performance_audit', generated: '5 days ago', recipients: '6', format: 'PDF', size: '12.4 MB' },
-                                            { name: 'compliance_report', generated: '1 week ago', recipients: '34', format: 'HTML', size: '18.2 MB' },
+                                            {
+                                                name: 'daily_operations',
+                                                generated: '2 hours ago',
+                                                recipients: '12',
+                                                format: 'PDF',
+                                                size: '2.3 MB',
+                                            },
+                                            {
+                                                name: 'weekly_summary',
+                                                generated: '1 day ago',
+                                                recipients: '28',
+                                                format: 'HTML',
+                                                size: '5.1 MB',
+                                            },
+                                            {
+                                                name: 'monthly_analysis',
+                                                generated: '3 days ago',
+                                                recipients: '15',
+                                                format: 'Excel',
+                                                size: '8.7 MB',
+                                            },
+                                            {
+                                                name: 'performance_audit',
+                                                generated: '5 days ago',
+                                                recipients: '6',
+                                                format: 'PDF',
+                                                size: '12.4 MB',
+                                            },
+                                            {
+                                                name: 'compliance_report',
+                                                generated: '1 week ago',
+                                                recipients: '34',
+                                                format: 'HTML',
+                                                size: '18.2 MB',
+                                            },
                                         ]}
                                         accentColor={THEME.primary}
                                     />
@@ -4312,11 +5080,34 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Audit Log</h1>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="1,240" label="EVENTS (24H)" subtitle="Recorded" color="#4facfe" />
-                                    <ExecStatCard value="342" label="AUTH EVENTS" subtitle="Login/logout" color="#00ffaa" />
-                                    <ExecStatCard value="648" label="DATA ACCESS" subtitle="Read/write" color="#00e5ff" />
-                                    <ExecStatCard value="250" label="ADMIN ACTIONS" subtitle="Config changes" color="#ffcc00" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard
+                                        value="1,240"
+                                        label="EVENTS (24H)"
+                                        subtitle="Recorded"
+                                        color="#0284c7"
+                                    />
+                                    <ExecStatCard
+                                        value="342"
+                                        label="AUTH EVENTS"
+                                        subtitle="Login/logout"
+                                        color="#16a34a"
+                                    />
+                                    <ExecStatCard
+                                        value="648"
+                                        label="DATA ACCESS"
+                                        subtitle="Read/write"
+                                        color="#0ea5e9"
+                                    />
+                                    <ExecStatCard
+                                        value="250"
+                                        label="ADMIN ACTIONS"
+                                        subtitle="Config changes"
+                                        color="#d97706"
+                                    />
                                 </div>
 
                                 <Panel title="Event Volume" icon={Activity} accentColor={THEME.primary}>
@@ -4364,11 +5155,14 @@ function DemoMongoDBTab({ tabId }) {
                     case 'users':
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
-                                    <ExecStatCard value="4" label="TOTAL USERS" subtitle="Active" color="#4facfe" />
-                                    <ExecStatCard value="1" label="ADMINS" subtitle="Full access" color="#ffcc00" />
-                                    <ExecStatCard value="50%" label="MFA ENABLED" subtitle="2 of 4" color="#00ffaa" />
-                                    <ExecStatCard value="2h ago" label="LAST LOGIN" subtitle="Recent" color="#00e5ff" />
+                                <div
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    className="dpg-stagger"
+                                >
+                                    <ExecStatCard value="4" label="TOTAL USERS" subtitle="Active" color="#0284c7" />
+                                    <ExecStatCard value="1" label="ADMINS" subtitle="Full access" color="#d97706" />
+                                    <ExecStatCard value="50%" label="MFA ENABLED" subtitle="2 of 4" color="#16a34a" />
+                                    <ExecStatCard value="2h ago" label="LAST LOGIN" subtitle="Recent" color="#0ea5e9" />
                                 </div>
                                 <Panel title="User Management" icon={Users} accentColor={THEME.primary}>
                                     <DataTable
@@ -4406,15 +5200,15 @@ function DemoMongoDBTab({ tabId }) {
             accentColor={THEME.primary}
             titleIcon={Database}
             headerStats={[
-                { value: '419', label: 'CONNECTIONS', color: '#00ffaa' },
-                { value: '3,089', label: 'OPS/SEC', color: '#4facfe' },
-                { value: '26ms', label: 'P50 LATENCY', color: '#ffcc00' },
+                { value: '419', label: 'CONNECTIONS', color: '#16a34a' },
+                { value: '3,089', label: 'OPS/SEC', color: '#0284c7' },
+                { value: '26ms', label: 'P50 LATENCY', color: '#d97706' },
             ]}
             clusterOptions={['Local Dev', 'Production', 'Staging']}
             statusItems={[
                 { label: 'Cluster', value: 'Local Dev — rs0' },
                 { label: 'MongoDB', value: '7.0.4' },
-                { label: 'Nodes', value: '3/3 healthy', color: '#00ffaa' },
+                { label: 'Nodes', value: '3/3 healthy', color: '#16a34a' },
                 { label: 'Uptime', value: '18d 4h' },
                 { label: 'Last sync', value: new Date().toLocaleTimeString() },
             ]}

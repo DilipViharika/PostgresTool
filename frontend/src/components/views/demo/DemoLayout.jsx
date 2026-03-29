@@ -4,7 +4,7 @@ import { useNavigation } from '../../../context/NavigationContext.jsx';
 import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, ArrowLeft } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DemoLayout — "Obsidian Aurora" MongoDB Monitor design with:
+   DemoLayout — Clean Light Theme design with:
    - Top header bar (56px) with breadcrumb, title, stats, live badge, notification, avatar
    - Enhanced sidebar with logo, tier badge, active cluster dropdown, nav badges, bottom buttons
    - Bottom status bar (24px) with cluster/version info
@@ -24,6 +24,44 @@ import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, Ar
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const SIDEBAR_W = 240;
+
+/* ── Light theme color palette ── */
+const LT = {
+    bg: '#f0f4f8',
+    surface: '#ffffff',
+    surfaceHover: '#f8fafc',
+    sidebarBg: '#ffffff',
+    headerBg: 'rgba(255,255,255,0.92)',
+    footerBg: 'rgba(248,250,252,0.95)',
+    border: '#e2e8f0',
+    borderLight: '#f1f5f9',
+    borderAccent: 'rgba(14,165,233,0.15)',
+    text: '#0f172a',
+    textMuted: '#475569',
+    textDim: '#94a3b8',
+    primary: '#0ea5e9',
+    secondary: '#10b981',
+    success: '#16a34a',
+    danger: '#dc2626',
+    warning: '#d97706',
+    info: '#0284c7',
+    ai: '#7c3aed',
+    cardBg: '#ffffff',
+    cardBorder: '#e2e8f0',
+    cardShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
+    cardShadowHover: '0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)',
+    activeItemBg: 'rgba(14,165,233,0.08)',
+    activeItemBorder: '#0ea5e9',
+    hoverBg: 'rgba(14,165,233,0.04)',
+    badgeBg: 'rgba(14,165,233,0.1)',
+    badgeColor: '#0284c7',
+    liveBg: 'rgba(22,163,74,0.08)',
+    liveBorder: 'rgba(22,163,74,0.2)',
+    liveColor: '#16a34a',
+    buttonBg: '#f1f5f9',
+    buttonHoverBg: '#e2e8f0',
+    accentGradient: 'linear-gradient(135deg, #0ea5e9, #10b981)',
+};
 
 const DemoLayout = ({
     sections = [],
@@ -76,37 +114,11 @@ const DemoLayout = ({
                 height: '100%',
                 minHeight: '100vh',
                 position: 'relative',
-                background: '#020810',
+                background: LT.bg,
                 flexDirection: 'column',
             }}
         >
             <DemoStyles />
-
-            {/* Aurora gradient background */}
-            <div
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 0,
-                    pointerEvents: 'none',
-                    background:
-                        'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,229,255,0.055) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(79,172,254,0.05) 0%, transparent 60%), radial-gradient(ellipse 70% 40% at 50% 10%, rgba(0,255,170,0.04) 0%, transparent 50%)',
-                    animation: 'aurora-drift 18s ease-in-out infinite alternate',
-                }}
-            />
-
-            {/* Dot grid overlay */}
-            <div
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 0,
-                    pointerEvents: 'none',
-                    backgroundImage: 'radial-gradient(circle, rgba(79,172,254,0.07) 1px, transparent 1px)',
-                    backgroundSize: '38px 38px',
-                    opacity: 0.45,
-                }}
-            />
 
             {/* Main flex wrapper for sidebar + content */}
             <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
@@ -115,10 +127,8 @@ const DemoLayout = ({
                     style={{
                         width: SIDEBAR_W,
                         minWidth: SIDEBAR_W,
-                        background: 'rgba(3,9,22,0.93)',
-                        backdropFilter: 'blur(28px) saturate(1.2)',
-                        WebkitBackdropFilter: 'blur(28px) saturate(1.2)',
-                        borderRight: '1px solid rgba(255,255,255,0.055)',
+                        background: LT.sidebarBg,
+                        borderRight: `1px solid ${LT.border}`,
                         display: 'flex',
                         flexDirection: 'column',
                         overflowY: 'auto',
@@ -128,29 +138,15 @@ const DemoLayout = ({
                         alignSelf: 'flex-start',
                         height: '100vh',
                         zIndex: 2,
-                        position: 'relative',
+                        boxShadow: '1px 0 3px rgba(0,0,0,0.04)',
                     }}
                 >
-                    {/* Gradient edge glow on right */}
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            right: 0,
-                            width: 1,
-                            height: '100%',
-                            background:
-                                'linear-gradient(180deg, transparent, rgba(0,229,255,0.2) 25%, rgba(0,255,170,0.15) 60%, rgba(79,172,254,0.2) 80%, transparent)',
-                            pointerEvents: 'none',
-                        }}
-                    />
-
                     {/* Logo + Title Header */}
                     <div
                         style={{
                             padding: '16px 16px 12px',
-                            borderBottom: '1px solid rgba(255,255,255,0.055)',
-                            background: 'rgba(0,0,0,0.15)',
+                            borderBottom: `1px solid ${LT.border}`,
+                            background: LT.surface,
                             display: 'flex',
                             alignItems: 'center',
                             gap: 10,
@@ -165,8 +161,8 @@ const DemoLayout = ({
                                     width: 24,
                                     height: 24,
                                     borderRadius: 6,
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    background: 'rgba(255,255,255,0.04)',
+                                    border: `1px solid ${LT.border}`,
+                                    background: LT.buttonBg,
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -175,13 +171,13 @@ const DemoLayout = ({
                                     padding: 0,
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.background = LT.buttonHoverBg;
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                    e.currentTarget.style.background = LT.buttonBg;
                                 }}
                             >
-                                <ArrowLeft size={12} color={THEME.textMuted} />
+                                <ArrowLeft size={12} color={LT.textMuted} />
                             </button>
                         )}
                         {TitleIcon && (
@@ -193,19 +189,18 @@ const DemoLayout = ({
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    background: `linear-gradient(135deg, ${accentColor || THEME.primary}25, rgba(0,229,255,0.15))`,
-                                    border: `1px solid ${accentColor || THEME.primary}30`,
-                                    boxShadow: `0 0 16px ${accentColor || THEME.primary}30`,
+                                    background: `${accentColor || LT.primary}12`,
+                                    border: `1px solid ${accentColor || LT.primary}20`,
                                 }}
                             >
-                                <TitleIcon size={16} color={accentColor || THEME.primary} />
+                                <TitleIcon size={16} color={accentColor || LT.primary} />
                             </div>
                         )}
                         <span
                             style={{
                                 fontSize: 14,
                                 fontWeight: 700,
-                                color: THEME.textMain,
+                                color: LT.text,
                                 fontFamily: THEME.fontBody,
                                 letterSpacing: '-0.02em',
                             }}
@@ -214,11 +209,12 @@ const DemoLayout = ({
                         </span>
                     </div>
 
-                    {/* Tier Badge (optional gold bar) */}
+                    {/* Accent stripe */}
                     <div
                         style={{
                             height: 2,
-                            background: 'linear-gradient(90deg, transparent, rgba(255,204,0,0.3), transparent)',
+                            background: LT.accentGradient,
+                            opacity: 0.4,
                             flexShrink: 0,
                         }}
                     />
@@ -227,7 +223,7 @@ const DemoLayout = ({
                     <div
                         style={{
                             padding: '12px 14px',
-                            borderBottom: '1px solid rgba(255,255,255,0.055)',
+                            borderBottom: `1px solid ${LT.border}`,
                             flexShrink: 0,
                         }}
                     >
@@ -235,7 +231,7 @@ const DemoLayout = ({
                             style={{
                                 fontSize: '9px',
                                 fontWeight: 700,
-                                color: THEME.textDim,
+                                color: LT.textDim,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.12em',
                                 display: 'block',
@@ -252,9 +248,9 @@ const DemoLayout = ({
                                 width: '100%',
                                 padding: '6px 8px',
                                 borderRadius: 6,
-                                background: 'rgba(0,229,255,0.05)',
-                                border: '1px solid rgba(0,229,255,0.15)',
-                                color: THEME.textMuted,
+                                background: LT.buttonBg,
+                                border: `1px solid ${LT.border}`,
+                                color: LT.textMuted,
                                 fontSize: 11,
                                 fontFamily: THEME.fontBody,
                                 cursor: 'pointer',
@@ -274,7 +270,7 @@ const DemoLayout = ({
                         {sections.map((section, si) => {
                             const isOpen = openSections.has(section.key);
                             const SIcon = section.icon;
-                            const sAccent = section.accent || accentColor || THEME.primary;
+                            const sAccent = section.accent || accentColor || LT.primary;
                             const hasCurrent = section.items?.some(
                                 (it) => it.key === activeItem && section.key === activeSection,
                             );
@@ -304,7 +300,7 @@ const DemoLayout = ({
                                                 letterSpacing: '0.1em',
                                                 textTransform: 'uppercase',
                                                 fontFamily: THEME.fontMono,
-                                                color: '#3a5678',
+                                                color: LT.textDim,
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: 6,
@@ -315,7 +311,7 @@ const DemoLayout = ({
                                         </span>
                                         <ChevronDown
                                             size={12}
-                                            color="#3a5678"
+                                            color={LT.textDim}
                                             style={{
                                                 transition: 'transform 0.2s ease',
                                                 transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
@@ -342,16 +338,13 @@ const DemoLayout = ({
                                                             alignItems: 'center',
                                                             gap: 8,
                                                             padding: '7px 14px 7px 28px',
-                                                            background: isActive
-                                                                ? 'linear-gradient(90deg, rgba(0,255,170,0.1), rgba(0,255,170,0.02) 70%, transparent)'
-                                                                : 'transparent',
+                                                            background: isActive ? LT.activeItemBg : 'transparent',
                                                             border: 'none',
                                                             borderLeft: isActive
-                                                                ? '2px solid #00ffaa'
-                                                                : '2px solid rgba(0,229,255,0.3)',
-                                                            boxShadow: isActive ? 'none' : 'none',
+                                                                ? `2px solid ${sAccent}`
+                                                                : `2px solid transparent`,
                                                             cursor: 'pointer',
-                                                            color: isActive ? '#00ffaa' : THEME.textDim,
+                                                            color: isActive ? sAccent : LT.textMuted,
                                                             fontWeight: isActive ? 600 : 400,
                                                             fontSize: 12,
                                                             textAlign: 'left',
@@ -360,24 +353,20 @@ const DemoLayout = ({
                                                             textOverflow: 'ellipsis',
                                                             fontFamily: THEME.fontBody,
                                                             transition:
-                                                                'background 0.15s ease, color 0.15s ease, border-color 0.15s ease, text-shadow 0.15s ease',
+                                                                'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
                                                             position: 'relative',
                                                             borderRadius: 0,
-                                                            textShadow: isActive
-                                                                ? '0 0 12px rgba(0,255,170,0.3)'
-                                                                : 'none',
                                                         }}
                                                         onMouseEnter={(e) => {
                                                             if (!isActive) {
-                                                                e.currentTarget.style.background =
-                                                                    'rgba(0,229,255,0.04)';
-                                                                e.currentTarget.style.color = THEME.textMuted;
+                                                                e.currentTarget.style.background = LT.hoverBg;
+                                                                e.currentTarget.style.color = LT.text;
                                                             }
                                                         }}
                                                         onMouseLeave={(e) => {
                                                             if (!isActive) {
                                                                 e.currentTarget.style.background = 'transparent';
-                                                                e.currentTarget.style.color = THEME.textDim;
+                                                                e.currentTarget.style.color = LT.textMuted;
                                                             }
                                                         }}
                                                     >
@@ -387,9 +376,6 @@ const DemoLayout = ({
                                                                 style={{
                                                                     flexShrink: 0,
                                                                     opacity: isActive ? 1 : 0.6,
-                                                                    filter: isActive
-                                                                        ? `drop-shadow(0 0 4px ${sAccent}80)`
-                                                                        : 'none',
                                                                 }}
                                                             />
                                                         )}
@@ -408,8 +394,8 @@ const DemoLayout = ({
                                                                     fontSize: '7.5px',
                                                                     fontWeight: 700,
                                                                     textTransform: 'uppercase',
-                                                                    background: 'rgba(0,229,255,0.15)',
-                                                                    color: '#00e5ff',
+                                                                    background: LT.badgeBg,
+                                                                    color: LT.badgeColor,
                                                                     borderRadius: 4,
                                                                     padding: '1px 6px',
                                                                     flexShrink: 0,
@@ -419,19 +405,6 @@ const DemoLayout = ({
                                                             >
                                                                 {item.badge}
                                                             </span>
-                                                        )}
-                                                        {isActive && (
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    right: 0,
-                                                                    top: 0,
-                                                                    bottom: 0,
-                                                                    width: 50,
-                                                                    background: `linear-gradient(270deg, ${sAccent}10, transparent)`,
-                                                                    pointerEvents: 'none',
-                                                                }}
-                                                            />
                                                         )}
                                                     </button>
                                                 );
@@ -447,7 +420,7 @@ const DemoLayout = ({
                     <div
                         style={{
                             padding: '12px 10px',
-                            borderTop: '1px solid rgba(255,255,255,0.055)',
+                            borderTop: `1px solid ${LT.border}`,
                             flexShrink: 0,
                             display: 'flex',
                             flexDirection: 'column',
@@ -462,22 +435,22 @@ const DemoLayout = ({
                                 fontSize: 11,
                                 fontWeight: 500,
                                 borderRadius: 6,
-                                border: 'none',
-                                background: 'rgba(255,255,255,0.02)',
-                                color: THEME.textDim,
+                                border: `1px solid ${LT.border}`,
+                                background: LT.buttonBg,
+                                color: LT.textMuted,
                                 cursor: onRefresh ? 'pointer' : 'not-allowed',
                                 fontFamily: THEME.fontBody,
                                 transition: 'all 0.2s ease',
                             }}
                             onMouseEnter={(e) => {
                                 if (onRefresh) {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                                    e.currentTarget.style.color = THEME.textMuted;
+                                    e.currentTarget.style.background = LT.buttonHoverBg;
+                                    e.currentTarget.style.color = LT.text;
                                 }
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                e.currentTarget.style.color = THEME.textDim;
+                                e.currentTarget.style.background = LT.buttonBg;
+                                e.currentTarget.style.color = LT.textMuted;
                             }}
                         >
                             Refresh data
@@ -490,22 +463,22 @@ const DemoLayout = ({
                                 fontSize: 11,
                                 fontWeight: 500,
                                 borderRadius: 6,
-                                border: 'none',
-                                background: 'rgba(255,255,255,0.02)',
-                                color: THEME.textDim,
+                                border: `1px solid ${LT.border}`,
+                                background: LT.buttonBg,
+                                color: LT.textMuted,
                                 cursor: onExport ? 'pointer' : 'not-allowed',
                                 fontFamily: THEME.fontBody,
                                 transition: 'all 0.2s ease',
                             }}
                             onMouseEnter={(e) => {
                                 if (onExport) {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                                    e.currentTarget.style.color = THEME.textMuted;
+                                    e.currentTarget.style.background = LT.buttonHoverBg;
+                                    e.currentTarget.style.color = LT.text;
                                 }
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                e.currentTarget.style.color = THEME.textDim;
+                                e.currentTarget.style.background = LT.buttonBg;
+                                e.currentTarget.style.color = LT.textMuted;
                             }}
                         >
                             Export JSON
@@ -518,8 +491,8 @@ const DemoLayout = ({
                                 fontWeight: 600,
                                 borderRadius: 6,
                                 border: 'none',
-                                background: 'linear-gradient(135deg, #00ffaa, #00e5ff)',
-                                color: '#020810',
+                                background: LT.accentGradient,
+                                color: '#ffffff',
                                 cursor: 'pointer',
                                 fontFamily: THEME.fontBody,
                                 transition: 'all 0.2s ease',
@@ -542,10 +515,10 @@ const DemoLayout = ({
                     <header
                         style={{
                             height: 56,
-                            background: 'rgba(2,6,16,0.88)',
-                            backdropFilter: 'blur(24px)',
-                            WebkitBackdropFilter: 'blur(24px)',
-                            borderBottom: '1px solid rgba(255,255,255,0.055)',
+                            background: LT.headerBg,
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
+                            borderBottom: `1px solid ${LT.border}`,
                             display: 'flex',
                             alignItems: 'center',
                             padding: '0 20px',
@@ -555,26 +528,12 @@ const DemoLayout = ({
                             flexShrink: 0,
                         }}
                     >
-                        {/* Top gradient border */}
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                height: 1,
-                                background:
-                                    'linear-gradient(90deg, transparent, #00e5ff, #00ffaa, #4facfe, transparent)',
-                                pointerEvents: 'none',
-                            }}
-                        />
-
                         {/* Left: Breadcrumb + Title */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <div
                                 style={{
                                     fontSize: 10,
-                                    color: THEME.textDim,
+                                    color: LT.textDim,
                                     fontFamily: THEME.fontMono,
                                     letterSpacing: '0.05em',
                                     marginBottom: 2,
@@ -583,7 +542,7 @@ const DemoLayout = ({
                             >
                                 {title}{' '}
                                 {activeSection && (
-                                    <span style={{ color: THEME.textMuted }}>
+                                    <span style={{ color: LT.textMuted }}>
                                         &gt; {sections.find((s) => s.key === activeSection)?.label}
                                     </span>
                                 )}
@@ -592,7 +551,7 @@ const DemoLayout = ({
                                 style={{
                                     fontSize: 16,
                                     fontWeight: 800,
-                                    color: THEME.textMain,
+                                    color: LT.text,
                                     fontFamily: THEME.fontBody,
                                     letterSpacing: '-0.04em',
                                 }}
@@ -616,16 +575,16 @@ const DemoLayout = ({
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 padding: '6px 12px',
-                                                background: `${stat.color || THEME.primary}12`,
+                                                background: `${stat.color || LT.primary}10`,
                                                 borderRadius: 8,
-                                                border: `1px solid ${stat.color || THEME.primary}30`,
+                                                border: `1px solid ${stat.color || LT.primary}20`,
                                             }}
                                         >
                                             <div
                                                 style={{
                                                     fontSize: 12,
                                                     fontWeight: 700,
-                                                    color: stat.color || THEME.primary,
+                                                    color: stat.color || LT.primary,
                                                     fontFamily: THEME.fontMono,
                                                 }}
                                             >
@@ -634,7 +593,7 @@ const DemoLayout = ({
                                             <div
                                                 style={{
                                                     fontSize: 8,
-                                                    color: THEME.textDim,
+                                                    color: LT.textDim,
                                                     fontWeight: 600,
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.05em',
@@ -655,12 +614,12 @@ const DemoLayout = ({
                                     alignItems: 'center',
                                     gap: 6,
                                     padding: '5px 12px',
-                                    background: 'rgba(0,255,170,0.1)',
+                                    background: LT.liveBg,
                                     borderRadius: 20,
-                                    border: '1px solid rgba(0,255,170,0.25)',
+                                    border: `1px solid ${LT.liveBorder}`,
                                     fontSize: 10,
                                     fontWeight: 700,
-                                    color: '#00ffaa',
+                                    color: LT.liveColor,
                                     fontFamily: THEME.fontMono,
                                 }}
                             >
@@ -669,9 +628,8 @@ const DemoLayout = ({
                                         width: 6,
                                         height: 6,
                                         borderRadius: '50%',
-                                        background: '#00ffaa',
+                                        background: LT.liveColor,
                                         animation: 'live-pulse 1.5s ease-in-out infinite',
-                                        boxShadow: '0 0 6px #00ffaa',
                                     }}
                                 />
                                 Live
@@ -683,8 +641,8 @@ const DemoLayout = ({
                                     width: 36,
                                     height: 36,
                                     borderRadius: 8,
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: LT.buttonBg,
+                                    border: `1px solid ${LT.border}`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -692,13 +650,13 @@ const DemoLayout = ({
                                     transition: 'all 0.2s ease',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.background = LT.buttonHoverBg;
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    e.currentTarget.style.background = LT.buttonBg;
                                 }}
                             >
-                                <Bell size={16} color={THEME.textDim} />
+                                <Bell size={16} color={LT.textDim} />
                             </button>
 
                             {/* User Avatar */}
@@ -707,8 +665,8 @@ const DemoLayout = ({
                                     width: 36,
                                     height: 36,
                                     borderRadius: 50,
-                                    background: 'linear-gradient(135deg, #00ffaa, #4facfe)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: LT.accentGradient,
+                                    border: `1px solid ${LT.border}`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -716,13 +674,13 @@ const DemoLayout = ({
                                     transition: 'all 0.2s ease',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.boxShadow = '0 0 12px rgba(0,255,170,0.4)';
+                                    e.currentTarget.style.boxShadow = '0 0 8px rgba(14,165,233,0.3)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.boxShadow = 'none';
                                 }}
                             >
-                                <User size={16} color="#020810" />
+                                <User size={16} color="#ffffff" />
                             </button>
                         </div>
                     </header>
@@ -751,10 +709,10 @@ const DemoLayout = ({
                         left: 0,
                         right: 0,
                         height: 24,
-                        background: 'rgba(2,6,16,0.9)',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
-                        borderTop: '1px solid rgba(255,255,255,0.055)',
+                        background: LT.footerBg,
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        borderTop: `1px solid ${LT.border}`,
                         display: 'flex',
                         alignItems: 'center',
                         paddingLeft: SIDEBAR_W,
@@ -762,30 +720,15 @@ const DemoLayout = ({
                         gap: 18,
                         fontSize: 10,
                         fontFamily: THEME.fontMono,
-                        color: THEME.textDim,
+                        color: LT.textDim,
                         zIndex: 11,
                     }}
                 >
-                    {/* Top gradient border */}
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            height: 1,
-                            background: 'linear-gradient(90deg, transparent, rgba(0,229,255,0.25), transparent)',
-                            pointerEvents: 'none',
-                        }}
-                    />
-
                     {statusItems && statusItems.length > 0 ? (
                         statusItems.map((item, i) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <span style={{ color: item.color || THEME.textDim }}>{item.label}:</span>
-                                <span style={{ fontWeight: 600, color: item.color || THEME.textMuted }}>
-                                    {item.value}
-                                </span>
+                                <span style={{ color: item.color || LT.textDim }}>{item.label}:</span>
+                                <span style={{ fontWeight: 600, color: item.color || LT.textMuted }}>{item.value}</span>
                             </div>
                         ))
                     ) : (
@@ -804,9 +747,8 @@ const DemoStyles = () => (
     <style>{`
         @keyframes dpgFadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
         @keyframes ovPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-        @keyframes aurora-drift { 0%{opacity:1} 33%{transform:scale(1.015)} 66%{opacity:0.88} 100%{transform:scale(0.985);opacity:1} }
         @keyframes kpi-in { from{opacity:0;transform:translateY(10px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
-        @keyframes live-pulse { 0%,100%{opacity:1;box-shadow:0 0 6px #00ffaa,0 0 14px rgba(0,255,170,0.3)} 50%{opacity:.7;box-shadow:0 0 10px #00ffaa,0 0 24px rgba(0,255,170,0.5)} }
+        @keyframes live-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
         @keyframes badge-crit { 0%,100%{opacity:1} 50%{opacity:.7} }
         .dpg-stagger > * { animation: dpgFadeIn 0.45s ease-out both; }
         .dpg-stagger > *:nth-child(1){animation-delay:0s}
@@ -815,15 +757,15 @@ const DemoStyles = () => (
         .dpg-stagger > *:nth-child(4){animation-delay:.21s}
         .dpg-stagger > *:nth-child(5){animation-delay:.28s}
         .dpg-stagger > *:nth-child(6){animation-delay:.35s}
-        .dpg-card-shine { position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%); pointer-events:none; border-radius:inherit; }
+        .dpg-card-shine { position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 50%); pointer-events:none; border-radius:inherit; opacity:0.3; }
         .dpg-metric { transition: transform 0.2s ease, border-color 0.2s ease; }
-        .dpg-table-row { border-bottom: 1px solid ${THEME.glassBorder}; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+        .dpg-table-row { border-bottom: 1px solid #e2e8f0; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .dpg-table-row:last-child { border-bottom: none; }
         .demo-nav-item::-webkit-scrollbar { display: none; }
         .dpg-glow { animation: dpgGlowPulse 3.5s ease-in-out infinite; }
         .dpg-glow-warn { animation: dpgGlowPulseWarn 2.8s ease-in-out infinite; }
-        @keyframes dpgGlowPulse { 0%,100%{box-shadow:0 0 0px rgba(14,165,233,0)} 50%{box-shadow:0 0 22px rgba(14,165,233,0.18)} }
-        @keyframes dpgGlowPulseWarn { 0%,100%{box-shadow:0 0 0px rgba(251,146,60,0)} 50%{box-shadow:0 0 20px rgba(251,146,60,0.2)} }
+        @keyframes dpgGlowPulse { 0%,100%{box-shadow:0 1px 3px rgba(0,0,0,0.08)} 50%{box-shadow:0 2px 8px rgba(14,165,233,0.12)} }
+        @keyframes dpgGlowPulseWarn { 0%,100%{box-shadow:0 1px 3px rgba(0,0,0,0.08)} 50%{box-shadow:0 2px 8px rgba(217,119,6,0.12)} }
     `}</style>
 );
 
@@ -834,41 +776,36 @@ export default DemoLayout;
 export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentColor, style = {} }) => (
     <div
         style={{
-            background: 'rgba(6,14,32,0.72)',
-            backdropFilter: 'blur(20px) saturate(1.1)',
-            WebkitBackdropFilter: 'blur(20px) saturate(1.1)',
-            border: '1px solid rgba(255,255,255,0.055)',
+            background: LT.cardBg,
+            border: `1px solid ${LT.cardBorder}`,
             borderRadius: 12,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             position: 'relative',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
+            boxShadow: LT.cardShadow,
             ...style,
         }}
         onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(79,172,254,0.2)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.035)';
+            e.currentTarget.style.borderColor = `${accentColor || LT.primary}30`;
+            e.currentTarget.style.boxShadow = LT.cardShadowHover;
         }}
         onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.055)';
-            e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)';
+            e.currentTarget.style.borderColor = LT.cardBorder;
+            e.currentTarget.style.boxShadow = LT.cardShadow;
         }}
     >
-        <div className="dpg-card-shine" />
         {title && (
             <div
                 style={{
                     padding: '14px 20px',
-                    borderBottom: '1px solid rgba(255,255,255,0.055)',
-                    borderTop: '1px solid rgba(79,172,254,0.15)',
+                    borderBottom: `1px solid ${LT.border}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexShrink: 0,
                     minHeight: 44,
-                    background: 'linear-gradient(180deg, rgba(79,172,254,0.04), rgba(0,0,0,0.05))',
-                    backgroundImage: 'linear-gradient(180deg, rgba(79,172,254,0.04) 0%, transparent 50%)',
+                    background: LT.surfaceHover,
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -881,18 +818,17 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: accentColor ? `${accentColor}16` : `${THEME.textDim}12`,
-                                boxShadow: accentColor ? `0 0 8px ${accentColor}20` : 'none',
+                                background: accentColor ? `${accentColor}12` : `${LT.textDim}12`,
                             }}
                         >
-                            <TIcon size={13} color={accentColor || THEME.textDim} />
+                            <TIcon size={13} color={accentColor || LT.textDim} />
                         </div>
                     )}
                     <span
                         style={{
                             fontSize: 12,
                             fontWeight: 700,
-                            color: THEME.textMuted,
+                            color: LT.textMuted,
                             textTransform: 'uppercase',
                             letterSpacing: '0.1em',
                             fontFamily: THEME.fontBody,
@@ -920,12 +856,11 @@ export const StatusBadge = ({ label, color, pulse }) => (
             borderRadius: 12,
             background: `${color}12`,
             color,
-            border: `1px solid ${color}28`,
+            border: `1px solid ${color}20`,
             lineHeight: 1.3,
             whiteSpace: 'nowrap',
             fontFamily: THEME.fontMono,
             letterSpacing: '0.05em',
-            boxShadow: `0 0 8px ${color}40`,
         }}
     >
         <span
@@ -934,7 +869,6 @@ export const StatusBadge = ({ label, color, pulse }) => (
                 height: 6,
                 borderRadius: '50%',
                 background: color,
-                boxShadow: `0 0 8px ${color}80, 0 0 12px ${color}40`,
                 flexShrink: 0,
                 animation: pulse ? 'ovPulse 1.5s ease-in-out infinite' : 'none',
             }}
@@ -962,14 +896,7 @@ export const RingGauge = ({
     return (
         <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
             <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                <circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={r}
-                    fill="none"
-                    stroke={`${THEME.grid}45`}
-                    strokeWidth={strokeWidth}
-                />
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} />
                 <circle
                     cx={size / 2}
                     cy={size / 2}
@@ -982,7 +909,6 @@ export const RingGauge = ({
                     transform={`rotate(-90 ${size / 2} ${size / 2})`}
                     style={{
                         transition: 'stroke-dasharray 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
-                        filter: `drop-shadow(0 0 6px ${color}60) drop-shadow(0 0 12px ${color}30)`,
                     }}
                 />
                 {secondaryValue != null && (
@@ -992,7 +918,7 @@ export const RingGauge = ({
                             cy={size / 2}
                             r={r2}
                             fill="none"
-                            stroke={`${THEME.grid}35`}
+                            stroke="#e2e8f0"
                             strokeWidth={strokeWidth - 1.5}
                         />
                         <circle
@@ -1007,7 +933,6 @@ export const RingGauge = ({
                             transform={`rotate(-90 ${size / 2} ${size / 2})`}
                             style={{
                                 transition: 'stroke-dasharray 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s',
-                                filter: `drop-shadow(0 0 5px ${secondaryColor}50) drop-shadow(0 0 10px ${secondaryColor}25)`,
                             }}
                         />
                     </>
@@ -1040,7 +965,7 @@ export const RingGauge = ({
                         <span
                             style={{
                                 fontSize: 7.5,
-                                color: THEME.textDim,
+                                color: LT.textDim,
                                 fontWeight: 600,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em',
@@ -1056,7 +981,7 @@ export const RingGauge = ({
     );
 };
 
-export const MiniSparkline = ({ data = [], color = THEME.primary, width = 64, height = 20, filled = true }) => {
+export const MiniSparkline = ({ data = [], color = LT.primary, width = 64, height = 20, filled = true }) => {
     if (!data || data.length < 2) return <div style={{ width, height }} />;
     const min = Math.min(...data),
         max = Math.max(...data),
@@ -1069,7 +994,7 @@ export const MiniSparkline = ({ data = [], color = THEME.primary, width = 64, he
         <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
             <defs>
                 <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={color} stopOpacity={0.28} />
+                    <stop offset="0%" stopColor={color} stopOpacity={0.18} />
                     <stop offset="100%" stopColor={color} stopOpacity={0} />
                 </linearGradient>
             </defs>
@@ -1089,20 +1014,18 @@ export const MiniSparkline = ({ data = [], color = THEME.primary, width = 64, he
 export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }) => (
     <div
         style={{
-            background: 'rgba(6,14,32,0.72)',
-            backdropFilter: 'blur(20px) saturate(1.1)',
+            background: LT.cardBg,
             borderRadius: 12,
-            border: '1px solid rgba(255,255,255,0.055)',
+            border: `1px solid ${LT.cardBorder}`,
             padding: '14px 16px',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
+            boxShadow: LT.cardShadow,
             display: 'flex',
             alignItems: 'flex-start',
             gap: 10,
         }}
     >
-        <div className="dpg-card-shine" />
         <div
             style={{
                 width: 36,
@@ -1111,9 +1034,8 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: `linear-gradient(135deg, ${color}18, ${color}08)`,
-                border: `1px solid ${color}30`,
-                boxShadow: `0 0 16px ${color}15`,
+                background: `${color}12`,
+                border: `1px solid ${color}20`,
                 flexShrink: 0,
             }}
         >
@@ -1124,7 +1046,7 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
                 style={{
                     fontSize: 10,
                     fontWeight: 700,
-                    color: THEME.textMuted,
+                    color: LT.textMuted,
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
                     marginBottom: 4,
@@ -1137,11 +1059,10 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
                     fontSize: 20,
                     fontWeight: 800,
                     fontFamily: THEME.fontMono,
-                    color: color || THEME.textMain,
+                    color: color || LT.text,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
-                    textShadow: color ? `0 0 20px ${color}` : 'none',
                 }}
             >
                 {value}
@@ -1164,27 +1085,24 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                 gap: 10,
                 padding: '14px 16px',
                 borderRadius: 14,
-                background: 'rgba(6,14,32,0.72)',
-                backdropFilter: 'blur(20px) saturate(1.1)',
-                WebkitBackdropFilter: 'blur(20px) saturate(1.1)',
-                border: '1px solid rgba(255,255,255,0.055)',
+                background: LT.cardBg,
+                border: `1px solid ${LT.cardBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
+                boxShadow: LT.cardShadow,
                 animation: 'kpi-in 0.35s cubic-bezier(.22,.68,0,1.2) both',
             }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(79,172,254,0.2)';
+                e.currentTarget.style.borderColor = `${color || LT.primary}30`;
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.035)';
+                e.currentTarget.style.boxShadow = LT.cardShadowHover;
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.055)';
+                e.currentTarget.style.borderColor = LT.cardBorder;
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)';
+                e.currentTarget.style.boxShadow = LT.cardShadow;
             }}
         >
-            <div className="dpg-card-shine" />
             {/* Icon + Sparkline Row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div
@@ -1209,7 +1127,7 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                 <div
                     style={{
                         fontSize: 9.5,
-                        color: THEME.textDim,
+                        color: LT.textDim,
                         fontWeight: 600,
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
@@ -1228,40 +1146,39 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                             lineHeight: 1,
                             letterSpacing: '-0.02em',
                             fontFamily: THEME.fontMono,
-                            textShadow: `0 0 20px ${color}`,
                         }}
                     >
                         {value}
                     </span>
-                    {subText && <span style={{ fontSize: 10, color: THEME.textDim }}>{subText}</span>}
+                    {subText && <span style={{ fontSize: 10, color: LT.textDim }}>{subText}</span>}
                 </div>
             </div>
             {/* Trend Indicator */}
             {trend && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                     {isUp ? (
-                        <ArrowUpRight size={10} color={THEME.success} />
+                        <ArrowUpRight size={10} color={LT.success} />
                     ) : (
-                        <ArrowDownRight size={10} color={THEME.danger} />
+                        <ArrowDownRight size={10} color={LT.danger} />
                     )}
                     <span
                         style={{
                             fontSize: 10,
                             fontWeight: 700,
                             fontFamily: THEME.fontMono,
-                            color: isUp ? THEME.success : THEME.danger,
+                            color: isUp ? LT.success : LT.danger,
                         }}
                     >
                         {trend}
                     </span>
-                    <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
+                    <span style={{ fontSize: 9.5, color: LT.textDim, marginLeft: 2 }}>vs last hr</span>
                 </div>
             )}
         </div>
     );
 };
 
-/* ── LiveMetric — compact metric with sparkline + progress bar (like Alerts page) ── */
+/* ── LiveMetric — compact metric with sparkline + progress bar ── */
 export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progress }) => (
     <div
         style={{
@@ -1270,17 +1187,15 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
             gap: 6,
             padding: '12px 14px',
             borderRadius: 12,
-            background: 'rgba(6,14,32,0.72)',
-            backdropFilter: 'blur(20px) saturate(1.1)',
-            border: '1px solid rgba(255,255,255,0.055)',
+            background: LT.cardBg,
+            border: `1px solid ${LT.cardBorder}`,
             position: 'relative',
             overflow: 'hidden',
             flex: 1,
             minWidth: 120,
-            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
+            boxShadow: LT.cardShadow,
         }}
     >
-        <div className="dpg-card-shine" />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 {Icon && (
@@ -1302,7 +1217,7 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
                     style={{
                         fontSize: 9.5,
                         fontWeight: 700,
-                        color: THEME.textMuted,
+                        color: LT.textMuted,
                         textTransform: 'uppercase',
                         letterSpacing: '0.06em',
                     }}
@@ -1318,13 +1233,13 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
                     fontSize: 20,
                     fontWeight: 700,
                     fontFamily: THEME.fontMono,
-                    color: THEME.textMain,
+                    color: LT.text,
                     lineHeight: 1,
                 }}
             >
                 {value}
             </span>
-            {unit && <span style={{ fontSize: 10, color: THEME.textDim }}>{unit}</span>}
+            {unit && <span style={{ fontSize: 10, color: LT.textDim }}>{unit}</span>}
         </div>
         {progress != null && (
             <div
@@ -1349,12 +1264,12 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
     </div>
 );
 
-/* ── TabPills — sub-navigation pills like the actual app ── */
+/* ── TabPills — sub-navigation pills ── */
 export const TabPills = ({ tabs, active, onChange, accentColor }) => (
     <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
         {tabs.map((t) => {
             const isActive = t.key === active;
-            const ac = accentColor || THEME.primary;
+            const ac = accentColor || LT.primary;
             return (
                 <button
                     key={t.key}
@@ -1368,9 +1283,9 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                         padding: '8px 18px',
                         borderRadius: 22,
                         background: isActive ? ac : 'transparent',
-                        color: isActive ? '#fff' : THEME.textMuted,
-                        border: `1px solid ${isActive ? ac : THEME.glassBorder}`,
-                        boxShadow: isActive ? `0 2px 12px ${ac}40, 0 0 0 1px ${ac}20` : 'none',
+                        color: isActive ? '#fff' : LT.textMuted,
+                        border: `1px solid ${isActive ? ac : LT.border}`,
+                        boxShadow: isActive ? `0 2px 8px ${ac}30` : 'none',
                         cursor: 'pointer',
                         fontFamily: THEME.fontBody,
                         transition: 'all 0.2s ease',
@@ -1386,7 +1301,7 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                                 fontWeight: 700,
                                 padding: '2px 7px',
                                 borderRadius: 8,
-                                background: isActive ? 'rgba(255,255,255,0.25)' : `${t.badgeColor || ac}25`,
+                                background: isActive ? 'rgba(255,255,255,0.25)' : `${t.badgeColor || ac}15`,
                                 color: isActive ? '#fff' : t.badgeColor || ac,
                             }}
                         >
@@ -1399,7 +1314,7 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
     </div>
 );
 
-/* ── AlertRow — an alert list item matching the actual app ── */
+/* ── AlertRow — an alert list item ── */
 export const AlertRow = ({ severity, title, time, source, color }) => (
     <div
         style={{
@@ -1408,7 +1323,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
             gap: 10,
             padding: '11px 14px',
             background: `${color}06`,
-            borderBottom: `1px solid ${THEME.glassBorder}20`,
+            borderBottom: `1px solid ${LT.border}`,
             borderLeft: `2px solid ${color}`,
             borderRadius: '0 8px 8px 0',
             marginBottom: 4,
@@ -1420,24 +1335,23 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
                 height: 8,
                 borderRadius: '50%',
                 background: color,
-                boxShadow: `0 0 6px ${color}80`,
                 flexShrink: 0,
                 marginTop: 4,
             }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11.5, color: THEME.textMain, fontWeight: 600, lineHeight: 1.35 }}>{title}</div>
+            <div style={{ fontSize: 11.5, color: LT.text, fontWeight: 600, lineHeight: 1.35 }}>{title}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
                 <span
                     style={{
                         fontSize: 9.5,
                         fontFamily: THEME.fontMono,
-                        color: THEME.textDim,
+                        color: LT.textDim,
                     }}
                 >
                     {time}
                 </span>
-                {source && <span style={{ fontSize: 9.5, color: THEME.textDim }}>{source}</span>}
+                {source && <span style={{ fontSize: 9.5, color: LT.textDim }}>{source}</span>}
             </div>
         </div>
         <span
@@ -1446,7 +1360,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
                 fontWeight: 700,
                 padding: '2px 8px',
                 borderRadius: 8,
-                background: `${color}18`,
+                background: `${color}12`,
                 color,
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
@@ -1461,7 +1375,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
 
 /* ── TableRow — consistent table row style ── */
 export const DataTable = ({ columns, rows, accentColor }) => (
-    <div style={{ fontSize: 12, color: THEME.textMuted }}>
+    <div style={{ fontSize: 12, color: LT.textMuted }}>
         {/* header */}
         <div
             style={{
@@ -1469,12 +1383,12 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                 gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
                 gap: 8,
                 padding: '8px 14px',
-                borderBottom: '1px solid rgba(79,172,254,0.15)',
+                borderBottom: `1px solid ${LT.border}`,
                 fontWeight: 700,
                 fontSize: '9.5px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
-                color: THEME.textDim,
+                color: LT.textDim,
             }}
         >
             {columns.map((c, i) => (
@@ -1492,10 +1406,10 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                     gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
                     gap: 8,
                     padding: '10px 14px',
-                    borderBottom: `1px solid ${THEME.glassBorder}30`,
+                    borderBottom: `1px solid ${LT.borderLight}`,
                     transition: 'background 0.15s',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = LT.surfaceHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
                 {columns.map((c, ci) => (
@@ -1504,7 +1418,7 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                         style={{
                             textAlign: c.align || 'left',
                             fontFamily: c.mono ? THEME.fontMono : 'inherit',
-                            color: row[c.key + 'Color'] || (c.mono ? THEME.textMain : THEME.textMuted),
+                            color: row[c.key + 'Color'] || (c.mono ? LT.text : LT.textMuted),
                             fontWeight: ci === 0 ? 600 : 400,
                             fontSize: 12,
                             whiteSpace: 'nowrap',
@@ -1525,161 +1439,36 @@ export const ChartTip = ({ active, payload, label }) => {
     return (
         <div
             style={{
-                background: 'rgba(6,14,32,0.72)',
-                border: '1px solid rgba(255,255,255,0.055)',
-                borderRadius: 12,
+                background: LT.cardBg,
+                border: `1px solid ${LT.cardBorder}`,
+                borderRadius: 10,
                 padding: '10px 14px',
                 fontSize: 12,
-                backdropFilter: 'blur(20px) saturate(1.1)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
             }}
         >
-            <div
-                style={{
-                    color: THEME.textDim,
-                    marginBottom: 5,
-                    fontSize: 10,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                }}
-            >
-                {label}
-            </div>
+            {label && (
+                <div style={{ fontSize: 10, color: LT.textDim, marginBottom: 6, fontFamily: THEME.fontMono }}>
+                    {label}
+                </div>
+            )}
             {payload.map((p, i) => (
-                <div key={i} style={{ color: p.color, fontFamily: THEME.fontMono, fontSize: 12 }}>
-                    {p.name}: <strong>{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</strong>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                    <span
+                        style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: p.color || p.stroke || LT.primary,
+                            flexShrink: 0,
+                        }}
+                    />
+                    <span style={{ color: LT.textMuted, fontSize: 11 }}>{p.name || p.dataKey}:</span>
+                    <span style={{ color: LT.text, fontWeight: 600, fontFamily: THEME.fontMono, fontSize: 11 }}>
+                        {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}
+                    </span>
                 </div>
             ))}
-        </div>
-    );
-};
-
-/* ── ConnectionBar — mimics the real app's connection/refresh status bar ── */
-export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
-    <div
-        style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 16px',
-            background: 'rgba(6,14,32,0.72)',
-            border: '1px solid rgba(255,255,255,0.055)',
-            borderRadius: 10,
-            fontSize: 11,
-            color: THEME.textDim,
-            marginBottom: 4,
-            backdropFilter: 'blur(20px) saturate(1.1)',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
-        }}
-    >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span
-                    style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        background: THEME.success,
-                        boxShadow: `0 0 6px ${THEME.success}80`,
-                    }}
-                />
-                <span style={{ fontWeight: 600, color: THEME.textMuted }}>Connected</span>
-            </span>
-            <span>Last sync {lastSync} ago</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                Auto-refresh:
-                {['10s', '30s', '1m', '5m', 'Off'].map((v, i) => (
-                    <span
-                        key={i}
-                        style={{
-                            padding: '2px 6px',
-                            borderRadius: 4,
-                            fontSize: 10,
-                            fontWeight: 600,
-                            background: v === refreshInterval ? THEME.primary : 'transparent',
-                            color: v === refreshInterval ? '#fff' : THEME.textDim,
-                            cursor: 'pointer',
-                        }}
-                    >
-                        {v}
-                    </span>
-                ))}
-            </span>
-        </div>
-        <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                color: THEME.primary,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: 11,
-            }}
-        >
-            ↻ Refresh Now
-        </div>
-    </div>
-);
-
-export const generateChartData = (hours = 24) =>
-    Array.from({ length: hours }, (_, i) => ({ time: `${String(i).padStart(2, '0')}:00` }));
-
-/* ── ExecStatCard — Large hero KPI card matching the reference design ── */
-export const ExecStatCard = ({ value, label, subtitle, color }) => {
-    const r = parseInt(color.slice(1, 3), 16) || 0;
-    const g = parseInt(color.slice(3, 5), 16) || 0;
-    const b = parseInt(color.slice(5, 7), 16) || 0;
-    return (
-        <div
-            style={{
-                background: `linear-gradient(145deg, rgba(${r},${g},${b},0.06), rgba(6,14,32,0.72))`,
-                borderRadius: 16,
-                padding: '24px 20px',
-                border: `1px solid ${color}40`,
-                backdropFilter: 'blur(8px)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = `0 12px 24px ${color}20, 0 0 20px ${color}10`;
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-            }}
-        >
-            <div className="dpg-card-shine" />
-            <div
-                style={{
-                    fontSize: 42,
-                    fontWeight: 800,
-                    letterSpacing: '-0.04em',
-                    textShadow: `0 0 20px ${color}80`,
-                    color,
-                    marginBottom: 8,
-                    fontFamily: THEME.fontMono,
-                }}
-            >
-                {value}
-            </div>
-            <div
-                style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: THEME.textDim,
-                    marginBottom: 4,
-                }}
-            >
-                {label}
-            </div>
-            {subtitle && <div style={{ fontSize: 10.5, color: THEME.textDim }}>{subtitle}</div>}
         </div>
     );
 };

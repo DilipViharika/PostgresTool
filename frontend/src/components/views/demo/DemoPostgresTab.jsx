@@ -915,342 +915,919 @@ function DemoPostgresTab({ tabId }) {
                     )}
 
                     {/* ── TAB 2: Deep Insights ── */}
-                    {perfTabKey === 'deep' && (() => {
-                        const deepTabs = [
-                            { key: 'wait-events', label: 'Wait Events' },
-                            { key: 'slow-query', label: 'Slow Query Trend' },
-                            { key: 'jit', label: 'JIT Compilation' },
-                            { key: 'parallel', label: 'Parallel Workers' },
-                            { key: 'blocking', label: 'Blocking Tree' },
-                            { key: 'deadlock', label: 'Deadlock History' },
-                            { key: 'plan-cache', label: 'Plan Cache' },
-                            { key: 'temp-files', label: 'Temp Files' },
-                        ];
-                        const dt = deepTab || 'wait-events';
-                        return (
-                        <>
-                            <TabPills tabs={deepTabs} active={dt} onChange={setDeepTab} accentColor={THEME.primary} />
-
-                            {/* ── Wait Events ── */}
-                            {dt === 'wait-events' && (
+                    {perfTabKey === 'deep' &&
+                        (() => {
+                            const deepTabs = [
+                                { key: 'wait-events', label: 'Wait Events' },
+                                { key: 'slow-query', label: 'Slow Query Trend' },
+                                { key: 'jit', label: 'JIT Compilation' },
+                                { key: 'parallel', label: 'Parallel Workers' },
+                                { key: 'blocking', label: 'Blocking Tree' },
+                                { key: 'deadlock', label: 'Deadlock History' },
+                                { key: 'plan-cache', label: 'Plan Cache' },
+                                { key: 'temp-files', label: 'Temp Files' },
+                            ];
+                            const dt = deepTab || 'wait-events';
+                            return (
                                 <>
-                                    <Panel title="WAIT EVENT SUMMARY" icon={Clock} accentColor={THEME.warning}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="TOTAL WAITS" value="1,245" icon={Clock} color={THEME.warning} />
-                                            <LiveMetric label="LOCK WAITS" value="89" icon={Lock} color={THEME.danger} />
-                                            <LiveMetric label="I/O WAITS" value="342" icon={HardDrive} color={THEME.primary} />
-                                            <LiveMetric label="CPU WAITS" value="814" icon={Cpu} color={THEME.success} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="WAIT EVENTS OVER TIME" icon={BarChart2} accentColor={THEME.warning}>
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <AreaChart data={demoData.cpuMemory}>
-                                                <defs>
-                                                    <linearGradient id="deep-wait-grad" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor={THEME.warning} stopOpacity={0.3} />
-                                                        <stop offset="95%" stopColor={THEME.warning} stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                                <Tooltip content={<ChartTip />} />
-                                                <Area type="monotone" dataKey="cpu" stroke={THEME.warning} fill="url(#deep-wait-grad)" name="Wait Events" />
-                                                <Area type="monotone" dataKey="memory" stroke={THEME.danger} fill={`${THEME.danger}10`} name="Lock Waits" />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </Panel>
-                                    <Panel title="TOP WAIT EVENTS" icon={AlertTriangle} accentColor={THEME.danger}>
-                                        <DataTable
-                                            columns={[
-                                                { key: 'event', label: 'Wait Event' },
-                                                { key: 'type', label: 'Type' },
-                                                { key: 'count', label: 'Count' },
-                                                { key: 'avgWait', label: 'Avg Wait' },
-                                                { key: 'pct', label: '% Total' },
-                                            ]}
-                                            rows={[
-                                                { event: 'LWLock:BufferMapping', type: <StatusBadge label="LWLock" color={THEME.warning} />, count: '456', avgWait: '0.8ms', pct: '36.6%' },
-                                                { event: 'Lock:transactionid', type: <StatusBadge label="Lock" color={THEME.danger} />, count: '89', avgWait: '12.3ms', pct: '7.1%' },
-                                                { event: 'IO:DataFileRead', type: <StatusBadge label="I/O" color={THEME.primary} />, count: '342', avgWait: '2.1ms', pct: '27.5%' },
-                                                { event: 'CPU:Sort', type: <StatusBadge label="CPU" color={THEME.success} />, count: '234', avgWait: '0.3ms', pct: '18.8%' },
-                                                { event: 'IO:WALWrite', type: <StatusBadge label="I/O" color={THEME.primary} />, count: '124', avgWait: '1.5ms', pct: '10.0%' },
-                                            ]}
-                                        />
-                                    </Panel>
-                                </>
-                            )}
+                                    <TabPills
+                                        tabs={deepTabs}
+                                        active={dt}
+                                        onChange={setDeepTab}
+                                        accentColor={THEME.primary}
+                                    />
 
-                            {/* ── Slow Query Trend ── */}
-                            {dt === 'slow-query' && (
-                                <>
-                                    <Panel title="SLOW QUERY SUMMARY" icon={Clock} accentColor={THEME.danger}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="SLOW QUERIES" value="23" icon={Clock} color={THEME.danger} />
-                                            <LiveMetric label="AVG DURATION" value="4.2s" icon={TrendingUp} color={THEME.warning} />
-                                            <LiveMetric label="P99 LATENCY" value="12.4s" icon={Gauge} color={THEME.ai} />
-                                            <LiveMetric label="IMPROVED" value="5" icon={CheckCircle} color={THEME.success} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="SLOW QUERY TREND (24H)" icon={TrendingUp} accentColor={THEME.danger}>
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <LineChart data={demoData.clusterVelocity.slice(0, 12)}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                                <Tooltip content={<ChartTip />} />
-                                                <Line type="monotone" dataKey="tps" stroke={THEME.danger} strokeWidth={2} name="Slow Queries" dot={{ r: 3 }} />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </Panel>
-                                    <Panel title="TOP SLOW QUERIES" icon={Zap} accentColor={THEME.warning}>
-                                        <DataTable
-                                            columns={[
-                                                { key: 'query', label: 'Query', width: '45%' },
-                                                { key: 'calls', label: 'Calls' },
-                                                { key: 'avg', label: 'Avg (ms)' },
-                                                { key: 'max', label: 'Max (ms)' },
-                                                { key: 'trend', label: 'Trend' },
-                                            ]}
-                                            rows={[
-                                                { query: 'SELECT * FROM orders WHERE...', calls: '1,245', avg: '3,240', max: '12,400', trend: <StatusBadge label="↑ Worse" color={THEME.danger} /> },
-                                                { query: 'UPDATE users SET last_login...', calls: '890', avg: '2,100', max: '8,900', trend: <StatusBadge label="↓ Better" color={THEME.success} /> },
-                                                { query: 'INSERT INTO audit_log...', calls: '2,340', avg: '1,800', max: '5,600', trend: <StatusBadge label="→ Stable" color={THEME.textMuted} /> },
-                                                { query: 'DELETE FROM sessions WHERE...', calls: '456', avg: '4,500', max: '15,200', trend: <StatusBadge label="↑ Worse" color={THEME.danger} /> },
-                                            ]}
-                                        />
-                                    </Panel>
-                                </>
-                            )}
+                                    {/* ── Wait Events ── */}
+                                    {dt === 'wait-events' && (
+                                        <>
+                                            <Panel title="WAIT EVENT SUMMARY" icon={Clock} accentColor={THEME.warning}>
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="TOTAL WAITS"
+                                                        value="1,245"
+                                                        icon={Clock}
+                                                        color={THEME.warning}
+                                                    />
+                                                    <LiveMetric
+                                                        label="LOCK WAITS"
+                                                        value="89"
+                                                        icon={Lock}
+                                                        color={THEME.danger}
+                                                    />
+                                                    <LiveMetric
+                                                        label="I/O WAITS"
+                                                        value="342"
+                                                        icon={HardDrive}
+                                                        color={THEME.primary}
+                                                    />
+                                                    <LiveMetric
+                                                        label="CPU WAITS"
+                                                        value="814"
+                                                        icon={Cpu}
+                                                        color={THEME.success}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel
+                                                title="WAIT EVENTS OVER TIME"
+                                                icon={BarChart2}
+                                                accentColor={THEME.warning}
+                                            >
+                                                <ResponsiveContainer width="100%" height={200}>
+                                                    <AreaChart data={demoData.cpuMemory}>
+                                                        <defs>
+                                                            <linearGradient
+                                                                id="deep-wait-grad"
+                                                                x1="0"
+                                                                y1="0"
+                                                                x2="0"
+                                                                y2="1"
+                                                            >
+                                                                <stop
+                                                                    offset="5%"
+                                                                    stopColor={THEME.warning}
+                                                                    stopOpacity={0.3}
+                                                                />
+                                                                <stop
+                                                                    offset="95%"
+                                                                    stopColor={THEME.warning}
+                                                                    stopOpacity={0}
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            stroke={THEME.glassBorder}
+                                                        />
+                                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                        <Tooltip content={<ChartTip />} />
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="cpu"
+                                                            stroke={THEME.warning}
+                                                            fill="url(#deep-wait-grad)"
+                                                            name="Wait Events"
+                                                        />
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="memory"
+                                                            stroke={THEME.danger}
+                                                            fill={`${THEME.danger}10`}
+                                                            name="Lock Waits"
+                                                        />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </Panel>
+                                            <Panel
+                                                title="TOP WAIT EVENTS"
+                                                icon={AlertTriangle}
+                                                accentColor={THEME.danger}
+                                            >
+                                                <DataTable
+                                                    columns={[
+                                                        { key: 'event', label: 'Wait Event' },
+                                                        { key: 'type', label: 'Type' },
+                                                        { key: 'count', label: 'Count' },
+                                                        { key: 'avgWait', label: 'Avg Wait' },
+                                                        { key: 'pct', label: '% Total' },
+                                                    ]}
+                                                    rows={[
+                                                        {
+                                                            event: 'LWLock:BufferMapping',
+                                                            type: <StatusBadge label="LWLock" color={THEME.warning} />,
+                                                            count: '456',
+                                                            avgWait: '0.8ms',
+                                                            pct: '36.6%',
+                                                        },
+                                                        {
+                                                            event: 'Lock:transactionid',
+                                                            type: <StatusBadge label="Lock" color={THEME.danger} />,
+                                                            count: '89',
+                                                            avgWait: '12.3ms',
+                                                            pct: '7.1%',
+                                                        },
+                                                        {
+                                                            event: 'IO:DataFileRead',
+                                                            type: <StatusBadge label="I/O" color={THEME.primary} />,
+                                                            count: '342',
+                                                            avgWait: '2.1ms',
+                                                            pct: '27.5%',
+                                                        },
+                                                        {
+                                                            event: 'CPU:Sort',
+                                                            type: <StatusBadge label="CPU" color={THEME.success} />,
+                                                            count: '234',
+                                                            avgWait: '0.3ms',
+                                                            pct: '18.8%',
+                                                        },
+                                                        {
+                                                            event: 'IO:WALWrite',
+                                                            type: <StatusBadge label="I/O" color={THEME.primary} />,
+                                                            count: '124',
+                                                            avgWait: '1.5ms',
+                                                            pct: '10.0%',
+                                                        },
+                                                    ]}
+                                                />
+                                            </Panel>
+                                        </>
+                                    )}
 
-                            {/* ── JIT Compilation ── */}
-                            {dt === 'jit' && (
-                                <>
-                                    <Panel title="JIT COMPILATION STATUS" icon={Zap} accentColor={THEME.ai}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="JIT FUNCTIONS" value="156" icon={Code} color={THEME.ai} />
-                                            <LiveMetric label="COMPILE TIME" value="234ms" icon={Clock} color={THEME.warning} />
-                                            <LiveMetric label="INLINING" value="ON" icon={CheckCircle} color={THEME.success} />
-                                            <LiveMetric label="OPTIMIZATION" value="ON" icon={Zap} color={THEME.success} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="JIT COMPILATION OVER TIME" icon={BarChart2} accentColor={THEME.ai}>
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <BarChart data={[
-                                                { hour: '00:00', compiled: 12, time: 45 },
-                                                { hour: '04:00', compiled: 8, time: 32 },
-                                                { hour: '08:00', compiled: 24, time: 89 },
-                                                { hour: '12:00', compiled: 34, time: 156 },
-                                                { hour: '16:00', compiled: 28, time: 120 },
-                                                { hour: '20:00', compiled: 18, time: 67 },
-                                            ]}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                                <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
-                                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                                <Tooltip content={<ChartTip />} />
-                                                <Bar dataKey="compiled" fill={THEME.ai} name="Functions Compiled" radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </Panel>
-                                    <Panel title="JIT-COMPILED QUERIES" icon={Terminal} accentColor={THEME.primary}>
-                                        <DataTable
-                                            columns={[
-                                                { key: 'query', label: 'Query', width: '40%' },
-                                                { key: 'functions', label: 'Functions' },
-                                                { key: 'compTime', label: 'Compile' },
-                                                { key: 'execTime', label: 'Exec Time' },
-                                                { key: 'speedup', label: 'Speedup' },
-                                            ]}
-                                            rows={[
-                                                { query: 'Aggregate on orders...', functions: '12', compTime: '45ms', execTime: '123ms', speedup: <StatusBadge label="3.2x" color={THEME.success} /> },
-                                                { query: 'Hash Join users + orders...', functions: '8', compTime: '32ms', execTime: '89ms', speedup: <StatusBadge label="2.1x" color={THEME.success} /> },
-                                                { query: 'Sort + Limit products...', functions: '5', compTime: '18ms', execTime: '45ms', speedup: <StatusBadge label="1.8x" color={THEME.primary} /> },
-                                            ]}
-                                        />
-                                    </Panel>
-                                </>
-                            )}
+                                    {/* ── Slow Query Trend ── */}
+                                    {dt === 'slow-query' && (
+                                        <>
+                                            <Panel title="SLOW QUERY SUMMARY" icon={Clock} accentColor={THEME.danger}>
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="SLOW QUERIES"
+                                                        value="23"
+                                                        icon={Clock}
+                                                        color={THEME.danger}
+                                                    />
+                                                    <LiveMetric
+                                                        label="AVG DURATION"
+                                                        value="4.2s"
+                                                        icon={TrendingUp}
+                                                        color={THEME.warning}
+                                                    />
+                                                    <LiveMetric
+                                                        label="P99 LATENCY"
+                                                        value="12.4s"
+                                                        icon={Gauge}
+                                                        color={THEME.ai}
+                                                    />
+                                                    <LiveMetric
+                                                        label="IMPROVED"
+                                                        value="5"
+                                                        icon={CheckCircle}
+                                                        color={THEME.success}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel
+                                                title="SLOW QUERY TREND (24H)"
+                                                icon={TrendingUp}
+                                                accentColor={THEME.danger}
+                                            >
+                                                <ResponsiveContainer width="100%" height={200}>
+                                                    <LineChart data={demoData.clusterVelocity.slice(0, 12)}>
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            stroke={THEME.glassBorder}
+                                                        />
+                                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                        <Tooltip content={<ChartTip />} />
+                                                        <Line
+                                                            type="monotone"
+                                                            dataKey="tps"
+                                                            stroke={THEME.danger}
+                                                            strokeWidth={2}
+                                                            name="Slow Queries"
+                                                            dot={{ r: 3 }}
+                                                        />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            </Panel>
+                                            <Panel title="TOP SLOW QUERIES" icon={Zap} accentColor={THEME.warning}>
+                                                <DataTable
+                                                    columns={[
+                                                        { key: 'query', label: 'Query', width: '45%' },
+                                                        { key: 'calls', label: 'Calls' },
+                                                        { key: 'avg', label: 'Avg (ms)' },
+                                                        { key: 'max', label: 'Max (ms)' },
+                                                        { key: 'trend', label: 'Trend' },
+                                                    ]}
+                                                    rows={[
+                                                        {
+                                                            query: 'SELECT * FROM orders WHERE...',
+                                                            calls: '1,245',
+                                                            avg: '3,240',
+                                                            max: '12,400',
+                                                            trend: <StatusBadge label="↑ Worse" color={THEME.danger} />,
+                                                        },
+                                                        {
+                                                            query: 'UPDATE users SET last_login...',
+                                                            calls: '890',
+                                                            avg: '2,100',
+                                                            max: '8,900',
+                                                            trend: (
+                                                                <StatusBadge label="↓ Better" color={THEME.success} />
+                                                            ),
+                                                        },
+                                                        {
+                                                            query: 'INSERT INTO audit_log...',
+                                                            calls: '2,340',
+                                                            avg: '1,800',
+                                                            max: '5,600',
+                                                            trend: (
+                                                                <StatusBadge label="→ Stable" color={THEME.textMuted} />
+                                                            ),
+                                                        },
+                                                        {
+                                                            query: 'DELETE FROM sessions WHERE...',
+                                                            calls: '456',
+                                                            avg: '4,500',
+                                                            max: '15,200',
+                                                            trend: <StatusBadge label="↑ Worse" color={THEME.danger} />,
+                                                        },
+                                                    ]}
+                                                />
+                                            </Panel>
+                                        </>
+                                    )}
 
-                            {/* ── Parallel Workers ── */}
-                            {dt === 'parallel' && (
-                                <>
-                                    <Panel title="PARALLEL QUERY UTILIZATION" icon={Cpu} accentColor={THEME.primary}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="MAX WORKERS" value="8" icon={Server} color={THEME.primary} />
-                                            <LiveMetric label="PER GATHER" value="4" icon={Activity} color={THEME.success} />
-                                            <LiveMetric label="AVG ACTIVE" value="3.5" icon={TrendingUp} color={THEME.ai} />
-                                            <LiveMetric label="UTILIZATION" value="44%" icon={Gauge} color={THEME.warning} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="WORKER UTILIZATION OVER TIME" icon={BarChart2} accentColor={THEME.ai}>
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <AreaChart data={demoData.connectionTrends.map((d, idx) => ({ ...d, workers: Math.floor(2 + Math.sin(idx / 4) * 3 + Math.random() * 2) }))}>
-                                                <defs>
-                                                    <linearGradient id="pg-workers-grad" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
-                                                        <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                                <Tooltip content={<ChartTip />} />
-                                                <Area type="monotone" dataKey="workers" stroke={THEME.primary} fillOpacity={1} fill="url(#pg-workers-grad)" />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </Panel>
-                                    <Panel title="ACTIVE PARALLEL QUERIES" icon={Zap} accentColor={THEME.success}>
-                                        <DataTable
-                                            columns={[
-                                                { key: 'query', label: 'Query', width: '40%' },
-                                                { key: 'type', label: 'Type' },
-                                                { key: 'workers', label: 'Workers' },
-                                                { key: 'speedup', label: 'Speedup' },
-                                            ]}
-                                            rows={[
-                                                { query: 'SELECT COUNT(*) FROM large_table...', type: <StatusBadge label="Seq Scan" color={THEME.success} />, workers: '5/8', speedup: '68% faster' },
-                                                { query: 'SELECT o.* FROM orders o JOIN...', type: <StatusBadge label="Hash Join" color={THEME.primary} />, workers: '3/8', speedup: '52% faster' },
-                                                { query: 'CREATE INDEX CONCURRENTLY...', type: <StatusBadge label="Index Build" color={THEME.ai} />, workers: '8/8', speedup: '4.2x faster' },
-                                            ]}
-                                        />
-                                    </Panel>
-                                </>
-                            )}
+                                    {/* ── JIT Compilation ── */}
+                                    {dt === 'jit' && (
+                                        <>
+                                            <Panel title="JIT COMPILATION STATUS" icon={Zap} accentColor={THEME.ai}>
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="JIT FUNCTIONS"
+                                                        value="156"
+                                                        icon={Code}
+                                                        color={THEME.ai}
+                                                    />
+                                                    <LiveMetric
+                                                        label="COMPILE TIME"
+                                                        value="234ms"
+                                                        icon={Clock}
+                                                        color={THEME.warning}
+                                                    />
+                                                    <LiveMetric
+                                                        label="INLINING"
+                                                        value="ON"
+                                                        icon={CheckCircle}
+                                                        color={THEME.success}
+                                                    />
+                                                    <LiveMetric
+                                                        label="OPTIMIZATION"
+                                                        value="ON"
+                                                        icon={Zap}
+                                                        color={THEME.success}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel
+                                                title="JIT COMPILATION OVER TIME"
+                                                icon={BarChart2}
+                                                accentColor={THEME.ai}
+                                            >
+                                                <ResponsiveContainer width="100%" height={200}>
+                                                    <BarChart
+                                                        data={[
+                                                            { hour: '00:00', compiled: 12, time: 45 },
+                                                            { hour: '04:00', compiled: 8, time: 32 },
+                                                            { hour: '08:00', compiled: 24, time: 89 },
+                                                            { hour: '12:00', compiled: 34, time: 156 },
+                                                            { hour: '16:00', compiled: 28, time: 120 },
+                                                            { hour: '20:00', compiled: 18, time: 67 },
+                                                        ]}
+                                                    >
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            stroke={THEME.glassBorder}
+                                                        />
+                                                        <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
+                                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                        <Tooltip content={<ChartTip />} />
+                                                        <Bar
+                                                            dataKey="compiled"
+                                                            fill={THEME.ai}
+                                                            name="Functions Compiled"
+                                                            radius={[4, 4, 0, 0]}
+                                                        />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </Panel>
+                                            <Panel
+                                                title="JIT-COMPILED QUERIES"
+                                                icon={Terminal}
+                                                accentColor={THEME.primary}
+                                            >
+                                                <DataTable
+                                                    columns={[
+                                                        { key: 'query', label: 'Query', width: '40%' },
+                                                        { key: 'functions', label: 'Functions' },
+                                                        { key: 'compTime', label: 'Compile' },
+                                                        { key: 'execTime', label: 'Exec Time' },
+                                                        { key: 'speedup', label: 'Speedup' },
+                                                    ]}
+                                                    rows={[
+                                                        {
+                                                            query: 'Aggregate on orders...',
+                                                            functions: '12',
+                                                            compTime: '45ms',
+                                                            execTime: '123ms',
+                                                            speedup: <StatusBadge label="3.2x" color={THEME.success} />,
+                                                        },
+                                                        {
+                                                            query: 'Hash Join users + orders...',
+                                                            functions: '8',
+                                                            compTime: '32ms',
+                                                            execTime: '89ms',
+                                                            speedup: <StatusBadge label="2.1x" color={THEME.success} />,
+                                                        },
+                                                        {
+                                                            query: 'Sort + Limit products...',
+                                                            functions: '5',
+                                                            compTime: '18ms',
+                                                            execTime: '45ms',
+                                                            speedup: <StatusBadge label="1.8x" color={THEME.primary} />,
+                                                        },
+                                                    ]}
+                                                />
+                                            </Panel>
+                                        </>
+                                    )}
 
-                            {/* ── Blocking Tree ── */}
-                            {dt === 'blocking' && (
-                                <>
-                                    <Panel title="BLOCKING TREE SUMMARY" icon={Lock} accentColor={THEME.danger}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="BLOCKED" value="3" icon={Lock} color={THEME.danger} />
-                                            <LiveMetric label="BLOCKERS" value="2" icon={AlertTriangle} color={THEME.warning} />
-                                            <LiveMetric label="MAX WAIT" value="45s" icon={Clock} color={THEME.ai} />
-                                            <LiveMetric label="AVG WAIT" value="12s" icon={TrendingUp} color={THEME.primary} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="BLOCKING CHAIN" icon={Lock} accentColor={THEME.danger}>
-                                        <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textDim, lineHeight: 2 }}>
-                                            <div><span style={{ color: THEME.danger, fontWeight: 700 }}>PID 54231</span> — UPDATE public.orders SET status = ... <StatusBadge label="BLOCKER" color={THEME.danger} /></div>
-                                            <div style={{ marginLeft: 24 }}>├─ <span style={{ color: THEME.warning }}>PID 54289</span> — SELECT * FROM orders WHERE id = 1234 <StatusBadge label="45s" color={THEME.warning} /></div>
-                                            <div style={{ marginLeft: 24 }}>├─ <span style={{ color: THEME.warning }}>PID 54301</span> — UPDATE orders SET amount = ... <StatusBadge label="32s" color={THEME.warning} /></div>
-                                            <div style={{ marginLeft: 48 }}>└─ <span style={{ color: THEME.primary }}>PID 54315</span> — SELECT FOR UPDATE ... <StatusBadge label="18s" color={THEME.primary} /></div>
-                                            <div style={{ marginTop: 12 }}><span style={{ color: THEME.danger, fontWeight: 700 }}>PID 54245</span> — ALTER TABLE users ADD COLUMN ... <StatusBadge label="BLOCKER" color={THEME.danger} /></div>
-                                            <div style={{ marginLeft: 24 }}>└─ <span style={{ color: THEME.warning }}>PID 54298</span> — INSERT INTO users VALUES ... <StatusBadge label="12s" color={THEME.warning} /></div>
-                                        </div>
-                                    </Panel>
-                                </>
-                            )}
+                                    {/* ── Parallel Workers ── */}
+                                    {dt === 'parallel' && (
+                                        <>
+                                            <Panel
+                                                title="PARALLEL QUERY UTILIZATION"
+                                                icon={Cpu}
+                                                accentColor={THEME.primary}
+                                            >
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="MAX WORKERS"
+                                                        value="8"
+                                                        icon={Server}
+                                                        color={THEME.primary}
+                                                    />
+                                                    <LiveMetric
+                                                        label="PER GATHER"
+                                                        value="4"
+                                                        icon={Activity}
+                                                        color={THEME.success}
+                                                    />
+                                                    <LiveMetric
+                                                        label="AVG ACTIVE"
+                                                        value="3.5"
+                                                        icon={TrendingUp}
+                                                        color={THEME.ai}
+                                                    />
+                                                    <LiveMetric
+                                                        label="UTILIZATION"
+                                                        value="44%"
+                                                        icon={Gauge}
+                                                        color={THEME.warning}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel
+                                                title="WORKER UTILIZATION OVER TIME"
+                                                icon={BarChart2}
+                                                accentColor={THEME.ai}
+                                            >
+                                                <ResponsiveContainer width="100%" height={200}>
+                                                    <AreaChart
+                                                        data={demoData.connectionTrends.map((d, idx) => ({
+                                                            ...d,
+                                                            workers: Math.floor(
+                                                                2 + Math.sin(idx / 4) * 3 + Math.random() * 2,
+                                                            ),
+                                                        }))}
+                                                    >
+                                                        <defs>
+                                                            <linearGradient
+                                                                id="pg-workers-grad"
+                                                                x1="0"
+                                                                y1="0"
+                                                                x2="0"
+                                                                y2="1"
+                                                            >
+                                                                <stop
+                                                                    offset="5%"
+                                                                    stopColor={THEME.primary}
+                                                                    stopOpacity={0.3}
+                                                                />
+                                                                <stop
+                                                                    offset="95%"
+                                                                    stopColor={THEME.primary}
+                                                                    stopOpacity={0}
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            stroke={THEME.glassBorder}
+                                                        />
+                                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                        <Tooltip content={<ChartTip />} />
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="workers"
+                                                            stroke={THEME.primary}
+                                                            fillOpacity={1}
+                                                            fill="url(#pg-workers-grad)"
+                                                        />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </Panel>
+                                            <Panel
+                                                title="ACTIVE PARALLEL QUERIES"
+                                                icon={Zap}
+                                                accentColor={THEME.success}
+                                            >
+                                                <DataTable
+                                                    columns={[
+                                                        { key: 'query', label: 'Query', width: '40%' },
+                                                        { key: 'type', label: 'Type' },
+                                                        { key: 'workers', label: 'Workers' },
+                                                        { key: 'speedup', label: 'Speedup' },
+                                                    ]}
+                                                    rows={[
+                                                        {
+                                                            query: 'SELECT COUNT(*) FROM large_table...',
+                                                            type: (
+                                                                <StatusBadge label="Seq Scan" color={THEME.success} />
+                                                            ),
+                                                            workers: '5/8',
+                                                            speedup: '68% faster',
+                                                        },
+                                                        {
+                                                            query: 'SELECT o.* FROM orders o JOIN...',
+                                                            type: (
+                                                                <StatusBadge label="Hash Join" color={THEME.primary} />
+                                                            ),
+                                                            workers: '3/8',
+                                                            speedup: '52% faster',
+                                                        },
+                                                        {
+                                                            query: 'CREATE INDEX CONCURRENTLY...',
+                                                            type: <StatusBadge label="Index Build" color={THEME.ai} />,
+                                                            workers: '8/8',
+                                                            speedup: '4.2x faster',
+                                                        },
+                                                    ]}
+                                                />
+                                            </Panel>
+                                        </>
+                                    )}
 
-                            {/* ── Deadlock History ── */}
-                            {dt === 'deadlock' && (
-                                <>
-                                    <Panel title="DEADLOCK SUMMARY" icon={AlertOctagon} accentColor={THEME.danger}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="DEADLOCKS (24H)" value="3" icon={AlertOctagon} color={THEME.danger} />
-                                            <LiveMetric label="DEADLOCKS (7D)" value="12" icon={Calendar} color={THEME.warning} />
-                                            <LiveMetric label="RESOLVED" value="3" icon={CheckCircle} color={THEME.success} />
-                                            <LiveMetric label="LAST OCCURRED" value="2h ago" icon={Clock} color={THEME.primary} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="DEADLOCK HISTORY" icon={AlertOctagon} accentColor={THEME.danger}>
-                                        <DataTable
-                                            columns={[
-                                                { key: 'time', label: 'Time' },
-                                                { key: 'pid1', label: 'PID 1' },
-                                                { key: 'pid2', label: 'PID 2' },
-                                                { key: 'table', label: 'Table' },
-                                                { key: 'resolved', label: 'Resolved By' },
-                                            ]}
-                                            rows={[
-                                                { time: '2h ago', pid1: '54231', pid2: '54289', table: 'orders', resolved: <StatusBadge label="Rollback PID 54289" color={THEME.warning} /> },
-                                                { time: '8h ago', pid1: '54102', pid2: '54156', table: 'users', resolved: <StatusBadge label="Rollback PID 54156" color={THEME.warning} /> },
-                                                { time: '1d ago', pid1: '53890', pid2: '53912', table: 'inventory', resolved: <StatusBadge label="Rollback PID 53912" color={THEME.warning} /> },
-                                            ]}
-                                        />
-                                    </Panel>
-                                </>
-                            )}
+                                    {/* ── Blocking Tree ── */}
+                                    {dt === 'blocking' && (
+                                        <>
+                                            <Panel title="BLOCKING TREE SUMMARY" icon={Lock} accentColor={THEME.danger}>
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="BLOCKED"
+                                                        value="3"
+                                                        icon={Lock}
+                                                        color={THEME.danger}
+                                                    />
+                                                    <LiveMetric
+                                                        label="BLOCKERS"
+                                                        value="2"
+                                                        icon={AlertTriangle}
+                                                        color={THEME.warning}
+                                                    />
+                                                    <LiveMetric
+                                                        label="MAX WAIT"
+                                                        value="45s"
+                                                        icon={Clock}
+                                                        color={THEME.ai}
+                                                    />
+                                                    <LiveMetric
+                                                        label="AVG WAIT"
+                                                        value="12s"
+                                                        icon={TrendingUp}
+                                                        color={THEME.primary}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel title="BLOCKING CHAIN" icon={Lock} accentColor={THEME.danger}>
+                                                <div
+                                                    style={{
+                                                        fontFamily: THEME.fontMono,
+                                                        fontSize: 11,
+                                                        color: THEME.textDim,
+                                                        lineHeight: 2,
+                                                    }}
+                                                >
+                                                    <div>
+                                                        <span style={{ color: THEME.danger, fontWeight: 700 }}>
+                                                            PID 54231
+                                                        </span>{' '}
+                                                        — UPDATE public.orders SET status = ...{' '}
+                                                        <StatusBadge label="BLOCKER" color={THEME.danger} />
+                                                    </div>
+                                                    <div style={{ marginLeft: 24 }}>
+                                                        ├─ <span style={{ color: THEME.warning }}>PID 54289</span> —
+                                                        SELECT * FROM orders WHERE id = 1234{' '}
+                                                        <StatusBadge label="45s" color={THEME.warning} />
+                                                    </div>
+                                                    <div style={{ marginLeft: 24 }}>
+                                                        ├─ <span style={{ color: THEME.warning }}>PID 54301</span> —
+                                                        UPDATE orders SET amount = ...{' '}
+                                                        <StatusBadge label="32s" color={THEME.warning} />
+                                                    </div>
+                                                    <div style={{ marginLeft: 48 }}>
+                                                        └─ <span style={{ color: THEME.primary }}>PID 54315</span> —
+                                                        SELECT FOR UPDATE ...{' '}
+                                                        <StatusBadge label="18s" color={THEME.primary} />
+                                                    </div>
+                                                    <div style={{ marginTop: 12 }}>
+                                                        <span style={{ color: THEME.danger, fontWeight: 700 }}>
+                                                            PID 54245
+                                                        </span>{' '}
+                                                        — ALTER TABLE users ADD COLUMN ...{' '}
+                                                        <StatusBadge label="BLOCKER" color={THEME.danger} />
+                                                    </div>
+                                                    <div style={{ marginLeft: 24 }}>
+                                                        └─ <span style={{ color: THEME.warning }}>PID 54298</span> —
+                                                        INSERT INTO users VALUES ...{' '}
+                                                        <StatusBadge label="12s" color={THEME.warning} />
+                                                    </div>
+                                                </div>
+                                            </Panel>
+                                        </>
+                                    )}
 
-                            {/* ── Plan Cache ── */}
-                            {dt === 'plan-cache' && (
-                                <>
-                                    <Panel title="PLAN CACHE STATISTICS" icon={Archive} accentColor={THEME.ai}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="CACHED PLANS" value="1,456" icon={Archive} color={THEME.ai} />
-                                            <LiveMetric label="HIT RATIO" value="94.2%" icon={CheckCircle} color={THEME.success} />
-                                            <LiveMetric label="EVICTIONS" value="23" icon={RefreshCw} color={THEME.warning} />
-                                            <LiveMetric label="MEMORY" value="128 MB" icon={HardDrive} color={THEME.primary} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="CACHE HIT RATIO OVER TIME" icon={TrendingUp} accentColor={THEME.success}>
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <AreaChart data={demoData.cpuMemory}>
-                                                <defs>
-                                                    <linearGradient id="deep-cache-grad" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
-                                                        <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                                <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
-                                                <YAxis stroke={THEME.textDim} fontSize={10} domain={[80, 100]} />
-                                                <Tooltip content={<ChartTip />} />
-                                                <Area type="monotone" dataKey="memory" stroke={THEME.success} fill="url(#deep-cache-grad)" name="Hit Ratio %" />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </Panel>
-                                </>
-                            )}
+                                    {/* ── Deadlock History ── */}
+                                    {dt === 'deadlock' && (
+                                        <>
+                                            <Panel
+                                                title="DEADLOCK SUMMARY"
+                                                icon={AlertOctagon}
+                                                accentColor={THEME.danger}
+                                            >
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="DEADLOCKS (24H)"
+                                                        value="3"
+                                                        icon={AlertOctagon}
+                                                        color={THEME.danger}
+                                                    />
+                                                    <LiveMetric
+                                                        label="DEADLOCKS (7D)"
+                                                        value="12"
+                                                        icon={Calendar}
+                                                        color={THEME.warning}
+                                                    />
+                                                    <LiveMetric
+                                                        label="RESOLVED"
+                                                        value="3"
+                                                        icon={CheckCircle}
+                                                        color={THEME.success}
+                                                    />
+                                                    <LiveMetric
+                                                        label="LAST OCCURRED"
+                                                        value="2h ago"
+                                                        icon={Clock}
+                                                        color={THEME.primary}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel
+                                                title="DEADLOCK HISTORY"
+                                                icon={AlertOctagon}
+                                                accentColor={THEME.danger}
+                                            >
+                                                <DataTable
+                                                    columns={[
+                                                        { key: 'time', label: 'Time' },
+                                                        { key: 'pid1', label: 'PID 1' },
+                                                        { key: 'pid2', label: 'PID 2' },
+                                                        { key: 'table', label: 'Table' },
+                                                        { key: 'resolved', label: 'Resolved By' },
+                                                    ]}
+                                                    rows={[
+                                                        {
+                                                            time: '2h ago',
+                                                            pid1: '54231',
+                                                            pid2: '54289',
+                                                            table: 'orders',
+                                                            resolved: (
+                                                                <StatusBadge
+                                                                    label="Rollback PID 54289"
+                                                                    color={THEME.warning}
+                                                                />
+                                                            ),
+                                                        },
+                                                        {
+                                                            time: '8h ago',
+                                                            pid1: '54102',
+                                                            pid2: '54156',
+                                                            table: 'users',
+                                                            resolved: (
+                                                                <StatusBadge
+                                                                    label="Rollback PID 54156"
+                                                                    color={THEME.warning}
+                                                                />
+                                                            ),
+                                                        },
+                                                        {
+                                                            time: '1d ago',
+                                                            pid1: '53890',
+                                                            pid2: '53912',
+                                                            table: 'inventory',
+                                                            resolved: (
+                                                                <StatusBadge
+                                                                    label="Rollback PID 53912"
+                                                                    color={THEME.warning}
+                                                                />
+                                                            ),
+                                                        },
+                                                    ]}
+                                                />
+                                            </Panel>
+                                        </>
+                                    )}
 
-                            {/* ── Temp Files ── */}
-                            {dt === 'temp-files' && (
-                                <>
-                                    <Panel title="TEMP FILE USAGE" icon={FileText} accentColor={THEME.warning}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                            <LiveMetric label="TEMP FILES" value="45" icon={FileText} color={THEME.warning} />
-                                            <LiveMetric label="TOTAL SIZE" value="2.3 GB" icon={HardDrive} color={THEME.danger} />
-                                            <LiveMetric label="AVG SIZE" value="52 MB" icon={BarChart2} color={THEME.primary} />
-                                            <LiveMetric label="WORK MEM" value="256 MB" icon={Server} color={THEME.success} />
-                                        </div>
-                                    </Panel>
-                                    <Panel title="TEMP FILE CREATION OVER TIME" icon={TrendingUp} accentColor={THEME.warning}>
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <BarChart data={[
-                                                { hour: '00:00', files: 3, size: 120 },
-                                                { hour: '04:00', files: 1, size: 45 },
-                                                { hour: '08:00', files: 8, size: 340 },
-                                                { hour: '12:00', files: 12, size: 890 },
-                                                { hour: '16:00', files: 10, size: 560 },
-                                                { hour: '20:00', files: 6, size: 230 },
-                                            ]}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
-                                                <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
-                                                <YAxis stroke={THEME.textDim} fontSize={10} />
-                                                <Tooltip content={<ChartTip />} />
-                                                <Bar dataKey="files" fill={THEME.warning} name="Temp Files" radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </Panel>
-                                    <Panel title="QUERIES USING TEMP FILES" icon={Terminal} accentColor={THEME.danger}>
-                                        <DataTable
-                                            columns={[
-                                                { key: 'query', label: 'Query', width: '40%' },
-                                                { key: 'size', label: 'Temp Size' },
-                                                { key: 'sortMethod', label: 'Sort Method' },
-                                                { key: 'suggestion', label: 'Suggestion' },
-                                            ]}
-                                            rows={[
-                                                { query: 'SELECT * FROM orders ORDER BY...', size: '340 MB', sortMethod: 'External Merge', suggestion: <StatusBadge label="Increase work_mem" color={THEME.warning} /> },
-                                                { query: 'SELECT DISTINCT category FROM...', size: '120 MB', sortMethod: 'External Sort', suggestion: <StatusBadge label="Add index" color={THEME.primary} /> },
-                                                { query: 'GROUP BY user_id, product_id...', size: '89 MB', sortMethod: 'Hash Batch', suggestion: <StatusBadge label="Reduce grouping" color={THEME.ai} /> },
-                                            ]}
-                                        />
-                                    </Panel>
+                                    {/* ── Plan Cache ── */}
+                                    {dt === 'plan-cache' && (
+                                        <>
+                                            <Panel title="PLAN CACHE STATISTICS" icon={Archive} accentColor={THEME.ai}>
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="CACHED PLANS"
+                                                        value="1,456"
+                                                        icon={Archive}
+                                                        color={THEME.ai}
+                                                    />
+                                                    <LiveMetric
+                                                        label="HIT RATIO"
+                                                        value="94.2%"
+                                                        icon={CheckCircle}
+                                                        color={THEME.success}
+                                                    />
+                                                    <LiveMetric
+                                                        label="EVICTIONS"
+                                                        value="23"
+                                                        icon={RefreshCw}
+                                                        color={THEME.warning}
+                                                    />
+                                                    <LiveMetric
+                                                        label="MEMORY"
+                                                        value="128 MB"
+                                                        icon={HardDrive}
+                                                        color={THEME.primary}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel
+                                                title="CACHE HIT RATIO OVER TIME"
+                                                icon={TrendingUp}
+                                                accentColor={THEME.success}
+                                            >
+                                                <ResponsiveContainer width="100%" height={200}>
+                                                    <AreaChart data={demoData.cpuMemory}>
+                                                        <defs>
+                                                            <linearGradient
+                                                                id="deep-cache-grad"
+                                                                x1="0"
+                                                                y1="0"
+                                                                x2="0"
+                                                                y2="1"
+                                                            >
+                                                                <stop
+                                                                    offset="5%"
+                                                                    stopColor={THEME.success}
+                                                                    stopOpacity={0.3}
+                                                                />
+                                                                <stop
+                                                                    offset="95%"
+                                                                    stopColor={THEME.success}
+                                                                    stopOpacity={0}
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            stroke={THEME.glassBorder}
+                                                        />
+                                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
+                                                        <YAxis
+                                                            stroke={THEME.textDim}
+                                                            fontSize={10}
+                                                            domain={[80, 100]}
+                                                        />
+                                                        <Tooltip content={<ChartTip />} />
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="memory"
+                                                            stroke={THEME.success}
+                                                            fill="url(#deep-cache-grad)"
+                                                            name="Hit Ratio %"
+                                                        />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </Panel>
+                                        </>
+                                    )}
+
+                                    {/* ── Temp Files ── */}
+                                    {dt === 'temp-files' && (
+                                        <>
+                                            <Panel title="TEMP FILE USAGE" icon={FileText} accentColor={THEME.warning}>
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                        gap: 12,
+                                                        marginBottom: 16,
+                                                    }}
+                                                >
+                                                    <LiveMetric
+                                                        label="TEMP FILES"
+                                                        value="45"
+                                                        icon={FileText}
+                                                        color={THEME.warning}
+                                                    />
+                                                    <LiveMetric
+                                                        label="TOTAL SIZE"
+                                                        value="2.3 GB"
+                                                        icon={HardDrive}
+                                                        color={THEME.danger}
+                                                    />
+                                                    <LiveMetric
+                                                        label="AVG SIZE"
+                                                        value="52 MB"
+                                                        icon={BarChart2}
+                                                        color={THEME.primary}
+                                                    />
+                                                    <LiveMetric
+                                                        label="WORK MEM"
+                                                        value="256 MB"
+                                                        icon={Server}
+                                                        color={THEME.success}
+                                                    />
+                                                </div>
+                                            </Panel>
+                                            <Panel
+                                                title="TEMP FILE CREATION OVER TIME"
+                                                icon={TrendingUp}
+                                                accentColor={THEME.warning}
+                                            >
+                                                <ResponsiveContainer width="100%" height={200}>
+                                                    <BarChart
+                                                        data={[
+                                                            { hour: '00:00', files: 3, size: 120 },
+                                                            { hour: '04:00', files: 1, size: 45 },
+                                                            { hour: '08:00', files: 8, size: 340 },
+                                                            { hour: '12:00', files: 12, size: 890 },
+                                                            { hour: '16:00', files: 10, size: 560 },
+                                                            { hour: '20:00', files: 6, size: 230 },
+                                                        ]}
+                                                    >
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            stroke={THEME.glassBorder}
+                                                        />
+                                                        <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
+                                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                                        <Tooltip content={<ChartTip />} />
+                                                        <Bar
+                                                            dataKey="files"
+                                                            fill={THEME.warning}
+                                                            name="Temp Files"
+                                                            radius={[4, 4, 0, 0]}
+                                                        />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </Panel>
+                                            <Panel
+                                                title="QUERIES USING TEMP FILES"
+                                                icon={Terminal}
+                                                accentColor={THEME.danger}
+                                            >
+                                                <DataTable
+                                                    columns={[
+                                                        { key: 'query', label: 'Query', width: '40%' },
+                                                        { key: 'size', label: 'Temp Size' },
+                                                        { key: 'sortMethod', label: 'Sort Method' },
+                                                        { key: 'suggestion', label: 'Suggestion' },
+                                                    ]}
+                                                    rows={[
+                                                        {
+                                                            query: 'SELECT * FROM orders ORDER BY...',
+                                                            size: '340 MB',
+                                                            sortMethod: 'External Merge',
+                                                            suggestion: (
+                                                                <StatusBadge
+                                                                    label="Increase work_mem"
+                                                                    color={THEME.warning}
+                                                                />
+                                                            ),
+                                                        },
+                                                        {
+                                                            query: 'SELECT DISTINCT category FROM...',
+                                                            size: '120 MB',
+                                                            sortMethod: 'External Sort',
+                                                            suggestion: (
+                                                                <StatusBadge label="Add index" color={THEME.primary} />
+                                                            ),
+                                                        },
+                                                        {
+                                                            query: 'GROUP BY user_id, product_id...',
+                                                            size: '89 MB',
+                                                            sortMethod: 'Hash Batch',
+                                                            suggestion: (
+                                                                <StatusBadge label="Reduce grouping" color={THEME.ai} />
+                                                            ),
+                                                        },
+                                                    ]}
+                                                />
+                                            </Panel>
+                                        </>
+                                    )}
                                 </>
-                            )}
-                        </>
-                        );
-                    })()}
+                            );
+                        })()}
 
                     {/* ── TAB 3: Resources & Health ── */}
                     {perfTabKey === 'resources' && (
@@ -2131,7 +2708,7 @@ function DemoPostgresTab({ tabId }) {
                                 </span>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                     <Users size={9} /> 3/5 online
-                                    {['#6366f1', '#22d3a5', '#38bdf8'].map((c, i) => (
+                                    {['#4338ca', '#1a7f64', '#0284c7'].map((c, i) => (
                                         <span
                                             key={i}
                                             style={{
@@ -3087,11 +3664,42 @@ function DemoPostgresTab({ tabId }) {
             ];
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={Link2} label="Correlated" value="3" color={THEME.ai} trend="+1" subtitle="alert groups" />
-                        <MetricCard icon={Clock} label="Time Window" value="5m" color={THEME.primary} subtitle="correlation window" />
-                        <MetricCard icon={TrendingUp} label="Root Causes" value="2" color={THEME.warning} subtitle="identified" />
-                        <MetricCard icon={Brain} label="AI Confidence" value="94%" color={THEME.success} subtitle="correlation accuracy" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Link2}
+                            label="Correlated"
+                            value="3"
+                            color={THEME.ai}
+                            trend="+1"
+                            subtitle="alert groups"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Time Window"
+                            value="5m"
+                            color={THEME.primary}
+                            subtitle="correlation window"
+                        />
+                        <MetricCard
+                            icon={TrendingUp}
+                            label="Root Causes"
+                            value="2"
+                            color={THEME.warning}
+                            subtitle="identified"
+                        />
+                        <MetricCard
+                            icon={Brain}
+                            label="AI Confidence"
+                            value="94%"
+                            color={THEME.success}
+                            subtitle="correlation accuracy"
+                        />
                     </div>
                     <Panel title="Correlation Timeline" icon={Clock} accentColor={THEME.ai}>
                         <ResponsiveContainer width="100%" height={220}>
@@ -3106,7 +3714,13 @@ function DemoPostgresTab({ tabId }) {
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Area type="monotone" dataKey="qps" stroke={THEME.ai} fill="url(#corr-event-grad)" name="Events" />
+                                <Area
+                                    type="monotone"
+                                    dataKey="qps"
+                                    stroke={THEME.ai}
+                                    fill="url(#corr-event-grad)"
+                                    name="Events"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -3120,29 +3734,77 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'status', label: 'Status' },
                             ]}
                             rows={[
-                                { group: 'CPU + Query Spike', alerts: '4', root: 'Expensive query on orders', confidence: '96%', status: <StatusBadge label="Active" color={THEME.danger} /> },
-                                { group: 'Memory + Connections', alerts: '3', root: 'Connection pool exhaustion', confidence: '89%', status: <StatusBadge label="Active" color={THEME.warning} /> },
-                                { group: 'Disk I/O + WAL', alerts: '2', root: 'Checkpoint spike', confidence: '92%', status: <StatusBadge label="Resolved" color={THEME.success} /> },
+                                {
+                                    group: 'CPU + Query Spike',
+                                    alerts: '4',
+                                    root: 'Expensive query on orders',
+                                    confidence: '96%',
+                                    status: <StatusBadge label="Active" color={THEME.danger} />,
+                                },
+                                {
+                                    group: 'Memory + Connections',
+                                    alerts: '3',
+                                    root: 'Connection pool exhaustion',
+                                    confidence: '89%',
+                                    status: <StatusBadge label="Active" color={THEME.warning} />,
+                                },
+                                {
+                                    group: 'Disk I/O + WAL',
+                                    alerts: '2',
+                                    root: 'Checkpoint spike',
+                                    confidence: '92%',
+                                    status: <StatusBadge label="Resolved" color={THEME.success} />,
+                                },
                             ]}
                         />
                     </Panel>
                     <Panel title="Alert Correlation Matrix" icon={BarChart2} accentColor={THEME.primary}>
-                        <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 8 }}>Correlation strength between alert categories (higher = more likely to co-occur)</div>
+                        <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 8 }}>
+                            Correlation strength between alert categories (higher = more likely to co-occur)
+                        </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(5, 1fr)', gap: '4px' }}>
                             <div />
                             {corrMatrix[0].map((h, i) => (
-                                <div key={i} style={{ padding: 6, textAlign: 'center', fontSize: 10, fontWeight: 600, color: THEME.textMain }}>{h}</div>
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: 6,
+                                        textAlign: 'center',
+                                        fontSize: 10,
+                                        fontWeight: 600,
+                                        color: THEME.textMain,
+                                    }}
+                                >
+                                    {h}
+                                </div>
                             ))}
                             {corrMatrix[0].map((row, ri) => (
                                 <React.Fragment key={ri}>
-                                    <div style={{ padding: 6, fontSize: 10, fontWeight: 600, color: THEME.textMain }}>{row}</div>
+                                    <div style={{ padding: 6, fontSize: 10, fontWeight: 600, color: THEME.textMain }}>
+                                        {row}
+                                    </div>
                                     {corrMatrix[ri + 1].map((val, ci) => (
-                                        <div key={ci} style={{
-                                            padding: 6, textAlign: 'center', fontSize: 10, borderRadius: 4,
-                                            background: val === 100 ? `${THEME.primary}30` : val > 60 ? `${THEME.danger}20` : val > 30 ? `${THEME.warning}15` : THEME.glass,
-                                            color: val > 60 ? THEME.textMain : THEME.textDim,
-                                            fontWeight: val > 60 ? 600 : 400,
-                                        }}>{val}%</div>
+                                        <div
+                                            key={ci}
+                                            style={{
+                                                padding: 6,
+                                                textAlign: 'center',
+                                                fontSize: 10,
+                                                borderRadius: 4,
+                                                background:
+                                                    val === 100
+                                                        ? `${THEME.primary}30`
+                                                        : val > 60
+                                                          ? `${THEME.danger}20`
+                                                          : val > 30
+                                                            ? `${THEME.warning}15`
+                                                            : THEME.glass,
+                                                color: val > 60 ? THEME.textMain : THEME.textDim,
+                                                fontWeight: val > 60 ? 600 : 400,
+                                            }}
+                                        >
+                                            {val}%
+                                        </div>
                                     ))}
                                 </React.Fragment>
                             ))}
@@ -3552,32 +4214,122 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'query-analysis' && itemKey === 'query-plan') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={BarChart2} label="Est. Cost" value="1,245" color={THEME.warning} subtitle="total cost units" />
-                        <MetricCard icon={Clock} label="Est. Time" value="234ms" color={THEME.primary} subtitle="execution time" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={BarChart2}
+                            label="Est. Cost"
+                            value="1,245"
+                            color={THEME.warning}
+                            subtitle="total cost units"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Est. Time"
+                            value="234ms"
+                            color={THEME.primary}
+                            subtitle="execution time"
+                        />
                         <MetricCard icon={Layers} label="Plan Nodes" value="5" color={THEME.ai} subtitle="operations" />
-                        <MetricCard icon={Database} label="Rows Est." value="12,450" color={THEME.success} subtitle="estimated rows" />
+                        <MetricCard
+                            icon={Database}
+                            label="Rows Est."
+                            value="12,450"
+                            color={THEME.success}
+                            subtitle="estimated rows"
+                        />
                     </div>
                     {/* SQL query being analyzed */}
                     <Panel title="Query" icon={Code} accentColor={THEME.textMuted}>
-                        <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: '#c9d1d9', background: '#0d1117', padding: 12, borderRadius: 6, lineHeight: 1.6 }}>
-                            <span style={{ color: '#ff7b72' }}>SELECT</span> u.id, u.email, <span style={{ color: '#d2a8ff' }}>COUNT</span>(o.id){'\n'}<span style={{ color: '#ff7b72' }}>FROM</span> users u <span style={{ color: '#ff7b72' }}>JOIN</span> orders o <span style={{ color: '#ff7b72' }}>ON</span> u.id = o.user_id{'\n'}<span style={{ color: '#ff7b72' }}>WHERE</span> o.created_at {'>'} <span style={{ color: '#a5d6ff' }}>'2024-01-01'</span>{'\n'}<span style={{ color: '#ff7b72' }}>GROUP BY</span> u.id, u.email;
+                        <div
+                            style={{
+                                fontFamily: THEME.fontMono,
+                                fontSize: 11,
+                                color: '#24292f',
+                                background: '#ffffff',
+                                padding: 12,
+                                borderRadius: 6,
+                                lineHeight: 1.6,
+                            }}
+                        >
+                            <span style={{ color: '#d1242f' }}>SELECT</span> u.id, u.email,{' '}
+                            <span style={{ color: '#6c17a6' }}>COUNT</span>(o.id){'\n'}
+                            <span style={{ color: '#d1242f' }}>FROM</span> users u{' '}
+                            <span style={{ color: '#d1242f' }}>JOIN</span> orders o{' '}
+                            <span style={{ color: '#d1242f' }}>ON</span> u.id = o.user_id{'\n'}
+                            <span style={{ color: '#d1242f' }}>WHERE</span> o.created_at {'>'}{' '}
+                            <span style={{ color: '#0550ae' }}>'2024-01-01'</span>
+                            {'\n'}
+                            <span style={{ color: '#d1242f' }}>GROUP BY</span> u.id, u.email;
                         </div>
                     </Panel>
                     <Panel title="Execution Plan Tree" icon={TreePine} accentColor={THEME.ai}>
-                        <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textDim, lineHeight: 1.8 }}>
+                        <div
+                            style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textDim, lineHeight: 1.8 }}
+                        >
                             {[
-                                { indent: 0, text: 'Aggregate (cost=1000..1245 rows=100)', pct: '100%', color: THEME.ai },
-                                { indent: 1, text: 'Hash Join (cost=500..800 rows=12450)', pct: '64%', color: THEME.warning },
-                                { indent: 2, text: 'Seq Scan on orders (cost=0..450 rows=8900)', pct: '36%', color: THEME.danger },
-                                { indent: 3, text: 'Filter: (created_at > \'2024-01-01\')', pct: '', color: THEME.textDim },
+                                {
+                                    indent: 0,
+                                    text: 'Aggregate (cost=1000..1245 rows=100)',
+                                    pct: '100%',
+                                    color: THEME.ai,
+                                },
+                                {
+                                    indent: 1,
+                                    text: 'Hash Join (cost=500..800 rows=12450)',
+                                    pct: '64%',
+                                    color: THEME.warning,
+                                },
+                                {
+                                    indent: 2,
+                                    text: 'Seq Scan on orders (cost=0..450 rows=8900)',
+                                    pct: '36%',
+                                    color: THEME.danger,
+                                },
+                                {
+                                    indent: 3,
+                                    text: "Filter: (created_at > '2024-01-01')",
+                                    pct: '',
+                                    color: THEME.textDim,
+                                },
                                 { indent: 2, text: 'Hash (cost=50..50 rows=2300)', pct: '4%', color: THEME.success },
-                                { indent: 3, text: 'Index Scan using users_pkey on users', pct: '2%', color: THEME.success },
+                                {
+                                    indent: 3,
+                                    text: 'Index Scan using users_pkey on users',
+                                    pct: '2%',
+                                    color: THEME.success,
+                                },
                             ].map((node, i) => (
-                                <div key={i} style={{ marginLeft: node.indent * 24, display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <div
+                                    key={i}
+                                    style={{
+                                        marginLeft: node.indent * 24,
+                                        display: 'flex',
+                                        gap: 8,
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <span style={{ color: node.color }}>{'→'}</span>
                                     <span>{node.text}</span>
-                                    {node.pct && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: `${node.color}20`, color: node.color, fontWeight: 600 }}>{node.pct}</span>}
+                                    {node.pct && (
+                                        <span
+                                            style={{
+                                                fontSize: 9,
+                                                padding: '1px 6px',
+                                                borderRadius: 4,
+                                                background: `${node.color}20`,
+                                                color: node.color,
+                                                fontWeight: 600,
+                                            }}
+                                        >
+                                            {node.pct}
+                                        </span>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -3594,7 +4346,12 @@ function DemoPostgresTab({ tabId }) {
                                             { name: 'Aggregate', value: 245 },
                                             { name: 'Index Scan', value: 50 },
                                         ]}
-                                        cx="50%" cy="50%" innerRadius={40} outerRadius={75} fill={THEME.ai} dataKey="value"
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={40}
+                                        outerRadius={75}
+                                        fill={THEME.ai}
+                                        dataKey="value"
                                     >
                                         <Cell fill={THEME.danger} />
                                         <Cell fill={THEME.warning} />
@@ -4707,19 +5464,72 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'schema' && itemKey === 'schema-migrations') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={RefreshCw} label="Applied" value="24" color={THEME.success} trend="+2" subtitle="this week" />
-                        <MetricCard icon={Clock} label="Pending" value="2" color={THEME.warning} subtitle="awaiting review" />
-                        <MetricCard icon={CheckCircle} label="Latest" value="v2.3.1" color={THEME.primary} subtitle="2h ago" />
-                        <MetricCard icon={AlertTriangle} label="Failed" value="0" color={THEME.success} subtitle="last 30d" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={RefreshCw}
+                            label="Applied"
+                            value="24"
+                            color={THEME.success}
+                            trend="+2"
+                            subtitle="this week"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Pending"
+                            value="2"
+                            color={THEME.warning}
+                            subtitle="awaiting review"
+                        />
+                        <MetricCard
+                            icon={CheckCircle}
+                            label="Latest"
+                            value="v2.3.1"
+                            color={THEME.primary}
+                            subtitle="2h ago"
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Failed"
+                            value="0"
+                            color={THEME.success}
+                            subtitle="last 30d"
+                        />
                     </div>
                     {/* Pending migration banner */}
-                    <div style={{ padding: '12px 16px', background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}40`, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                        style={{
+                            padding: '12px 16px',
+                            background: `${THEME.warning}12`,
+                            border: `1px solid ${THEME.warning}40`,
+                            borderRadius: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                        }}
+                    >
                         <AlertTriangle size={16} style={{ color: THEME.warning, flexShrink: 0 }} />
                         <div style={{ flex: 1, fontSize: 11, color: THEME.textMain }}>
                             <strong>2 pending migrations</strong> awaiting approval for production deployment
                         </div>
-                        <div style={{ padding: '5px 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, background: THEME.warning, color: '#fff', cursor: 'pointer' }}>Review</div>
+                        <div
+                            style={{
+                                padding: '5px 12px',
+                                borderRadius: 6,
+                                fontSize: 10,
+                                fontWeight: 600,
+                                background: THEME.warning,
+                                color: '#fff',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Review
+                        </div>
                     </div>
                     <Panel title="Migration History" icon={RefreshCw} accentColor={THEME.primary}>
                         <DataTable
@@ -4732,25 +5542,69 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'date', label: 'Applied' },
                             ]}
                             rows={[
-                                { version: 'v2.3.2', description: 'Add payment_method to orders', author: 'dev_team', duration: '-', status: <StatusBadge label="Pending" color={THEME.warning} />, date: '-' },
-                                { version: 'v2.3.1', description: 'Create user_preferences table', author: 'admin', duration: '1.2s', status: <StatusBadge label="Applied" color={THEME.success} />, date: '2h ago' },
-                                { version: 'v2.3.0', description: 'Add index on orders.created_at', author: 'dba_team', duration: '4.5s', status: <StatusBadge label="Applied" color={THEME.success} />, date: '1d ago' },
-                                { version: 'v2.2.9', description: 'Rename user.name to full_name', author: 'dev_team', duration: '0.8s', status: <StatusBadge label="Applied" color={THEME.success} />, date: '3d ago' },
-                                { version: 'v2.2.8', description: 'Add sessions table', author: 'admin', duration: '2.1s', status: <StatusBadge label="Applied" color={THEME.success} />, date: '5d ago' },
-                                { version: 'v2.2.7', description: 'Drop legacy_orders table', author: 'dba_team', duration: '0.3s', status: <StatusBadge label="Applied" color={THEME.success} />, date: '1w ago' },
+                                {
+                                    version: 'v2.3.2',
+                                    description: 'Add payment_method to orders',
+                                    author: 'dev_team',
+                                    duration: '-',
+                                    status: <StatusBadge label="Pending" color={THEME.warning} />,
+                                    date: '-',
+                                },
+                                {
+                                    version: 'v2.3.1',
+                                    description: 'Create user_preferences table',
+                                    author: 'admin',
+                                    duration: '1.2s',
+                                    status: <StatusBadge label="Applied" color={THEME.success} />,
+                                    date: '2h ago',
+                                },
+                                {
+                                    version: 'v2.3.0',
+                                    description: 'Add index on orders.created_at',
+                                    author: 'dba_team',
+                                    duration: '4.5s',
+                                    status: <StatusBadge label="Applied" color={THEME.success} />,
+                                    date: '1d ago',
+                                },
+                                {
+                                    version: 'v2.2.9',
+                                    description: 'Rename user.name to full_name',
+                                    author: 'dev_team',
+                                    duration: '0.8s',
+                                    status: <StatusBadge label="Applied" color={THEME.success} />,
+                                    date: '3d ago',
+                                },
+                                {
+                                    version: 'v2.2.8',
+                                    description: 'Add sessions table',
+                                    author: 'admin',
+                                    duration: '2.1s',
+                                    status: <StatusBadge label="Applied" color={THEME.success} />,
+                                    date: '5d ago',
+                                },
+                                {
+                                    version: 'v2.2.7',
+                                    description: 'Drop legacy_orders table',
+                                    author: 'dba_team',
+                                    duration: '0.3s',
+                                    status: <StatusBadge label="Applied" color={THEME.success} />,
+                                    date: '1w ago',
+                                },
                             ]}
                         />
                     </Panel>
                     <Panel title="Migration Timeline" icon={Calendar} accentColor={THEME.warning}>
                         <ResponsiveContainer width="100%" height={180}>
-                            <BarChart data={[
-                                { month: 'Oct', applied: 4, failed: 0 },
-                                { month: 'Nov', applied: 6, failed: 1 },
-                                { month: 'Dec', applied: 3, failed: 0 },
-                                { month: 'Jan', applied: 5, failed: 0 },
-                                { month: 'Feb', applied: 4, failed: 0 },
-                                { month: 'Mar', applied: 2, failed: 0 },
-                            ]}>
+                            <BarChart
+                                data={[
+                                    { month: 'Oct', applied: 4, failed: 0 },
+                                    { month: 'Nov', applied: 6, failed: 1 },
+                                    { month: 'Dec', applied: 3, failed: 0 },
+                                    { month: 'Jan', applied: 5, failed: 0 },
+                                    { month: 'Feb', applied: 4, failed: 0 },
+                                    { month: 'Mar', applied: 2, failed: 0 },
+                                ]}
+                            >
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
                                 <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
@@ -4768,7 +5622,13 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'schema' && itemKey === 'schema-visualizer') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
                         <MetricCard icon={Database} label="Tables" value="45" color={THEME.primary} />
                         <MetricCard icon={Link2} label="Relationships" value="28" color={THEME.success} />
                         <MetricCard icon={Layers} label="Schemas" value="4" color={THEME.ai} />
@@ -4797,7 +5657,14 @@ function DemoPostgresTab({ tabId }) {
                     </div>
 
                     <Panel title="Entity Relationship Diagram" icon={Blocks} accentColor={THEME.warning}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', padding: '24px' }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(3, 1fr)',
+                                gap: '24px',
+                                padding: '24px',
+                            }}
+                        >
                             {[
                                 { name: 'users', cols: 'id, email, name' },
                                 { name: 'orders', cols: 'id, user_id, total' },
@@ -4816,12 +5683,27 @@ function DemoPostgresTab({ tabId }) {
                                         textAlign: 'center',
                                     }}
                                 >
-                                    <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 12, color: THEME.textMain }}>{table.name}</div>
+                                    <div
+                                        style={{
+                                            fontWeight: 700,
+                                            marginBottom: 8,
+                                            fontSize: 12,
+                                            color: THEME.textMain,
+                                        }}
+                                    >
+                                        {table.name}
+                                    </div>
                                     <div style={{ fontSize: 10, color: THEME.textDim }}>{table.cols}</div>
                                 </div>
                             ))}
                         </div>
-                        <div style={{ height: '2px', background: `linear-gradient(90deg, ${THEME.glassBorder}, transparent)`, marginTop: '16px' }}></div>
+                        <div
+                            style={{
+                                height: '2px',
+                                background: `linear-gradient(90deg, ${THEME.glassBorder}, transparent)`,
+                                marginTop: '16px',
+                            }}
+                        ></div>
                     </Panel>
 
                     <Panel title="Relationship Details" icon={Link2} accentColor={THEME.primary}>
@@ -4835,12 +5717,54 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'cardinality', label: 'Cardinality' },
                             ]}
                             rows={[
-                                { source_table: 'orders', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
-                                { source_table: 'payments', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
-                                { source_table: 'inventory', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'SET NULL', cardinality: '1:N' },
-                                { source_table: 'sessions', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
-                                { source_table: 'order_items', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', cardinality: '1:N' },
-                                { source_table: 'order_items', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'RESTRICT', cardinality: '1:N' },
+                                {
+                                    source_table: 'orders',
+                                    source_col: 'user_id',
+                                    target_table: 'users',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    cardinality: '1:N',
+                                },
+                                {
+                                    source_table: 'payments',
+                                    source_col: 'order_id',
+                                    target_table: 'orders',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    cardinality: '1:N',
+                                },
+                                {
+                                    source_table: 'inventory',
+                                    source_col: 'product_id',
+                                    target_table: 'products',
+                                    target_col: 'id',
+                                    on_delete: 'SET NULL',
+                                    cardinality: '1:N',
+                                },
+                                {
+                                    source_table: 'sessions',
+                                    source_col: 'user_id',
+                                    target_table: 'users',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    cardinality: '1:N',
+                                },
+                                {
+                                    source_table: 'order_items',
+                                    source_col: 'order_id',
+                                    target_table: 'orders',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    cardinality: '1:N',
+                                },
+                                {
+                                    source_table: 'order_items',
+                                    source_col: 'product_id',
+                                    target_table: 'products',
+                                    target_col: 'id',
+                                    on_delete: 'RESTRICT',
+                                    cardinality: '1:N',
+                                },
                             ]}
                         />
                     </Panel>
@@ -4852,7 +5776,13 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'schema' && itemKey === 'table-dependencies') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
                         <MetricCard icon={Database} label="Total Tables" value="45" color={THEME.primary} />
                         <MetricCard icon={Link2} label="Foreign Keys" value="28" color={THEME.success} />
                         <MetricCard icon={AlertTriangle} label="Circular Deps" value="0" color={THEME.success} />
@@ -4860,16 +5790,26 @@ function DemoPostgresTab({ tabId }) {
                     </div>
 
                     <Panel title="Dependency Graph" icon={TreePine} accentColor={THEME.warning}>
-                        <div style={{ padding: '16px', fontFamily: THEME.fontMono, fontSize: 11, lineHeight: '1.8', color: THEME.textMain }}>
+                        <div
+                            style={{
+                                padding: '16px',
+                                fontFamily: THEME.fontMono,
+                                fontSize: 11,
+                                lineHeight: '1.8',
+                                color: THEME.textMain,
+                            }}
+                        >
                             <div>public/</div>
-                            <div style={{ paddingLeft: '20px', color: THEME.textDim }}>├─ users (referenced by 8 tables)</div>
-                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  ├─ orders</div>
-                            <div style={{ paddingLeft: '60px', color: THEME.textDim }}>│  │  ├─ order_items</div>
-                            <div style={{ paddingLeft: '80px', color: THEME.textDim }}>│  │  └─ payments</div>
-                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  └─ sessions</div>
+                            <div style={{ paddingLeft: '20px', color: THEME.textDim }}>
+                                ├─ users (referenced by 8 tables)
+                            </div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│ ├─ orders</div>
+                            <div style={{ paddingLeft: '60px', color: THEME.textDim }}>│ │ ├─ order_items</div>
+                            <div style={{ paddingLeft: '80px', color: THEME.textDim }}>│ │ └─ payments</div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│ └─ sessions</div>
                             <div style={{ paddingLeft: '20px', color: THEME.textDim }}>├─ products</div>
-                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  ├─ inventory</div>
-                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│  └─ order_items</div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│ ├─ inventory</div>
+                            <div style={{ paddingLeft: '40px', color: THEME.textDim }}>│ └─ order_items</div>
                             <div style={{ paddingLeft: '20px', color: THEME.textDim }}>└─ audit_logs</div>
                         </div>
                     </Panel>
@@ -4885,29 +5825,104 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'on_update', label: 'On Update' },
                             ]}
                             rows={[
-                                { source_table: 'orders', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
-                                { source_table: 'order_items', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
-                                { source_table: 'order_items', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'RESTRICT', on_update: 'CASCADE' },
-                                { source_table: 'payments', source_col: 'order_id', target_table: 'orders', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
-                                { source_table: 'inventory', source_col: 'product_id', target_table: 'products', target_col: 'id', on_delete: 'SET NULL', on_update: 'CASCADE' },
-                                { source_table: 'sessions', source_col: 'user_id', target_table: 'users', target_col: 'id', on_delete: 'CASCADE', on_update: 'CASCADE' },
+                                {
+                                    source_table: 'orders',
+                                    source_col: 'user_id',
+                                    target_table: 'users',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    on_update: 'CASCADE',
+                                },
+                                {
+                                    source_table: 'order_items',
+                                    source_col: 'order_id',
+                                    target_table: 'orders',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    on_update: 'CASCADE',
+                                },
+                                {
+                                    source_table: 'order_items',
+                                    source_col: 'product_id',
+                                    target_table: 'products',
+                                    target_col: 'id',
+                                    on_delete: 'RESTRICT',
+                                    on_update: 'CASCADE',
+                                },
+                                {
+                                    source_table: 'payments',
+                                    source_col: 'order_id',
+                                    target_table: 'orders',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    on_update: 'CASCADE',
+                                },
+                                {
+                                    source_table: 'inventory',
+                                    source_col: 'product_id',
+                                    target_table: 'products',
+                                    target_col: 'id',
+                                    on_delete: 'SET NULL',
+                                    on_update: 'CASCADE',
+                                },
+                                {
+                                    source_table: 'sessions',
+                                    source_col: 'user_id',
+                                    target_table: 'users',
+                                    target_col: 'id',
+                                    on_delete: 'CASCADE',
+                                    on_update: 'CASCADE',
+                                },
                             ]}
                         />
                     </Panel>
 
                     <Panel title="Dependency Analysis" icon={BarChart2} accentColor={THEME.success}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: THEME.glass, borderRadius: 4 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '8px',
+                                    background: THEME.glass,
+                                    borderRadius: 4,
+                                }}
+                            >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Most Referenced Table</span>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.primary }}>users (8 refs)</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.primary }}>
+                                    users (8 refs)
+                                </span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: THEME.glass, borderRadius: 4 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '8px',
+                                    background: THEME.glass,
+                                    borderRadius: 4,
+                                }}
+                            >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Deepest Dependency Chain</span>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.warning }}>orders → items → shipping → tracking</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.warning }}>
+                                    orders → items → shipping → tracking
+                                </span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: THEME.glass, borderRadius: 4 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '8px',
+                                    background: THEME.glass,
+                                    borderRadius: 4,
+                                }}
+                            >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Orphan Tables</span>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.danger }}>2 (temp_data, staging)</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: THEME.danger }}>
+                                    2 (temp_data, staging)
+                                </span>
                             </div>
                         </div>
                     </Panel>
@@ -4919,7 +5934,13 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'schema' && itemKey === 'chart-builder') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
                         <MetricCard icon={LayoutDashboard} label="Saved Charts" value="12" color={THEME.primary} />
                         <MetricCard icon={Gauge} label="Dashboards" value="4" color={THEME.success} />
                         <MetricCard icon={Share2} label="Shared" value="8" color={THEME.ai} />
@@ -4927,7 +5948,14 @@ function DemoPostgresTab({ tabId }) {
                     </div>
 
                     <Panel title="Chart Configuration" icon={BarChart2} accentColor={THEME.warning}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', padding: '16px' }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(2, 1fr)',
+                                gap: '16px',
+                                padding: '16px',
+                            }}
+                        >
                             <div>
                                 <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>
                                     Chart Type
@@ -5038,17 +6066,54 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'shared', label: 'Shared' },
                             ]}
                             rows={[
-                                { name: 'Query Performance', type: 'Line Chart', data_source: 'pg_stat_statements', created: '2h ago', shared: <StatusBadge label="Yes" color={THEME.success} /> },
-                                { name: 'Table Growth', type: 'Area Chart', data_source: 'pg_tables', created: '1d ago', shared: <StatusBadge label="No" color={THEME.textDim} /> },
-                                { name: 'Index Usage', type: 'Bar Chart', data_source: 'pg_indexes', created: '3d ago', shared: <StatusBadge label="Yes" color={THEME.success} /> },
-                                { name: 'Connection Distribution', type: 'Pie Chart', data_source: 'pg_stat_activity', created: '1w ago', shared: <StatusBadge label="Yes" color={THEME.success} /> },
-                                { name: 'Cache Hit Ratio', type: 'Line Chart', data_source: 'pg_stat_database', created: '2w ago', shared: <StatusBadge label="No" color={THEME.textDim} /> },
+                                {
+                                    name: 'Query Performance',
+                                    type: 'Line Chart',
+                                    data_source: 'pg_stat_statements',
+                                    created: '2h ago',
+                                    shared: <StatusBadge label="Yes" color={THEME.success} />,
+                                },
+                                {
+                                    name: 'Table Growth',
+                                    type: 'Area Chart',
+                                    data_source: 'pg_tables',
+                                    created: '1d ago',
+                                    shared: <StatusBadge label="No" color={THEME.textDim} />,
+                                },
+                                {
+                                    name: 'Index Usage',
+                                    type: 'Bar Chart',
+                                    data_source: 'pg_indexes',
+                                    created: '3d ago',
+                                    shared: <StatusBadge label="Yes" color={THEME.success} />,
+                                },
+                                {
+                                    name: 'Connection Distribution',
+                                    type: 'Pie Chart',
+                                    data_source: 'pg_stat_activity',
+                                    created: '1w ago',
+                                    shared: <StatusBadge label="Yes" color={THEME.success} />,
+                                },
+                                {
+                                    name: 'Cache Hit Ratio',
+                                    type: 'Line Chart',
+                                    data_source: 'pg_stat_database',
+                                    created: '2w ago',
+                                    shared: <StatusBadge label="No" color={THEME.textDim} />,
+                                },
                             ]}
                         />
                     </Panel>
 
                     <Panel title="Export Options" icon={Download} accentColor={THEME.success}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', padding: '16px' }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(2, 1fr)',
+                                gap: '12px',
+                                padding: '16px',
+                            }}
+                        >
                             {['PNG', 'SVG', 'PDF', 'Share Link'].map((option) => (
                                 <button
                                     key={option}
@@ -5082,16 +6147,53 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'infrastructure' && itemKey === 'connection-pool') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
                         <RingGauge value={65} max={100} label="Pool Usage" color={THEME.ai} />
                         <RingGauge value={45} max={200} label="Active Conns" color={THEME.success} />
                         <RingGauge value={12} max={50} label="Idle Conns" color={THEME.textMuted} />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={Network} label="Pool Size" value="200" color={THEME.primary} subtitle="max connections" />
-                        <MetricCard icon={Clock} label="Wait Time" value="12ms" color={THEME.warning} trend="-3ms" subtitle="avg checkout" />
-                        <MetricCard icon={AlertTriangle} label="Exhausted" value="0" color={THEME.success} subtitle="pool exhaustions" />
-                        <MetricCard icon={RefreshCw} label="Turnover" value="3.2/s" color={THEME.ai} subtitle="conn/sec" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Network}
+                            label="Pool Size"
+                            value="200"
+                            color={THEME.primary}
+                            subtitle="max connections"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Wait Time"
+                            value="12ms"
+                            color={THEME.warning}
+                            trend="-3ms"
+                            subtitle="avg checkout"
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Exhausted"
+                            value="0"
+                            color={THEME.success}
+                            subtitle="pool exhaustions"
+                        />
+                        <MetricCard
+                            icon={RefreshCw}
+                            label="Turnover"
+                            value="3.2/s"
+                            color={THEME.ai}
+                            subtitle="conn/sec"
+                        />
                     </div>
                     <Panel title="Pool Connections Over Time" icon={Network} accentColor={THEME.success}>
                         <ResponsiveContainer width="100%" height={220}>
@@ -5110,8 +6212,20 @@ function DemoPostgresTab({ tabId }) {
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Area type="monotone" dataKey="active" stroke={THEME.success} fill="url(#pool-active-grad)" name="Active" />
-                                <Area type="monotone" dataKey="idle" stroke={THEME.textMuted} fill="url(#pool-idle-grad)" name="Idle" />
+                                <Area
+                                    type="monotone"
+                                    dataKey="active"
+                                    stroke={THEME.success}
+                                    fill="url(#pool-active-grad)"
+                                    name="Active"
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="idle"
+                                    stroke={THEME.textMuted}
+                                    fill="url(#pool-idle-grad)"
+                                    name="Idle"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -5126,10 +6240,38 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'status', label: 'Health' },
                             ]}
                             rows={[
-                                { pool: 'pgbouncer-main', active: '45', idle: '12', max: '100', wait: '0', status: <StatusBadge label="Healthy" color={THEME.success} /> },
-                                { pool: 'pgbouncer-read', active: '23', idle: '8', max: '50', wait: '0', status: <StatusBadge label="Healthy" color={THEME.success} /> },
-                                { pool: 'pgbouncer-analytics', active: '67', idle: '3', max: '80', wait: '2', status: <StatusBadge label="High Load" color={THEME.warning} /> },
-                                { pool: 'direct-conn', active: '12', idle: '5', max: '30', wait: '0', status: <StatusBadge label="Healthy" color={THEME.success} /> },
+                                {
+                                    pool: 'pgbouncer-main',
+                                    active: '45',
+                                    idle: '12',
+                                    max: '100',
+                                    wait: '0',
+                                    status: <StatusBadge label="Healthy" color={THEME.success} />,
+                                },
+                                {
+                                    pool: 'pgbouncer-read',
+                                    active: '23',
+                                    idle: '8',
+                                    max: '50',
+                                    wait: '0',
+                                    status: <StatusBadge label="Healthy" color={THEME.success} />,
+                                },
+                                {
+                                    pool: 'pgbouncer-analytics',
+                                    active: '67',
+                                    idle: '3',
+                                    max: '80',
+                                    wait: '2',
+                                    status: <StatusBadge label="High Load" color={THEME.warning} />,
+                                },
+                                {
+                                    pool: 'direct-conn',
+                                    active: '12',
+                                    idle: '5',
+                                    max: '30',
+                                    wait: '0',
+                                    status: <StatusBadge label="Healthy" color={THEME.success} />,
+                                },
                             ]}
                         />
                     </Panel>
@@ -5141,11 +6283,44 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'infrastructure' && itemKey === 'pool-metrics') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={Gauge} label="Utilization" value="65%" color={THEME.ai} trend="+2%" subtitle="pool usage" />
-                        <MetricCard icon={Clock} label="Avg Wait" value="12ms" color={THEME.warning} trend="-3ms" subtitle="checkout time" />
-                        <MetricCard icon={RefreshCw} label="Turnover" value="845" color={THEME.success} subtitle="conns/min" />
-                        <MetricCard icon={AlertTriangle} label="Timeouts" value="3" color={THEME.danger} trend="+1" subtitle="last hour" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Gauge}
+                            label="Utilization"
+                            value="65%"
+                            color={THEME.ai}
+                            trend="+2%"
+                            subtitle="pool usage"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Avg Wait"
+                            value="12ms"
+                            color={THEME.warning}
+                            trend="-3ms"
+                            subtitle="checkout time"
+                        />
+                        <MetricCard
+                            icon={RefreshCw}
+                            label="Turnover"
+                            value="845"
+                            color={THEME.success}
+                            subtitle="conns/min"
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Timeouts"
+                            value="3"
+                            color={THEME.danger}
+                            trend="+1"
+                            subtitle="last hour"
+                        />
                     </div>
                     <Panel title="Pool Utilization" icon={Network} accentColor={THEME.success}>
                         <ResponsiveContainer width="100%" height={220}>
@@ -5154,8 +6329,20 @@ function DemoPostgresTab({ tabId }) {
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Area type="monotone" dataKey="active" stroke={THEME.ai} fill={`${THEME.ai}20`} name="Active" />
-                                <Area type="monotone" dataKey="idle" stroke={THEME.textMuted} fill={`${THEME.textMuted}10`} name="Idle" />
+                                <Area
+                                    type="monotone"
+                                    dataKey="active"
+                                    stroke={THEME.ai}
+                                    fill={`${THEME.ai}20`}
+                                    name="Active"
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="idle"
+                                    stroke={THEME.textMuted}
+                                    fill={`${THEME.textMuted}10`}
+                                    name="Idle"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -5166,7 +6353,13 @@ function DemoPostgresTab({ tabId }) {
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Line type="monotone" dataKey="tps" stroke={THEME.warning} strokeWidth={2} name="Wait (ms)" />
+                                <Line
+                                    type="monotone"
+                                    dataKey="tps"
+                                    stroke={THEME.warning}
+                                    strokeWidth={2}
+                                    name="Wait (ms)"
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -5180,11 +6373,41 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'status', label: 'Status' },
                             ]}
                             rows={[
-                                { metric: 'Active Connections', current: '45', avg: '38', peak: '89', status: <StatusBadge label="Normal" color={THEME.success} /> },
-                                { metric: 'Idle Connections', current: '12', avg: '15', peak: '25', status: <StatusBadge label="Normal" color={THEME.success} /> },
-                                { metric: 'Wait Queue', current: '0', avg: '1.2', peak: '8', status: <StatusBadge label="Clear" color={THEME.success} /> },
-                                { metric: 'Checkout Time', current: '12ms', avg: '15ms', peak: '45ms', status: <StatusBadge label="Good" color={THEME.success} /> },
-                                { metric: 'Connection Errors', current: '0', avg: '0.5', peak: '3', status: <StatusBadge label="Normal" color={THEME.success} /> },
+                                {
+                                    metric: 'Active Connections',
+                                    current: '45',
+                                    avg: '38',
+                                    peak: '89',
+                                    status: <StatusBadge label="Normal" color={THEME.success} />,
+                                },
+                                {
+                                    metric: 'Idle Connections',
+                                    current: '12',
+                                    avg: '15',
+                                    peak: '25',
+                                    status: <StatusBadge label="Normal" color={THEME.success} />,
+                                },
+                                {
+                                    metric: 'Wait Queue',
+                                    current: '0',
+                                    avg: '1.2',
+                                    peak: '8',
+                                    status: <StatusBadge label="Clear" color={THEME.success} />,
+                                },
+                                {
+                                    metric: 'Checkout Time',
+                                    current: '12ms',
+                                    avg: '15ms',
+                                    peak: '45ms',
+                                    status: <StatusBadge label="Good" color={THEME.success} />,
+                                },
+                                {
+                                    metric: 'Connection Errors',
+                                    current: '0',
+                                    avg: '0.5',
+                                    peak: '3',
+                                    status: <StatusBadge label="Normal" color={THEME.success} />,
+                                },
                             ]}
                         />
                     </Panel>
@@ -6091,10 +7314,37 @@ function DemoPostgresTab({ tabId }) {
                             gap: '12px',
                         }}
                     >
-                        <MetricCard icon={BarChart2} label="Metrics" value="2,456" color={THEME.ai} trend="+12%" subtitle="active series" />
-                        <MetricCard icon={FileSearch} label="Logs" value="1.2M" color={THEME.warning} trend="+8%" subtitle="24h ingested" />
-                        <MetricCard icon={Radar} label="Traces" value="45K" color={THEME.primary} trend="+5%" subtitle="spans collected" />
-                        <MetricCard icon={Eye} label="Uptime" value="99.97%" color={THEME.success} subtitle="30d average" />
+                        <MetricCard
+                            icon={BarChart2}
+                            label="Metrics"
+                            value="2,456"
+                            color={THEME.ai}
+                            trend="+12%"
+                            subtitle="active series"
+                        />
+                        <MetricCard
+                            icon={FileSearch}
+                            label="Logs"
+                            value="1.2M"
+                            color={THEME.warning}
+                            trend="+8%"
+                            subtitle="24h ingested"
+                        />
+                        <MetricCard
+                            icon={Radar}
+                            label="Traces"
+                            value="45K"
+                            color={THEME.primary}
+                            trend="+5%"
+                            subtitle="spans collected"
+                        />
+                        <MetricCard
+                            icon={Eye}
+                            label="Uptime"
+                            value="99.97%"
+                            color={THEME.success}
+                            subtitle="30d average"
+                        />
                     </div>
                     <Panel title="Integration Status" icon={Radio} accentColor={THEME.warning}>
                         <div
@@ -6142,7 +7392,13 @@ function DemoPostgresTab({ tabId }) {
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Area type="monotone" dataKey="qps" stroke={THEME.ai} fill="url(#obs-ingest-grad)" name="Metrics/s" />
+                                <Area
+                                    type="monotone"
+                                    dataKey="qps"
+                                    stroke={THEME.ai}
+                                    fill="url(#obs-ingest-grad)"
+                                    name="Metrics/s"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -6155,10 +7411,30 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'status', label: 'Status' },
                             ]}
                             rows={[
-                                { source: 'Prometheus', type: 'CPU High', count: '12', status: <StatusBadge label="Active" color={THEME.danger} /> },
-                                { source: 'Loki', type: 'Error Spike', count: '8', status: <StatusBadge label="Active" color={THEME.warning} /> },
-                                { source: 'Jaeger', type: 'Latency P99', count: '5', status: <StatusBadge label="Resolved" color={THEME.success} /> },
-                                { source: 'PagerDuty', type: 'Disk Alert', count: '3', status: <StatusBadge label="Acked" color={THEME.primary} /> },
+                                {
+                                    source: 'Prometheus',
+                                    type: 'CPU High',
+                                    count: '12',
+                                    status: <StatusBadge label="Active" color={THEME.danger} />,
+                                },
+                                {
+                                    source: 'Loki',
+                                    type: 'Error Spike',
+                                    count: '8',
+                                    status: <StatusBadge label="Active" color={THEME.warning} />,
+                                },
+                                {
+                                    source: 'Jaeger',
+                                    type: 'Latency P99',
+                                    count: '5',
+                                    status: <StatusBadge label="Resolved" color={THEME.success} />,
+                                },
+                                {
+                                    source: 'PagerDuty',
+                                    type: 'Disk Alert',
+                                    count: '3',
+                                    status: <StatusBadge label="Acked" color={THEME.primary} />,
+                                },
                             ]}
                         />
                     </Panel>
@@ -6825,7 +8101,12 @@ function DemoPostgresTab({ tabId }) {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
-                                <YAxis stroke={THEME.textDim} fontSize={9} domain={[99.8, 100]} tickFormatter={(v) => v.toFixed(2)} />
+                                <YAxis
+                                    stroke={THEME.textDim}
+                                    fontSize={9}
+                                    domain={[99.8, 100]}
+                                    tickFormatter={(v) => v.toFixed(2)}
+                                />
                                 <Tooltip content={<ChartTip />} />
                                 <Area
                                     type="monotone"
@@ -7011,40 +8292,102 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'developer' && itemKey === 'sql-console') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={Terminal} label="Queries Run" value="1,284" color={THEME.ai} subtitle="today" />
-                        <MetricCard icon={Clock} label="Avg Runtime" value="45ms" color={THEME.success} subtitle="last 100" />
-                        <MetricCard icon={CheckCircle} label="Success Rate" value="98.7%" color={THEME.primary} subtitle="24h" />
-                        <MetricCard icon={Database} label="Connected" value="prod_main" color={THEME.warning} subtitle="primary" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Terminal}
+                            label="Queries Run"
+                            value="1,284"
+                            color={THEME.ai}
+                            subtitle="today"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Avg Runtime"
+                            value="45ms"
+                            color={THEME.success}
+                            subtitle="last 100"
+                        />
+                        <MetricCard
+                            icon={CheckCircle}
+                            label="Success Rate"
+                            value="98.7%"
+                            color={THEME.primary}
+                            subtitle="24h"
+                        />
+                        <MetricCard
+                            icon={Database}
+                            label="Connected"
+                            value="prod_main"
+                            color={THEME.warning}
+                            subtitle="primary"
+                        />
                     </div>
                     <Panel title="SQL Editor" icon={Terminal} accentColor={THEME.ai}>
                         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                             {['Run Query', 'Explain', 'Format', 'Save'].map((btn, i) => (
-                                <div key={i} style={{ padding: '6px 14px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer',
-                                    background: i === 0 ? THEME.ai : THEME.glass,
-                                    color: i === 0 ? '#fff' : THEME.textMuted,
-                                    border: `1px solid ${i === 0 ? THEME.ai : THEME.glassBorder}`,
-                                }}>{btn}</div>
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: '6px 14px',
+                                        borderRadius: 6,
+                                        fontSize: 10,
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        background: i === 0 ? THEME.ai : THEME.glass,
+                                        color: i === 0 ? '#fff' : THEME.textMuted,
+                                        border: `1px solid ${i === 0 ? THEME.ai : THEME.glassBorder}`,
+                                    }}
+                                >
+                                    {btn}
+                                </div>
                             ))}
                         </div>
                         <div
                             style={{
-                                background: '#0d1117',
+                                background: '#ffffff',
                                 border: `1px solid ${THEME.glassBorder}`,
                                 borderRadius: 6,
                                 padding: '14px',
                                 fontFamily: THEME.fontMono,
                                 fontSize: 11.5,
-                                color: '#c9d1d9',
+                                color: '#24292f',
                                 minHeight: 120,
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-word',
                                 lineHeight: 1.7,
                             }}
                         >
-                            <span style={{ color: '#ff7b72' }}>SELECT</span> u.id, u.email, <span style={{ color: '#d2a8ff' }}>COUNT</span>(o.id) <span style={{ color: '#ff7b72' }}>AS</span> order_count{'\n'}<span style={{ color: '#ff7b72' }}>FROM</span> users u{'\n'}<span style={{ color: '#ff7b72' }}>LEFT JOIN</span> orders o <span style={{ color: '#ff7b72' }}>ON</span> u.id = o.user_id{'\n'}<span style={{ color: '#ff7b72' }}>WHERE</span> u.created_at {'>'} <span style={{ color: '#a5d6ff' }}>'2024-01-01'</span>{'\n'}<span style={{ color: '#ff7b72' }}>GROUP BY</span> u.id, u.email{'\n'}<span style={{ color: '#ff7b72' }}>ORDER BY</span> order_count <span style={{ color: '#ff7b72' }}>DESC</span>{'\n'}<span style={{ color: '#ff7b72' }}>LIMIT</span> <span style={{ color: '#79c0ff' }}>100</span>;
+                            <span style={{ color: '#d1242f' }}>SELECT</span> u.id, u.email,{' '}
+                            <span style={{ color: '#6c17a6' }}>COUNT</span>(o.id){' '}
+                            <span style={{ color: '#d1242f' }}>AS</span> order_count{'\n'}
+                            <span style={{ color: '#d1242f' }}>FROM</span> users u{'\n'}
+                            <span style={{ color: '#d1242f' }}>LEFT JOIN</span> orders o{' '}
+                            <span style={{ color: '#d1242f' }}>ON</span> u.id = o.user_id{'\n'}
+                            <span style={{ color: '#d1242f' }}>WHERE</span> u.created_at {'>'}{' '}
+                            <span style={{ color: '#0550ae' }}>'2024-01-01'</span>
+                            {'\n'}
+                            <span style={{ color: '#d1242f' }}>GROUP BY</span> u.id, u.email{'\n'}
+                            <span style={{ color: '#d1242f' }}>ORDER BY</span> order_count{' '}
+                            <span style={{ color: '#d1242f' }}>DESC</span>
+                            {'\n'}
+                            <span style={{ color: '#d1242f' }}>LIMIT</span>{' '}
+                            <span style={{ color: '#0550ae' }}>100</span>;
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 10, color: THEME.textDim }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                marginTop: 8,
+                                fontSize: 10,
+                                color: THEME.textDim,
+                            }}
+                        >
                             <span>Rows: 5 | Time: 23ms | Cost: 1,245</span>
                             <span>Database: prod_main | Schema: public</span>
                         </div>
@@ -7089,20 +8432,79 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'developer' && itemKey === 'api-tracing') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={Network} label="Endpoints" value="45" color={THEME.primary} trend="+3" subtitle="tracked" />
-                        <MetricCard icon={Clock} label="Avg Latency" value="87ms" color={THEME.warning} trend="-12%" subtitle="improving" />
-                        <MetricCard icon={TrendingUp} label="Throughput" value="2.4K" color={THEME.success} subtitle="req/min" />
-                        <MetricCard icon={AlertTriangle} label="Errors (5xx)" value="23" color={THEME.danger} trend="+5" subtitle="last 1h" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Network}
+                            label="Endpoints"
+                            value="45"
+                            color={THEME.primary}
+                            trend="+3"
+                            subtitle="tracked"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Avg Latency"
+                            value="87ms"
+                            color={THEME.warning}
+                            trend="-12%"
+                            subtitle="improving"
+                        />
+                        <MetricCard
+                            icon={TrendingUp}
+                            label="Throughput"
+                            value="2.4K"
+                            color={THEME.success}
+                            subtitle="req/min"
+                        />
+                        <MetricCard
+                            icon={AlertTriangle}
+                            label="Errors (5xx)"
+                            value="23"
+                            color={THEME.danger}
+                            trend="+5"
+                            subtitle="last 1h"
+                        />
                     </div>
                     {/* Search/filter bar */}
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
+                        <div
+                            style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                background: THEME.glass,
+                                border: `1px solid ${THEME.glassBorder}`,
+                                borderRadius: 8,
+                                padding: '8px 12px',
+                            }}
+                        >
                             <FileSearch size={14} style={{ color: THEME.textMuted, flexShrink: 0 }} />
-                            <span style={{ fontSize: 11, color: THEME.textDim }}>Filter by endpoint, method, status...</span>
+                            <span style={{ fontSize: 11, color: THEME.textDim }}>
+                                Filter by endpoint, method, status...
+                            </span>
                         </div>
                         {['All Methods', 'All Status'].map((f, i) => (
-                            <div key={i} style={{ padding: '8px 12px', background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMuted, whiteSpace: 'nowrap' }}>{f} ▾</div>
+                            <div
+                                key={i}
+                                style={{
+                                    padding: '8px 12px',
+                                    background: THEME.glass,
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                    borderRadius: 8,
+                                    fontSize: 10,
+                                    color: THEME.textMuted,
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {f} ▾
+                            </div>
                         ))}
                     </div>
                     <Panel title="API Latency Trend" icon={TrendingUp} accentColor={THEME.primary}>
@@ -7118,7 +8520,13 @@ function DemoPostgresTab({ tabId }) {
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
-                                <Area type="monotone" dataKey="latency" stroke={THEME.primary} fill="url(#api-lat-grad)" name="Latency (ms)" />
+                                <Area
+                                    type="monotone"
+                                    dataKey="latency"
+                                    stroke={THEME.primary}
+                                    fill="url(#api-lat-grad)"
+                                    name="Latency (ms)"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Panel>
@@ -7133,12 +8541,54 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'errors', label: 'Errors' },
                             ]}
                             rows={[
-                                { endpoint: '/api/users', method: <StatusBadge label="GET" color={THEME.success} />, latency: '45ms', p99: '120ms', calls: '12,456', errors: '0.1%' },
-                                { endpoint: '/api/orders', method: <StatusBadge label="GET" color={THEME.success} />, latency: '123ms', p99: '340ms', calls: '8,234', errors: '0.3%' },
-                                { endpoint: '/api/users', method: <StatusBadge label="POST" color={THEME.warning} />, latency: '234ms', p99: '890ms', calls: '1,234', errors: '1.2%' },
-                                { endpoint: '/api/products', method: <StatusBadge label="GET" color={THEME.success} />, latency: '67ms', p99: '210ms', calls: '6,789', errors: '0.0%' },
-                                { endpoint: '/api/orders', method: <StatusBadge label="POST" color={THEME.warning} />, latency: '345ms', p99: '1.2s', calls: '2,456', errors: '2.1%' },
-                                { endpoint: '/api/auth/login', method: <StatusBadge label="POST" color={THEME.warning} />, latency: '189ms', p99: '450ms', calls: '4,567', errors: '0.5%' },
+                                {
+                                    endpoint: '/api/users',
+                                    method: <StatusBadge label="GET" color={THEME.success} />,
+                                    latency: '45ms',
+                                    p99: '120ms',
+                                    calls: '12,456',
+                                    errors: '0.1%',
+                                },
+                                {
+                                    endpoint: '/api/orders',
+                                    method: <StatusBadge label="GET" color={THEME.success} />,
+                                    latency: '123ms',
+                                    p99: '340ms',
+                                    calls: '8,234',
+                                    errors: '0.3%',
+                                },
+                                {
+                                    endpoint: '/api/users',
+                                    method: <StatusBadge label="POST" color={THEME.warning} />,
+                                    latency: '234ms',
+                                    p99: '890ms',
+                                    calls: '1,234',
+                                    errors: '1.2%',
+                                },
+                                {
+                                    endpoint: '/api/products',
+                                    method: <StatusBadge label="GET" color={THEME.success} />,
+                                    latency: '67ms',
+                                    p99: '210ms',
+                                    calls: '6,789',
+                                    errors: '0.0%',
+                                },
+                                {
+                                    endpoint: '/api/orders',
+                                    method: <StatusBadge label="POST" color={THEME.warning} />,
+                                    latency: '345ms',
+                                    p99: '1.2s',
+                                    calls: '2,456',
+                                    errors: '2.1%',
+                                },
+                                {
+                                    endpoint: '/api/auth/login',
+                                    method: <StatusBadge label="POST" color={THEME.warning} />,
+                                    latency: '189ms',
+                                    p99: '450ms',
+                                    calls: '4,567',
+                                    errors: '0.5%',
+                                },
                             ]}
                         />
                     </Panel>
@@ -7152,9 +8602,27 @@ function DemoPostgresTab({ tabId }) {
                                 { key: 'status', label: 'Status' },
                             ]}
                             rows={[
-                                { trace: 'abc123...def', endpoint: 'POST /api/orders', duration: '456ms', spans: '12', status: <StatusBadge label="OK" color={THEME.success} /> },
-                                { trace: 'ghi456...jkl', endpoint: 'GET /api/users', duration: '89ms', spans: '5', status: <StatusBadge label="OK" color={THEME.success} /> },
-                                { trace: 'mno789...pqr', endpoint: 'POST /api/auth', duration: '1.2s', spans: '18', status: <StatusBadge label="Error" color={THEME.danger} /> },
+                                {
+                                    trace: 'abc123...def',
+                                    endpoint: 'POST /api/orders',
+                                    duration: '456ms',
+                                    spans: '12',
+                                    status: <StatusBadge label="OK" color={THEME.success} />,
+                                },
+                                {
+                                    trace: 'ghi456...jkl',
+                                    endpoint: 'GET /api/users',
+                                    duration: '89ms',
+                                    spans: '5',
+                                    status: <StatusBadge label="OK" color={THEME.success} />,
+                                },
+                                {
+                                    trace: 'mno789...pqr',
+                                    endpoint: 'POST /api/auth',
+                                    duration: '1.2s',
+                                    spans: '18',
+                                    status: <StatusBadge label="Error" color={THEME.danger} />,
+                                },
                             ]}
                         />
                     </Panel>
@@ -7378,47 +8846,211 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'developer' && itemKey === 'ai-advisor') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                        <MetricCard icon={Brain} label="Recommendations" value="8" color={THEME.ai} trend="+3" subtitle="new today" />
-                        <MetricCard icon={Zap} label="Auto-Applied" value="5" color={THEME.success} subtitle="this week" />
-                        <MetricCard icon={TrendingUp} label="Perf Gain" value="34%" color={THEME.primary} subtitle="avg improvement" />
-                        <MetricCard icon={Clock} label="Time Saved" value="2.4h" color={THEME.warning} subtitle="estimated" />
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                            gap: '12px',
+                        }}
+                    >
+                        <MetricCard
+                            icon={Brain}
+                            label="Recommendations"
+                            value="8"
+                            color={THEME.ai}
+                            trend="+3"
+                            subtitle="new today"
+                        />
+                        <MetricCard
+                            icon={Zap}
+                            label="Auto-Applied"
+                            value="5"
+                            color={THEME.success}
+                            subtitle="this week"
+                        />
+                        <MetricCard
+                            icon={TrendingUp}
+                            label="Perf Gain"
+                            value="34%"
+                            color={THEME.primary}
+                            subtitle="avg improvement"
+                        />
+                        <MetricCard
+                            icon={Clock}
+                            label="Time Saved"
+                            value="2.4h"
+                            color={THEME.warning}
+                            subtitle="estimated"
+                        />
                     </div>
                     {/* AI Chat-like input */}
                     <Panel title="Ask AI Query Advisor" icon={Brain} accentColor={THEME.ai}>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
-                            <div style={{ flex: 1, padding: '10px 14px', background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 11, color: THEME.textDim }}>
+                            <div
+                                style={{
+                                    flex: 1,
+                                    padding: '10px 14px',
+                                    background: THEME.glass,
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                    borderRadius: 8,
+                                    fontSize: 11,
+                                    color: THEME.textDim,
+                                }}
+                            >
                                 Ask about query optimization, indexing strategies, or performance tuning...
                             </div>
-                            <div style={{ padding: '10px 16px', background: THEME.ai, color: '#fff', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Ask AI</div>
+                            <div
+                                style={{
+                                    padding: '10px 16px',
+                                    background: THEME.ai,
+                                    color: '#fff',
+                                    borderRadius: 8,
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Ask AI
+                            </div>
                         </div>
-                        <div style={{ padding: 12, background: `${THEME.ai}10`, border: `1px solid ${THEME.ai}30`, borderRadius: 8, fontSize: 11, color: THEME.textMain, lineHeight: 1.6 }}>
+                        <div
+                            style={{
+                                padding: 12,
+                                background: `${THEME.ai}10`,
+                                border: `1px solid ${THEME.ai}30`,
+                                borderRadius: 8,
+                                fontSize: 11,
+                                color: THEME.textMain,
+                                lineHeight: 1.6,
+                            }}
+                        >
                             <div style={{ fontWeight: 600, marginBottom: 6, color: THEME.ai }}>AI Suggestion</div>
-                            Based on your query patterns, I recommend adding a composite index on <span style={{ fontFamily: THEME.fontMono, fontSize: 10 }}>orders(user_id, created_at)</span> to optimize your most frequent JOIN operations. This could reduce query time by ~40%.
+                            Based on your query patterns, I recommend adding a composite index on{' '}
+                            <span style={{ fontFamily: THEME.fontMono, fontSize: 10 }}>
+                                orders(user_id, created_at)
+                            </span>{' '}
+                            to optimize your most frequent JOIN operations. This could reduce query time by ~40%.
                         </div>
                     </Panel>
                     <Panel title="Query Recommendations" icon={Brain} accentColor={THEME.ai}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {[
-                                { query: 'SELECT COUNT(*) FROM users WHERE created_at > ...', recommendation: 'Add index on users.created_at', priority: 'High', impact: '45% faster', type: 'Index' },
-                                { query: 'UPDATE orders SET status = ... WHERE id IN (...)', recommendation: 'Use batch updates with CTE', priority: 'High', impact: '60% faster', type: 'Rewrite' },
-                                { query: 'SELECT * FROM products LEFT JOIN inventory...', recommendation: 'Add covering index on inventory', priority: 'Medium', impact: '30% faster', type: 'Index' },
-                                { query: 'DELETE FROM sessions WHERE expired_at < ...', recommendation: 'Use table partitioning by date', priority: 'Medium', impact: '55% faster', type: 'Schema' },
-                                { query: 'SELECT DISTINCT category FROM products...', recommendation: 'Replace with materialized view', priority: 'Low', impact: '20% faster', type: 'Rewrite' },
+                                {
+                                    query: 'SELECT COUNT(*) FROM users WHERE created_at > ...',
+                                    recommendation: 'Add index on users.created_at',
+                                    priority: 'High',
+                                    impact: '45% faster',
+                                    type: 'Index',
+                                },
+                                {
+                                    query: 'UPDATE orders SET status = ... WHERE id IN (...)',
+                                    recommendation: 'Use batch updates with CTE',
+                                    priority: 'High',
+                                    impact: '60% faster',
+                                    type: 'Rewrite',
+                                },
+                                {
+                                    query: 'SELECT * FROM products LEFT JOIN inventory...',
+                                    recommendation: 'Add covering index on inventory',
+                                    priority: 'Medium',
+                                    impact: '30% faster',
+                                    type: 'Index',
+                                },
+                                {
+                                    query: 'DELETE FROM sessions WHERE expired_at < ...',
+                                    recommendation: 'Use table partitioning by date',
+                                    priority: 'Medium',
+                                    impact: '55% faster',
+                                    type: 'Schema',
+                                },
+                                {
+                                    query: 'SELECT DISTINCT category FROM products...',
+                                    recommendation: 'Replace with materialized view',
+                                    priority: 'Low',
+                                    impact: '20% faster',
+                                    type: 'Rewrite',
+                                },
                             ].map((r, i) => (
-                                <div key={i} style={{ padding: '12px', background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: '12px',
+                                        background: THEME.glass,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderRadius: 8,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                    }}
+                                >
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textMain, marginBottom: 4 }}>{r.recommendation}</div>
-                                        <div style={{ fontSize: 9.5, fontFamily: THEME.fontMono, color: THEME.textDim, marginBottom: 4 }}>{r.query}</div>
+                                        <div
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                color: THEME.textMain,
+                                                marginBottom: 4,
+                                            }}
+                                        >
+                                            {r.recommendation}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 9.5,
+                                                fontFamily: THEME.fontMono,
+                                                color: THEME.textDim,
+                                                marginBottom: 4,
+                                            }}
+                                        >
+                                            {r.query}
+                                        </div>
                                         <div style={{ display: 'flex', gap: 6 }}>
                                             <StatusBadge label={r.type} color={THEME.primary} />
                                             <StatusBadge label={r.impact} color={THEME.success} />
-                                            <span style={{ fontSize: 9, color: r.priority === 'High' ? THEME.danger : r.priority === 'Medium' ? THEME.warning : THEME.textMuted }}>● {r.priority}</span>
+                                            <span
+                                                style={{
+                                                    fontSize: 9,
+                                                    color:
+                                                        r.priority === 'High'
+                                                            ? THEME.danger
+                                                            : r.priority === 'Medium'
+                                                              ? THEME.warning
+                                                              : THEME.textMuted,
+                                                }}
+                                            >
+                                                ● {r.priority}
+                                            </span>
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: 6 }}>
-                                        <div style={{ padding: '5px 10px', borderRadius: 6, fontSize: 9, fontWeight: 600, background: `${THEME.success}15`, color: THEME.success, border: `1px solid ${THEME.success}40`, cursor: 'pointer' }}>Apply</div>
-                                        <div style={{ padding: '5px 10px', borderRadius: 6, fontSize: 9, fontWeight: 600, background: THEME.glass, color: THEME.textMuted, border: `1px solid ${THEME.glassBorder}`, cursor: 'pointer' }}>Dismiss</div>
+                                        <div
+                                            style={{
+                                                padding: '5px 10px',
+                                                borderRadius: 6,
+                                                fontSize: 9,
+                                                fontWeight: 600,
+                                                background: `${THEME.success}15`,
+                                                color: THEME.success,
+                                                border: `1px solid ${THEME.success}40`,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            Apply
+                                        </div>
+                                        <div
+                                            style={{
+                                                padding: '5px 10px',
+                                                borderRadius: 6,
+                                                fontSize: 9,
+                                                fontWeight: 600,
+                                                background: THEME.glass,
+                                                color: THEME.textMuted,
+                                                border: `1px solid ${THEME.glassBorder}`,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            Dismiss
+                                        </div>
                                     </div>
                                 </div>
                             ))}
