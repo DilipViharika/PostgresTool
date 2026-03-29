@@ -5212,6 +5212,7 @@ function DemoMongoDBTab({ tabId }) {
                 { label: 'Uptime', value: '18d 4h' },
                 { label: 'Last sync', value: new Date().toLocaleTimeString() },
             ]}
+            activeDemo="demo-mongodb"
         />
     );
 }

@@ -4553,6 +4553,7 @@ function DemoMySQLTab({ tabId }) {
             title="MySQL Demo"
             accentColor={THEME.primary}
             titleIcon={Database}
+            activeDemo="demo-mysql"
         />
     );
 }

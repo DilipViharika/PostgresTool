@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { useNavigation } from '../../../context/NavigationContext.jsx';
-import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, Database } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    DemoLayout — Clean Light Theme design with:
@@ -24,6 +24,12 @@ import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, Ar
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const SIDEBAR_W = 240;
+
+const DEMO_TABS = [
+    { id: 'demo-postgres', label: 'PostgreSQL', short: 'PG' },
+    { id: 'demo-mysql', label: 'MySQL', short: 'MY' },
+    { id: 'demo-mongodb', label: 'MongoDB', short: 'MO' },
+];
 
 /* ── Light theme color palette ── */
 const LT = {
@@ -74,6 +80,7 @@ const DemoLayout = ({
     statusItems = [],
     onRefresh,
     onExport,
+    activeDemo = 'demo-postgres',
 }) => {
     useAdaptiveTheme();
     let goToTab = null;
@@ -141,46 +148,85 @@ const DemoLayout = ({
                         boxShadow: '1px 0 3px rgba(0,0,0,0.04)',
                     }}
                 >
-                    {/* Logo + Title Header */}
+                    {/* Logo + Title + Demo Switcher */}
                     <div
                         style={{
-                            padding: '16px 16px 12px',
+                            padding: '12px 14px',
                             borderBottom: `1px solid ${LT.border}`,
                             background: LT.surface,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
                             flexShrink: 0,
                         }}
                     >
-                        {/* Back button only shown when a real connection exists (there's somewhere to go back to) */}
-                        {TitleIcon && (
-                            <div
+                        {/* Title row */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                            {TitleIcon && (
+                                <div
+                                    style={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: 10,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: `${accentColor || LT.primary}12`,
+                                        border: `1px solid ${accentColor || LT.primary}20`,
+                                    }}
+                                >
+                                    <TitleIcon size={16} color={accentColor || LT.primary} />
+                                </div>
+                            )}
+                            <span
                                 style={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: 10,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: `${accentColor || LT.primary}12`,
-                                    border: `1px solid ${accentColor || LT.primary}20`,
+                                    fontSize: 14,
+                                    fontWeight: 700,
+                                    color: LT.text,
+                                    fontFamily: THEME.fontBody,
+                                    letterSpacing: '-0.02em',
                                 }}
                             >
-                                <TitleIcon size={16} color={accentColor || LT.primary} />
-                            </div>
-                        )}
-                        <span
-                            style={{
-                                fontSize: 14,
-                                fontWeight: 700,
-                                color: LT.text,
-                                fontFamily: THEME.fontBody,
-                                letterSpacing: '-0.02em',
-                            }}
-                        >
-                            {title}
-                        </span>
+                                {title}
+                            </span>
+                        </div>
+                        {/* Demo tab switcher */}
+                        <div style={{ display: 'flex', gap: 4 }}>
+                            {DEMO_TABS.map((dt) => {
+                                const isActive = dt.id === activeDemo;
+                                return (
+                                    <button
+                                        key={dt.id}
+                                        onClick={() => goToTab && goToTab(dt.id)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '6px 4px',
+                                            fontSize: 10,
+                                            fontWeight: isActive ? 700 : 500,
+                                            fontFamily: THEME.fontBody,
+                                            borderRadius: 6,
+                                            border: isActive ? `1px solid ${LT.primary}` : `1px solid ${LT.border}`,
+                                            background: isActive ? `${LT.primary}10` : LT.buttonBg,
+                                            color: isActive ? LT.primary : LT.textMuted,
+                                            cursor: isActive ? 'default' : 'pointer',
+                                            transition: 'all 0.15s ease',
+                                            letterSpacing: '0.02em',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!isActive) {
+                                                e.currentTarget.style.background = LT.buttonHoverBg;
+                                                e.currentTarget.style.color = LT.text;
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isActive) {
+                                                e.currentTarget.style.background = LT.buttonBg;
+                                                e.currentTarget.style.color = LT.textMuted;
+                                            }
+                                        }}
+                                    >
+                                        {dt.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Accent stripe */}

@@ -9966,6 +9966,7 @@ function DemoPostgresTab({ tabId }) {
             title="PostgreSQL Demo"
             accentColor={THEME.primary}
             titleIcon={Database}
+            activeDemo="demo-postgres"
         />
     );
 }
