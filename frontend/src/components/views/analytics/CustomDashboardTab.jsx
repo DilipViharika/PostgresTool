@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
 import { fetchData } from '../../../utils/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
@@ -526,6 +526,7 @@ export default function CustomDashboardTab() {
     const [categories, setCategories] = useState([]);
     const [widgetData, setWidgetData] = useState({});
     const [loadingWidgets, setLoadingWidgets] = useState({});
+    const [error, setError] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
     const [editingWidget, setEditingWidget] = useState(null);
@@ -537,43 +538,62 @@ export default function CustomDashboardTab() {
             try {
                 const data = await fetchData('/api/metrics/registry');
                 setMetrics(data?.metrics || []);
+                setError(null);
                 const cats = await fetchData('/api/metrics/categories');
                 setCategories(cats?.categories || []);
             } catch (e) {
                 console.error('Failed to load metrics:', e);
+                setError('Failed to load metrics: ' + e.message);
             }
         };
         load();
     }, []);
 
-    // Load widget data
-    useEffect(() => {
-        const loadData = async () => {
-            for (const widget of widgets) {
-                if (!widget.metricId) continue;
+    // Load widget data with useCallback
+    const loadWidgetData = useCallback(async () => {
+        let cancelled = false;
 
-                setLoadingWidgets(prev => ({ ...prev, [widget.id]:true }));
-                try {
-                    let data;
-                    if (widget.type === 'metric_chart' || widget.type === 'sparkline') {
-                        data = await fetchData(`/api/metrics/history/${widget.metricId}?hours=24`);
-                        data = data?.history || [];
-                    } else {
-                        const current = await fetchData('/api/metrics/current');
-                        data = current?.current?.[widget.metricId]?.value;
-                    }
-                    setWidgetData(prev => ({ ...prev, [widget.id]:data }));
-                } catch (e) {
-                    console.error(`Failed to load data for widget ${widget.id}:`, e);
+        for (const widget of widgets) {
+            if (!widget.metricId) continue;
+
+            if (cancelled) return;
+            setLoadingWidgets(prev => ({ ...prev, [widget.id]:true }));
+            try {
+                let data;
+                if (widget.type === 'metric_chart' || widget.type === 'sparkline') {
+                    data = await fetchData(`/api/metrics/history/${widget.metricId}?hours=24`);
+                    data = data?.history || [];
+                } else {
+                    const current = await fetchData('/api/metrics/current');
+                    data = current?.current?.[widget.metricId]?.value;
                 }
-                setLoadingWidgets(prev => ({ ...prev, [widget.id]:false }));
+                if (!cancelled) {
+                    setWidgetData(prev => ({ ...prev, [widget.id]:data }));
+                    setError(null);
+                }
+            } catch (e) {
+                console.error(`Failed to load data for widget ${widget.id}:`, e);
+                if (!cancelled) {
+                    setError(`Failed to load widget data: ${e.message}`);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoadingWidgets(prev => ({ ...prev, [widget.id]:false }));
+                }
             }
-        };
-
-        loadData();
-        const interval = setInterval(loadData, 30000);
-        return () => clearInterval(interval);
+        }
     }, [widgets]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        loadWidgetData();
+        const interval = setInterval(loadWidgetData, 30000);
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+        };
+    }, [loadWidgetData]);
 
     const saveDashboard = () => {
         try {

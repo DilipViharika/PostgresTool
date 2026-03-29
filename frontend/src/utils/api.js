@@ -196,13 +196,26 @@ export function connectWS(onMessage, intervalMs = 10000) {
 
     // Immediate first poll
     poll();
-    const timer = setInterval(poll, intervalMs);
+    let pollInterval = setInterval(poll, intervalMs);
+
+    // Visibility-aware polling: pause when tab is hidden, resume when visible
+    const visHandler = () => {
+        if (document.hidden) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        } else if (!pollInterval) {
+            poll();
+            pollInterval = setInterval(poll, intervalMs);
+        }
+    };
+    document.addEventListener('visibilitychange', visHandler);
 
     // Return cleanup function (mirrors old WS cleanup interface)
     return () => {
         stopped = true;
-        clearInterval(timer);
+        if (pollInterval) clearInterval(pollInterval);
         if (reconnectTimer) clearTimeout(reconnectTimer);
+        document.removeEventListener('visibilitychange', visHandler);
     };
 }
 

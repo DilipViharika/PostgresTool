@@ -12,6 +12,7 @@ import fs                       from 'fs/promises';
 import path                     from 'path';
 import { fileURLToPath }        from 'url';
 import { dirname }              from 'path';
+import { randomUUID }           from 'crypto';
 
 import { getStatus, getMetric } from './services/cloudwatchService.js';
 import { sendSlackAlert, sendSlackMessage, verifySlackSignature, updateAlertMessage, postThreadComment, resolveSlackUser } from './services/slackService.js';
@@ -417,6 +418,13 @@ function cached(key, ttl) {
 }
 
 const rateBuckets = new Map();
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of rateBuckets) {
+        if (now - v.windowStart > CONFIG.RATE_LIMIT.WINDOW_MS) rateBuckets.delete(k);
+    }
+}, 600_000);
+
 function rateLimiter(req, res, next) {
     const ip  = req.ip || 'unknown';
     const now = Date.now();
@@ -432,6 +440,12 @@ function rateLimiter(req, res, next) {
 }
 
 const strictBuckets = new Map();
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of strictBuckets) {
+        if (now - v.windowStart > 600_000) strictBuckets.delete(k);
+    }
+}, 600_000);
 function strictRateLimiter(windowMs = 60_000, maxReqs = 10) {
     return (req, res, next) => {
         const key = `${req.ip || 'unknown'}:${req.path}`;
@@ -661,8 +675,11 @@ function rowToConn(row) {
             sshPassword = decrypt(sshPassword);
         }
     } catch (error) {
-        // Log decryption errors but don't fail — allow fallback to plaintext
-        console.error('Decryption error in rowToConn:', error.message);
+        log('WARN', 'Decryption failed for connection, credentials need re-entry', { error: error.message });
+        password = null;
+        sshPrivateKey = null;
+        sshPassphrase = null;
+        sshPassword = null;
     }
 
     return {
@@ -868,6 +885,11 @@ app.use(cors({
     exposedHeaders: ['X-Cache', 'X-Request-Id'],
 }));
 app.use(securityHeaders);
+app.use((req, res, next) => {
+    req.id = req.headers['x-request-id'] || randomUUID();
+    res.setHeader('X-Request-Id', req.id);
+    next();
+});
 app.use(express.json({ limit: '1mb' }));
 app.use(rateLimiter);
 
@@ -1010,7 +1032,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
         const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
         recordLoginAttempt(username, true);
 
-        Promise.all([
+        const results = await Promise.allSettled([
             touchLastLogin(pool, user.id),
             recordLogin(pool, user.id),
             writeAudit(pool, {
@@ -1021,7 +1043,10 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
                 detail:        req.headers['user-agent']?.slice(0, 120),
                 ip:            req.ip,
             }),
-        ]).catch(err => log('WARN', 'Post-login side effects failed', { error: err.message }));
+        ]);
+        results.forEach((r, i) => {
+            if (r.status === 'rejected') log('WARN', `Post-login task ${i} failed`, { error: r.reason?.message });
+        });
 
         res.json({
             token,
@@ -1092,7 +1117,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
 
         const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
 
-        Promise.all([
+        const results = await Promise.allSettled([
             touchLastLogin(pool, user.id),
             recordLogin(pool, user.id),
             writeAudit(pool, {
@@ -1103,7 +1128,10 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
                 detail:        `Logged in via ${provider}`,
                 ip:            req.ip,
             }),
-        ]).catch(err => log('WARN', 'Post-SSO login side effects failed', { error: err.message }));
+        ]);
+        results.forEach((r, i) => {
+            if (r.status === 'rejected') log('WARN', `Post-SSO login task ${i} failed`, { error: r.reason?.message });
+        });
 
         const redirectUri = new URL(`${CONFIG.FRONTEND_URL}/auth/callback`);
         redirectUri.searchParams.append('token', token);
@@ -2633,6 +2661,7 @@ app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE
 // QUERY PLAN REGRESSION
 // ─────────────────────────────────────────────────────────────────────────────
 const planBaselines = new Map();
+setInterval(() => { if (planBaselines.size > 500) planBaselines.clear(); }, 600_000);
 
 app.post('/api/regression/capture', authenticate, async (req, res) => {
     try {
@@ -2794,6 +2823,7 @@ app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const dbaTaskStore = new Map();
 let taskIdCounter = 1;
+setInterval(() => { for (const [k,v] of dbaTaskStore) { if (Date.now() - (v.updatedAt || 0) > 86400_000) dbaTaskStore.delete(k); } }, 600_000);
 
 const defaultTasks = [
     { category: 'Daily',   priority: 'high',   title: 'Check active connections and long-running queries',  recurrence: 'daily'   },
@@ -3053,7 +3083,7 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
 
         const WINDOW_MS = 5 * 60 * 1000;
         const groups = [];
-        const remaining = [...alertEventStore];
+        let remaining = [...alertEventStore];
 
         while (remaining.length > 0) {
             const anchor = remaining.shift();
@@ -3067,7 +3097,7 @@ app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), 
                     survivors.push(ev);
                 }
             }
-            remaining.splice(0, remaining.length, ...survivors);
+            remaining = survivors;
             groups.push({
                 id: `grp-${anchorTs}`,
                 startTs: anchor.ts,
@@ -4959,19 +4989,28 @@ async function startup() {
 // ─────────────────────────────────────────────────────────────────────────────
 async function shutdown(signal) {
     log('INFO', `${signal} — shutting down`);
-    if (alerts) alerts.stopMonitoring();
-    // Close all MongoDB clients
-    for (const [id, m] of mongoClients) {
-        await m.client.close().catch(() => {});
+    const forceExit = setTimeout(() => {
+        log('WARN', 'Forced shutdown after timeout');
+        process.exit(1);
+    }, 30_000);
+    forceExit.unref();
+    try {
+        if (alerts) alerts.stopMonitoring();
+        // Close all MongoDB clients
+        for (const [id, m] of mongoClients) {
+            await m.client.close().catch(() => {});
+        }
+        mongoClients.clear();
+        // Close all PG/MySQL pools
+        for (const [id, p] of connectionPools) {
+            await p.end().catch(() => {});
+        }
+        connectionPools.clear();
+        await closeAllTunnels().catch(() => {});
+        server.close(() => (pool ? pool.end(() => process.exit(0)) : process.exit(0)));
+    } catch (err) {
+        log('ERROR', 'Shutdown error', { error: err.message });
     }
-    mongoClients.clear();
-    // Close all PG/MySQL pools
-    for (const [id, p] of connectionPools) {
-        await p.end().catch(() => {});
-    }
-    connectionPools.clear();
-    await closeAllTunnels().catch(() => {});
-    server.close(() => (pool ? pool.end(() => process.exit(0)) : process.exit(0)));
 }
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));

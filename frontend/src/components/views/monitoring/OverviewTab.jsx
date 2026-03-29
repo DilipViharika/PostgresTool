@@ -753,6 +753,8 @@ const NotificationBell = () => {
         <div ref={ref} style={{ position: 'relative' }}>
             <button
                 onClick={() => setOpen((o) => !o)}
+                aria-label="Notifications"
+                title="Notifications"
                 style={{
                     position: 'relative',
                     width: 36,
@@ -959,6 +961,8 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
             <button
                 onClick={onManualRefresh}
                 disabled={loading}
+                aria-label="Refresh data"
+                title="Refresh"
                 style={{
                     width: 32,
                     height: 32,
@@ -972,7 +976,6 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                     transition: 'all 0.15s',
                     opacity: loading ? 0.5 : 1,
                 }}
-                title="Manual refresh"
             >
                 <RefreshCw
                     size={13}
@@ -984,6 +987,8 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
             {/* Interval picker */}
             <button
                 onClick={() => setOpen((o) => !o)}
+                aria-label={interval === 0 ? "Resume auto-refresh" : "Pause auto-refresh"}
+                title="Toggle auto-refresh"
                 style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -3394,4 +3399,4 @@ const OverviewTab = () => {
     );
 };
 
-export default OverviewTab;
+export default React.memo(OverviewTab);

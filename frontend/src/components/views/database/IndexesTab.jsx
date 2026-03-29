@@ -46,6 +46,7 @@ function useIndexData(live) {
     const [error, setError] = useState(null);
 
     const load = useCallback(async () => {
+        let cancelled = false;
         setLoading(true); setError(null);
         try {
             const [health, missing, unused, dupes, bloat] = await Promise.all([
@@ -55,6 +56,8 @@ function useIndexData(live) {
                 fetchData('/api/indexes/duplicates').catch(() => []),
                 fetchData('/api/indexes/bloat').catch(() => []),
             ]);
+
+            if (cancelled) return;
 
             // normalise missing rows
             const missingNorm = (Array.isArray(missing) ? missing : []).map((r, i) => ({
@@ -146,19 +149,27 @@ function useIndexData(live) {
                 history: EMPTY_DATA.history,
             });
         } catch (e) {
-            setError(e.message);
+            if (!cancelled) {
+                setError(e.message);
+            }
         } finally {
-            setLoading(false);
+            if (!cancelled) {
+                setLoading(false);
+            }
         }
     }, []);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => {
+        load();
+    }, [load]);
 
     // Refresh every 60 s when live mode is on
     useEffect(() => {
         if (!live) return;
         const t = setInterval(load, 60_000);
-        return () => clearInterval(t);
+        return () => {
+            clearInterval(t);
+        };
     }, [live, load]);
 
     return { data, loading, error, refresh: load };

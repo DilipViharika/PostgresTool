@@ -1421,4 +1421,4 @@ const ReliabilityTab = () => {
     );
 };
 
-export default ReliabilityTab;
+export default React.memo(ReliabilityTab);

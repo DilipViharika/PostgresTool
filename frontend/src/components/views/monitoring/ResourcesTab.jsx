@@ -1835,4 +1835,4 @@ const ResourcesTab = () => {
     );
 };
 
-export default ResourcesTab;
+export default React.memo(ResourcesTab);

@@ -2462,4 +2462,4 @@ const PerformanceTab = () => {
     );
 };
 
-export default PerformanceTab;
+export default React.memo(PerformanceTab);

@@ -2169,4 +2169,4 @@ const QueryOptimizerTab = () => {
     );
 };
 
-export default QueryOptimizerTab;
+export default React.memo(QueryOptimizerTab);
