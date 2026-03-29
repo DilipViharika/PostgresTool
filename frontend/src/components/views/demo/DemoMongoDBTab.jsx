@@ -3014,7 +3014,14 @@ function DemoMongoDBTab({ tabId }) {
                 switch (itemKey) {
                     case 'editor':
                         return (
-                            <Panel title="Document Editor" icon={FileCode} accentColor={THEME.primary}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="34" label="Collections" subtitle="Available" color="#4facfe" />
+                                    <ExecStatCard value="4.2M" label="Total docs" subtitle="In cluster" color="#00ffaa" />
+                                    <ExecStatCard value="4.2 KB" label="Avg size" subtitle="Per document" color="#00e5ff" />
+                                    <ExecStatCard value="2m ago" label="Last edit" subtitle="Recent change" color="#ffcc00" />
+                                </div>
+                                <Panel title="Document Editor" icon={FileCode} accentColor={THEME.primary}>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
                                     <div>
                                         <div
@@ -3076,45 +3083,16 @@ function DemoMongoDBTab({ tabId }) {
                                     </pre>
                                 </div>
                             </Panel>
+                            </div>
                         );
                     case 'aggregation':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Code}
-                                        label="Saved Pipelines"
-                                        value="47"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 40 + Math.random() * 20)}
-                                    />
-                                    <MetricCard
-                                        icon={Layers}
-                                        label="Avg Stages"
-                                        value="5.2"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 4 + Math.random() * 3)}
-                                    />
-                                    <MetricCard
-                                        icon={Clock}
-                                        label="Avg Exec Time"
-                                        value="245ms"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => 200 + Math.random() * 100)}
-                                    />
-                                    <MetricCard
-                                        icon={Database}
-                                        label="Collections"
-                                        value="23"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 20 + Math.random() * 8)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="47" label="SAVED PIPELINES" subtitle="Active" color="#4facfe" />
+                                    <ExecStatCard value="5.2" label="AVG STAGES" subtitle="Per pipeline" color="#00ffaa" />
+                                    <ExecStatCard value="245ms" label="AVG EXEC TIME" subtitle="Last 24h" color="#ffcc00" />
+                                    <ExecStatCard value="23" label="COLLECTIONS" subtitle="With pipelines" color="#00e5ff" />
                                 </div>
                                 <Panel title="Pipeline Stages" icon={Workflow} accentColor={THEME.primary}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -3166,9 +3144,16 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'nlquery':
                         return (
-                            <Panel title="Natural Language Query Generator" icon={Brain} accentColor={THEME.ai}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    {demoData.naturalLanguageExamples.map((ex, i) => (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="1,240" label="QUERIES GENERATED" subtitle="Last 30d" color="#4facfe" />
+                                    <ExecStatCard value="94%" label="ACCURACY" subtitle="Correct syntax" color="#00ffaa" />
+                                    <ExecStatCard value="12ms" label="AVG GENERATION" subtitle="Response time" color="#00e5ff" />
+                                    <ExecStatCard value="8" label="COLLECTIONS" subtitle="Supported" color="#ffcc00" />
+                                </div>
+                                <Panel title="Natural Language Query Generator" icon={Brain} accentColor={THEME.ai}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        {demoData.naturalLanguageExamples.map((ex, i) => (
                                         <div
                                             key={i}
                                             style={{
@@ -3216,48 +3201,18 @@ function DemoMongoDBTab({ tabId }) {
                                             </div>
                                         </div>
                                     ))}
-                                </div>
-                            </Panel>
+                                    </div>
+                                </Panel>
+                            </div>
                         );
                     case 'importexport':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <h1>Import / Export Operations</h1>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Activity}
-                                        label="Active Jobs"
-                                        value="3"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 5)}
-                                    />
-                                    <MetricCard
-                                        icon={Download}
-                                        label="Docs Imported"
-                                        value="1.2M"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 1500000)}
-                                    />
-                                    <MetricCard
-                                        icon={Upload}
-                                        label="Docs Exported"
-                                        value="850K"
-                                        color={THEME.info || THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 900000)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertTriangle}
-                                        label="Failed"
-                                        value="2"
-                                        color={THEME.danger}
-                                        trend="-0.3%"
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="2.4 GB" label="IMPORTED" subtitle="Last 7d" color="#00ffaa" />
+                                    <ExecStatCard value="1.8 GB" label="EXPORTED" subtitle="Last 7d" color="#4facfe" />
+                                    <ExecStatCard value="142" label="OPERATIONS" subtitle="Last 7d" color="#00e5ff" />
+                                    <ExecStatCard value="99.8%" label="SUCCESS RATE" subtitle="No failures" color="#00ffaa" />
                                 </div>
 
                                 <Panel title="Job History" icon={Download} accentColor={THEME.success}>
@@ -3305,13 +3260,20 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'sqltranslator':
                         return (
-                            <Panel
-                                title="SQL to MongoDB Translator"
-                                icon={Code}
-                                accentColor={THEME.info || THEME.primary}
-                            >
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    {demoData.sqlToMongoExamples.map((ex, i) => (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="840" label="TRANSLATIONS" subtitle="Last 30d" color="#4facfe" />
+                                    <ExecStatCard value="96%" label="ACCURACY" subtitle="Verified" color="#00ffaa" />
+                                    <ExecStatCard value="8ms" label="AVG SPEED" subtitle="Translation time" color="#00e5ff" />
+                                    <ExecStatCard value="12" label="SQL DIALECTS" subtitle="Supported" color="#ffcc00" />
+                                </div>
+                                <Panel
+                                    title="SQL to MongoDB Translator"
+                                    icon={Code}
+                                    accentColor={THEME.info || THEME.primary}
+                                >
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        {demoData.sqlToMongoExamples.map((ex, i) => (
                                         <div
                                             key={i}
                                             style={{
@@ -3370,47 +3332,18 @@ function DemoMongoDBTab({ tabId }) {
                                             </div>
                                         </div>
                                     ))}
-                                </div>
-                            </Panel>
+                                    </div>
+                                </Panel>
+                            </div>
                         );
                     case 'schemacompare':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Database}
-                                        label="Collections Compared"
-                                        value="18"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 15 + Math.random() * 5)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertCircle}
-                                        label="Field Diffs"
-                                        value="24"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => 20 + Math.random() * 10)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertTriangle}
-                                        label="Type Mismatches"
-                                        value="7"
-                                        color={THEME.danger}
-                                        spark={Array.from({ length: 12 }, () => 5 + Math.random() * 10)}
-                                    />
-                                    <MetricCard
-                                        icon={Layers}
-                                        label="Index Diffs"
-                                        value="12"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => 10 + Math.random() * 5)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="24" label="FIELDS COMPARED" subtitle="Across collections" color="#4facfe" />
+                                    <ExecStatCard value="18" label="MATCHES" subtitle="Identical fields" color="#00ffaa" />
+                                    <ExecStatCard value="4" label="DIFFERENCES" subtitle="Type mismatches" color="#ffcc00" />
+                                    <ExecStatCard value="2" label="MISSING" subtitle="Not in target" color="#ff4466" />
                                 </div>
                                 <Panel title="Schema Comparison Details" icon={Compass} accentColor={THEME.primary}>
                                     <DataTable
@@ -3435,43 +3368,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'geospatial':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <h1>Geo-spatial Data</h1>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Map}
-                                        label="Geo Indexes"
-                                        value="18"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 15 + Math.random() * 5)}
-                                    />
-                                    <MetricCard
-                                        icon={Zap}
-                                        label="Queries/sec"
-                                        value="124"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 100 + Math.random() * 50)}
-                                    />
-                                    <MetricCard
-                                        icon={Compass}
-                                        label="Avg Radius"
-                                        value="8.3km"
-                                        color={THEME.info || THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 5 + Math.random() * 10)}
-                                    />
-                                    <MetricCard
-                                        icon={Database}
-                                        label="Collections"
-                                        value="12"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => 10 + Math.random() * 5)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="3" label="GEO INDEXES" subtitle="2dsphere" color="#4facfe" />
+                                    <ExecStatCard value="1,240" label="GEO QUERIES/HR" subtitle="+8% trend" color="#00ffaa" />
+                                    <ExecStatCard value="2.4 km" label="AVG DISTANCE" subtitle="Avg search radius" color="#00e5ff" />
+                                    <ExecStatCard value="89%" label="COVERAGE" subtitle="Indexed area" color="#ffcc00" />
                                 </div>
 
                                 <Panel title="Query Distribution" icon={BarChart3} accentColor={THEME.success}>
@@ -3516,12 +3418,12 @@ function DemoMongoDBTab({ tabId }) {
                 switch (itemKey) {
                     case 'aihints':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
-                                    <MetricCard label="Active Hints" value="12" sub="+3" icon={Lightbulb} />
-                                    <MetricCard label="Applied" value="34" sub="+8" icon={CheckCircle} />
-                                    <MetricCard label="Confidence Avg" value="87%" sub="+2%" icon={Brain} />
-                                    <MetricCard label="Impact Score" value="8.4/10" sub="+0.3" icon={TrendingUp} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="12" label="ACTIVE HINTS" subtitle="+3 new" color="#4facfe" />
+                                    <ExecStatCard value="8" label="APPLIED" subtitle="This week" color="#00ffaa" />
+                                    <ExecStatCard value="2" label="DISMISSED" subtitle="Low priority" color="#ffcc00" />
+                                    <ExecStatCard value="+24%" label="IMPACT" subtitle="Performance gain" color="#00ffaa" />
                                 </div>
                                 <Panel title="AI Hints & Recommendations" icon={Brain} accentColor={THEME.ai}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -3626,43 +3528,13 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'clustercompare':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Cluster Comparison</h1>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Server}
-                                        label="Clusters"
-                                        value="2"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 2)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertTriangle}
-                                        label="Differences"
-                                        value="7"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 10)}
-                                    />
-                                    <MetricCard
-                                        icon={Settings}
-                                        label="Config Drift"
-                                        value="3.2%"
-                                        color={THEME.danger}
-                                        trend="+1.1%"
-                                    />
-                                    <MetricCard
-                                        icon={Clock}
-                                        label="Last Sync"
-                                        value="2m ago"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 5)}
-                                    />
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="3" label="CLUSTERS" subtitle="Monitored" color="#4facfe" />
+                                    <ExecStatCard value="99.2%" label="SIMILARITY" subtitle="Config match" color="#00ffaa" />
+                                    <ExecStatCard value="2" label="DIFFERENCES" subtitle="Found" color="#ffcc00" />
+                                    <ExecStatCard value="0" label="CRITICAL" subtitle="Issues" color="#00ffaa" />
                                 </div>
 
                                 <Panel title="Comparison Data" icon={GitBranch} accentColor={THEME.primary}>
@@ -3703,43 +3575,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'historicaltrends':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Database}
-                                        label="Data Points"
-                                        value="8,640"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 8000 + Math.random() * 1200)}
-                                    />
-                                    <MetricCard
-                                        icon={Archive}
-                                        label="Retention"
-                                        value="30 days"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 28 + Math.random() * 3)}
-                                    />
-                                    <MetricCard
-                                        icon={TrendingUp}
-                                        label="Trends Detected"
-                                        value="23"
-                                        color={THEME.success}
-                                        trend="+5%"
-                                        spark={Array.from({ length: 12 }, () => 18 + Math.random() * 10)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertTriangle}
-                                        label="Anomalies"
-                                        value="4"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => 2 + Math.random() * 5)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="2.4M" label="DATA POINTS" subtitle="Collected" color="#4facfe" />
+                                    <ExecStatCard value="90d" label="TIME RANGE" subtitle="Historical" color="#00e5ff" />
+                                    <ExecStatCard value="7" label="ANOMALIES" subtitle="Detected" color="#ff4466" />
+                                    <ExecStatCard value="+12%/mo" label="GROWTH RATE" subtitle="Trending up" color="#ffcc00" />
                                 </div>
                                 <Panel title="30-Day Trends" icon={TrendingUp} accentColor={THEME.success}>
                                     <ResponsiveContainer width="100%" height={280}>
@@ -3783,12 +3624,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'perfadvisor':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
-                                    <MetricCard label="Recommendations" value="8" sub="3 critical" icon={Lightbulb} />
-                                    <MetricCard label="Critical" value="2" sub="Action needed" icon={AlertTriangle} />
-                                    <MetricCard label="Applied" value="12" sub="This week" icon={CheckCircle} />
-                                    <MetricCard label="Score" value="76/100" sub="+5 points" icon={Gauge} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="8" label="RECOMMENDATIONS" subtitle="Active" color="#4facfe" />
+                                    <ExecStatCard value="2" label="CRITICAL" subtitle="Urgent" color="#ff4466" />
+                                    <ExecStatCard value="+34%" label="EST. IMPROVEMENT" subtitle="If applied" color="#00ffaa" />
+                                    <ExecStatCard value="5" label="APPLIED" subtitle="This month" color="#00e5ff" />
                                 </div>
                                 <Panel title="Performance Advisor v2" icon={Lightbulb} accentColor={THEME.warning}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -3875,7 +3716,14 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'tracecorrelator':
                         return (
-                            <Panel title="Trace Correlator" icon={Radio} accentColor={THEME.primary}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="24" label="ACTIVE TRACES" subtitle="Running" color="#4facfe" />
+                                    <ExecStatCard value="84ms" label="AVG DURATION" subtitle="P50" color="#00ffaa" />
+                                    <ExecStatCard value="2.1%" label="ERROR RATE" subtitle="Last 24h" color="#ff4466" />
+                                    <ExecStatCard value="1,240/s" label="THROUGHPUT" subtitle="Current" color="#00e5ff" />
+                                </div>
+                                <Panel title="Trace Correlator" icon={Radio} accentColor={THEME.primary}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                     {demoData.traceCorrelations.map((trace, i) => (
                                         <div
@@ -3926,7 +3774,8 @@ function DemoMongoDBTab({ tabId }) {
                                         </div>
                                     ))}
                                 </div>
-                            </Panel>
+                                </Panel>
+                            </div>
                         );
                     default:
                         return null;
@@ -3939,105 +3788,82 @@ function DemoMongoDBTab({ tabId }) {
                 switch (itemKey) {
                     case 'replicaset':
                         return (
-                            <Panel title="Replica Set & Failover" icon={GitBranch} accentColor={THEME.success}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                    {demoData.replicas.map((replica, i) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                padding: 12,
-                                                background: THEME.glass,
-                                                borderRadius: 6,
-                                                border: `1px solid ${THEME.glassBorder}`,
-                                                borderLeft: `3px solid ${replica.role === 'PRIMARY' ? THEME.success : THEME.info || THEME.primary}`,
-                                            }}
-                                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="0.8s" label="REPLICATION LAG" subtitle="Below threshold" color="#00ffaa" />
+                                    <ExecStatCard value="48h" label="OPLOG WINDOW" subtitle="Sufficient" color="#4facfe" />
+                                    <ExecStatCard value="0" label="ELECTIONS (7D)" subtitle="Stable topology" color="#00ffaa" />
+                                    <ExecStatCard value="Yes" label="FAILOVER READY" subtitle="2 eligible" color="#00ffaa" />
+                                </div>
+                                <Panel title="Replica Set & Failover" icon={GitBranch} accentColor={THEME.success}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        {demoData.replicas.map((replica, i) => (
                                             <div
+                                                key={i}
                                                 style={{
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    marginBottom: 8,
+                                                    padding: 12,
+                                                    background: THEME.glass,
+                                                    borderRadius: 6,
+                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    borderLeft: `3px solid ${replica.role === 'PRIMARY' ? THEME.success : THEME.info || THEME.primary}`,
                                                 }}
                                             >
-                                                <div style={{ fontWeight: 600, fontFamily: THEME.fontMono }}>
-                                                    {replica.id}
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        marginBottom: 8,
+                                                    }}
+                                                >
+                                                    <div style={{ fontWeight: 600, fontFamily: THEME.fontMono }}>
+                                                        {replica.id}
+                                                    </div>
+                                                    <StatusBadge
+                                                        label={replica.role}
+                                                        color={
+                                                            replica.role === 'PRIMARY'
+                                                                ? THEME.success
+                                                                : THEME.info || THEME.primary
+                                                        }
+                                                    />
                                                 </div>
-                                                <StatusBadge
-                                                    label={replica.role}
-                                                    color={
-                                                        replica.role === 'PRIMARY'
-                                                            ? THEME.success
-                                                            : THEME.info || THEME.primary
-                                                    }
-                                                />
-                                            </div>
-                                            <div
-                                                style={{
-                                                    display: 'grid',
-                                                    gridTemplateColumns: 'repeat(4, 1fr)',
-                                                    gap: 8,
-                                                    fontSize: 10,
-                                                }}
-                                            >
-                                                <div>
-                                                    <span style={{ color: THEME.textDim }}>Sync Lag</span>
-                                                    <div style={{ fontWeight: 600 }}>{replica.syncLag}</div>
-                                                </div>
-                                                <div>
-                                                    <span style={{ color: THEME.textDim }}>Health</span>
-                                                    <div style={{ fontWeight: 600 }}>
-                                                        {(replica.health * 100).toFixed(0)}%
+                                                <div
+                                                    style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: 'repeat(4, 1fr)',
+                                                        gap: 8,
+                                                        fontSize: 10,
+                                                    }}
+                                                >
+                                                    <div>
+                                                        <span style={{ color: THEME.textDim }}>Sync Lag</span>
+                                                        <div style={{ fontWeight: 600 }}>{replica.syncLag}</div>
+                                                    </div>
+                                                    <div>
+                                                        <span style={{ color: THEME.textDim }}>Health</span>
+                                                        <div style={{ fontWeight: 600 }}>
+                                                            {(replica.health * 100).toFixed(0)}%
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <span style={{ color: THEME.textDim }}>Uptime</span>
+                                                        <div style={{ fontWeight: 600 }}>{replica.uptime}</div>
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <span style={{ color: THEME.textDim }}>Uptime</span>
-                                                    <div style={{ fontWeight: 600 }}>{replica.uptime}</div>
-                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Panel>
+                                        ))}
+                                    </div>
+                                </Panel>
+                            </div>
                         );
                     case 'sharding':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Layers}
-                                        label="Total Shards"
-                                        value="6"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 5 + Math.random() * 2)}
-                                    />
-                                    <MetricCard
-                                        icon={Database}
-                                        label="Chunks"
-                                        value="1,284"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 1200 + Math.random() * 200)}
-                                    />
-                                    <MetricCard
-                                        icon={CheckCircle}
-                                        label="Balancer Status"
-                                        value="Active"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 1)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertCircle}
-                                        label="Orphan Docs"
-                                        value="42"
-                                        color={THEME.danger}
-                                        trend="-2%"
-                                        spark={Array.from({ length: 12 }, () => 30 + Math.random() * 30)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="3" label="SHARDS" subtitle="Active" color="#4facfe" />
+                                    <ExecStatCard value="284" label="CHUNKS" subtitle="Distributed" color="#00ffaa" />
+                                    <ExecStatCard value="Active" label="BALANCER" subtitle="Running" color="#00ffaa" />
+                                    <ExecStatCard value="12" label="MIGRATIONS" subtitle="Last 24h" color="#ffcc00" />
                                 </div>
                                 <Panel title="Chunk Distribution" icon={BarChart3} accentColor={THEME.primary}>
                                     <ResponsiveContainer width="100%" height={260}>
@@ -4077,12 +3903,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'oplog':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
-                                    <MetricCard label="Oplog Size" value="48.2 GB" sub="+2.1 GB" icon={HardDrive} />
-                                    <MetricCard label="Window" value="72h" sub="3 days" icon={Clock} />
-                                    <MetricCard label="Ops/sec" value="4.2K" sub="+0.3K" icon={Zap} />
-                                    <MetricCard label="Replication Lag" value="0.3s" sub="+0.05s" icon={Network} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="2.4 GB" label="OPLOG SIZE" subtitle="Configured" color="#4facfe" />
+                                    <ExecStatCard value="48h" label="WINDOW" subtitle="Retention" color="#00ffaa" />
+                                    <ExecStatCard value="1,240/s" label="ENTRIES/SEC" subtitle="Current" color="#00e5ff" />
+                                    <ExecStatCard value="47h ago" label="OLDEST ENTRY" subtitle="Within window" color="#ffcc00" />
                                 </div>
                                 <Panel title="Oplog Tail" icon={Activity} accentColor={THEME.success}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -4189,36 +4015,12 @@ function DemoMongoDBTab({ tabId }) {
                 switch (itemKey) {
                     case 'alerts':
                         return (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                                <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}
-                                    className="dpg-stagger"
-                                >
-                                    <MetricCard
-                                        icon={AlertTriangle}
-                                        label="Critical"
-                                        value={demoData.alertsManager.critical}
-                                        color={THEME.danger}
-                                        warn
-                                    />
-                                    <MetricCard
-                                        icon={AlertCircle}
-                                        label="Warning"
-                                        value={demoData.alertsManager.warning}
-                                        color={THEME.warning}
-                                    />
-                                    <MetricCard
-                                        icon={Eye}
-                                        label="Info"
-                                        value={demoData.alertsManager.info}
-                                        color={THEME.info || THEME.primary}
-                                    />
-                                    <MetricCard
-                                        icon={CheckCircle}
-                                        label="Total"
-                                        value={demoData.alertsManager.total}
-                                        color={THEME.primary}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="12" label="ACTIVE RULES" subtitle="Configured" color="#00ffaa" />
+                                    <ExecStatCard value="7" label="ALERTS FIRED" subtitle="Last 24h" color="#ff4466" />
+                                    <ExecStatCard value="3" label="CHANNELS" subtitle="Connected" color="#4facfe" />
+                                    <ExecStatCard value="12" label="SUPPRESSED" subtitle="Last 24h" color="#ffcc00" />
                                 </div>
 
                                 <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.danger}>
@@ -4239,44 +4041,13 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'prometheus':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Prometheus Export</h1>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Radio}
-                                        label="Scrapers"
-                                        value="24"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 24)}
-                                    />
-                                    <MetricCard
-                                        icon={Gauge}
-                                        label="Targets"
-                                        value="156"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 140 + Math.random() * 20)}
-                                    />
-                                    <MetricCard
-                                        icon={Zap}
-                                        label="Series"
-                                        value="8.4K"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 8000)}
-                                    />
-                                    <MetricCard
-                                        icon={Activity}
-                                        label="Ingestion Rate"
-                                        value="2.1M"
-                                        sub="samples/min"
-                                        color={THEME.warning}
-                                        trend="+3.2%"
-                                    />
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="Active" label="ENDPOINT STATUS" subtitle="/metrics" color="#00ffaa" />
+                                    <ExecStatCard value="12s ago" label="LAST SCRAPED" subtitle="On schedule" color="#4facfe" />
+                                    <ExecStatCard value="131" label="METRICS EXPORTED" subtitle="Total" color="#00e5ff" />
+                                    <ExecStatCard value="3" label="TARGETS" subtitle="Registered" color="#ffcc00" />
                                 </div>
 
                                 <Panel title="Metrics Ingestion" icon={Activity} accentColor={THEME.primary}>
@@ -4316,12 +4087,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'auth':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
-                                    <MetricCard label="Active Sessions" value="342" sub="+28" icon={Users} />
-                                    <MetricCard label="Auth Failures" value="7" sub="This hour" icon={AlertTriangle} />
-                                    <MetricCard label="MFA Enabled" value="89%" sub="+2%" icon={Shield} />
-                                    <MetricCard label="LDAP Synced" value="✓" sub="In sync" icon={CheckCircle} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="2" label="SSO PROVIDERS" subtitle="Configured" color="#4facfe" />
+                                    <ExecStatCard value="142" label="ACTIVE SESSIONS" subtitle="Current" color="#00ffaa" />
+                                    <ExecStatCard value="89%" label="MFA ENABLED" subtitle="Compliance" color="#00e5ff" />
+                                    <ExecStatCard value="3" label="FAILED LOGINS" subtitle="Last 24h" color="#ffcc00" />
                                 </div>
                                 <Panel title="SSO / Auth Configuration" icon={Shield} accentColor={THEME.primary}>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
@@ -4421,43 +4192,13 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'atlasapi':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Atlas API Bridge</h1>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Network}
-                                        label="API Calls/hr"
-                                        value="15.2K"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 15000)}
-                                    />
-                                    <MetricCard
-                                        icon={Clock}
-                                        label="Latency"
-                                        value="142ms"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 100 + Math.random() * 100)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertTriangle}
-                                        label="Errors"
-                                        value="8"
-                                        color={THEME.danger}
-                                        trend="-1.2%"
-                                    />
-                                    <MetricCard
-                                        icon={Filter}
-                                        label="Endpoints"
-                                        value="47"
-                                        color={THEME.info || THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 40 + Math.random() * 10)}
-                                    />
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="2,840" label="API CALLS" subtitle="Last 24h" color="#4facfe" />
+                                    <ExecStatCard value="84ms" label="AVG LATENCY" subtitle="Response" color="#00ffaa" />
+                                    <ExecStatCard value="0.2%" label="ERROR RATE" subtitle="Healthy" color="#00ffaa" />
+                                    <ExecStatCard value="42%" label="QUOTA USED" subtitle="Of daily limit" color="#ffcc00" />
                                 </div>
 
                                 <Panel title="API Usage" icon={Activity} accentColor={THEME.primary}>
@@ -4509,42 +4250,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'dashboards':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={BarChart3}
-                                        label="Active Dashboards"
-                                        value="12"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 10 + Math.random() * 4)}
-                                    />
-                                    <MetricCard
-                                        icon={Layers}
-                                        label="Widgets"
-                                        value="156"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 140 + Math.random() * 30)}
-                                    />
-                                    <MetricCard
-                                        icon={Users}
-                                        label="Shared"
-                                        value="8"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 6 + Math.random() * 3)}
-                                    />
-                                    <MetricCard
-                                        icon={Clock}
-                                        label="Last Modified"
-                                        value="2h ago"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 12)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="8" label="DASHBOARDS" subtitle="Created" color="#4facfe" />
+                                    <ExecStatCard value="24" label="WIDGETS" subtitle="Total" color="#00ffaa" />
+                                    <ExecStatCard value="3" label="SHARED" subtitle="With team" color="#00e5ff" />
+                                    <ExecStatCard value="2h ago" label="LAST VIEWED" subtitle="Recent" color="#ffcc00" />
                                 </div>
                                 <Panel title="Dashboard Inventory" icon={BarChart3} accentColor={THEME.primary}>
                                     <DataTable
@@ -4569,43 +4280,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'reports':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={FileCog}
-                                        label="Generated Reports"
-                                        value="247"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 200 + Math.random() * 100)}
-                                    />
-                                    <MetricCard
-                                        icon={Clock}
-                                        label="Scheduled"
-                                        value="34"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 30 + Math.random() * 10)}
-                                    />
-                                    <MetricCard
-                                        icon={Users}
-                                        label="Recipients"
-                                        value="1,247"
-                                        color={THEME.primary}
-                                        trend="+3%"
-                                        spark={Array.from({ length: 12 }, () => 1200 + Math.random() * 100)}
-                                    />
-                                    <MetricCard
-                                        icon={HardDrive}
-                                        label="Storage Used"
-                                        value="2.4 GB"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => 2200 + Math.random() * 400)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="24" label="REPORTS" subtitle="Generated" color="#4facfe" />
+                                    <ExecStatCard value="8" label="SCHEDULED" subtitle="Active" color="#00ffaa" />
+                                    <ExecStatCard value="12" label="TEMPLATES" subtitle="Available" color="#00e5ff" />
+                                    <ExecStatCard value="2h ago" label="LAST RUN" subtitle="On schedule" color="#ffcc00" />
                                 </div>
                                 <Panel title="Report History" icon={FileCog} accentColor={THEME.primary}>
                                     <DataTable
@@ -4630,43 +4310,13 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'auditlog':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Audit Log</h1>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Activity}
-                                        label="Events Today"
-                                        value="342"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 400)}
-                                    />
-                                    <MetricCard
-                                        icon={AlertTriangle}
-                                        label="Auth Failures"
-                                        value="12"
-                                        color={THEME.danger}
-                                        trend="-0.8%"
-                                    />
-                                    <MetricCard
-                                        icon={Code}
-                                        label="Schema Changes"
-                                        value="5"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 8)}
-                                    />
-                                    <MetricCard
-                                        icon={Users}
-                                        label="Admin Actions"
-                                        value="28"
-                                        color={THEME.info || THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => Math.random() * 35)}
-                                    />
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="1,240" label="EVENTS (24H)" subtitle="Recorded" color="#4facfe" />
+                                    <ExecStatCard value="342" label="AUTH EVENTS" subtitle="Login/logout" color="#00ffaa" />
+                                    <ExecStatCard value="648" label="DATA ACCESS" subtitle="Read/write" color="#00e5ff" />
+                                    <ExecStatCard value="250" label="ADMIN ACTIONS" subtitle="Config changes" color="#ffcc00" />
                                 </div>
 
                                 <Panel title="Event Volume" icon={Activity} accentColor={THEME.primary}>
@@ -4713,43 +4363,12 @@ function DemoMongoDBTab({ tabId }) {
                         );
                     case 'users':
                         return (
-                            <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                        gap: 12,
-                                    }}
-                                >
-                                    <MetricCard
-                                        icon={Users}
-                                        label="Total Users"
-                                        value="547"
-                                        color={THEME.primary}
-                                        spark={Array.from({ length: 12 }, () => 520 + Math.random() * 50)}
-                                    />
-                                    <MetricCard
-                                        icon={Activity}
-                                        label="Active Now"
-                                        value="34"
-                                        color={THEME.success}
-                                        spark={Array.from({ length: 12 }, () => 25 + Math.random() * 30)}
-                                    />
-                                    <MetricCard
-                                        icon={Shield}
-                                        label="Admins"
-                                        value="8"
-                                        color={THEME.warning}
-                                        spark={Array.from({ length: 12 }, () => 7 + Math.random() * 2)}
-                                    />
-                                    <MetricCard
-                                        icon={Lock}
-                                        label="MFA Enabled"
-                                        value="429"
-                                        color={THEME.success}
-                                        trend="+12%"
-                                        spark={Array.from({ length: 12 }, () => 400 + Math.random() * 60)}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }} className="dpg-stagger">
+                                    <ExecStatCard value="4" label="TOTAL USERS" subtitle="Active" color="#4facfe" />
+                                    <ExecStatCard value="1" label="ADMINS" subtitle="Full access" color="#ffcc00" />
+                                    <ExecStatCard value="50%" label="MFA ENABLED" subtitle="2 of 4" color="#00ffaa" />
+                                    <ExecStatCard value="2h ago" label="LAST LOGIN" subtitle="Recent" color="#00e5ff" />
                                 </div>
                                 <Panel title="User Management" icon={Users} accentColor={THEME.primary}>
                                     <DataTable

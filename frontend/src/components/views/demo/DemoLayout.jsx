@@ -1511,3 +1511,46 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
 
 export const generateChartData = (hours = 24) =>
     Array.from({ length: hours }, (_, i) => ({ time: `${String(i).padStart(2, '0')}:00` }));
+
+/* ── ExecStatCard — Large hero KPI card matching the reference design ── */
+export const ExecStatCard = ({ value, label, subtitle, color }) => {
+    const r = parseInt(color.slice(1, 3), 16) || 0;
+    const g = parseInt(color.slice(3, 5), 16) || 0;
+    const b = parseInt(color.slice(5, 7), 16) || 0;
+    return (
+        <div
+            style={{
+                background: `linear-gradient(145deg, rgba(${r},${g},${b},0.06), rgba(6,14,32,0.72))`,
+                borderRadius: 16,
+                padding: '24px 20px',
+                border: `1px solid ${color}40`,
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.boxShadow = `0 12px 24px ${color}20, 0 0 20px ${color}10`;
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+            }}
+        >
+            <div className="dpg-card-shine" />
+            <div style={{ fontSize: 42, fontWeight: 800, letterSpacing: '-0.04em', textShadow: `0 0 20px ${color}80`, color, marginBottom: 8, fontFamily: THEME.fontMono }}>
+                {value}
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textDim, marginBottom: 4 }}>
+                {label}
+            </div>
+            {subtitle && (
+                <div style={{ fontSize: 10.5, color: THEME.textDim }}>
+                    {subtitle}
+                </div>
+            )}
+        </div>
+    );
+};
