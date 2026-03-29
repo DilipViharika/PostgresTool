@@ -38,16 +38,32 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
     };
 
     return (
-        <div style={{ display: 'flex', height: '100%', minHeight: '100vh', position: 'relative' }}>
+        <div style={{ display: 'flex', height: '100%', minHeight: '100vh', position: 'relative', background: '#020810' }}>
             <DemoStyles />
+
+            {/* Aurora gradient background */}
+            <div style={{
+                position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+                background: 'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,229,255,0.055) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(79,172,254,0.05) 0%, transparent 60%), radial-gradient(ellipse 70% 40% at 50% 10%, rgba(0,255,170,0.04) 0%, transparent 50%)',
+                animation: 'aurora-drift 18s ease-in-out infinite alternate',
+            }} />
+
+            {/* Dot grid overlay */}
+            <div style={{
+                position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+                backgroundImage: 'radial-gradient(circle, rgba(79,172,254,0.07) 1px, transparent 1px)',
+                backgroundSize: '38px 38px', opacity: 0.45,
+            }} />
 
             {/* ── SIDEBAR ── */}
             <aside
                 style={{
                     width: SIDEBAR_W,
                     minWidth: SIDEBAR_W,
-                    background: `linear-gradient(180deg, ${THEME.glass}, rgba(10,6,18,0.85))`,
-                    borderRight: `1px solid ${THEME.glassBorder}`,
+                    background: 'rgba(3,9,22,0.93)',
+                    backdropFilter: 'blur(28px) saturate(1.2)',
+                    WebkitBackdropFilter: 'blur(28px) saturate(1.2)',
+                    borderRight: '1px solid rgba(255,255,255,0.055)',
                     display: 'flex',
                     flexDirection: 'column',
                     overflowY: 'auto',
@@ -56,16 +72,22 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                     top: 0,
                     alignSelf: 'flex-start',
                     height: '100vh',
-                    backdropFilter: 'blur(18px)',
-                    WebkitBackdropFilter: 'blur(18px)',
                     zIndex: 2,
+                    position: 'relative',
                 }}
             >
+                {/* Gradient edge glow on right */}
+                <div style={{
+                    position: 'absolute', top: 0, right: 0, width: 1, height: '100%',
+                    background: 'linear-gradient(180deg, transparent, rgba(0,229,255,0.2) 25%, rgba(0,255,170,0.15) 60%, rgba(79,172,254,0.2) 80%, transparent)',
+                    pointerEvents: 'none',
+                }} />
                 {/* header */}
                 <div
                     style={{
                         padding: '16px 16px 12px',
-                        borderBottom: `1px solid ${THEME.glassBorder}`,
+                        borderBottom: '1px solid rgba(255,255,255,0.055)',
+                        background: 'rgba(0,0,0,0.15)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
@@ -130,12 +152,12 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                                 >
                                     <span
                                         style={{
-                                            fontSize: 10,
+                                            fontSize: '8.5px',
                                             fontWeight: 700,
                                             letterSpacing: '0.1em',
                                             textTransform: 'uppercase',
                                             fontFamily: THEME.fontMono,
-                                            color: hasCurrent ? sAccent : THEME.textDim,
+                                            color: '#1e3050',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: 6,
@@ -146,7 +168,7 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                                     </span>
                                     <ChevronDown
                                         size={12}
-                                        color={hasCurrent ? sAccent : THEME.textDim}
+                                        color="#1e3050"
                                         style={{
                                             transition: 'transform 0.2s ease',
                                             transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
@@ -173,17 +195,17 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                                                         gap: 8,
                                                         padding: '7px 14px 7px 28px',
                                                         background: isActive
-                                                            ? `linear-gradient(90deg, ${sAccent}25 0%, ${sAccent}08 60%, transparent 100%)`
+                                                            ? 'linear-gradient(90deg, rgba(0,255,170,0.1), rgba(0,255,170,0.02) 70%, transparent)'
                                                             : 'transparent',
                                                         border: 'none',
                                                         borderLeft: isActive
-                                                            ? `3px solid ${sAccent}`
-                                                            : '3px solid transparent',
+                                                            ? '2px solid #00ffaa'
+                                                            : '2px solid rgba(0,229,255,0.3)',
                                                         boxShadow: isActive
-                                                            ? `inset 0 0 24px ${sAccent}10, 0 0 12px ${sAccent}08`
+                                                            ? 'none'
                                                             : 'none',
                                                         cursor: 'pointer',
-                                                        color: isActive ? sAccent : THEME.textDim,
+                                                        color: isActive ? '#00ffaa' : THEME.textDim,
                                                         fontWeight: isActive ? 600 : 400,
                                                         fontSize: 12,
                                                         textAlign: 'left',
@@ -192,13 +214,14 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                                                         textOverflow: 'ellipsis',
                                                         fontFamily: THEME.fontBody,
                                                         transition:
-                                                            'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                                                            'background 0.15s ease, color 0.15s ease, border-color 0.15s ease, text-shadow 0.15s ease',
                                                         position: 'relative',
                                                         borderRadius: 0,
+                                                        textShadow: isActive ? '0 0 12px rgba(0,255,170,0.3)' : 'none',
                                                     }}
                                                     onMouseEnter={(e) => {
                                                         if (!isActive) {
-                                                            e.currentTarget.style.background = `${THEME.glassBorder}50`;
+                                                            e.currentTarget.style.background = 'rgba(0,229,255,0.04)';
                                                             e.currentTarget.style.color = THEME.textMuted;
                                                         }
                                                     }}
@@ -259,8 +282,10 @@ const DemoLayout = ({ sections = [], renderContent, title, accentColor, titleIco
                 style={{
                     flex: 1,
                     minWidth: 0,
-                    padding: '24px 28px',
+                    padding: '20px 22px 44px',
                     overflowY: 'auto',
+                    position: 'relative',
+                    zIndex: 5,
                 }}
             >
                 {renderContent(activeSection, activeItem)}
@@ -274,6 +299,10 @@ const DemoStyles = () => (
     <style>{`
         @keyframes dpgFadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
         @keyframes ovPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+        @keyframes aurora-drift { 0%{opacity:1} 33%{transform:scale(1.015)} 66%{opacity:0.88} 100%{transform:scale(0.985);opacity:1} }
+        @keyframes kpi-in { from{opacity:0;transform:translateY(10px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes live-pulse { 0%,100%{opacity:1;box-shadow:0 0 6px #00ffaa,0 0 14px rgba(0,255,170,0.3)} 50%{opacity:.7;box-shadow:0 0 10px #00ffaa,0 0 24px rgba(0,255,170,0.5)} }
+        @keyframes badge-crit { 0%,100%{opacity:1} 50%{opacity:.7} }
         .dpg-stagger > * { animation: dpgFadeIn 0.45s ease-out both; }
         .dpg-stagger > *:nth-child(1){animation-delay:0s}
         .dpg-stagger > *:nth-child(2){animation-delay:.07s}
@@ -300,19 +329,25 @@ export default DemoLayout;
 export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentColor, style = {} }) => (
     <div
         style={{
-            background: THEME.glass,
-            backdropFilter: 'blur(18px)',
-            WebkitBackdropFilter: 'blur(18px)',
-            border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
+            background: 'rgba(6,14,32,0.72)',
+            backdropFilter: 'blur(20px) saturate(1.1)',
+            WebkitBackdropFilter: 'blur(20px) saturate(1.1)',
+            border: '1px solid rgba(255,255,255,0.055)',
             borderRadius: 12,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             position: 'relative',
-            boxShadow: accentColor
-                ? `0 0 0 1px ${accentColor}12, 0 4px 16px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.08)`
-                : `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
             ...style,
+        }}
+        onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(79,172,254,0.2)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.035)';
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.055)';
+            e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)';
         }}
     >
         <div className="dpg-card-shine" />
@@ -320,13 +355,15 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
             <div
                 style={{
                     padding: '14px 20px',
-                    borderBottom: `1px solid ${accentColor ? `${accentColor}18` : THEME.glassBorder}`,
+                    borderBottom: '1px solid rgba(255,255,255,0.055)',
+                    borderTop: '1px solid rgba(79,172,254,0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexShrink: 0,
                     minHeight: 44,
-                    background: accentColor ? `${accentColor}06` : 'rgba(255,255,255,0.02)',
+                    background: 'linear-gradient(180deg, rgba(79,172,254,0.04), rgba(0,0,0,0.05))',
+                    backgroundImage: 'linear-gradient(180deg, rgba(79,172,254,0.04) 0%, transparent 50%)',
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -383,6 +420,7 @@ export const StatusBadge = ({ label, color, pulse }) => (
             whiteSpace: 'nowrap',
             fontFamily: THEME.fontMono,
             letterSpacing: '0.05em',
+            boxShadow: `0 0 8px ${color}40`,
         }}
     >
         <span
@@ -546,14 +584,14 @@ export const MiniSparkline = ({ data = [], color = THEME.primary, width = 64, he
 export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }) => (
     <div
         style={{
-            background: THEME.glass,
-            backdropFilter: 'blur(16px)',
+            background: 'rgba(6,14,32,0.72)',
+            backdropFilter: 'blur(20px) saturate(1.1)',
             borderRadius: 12,
-            border: `1px solid ${THEME.glassBorder}`,
+            border: '1px solid rgba(255,255,255,0.055)',
             padding: '14px 16px',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08)`,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
             display: 'flex',
             alignItems: 'flex-start',
             gap: 10,
@@ -594,10 +632,11 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
                     fontSize: 20,
                     fontWeight: 800,
                     fontFamily: THEME.fontMono,
-                    color: THEME.textMain,
+                    color: color || THEME.textMain,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
+                    textShadow: color ? `0 0 20px ${color}` : 'none',
                 }}
             >
                 {value}
@@ -620,21 +659,24 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
             gap: 10,
             padding: '14px 16px',
             borderRadius: 14,
-            background: THEME.glass,
-            backdropFilter: 'blur(14px)',
-            WebkitBackdropFilter: 'blur(14px)',
-            border: `1px solid ${warn ? `${color}28` : THEME.glassBorder}`,
+            background: 'rgba(6,14,32,0.72)',
+            backdropFilter: 'blur(20px) saturate(1.1)',
+            WebkitBackdropFilter: 'blur(20px) saturate(1.1)',
+            border: '1px solid rgba(255,255,255,0.055)',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
+            animation: 'kpi-in 0.35s cubic-bezier(.22,.68,0,1.2) both',
         }}
         onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = THEME.glassBorderHover || 'rgba(0,212,255,0.32)';
+            e.currentTarget.style.borderColor = 'rgba(79,172,254,0.2)';
             e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.035)';
         }}
         onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = warn ? `${color}28` : THEME.glassBorder;
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.055)';
             e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)';
         }}
     >
         <div className="dpg-card-shine" />
@@ -681,6 +723,7 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                         lineHeight: 1,
                         letterSpacing: '-0.02em',
                         fontFamily: THEME.fontMono,
+                        textShadow: `0 0 20px ${color}`,
                     }}
                 >
                     {value}
@@ -722,13 +765,14 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
             gap: 6,
             padding: '12px 14px',
             borderRadius: 12,
-            background: THEME.glass,
-            backdropFilter: 'blur(12px)',
-            border: `1px solid ${THEME.glassBorder}`,
+            background: 'rgba(6,14,32,0.72)',
+            backdropFilter: 'blur(20px) saturate(1.1)',
+            border: '1px solid rgba(255,255,255,0.055)',
             position: 'relative',
             overflow: 'hidden',
             flex: 1,
             minWidth: 120,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
         }}
     >
         <div className="dpg-card-shine" />
@@ -920,9 +964,9 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                 gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
                 gap: 8,
                 padding: '8px 14px',
-                borderBottom: `1px solid ${THEME.glassBorder}`,
+                borderBottom: '1px solid rgba(79,172,254,0.15)',
                 fontWeight: 700,
-                fontSize: 9.5,
+                fontSize: '9.5px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 color: THEME.textDim,
@@ -946,7 +990,7 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                     borderBottom: `1px solid ${THEME.glassBorder}30`,
                     transition: 'background 0.15s',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = `${THEME.glassBorder}20`)}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
                 {columns.map((c, ci) => (
@@ -976,13 +1020,13 @@ export const ChartTip = ({ active, payload, label }) => {
     return (
         <div
             style={{
-                background: THEME.glass,
-                border: `1px solid ${THEME.glassBorder}`,
+                background: 'rgba(6,14,32,0.72)',
+                border: '1px solid rgba(255,255,255,0.055)',
                 borderRadius: 12,
                 padding: '10px 14px',
                 fontSize: 12,
-                backdropFilter: 'blur(12px)',
-                boxShadow: THEME.shadowMd,
+                backdropFilter: 'blur(20px) saturate(1.1)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
             }}
         >
             <div
@@ -1014,12 +1058,14 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '8px 16px',
-            background: THEME.glass,
-            border: `1px solid ${THEME.glassBorder}`,
+            background: 'rgba(6,14,32,0.72)',
+            border: '1px solid rgba(255,255,255,0.055)',
             borderRadius: 10,
             fontSize: 11,
             color: THEME.textDim,
             marginBottom: 4,
+            backdropFilter: 'blur(20px) saturate(1.1)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
         }}
     >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
