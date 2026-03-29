@@ -155,7 +155,7 @@ const DemoLayout = ({
                     >
                         {goToTab && (
                             <button
-                                onClick={() => goToTab('demo-postgres')}
+                                onClick={() => goToTab('overview')}
                                 title="Back to main app"
                                 style={{
                                     width: 24,

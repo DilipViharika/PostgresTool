@@ -1991,15 +1991,15 @@ const OverviewTab = () => {
         };
     }, [refreshInterval, load, activeConnection]);
 
-    /* ── Guard: no active connection ── */
+    /* ── Guard: no active connection — show welcome with demo links ── */
     if (!activeConnection) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, minHeight: 400 }}>
                 <OvStyles />
-                <div style={{ textAlign: 'center' }}>
-                    <Database size={48} color={THEME.textMuted} style={{ marginBottom: 16, opacity: 0.5 }} />
-                    <div style={{ fontSize: 16, fontWeight: 600, color: THEME.textMain, marginBottom: 8 }}>Connect to a database</div>
-                    <div style={{ fontSize: 13, color: THEME.textMuted }}>Connect to a database to view overview metrics</div>
+                <div style={{ textAlign: 'center', maxWidth: 480 }}>
+                    <Database size={48} color={THEME.primary} style={{ marginBottom: 16, opacity: 0.7 }} />
+                    <div style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>Welcome to VIGIL</div>
+                    <div style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 24 }}>Connect a database to monitor it, or explore the interactive demos from the sidebar.</div>
                 </div>
             </div>
         );
