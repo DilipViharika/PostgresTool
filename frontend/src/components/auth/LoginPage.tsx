@@ -11,6 +11,7 @@ import {
     Moon,
     Server,
     Fingerprint,
+    ArrowRight,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { THEME, useAdaptiveTheme } from '../../utils/theme';
@@ -19,32 +20,177 @@ import { useTheme } from '../../context/ThemeContext';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  STYLES
+//  STYLES — gradient mesh + glassmorphism
 // ─────────────────────────────────────────────────────────────────────────────
 const STYLES = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
 
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(2px); } }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px ${THEME.surface} inset !important;
-    -webkit-text-fill-color: ${THEME.textMain} !important;
-    caret-color: ${THEME.textMain};
+  @keyframes blob1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(80px, -60px) scale(1.15); }
+    50% { transform: translate(-40px, 80px) scale(0.9); }
+    75% { transform: translate(60px, 40px) scale(1.05); }
+  }
+  @keyframes blob2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(-90px, 50px) scale(1.1); }
+    50% { transform: translate(60px, -70px) scale(0.95); }
+    75% { transform: translate(-30px, -40px) scale(1.08); }
+  }
+  @keyframes blob3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(50px, 70px) scale(0.92); }
+    50% { transform: translate(-80px, -30px) scale(1.12); }
+    75% { transform: translate(40px, -60px) scale(1); }
+  }
+  @keyframes blob4 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-60px, -80px) scale(1.1); }
+    66% { transform: translate(70px, 50px) scale(0.95); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .glass-input:focus {
+    outline: none;
+    border-color: rgba(255,255,255,.4) !important;
+    box-shadow: 0 0 0 3px rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.1) !important;
+  }
+  .glass-input::placeholder {
+    color: rgba(255,255,255,.35);
+  }
+  .glass-input:-webkit-autofill,
+  .glass-input:-webkit-autofill:hover,
+  .glass-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,.06) inset !important;
+    -webkit-text-fill-color: rgba(255,255,255,.9) !important;
+    caret-color: rgba(255,255,255,.9);
     transition: background-color 5000s ease-in-out 0s;
+  }
+
+  .login-btn:not(:disabled):hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,.3), 0 0 60px rgba(139,92,246,.2) !important;
+  }
+  .login-btn:not(:disabled):active {
+    transform: translateY(0) !important;
+  }
+
+  .sso-btn:hover {
+    background: rgba(255,255,255,.12) !important;
+    border-color: rgba(255,255,255,.25) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .forgot-btn:hover {
+    color: rgba(255,255,255,.9) !important;
+  }
+
+  .theme-toggle:hover {
+    background: rgba(255,255,255,.15) !important;
+    transform: scale(1.1) rotate(15deg) !important;
   }
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SERVER STATUS
+//  GRADIENT MESH BACKGROUND
 // ─────────────────────────────────────────────────────────────────────────────
-const ServerStatus = ({ status }) => {
+const GradientMesh = () => (
+    <div
+        style={{
+            position: 'fixed',
+            inset: 0,
+            overflow: 'hidden',
+            background: 'linear-gradient(135deg, #0f0c29 0%, #1a1040 25%, #1e1145 50%, #0d1b3e 75%, #0a0e27 100%)',
+            zIndex: 0,
+        }}
+    >
+        {/* Blob 1 — Purple/Violet */}
+        <div
+            style={{
+                position: 'absolute',
+                top: '10%',
+                left: '15%',
+                width: 500,
+                height: 500,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(139,92,246,.35) 0%, rgba(139,92,246,.08) 50%, transparent 70%)',
+                filter: 'blur(80px)',
+                animation: 'blob1 20s ease-in-out infinite',
+            }}
+        />
+        {/* Blob 2 — Cyan/Teal */}
+        <div
+            style={{
+                position: 'absolute',
+                top: '50%',
+                right: '10%',
+                width: 450,
+                height: 450,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(6,182,212,.3) 0%, rgba(6,182,212,.06) 50%, transparent 70%)',
+                filter: 'blur(80px)',
+                animation: 'blob2 25s ease-in-out infinite',
+            }}
+        />
+        {/* Blob 3 — Pink/Rose */}
+        <div
+            style={{
+                position: 'absolute',
+                bottom: '10%',
+                left: '30%',
+                width: 400,
+                height: 400,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(244,63,94,.25) 0%, rgba(244,63,94,.05) 50%, transparent 70%)',
+                filter: 'blur(80px)',
+                animation: 'blob3 22s ease-in-out infinite',
+            }}
+        />
+        {/* Blob 4 — Blue accent */}
+        <div
+            style={{
+                position: 'absolute',
+                top: '30%',
+                right: '35%',
+                width: 350,
+                height: 350,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(59,130,246,.2) 0%, rgba(59,130,246,.04) 50%, transparent 70%)',
+                filter: 'blur(80px)',
+                animation: 'blob4 18s ease-in-out infinite',
+            }}
+        />
+
+        {/* Noise overlay for texture */}
+        <div
+            style={{
+                position: 'absolute',
+                inset: 0,
+                opacity: 0.03,
+                background: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            }}
+        />
+    </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SERVER STATUS (glassmorphism style)
+// ─────────────────────────────────────────────────────────────────────────────
+const ServerStatus = ({ status }: { status: { status: string; latency?: number } }) => {
     const isOnline = status.status === 'online';
-    const color = isOnline ? '#22c55e' : status.status === 'offline' ? '#ef4444' : '#f59e0b';
+    const color = isOnline ? '#34d399' : status.status === 'offline' ? '#f87171' : '#fbbf24';
     const label = isOnline ? 'ONLINE' : status.status === 'offline' ? 'OFFLINE' : 'CHECKING';
 
     return (
@@ -53,15 +199,16 @@ const ServerStatus = ({ status }) => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                padding: '6px 14px',
+                padding: '5px 14px',
                 borderRadius: 100,
-                background: `${color}0A`,
-                border: `1px solid ${color}22`,
-                fontFamily: THEME.fontMono,
+                background: 'rgba(255,255,255,.06)',
+                border: '1px solid rgba(255,255,255,.08)',
+                backdropFilter: 'blur(8px)',
                 fontSize: 9,
                 fontWeight: 600,
                 color,
-                letterSpacing: '.1em',
+                letterSpacing: '.12em',
+                fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', monospace",
             }}
         >
             {status.status === 'checking' ? (
@@ -69,11 +216,11 @@ const ServerStatus = ({ status }) => {
             ) : (
                 <div
                     style={{
-                        width: 6,
-                        height: 6,
+                        width: 5,
+                        height: 5,
                         borderRadius: '50%',
                         background: color,
-                        boxShadow: `0 0 8px ${color}`,
+                        boxShadow: `0 0 10px ${color}80`,
                     }}
                 />
             )}
@@ -81,78 +228,6 @@ const ServerStatus = ({ status }) => {
         </div>
     );
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  INPUT FIELD
-// ─────────────────────────────────────────────────────────────────────────────
-const InputField = React.forwardRef(function InputField(
-    { icon: Icon, label, type = 'text', value, onChange, placeholder, autoComplete, disabled, rightEl },
-    ref,
-) {
-    const [focused, setFocused] = useState(false);
-    const hasVal = value.length > 0;
-
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label
-                style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: focused ? '#0ea5e9' : THEME.textMuted,
-                    textTransform: 'uppercase',
-                    letterSpacing: '1.2px',
-                    fontFamily: THEME.fontMono,
-                    transition: 'color .25s',
-                }}
-            >
-                {label}
-            </label>
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    background: THEME.surface,
-                    border: `1px solid ${focused ? '#0ea5e9' : THEME.grid}`,
-                    borderRadius: 10,
-                    padding: '0 14px',
-                    transition: 'all .25s',
-                    boxShadow: focused ? `0 0 0 3px rgba(14,165,233,.08)` : 'none',
-                }}
-            >
-                <Icon
-                    size={16}
-                    color={focused ? '#0ea5e9' : hasVal ? THEME.textMuted : THEME.textDim}
-                    style={{ flexShrink: 0, transition: 'color .25s' }}
-                    strokeWidth={1.5}
-                />
-                <input
-                    ref={ref}
-                    type={type}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder}
-                    autoComplete={autoComplete}
-                    disabled={disabled}
-                    onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
-                    style={{
-                        flex: 1,
-                        padding: '11px 0',
-                        background: 'none',
-                        border: 'none',
-                        color: THEME.textMain,
-                        fontSize: 14,
-                        outline: 'none',
-                        fontFamily: THEME.fontBody,
-                        opacity: disabled ? 0.5 : 1,
-                    }}
-                />
-                {rightEl}
-            </div>
-        </div>
-    );
-});
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  LOGIN PAGE
@@ -165,7 +240,7 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [showPwd, setShowPwd] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
-    const [serverStatus, setServerStatus] = useState({ status: 'checking' });
+    const [serverStatus, setServerStatus] = useState<{ status: string; latency?: number }>({ status: 'checking' });
     const [shake, setShake] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [resetEmail, setResetEmail] = useState('');
@@ -174,8 +249,8 @@ const LoginPage = () => {
     const [attempts, setAttempts] = useState(0);
     const [lockoutUntil, setLockoutUntil] = useState(0);
     const [rateLimitError, setRateLimitError] = useState('');
-    const userRef = useRef(null);
-    const pwdRef = useRef(null);
+    const userRef = useRef<HTMLInputElement>(null);
+    const pwdRef = useRef<HTMLInputElement>(null);
 
     // Check server health
     useEffect(() => {
@@ -197,10 +272,7 @@ const LoginPage = () => {
         };
         check();
         const iv = setInterval(check, 15000);
-        return () => {
-            cancelled = true;
-            clearInterval(iv);
-        };
+        return () => { cancelled = true; clearInterval(iv); };
     }, []);
 
     // Load remembered user
@@ -215,7 +287,7 @@ const LoginPage = () => {
         }
     }, []);
 
-    // Error shake animation
+    // Error shake
     useEffect(() => {
         if (error) {
             setShake(true);
@@ -229,33 +301,24 @@ const LoginPage = () => {
     }, [username, password, clearError]);
 
     const handleSubmit = useCallback(
-        async (e) => {
+        async (e?: React.FormEvent) => {
             e?.preventDefault();
             if (!username.trim() || !password.trim()) return;
-
-            // Rate limiting
             if (Date.now() < lockoutUntil) {
                 setRateLimitError('Too many attempts. Please wait before trying again.');
                 return;
             }
             setRateLimitError('');
-
-            // Input validation
             if (username.length > 255 || password.length > 1000) {
                 setRateLimitError('Input too long');
                 return;
             }
-
             if (rememberMe) {
                 localStorage.setItem('vigil_remembered_user', username.trim());
             } else {
                 localStorage.removeItem('vigil_remembered_user');
             }
-
-            try {
-                localStorage.removeItem('pg_monitor_active_tab');
-            } catch {}
-
+            try { localStorage.removeItem('pg_monitor_active_tab'); } catch {}
             try {
                 await login(username, password);
                 setAttempts(0);
@@ -274,12 +337,11 @@ const LoginPage = () => {
     );
 
     const handleForgotPassword = useCallback(
-        async (e) => {
+        async (e?: React.FormEvent) => {
             e?.preventDefault();
             if (!resetEmail.trim()) return;
             setResetLoading(true);
             setResetMessage('');
-
             try {
                 const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
                     method: 'POST',
@@ -294,7 +356,7 @@ const LoginPage = () => {
                 } else {
                     setResetMessage(data.error || 'Failed to process request');
                 }
-            } catch (err) {
+            } catch {
                 setResetMessage('Unable to reach server. Please try again.');
             } finally {
                 setResetLoading(false);
@@ -311,511 +373,412 @@ const LoginPage = () => {
                 height: '100vh',
                 width: '100vw',
                 display: 'flex',
-                background: THEME.bg,
-                fontFamily: THEME.fontBody,
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                 overflow: 'hidden',
+                position: 'relative',
             }}
         >
             <style>{STYLES}</style>
 
-            {/* LEFT PANEL - Branding */}
+            {/* Animated gradient mesh background */}
+            <GradientMesh />
+
+            {/* Main glass card */}
             <div
                 style={{
-                    flex: '1 1 50%',
-                    background: 'linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '48px',
                     position: 'relative',
-                    overflow: 'hidden',
+                    zIndex: 1,
+                    width: '100%',
+                    maxWidth: 420,
+                    padding: '0 24px',
+                    animation: 'fadeIn .8s ease-out',
                 }}
             >
-                {/* Subtle background shapes */}
+                {/* Logo + Branding */}
                 <div
                     style={{
-                        position: 'absolute',
-                        top: '-20%',
-                        right: '-10%',
-                        width: 400,
-                        height: 400,
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(14,165,233,.05) 0%, transparent 70%)',
-                        filter: 'blur(60px)',
+                        textAlign: 'center',
+                        marginBottom: 32,
+                        animation: 'float 6s ease-in-out infinite',
                     }}
-                />
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '-15%',
-                        left: '-10%',
-                        width: 350,
-                        height: 350,
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(16,185,129,.04) 0%, transparent 70%)',
-                        filter: 'blur(50px)',
-                    }}
-                />
-
-                {/* Logo and branding */}
-                <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 500 }}>
-                    {/* Logo */}
+                >
                     <div
                         style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: 12,
-                            background: 'linear-gradient(135deg, #0ea5e9, #10b981)',
+                            width: 56,
+                            height: 56,
+                            borderRadius: 16,
+                            background: 'linear-gradient(135deg, rgba(139,92,246,.8), rgba(6,182,212,.8))',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            margin: '0 auto 20px',
-                            boxShadow: '0 8px 24px rgba(14,165,233,.25)',
+                            margin: '0 auto 16px',
+                            boxShadow: '0 8px 32px rgba(139,92,246,.3), 0 0 60px rgba(139,92,246,.15)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255,255,255,.15)',
                         }}
                     >
-                        <Server size={24} color="#fff" strokeWidth={1.5} />
+                        <Server size={26} color="#fff" strokeWidth={1.5} />
                     </div>
-
-                    {/* Title */}
                     <h1
                         style={{
-                            fontSize: 32,
+                            fontSize: 28,
                             fontWeight: 700,
-                            color: '#0f172a',
-                            margin: '0 0 8px',
-                            letterSpacing: '-0.02em',
+                            color: '#fff',
+                            margin: '0 0 4px',
+                            letterSpacing: '0.08em',
                         }}
                     >
                         VIGIL
                     </h1>
-
-                    {/* Subtitle */}
                     <p
                         style={{
                             fontSize: 13,
-                            fontWeight: 500,
-                            color: '#64748b',
-                            margin: '0 0 24px',
-                            letterSpacing: '2px',
-                            textTransform: 'uppercase',
-                            fontFamily: THEME.fontMono,
-                        }}
-                    >
-                        Database Monitor
-                    </p>
-
-                    {/* Tagline */}
-                    <p
-                        style={{
-                            fontSize: 16,
-                            color: '#0f172a',
-                            lineHeight: 1.6,
-                            margin: '0 0 32px',
+                            color: 'rgba(255,255,255,.45)',
+                            margin: 0,
+                            letterSpacing: '0.04em',
                             fontWeight: 400,
                         }}
                     >
-                        Every database, one command center.
+                        Database Command Center
                     </p>
-
-                    {/* Feature pills */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            gap: 12,
-                            justifyContent: 'center',
-                            flexWrap: 'wrap',
-                        }}
-                    >
-                        {[
-                            { label: '3 DB Engines', color: '#0ea5e9' },
-                            { label: '203 Metrics', color: '#10b981' },
-                            { label: 'AI Powered', color: '#a78bfa' },
-                        ].map(({ label, color }) => (
-                            <div
-                                key={label}
-                                style={{
-                                    padding: '8px 14px',
-                                    borderRadius: 8,
-                                    background: `${color}10`,
-                                    border: `1px solid ${color}25`,
-                                    fontSize: 12,
-                                    fontWeight: 500,
-                                    color: '#0f172a',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 6,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        width: 4,
-                                        height: 4,
-                                        borderRadius: '50%',
-                                        background: color,
-                                    }}
-                                />
-                                {label}
-                            </div>
-                        ))}
-                    </div>
                 </div>
-            </div>
 
-            {/* RIGHT PANEL - Login Form */}
-            <div
-                style={{
-                    flex: '1 1 50%',
-                    background: THEME.surface,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '48px 40px',
-                    position: 'relative',
-                    overflow: 'auto',
-                }}
-            >
-                {/* Subtle background glow */}
+                {/* Server status */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                    <ServerStatus status={serverStatus} />
+                </div>
+
+                {/* Glass card */}
                 <div
                     style={{
-                        position: 'absolute',
-                        top: '10%',
-                        right: '-5%',
-                        width: 300,
-                        height: 300,
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(14,165,233,.03) 0%, transparent 70%)',
-                        filter: 'blur(50px)',
-                        pointerEvents: 'none',
-                    }}
-                />
-
-                <div
-                    style={{
-                        position: 'relative',
-                        zIndex: 1,
-                        width: '100%',
-                        maxWidth: 360,
+                        background: 'rgba(255,255,255,.06)',
+                        backdropFilter: 'blur(24px) saturate(1.4)',
+                        WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+                        borderRadius: 20,
+                        border: '1px solid rgba(255,255,255,.1)',
+                        padding: '32px 28px',
+                        boxShadow: '0 24px 80px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08)',
+                        animation: shake ? 'shake .5s ease' : 'none',
                     }}
                 >
-                    {/* Welcome heading */}
-                    <div style={{ marginBottom: 24, textAlign: 'center' }}>
-                        <h2
+                    {/* Error */}
+                    {(error || rateLimitError) && (
+                        <div
                             style={{
-                                fontSize: 28,
-                                fontWeight: 700,
-                                color: THEME.textMain,
-                                margin: '0 0 8px',
-                                letterSpacing: '-0.02em',
+                                marginBottom: 18,
+                                padding: '12px 14px',
+                                borderRadius: 12,
+                                background: 'rgba(244,63,94,.12)',
+                                border: '1px solid rgba(244,63,94,.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                backdropFilter: 'blur(8px)',
                             }}
                         >
-                            Welcome back
-                        </h2>
-                        <p
-                            style={{
-                                fontSize: 13,
-                                color: THEME.textMuted,
-                                margin: 0,
-                                lineHeight: 1.5,
-                            }}
-                        >
-                            Sign in to your database command center
-                        </p>
-                    </div>
+                            <AlertCircle size={14} color="#fb7185" style={{ flexShrink: 0 }} />
+                            <span style={{ color: '#fb7185', fontSize: 12, fontWeight: 500 }}>
+                                {error || rateLimitError}
+                            </span>
+                        </div>
+                    )}
 
-                    {/* Server status */}
-                    <div
-                        style={{
-                            marginBottom: 20,
-                            display: 'flex',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <ServerStatus status={serverStatus} />
-                    </div>
-
-                    {/* Login card */}
-                    <div
-                        style={{
-                            background: THEME.bg,
-                            borderRadius: 12,
-                            padding: '24px',
-                            border: `1px solid ${THEME.grid}`,
-                            marginBottom: 16,
-                            animation: shake ? 'shake .5s ease' : 'none',
-                        }}
-                    >
-                        {/* Error message */}
-                        {(error || rateLimitError) && (
-                            <div
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {/* Username */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <label
                                 style={{
-                                    marginBottom: 16,
-                                    padding: '12px 14px',
-                                    borderRadius: 8,
-                                    background: 'rgba(239,68,68,.06)',
-                                    border: '1px solid rgba(239,68,68,.18)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 10,
+                                    fontSize: 11,
+                                    fontWeight: 500,
+                                    color: 'rgba(255,255,255,.4)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
                                 }}
                             >
-                                <AlertCircle size={14} color="#ef4444" style={{ flexShrink: 0 }} />
-                                <span
+                                Username
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                                <User
+                                    size={16}
+                                    color="rgba(255,255,255,.3)"
+                                    strokeWidth={1.5}
+                                    style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+                                />
+                                <input
+                                    ref={userRef}
+                                    className="glass-input"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter username"
+                                    autoComplete="username"
+                                    disabled={authLoading}
                                     style={{
-                                        color: '#ef4444',
-                                        fontSize: 12,
-                                        fontWeight: 500,
+                                        width: '100%',
+                                        padding: '12px 14px 12px 42px',
+                                        background: 'rgba(255,255,255,.06)',
+                                        border: '1px solid rgba(255,255,255,.1)',
+                                        borderRadius: 12,
+                                        color: 'rgba(255,255,255,.9)',
+                                        fontSize: 14,
+                                        fontFamily: 'inherit',
+                                        outline: 'none',
+                                        transition: 'all .25s',
+                                        opacity: authLoading ? 0.5 : 1,
                                     }}
-                                >
-                                    {error || rateLimitError}
-                                </span>
+                                />
                             </div>
-                        )}
+                        </div>
 
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            <InputField
-                                ref={userRef}
-                                icon={User}
-                                label="Username"
-                                value={username}
-                                onChange={setUsername}
-                                placeholder="Enter username"
-                                autoComplete="username"
-                                disabled={authLoading}
-                            />
-
-                            <InputField
-                                ref={pwdRef}
-                                icon={KeyRound}
-                                label="Password"
-                                type={showPwd ? 'text' : 'password'}
-                                value={password}
-                                onChange={setPassword}
-                                placeholder="Enter password"
-                                autoComplete="current-password"
-                                disabled={authLoading}
-                                rightEl={
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPwd((s) => !s)}
-                                        tabIndex={-1}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            color: THEME.textDim,
-                                            padding: 4,
-                                            display: 'flex',
-                                            transition: 'color .2s',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.color = '#0ea5e9';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.color = THEME.textDim;
-                                        }}
-                                    >
-                                        {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
-                                }
-                            />
-
-                            {/* Remember + Forgot */}
-                            <div
+                        {/* Password */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <label
                                 style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    fontSize: 12,
+                                    fontSize: 11,
+                                    fontWeight: 500,
+                                    color: 'rgba(255,255,255,.4)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
                                 }}
                             >
-                                <div
+                                Password
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                                <KeyRound
+                                    size={16}
+                                    color="rgba(255,255,255,.3)"
+                                    strokeWidth={1.5}
+                                    style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+                                />
+                                <input
+                                    ref={pwdRef}
+                                    className="glass-input"
+                                    type={showPwd ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Enter password"
+                                    autoComplete="current-password"
+                                    disabled={authLoading}
                                     style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 8,
-                                        cursor: 'pointer',
-                                        userSelect: 'none',
+                                        width: '100%',
+                                        padding: '12px 44px 12px 42px',
+                                        background: 'rgba(255,255,255,.06)',
+                                        border: '1px solid rgba(255,255,255,.1)',
+                                        borderRadius: 12,
+                                        color: 'rgba(255,255,255,.9)',
+                                        fontSize: 14,
+                                        fontFamily: 'inherit',
+                                        outline: 'none',
+                                        transition: 'all .25s',
+                                        opacity: authLoading ? 0.5 : 1,
                                     }}
-                                    onClick={() => setRememberMe((r) => !r)}
-                                >
-                                    <div
-                                        style={{
-                                            width: 16,
-                                            height: 16,
-                                            borderRadius: 4,
-                                            flexShrink: 0,
-                                            border: `1.5px solid ${rememberMe ? '#0ea5e9' : THEME.grid}`,
-                                            background: rememberMe ? '#0ea5e9' : 'transparent',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'all .25s',
-                                        }}
-                                    >
-                                        {rememberMe && (
-                                            <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
-                                                <path
-                                                    d="M2 5L4 7L8 3"
-                                                    stroke="#fff"
-                                                    strokeWidth="1.8"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        )}
-                                    </div>
-                                    <span style={{ color: THEME.textMuted }}>Remember me</span>
-                                </div>
+                                />
                                 <button
                                     type="button"
-                                    onClick={() => setShowForgotPassword(true)}
+                                    onClick={() => setShowPwd((s) => !s)}
+                                    tabIndex={-1}
                                     style={{
+                                        position: 'absolute',
+                                        right: 12,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
                                         background: 'none',
                                         border: 'none',
                                         cursor: 'pointer',
-                                        color: THEME.textMuted,
-                                        padding: 0,
+                                        color: 'rgba(255,255,255,.3)',
+                                        padding: 4,
+                                        display: 'flex',
                                         transition: 'color .2s',
                                     }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.color = '#0ea5e9';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.color = THEME.textMuted;
-                                    }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,.7)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,.3)'; }}
                                 >
-                                    Forgot password?
+                                    {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
                             </div>
+                        </div>
 
-                            {/* Sign in button */}
-                            <button
-                                type="submit"
-                                disabled={!canSubmit}
-                                style={{
-                                    background: canSubmit
-                                        ? 'linear-gradient(135deg, #0ea5e9, #10b981)'
-                                        : THEME.surfaceHover,
-                                    border: canSubmit ? 'none' : `1px solid ${THEME.grid}`,
-                                    padding: '12px 20px',
-                                    borderRadius: 10,
-                                    color: canSubmit ? '#fff' : THEME.textMuted,
-                                    fontWeight: 600,
-                                    fontSize: 14,
-                                    fontFamily: THEME.fontBody,
-                                    cursor: canSubmit ? 'pointer' : 'not-allowed',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 8,
-                                    transition: 'all .25s',
-                                    boxShadow: canSubmit
-                                        ? '0 8px 20px rgba(14,165,233,.25)'
-                                        : 'none',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (canSubmit) {
-                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                        e.currentTarget.style.boxShadow = '0 12px 28px rgba(14,165,233,.35)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (canSubmit) {
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(14,165,233,.25)';
-                                    }
-                                }}
-                            >
-                                {authLoading ? (
-                                    <>
-                                        <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                                        Authenticating...
-                                    </>
-                                ) : (
-                                    <>Sign In</>
-                                )}
-                            </button>
-
-                            {/* Divider */}
+                        {/* Remember + Forgot */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
                             <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 12,
-                                    margin: '6px 0',
-                                }}
+                                style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}
+                                onClick={() => setRememberMe((r) => !r)}
                             >
-                                <div style={{ flex: 1, height: 1, background: THEME.grid }} />
-                                <span
+                                <div
                                     style={{
-                                        fontSize: 11,
-                                        color: THEME.textMuted,
-                                        fontFamily: THEME.fontMono,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '.8px',
+                                        width: 16,
+                                        height: 16,
+                                        borderRadius: 5,
+                                        flexShrink: 0,
+                                        border: `1.5px solid ${rememberMe ? 'rgba(139,92,246,.8)' : 'rgba(255,255,255,.15)'}`,
+                                        background: rememberMe ? 'rgba(139,92,246,.7)' : 'transparent',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        transition: 'all .25s',
                                     }}
                                 >
-                                    or
-                                </span>
-                                <div style={{ flex: 1, height: 1, background: THEME.grid }} />
+                                    {rememberMe && (
+                                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+                                            <path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <span style={{ color: 'rgba(255,255,255,.45)' }}>Remember me</span>
                             </div>
-
-                            {/* SSO button */}
                             <button
                                 type="button"
-                                onClick={() => loginWithSSO('okta')}
+                                className="forgot-btn"
+                                onClick={() => setShowForgotPassword(true)}
                                 style={{
-                                    padding: '11px 20px',
-                                    borderRadius: 10,
-                                    background: THEME.surface,
-                                    border: `1px solid ${THEME.grid}`,
-                                    color: THEME.textMain,
-                                    fontWeight: 500,
-                                    fontSize: 13,
-                                    fontFamily: THEME.fontBody,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 10,
+                                    background: 'none',
+                                    border: 'none',
                                     cursor: 'pointer',
-                                    transition: 'all .25s',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = THEME.surfaceHover;
-                                    e.currentTarget.style.borderColor = '#0ea5e9';
-                                    e.currentTarget.style.transform = 'translateY(-1px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = THEME.surface;
-                                    e.currentTarget.style.borderColor = THEME.grid;
-                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    color: 'rgba(255,255,255,.4)',
+                                    padding: 0,
+                                    fontSize: 12,
+                                    transition: 'color .2s',
                                 }}
                             >
-                                <Fingerprint size={14} color="#0ea5e9" />
-                                Continue with SSO
+                                Forgot password?
                             </button>
-                        </form>
-                    </div>
+                        </div>
 
-                    {/* Footer text */}
-                    <div
-                        style={{
-                            textAlign: 'center',
-                            fontSize: 11,
-                            color: THEME.textMuted,
-                            fontFamily: THEME.fontMono,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                        }}
-                    >
-                        <Lock size={10} />
-                        TLS 1.3 encrypted
-                    </div>
+                        {/* Sign in button */}
+                        <button
+                            type="submit"
+                            className="login-btn"
+                            disabled={!canSubmit}
+                            style={{
+                                marginTop: 4,
+                                background: canSubmit
+                                    ? 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)'
+                                    : 'rgba(255,255,255,.06)',
+                                border: canSubmit ? 'none' : '1px solid rgba(255,255,255,.08)',
+                                padding: '13px 20px',
+                                borderRadius: 12,
+                                color: canSubmit ? '#fff' : 'rgba(255,255,255,.25)',
+                                fontWeight: 600,
+                                fontSize: 14,
+                                fontFamily: 'inherit',
+                                cursor: canSubmit ? 'pointer' : 'not-allowed',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 8,
+                                transition: 'all .3s ease',
+                                boxShadow: canSubmit
+                                    ? '0 12px 32px rgba(139,92,246,.3), 0 0 40px rgba(139,92,246,.1)'
+                                    : 'none',
+                                letterSpacing: '0.02em',
+                            }}
+                        >
+                            {authLoading ? (
+                                <>
+                                    <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                                    Authenticating...
+                                </>
+                            ) : (
+                                <>
+                                    Sign In
+                                    <ArrowRight size={16} strokeWidth={2} />
+                                </>
+                            )}
+                        </button>
+
+                        {/* Divider */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '2px 0' }}>
+                            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent)' }} />
+                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,.25)', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 500 }}>
+                                or
+                            </span>
+                            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent)' }} />
+                        </div>
+
+                        {/* SSO */}
+                        <button
+                            type="button"
+                            className="sso-btn"
+                            onClick={() => loginWithSSO('okta')}
+                            style={{
+                                padding: '12px 20px',
+                                borderRadius: 12,
+                                background: 'rgba(255,255,255,.06)',
+                                border: '1px solid rgba(255,255,255,.1)',
+                                color: 'rgba(255,255,255,.7)',
+                                fontWeight: 500,
+                                fontSize: 13,
+                                fontFamily: 'inherit',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 10,
+                                cursor: 'pointer',
+                                transition: 'all .25s',
+                                backdropFilter: 'blur(8px)',
+                            }}
+                        >
+                            <Fingerprint size={15} color="rgba(139,92,246,.7)" strokeWidth={1.5} />
+                            Continue with SSO
+                        </button>
+                    </form>
+                </div>
+
+                {/* Footer */}
+                <div
+                    style={{
+                        textAlign: 'center',
+                        marginTop: 20,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        fontSize: 10,
+                        color: 'rgba(255,255,255,.2)',
+                        letterSpacing: '.04em',
+                    }}
+                >
+                    <Lock size={10} />
+                    TLS 1.3 encrypted
+                </div>
+
+                {/* Feature pills */}
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: 8,
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                        marginTop: 16,
+                    }}
+                >
+                    {[
+                        { label: '3 DB Engines', color: 'rgba(139,92,246,.5)' },
+                        { label: '203 Metrics', color: 'rgba(6,182,212,.5)' },
+                        { label: 'AI Powered', color: 'rgba(244,63,94,.4)' },
+                    ].map(({ label, color }) => (
+                        <div
+                            key={label}
+                            style={{
+                                padding: '5px 12px',
+                                borderRadius: 100,
+                                background: 'rgba(255,255,255,.04)',
+                                border: '1px solid rgba(255,255,255,.06)',
+                                fontSize: 10,
+                                fontWeight: 500,
+                                color: 'rgba(255,255,255,.4)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 5,
+                            }}
+                        >
+                            <div style={{ width: 4, height: 4, borderRadius: '50%', background: color }} />
+                            {label}
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -825,7 +788,8 @@ const LoginPage = () => {
                     style={{
                         position: 'fixed',
                         inset: 0,
-                        background: 'rgba(0,0,0,.5)',
+                        background: 'rgba(0,0,0,.6)',
+                        backdropFilter: 'blur(8px)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -836,52 +800,43 @@ const LoginPage = () => {
                 >
                     <div
                         style={{
-                            background: THEME.bg,
-                            borderRadius: 12,
+                            background: 'rgba(255,255,255,.08)',
+                            backdropFilter: 'blur(24px) saturate(1.4)',
+                            WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+                            borderRadius: 20,
                             padding: '32px',
                             maxWidth: '380px',
                             width: '90%',
-                            border: `1px solid ${THEME.grid}`,
-                            boxShadow: '0 20px 60px rgba(0,0,0,.3)',
+                            border: '1px solid rgba(255,255,255,.1)',
+                            boxShadow: '0 24px 80px rgba(0,0,0,.4)',
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3
-                            style={{
-                                fontSize: 18,
-                                fontWeight: 700,
-                                color: THEME.textMain,
-                                marginBottom: 8,
-                            }}
-                        >
+                        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
                             Reset Password
                         </h3>
-                        <p
-                            style={{
-                                fontSize: 13,
-                                color: THEME.textMuted,
-                                marginBottom: 20,
-                            }}
-                        >
+                        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.45)', marginBottom: 20 }}>
                             Enter your email and we'll send you a reset link.
                         </p>
 
                         <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                             <input
+                                className="glass-input"
                                 type="email"
                                 placeholder="Enter your email"
                                 value={resetEmail}
                                 onChange={(e) => setResetEmail(e.target.value)}
                                 disabled={resetLoading}
                                 style={{
-                                    padding: '10px 12px',
-                                    borderRadius: 8,
-                                    border: `1px solid ${THEME.grid}`,
-                                    background: THEME.surface,
-                                    color: THEME.textMain,
+                                    padding: '11px 14px',
+                                    borderRadius: 12,
+                                    border: '1px solid rgba(255,255,255,.1)',
+                                    background: 'rgba(255,255,255,.06)',
+                                    color: 'rgba(255,255,255,.9)',
                                     fontSize: 13,
-                                    fontFamily: THEME.fontBody,
+                                    fontFamily: 'inherit',
                                     outline: 'none',
+                                    transition: 'all .25s',
                                 }}
                             />
 
@@ -889,36 +844,36 @@ const LoginPage = () => {
                                 <div
                                     style={{
                                         padding: '10px 12px',
-                                        borderRadius: 8,
+                                        borderRadius: 10,
                                         background: resetMessage.includes('failed')
-                                            ? 'rgba(239,68,68,.1)'
-                                            : 'rgba(34,197,94,.1)',
-                                        color: resetMessage.includes('failed') ? '#ef4444' : '#22c55e',
+                                            ? 'rgba(244,63,94,.12)'
+                                            : 'rgba(34,197,94,.12)',
+                                        color: resetMessage.includes('failed') ? '#fb7185' : '#34d399',
                                         fontSize: 12,
-                                        fontFamily: THEME.fontBody,
                                     }}
                                 >
                                     {resetMessage}
                                 </div>
                             )}
 
-                            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                                 <button
                                     type="submit"
                                     disabled={!resetEmail.trim() || resetLoading}
                                     style={{
                                         flex: 1,
-                                        padding: '10px 16px',
-                                        borderRadius: 8,
+                                        padding: '11px 16px',
+                                        borderRadius: 10,
                                         border: 'none',
-                                        background:
-                                            resetEmail.trim() && !resetLoading ? '#0ea5e9' : THEME.surfaceHover,
-                                        color:
-                                            resetEmail.trim() && !resetLoading ? '#fff' : THEME.textMuted,
+                                        background: resetEmail.trim() && !resetLoading
+                                            ? 'linear-gradient(135deg, #8b5cf6, #06b6d4)'
+                                            : 'rgba(255,255,255,.06)',
+                                        color: resetEmail.trim() && !resetLoading ? '#fff' : 'rgba(255,255,255,.25)',
                                         fontSize: 12,
                                         fontWeight: 600,
                                         cursor: resetEmail.trim() && !resetLoading ? 'pointer' : 'not-allowed',
-                                        fontFamily: THEME.fontBody,
+                                        fontFamily: 'inherit',
+                                        transition: 'all .25s',
                                     }}
                                 >
                                     {resetLoading ? 'Sending...' : 'Send Reset Link'}
@@ -928,15 +883,16 @@ const LoginPage = () => {
                                     onClick={() => setShowForgotPassword(false)}
                                     style={{
                                         flex: 1,
-                                        padding: '10px 16px',
-                                        borderRadius: 8,
-                                        border: `1px solid ${THEME.grid}`,
+                                        padding: '11px 16px',
+                                        borderRadius: 10,
+                                        border: '1px solid rgba(255,255,255,.1)',
                                         background: 'transparent',
-                                        color: THEME.textMuted,
+                                        color: 'rgba(255,255,255,.45)',
                                         fontSize: 12,
                                         fontWeight: 600,
                                         cursor: 'pointer',
-                                        fontFamily: THEME.fontBody,
+                                        fontFamily: 'inherit',
+                                        transition: 'all .25s',
                                     }}
                                 >
                                     Cancel
@@ -949,6 +905,7 @@ const LoginPage = () => {
 
             {/* Theme Toggle */}
             <button
+                className="theme-toggle"
                 onClick={toggleTheme}
                 title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                 style={{
@@ -959,25 +916,16 @@ const LoginPage = () => {
                     width: 40,
                     height: 40,
                     borderRadius: '50%',
-                    background: THEME.surface,
-                    border: `1px solid ${THEME.grid}`,
+                    background: 'rgba(255,255,255,.08)',
+                    border: '1px solid rgba(255,255,255,.1)',
+                    backdropFilter: 'blur(8px)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    color: THEME.textMuted,
-                    transition: 'all .25s',
+                    color: 'rgba(255,255,255,.4)',
+                    transition: 'all .3s',
                     outline: 'none',
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.background = THEME.surfaceHover;
-                    e.currentTarget.style.color = '#0ea5e9';
-                    e.currentTarget.style.transform = 'scale(1.1) rotate(15deg)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.background = THEME.surface;
-                    e.currentTarget.style.color = THEME.textMuted;
-                    e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
                 }}
             >
                 {isDark ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
