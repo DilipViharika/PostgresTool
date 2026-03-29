@@ -102,7 +102,6 @@ const ObservabilityHub = lazyRetry(() => import('./components/views/monitoring/O
 // Gap features — Database
 const AIQueryAdvisorTab = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab.jsx'));
 
-
 // MySQL features
 const MySQLOverviewTab = lazyRetry(() => import('./components/views/mysql/MySQLOverviewTab.jsx'));
 const MySQLPerformanceTab = lazyRetry(() => import('./components/views/mysql/MySQLPerformanceTab.jsx'));
@@ -2783,8 +2782,26 @@ const Sidebar = ({
     const connDbType = activeConnection?.dbType || null;
 
     // Sections shown per database type
-    const PG_SECTIONS = ['Overview', 'Alerts & Rules', 'Query Analysis', 'Schema & Data', 'Infrastructure', 'Security', 'Observability', 'Developer Tools', 'Admin'];
-    const MYSQL_SECTIONS = ['MySQL', 'Overview', 'Alerts & Rules', 'Security', 'Observability', 'Developer Tools', 'Admin'];
+    const PG_SECTIONS = [
+        'Overview',
+        'Alerts & Rules',
+        'Query Analysis',
+        'Schema & Data',
+        'Infrastructure',
+        'Security',
+        'Observability',
+        'Developer Tools',
+        'Admin',
+    ];
+    const MYSQL_SECTIONS = [
+        'MySQL',
+        'Overview',
+        'Alerts & Rules',
+        'Security',
+        'Observability',
+        'Developer Tools',
+        'Admin',
+    ];
     const MONGO_SECTIONS = ['MongoDB', 'Overview', 'Alerts & Rules', 'Security', 'Observability', 'Admin'];
 
     const visibleGroups = useMemo(
@@ -2961,7 +2978,8 @@ const Sidebar = ({
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     fontFamily: DS.fontUI,
-                                    transition: 'background 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out',
+                                    transition:
+                                        'background 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out',
                                     position: 'relative',
                                 }}
                                 onMouseEnter={(e) => {
@@ -3362,7 +3380,7 @@ const ConnectionSelector = () => {
         try {
             await switchConnection(id);
             // Auto-navigate to appropriate overview tab based on database type
-            const targetConnection = connections.find(c => c.id === id);
+            const targetConnection = connections.find((c) => c.id === id);
             if (targetConnection && goToTab) {
                 const dbType = targetConnection.dbType?.toLowerCase();
                 let targetTab = 'overview'; // Default to PostgreSQL overview
@@ -3451,7 +3469,9 @@ const ConnectionSelector = () => {
                 )}
                 <Database size={12} style={{ color: DS.cyan, flexShrink: 0 }} />
                 {/* Two-line label: name on top, connection string below */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, flex: 1 }}>
+                <div
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0, flex: 1 }}
+                >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
                         <span
                             style={{
@@ -3485,7 +3505,15 @@ const ConnectionSelector = () => {
                                 }}
                                 title={`Database type: ${activeConnection.dbType || 'unknown'}`}
                             >
-                                {activeConnection.dbType === 'postgresql' ? 'PG' : activeConnection.dbType === 'mysql' ? 'MySQL' : activeConnection.dbType === 'mariadb' ? 'Maria' : activeConnection.dbType === 'mongodb' ? 'Mongo' : 'DB'}
+                                {activeConnection.dbType === 'postgresql'
+                                    ? 'PG'
+                                    : activeConnection.dbType === 'mysql'
+                                      ? 'MySQL'
+                                      : activeConnection.dbType === 'mariadb'
+                                        ? 'Maria'
+                                        : activeConnection.dbType === 'mongodb'
+                                          ? 'Mongo'
+                                          : 'DB'}
                             </span>
                         )}
                     </div>
@@ -3840,8 +3868,19 @@ const DashboardInner = ({ onLogout }) => {
 
     // Auto-navigate to appropriate overview tab when connection changes
     // This ensures users see the right dashboard after switching databases
+    // Also redirects to demo tab when no connection exists and user is on a connection-dependent tab
     useEffect(() => {
-        if (!activeConnection) return;
+        // No connection → redirect away from connection-dependent tabs
+        if (!activeConnection) {
+            // Demo tabs don't need a connection
+            if (activeTab?.startsWith('demo-')) return;
+            // Any non-demo tab requires a connection — redirect to demo
+            setActiveTab('demo-postgres');
+            try {
+                localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'demo-postgres');
+            } catch {}
+            return;
+        }
 
         const dbType = activeConnection.dbType?.toLowerCase();
         let targetTab = 'overview'; // Default to PostgreSQL overview
@@ -3855,13 +3894,27 @@ const DashboardInner = ({ onLogout }) => {
         // Only navigate if we're not already on a relevant tab for this connection
         // This avoids jarring navigation if user is already viewing a universal tab (like Alerts)
         const isRelevantTab = (tabId) => {
+            // Always allow demo tabs
+            if (tabId?.startsWith('demo-')) return true;
             // Always allow universal sections
-            const universalSections = ['Overview', 'Alerts & Rules', 'Security', 'Observability', 'Developer Tools', 'User Management', 'Admin'];
-            const currentSection = SECTION_GROUPS.find(g => g.tabs.some(t => t.id === tabId))?.section;
+            const universalSections = [
+                'Overview',
+                'Alerts & Rules',
+                'Security',
+                'Observability',
+                'Developer Tools',
+                'User Management',
+                'Admin',
+            ];
+            const currentSection = SECTION_GROUPS.find((g) => g.tabs.some((t) => t.id === tabId))?.section;
             if (universalSections.includes(currentSection)) return true;
 
             // For DB-specific tabs, only allow if they match current connection
-            if (dbType === 'postgresql' && ['Query Analysis', 'Schema & Data', 'Infrastructure'].includes(currentSection)) return true;
+            if (
+                dbType === 'postgresql' &&
+                ['Query Analysis', 'Schema & Data', 'Infrastructure'].includes(currentSection)
+            )
+                return true;
             if ((dbType === 'mysql' || dbType === 'mariadb') && currentSection === 'MySQL') return true;
             if (dbType === 'mongodb' && currentSection === 'MongoDB') return true;
             return false;
@@ -3874,7 +3927,7 @@ const DashboardInner = ({ onLogout }) => {
                 localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, targetTab);
             } catch {}
         }
-    }, [activeConnection?.id]); // Only re-run when connection ID changes, not on every re-render
+    }, [activeConnection?.id, activeTab]); // Re-run when connection or active tab changes
 
     const allowedTabIds = useMemo(
         () =>
@@ -4215,7 +4268,9 @@ const DashboardInner = ({ onLogout }) => {
                             flex: 1,
                             overflowY: 'auto',
                             position: 'relative',
-                            background: isDemoFullPage ? 'transparent' : `linear-gradient(135deg, ${DS.bg} 0%, rgba(56,189,248,0.02) 100%)`,
+                            background: isDemoFullPage
+                                ? 'transparent'
+                                : `linear-gradient(135deg, ${DS.bg} 0%, rgba(56,189,248,0.02) 100%)`,
                         }}
                     >
                         {/* Floating alert toast */}
@@ -4247,7 +4302,14 @@ const DashboardInner = ({ onLogout }) => {
                             </div>
                         )}
 
-                        <div style={{ padding: isDemoFullPage ? 0 : '28px 32px', width: '100%', minHeight: '100%', position: 'relative' }}>
+                        <div
+                            style={{
+                                padding: isDemoFullPage ? 0 : '28px 32px',
+                                width: '100%',
+                                minHeight: '100%',
+                                position: 'relative',
+                            }}
+                        >
                             <ErrorBoundary key={activeTab}>
                                 <Suspense
                                     fallback={

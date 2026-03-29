@@ -26,20 +26,25 @@ import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, Ar
 const SIDEBAR_W = 240;
 
 const DemoLayout = ({
-  sections = [],
-  renderContent,
-  title,
-  accentColor,
-  titleIcon: TitleIcon,
-  headerStats = [],
-  clusterOptions = ['Local Dev'],
-  statusItems = [],
-  onRefresh,
-  onExport,
+    sections = [],
+    renderContent,
+    title,
+    accentColor,
+    titleIcon: TitleIcon,
+    headerStats = [],
+    clusterOptions = ['Local Dev'],
+    statusItems = [],
+    onRefresh,
+    onExport,
 }) => {
     useAdaptiveTheme();
     let goToTab = null;
-    try { const nav = useNavigation(); goToTab = nav?.goToTab; } catch(e) { /* outside NavigationContext */ }
+    try {
+        const nav = useNavigation();
+        goToTab = nav?.goToTab;
+    } catch (e) {
+        /* outside NavigationContext */
+    }
 
     const [activeSection, setActiveSection] = useState(sections[0]?.key || '');
     const [activeItem, setActiveItem] = useState(sections[0]?.items?.[0]?.key || '');
@@ -62,437 +67,703 @@ const DemoLayout = ({
         }
     };
 
-    const activeItemData = sections
-        .find((s) => s.key === activeSection)
-        ?.items?.find((i) => i.key === activeItem);
+    const activeItemData = sections.find((s) => s.key === activeSection)?.items?.find((i) => i.key === activeItem);
 
     return (
-        <div style={{ display: 'flex', height: '100%', minHeight: '100vh', position: 'relative', background: '#020810', flexDirection: 'column' }}>
+        <div
+            style={{
+                display: 'flex',
+                height: '100%',
+                minHeight: '100vh',
+                position: 'relative',
+                background: '#020810',
+                flexDirection: 'column',
+            }}
+        >
             <DemoStyles />
 
             {/* Aurora gradient background */}
-            <div style={{
-                position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-                background: 'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,229,255,0.055) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(79,172,254,0.05) 0%, transparent 60%), radial-gradient(ellipse 70% 40% at 50% 10%, rgba(0,255,170,0.04) 0%, transparent 50%)',
-                animation: 'aurora-drift 18s ease-in-out infinite alternate',
-            }} />
+            <div
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                    background:
+                        'radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,229,255,0.055) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(79,172,254,0.05) 0%, transparent 60%), radial-gradient(ellipse 70% 40% at 50% 10%, rgba(0,255,170,0.04) 0%, transparent 50%)',
+                    animation: 'aurora-drift 18s ease-in-out infinite alternate',
+                }}
+            />
 
             {/* Dot grid overlay */}
-            <div style={{
-                position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-                backgroundImage: 'radial-gradient(circle, rgba(79,172,254,0.07) 1px, transparent 1px)',
-                backgroundSize: '38px 38px', opacity: 0.45,
-            }} />
+            <div
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                    backgroundImage: 'radial-gradient(circle, rgba(79,172,254,0.07) 1px, transparent 1px)',
+                    backgroundSize: '38px 38px',
+                    opacity: 0.45,
+                }}
+            />
 
             {/* Main flex wrapper for sidebar + content */}
             <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-            {/* ── SIDEBAR ── */}
-            <aside
-                style={{
-                    width: SIDEBAR_W,
-                    minWidth: SIDEBAR_W,
-                    background: 'rgba(3,9,22,0.93)',
-                    backdropFilter: 'blur(28px) saturate(1.2)',
-                    WebkitBackdropFilter: 'blur(28px) saturate(1.2)',
-                    borderRight: '1px solid rgba(255,255,255,0.055)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    position: 'sticky',
-                    top: 0,
-                    alignSelf: 'flex-start',
-                    height: '100vh',
-                    zIndex: 2,
-                    position: 'relative',
-                }}
-            >
-                {/* Gradient edge glow on right */}
-                <div style={{
-                    position: 'absolute', top: 0, right: 0, width: 1, height: '100%',
-                    background: 'linear-gradient(180deg, transparent, rgba(0,229,255,0.2) 25%, rgba(0,255,170,0.15) 60%, rgba(79,172,254,0.2) 80%, transparent)',
-                    pointerEvents: 'none',
-                }} />
-
-                {/* Logo + Title Header */}
-                <div
+                {/* ── SIDEBAR ── */}
+                <aside
                     style={{
-                        padding: '16px 16px 12px',
-                        borderBottom: '1px solid rgba(255,255,255,0.055)',
-                        background: 'rgba(0,0,0,0.15)',
+                        width: SIDEBAR_W,
+                        minWidth: SIDEBAR_W,
+                        background: 'rgba(3,9,22,0.93)',
+                        backdropFilter: 'blur(28px) saturate(1.2)',
+                        WebkitBackdropFilter: 'blur(28px) saturate(1.2)',
+                        borderRight: '1px solid rgba(255,255,255,0.055)',
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        flexShrink: 0,
+                        flexDirection: 'column',
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        position: 'sticky',
+                        top: 0,
+                        alignSelf: 'flex-start',
+                        height: '100vh',
+                        zIndex: 2,
+                        position: 'relative',
                     }}
                 >
-                    {goToTab && (
-                        <button
-                            onClick={() => goToTab('overview')}
-                            title="Back to main app"
+                    {/* Gradient edge glow on right */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            width: 1,
+                            height: '100%',
+                            background:
+                                'linear-gradient(180deg, transparent, rgba(0,229,255,0.2) 25%, rgba(0,255,170,0.15) 60%, rgba(79,172,254,0.2) 80%, transparent)',
+                            pointerEvents: 'none',
+                        }}
+                    />
+
+                    {/* Logo + Title Header */}
+                    <div
+                        style={{
+                            padding: '16px 16px 12px',
+                            borderBottom: '1px solid rgba(255,255,255,0.055)',
+                            background: 'rgba(0,0,0,0.15)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            flexShrink: 0,
+                        }}
+                    >
+                        {goToTab && (
+                            <button
+                                onClick={() => goToTab('demo-postgres')}
+                                title="Back to main app"
+                                style={{
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: 6,
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: 'rgba(255,255,255,0.04)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                    padding: 0,
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                }}
+                            >
+                                <ArrowLeft size={12} color={THEME.textMuted} />
+                            </button>
+                        )}
+                        {TitleIcon && (
+                            <div
+                                style={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: 10,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: `linear-gradient(135deg, ${accentColor || THEME.primary}25, rgba(0,229,255,0.15))`,
+                                    border: `1px solid ${accentColor || THEME.primary}30`,
+                                    boxShadow: `0 0 16px ${accentColor || THEME.primary}30`,
+                                }}
+                            >
+                                <TitleIcon size={16} color={accentColor || THEME.primary} />
+                            </div>
+                        )}
+                        <span
                             style={{
-                                width: 24, height: 24, borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)',
-                                background: 'rgba(255,255,255,0.04)', cursor: 'pointer', display: 'flex',
-                                alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0,
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: THEME.textMain,
+                                fontFamily: THEME.fontBody,
+                                letterSpacing: '-0.02em',
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                         >
-                            <ArrowLeft size={12} color={THEME.textMuted} />
-                        </button>
-                    )}
-                    {TitleIcon && (
-                        <div
+                            {title}
+                        </span>
+                    </div>
+
+                    {/* Tier Badge (optional gold bar) */}
+                    <div
+                        style={{
+                            height: 2,
+                            background: 'linear-gradient(90deg, transparent, rgba(255,204,0,0.3), transparent)',
+                            flexShrink: 0,
+                        }}
+                    />
+
+                    {/* Active Cluster Dropdown */}
+                    <div
+                        style={{
+                            padding: '12px 14px',
+                            borderBottom: '1px solid rgba(255,255,255,0.055)',
+                            flexShrink: 0,
+                        }}
+                    >
+                        <label
                             style={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: 10,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: `linear-gradient(135deg, ${accentColor || THEME.primary}25, rgba(0,229,255,0.15))`,
-                                border: `1px solid ${accentColor || THEME.primary}30`,
-                                boxShadow: `0 0 16px ${accentColor || THEME.primary}30`,
+                                fontSize: '9px',
+                                fontWeight: 700,
+                                color: THEME.textDim,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.12em',
+                                display: 'block',
+                                marginBottom: 6,
+                                fontFamily: THEME.fontMono,
                             }}
                         >
-                            <TitleIcon size={16} color={accentColor || THEME.primary} />
-                        </div>
-                    )}
-                    <span
-                        style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: THEME.textMain,
-                            fontFamily: THEME.fontBody,
-                            letterSpacing: '-0.02em',
-                        }}
-                    >
-                        {title}
-                    </span>
-                </div>
+                            ACTIVE CLUSTER
+                        </label>
+                        <select
+                            value={activeCluster}
+                            onChange={(e) => setActiveCluster(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '6px 8px',
+                                borderRadius: 6,
+                                background: 'rgba(0,229,255,0.05)',
+                                border: '1px solid rgba(0,229,255,0.15)',
+                                color: THEME.textMuted,
+                                fontSize: 11,
+                                fontFamily: THEME.fontBody,
+                                cursor: 'pointer',
+                                fontWeight: 500,
+                            }}
+                        >
+                            {clusterOptions.map((opt) => (
+                                <option key={opt} value={opt}>
+                                    {opt}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                {/* Tier Badge (optional gold bar) */}
-                <div
-                    style={{
-                        height: 2,
-                        background: 'linear-gradient(90deg, transparent, rgba(255,204,0,0.3), transparent)',
-                        flexShrink: 0,
-                    }}
-                />
+                    {/* nav sections */}
+                    <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto', overflowX: 'hidden' }}>
+                        {sections.map((section, si) => {
+                            const isOpen = openSections.has(section.key);
+                            const SIcon = section.icon;
+                            const sAccent = section.accent || accentColor || THEME.primary;
+                            const hasCurrent = section.items?.some(
+                                (it) => it.key === activeItem && section.key === activeSection,
+                            );
 
-                {/* Active Cluster Dropdown */}
-                <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.055)', flexShrink: 0 }}>
-                    <label
-                        style={{
-                            fontSize: '9px',
-                            fontWeight: 700,
-                            color: THEME.textDim,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.12em',
-                            display: 'block',
-                            marginBottom: 6,
-                            fontFamily: THEME.fontMono,
-                        }}
-                    >
-                        ACTIVE CLUSTER
-                    </label>
-                    <select
-                        value={activeCluster}
-                        onChange={(e) => setActiveCluster(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '6px 8px',
-                            borderRadius: 6,
-                            background: 'rgba(0,229,255,0.05)',
-                            border: '1px solid rgba(0,229,255,0.15)',
-                            color: THEME.textMuted,
-                            fontSize: 11,
-                            fontFamily: THEME.fontBody,
-                            cursor: 'pointer',
-                            fontWeight: 500,
-                        }}
-                    >
-                        {clusterOptions.map((opt) => (
-                            <option key={opt} value={opt}>
-                                {opt}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* nav sections */}
-                <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto', overflowX: 'hidden' }}>
-                    {sections.map((section, si) => {
-                        const isOpen = openSections.has(section.key);
-                        const SIcon = section.icon;
-                        const sAccent = section.accent || accentColor || THEME.primary;
-                        const hasCurrent = section.items?.some(
-                            (it) => it.key === activeItem && section.key === activeSection,
-                        );
-
-                        return (
-                            <div key={section.key} style={{ marginBottom: 2 }}>
-                                {/* section header */}
-                                <button
-                                    onClick={() => toggleSection(section.key)}
-                                    style={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '7px 14px 5px 14px',
-                                        background: 'transparent',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        borderRadius: 0,
-                                        marginTop: si === 0 ? 2 : 6,
-                                    }}
-                                >
-                                    <span
+                            return (
+                                <div key={section.key} style={{ marginBottom: 2 }}>
+                                    {/* section header */}
+                                    <button
+                                        onClick={() => toggleSection(section.key)}
                                         style={{
-                                            fontSize: '8.5px',
-                                            fontWeight: 700,
-                                            letterSpacing: '0.1em',
-                                            textTransform: 'uppercase',
-                                            fontFamily: THEME.fontMono,
-                                            color: '#3a5678',
+                                            width: '100%',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 6,
+                                            justifyContent: 'space-between',
+                                            padding: '7px 14px 5px 14px',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            borderRadius: 0,
+                                            marginTop: si === 0 ? 2 : 6,
                                         }}
                                     >
-                                        {SIcon && <SIcon size={11} />}
-                                        {section.label}
-                                    </span>
-                                    <ChevronDown
-                                        size={12}
-                                        color="#3a5678"
-                                        style={{
-                                            transition: 'transform 0.2s ease',
-                                            transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                                            flexShrink: 0,
-                                        }}
-                                    />
-                                </button>
+                                        <span
+                                            style={{
+                                                fontSize: '8.5px',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.1em',
+                                                textTransform: 'uppercase',
+                                                fontFamily: THEME.fontMono,
+                                                color: '#3a5678',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 6,
+                                            }}
+                                        >
+                                            {SIcon && <SIcon size={11} />}
+                                            {section.label}
+                                        </span>
+                                        <ChevronDown
+                                            size={12}
+                                            color="#3a5678"
+                                            style={{
+                                                transition: 'transform 0.2s ease',
+                                                transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                    </button>
 
-                                {/* items */}
-                                {isOpen && (
-                                    <div>
-                                        {section.items?.map((item) => {
-                                            const isActive = activeSection === section.key && activeItem === item.key;
-                                            const IIcon = item.icon;
-                                            return (
-                                                <button
-                                                    key={item.key}
-                                                    onClick={() => handleItemClick(section.key, item.key)}
-                                                    className="demo-nav-item"
-                                                    style={{
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                        padding: '7px 14px 7px 28px',
-                                                        background: isActive
-                                                            ? 'linear-gradient(90deg, rgba(0,255,170,0.1), rgba(0,255,170,0.02) 70%, transparent)'
-                                                            : 'transparent',
-                                                        border: 'none',
-                                                        borderLeft: isActive
-                                                            ? '2px solid #00ffaa'
-                                                            : '2px solid rgba(0,229,255,0.3)',
-                                                        boxShadow: isActive
-                                                            ? 'none'
-                                                            : 'none',
-                                                        cursor: 'pointer',
-                                                        color: isActive ? '#00ffaa' : THEME.textDim,
-                                                        fontWeight: isActive ? 600 : 400,
-                                                        fontSize: 12,
-                                                        textAlign: 'left',
-                                                        whiteSpace: 'nowrap',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        fontFamily: THEME.fontBody,
-                                                        transition:
-                                                            'background 0.15s ease, color 0.15s ease, border-color 0.15s ease, text-shadow 0.15s ease',
-                                                        position: 'relative',
-                                                        borderRadius: 0,
-                                                        textShadow: isActive ? '0 0 12px rgba(0,255,170,0.3)' : 'none',
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        if (!isActive) {
-                                                            e.currentTarget.style.background = 'rgba(0,229,255,0.04)';
-                                                            e.currentTarget.style.color = THEME.textMuted;
-                                                        }
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        if (!isActive) {
-                                                            e.currentTarget.style.background = 'transparent';
-                                                            e.currentTarget.style.color = THEME.textDim;
-                                                        }
-                                                    }}
-                                                >
-                                                    {IIcon && (
-                                                        <IIcon
-                                                            size={13}
-                                                            style={{
-                                                                flexShrink: 0,
-                                                                opacity: isActive ? 1 : 0.6,
-                                                                filter: isActive
-                                                                    ? `drop-shadow(0 0 4px ${sAccent}80)`
-                                                                    : 'none',
-                                                            }}
-                                                        />
-                                                    )}
-                                                    <span
+                                    {/* items */}
+                                    {isOpen && (
+                                        <div>
+                                            {section.items?.map((item) => {
+                                                const isActive =
+                                                    activeSection === section.key && activeItem === item.key;
+                                                const IIcon = item.icon;
+                                                return (
+                                                    <button
+                                                        key={item.key}
+                                                        onClick={() => handleItemClick(section.key, item.key)}
+                                                        className="demo-nav-item"
                                                         style={{
-                                                            flex: 1,
+                                                            width: '100%',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 8,
+                                                            padding: '7px 14px 7px 28px',
+                                                            background: isActive
+                                                                ? 'linear-gradient(90deg, rgba(0,255,170,0.1), rgba(0,255,170,0.02) 70%, transparent)'
+                                                                : 'transparent',
+                                                            border: 'none',
+                                                            borderLeft: isActive
+                                                                ? '2px solid #00ffaa'
+                                                                : '2px solid rgba(0,229,255,0.3)',
+                                                            boxShadow: isActive ? 'none' : 'none',
+                                                            cursor: 'pointer',
+                                                            color: isActive ? '#00ffaa' : THEME.textDim,
+                                                            fontWeight: isActive ? 600 : 400,
+                                                            fontSize: 12,
+                                                            textAlign: 'left',
+                                                            whiteSpace: 'nowrap',
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
+                                                            fontFamily: THEME.fontBody,
+                                                            transition:
+                                                                'background 0.15s ease, color 0.15s ease, border-color 0.15s ease, text-shadow 0.15s ease',
+                                                            position: 'relative',
+                                                            borderRadius: 0,
+                                                            textShadow: isActive
+                                                                ? '0 0 12px rgba(0,255,170,0.3)'
+                                                                : 'none',
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            if (!isActive) {
+                                                                e.currentTarget.style.background =
+                                                                    'rgba(0,229,255,0.04)';
+                                                                e.currentTarget.style.color = THEME.textMuted;
+                                                            }
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            if (!isActive) {
+                                                                e.currentTarget.style.background = 'transparent';
+                                                                e.currentTarget.style.color = THEME.textDim;
+                                                            }
                                                         }}
                                                     >
-                                                        {item.label}
-                                                    </span>
-                                                    {item.badge && (
+                                                        {IIcon && (
+                                                            <IIcon
+                                                                size={13}
+                                                                style={{
+                                                                    flexShrink: 0,
+                                                                    opacity: isActive ? 1 : 0.6,
+                                                                    filter: isActive
+                                                                        ? `drop-shadow(0 0 4px ${sAccent}80)`
+                                                                        : 'none',
+                                                                }}
+                                                            />
+                                                        )}
                                                         <span
                                                             style={{
-                                                                fontSize: '7.5px',
-                                                                fontWeight: 700,
-                                                                textTransform: 'uppercase',
-                                                                background: 'rgba(0,229,255,0.15)',
-                                                                color: '#00e5ff',
-                                                                borderRadius: 4,
-                                                                padding: '1px 6px',
-                                                                flexShrink: 0,
-                                                                fontFamily: THEME.fontMono,
-                                                                letterSpacing: '0.05em',
+                                                                flex: 1,
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
                                                             }}
                                                         >
-                                                            {item.badge}
+                                                            {item.label}
                                                         </span>
-                                                    )}
-                                                    {isActive && (
-                                                        <div
-                                                            style={{
-                                                                position: 'absolute',
-                                                                right: 0,
-                                                                top: 0,
-                                                                bottom: 0,
-                                                                width: 50,
-                                                                background: `linear-gradient(270deg, ${sAccent}10, transparent)`,
-                                                                pointerEvents: 'none',
-                                                            }}
-                                                        />
-                                                    )}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                                        {item.badge && (
+                                                            <span
+                                                                style={{
+                                                                    fontSize: '7.5px',
+                                                                    fontWeight: 700,
+                                                                    textTransform: 'uppercase',
+                                                                    background: 'rgba(0,229,255,0.15)',
+                                                                    color: '#00e5ff',
+                                                                    borderRadius: 4,
+                                                                    padding: '1px 6px',
+                                                                    flexShrink: 0,
+                                                                    fontFamily: THEME.fontMono,
+                                                                    letterSpacing: '0.05em',
+                                                                }}
+                                                            >
+                                                                {item.badge}
+                                                            </span>
+                                                        )}
+                                                        {isActive && (
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    right: 0,
+                                                                    top: 0,
+                                                                    bottom: 0,
+                                                                    width: 50,
+                                                                    background: `linear-gradient(270deg, ${sAccent}10, transparent)`,
+                                                                    pointerEvents: 'none',
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </nav>
+
+                    {/* Sidebar bottom buttons */}
+                    <div
+                        style={{
+                            padding: '12px 10px',
+                            borderTop: '1px solid rgba(255,255,255,0.055)',
+                            flexShrink: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 6,
+                        }}
+                    >
+                        <button
+                            onClick={onRefresh}
+                            style={{
+                                width: '100%',
+                                padding: '6px 10px',
+                                fontSize: 11,
+                                fontWeight: 500,
+                                borderRadius: 6,
+                                border: 'none',
+                                background: 'rgba(255,255,255,0.02)',
+                                color: THEME.textDim,
+                                cursor: onRefresh ? 'pointer' : 'not-allowed',
+                                fontFamily: THEME.fontBody,
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                if (onRefresh) {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    e.currentTarget.style.color = THEME.textMuted;
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                e.currentTarget.style.color = THEME.textDim;
+                            }}
+                        >
+                            Refresh data
+                        </button>
+                        <button
+                            onClick={onExport}
+                            style={{
+                                width: '100%',
+                                padding: '6px 10px',
+                                fontSize: 11,
+                                fontWeight: 500,
+                                borderRadius: 6,
+                                border: 'none',
+                                background: 'rgba(255,255,255,0.02)',
+                                color: THEME.textDim,
+                                cursor: onExport ? 'pointer' : 'not-allowed',
+                                fontFamily: THEME.fontBody,
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                if (onExport) {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    e.currentTarget.style.color = THEME.textMuted;
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                e.currentTarget.style.color = THEME.textDim;
+                            }}
+                        >
+                            Export JSON
+                        </button>
+                        <button
+                            style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                borderRadius: 6,
+                                border: 'none',
+                                background: 'linear-gradient(135deg, #00ffaa, #00e5ff)',
+                                color: '#020810',
+                                cursor: 'pointer',
+                                fontFamily: THEME.fontBody,
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.opacity = '0.9';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.opacity = '1';
+                            }}
+                        >
+                            + Add cluster
+                        </button>
+                    </div>
+                </aside>
+
+                {/* ── CONTENT COLUMN (header + main) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                    {/* TOP HEADER BAR */}
+                    <header
+                        style={{
+                            height: 56,
+                            background: 'rgba(2,6,16,0.88)',
+                            backdropFilter: 'blur(24px)',
+                            WebkitBackdropFilter: 'blur(24px)',
+                            borderBottom: '1px solid rgba(255,255,255,0.055)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0 20px',
+                            gap: 24,
+                            position: 'relative',
+                            zIndex: 10,
+                            flexShrink: 0,
+                        }}
+                    >
+                        {/* Top gradient border */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: 1,
+                                background:
+                                    'linear-gradient(90deg, transparent, #00e5ff, #00ffaa, #4facfe, transparent)',
+                                pointerEvents: 'none',
+                            }}
+                        />
+
+                        {/* Left: Breadcrumb + Title */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                                style={{
+                                    fontSize: 10,
+                                    color: THEME.textDim,
+                                    fontFamily: THEME.fontMono,
+                                    letterSpacing: '0.05em',
+                                    marginBottom: 2,
+                                    textTransform: 'uppercase',
+                                }}
+                            >
+                                {title}{' '}
+                                {activeSection && (
+                                    <span style={{ color: THEME.textMuted }}>
+                                        &gt; {sections.find((s) => s.key === activeSection)?.label}
+                                    </span>
                                 )}
                             </div>
-                        );
-                    })}
-                </nav>
+                            <div
+                                style={{
+                                    fontSize: 16,
+                                    fontWeight: 800,
+                                    color: THEME.textMain,
+                                    fontFamily: THEME.fontBody,
+                                    letterSpacing: '-0.04em',
+                                }}
+                            >
+                                {activeItemData?.label ||
+                                    sections.find((s) => s.key === activeSection)?.label ||
+                                    'Dashboard'}
+                            </div>
+                        </div>
 
-                {/* Sidebar bottom buttons */}
-                <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.055)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <button
-                        onClick={onRefresh}
+                        {/* Right: Stats, Live Badge, Notification, Avatar */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexShrink: 0 }}>
+                            {/* Stat Pills */}
+                            {headerStats && headerStats.length > 0 && (
+                                <div style={{ display: 'flex', gap: 12 }}>
+                                    {headerStats.map((stat, i) => (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                padding: '6px 12px',
+                                                background: `${stat.color || THEME.primary}12`,
+                                                borderRadius: 8,
+                                                border: `1px solid ${stat.color || THEME.primary}30`,
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontSize: 12,
+                                                    fontWeight: 700,
+                                                    color: stat.color || THEME.primary,
+                                                    fontFamily: THEME.fontMono,
+                                                }}
+                                            >
+                                                {stat.value}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 8,
+                                                    color: THEME.textDim,
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.05em',
+                                                    marginTop: 1,
+                                                }}
+                                            >
+                                                {stat.label}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Live Badge */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    padding: '5px 12px',
+                                    background: 'rgba(0,255,170,0.1)',
+                                    borderRadius: 20,
+                                    border: '1px solid rgba(0,255,170,0.25)',
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    color: '#00ffaa',
+                                    fontFamily: THEME.fontMono,
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: '50%',
+                                        background: '#00ffaa',
+                                        animation: 'live-pulse 1.5s ease-in-out infinite',
+                                        boxShadow: '0 0 6px #00ffaa',
+                                    }}
+                                />
+                                Live
+                            </div>
+
+                            {/* Notification Bell */}
+                            <button
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 8,
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                }}
+                            >
+                                <Bell size={16} color={THEME.textDim} />
+                            </button>
+
+                            {/* User Avatar */}
+                            <button
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 50,
+                                    background: 'linear-gradient(135deg, #00ffaa, #4facfe)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.boxShadow = '0 0 12px rgba(0,255,170,0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                <User size={16} color="#020810" />
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* MAIN CONTENT AREA */}
+                    <main
                         style={{
-                            width: '100%',
-                            padding: '6px 10px',
-                            fontSize: 11,
-                            fontWeight: 500,
-                            borderRadius: 6,
-                            border: 'none',
-                            background: 'rgba(255,255,255,0.02)',
-                            color: THEME.textDim,
-                            cursor: onRefresh ? 'pointer' : 'not-allowed',
-                            fontFamily: THEME.fontBody,
-                            transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (onRefresh) {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                                e.currentTarget.style.color = THEME.textMuted;
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                            e.currentTarget.style.color = THEME.textDim;
+                            flex: 1,
+                            minHeight: 0,
+                            minWidth: 0,
+                            padding: '20px 22px 24px',
+                            overflowY: 'auto',
+                            position: 'relative',
+                            zIndex: 5,
                         }}
                     >
-                        Refresh data
-                    </button>
-                    <button
-                        onClick={onExport}
-                        style={{
-                            width: '100%',
-                            padding: '6px 10px',
-                            fontSize: 11,
-                            fontWeight: 500,
-                            borderRadius: 6,
-                            border: 'none',
-                            background: 'rgba(255,255,255,0.02)',
-                            color: THEME.textDim,
-                            cursor: onExport ? 'pointer' : 'not-allowed',
-                            fontFamily: THEME.fontBody,
-                            transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (onExport) {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                                e.currentTarget.style.color = THEME.textMuted;
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                            e.currentTarget.style.color = THEME.textDim;
-                        }}
-                    >
-                        Export JSON
-                    </button>
-                    <button
-                        style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            fontSize: 11,
-                            fontWeight: 600,
-                            borderRadius: 6,
-                            border: 'none',
-                            background: 'linear-gradient(135deg, #00ffaa, #00e5ff)',
-                            color: '#020810',
-                            cursor: 'pointer',
-                            fontFamily: THEME.fontBody,
-                            transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.opacity = '0.9';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.opacity = '1';
-                        }}
-                    >
-                        + Add cluster
-                    </button>
+                        {renderContent(activeSection, activeItem)}
+                    </main>
                 </div>
-            </aside>
 
-            {/* ── CONTENT COLUMN (header + main) ── */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                {/* TOP HEADER BAR */}
-                <header
+                {/* BOTTOM STATUS BAR */}
+                <footer
                     style={{
-                        height: 56,
-                        background: 'rgba(2,6,16,0.88)',
-                        backdropFilter: 'blur(24px)',
-                        WebkitBackdropFilter: 'blur(24px)',
-                        borderBottom: '1px solid rgba(255,255,255,0.055)',
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: 24,
+                        background: 'rgba(2,6,16,0.9)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        borderTop: '1px solid rgba(255,255,255,0.055)',
                         display: 'flex',
                         alignItems: 'center',
-                        padding: '0 20px',
-                        gap: 24,
-                        position: 'relative',
-                        zIndex: 10,
-                        flexShrink: 0,
+                        paddingLeft: SIDEBAR_W,
+                        paddingRight: 20,
+                        gap: 18,
+                        fontSize: 10,
+                        fontFamily: THEME.fontMono,
+                        color: THEME.textDim,
+                        zIndex: 11,
                     }}
                 >
                     {/* Top gradient border */}
@@ -503,227 +774,26 @@ const DemoLayout = ({
                             left: 0,
                             right: 0,
                             height: 1,
-                            background: 'linear-gradient(90deg, transparent, #00e5ff, #00ffaa, #4facfe, transparent)',
+                            background: 'linear-gradient(90deg, transparent, rgba(0,229,255,0.25), transparent)',
                             pointerEvents: 'none',
                         }}
                     />
 
-                    {/* Left: Breadcrumb + Title */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                            style={{
-                                fontSize: 10,
-                                color: THEME.textDim,
-                                fontFamily: THEME.fontMono,
-                                letterSpacing: '0.05em',
-                                marginBottom: 2,
-                                textTransform: 'uppercase',
-                            }}
-                        >
-                            {title} {activeSection && <span style={{ color: THEME.textMuted }}>&gt; {sections.find((s) => s.key === activeSection)?.label}</span>}
-                        </div>
-                        <div
-                            style={{
-                                fontSize: 16,
-                                fontWeight: 800,
-                                color: THEME.textMain,
-                                fontFamily: THEME.fontBody,
-                                letterSpacing: '-0.04em',
-                            }}
-                        >
-                            {activeItemData?.label || (sections.find((s) => s.key === activeSection)?.label || 'Dashboard')}
-                        </div>
-                    </div>
-
-                    {/* Right: Stats, Live Badge, Notification, Avatar */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexShrink: 0 }}>
-                        {/* Stat Pills */}
-                        {headerStats && headerStats.length > 0 && (
-                            <div style={{ display: 'flex', gap: 12 }}>
-                                {headerStats.map((stat, i) => (
-                                    <div
-                                        key={i}
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            padding: '6px 12px',
-                                            background: `${stat.color || THEME.primary}12`,
-                                            borderRadius: 8,
-                                            border: `1px solid ${stat.color || THEME.primary}30`,
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                fontSize: 12,
-                                                fontWeight: 700,
-                                                color: stat.color || THEME.primary,
-                                                fontFamily: THEME.fontMono,
-                                            }}
-                                        >
-                                            {stat.value}
-                                        </div>
-                                        <div
-                                            style={{
-                                                fontSize: 8,
-                                                color: THEME.textDim,
-                                                fontWeight: 600,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.05em',
-                                                marginTop: 1,
-                                            }}
-                                        >
-                                            {stat.label}
-                                        </div>
-                                    </div>
-                                ))}
+                    {statusItems && statusItems.length > 0 ? (
+                        statusItems.map((item, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <span style={{ color: item.color || THEME.textDim }}>{item.label}:</span>
+                                <span style={{ fontWeight: 600, color: item.color || THEME.textMuted }}>
+                                    {item.value}
+                                </span>
                             </div>
-                        )}
-
-                        {/* Live Badge */}
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                padding: '5px 12px',
-                                background: 'rgba(0,255,170,0.1)',
-                                borderRadius: 20,
-                                border: '1px solid rgba(0,255,170,0.25)',
-                                fontSize: 10,
-                                fontWeight: 700,
-                                color: '#00ffaa',
-                                fontFamily: THEME.fontMono,
-                            }}
-                        >
-                            <span
-                                style={{
-                                    width: 6,
-                                    height: 6,
-                                    borderRadius: '50%',
-                                    background: '#00ffaa',
-                                    animation: 'live-pulse 1.5s ease-in-out infinite',
-                                    boxShadow: '0 0 6px #00ffaa',
-                                }}
-                            />
-                            Live
-                        </div>
-
-                        {/* Notification Bell */}
-                        <button
-                            style={{
-                                width: 36,
-                                height: 36,
-                                borderRadius: 8,
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                            }}
-                        >
-                            <Bell size={16} color={THEME.textDim} />
-                        </button>
-
-                        {/* User Avatar */}
-                        <button
-                            style={{
-                                width: 36,
-                                height: 36,
-                                borderRadius: 50,
-                                background: 'linear-gradient(135deg, #00ffaa, #4facfe)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.boxShadow = '0 0 12px rgba(0,255,170,0.4)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.boxShadow = 'none';
-                            }}
-                        >
-                            <User size={16} color="#020810" />
-                        </button>
-                    </div>
-                </header>
-
-                {/* MAIN CONTENT AREA */}
-                <main
-                    style={{
-                        flex: 1,
-                        minHeight: 0,
-                        minWidth: 0,
-                        padding: '20px 22px 24px',
-                        overflowY: 'auto',
-                        position: 'relative',
-                        zIndex: 5,
-                    }}
-                >
-                    {renderContent(activeSection, activeItem)}
-                </main>
-            </div>
-
-            {/* BOTTOM STATUS BAR */}
-            <footer
-                style={{
-                    position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 24,
-                    background: 'rgba(2,6,16,0.9)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    borderTop: '1px solid rgba(255,255,255,0.055)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    paddingLeft: SIDEBAR_W,
-                    paddingRight: 20,
-                    gap: 18,
-                    fontSize: 10,
-                    fontFamily: THEME.fontMono,
-                    color: THEME.textDim,
-                    zIndex: 11,
-                }}
-            >
-                {/* Top gradient border */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 1,
-                        background: 'linear-gradient(90deg, transparent, rgba(0,229,255,0.25), transparent)',
-                        pointerEvents: 'none',
-                    }}
-                />
-
-                {statusItems && statusItems.length > 0 ? (
-                    statusItems.map((item, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span style={{ color: item.color || THEME.textDim }}>{item.label}:</span>
-                            <span style={{ fontWeight: 600, color: item.color || THEME.textMuted }}>{item.value}</span>
-                        </div>
-                    ))
-                ) : (
-                    <>
-                        <span>Status: Ready</span>
-                    </>
-                )}
-            </footer>
+                        ))
+                    ) : (
+                        <>
+                            <span>Status: Ready</span>
+                        </>
+                    )}
+                </footer>
             </div>
         </div>
     );
@@ -1084,110 +1154,110 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
 /* ── MetricCard — matches the actual app's KPI card design exactly ── */
 export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spark, trend, trendUp = true, warn }) => {
     const subText = sub || subtitle;
-    const isUp = trendUp !== undefined ? trendUp : (typeof trend === 'string' && !trend.startsWith('-'));
+    const isUp = trendUp !== undefined ? trendUp : typeof trend === 'string' && !trend.startsWith('-');
     return (
-    <div
-        className={`dpg-metric ${warn ? 'dpg-glow-warn' : 'dpg-glow'}`}
-        style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            padding: '14px 16px',
-            borderRadius: 14,
-            background: 'rgba(6,14,32,0.72)',
-            backdropFilter: 'blur(20px) saturate(1.1)',
-            WebkitBackdropFilter: 'blur(20px) saturate(1.1)',
-            border: '1px solid rgba(255,255,255,0.055)',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
-            animation: 'kpi-in 0.35s cubic-bezier(.22,.68,0,1.2) both',
-        }}
-        onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(79,172,254,0.2)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.035)';
-        }}
-        onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.055)';
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)';
-        }}
-    >
-        <div className="dpg-card-shine" />
-        {/* Icon + Sparkline Row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div
-                style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 8,
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: `${color}10`,
-                    border: `1px solid ${color}18`,
-                }}
-            >
-                {Icon && <Icon size={14} color={color} />}
-            </div>
-            {spark && <MiniSparkline data={spark} color={color} width={48} height={18} />}
-        </div>
-        {/* Label + Value + Sub */}
-        <div>
-            <div
-                style={{
-                    fontSize: 9.5,
-                    color: THEME.textDim,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    lineHeight: 1,
-                    marginBottom: 5,
-                }}
-            >
-                {label}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span
+        <div
+            className={`dpg-metric ${warn ? 'dpg-glow-warn' : 'dpg-glow'}`}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                padding: '14px 16px',
+                borderRadius: 14,
+                background: 'rgba(6,14,32,0.72)',
+                backdropFilter: 'blur(20px) saturate(1.1)',
+                WebkitBackdropFilter: 'blur(20px) saturate(1.1)',
+                border: '1px solid rgba(255,255,255,0.055)',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)',
+                animation: 'kpi-in 0.35s cubic-bezier(.22,.68,0,1.2) both',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(79,172,254,0.2)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.035)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.055)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.035)';
+            }}
+        >
+            <div className="dpg-card-shine" />
+            {/* Icon + Sparkline Row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div
                     style={{
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: color,
+                        width: 30,
+                        height: 30,
+                        borderRadius: 8,
+                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: `${color}10`,
+                        border: `1px solid ${color}18`,
+                    }}
+                >
+                    {Icon && <Icon size={14} color={color} />}
+                </div>
+                {spark && <MiniSparkline data={spark} color={color} width={48} height={18} />}
+            </div>
+            {/* Label + Value + Sub */}
+            <div>
+                <div
+                    style={{
+                        fontSize: 9.5,
+                        color: THEME.textDim,
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
                         lineHeight: 1,
-                        letterSpacing: '-0.02em',
-                        fontFamily: THEME.fontMono,
-                        textShadow: `0 0 20px ${color}`,
+                        marginBottom: 5,
                     }}
                 >
-                    {value}
-                </span>
-                {subText && <span style={{ fontSize: 10, color: THEME.textDim }}>{subText}</span>}
+                    {label}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span
+                        style={{
+                            fontSize: 22,
+                            fontWeight: 700,
+                            color: color,
+                            lineHeight: 1,
+                            letterSpacing: '-0.02em',
+                            fontFamily: THEME.fontMono,
+                            textShadow: `0 0 20px ${color}`,
+                        }}
+                    >
+                        {value}
+                    </span>
+                    {subText && <span style={{ fontSize: 10, color: THEME.textDim }}>{subText}</span>}
+                </div>
             </div>
+            {/* Trend Indicator */}
+            {trend && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    {isUp ? (
+                        <ArrowUpRight size={10} color={THEME.success} />
+                    ) : (
+                        <ArrowDownRight size={10} color={THEME.danger} />
+                    )}
+                    <span
+                        style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            fontFamily: THEME.fontMono,
+                            color: isUp ? THEME.success : THEME.danger,
+                        }}
+                    >
+                        {trend}
+                    </span>
+                    <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
+                </div>
+            )}
         </div>
-        {/* Trend Indicator */}
-        {trend && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                {isUp ? (
-                    <ArrowUpRight size={10} color={THEME.success} />
-                ) : (
-                    <ArrowDownRight size={10} color={THEME.danger} />
-                )}
-                <span
-                    style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        fontFamily: THEME.fontMono,
-                        color: isUp ? THEME.success : THEME.danger,
-                    }}
-                >
-                    {trend}
-                </span>
-                <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
-            </div>
-        )}
-    </div>
     );
 };
 
@@ -1317,7 +1387,7 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                                 padding: '2px 7px',
                                 borderRadius: 8,
                                 background: isActive ? 'rgba(255,255,255,0.25)' : `${t.badgeColor || ac}25`,
-                                color: isActive ? '#fff' : (t.badgeColor || ac),
+                                color: isActive ? '#fff' : t.badgeColor || ac,
                             }}
                         >
                             {t.badge}
@@ -1505,23 +1575,49 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
     >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, boxShadow: `0 0 6px ${THEME.success}80` }} />
+                <span
+                    style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: THEME.success,
+                        boxShadow: `0 0 6px ${THEME.success}80`,
+                    }}
+                />
                 <span style={{ fontWeight: 600, color: THEME.textMuted }}>Connected</span>
             </span>
             <span>Last sync {lastSync} ago</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 Auto-refresh:
                 {['10s', '30s', '1m', '5m', 'Off'].map((v, i) => (
-                    <span key={i} style={{
-                        padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600,
-                        background: v === refreshInterval ? THEME.primary : 'transparent',
-                        color: v === refreshInterval ? '#fff' : THEME.textDim,
-                        cursor: 'pointer',
-                    }}>{v}</span>
+                    <span
+                        key={i}
+                        style={{
+                            padding: '2px 6px',
+                            borderRadius: 4,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            background: v === refreshInterval ? THEME.primary : 'transparent',
+                            color: v === refreshInterval ? '#fff' : THEME.textDim,
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {v}
+                    </span>
                 ))}
             </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: THEME.primary, fontWeight: 600, cursor: 'pointer', fontSize: 11 }}>
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                color: THEME.primary,
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: 11,
+            }}
+        >
             ↻ Refresh Now
         </div>
     </div>
@@ -1558,17 +1654,32 @@ export const ExecStatCard = ({ value, label, subtitle, color }) => {
             }}
         >
             <div className="dpg-card-shine" />
-            <div style={{ fontSize: 42, fontWeight: 800, letterSpacing: '-0.04em', textShadow: `0 0 20px ${color}80`, color, marginBottom: 8, fontFamily: THEME.fontMono }}>
+            <div
+                style={{
+                    fontSize: 42,
+                    fontWeight: 800,
+                    letterSpacing: '-0.04em',
+                    textShadow: `0 0 20px ${color}80`,
+                    color,
+                    marginBottom: 8,
+                    fontFamily: THEME.fontMono,
+                }}
+            >
                 {value}
             </div>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textDim, marginBottom: 4 }}>
+            <div
+                style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: THEME.textDim,
+                    marginBottom: 4,
+                }}
+            >
                 {label}
             </div>
-            {subtitle && (
-                <div style={{ fontSize: 10.5, color: THEME.textDim }}>
-                    {subtitle}
-                </div>
-            )}
+            {subtitle && <div style={{ fontSize: 10.5, color: THEME.textDim }}>{subtitle}</div>}
         </div>
     );
 };
