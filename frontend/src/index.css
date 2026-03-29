@@ -1282,62 +1282,70 @@ svg {
 
 /* Glass morphism card */
 .glass-card {
-    @apply rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-md;
+    border-radius: 1rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 /* Metric value animation */
 .metric-value {
-    @apply font-mono text-2xl font-semibold tracking-tight;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
 }
 
 /* Status dot */
 .status-dot {
-    @apply w-2 h-2 rounded-full;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
 }
 .status-dot-active {
-    @apply bg-emerald-400 animate-pulse;
+    background-color: #34d399;
+    animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;
 }
 .status-dot-warning {
-    @apply bg-amber-400;
+    background-color: #fbbf24;
 }
 .status-dot-error {
-    @apply bg-rose-400 animate-pulse;
+    background-color: #fb7185;
+    animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;
 }
 
 /* Sidebar navigation enhancements */
 .nav-item {
-    @apply transition-all duration-200 ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
-
 .nav-item:hover:not(:disabled) {
-    @apply hover:bg-white/5;
+    background: rgba(255,255,255,0.05);
 }
-
 .nav-item[aria-selected="true"] {
-    @apply ring-1 ring-white/10;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
 }
 
 /* Sidebar container backdrop blur */
 aside {
-    @apply backdrop-blur-xl;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
 }
 
 /* Section headers with group hover effects */
 .section-btn {
-    @apply transition-all duration-200 ease-in-out group;
+    transition: all 0.2s ease-in-out;
 }
-
 .section-btn:hover {
-    @apply hover:bg-white/5;
+    background: rgba(255,255,255,0.05);
 }
 
 /* Enhanced card styles */
 .v-card {
-    @apply transition-shadow duration-300 ease-in-out;
+    transition: box-shadow 0.3s ease-in-out;
 }
-
 .v-card:hover {
-    @apply hover:shadow-xl;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
 }
 
 /* Smooth dropdown animations for connection switcher */

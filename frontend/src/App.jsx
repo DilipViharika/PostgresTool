@@ -116,6 +116,11 @@ const MongoReplicationTab = lazyRetry(() => import('./components/views/mongodb/M
 const MongoDataToolsTab = lazyRetry(() => import('./components/views/mongodb/MongoDataToolsTab.jsx'));
 const MongoShardingTab = lazyRetry(() => import('./components/views/mongodb/MongoShardingTab.jsx'));
 
+// Demo
+const DemoPostgresTab = lazyRetry(() => import('./components/views/demo/DemoPostgresTab.jsx'));
+const DemoMySQLTab = lazyRetry(() => import('./components/views/demo/DemoMySQLTab.jsx'));
+const DemoMongoDBTab = lazyRetry(() => import('./components/views/demo/DemoMongoDBTab.jsx'));
+
 // Other
 const ReliabilityTab = lazyRetry(() => import('./components/views/ReliabilityTab.jsx'));
 const UserManagementTab = lazyRetry(() => import('./usermanagement/UserManagementTab.jsx'));
@@ -253,6 +258,9 @@ registerComponents({
     MongoReplicationTab,
     MongoDataToolsTab,
     MongoShardingTab,
+    DemoPostgresTab,
+    DemoMySQLTab,
+    DemoMongoDBTab,
     // Phase 1–4 new components
     FleetOverviewTab,
     ConnectionWizard,
@@ -2771,27 +2779,36 @@ const Sidebar = ({
         });
     }, []);
 
-    // Determine which DB-specific sections to show based on active connection
-    const connDbType = activeConnection?.dbType || null;
+    // Determine effective DB type from real connection OR active demo tab
+    const demoDbType = activeTab === 'demo-postgres' ? 'postgresql'
+        : activeTab === 'demo-mysql' ? 'mysql'
+        : activeTab === 'demo-mongodb' ? 'mongodb'
+        : null;
+    const connDbType = activeConnection?.dbType || demoDbType || null;
 
-    // Sections that are specific to PostgreSQL and should be hidden for MySQL/MongoDB
-    const PG_ONLY_SECTIONS = ['Query Analysis', 'Schema & Data', 'Infrastructure'];
+    // Sections shown per database type
+    const PG_SECTIONS = ['Overview', 'Alerts & Rules', 'Query Analysis', 'Schema & Data', 'Infrastructure', 'Security', 'Observability', 'Developer Tools', 'Admin'];
+    const MYSQL_SECTIONS = ['MySQL', 'Overview', 'Alerts & Rules', 'Security', 'Observability', 'Developer Tools', 'Admin'];
+    const MONGO_SECTIONS = ['MongoDB', 'Overview', 'Alerts & Rules', 'Security', 'Observability', 'Admin'];
 
     const visibleGroups = useMemo(
         () =>
             SECTION_GROUPS.map((g) => ({ ...g, tabs: g.tabs.filter((t) => allowedTabIds.includes(t.id)) }))
                 .filter((g) => g.tabs.length > 0)
-                // Hide DB-specific sections unless that DB type is connected
                 .filter((g) => {
-                    if (g.section === 'MongoDB') return connDbType === 'mongodb';
-                    if (g.section === 'MySQL') return connDbType === 'mysql' || connDbType === 'mariadb';
-                    // Hide PG-specific deep-dive sections when non-PG is connected
-                    if (connDbType && connDbType !== 'postgresql' && PG_ONLY_SECTIONS.includes(g.section)) return false;
-                    // Developer Tools: SQL Console works for PG and MySQL, not MongoDB
-                    if (g.section === 'Developer Tools' && connDbType === 'mongodb') return false;
-                    return true;
+                    // Demo always visible
+                    if (g.section === 'Demo') return true;
+                    // User Management only for super_admin
+                    if (g.section === 'User Management') return currentUser?.role === 'super_admin';
+                    // No connection → hide everything else
+                    if (!connDbType) return false;
+                    // Show sections based on DB type
+                    if (connDbType === 'postgresql') return PG_SECTIONS.includes(g.section);
+                    if (connDbType === 'mysql' || connDbType === 'mariadb') return MYSQL_SECTIONS.includes(g.section);
+                    if (connDbType === 'mongodb') return MONGO_SECTIONS.includes(g.section);
+                    return false;
                 }),
-        [allowedTabIds, connDbType],
+        [allowedTabIds, connDbType, currentUser, activeTab],
     );
 
     /* Build flat nav: each section becomes a { type:'section', ... } entry */

@@ -364,6 +364,12 @@ export function buildTabConfig() {
             badge: null,
         },
 
+        // ── Demo ─────────────────────────────────────────────────────
+        { section: 'Demo', accent: DS.amber },
+        { id: 'demo-postgres', icon: Database, label: 'PostgreSQL Demo', component: _components.DemoPostgresTab, badge: null },
+        { id: 'demo-mysql', icon: Database, label: 'MySQL Demo', component: _components.DemoMySQLTab, badge: null },
+        { id: 'demo-mongodb', icon: Database, label: 'MongoDB Demo', component: _components.DemoMongoDBTab, badge: null },
+
         // ── User Management ──────────────────────────────────────────
         //    User roles, permissions, audit logs, and security
         { section: 'User Management', accent: DS.indigo || DS.violet },
