@@ -20,7 +20,7 @@ const CommandPalette: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { isDark, tokens, toggleTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
   const { goToTab } = useNavigation();
   const ds = getDS();
   const tabs = getTabsOnly(buildTabConfig());
@@ -150,11 +150,11 @@ const CommandPalette: React.FC = () => {
     }
   };
 
-  const bgColor = isDark ? ds.colors.background.secondary : ds.colors.background.primary;
-  const textColor = isDark ? ds.colors.text.primary : ds.colors.text.primary;
-  const borderColor = isDark ? ds.colors.border.dark : ds.colors.border.light;
-  const hoverBg = isDark ? ds.colors.background.tertiary : ds.colors.background.secondary;
-  const accentColor = ds.colors.primary;
+  const bgColor = ds.surface;
+  const textColor = ds.textPrimary;
+  const borderColor = ds.border;
+  const hoverBg = ds.surfaceHover;
+  const accentColor = ds.cyan;
 
   if (!isOpen) return null;
 
@@ -276,7 +276,7 @@ const CommandPalette: React.FC = () => {
                   <div
                     style={{
                       fontSize: '11px',
-                      color: isDark ? ds.colors.text.secondary : ds.colors.text.secondary,
+                      color: ds.textMuted,
                       marginTop: '2px',
                     }}
                   >
@@ -293,7 +293,7 @@ const CommandPalette: React.FC = () => {
               style={{
                 padding: '32px 16px',
                 textAlign: 'center',
-                color: isDark ? ds.colors.text.secondary : ds.colors.text.secondary,
+                color: ds.textMuted,
                 fontSize: '14px',
               }}
             >
@@ -311,7 +311,7 @@ const CommandPalette: React.FC = () => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '12px',
-            color: isDark ? ds.colors.text.secondary : ds.colors.text.secondary,
+            color: ds.textMuted,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
