@@ -159,6 +159,38 @@ const DemoLayout = ({
                     >
                         {/* Title row */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                            {goToTab && (
+                                <button
+                                    onClick={() => goToTab('overview')}
+                                    title="Back to main menu"
+                                    style={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: 7,
+                                        border: `1px solid ${LT.border}`,
+                                        background: LT.buttonBg,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
+                                        padding: 0,
+                                        transition: 'all 0.15s ease',
+                                        fontSize: 14,
+                                        color: LT.textMuted,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = LT.buttonHoverBg;
+                                        e.currentTarget.style.color = LT.text;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = LT.buttonBg;
+                                        e.currentTarget.style.color = LT.textMuted;
+                                    }}
+                                >
+                                    ←
+                                </button>
+                            )}
                             {TitleIcon && (
                                 <div
                                     style={{
