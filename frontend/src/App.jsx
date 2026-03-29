@@ -3873,7 +3873,7 @@ const DashboardInner = ({ onLogout }) => {
         // No connection → only demo tabs and user management are allowed
         if (!activeConnection) {
             if (activeTab?.startsWith('demo-')) return;
-            if (activeTab === 'users') return;
+            if (activeTab === 'UserManagement') return;
             setActiveTab('demo-postgres');
             try {
                 localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'demo-postgres');
