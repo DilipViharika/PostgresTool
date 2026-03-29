@@ -1,7 +1,2 @@
-// @ts-nocheck
-import React from 'react';
-import DemoDataTab from './DemoDataTab.jsx';
-
-const DemoMySQLTab: React.FC = () => <DemoDataTab dbKey="mysql" />;
-
-export default DemoMySQLTab;
+import DemoDataTab from './DemoDataTab';
+export default function DemoMySQLTab() { return <DemoDataTab dbKey="mysql" />; }

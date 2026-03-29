@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import DemoLayout, {
     Panel,
     StatusBadge,
@@ -13,7 +13,7 @@ import DemoLayout, {
     ChartTip,
     ConnectionBar,
     generateChartData,
-} from './DemoLayout.jsx';
+} from './DemoLayout';
 import {
     Activity,
     Database,

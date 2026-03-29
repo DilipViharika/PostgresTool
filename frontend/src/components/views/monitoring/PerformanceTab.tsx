@@ -1,4 +1,3 @@
-// @ts-nocheck
 // components/tabs/PerformanceTab.jsx
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { THEME, ChartDefs, useAdaptiveTheme } from '../../../utils/theme';
@@ -56,88 +55,6 @@ import {
 /* ═══════════════════════════════════════════════════════════════════════════
    STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════════════════════════════
-   TYPES
-   ═══════════════════════════════════════════════════════════════════════════ */
-interface AnimValueProps {
-    value: number;
-    decimals?: number;
-    suffix?: string;
-    prefix?: string;
-}
-
-interface LiveDotProps {
-    color?: string;
-    size?: number;
-}
-
-interface MiniSparklineProps {
-    data?: number[];
-    color?: string;
-    width?: number;
-    height?: number;
-}
-
-interface SeverityBarProps {
-    value: number;
-    max?: number;
-    color?: string;
-    delay?: number;
-}
-
-interface SeverityTagProps {
-    ms: number;
-}
-
-interface StatChipProps {
-    label: string;
-    value: string | number;
-    color?: string;
-    icon?: React.ComponentType<any>;
-    small?: boolean;
-}
-
-interface ChartTooltipProps {
-    active?: boolean;
-    payload?: any[];
-    label?: string;
-}
-
-interface QueryData {
-    query: string;
-    calls?: number;
-    mean_time?: number;
-    total_time?: number;
-    rows?: number;
-    [key: string]: any;
-}
-
-interface ChartPoint {
-    name: string;
-    value: number;
-    [key: string]: any;
-}
-
-interface ExplainNodeData {
-    name: string;
-    cost: number;
-    children?: ExplainNodeData[];
-}
-
-interface LockNode {
-    pid: number;
-    query: string;
-    children?: LockNode[];
-}
-
-interface ConnectionData {
-    pid: number;
-    user: string;
-    query: string;
-    state?: string;
-}
-
-
 const PerfStyles = () => (
     <style>{`
         @keyframes perfSpin {
@@ -178,7 +95,7 @@ const PerfStyles = () => (
 /* ═══════════════════════════════════════════════════════════════════════════
    MICRO-COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
-const AnimValue: React.FC<AnimValueProps> = ({ value, decimals = 0, suffix = '', prefix = '' }) => {
+const AnimValue = ({ value, decimals = 0, suffix = '', prefix = '' }) => {
     const [display, setDisplay] = useState(0);
     const ref = useRef();
     useEffect(() => {
@@ -197,19 +114,19 @@ const AnimValue: React.FC<AnimValueProps> = ({ value, decimals = 0, suffix = '',
     return <span>{prefix}{display.toFixed(decimals)}{suffix}</span>;
 };
 
-const LiveDot: React.FC<LiveDotProps> = ({ color = THEME.success, size = 8 }) => (
+const LiveDot = ({ color = THEME.success, size = 8 }) => (
     <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
         <span style={{ width: size * 0.7, height: size * 0.7, borderRadius: '50%', background: color }} />
     </span>
 );
 
-const MiniSparkline: React.FC<MiniSparklineProps> = ({ data, color, width = 80, height = 24 }) => {
+const MiniSparkline = ({ data, color, width = 80, height = 24 }) => {
     if (!data?.length) return null;
     const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
     const pts = data.map((v, i) =>
         `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`
     ).join(' ');
-    const id = `msp-${color.replace(/[^a-z0-9]/gi, '')}0000`;
+    const id = `msp-${color.replace(/[^a-z0-9]/gi, '')}${'0000'}`;
     return (
         <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
             <polygon points={`0,${height} ${pts} ${width},${height}`} fill={`url(#${id})`} />
@@ -218,7 +135,7 @@ const MiniSparkline: React.FC<MiniSparklineProps> = ({ data, color, width = 80, 
     );
 };
 
-const SeverityBar: React.FC<SeverityBarProps> = ({ value, max = 100, color = THEME.danger, delay = 0 }) => (
+const SeverityBar = ({ value, max = 100, color = THEME.danger, delay = 0 }) => (
     <div style={{ width: '100%', height: 4, background: `${THEME.grid}60`, borderRadius: 2, overflow: 'hidden' }}>
         <div className="perf-bar-animate" style={{
             width: `${Math.min((value / max) * 100, 100)}%`, height: '100%', borderRadius: 2,
@@ -228,7 +145,7 @@ const SeverityBar: React.FC<SeverityBarProps> = ({ value, max = 100, color = THE
     </div>
 );
 
-const SeverityTag: React.FC<SeverityTagProps> = ({ ms }) => {
+const SeverityTag = ({ ms }) => {
     const n = Number(ms);
     const level = n > 5000 ? { label: 'CRITICAL', color: THEME.danger, bg: `${THEME.danger}18` }
         : n > 1000 ? { label: 'HIGH', color: THEME.warning, bg: `${THEME.warning}15` }
@@ -239,7 +156,7 @@ const SeverityTag: React.FC<SeverityTagProps> = ({ ms }) => {
     );
 };
 
-const StatChip: React.FC<StatChipProps> = ({ label, value, color = THEME.textMain, icon: Icon, small }) => (
+const StatChip = ({ label, value, color = THEME.textMain, icon: Icon, small }) => (
     <div style={{
         display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: small ? 3 : 5,
         padding: small ? '8px 12px' : '12px 14px',
@@ -254,7 +171,7 @@ const StatChip: React.FC<StatChipProps> = ({ label, value, color = THEME.textMai
     </div>
 );
 
-const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload, label }) => {
+const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
@@ -357,7 +274,7 @@ const generateExplainTree = (query) => {
             detail: 'Hash Cond: (o.user_id = u.id)', children: [
                 {
                     id: 2, op: 'Seq Scan', table: 'orders', cost: '0.00..1240.50', rows: 50000, width: 64, actualTime: '0.1..210.4',
-                    detail: "Filter: (status = 'active')", rowsRemoved: 45200, children: []
+                    detail: 'Filter: (status = \'active\')', rowsRemoved: 45200, children: []
                 },
                 {
                     id: 3, op: 'Hash', cost: '0.00..480.20', rows: 8000, width: 60, actualTime: '12.1..45.6',
@@ -920,7 +837,7 @@ const LockBlockingTree = ({ locks, conns }) => {
             role: 'holder',
             lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock'][i % 3],
             relation: ['orders', 'users', 'inventory'][i % 3],
-            query: h.query || 'BEGIN; UPDATE users SET last_login = NOW() WHERE id = ?',
+            query: h.query || '',
             waitTime: null,
             blockees: locks.slice(i * 2, i * 2 + 2).map((w, j) => ({
                 pid: w.pid || (8800 + i * 10 + j),
@@ -1345,7 +1262,7 @@ const LockWaitDetails = ({ locks, conns }) => {
         const waiters = locks.slice(0, 5);
         return waiters.map((w, i) => ({
             waiter: { pid: w.pid || 8800 + i, query: w.query || 'SELECT FOR UPDATE...', waitTime: Math.round(0 * 30) + 's' },
-            holder: holders[i % holders.length] || { pid: 9000 + i, query: 'UPDATE users SET...', application_name: 'pgadmin4' },
+            holder: holders[i % holders.length] || { pid: 9000 + i, query: '', application_name: '' },
             lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock', 'RowShareLock'][i % 4],
             relation: ['orders', 'users', 'products', 'inventory', 'sessions'][i % 5]
         }));
@@ -1376,7 +1293,7 @@ const LockWaitDetails = ({ locks, conns }) => {
                         </div>
                         <div style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
                             <div style={{ fontSize: 10, color: THEME.warning, fontWeight: 700, marginBottom: 4 }}>HOLDING — PID {chain.holder.pid} ({chain.holder.application_name || 'app'})</div>
-                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || 'BEGIN; UPDATE...'}</div>
+                            <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || ''}</div>
                         </div>
                     </div>
                 </div>
@@ -1663,7 +1580,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
-const PerformanceTab: React.FC = () => {
+const PerformanceTab = () => {
     useAdaptiveTheme();
     const [activeView, setActiveView] = useState('activity');
     const [selectedQuery, setSelectedQuery] = useState(null);
@@ -2545,4 +2462,4 @@ const PerformanceTab: React.FC = () => {
     );
 };
 
-export default PerformanceTab;
+export default React.memo(PerformanceTab);

@@ -1,11 +1,10 @@
-// @ts-nocheck
 import React, {
     useState, useCallback, useEffect, useReducer,
-    useRef, useMemo, createContext, useContext, memo, FC, ReactNode, Dispatch
+    useRef, useMemo, createContext, useContext, memo,
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { THEME, useAdaptiveTheme } from '../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../utils/theme';
 import { UsersTable, PermissionMatrix } from './Toggle/TableAndMatrix';
 import { AuditLog, SecurityPanel } from './PermissionMatrix/AuditAndSecurity';
 import { UserDrawer, PasswordModal, UserFormModal } from './PermissionMatrix/Modals';
@@ -16,14 +15,7 @@ const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.ve
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 1 — CONSTANTS
 ═══════════════════════════════════════════════════════════════════════════ */
-interface Tab {
-  id: string;
-  label: string;
-  icon: string;
-  shortcut: string;
-}
-
-const TABS: Tab[] = Object.freeze([
+const TABS = Object.freeze([
     { id: 'users',    label: 'Users',       icon: '👥', shortcut: '1' },
     { id: 'matrix',   label: 'Permissions', icon: '🛡️', shortcut: '2' },
     { id: 'audit',    label: 'Audit Log',   icon: '📋', shortcut: '3' },
@@ -31,11 +23,7 @@ const TABS: Tab[] = Object.freeze([
 ]);
 const TAB_IDS = TABS.map(t => t.id);
 
-interface IconRenderFn {
-  (sz: number, c: string): React.ReactElement;
-}
-
-const ICONS: Record<string, IconRenderFn> = {
+const ICONS = {
     alert:    (sz, c) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
     refresh:  (sz, c) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
     plus:     (sz, c) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
@@ -50,55 +38,27 @@ const ICONS: Record<string, IconRenderFn> = {
     edit:     (sz, c) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
 };
 
-interface IcoProps {
-  name: string;
-  size?: number;
-  color?: string;
-  style?: React.CSSProperties;
-}
-
-const Ico = memo<IcoProps>(({ name, size = 16, color = 'currentColor', style = {} }) => {
+const Ico = memo(({ name, size = 16, color = 'currentColor', style = {} }) => {
     const render = ICONS[name];
     if (!render) return null;
     return <span style={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, ...style }}>{render(size, color)}</span>;
 });
 Ico.displayName = 'Ico';
 
+const MODAL = Object.freeze({
+    NONE:     { type: 'NONE' },
+    DRAWER:   (user)    => ({ type: 'DRAWER', user }),
+    EDIT:     (user)    => ({ type: 'EDIT', user }),
+    PASSWORD: (user)    => ({ type: 'PASSWORD', user }),
+    CONFIRM:  (payload) => ({ type: 'CONFIRM', ...payload }),
+});
+
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 2 — STATE MACHINE
 ═══════════════════════════════════════════════════════════════════════════ */
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  status?: string;
-  role?: string;
-  riskScore?: number;
-}
-
-interface Modal {
-  type: string;
-  user?: User | null;
-  title?: string;
-  message?: string;
-  confirmLabel?: string;
-  variant?: string;
-  onConfirm?: () => void;
-}
-
-interface State {
-  activeTab: string;
-  modal: Modal;
-  prevTab: string | null;
-  tabHistory: string[];
-  bulkSelection: Set<string>;
-  searchQuery: string;
-  sortConfig: { key: string; direction: string };
-}
-
-const initialState: State = {
+const initialState = {
     activeTab:     'users',
-    modal:         { type: 'NONE' },
+    modal:         MODAL.NONE,
     prevTab:       null,
     tabHistory:    ['users'],
     bulkSelection: new Set(),
@@ -106,17 +66,7 @@ const initialState: State = {
     sortConfig:    { key: 'name', direction: 'asc' },
 };
 
-type Action =
-  | { type: 'SET_TAB'; tab: string }
-  | { type: 'OPEN_MODAL'; modal: Modal }
-  | { type: 'CLOSE_MODAL' }
-  | { type: 'TOGGLE_BULK_SELECT'; id: string }
-  | { type: 'SELECT_ALL_BULK'; ids: string[] }
-  | { type: 'CLEAR_BULK' }
-  | { type: 'SET_SEARCH'; query: string }
-  | { type: 'SET_SORT'; key: string };
-
-function reducer(state: State, action: Action): State {
+function reducer(state, action) {
     switch (action.type) {
         case 'SET_TAB': {
             if (state.activeTab === action.tab) return state;
@@ -124,7 +74,7 @@ function reducer(state: State, action: Action): State {
             return { ...state, prevTab: state.activeTab, activeTab: action.tab, tabHistory: history, bulkSelection: new Set(), searchQuery: '' };
         }
         case 'OPEN_MODAL':         return { ...state, modal: action.modal };
-        case 'CLOSE_MODAL':        return { ...state, modal: { type: 'NONE' } };
+        case 'CLOSE_MODAL':        return { ...state, modal: MODAL.NONE };
         case 'TOGGLE_BULK_SELECT': {
             const next = new Set(state.bulkSelection);
             if (next.has(action.id)) next.delete(action.id); else next.add(action.id);
@@ -144,15 +94,7 @@ function reducer(state: State, action: Action): State {
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 3 — CONTEXT
 ═══════════════════════════════════════════════════════════════════════════ */
-interface UserMgmtContextType {
-  state: State;
-  dispatch: Dispatch<Action>;
-  users: User[];
-  toast: (msg: string, type?: string) => void;
-  setUsers: (users: User[]) => void;
-}
-
-const UserMgmtContext = createContext<UserMgmtContextType | null>(null);
+const UserMgmtContext = createContext(null);
 export const useUserMgmt = () => {
     const ctx = useContext(UserMgmtContext);
     if (!ctx) throw new Error('useUserMgmt must be used within <UserManagementTab>');
@@ -162,27 +104,21 @@ export const useUserMgmt = () => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 4 — CUSTOM HOOKS
 ═══════════════════════════════════════════════════════════════════════════ */
-interface Toast {
-  id: number;
-  message: string;
-  type: string;
-}
-
 function useToast() {
-    const [toasts, setToasts] = useState<Toast[]>([]);
-    const toast = useCallback((message: string, type = 'success') => {
+    const [toasts, setToasts] = useState([]);
+    const toast = useCallback((message, type = 'success') => {
         const id = Date.now() + Math.random();
-        setToasts(prev => [...prev, { id: id as number, message, type }]);
+        setToasts(prev => [...prev, { id, message, type }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
     }, []);
     return { toasts, toast };
 }
 
-function useUsers(initialUsers: User[] = []) {
-    const [users, setUsers]     = useState<User[]>(initialUsers);
+function useUsers(initialUsers = []) {
+    const [users, setUsers]     = useState(initialUsers);
     const [loading, setLoading] = useState(false);
-    const [error, setError]     = useState<string | null>(null);
-    const abortRef              = useRef<AbortController | null>(null);
+    const [error, setError]     = useState(null);
+    const abortRef              = useRef(null);
 
     const getAuthHeaders = useCallback(() => {
         const token = localStorage.getItem('vigil_token');
@@ -200,11 +136,11 @@ function useUsers(initialUsers: User[] = []) {
             const data = await res.json();
             setUsers(Array.isArray(data) ? data : data.users || []);
         } catch (err) {
-            if (err instanceof Error && err.name !== 'AbortError') setError(err.message || 'Failed to fetch users');
+            if (err.name !== 'AbortError') setError(err.message || 'Failed to fetch users');
         } finally { setLoading(false); }
     }, [getAuthHeaders]);
 
-    const createUser = useCallback(async (formData: Partial<User>) => {
+    const createUser = useCallback(async (formData) => {
         const res = await fetch(`${API_BASE}/api/users`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(formData) });
         if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
         const created = await res.json();
@@ -212,7 +148,7 @@ function useUsers(initialUsers: User[] = []) {
         return created.user || created;
     }, [getAuthHeaders]);
 
-    const updateUser = useCallback(async (id: string, formData: Partial<User>) => {
+    const updateUser = useCallback(async (id, formData) => {
         const prev = users;
         setUsers(u => u.map(x => x.id === id ? { ...x, ...formData } : x));
         try {
@@ -223,7 +159,7 @@ function useUsers(initialUsers: User[] = []) {
         } catch (err) { setUsers(prev); throw err; }
     }, [getAuthHeaders, users]);
 
-    const deleteUsers = useCallback(async (ids: string[]) => {
+    const deleteUsers = useCallback(async (ids) => {
         const prev = users;
         setUsers(u => u.filter(x => !ids.includes(x.id)));
         try {
@@ -234,7 +170,7 @@ function useUsers(initialUsers: User[] = []) {
         } catch (err) { setUsers(prev); throw err; }
     }, [getAuthHeaders, users]);
 
-    const resetPassword = useCallback(async (userId: string, newPassword: string) => {
+    const resetPassword = useCallback(async (userId, newPassword) => {
         const res = await fetch(`${API_BASE}/api/users/${userId}/reset-password`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ newPassword }) });
         if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
     }, [getAuthHeaders]);
@@ -243,7 +179,7 @@ function useUsers(initialUsers: User[] = []) {
     return { users, loading, error, fetchUsers, createUser, updateUser, deleteUsers, resetPassword, setUsers };
 }
 
-function useStaleWhileRevalidate(users: User[], fetchUsers: () => Promise<void>) {
+function useStaleWhileRevalidate(users, fetchUsers) {
     const [isRevalidating, setIsRevalidating] = useState(false);
     const hasCached = useRef(false);
     useEffect(() => { if (users.length > 0) hasCached.current = true; }, [users.length]);
@@ -257,7 +193,7 @@ function useStaleWhileRevalidate(users: User[], fetchUsers: () => Promise<void>)
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 5 — GLOBAL STYLES
 ═══════════════════════════════════════════════════════════════════════════ */
-const GlobalStylesInjector = memo(() => (
+const GlobalStylesInjector = () => (
     <style>{`
     @keyframes umSlideUp    { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
     @keyframes umFade       { from { opacity:0 } to { opacity:1 } }
@@ -270,7 +206,7 @@ const GlobalStylesInjector = memo(() => (
     .shimmer-skeleton { background: linear-gradient(90deg, ${T.surfaceRaised || '#1a1a2e'} 25%, ${T.grid || '#2a2a3e'} 50%, ${T.surfaceRaised || '#1a1a2e'} 75%); background-size: 200% 100%; animation: umShimmer 1.5s infinite ease-in-out; border-radius: 12px; }
     .um-revalidating-bar { position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, ${T.primary || '#00D4FF'}, transparent); background-size:200% 100%; animation:umShimmer 1s infinite linear; border-radius:2px; z-index:10; }
     .um-live-dot { width:8px; height:8px; border-radius:50%; background:#2EE89C; animation:umLivePulse 2s ease-in-out infinite; display:inline-block; flex-shrink:0; }
-
+    
     .um-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s ease; font-family:inherit; line-height:1; }
     .um-btn:disabled { opacity:.5; cursor:not-allowed; }
     .um-btn-primary  { background:${T.primary || '#00D4FF'}; color:${T.textInverse || '#07030D'}; }
@@ -292,16 +228,13 @@ const GlobalStylesInjector = memo(() => (
     @media(max-width:600px){ .um-grid-4,.um-grid-2{ grid-template-columns:1fr; } }
     .um-scroll { overflow-y:auto; scrollbar-width:thin; scrollbar-color:${T.grid || '#1A0E2B'} transparent; }
   `}</style>
-));
+);
+GlobalStylesInjector.displayName = 'GlobalStylesInjector';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 6 — TOAST & ERROR
 ═══════════════════════════════════════════════════════════════════════════ */
-interface ToastContainerProps {
-  toasts: Toast[];
-}
-
-const ToastContainer = memo<ToastContainerProps>(({ toasts }) => {
+const ToastContainer = memo(({ toasts }) => {
     if (!toasts.length) return null;
     return createPortal(
         <div style={{ position:'fixed', top:20, right:20, zIndex:600, display:'flex', flexDirection:'column', gap:8 }} aria-live="polite">
@@ -325,26 +258,12 @@ ToastContainer.displayName = 'ToastContainer';
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 7 — CONFIRM PORTAL
 ═══════════════════════════════════════════════════════════════════════════ */
-interface ModalPortalProps {
-  isOpen: boolean;
-  children: ReactNode;
-}
-
-const ModalPortal = memo<ModalPortalProps>(({ children, isOpen }) => {
+const ModalPortal = memo(({ children, isOpen }) => {
     if (!isOpen) return null;
     return createPortal(children, document.body);
 });
 
-interface ConfirmDialogProps {
-  title: string;
-  message: string;
-  confirmLabel: string;
-  variant?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-const ConfirmDialog = memo<ConfirmDialogProps>(({ title, message, confirmLabel, variant = 'danger', onConfirm, onCancel }) => {
+const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', onConfirm, onCancel }) => {
     return (
         <div
             onClick={e => e.target === e.currentTarget && onCancel()}
@@ -372,12 +291,7 @@ const ConfirmDialog = memo<ConfirmDialogProps>(({ title, message, confirmLabel, 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 8 — TAB COMPONENTS
 ═══════════════════════════════════════════════════════════════════════════ */
-interface TabPanelProps {
-  activeTab: string;
-  children: ReactNode;
-}
-
-const TabPanel = memo<TabPanelProps>(({ activeTab, children }) => {
+const TabPanel = memo(({ activeTab, children }) => {
     return (
         <div role="tabpanel" style={{ padding:24, animation: 'umFade 0.2s ease-out' }}>
             {children}
@@ -388,25 +302,22 @@ const TabPanel = memo<TabPanelProps>(({ activeTab, children }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 9 — ROOT COMPONENT
 ═══════════════════════════════════════════════════════════════════════════ */
-interface UserManagementTabProps {
-  initialUsers?: User[];
-}
-
-const UserManagementTab: FC<UserManagementTabProps> = ({ initialUsers = [] }) => {
-    useAdaptiveTheme();
+const UserManagementTab = ({ initialUsers = [] }) => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [state, dispatch] = useReducer(reducer, initialState);
     const { activeTab, modal, bulkSelection } = state;
     const { toasts, toast }    = useToast();
     const { users, loading, error, fetchUsers, createUser, updateUser, deleteUsers, resetPassword, setUsers } = useUsers(initialUsers);
     const { isRevalidating, revalidate } = useStaleWhileRevalidate(users, fetchUsers);
 
-    // Real-time polling
-    const pollingRef = useRef<number | null>(null);
+    // Real-time polling and WebSocket
+    const wsRef = useRef(null);
     const [isLive, setIsLive] = useState(false);
-    const [lastSynced, setLastSynced] = useState<number | null>(null);
+    const [lastSynced, setLastSynced] = useState(null);
+    const pollingRef = useRef(null);
 
     // Format time elapsed
-    const formatTimeAgo = useCallback((timestamp: number | null): string => {
+    const formatTimeAgo = useCallback((timestamp) => {
         if (!timestamp) return 'never';
         const seconds = Math.floor((Date.now() - timestamp) / 1000);
         if (seconds < 60) return `${seconds}s`;
@@ -414,10 +325,10 @@ const UserManagementTab: FC<UserManagementTabProps> = ({ initialUsers = [] }) =>
         return `${Math.floor(seconds / 3600)}h`;
     }, []);
 
-    // Polling-based live sync
+    // Polling-based live sync (replaces WebSocket — not supported on Vercel)
     useEffect(() => {
         setIsLive(true);
-        pollingRef.current = window.setInterval(() => {
+        pollingRef.current = setInterval(() => {
             fetchUsers();
             setLastSynced(Date.now());
         }, 30000);
@@ -431,39 +342,39 @@ const UserManagementTab: FC<UserManagementTabProps> = ({ initialUsers = [] }) =>
     }, [fetchUsers]);
 
     // Initial load
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { if (initialUsers.length === 0) fetchUsers(); }, []);
 
     const activeCount  = useMemo(() => users.filter(u => u.status === 'active').length, [users]);
     const bulkCount    = bulkSelection.size;
     const contextValue = useMemo(() => ({ state, dispatch, users, toast, setUsers }), [state, users, toast, setUsers]);
 
-    const handleSaveUser = useCallback(async (formData: Partial<User>) => {
+    const handleSaveUser = useCallback(async (formData) => {
         try {
-            if ((formData as any).id) { await updateUser((formData as any).id, formData); toast(`${formData.name} updated successfully`); }
+            if (formData.id) { await updateUser(formData.id, formData); toast(`${formData.name} updated successfully`); }
             else { const created = await createUser(formData); toast(`${created?.name ?? formData.name} created successfully`); }
             dispatch({ type: 'CLOSE_MODAL' });
-        } catch (err) { toast(err instanceof Error ? err.message : 'Save failed', 'error'); }
+        } catch (err) { toast(err.message || 'Save failed', 'error'); }
     }, [updateUser, createUser, toast]);
 
-    const handleDeleteUsers = useCallback(async (ids: string | string[]) => {
+    const handleDeleteUsers = useCallback(async (ids) => {
         const arr = Array.isArray(ids) ? ids : [ids];
         const count = arr.length;
-        dispatch({ type:'OPEN_MODAL', modal: {
-                type: 'CONFIRM',
+        dispatch({ type:'OPEN_MODAL', modal: MODAL.CONFIRM({
                 title: `Delete ${count} user${count > 1 ? 's' : ''} ?`,
                 message: 'This action cannot be undone.',
                 confirmLabel: 'Delete',
                 variant: 'danger',
                 onConfirm: async () => {
                     try { await deleteUsers(arr); toast(`${count} user${count > 1 ? 's' : ''} removed`); dispatch({ type:'CLOSE_MODAL' }); }
-                    catch (err) { toast(err instanceof Error ? err.message : 'Delete failed', 'error'); }
+                    catch (err) { toast(err.message || 'Delete failed', 'error'); }
                 },
-            } });
+            }) });
     }, [deleteUsers, toast]);
 
-    const handleResetPassword = useCallback(async (userId: string, newPassword: string) => {
+    const handleResetPassword = useCallback(async (userId, newPassword) => {
         try { await resetPassword(userId, newPassword); toast('Password updated successfully'); dispatch({ type:'CLOSE_MODAL' }); }
-        catch (err) { toast(err instanceof Error ? err.message : 'Password reset failed', 'error'); }
+        catch (err) { toast(err.message || 'Password reset failed', 'error'); }
     }, [resetPassword, toast]);
 
     return (
@@ -494,7 +405,7 @@ const UserManagementTab: FC<UserManagementTabProps> = ({ initialUsers = [] }) =>
                             <Ico name="refresh" size={14} style={loading ? { animation:'umSpin 1s linear infinite' } : {}} />
                             {loading || isRevalidating ? 'Loading' : 'Refresh'}
                         </button>
-                        <button className="um-btn um-btn-primary" onClick={() => dispatch({ type:'OPEN_MODAL', modal:{ type: 'EDIT', user: null } })}>
+                        <button className="um-btn um-btn-primary" onClick={() => dispatch({ type:'OPEN_MODAL', modal:MODAL.EDIT(null) })}>
                             <Ico name="plus" size={15} color="#fff" /> New User
                         </button>
                     </div>
@@ -520,20 +431,20 @@ const UserManagementTab: FC<UserManagementTabProps> = ({ initialUsers = [] }) =>
                     </div>
 
                     <TabPanel activeTab={activeTab}>
-                        {activeTab === 'users'    && <UsersTable users={users} onSelectUser={u => dispatch({ type:'OPEN_MODAL', modal:{ type: 'DRAWER', user: u } })} onDeleteUsers={handleDeleteUsers} onEditUser={u => dispatch({ type:'OPEN_MODAL', modal:{ type: 'EDIT', user: u ?? null } })} />}
+                        {activeTab === 'users'    && <UsersTable users={users} onSelectUser={u => dispatch({ type:'OPEN_MODAL', modal:MODAL.DRAWER(u) })} onDeleteUsers={handleDeleteUsers} onEditUser={u => dispatch({ type:'OPEN_MODAL', modal:MODAL.EDIT(u ?? null) })} />}
                         {activeTab === 'matrix'   && <PermissionMatrix />}
                         {activeTab === 'audit'    && <AuditLog />}
                         {activeTab === 'security' && <SecurityPanel users={users} />}
                     </TabPanel>
                 </div>
 
-                {/* MODALS */}
+                {/* MODALS — Handled directly by Modals.jsx */}
                 {modal.type === 'EDIT' && (
                     <UserFormModal user={modal.user} onSave={handleSaveUser} onCancel={() => dispatch({ type:'CLOSE_MODAL' })} />
                 )}
 
                 {modal.type === 'DRAWER' && (
-                    <UserDrawer user={modal.user} onClose={() => dispatch({ type:'CLOSE_MODAL' })} onEdit={u => dispatch({ type:'OPEN_MODAL', modal:{ type: 'EDIT', user: u } })} onResetPassword={u => dispatch({ type:'OPEN_MODAL', modal:{ type: 'PASSWORD', user: u } })} />
+                    <UserDrawer user={modal.user} onClose={() => dispatch({ type:'CLOSE_MODAL' })} onEdit={u => dispatch({ type:'OPEN_MODAL', modal:MODAL.EDIT(u) })} onResetPassword={u => dispatch({ type:'OPEN_MODAL', modal:MODAL.PASSWORD(u) })} />
                 )}
 
                 {modal.type === 'PASSWORD' && (
@@ -541,7 +452,7 @@ const UserManagementTab: FC<UserManagementTabProps> = ({ initialUsers = [] }) =>
                 )}
 
                 <ModalPortal isOpen={modal.type === 'CONFIRM'}>
-                    <ConfirmDialog title={modal.title || ''} message={modal.message || ''} confirmLabel={modal.confirmLabel || ''} variant={modal.variant} onConfirm={modal.onConfirm || (() => {})} onCancel={() => dispatch({ type:'CLOSE_MODAL' })} />
+                    <ConfirmDialog title={modal.title} message={modal.message} confirmLabel={modal.confirmLabel} variant={modal.variant} onConfirm={modal.onConfirm} onCancel={() => dispatch({ type:'CLOSE_MODAL' })} />
                 </ModalPortal>
 
             </div>

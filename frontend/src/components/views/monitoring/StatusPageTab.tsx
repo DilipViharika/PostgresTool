@@ -1,68 +1,70 @@
-// @ts-nocheck
-import React, { useState, useEffect, FC } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import React, { useState, useEffect } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, postData, putData } from '../../../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Globe, CheckCircle, AlertTriangle, XCircle, Clock, Shield, PlusCircle, RefreshCw, Edit, Trash2 } from 'lucide-react';
 
-// Types
-interface StatusData {
-    status: 'operational' | 'degraded' | 'outage';
-    uptime30d: number;
-    lastUpdate?: string;
-    components?: Component[];
-}
+/* ── Styles ───────────────────────────────────────────────────────────────── */
+const Styles = () => (
+    <style>{`
+        @keyframes spSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes spFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .sp-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:spFade .3s ease; }
+        .sp-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+        .sp-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .sp-input:focus { outline:none; border-color:${THEME.primary}; }
+        .sp-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; min-height:100px; resize:vertical; }
+        .sp-textarea:focus { outline:none; border-color:${THEME.primary}; }
+        .sp-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
+        .sp-button:hover { background:${THEME.primaryLight}; }
+        .sp-button-danger { background:${THEME.danger}; }
+        .sp-button-danger:hover { background:${THEME.dangerLight}; }
+        .sp-button-secondary { background:${THEME.secondary}; }
+        .sp-button-secondary:hover { background:${THEME.secondaryLight}; }
+        .sp-status-operational { color:${THEME.success}; }
+        .sp-status-degraded { color:${THEME.warning}; }
+        .sp-status-outage { color:${THEME.danger}; }
+        .sp-component-row { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid ${THEME.grid}40; }
+        .sp-component-row:last-child { border-bottom:none; }
+        .sp-incident { background:${THEME.grid}; border-left:4px solid ${THEME.warning}; border-radius:8px; padding:12px; margin-bottom:12px; }
+        .sp-spinner { animation:spSpin 1s linear infinite; }
+    `}</style>
+);
 
-interface Component {
-    name: string;
-    status: 'operational' | 'degraded' | 'outage';
-    description: string;
-}
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const fmtDate = (d) => d ? new Date(d).toLocaleString() : '—';
 
-interface UptimeEntry {
-    date: string;
-    uptime: number;
-}
-
-interface Incident {
-    id: string;
-    title: string;
-    description?: string;
-    severity: 'degraded' | 'outage';
-    status: 'active' | 'resolved';
-    createdAt?: string;
-}
-
-const fmtDate = (d: string | Date | null) => d ? new Date(d).toLocaleString() : '—';
-
-const StatusIndicator: FC<{ status: string }> = ({ status }) => {
-    if (status === 'operational') return <CheckCircle size={16} className="text-vigil-emerald" />;
-    if (status === 'degraded') return <AlertTriangle size={16} className="text-vigil-amber" />;
-    return <XCircle size={16} className="text-vigil-rose" />;
+const StatusIndicator = ({ status }) => {
+    if (status === 'operational') return <CheckCircle size={16} className="sp-status-operational" />;
+    if (status === 'degraded') return <AlertTriangle size={16} className="sp-status-degraded" />;
+    return <XCircle size={16} className="sp-status-outage" />;
 };
 
-const ChartTip: FC<any> = ({ active, payload, label }) => {
+const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div className="bg-vigil-surface border border-vigil-accent/20 rounded-lg p-2 text-xs">
-            <div className="text-vigil-muted mb-1">{label}</div>
-            {payload.map((p: any) => (
-                <div key={p.name} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {p.value}%</div>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+            <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
+            {payload.map(p => (
+                <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {p.value}%</div>
             ))}
         </div>
     );
 };
 
-const StatusPageTab: FC = () => {
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATUS PAGE TAB
+   ═══════════════════════════════════════════════════════════════════════════ */
+export default function StatusPageTab() {
     useAdaptiveTheme();
-    const [status, setStatus] = useState<StatusData | null>(null);
-    const [components, setComponents] = useState<Component[]>([]);
-    const [uptimeHistory, setUptimeHistory] = useState<UptimeEntry[]>([]);
-    const [incidents, setIncidents] = useState<Incident[]>([]);
+    const [status, setStatus] = useState(null);
+    const [components, setComponents] = useState([]);
+    const [uptimeHistory, setUptimeHistory] = useState([]);
+    const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const [showIncidentForm, setShowIncidentForm] = useState(false);
-    const [incidentForm, setIncidentForm] = useState({ title: '', description: '', severity: 'degraded' as const });
+    const [incidentForm, setIncidentForm] = useState({ title:'', description:'', severity:'degraded' });
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
@@ -78,7 +80,7 @@ const StatusPageTab: FC = () => {
                 setUptimeHistory(uptime?.data || []);
                 setIncidents(inc?.incidents || []);
                 setError(null);
-            } catch (e: any) {
+            } catch (e) {
                 setError(e.message);
             } finally {
                 setLoading(false);
@@ -96,103 +98,110 @@ const StatusPageTab: FC = () => {
         try {
             const result = await postData('/api/status/incidents', incidentForm);
             setIncidents([result, ...incidents]);
-            setIncidentForm({ title: '', description: '', severity: 'degraded' });
+            setIncidentForm({ title:'', description:'', severity:'degraded' });
             setShowIncidentForm(false);
             setError(null);
-        } catch (e: any) {
+        } catch (e) {
             setError(e.message);
         } finally {
             setSubmitting(false);
         }
     };
 
-    const handleResolveIncident = async (id: string) => {
+    const handleResolveIncident = async (id) => {
         try {
-            await putData(`/api/status/incidents/${id}`, { status: 'resolved' });
-            setIncidents(incidents.map(i => i.id === id ? { ...i, status: 'resolved' } : i));
+            await putData(`/api/status/incidents/${id}`, { status:'resolved' });
+            setIncidents(incidents.map(i => i.id === id ? { ...i, status:'resolved' } : i));
             setError(null);
-        } catch (e: any) {
+        } catch (e) {
             setError(e.message);
         }
     };
 
     if (loading) {
         return (
-            <div className="p-5 text-center">
-                <RefreshCw size={32} className="text-vigil-cyan mx-auto mb-4" style={{ animation: 'spin 1s linear infinite' }} />
-                <div className="text-vigil-muted">Loading status page...</div>
+            <div style={{ padding:'40px 20px', textAlign:'center' }}>
+                <Styles />
+                <RefreshCw size={32} color={THEME.primary} className="sp-spinner" style={{ margin:'0 auto 16px' }} />
+                <div style={{ color:THEME.textMuted }}>Loading status page...</div>
             </div>
         );
     }
 
     const statusColor = status?.status === 'operational'
-        ? 'text-vigil-emerald'
+        ? THEME.success
         : status?.status === 'degraded'
-        ? 'text-vigil-amber'
-        : 'text-vigil-rose';
+        ? THEME.warning
+        : THEME.danger;
 
     return (
-        <div className="p-5 max-w-5xl mx-auto">
-            <style>{`
-                @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-            `}</style>
+        <div style={{ padding:'20px', maxWidth:'1400px' }}>
+            <Styles />
 
             {error && (
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-vigil-rose/10 border border-vigil-rose/30 text-vigil-rose text-xs mb-5 font-semibold">
-                    <AlertTriangle size={16} className="flex-shrink-0" />
+                <div style={{
+                    background:`${THEME.danger}15`,
+                    border:`1px solid ${THEME.danger}40`,
+                    borderRadius:10,
+                    padding:'12px 16px',
+                    marginBottom:20,
+                    color:THEME.danger,
+                    fontSize:13
+                }}>
+                    <AlertTriangle size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                     {error}
                 </div>
             )}
 
             {/* Overall Status */}
-            <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Globe size={32} className={statusColor} />
+            <div className="sp-card" style={{ marginBottom:20 }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+                        <Globe size={32} color={statusColor} />
                         <div>
-                            <div className="text-xs font-bold text-vigil-muted uppercase mb-1">
+                            <div style={{ fontSize:12, color:THEME.textMuted, fontWeight:700, textTransform:'uppercase', marginBottom:4 }}>
                                 System Status
                             </div>
-                            <div className={`text-2xl font-bold capitalize ${statusColor}`}>
+                            <div style={{ fontSize:28, fontWeight:800, color:statusColor, textTransform:'capitalize' }}>
                                 {status?.status || 'Unknown'}
                             </div>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <div className="text-xs text-vigil-muted mb-1">Uptime (30d)</div>
-                        <div className="text-2xl font-bold text-vigil-cyan">{status?.uptime30d || 0}%</div>
+                    <div style={{ textAlign:'right' }}>
+                        <div style={{ fontSize:12, color:THEME.textMuted, marginBottom:4 }}>Uptime (30d)</div>
+                        <div style={{ fontSize:24, fontWeight:800, color:THEME.primary }}>{status?.uptime30d || 0}%</div>
                     </div>
                 </div>
 
                 {status?.lastUpdate && (
-                    <div className="mt-4 flex items-center gap-1 text-xs text-vigil-muted">
-                        <Clock size={12} />
+                    <div style={{ marginTop:16, fontSize:11, color:THEME.textDim }}>
+                        <Clock size={12} style={{ display:'inline-block', marginRight:4, verticalAlign:'middle' }} />
                         Last updated: {fmtDate(status.lastUpdate)}
                     </div>
                 )}
 
-                <div className="mt-3 flex items-center gap-1.5 text-xs text-vigil-muted">
-                    <Shield size={12} />
-                    Public Status Page: <a href="#" className="text-vigil-cyan hover:underline">status.example.com</a>
+                <div style={{ marginTop:12, fontSize:12, color:THEME.textMuted }}>
+                    <Shield size={12} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
+                    Public Status Page: <a href="#" style={{ color:THEME.primary }}>status.example.com</a>
                 </div>
             </div>
 
             {/* Component Status */}
-            <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                    <Shield size={18} />
+            <div className="sp-card" style={{ marginBottom:20 }}>
+                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                    <Shield size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                     Component Status
                 </div>
                 {components.map((comp, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 border-b border-vigil-accent/10 last:border-b-0">
-                        <div className="flex items-center gap-3">
+                    <div key={i} className="sp-component-row">
+                        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                             <StatusIndicator status={comp.status} />
                             <div>
-                                <div className="text-xs font-bold text-vigil-text">{comp.name}</div>
-                                <div className="text-xs text-vigil-muted">{comp.description}</div>
+                                <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain }}>{comp.name}</div>
+                                <div style={{ fontSize:11, color:THEME.textDim }}>{comp.description}</div>
                             </div>
                         </div>
-                        <div className="text-xs text-vigil-muted capitalize">
+                        <div style={{ fontSize:11, color:THEME.textMuted, textTransform:'capitalize' }}>
                             {comp.status}
                         </div>
                     </div>
@@ -201,22 +210,19 @@ const StatusPageTab: FC = () => {
 
             {/* Uptime History Chart */}
             {uptimeHistory.length > 0 && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                        <Clock size={18} />
+                <div className="sp-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Clock size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Uptime History (Last 30 Days)
                     </div>
                     <ResponsiveContainer width="100%" height={200}>
                         <BarChart data={uptimeHistory}>
-                            <XAxis dataKey="date" stroke={THEME.textDim} style={{ fontSize: 11 }} />
-                            <YAxis stroke={THEME.textDim} style={{ fontSize: 11 }} domain={[0, 100]} />
+                            <XAxis dataKey="date" stroke={THEME.textDim} style={{ fontSize:11 }} />
+                            <YAxis stroke={THEME.textDim} style={{ fontSize:11 }} domain={[0, 100]} />
                             <Tooltip content={<ChartTip />} />
                             <Bar dataKey="uptime" radius={[4, 4, 0, 0]}>
                                 {uptimeHistory.map((entry, i) => (
-                                    <Cell
-                                        key={i}
-                                        fill={entry.uptime > 99 ? THEME.success : entry.uptime > 95 ? THEME.warning : THEME.danger}
-                                    />
+                                    <Cell key={i} fill={entry.uptime > 99 ? THEME.success : entry.uptime > 95 ? THEME.warning : THEME.danger} />
                                 ))}
                             </Bar>
                         </BarChart>
@@ -225,69 +231,68 @@ const StatusPageTab: FC = () => {
             )}
 
             {/* Incidents */}
-            <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5">
-                <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text">
-                        <AlertTriangle size={18} />
+            <div className="sp-card" style={{ marginBottom:20 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain }}>
+                        <AlertTriangle size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Incidents
                     </div>
-                    <button
-                        onClick={() => setShowIncidentForm(!showIncidentForm)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-vigil-cyan/20 border border-vigil-cyan/40 text-vigil-cyan text-xs font-semibold hover:bg-vigil-cyan/30 transition-colors"
-                    >
-                        <PlusCircle size={14} />
+                    <button className="sp-button" onClick={() => setShowIncidentForm(!showIncidentForm)}>
+                        <PlusCircle size={14} style={{ marginRight:6 }} />
                         Create Incident
                     </button>
                 </div>
 
                 {showIncidentForm && (
-                    <div className="bg-vigil-accent/5 rounded-xl p-4 mb-4">
-                        <div className="mb-3">
-                            <div className="text-xs font-bold text-vigil-muted uppercase mb-2">Incident Title</div>
+                    <div style={{ background:THEME.grid, borderRadius:10, padding:16, marginBottom:16 }}>
+                        <div style={{ marginBottom:12 }}>
+                            <div className="sp-label">Incident Title</div>
                             <input
                                 type="text"
-                                className="w-full px-3 py-2 bg-vigil-surface border border-vigil-accent/10 rounded-lg text-vigil-text text-xs"
+                                className="sp-input"
                                 placeholder="e.g., Database connectivity issue"
                                 value={incidentForm.title}
-                                onChange={(e) => setIncidentForm({ ...incidentForm, title: e.target.value })}
+                                onChange={(e) => setIncidentForm({ ...incidentForm, title:e.target.value })}
                             />
                         </div>
 
-                        <div className="mb-3">
-                            <div className="text-xs font-bold text-vigil-muted uppercase mb-2">Description</div>
+                        <div style={{ marginBottom:12 }}>
+                            <div className="sp-label">Description</div>
                             <textarea
-                                className="w-full px-3 py-2 bg-vigil-surface border border-vigil-accent/10 rounded-lg text-vigil-text text-xs min-h-20 resize-vertical"
+                                className="sp-textarea"
                                 placeholder="Describe the incident..."
                                 value={incidentForm.description}
-                                onChange={(e) => setIncidentForm({ ...incidentForm, description: e.target.value })}
+                                onChange={(e) => setIncidentForm({ ...incidentForm, description:e.target.value })}
                             />
                         </div>
 
-                        <div className="mb-4">
-                            <div className="text-xs font-bold text-vigil-muted uppercase mb-2">Severity</div>
+                        <div style={{ marginBottom:16 }}>
+                            <div className="sp-label">Severity</div>
                             <select
-                                className="w-full px-3 py-2 bg-vigil-surface border border-vigil-accent/10 rounded-lg text-vigil-text text-xs cursor-pointer"
+                                style={{
+                                    background:THEME.surfaceHover,
+                                    border:`1px solid ${THEME.grid}`,
+                                    borderRadius:8,
+                                    padding:'10px 12px',
+                                    color:THEME.textMain,
+                                    fontSize:13,
+                                    width:'100%',
+                                    cursor:'pointer'
+                                }}
                                 value={incidentForm.severity}
-                                onChange={(e) => setIncidentForm({ ...incidentForm, severity: e.target.value as 'degraded' | 'outage' })}
+                                onChange={(e) => setIncidentForm({ ...incidentForm, severity:e.target.value })}
                             >
                                 <option value="degraded">Degraded Performance</option>
                                 <option value="outage">Outage</option>
                             </select>
                         </div>
 
-                        <div className="flex gap-2.5">
-                            <button
-                                onClick={handleCreateIncident}
-                                disabled={submitting}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-vigil-cyan/20 border border-vigil-cyan/40 text-vigil-cyan text-xs font-semibold hover:bg-vigil-cyan/30 transition-colors disabled:opacity-50"
-                            >
-                                {submitting ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <PlusCircle size={12} />}
+                        <div style={{ display:'flex', gap:10 }}>
+                            <button className="sp-button" onClick={handleCreateIncident} disabled={submitting}>
+                                {submitting ? <RefreshCw size={14} className="sp-spinner" style={{ marginRight:6 }} /> : <PlusCircle size={14} style={{ marginRight:6 }} />}
                                 {submitting ? 'Creating...' : 'Create Incident'}
                             </button>
-                            <button
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-vigil-accent/5 border border-vigil-accent/10 text-vigil-muted text-xs font-semibold hover:bg-vigil-accent/10 transition-colors"
-                                onClick={() => setShowIncidentForm(false)}
-                            >
+                            <button className="sp-button" style={{ background:THEME.surfaceHover }} onClick={() => setShowIncidentForm(false)}>
                                 Cancel
                             </button>
                         </div>
@@ -296,52 +301,53 @@ const StatusPageTab: FC = () => {
 
                 {incidents.length > 0 ? (
                     incidents.map((incident, i) => (
-                        <div key={i} className="bg-vigil-accent/5 border-l-4 border-vigil-amber rounded-lg p-3 mb-3">
-                            <div className="flex justify-between items-start mb-2">
+                        <div key={i} className="sp-incident">
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'start', marginBottom:8 }}>
                                 <div>
-                                    <div className="text-xs font-bold text-vigil-text mb-1">
+                                    <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:4 }}>
                                         {incident.title}
                                     </div>
-                                    <div className="text-xs text-vigil-muted">
+                                    <div style={{ fontSize:11, color:THEME.textDim, marginBottom:6 }}>
                                         {fmtDate(incident.createdAt)}
                                     </div>
                                 </div>
-                                <div
-                                    className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase ${
-                                        incident.status === 'resolved'
-                                            ? 'bg-vigil-emerald/20 text-vigil-emerald'
-                                            : 'bg-vigil-rose/20 text-vigil-rose'
-                                    }`}
-                                >
+                                <div style={{
+                                    padding:'4px 10px',
+                                    background:incident.status === 'resolved' ? `${THEME.success}20` : `${THEME.danger}20`,
+                                    color:incident.status === 'resolved' ? THEME.success : THEME.danger,
+                                    borderRadius:4,
+                                    fontSize:11,
+                                    fontWeight:700,
+                                    textTransform:'capitalize'
+                                }}>
                                     {incident.status}
                                 </div>
                             </div>
 
                             {incident.description && (
-                                <div className="text-xs text-vigil-muted mb-2">
+                                <div style={{ fontSize:12, color:THEME.textDim, marginBottom:8 }}>
                                     {incident.description}
                                 </div>
                             )}
 
                             {incident.status !== 'resolved' && (
                                 <button
+                                    className="sp-button sp-button-secondary"
                                     onClick={() => handleResolveIncident(incident.id)}
-                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-vigil-emerald/20 border border-vigil-emerald/40 text-vigil-emerald text-xs font-semibold hover:bg-vigil-emerald/30 transition-colors"
+                                    style={{ fontSize:11, padding:'6px 12px' }}
                                 >
-                                    <CheckCircle size={12} />
+                                    <CheckCircle size={12} style={{ marginRight:4 }} />
                                     Mark Resolved
                                 </button>
                             )}
                         </div>
                     ))
                 ) : (
-                    <div className="text-center p-5 text-vigil-muted text-xs">
+                    <div style={{ textAlign:'center', padding:'20px', color:THEME.textDim, fontSize:12 }}>
                         No incidents reported
                     </div>
                 )}
             </div>
         </div>
     );
-};
-
-export default StatusPageTab;
+}

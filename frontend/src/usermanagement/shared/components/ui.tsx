@@ -1,31 +1,18 @@
 /**
  * Atomic UI components.
+ *
  * These are truly stateless presentational pieces with no business logic.
  * They accept only primitive props and render deterministically.
  */
 
-import React, { useState, FC, ReactNode, CSSProperties } from 'react';
-
-interface ThemeObject {
-    surface: string;
-    textMain: string;
-    textSub: string;
-    textDim: string;
-    primary: string;
-    success: string;
-    danger: string;
-    warning: string;
-    border: string;
-    fontMono: string;
-}
-
-// Import actual theme from utils if available
-import { THEME } from '../../../utils/theme.jsx';
-
-const T: ThemeObject = THEME as any;
+import React, { useState } from 'react';
+import { T } from '../../constants/theme';
+import { THEME } from '../../../utils/theme';
+import { ROLES, PERM_COLORS } from '../../constants/index';
+import { relTime } from '../../helpers/index';
 
 /* ─── SVG Icon ────────────────────────────────────────────────────────────── */
-export const ICONS: Record<string, string> = {
+export const ICONS = {
     users:    "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
     shield:   "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
     activity: "M22 12h-4l-3 9L9 3l-3 9H2",
@@ -63,7 +50,7 @@ export const ICONS: Record<string, string> = {
 };
 
 /** Generic SVG icon driven by a path string */
-export const Ico: FC<{ name: string; size?: number; color?: string; style?: CSSProperties }> = ({ name, size = 16, color = 'currentColor', style = {} }) => (
+export const Ico = ({ name, size = 16, color = 'currentColor', style = {} }) => (
     <svg
         width={size} height={size} viewBox="0 0 24 24"
         fill="none" stroke={color} strokeWidth="1.8"
@@ -74,12 +61,75 @@ export const Ico: FC<{ name: string; size?: number; color?: string; style?: CSSP
     </svg>
 );
 
+/* ─── Sparkline bar chart ─────────────────────────────────────────────────── */
+export const Sparkline = ({ data, color = T.primary, height = 28 }) => {
+    const max = Math.max(...data, 1);
+    return (
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height }}>
+            {data.map((v, i) => (
+                <div key={i} style={{
+                    flex: 1, minWidth: 3, borderRadius: 2,
+                    height: `${(v / max) * 100}%`,
+                    background: v === 0 ? T.border : `${color}${v > max * 0.7 ? 'dd' : '66'}`,
+                    transition: 'height 0.3s',
+                }} />
+            ))}
+        </div>
+    );
+};
+
+/* ─── SVG ring for risk score ─────────────────────────────────────────────── */
+export const RiskRing = ({ score, size = 44 }) => {
+    const color = score > 70 ? T.danger : score > 40 ? T.warning : T.success;
+    const r = size / 2 - 4;
+    const circ = 2 * Math.PI * r;
+    const dash = (score / 100) * circ;
+    return (
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
+            <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={T.border} strokeWidth="3" />
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="3"
+                        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+                        style={{ transition: 'stroke-dasharray 0.6s ease' }}
+                />
+            </svg>
+            <span style={{ position: 'absolute', fontSize: 11, fontWeight: 700, color, fontFamily: THEME.fontMono }}>
+                {score}
+            </span>
+        </div>
+    );
+};
+
+/* ─── Login heat-map (28 days) ────────────────────────────────────────────── */
+export const LoginHeatmap = ({ data }) => {
+    const weeks = [];
+    for (let w = 0; w < 4; w++) weeks.push(data.slice(w * 7, w * 7 + 7));
+    return (
+        <div style={{ display: 'flex', gap: 3 }}>
+            {weeks.map((week, wi) => (
+                <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {week.map((val, di) => (
+                        <div key={di} title={`${val} logins`} style={{
+                            width: 12, height: 12, borderRadius: 10,
+                            background: val === 0 ? T.border
+                                : val < 3 ? `${T.primary}44`
+                                    : val < 6 ? `${T.primary}88`
+                                        : T.primary,
+                            cursor: 'default',
+                        }} />
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
+};
+
 /* ─── Status badge ────────────────────────────────────────────────────────── */
-export const StatusBadge: FC<{ status: string }> = ({ status }) => {
-    const cfgMap: Record<string, any> = {
-        active:    { color: T.success, bg: `${T.success}18`, dot: '•', label: 'Active' },
+export const StatusBadge = ({ status }) => {
+    const cfgMap = {
+        active:    { color: T.success, bg: T.successDim, dot: '•', label: 'Active' },
         inactive:  { color: T.textDim, bg: `${T.textDim}18`, dot: '○', label: 'Inactive' },
-        suspended: { color: T.danger,  bg: `${T.danger}18`,  dot: '✕', label: 'Suspended' },
+        suspended: { color: T.danger,  bg: T.dangerDim,  dot: '✕', label: 'Suspended' },
     };
     const cfg = cfgMap[status] || { color: T.textDim, bg: T.border, dot: '?', label: status };
     return (
@@ -96,8 +146,115 @@ export const StatusBadge: FC<{ status: string }> = ({ status }) => {
     );
 };
 
-/* ─── Form field wrapper (label + error) ──────────────────────────────── */
-export const FormField: FC<{ label: string; error?: string; required?: boolean; children: ReactNode }> = ({ label, error, required, children }) => (
+/* ─── Role badge ──────────────────────────────────────────────────────────── */
+export const RoleBadge = ({ roleId, size = 'md' }) => {
+    const role = ROLES.find(r => r.id === roleId) || ROLES[4];
+    const sm = size === 'sm';
+    return (
+        <span style={{
+            fontFamily: THEME.fontMono,
+            fontSize: sm ? 10 : 11, fontWeight: 700,
+            color: role.color,
+            background: `${role.color}18`,
+            border: `1px solid ${role.color}35`,
+            borderRadius: 5,
+            padding: sm ? '2px 6px' : '3px 8px',
+        }}>
+            {role.badge} {role.label}
+        </span>
+    );
+};
+
+/* ─── MFA badge ───────────────────────────────────────────────────────────── */
+export const MfaBadge = ({ enabled }) => (
+    <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5,
+        padding: '3px 9px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',
+        background: enabled ? T.successDim : T.dangerDim,
+        color:      enabled ? T.success    : T.danger,
+        border:     `1px solid ${enabled ? T.success : T.danger}30`,
+    }}>
+        <Ico name={enabled ? 'shield' : 'alert'} size={10} />
+        {enabled ? 'MFA' : 'No MFA'}
+    </span>
+);
+
+/* ─── Metric / stat card ──────────────────────────────────────────────────── */
+export const StatCard = ({ label, value, sub, icon, color = T.primary, trend, sparkData, onClick }) => (
+    <div onClick={onClick} style={{
+        background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14,
+        padding: 20, cursor: onClick ? 'pointer' : 'default',
+        position: 'relative', overflow: 'hidden',
+        transition: 'border-color 0.2s',
+    }}>
+        {/* Ghost icon watermark */}
+        <div style={{ position: 'absolute', top: -10, right: -10, opacity: 0.06, transform: 'scale(2.5)' }}>
+            <Ico name={icon} size={48} color={color} />
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+            <div style={{
+                width: 36, height: 36, borderRadius: 9,
+                background: `${color}18`, border: `1px solid ${color}30`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+                <Ico name={icon} size={16} color={color} />
+            </div>
+            {trend !== undefined && (
+                <span style={{ fontSize: 11, fontWeight: 700, color: trend >= 0 ? T.success : T.danger, display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Ico name={trend >= 0 ? 'arrowUp' : 'arrowDown'} size={11} color={trend >= 0 ? T.success : T.danger} />
+                    {Math.abs(trend)}%
+                </span>
+            )}
+        </div>
+        <div style={{ fontSize: 28, fontWeight: 800, color: T.text, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
+        <div style={{ fontSize: 12, color: T.textSub, marginTop: 4, fontWeight: 500 }}>{label}</div>
+        {sub       && <div style={{ fontSize: 11, color: T.textDim, marginTop: 3 }}>{sub}</div>}
+        {sparkData && <div style={{ marginTop: 12 }}><Sparkline data={sparkData} color={color} height={24} /></div>}
+    </div>
+);
+
+/* ─── Toast notification stack ────────────────────────────────────────────── */
+export const Toast = ({ toasts }) => (
+    <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 600, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+        {toasts.map(t => (
+            <div key={t.id} style={{
+                padding: '12px 18px', borderRadius: 10,
+                background:  t.type === 'success' ? T.successDim : t.type === 'error' ? T.dangerDim : T.primaryDim,
+                border:      `1px solid ${t.type === 'success' ? T.success : t.type === 'error' ? T.danger : T.primary}40`,
+                display: 'flex', alignItems: 'center', gap: 10,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                animation: 'umSlideRight 0.3s ease',
+                backdropFilter: 'blur(12px)',
+                pointerEvents: 'auto',
+            }}>
+                <Ico
+                    name={t.type === 'success' ? 'check' : t.type === 'error' ? 'x' : 'activity'}
+                    size={15}
+                    color={t.type === 'success' ? T.success : t.type === 'error' ? T.danger : T.primary}
+                />
+                <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{t.message}</span>
+            </div>
+        ))}
+    </div>
+);
+
+/* ─── Tag/pill filter button ──────────────────────────────────────────────── */
+export const TagFilter = ({ label, active, onClick, activeColor }) => (
+    <button onClick={onClick} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+        cursor: 'pointer', transition: 'all 0.15s',
+        background: active ? (activeColor ? `${activeColor}15` : T.primaryDim) : 'transparent',
+        border:     `1px solid ${active ? (activeColor || T.primary) : T.border}`,
+        color:      active ? (activeColor || T.primary) : T.textDim,
+    }}>
+        {label}
+    </button>
+);
+
+/* ─── Form field wrapper (label + error) ──────────────────────────────────── */
+export const FormField = ({ label, error, required, children }) => (
     <div>
         <label style={{
             display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6,
@@ -112,7 +269,7 @@ export const FormField: FC<{ label: string; error?: string; required?: boolean; 
 );
 
 /* ─── Toggle switch ───────────────────────────────────────────────────────── */
-export const Toggle: FC<{ value: boolean; onChange: (val: boolean) => void; color?: string }> = ({ value, onChange, color = T.success }) => (
+export const Toggle = ({ value, onChange, color = T.success }) => (
     <button
         role="switch"
         aria-checked={value}
@@ -130,30 +287,3 @@ export const Toggle: FC<{ value: boolean; onChange: (val: boolean) => void; colo
         }} />
     </button>
 );
-
-/* ─── RoleBadge component ──────────────────────────────────────────────────────── */
-export const RoleBadge: FC<{ roleId?: string; size?: 'sm' | 'md' }> = ({ roleId, size = 'md' }) => {
-    const sm = size === 'sm';
-    return (
-        <span style={{
-            fontFamily: THEME.fontMono,
-            fontSize: sm ? 10 : 11, fontWeight: 700,
-            color: T.primary,
-            background: `${T.primary}18`,
-            border: `1px solid ${T.primary}35`,
-            borderRadius: 5,
-            padding: sm ? '2px 6px' : '3px 8px',
-        }}>
-            {roleId || 'viewer'}
-        </span>
-    );
-};
-
-export default {
-    ICONS,
-    Ico,
-    StatusBadge,
-    FormField,
-    Toggle,
-    RoleBadge,
-};

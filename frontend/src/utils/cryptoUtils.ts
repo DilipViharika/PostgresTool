@@ -12,14 +12,14 @@
  *   // encrypted.password is now RSA-OAEP ciphertext (base64)
  */
 
-const SENSITIVE_FIELDS: readonly string[] = ['password', 'sshPrivateKey', 'sshPassphrase', 'sshPassword'];
+const SENSITIVE_FIELDS = ['password', 'sshPrivateKey', 'sshPassphrase', 'sshPassword'];
 
 /**
  * Import an RSA public key (PEM) into the Web Crypto API.
- * @param pem — PEM-encoded SPKI public key
- * @returns Promise resolving to a CryptoKey
+ * @param {string} pem — PEM-encoded SPKI public key
+ * @returns {Promise<CryptoKey>}
  */
-async function importPublicKey(pem: string): Promise<CryptoKey> {
+async function importPublicKey(pem) {
     const stripped = pem
         .replace(/-----BEGIN PUBLIC KEY-----/, '')
         .replace(/-----END PUBLIC KEY-----/, '')
@@ -30,7 +30,7 @@ async function importPublicKey(pem: string): Promise<CryptoKey> {
     return crypto.subtle.importKey(
         'spki',
         binaryDer.buffer,
-        { name: 'RSA-OAEP', hash: 'SHA-256' } as RsaHashedImportParams,
+        { name: 'RSA-OAEP', hash: 'SHA-256' },
         false,
         ['encrypt'],
     );
@@ -38,14 +38,14 @@ async function importPublicKey(pem: string): Promise<CryptoKey> {
 
 /**
  * Encrypt a string with an RSA-OAEP public key.
- * @param publicKey - The CryptoKey to use for encryption
- * @param plaintext - The string to encrypt
- * @returns Promise resolving to base64-encoded ciphertext
+ * @param {CryptoKey} publicKey
+ * @param {string} plaintext
+ * @returns {Promise<string>} base64-encoded ciphertext
  */
-async function rsaEncrypt(publicKey: CryptoKey, plaintext: string): Promise<string> {
+async function rsaEncrypt(publicKey, plaintext) {
     const encoded = new TextEncoder().encode(plaintext);
     const cipherBuffer = await crypto.subtle.encrypt(
-        { name: 'RSA-OAEP' } as RsaOaepParams,
+        { name: 'RSA-OAEP' },
         publicKey,
         encoded,
     );
@@ -59,15 +59,11 @@ async function rsaEncrypt(publicKey: CryptoKey, plaintext: string): Promise<stri
 /**
  * Fetches the server's RSA public key, caches it for the session.
  */
-let _cachedKey: CryptoKey | null = null;
+let _cachedKey = null;
 let _cacheExpiry = 0;
 const CACHE_TTL = 25 * 60 * 1000; // 25 min (server rotates every 30)
 
-interface HandshakeResponse {
-    publicKey: string;
-}
-
-async function fetchPublicKey(apiBase: string, authToken: string): Promise<CryptoKey> {
+async function fetchPublicKey(apiBase, authToken) {
     const now = Date.now();
     if (_cachedKey && now < _cacheExpiry) return _cachedKey;
 
@@ -75,7 +71,7 @@ async function fetchPublicKey(apiBase: string, authToken: string): Promise<Crypt
         headers: { Authorization: `Bearer ${authToken}` },
     });
     if (!res.ok) throw new Error(`Handshake failed (${res.status})`);
-    const { publicKey: pem } = (await res.json()) as HandshakeResponse;
+    const { publicKey: pem } = await res.json();
     _cachedKey = await importPublicKey(pem);
     _cacheExpiry = now + CACHE_TTL;
     return _cachedKey;
@@ -85,16 +81,12 @@ async function fetchPublicKey(apiBase: string, authToken: string): Promise<Crypt
  * Encrypt all sensitive fields in a connection form data object.
  * Non-sensitive fields pass through unchanged.
  *
- * @param apiBase - e.g. 'https://postgrestoolbackend.vercel.app'
- * @param authToken - JWT bearer token
- * @param formData - the raw form data with plaintext passwords
- * @returns Promise resolving to form data with sensitive fields RSA-encrypted
+ * @param {string} apiBase   — e.g. 'https://postgrestoolbackend.vercel.app'
+ * @param {string} authToken — JWT bearer token
+ * @param {object} formData  — the raw form data with plaintext passwords
+ * @returns {Promise<object>} — form data with sensitive fields RSA-encrypted
  */
-export async function encryptConnectionFields(
-    apiBase: string,
-    authToken: string,
-    formData: Record<string, any>
-): Promise<Record<string, any>> {
+export async function encryptConnectionFields(apiBase, authToken, formData) {
     // If Web Crypto is not available (e.g. non-HTTPS localhost), skip encryption.
     // The backend will still accept plaintext and encrypt with AES for storage.
     if (!crypto?.subtle) {
@@ -104,7 +96,7 @@ export async function encryptConnectionFields(
 
     try {
         const publicKey = await fetchPublicKey(apiBase, authToken);
-        const encrypted: Record<string, any> = { ...formData };
+        const encrypted = { ...formData };
 
         for (const field of SENSITIVE_FIELDS) {
             const value = encrypted[field];
@@ -116,8 +108,7 @@ export async function encryptConnectionFields(
         return encrypted;
     } catch (err) {
         // If handshake fails (e.g. old backend), fall back gracefully
-        const message = err instanceof Error ? err.message : String(err);
-        console.warn('[VIGIL] Client-side encryption unavailable:', message);
+        console.warn('[VIGIL] Client-side encryption unavailable:', err.message);
         return formData;
     }
 }
@@ -125,7 +116,7 @@ export async function encryptConnectionFields(
 /**
  * Invalidate the cached public key (call after key rotation errors).
  */
-export function clearKeyCache(): void {
+export function clearKeyCache() {
     _cachedKey = null;
     _cacheExpiry = 0;
 }

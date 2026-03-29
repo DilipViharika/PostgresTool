@@ -1,43 +1,6 @@
-// @ts-nocheck
-import React, { useState, useMemo, useCallback, CSSProperties } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { ChevronRight, ChevronDown, Clock, Rows3, Zap, Filter, ZoomIn, ZoomOut } from 'lucide-react';
-
-/* ── Type Definitions ─────────────────────────────────────────────────────── */
-interface PlanNode {
-    'Node Type': string;
-    'Total Cost'?: number;
-    'Actual Rows'?: number;
-    'Actual Total Time'?: number;
-    'Plan Rows'?: number;
-    'Planned Rows'?: number;
-    'Startup Cost'?: number;
-    Filter?: string;
-    'Index Name'?: string;
-    'Join Type'?: string;
-    'Relation Name'?: string;
-    'Alias'?: string;
-    'Buffer Hits'?: number;
-    Plans?: PlanNode[];
-}
-
-interface QueryPlan {
-    'Planning Time'?: number;
-    'Execution Time'?: number;
-    Plan: PlanNode;
-}
-
-interface SummaryStats {
-    planningTime: number;
-    executionTime: number;
-    totalTime: number;
-    rowsReturned: number;
-}
-
-interface QueryPlanViewerProps {
-    planData?: QueryPlan | null;
-    onClose?: (() => void) | null;
-}
 
 /**
  * QueryPlanViewer
@@ -55,15 +18,15 @@ interface QueryPlanViewerProps {
  * - Node connection lines (vertical/horizontal connectors)
  */
 
-const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onClose = null }) => {
+const QueryPlanViewer = ({ planData = null, onClose = null }) => {
     useAdaptiveTheme();
 
-    const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-    const [zoom, setZoom] = useState<number>(1);
-    const [selectedNode, setSelectedNode] = useState<string | null>(null);
+    const [expandedNodes, setExpandedNodes] = useState(new Set());
+    const [zoom, setZoom] = useState(1);
+    const [selectedNode, setSelectedNode] = useState(null);
 
     // Extract summary stats
-    const summaryStats = useMemo<SummaryStats>(() => {
+    const summaryStats = useMemo(() => {
         if (!planData || !planData.Plan) {
             return {
                 planningTime: 0,
@@ -82,10 +45,10 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
     }, [planData]);
 
     // Find max cost for gradient normalization
-    const maxCost = useMemo<number>(() => {
+    const maxCost = useMemo(() => {
         let max = 0;
 
-        const traverse = (node: PlanNode) => {
+        const traverse = (node) => {
             if (node['Total Cost']) {
                 max = Math.max(max, node['Total Cost']);
             }
@@ -102,7 +65,7 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
     }, [planData]);
 
     // Get color based on cost proportion
-    const getCostColor = useCallback((cost: number | undefined): string => {
+    const getCostColor = useCallback((cost) => {
         const proportion = (cost || 0) / maxCost;
 
         if (proportion < 0.25) return THEME.success; // Green
@@ -112,7 +75,7 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
     }, [maxCost]);
 
     // Toggle node expansion
-    const toggleExpand = useCallback((nodeId: string) => {
+    const toggleExpand = useCallback((nodeId) => {
         setExpandedNodes((prev) => {
             const next = new Set(prev);
             if (next.has(nodeId)) {
@@ -125,47 +88,48 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
     }, []);
 
     // Styles
-    const styles: { [key: string]: CSSProperties } = {
+    const styles = {
         container: {
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
             background: THEME.glass,
             border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: 12,
+            borderRadius: THEME.radiusMd,
             overflow: 'hidden',
             fontFamily: THEME.fontBody,
-        } as CSSProperties,
+        },
         header: {
             padding: '16px',
             borderBottom: `1px solid ${THEME.glassBorder}`,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-        } as CSSProperties,
+        },
         title: {
             color: THEME.textMain,
             fontSize: '14px',
             fontWeight: '600',
-        } as CSSProperties,
+        },
         toolbar: {
             display: 'flex',
             gap: '8px',
             alignItems: 'center',
-        } as CSSProperties,
+        },
         button: {
             padding: '6px 10px',
             background: THEME.primary,
             color: THEME.textInverse,
             border: 'none',
-            borderRadius: 6,
+            borderRadius: THEME.radiusSm,
             cursor: 'pointer',
             fontSize: '12px',
             fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
-        } as CSSProperties,
+            transition: THEME.transitionFast,
+        },
         summaryBar: {
             display: 'flex',
             gap: '24px',
@@ -173,97 +137,110 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
             background: THEME.surface,
             borderBottom: `1px solid ${THEME.glassBorder}`,
             fontSize: '12px',
-        } as CSSProperties,
+        },
         summaryItem: {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             color: THEME.textMain,
-        } as CSSProperties,
+        },
         summaryValue: {
             fontWeight: '600',
             color: THEME.primary,
-        } as CSSProperties,
+        },
         treeContainer: {
             flex: 1,
-            overflowY: 'auto' as 'auto',
+            overflowY: 'auto',
             padding: '16px',
             fontSize: '12px',
-        } as CSSProperties,
+        },
         emptyState: {
             padding: '32px 16px',
-            textAlign: 'center' as 'center',
+            textAlign: 'center',
             color: THEME.textMuted,
             fontSize: '12px',
-        } as CSSProperties,
+        },
         nodeRow: {
             marginBottom: '12px',
             padding: '8px',
             background: THEME.surface,
             border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: 6,
+            borderRadius: THEME.radiusSm,
+            transition: THEME.transitionFast,
             cursor: 'pointer',
-        } as CSSProperties,
+        },
+        nodeRowHover: {
+            background: THEME.surfaceHover,
+            borderColor: THEME.glassBorderHover,
+        },
         nodeHeader: {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             marginBottom: '4px',
-        } as CSSProperties,
+        },
         chevron: {
             width: '16px',
             height: '16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-        } as CSSProperties,
+        },
+        nodeTitle: {
+            flex: 1,
+            fontWeight: '600',
+            color: THEME.textMain,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+        },
         nodeBadge: {
             padding: '2px 8px',
             borderRadius: '3px',
             fontSize: '11px',
             fontWeight: '600',
-        } as CSSProperties,
+        },
         nodeStats: {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
             gap: '8px',
             marginTop: '8px',
             paddingTop: '8px',
-            borderTop: `1px solid ${THEME.grid}`,
-        } as CSSProperties,
+            borderTop: `1px solid ${THEME.gridAlt}`,
+        },
         statItem: {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
             fontSize: '11px',
             color: THEME.textMuted,
-        } as CSSProperties,
+        },
         detailsPanel: {
             marginTop: '12px',
             padding: '12px',
-            background: THEME.surface,
-            borderRadius: 6,
-            border: `1px solid ${THEME.grid}`,
+            background: THEME.bgAlt,
+            borderRadius: THEME.radiusSm,
+            border: `1px solid ${THEME.gridAlt}`,
             fontSize: '11px',
             maxHeight: '200px',
-            overflowY: 'auto' as 'auto',
-        } as CSSProperties,
+            overflowY: 'auto',
+        },
         detailRow: {
             display: 'flex',
             justifyContent: 'space-between',
             marginBottom: '6px',
             paddingBottom: '6px',
-            borderBottom: `1px solid ${THEME.grid}`,
-        } as CSSProperties,
+            borderBottom: `1px solid ${THEME.gridAlt}`,
+        },
         detailLabel: {
             color: THEME.textMuted,
             fontWeight: '500',
-        } as CSSProperties,
+        },
         detailValue: {
             color: THEME.textMain,
             fontFamily: 'monospace',
             fontSize: '10px',
-        } as CSSProperties,
+        },
     };
 
     if (!planData || !planData.Plan) {
@@ -285,7 +262,7 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
         );
     }
 
-    const renderNode = (node: PlanNode, nodeId: string, depth: number = 0): JSX.Element => {
+    const renderNode = (node, nodeId, depth = 0) => {
         const isExpanded = expandedNodes.has(nodeId);
         const hasChildren = node.Plans && node.Plans.length > 0;
         const cost = node['Total Cost'] || 0;
@@ -298,7 +275,7 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
                         ...styles.nodeRow,
                         borderLeftColor: costColor,
                         borderLeftWidth: '3px',
-                        cursor: hasChildren || node.Filter || node['Index Name'] ? 'pointer' : 'default',
+                        cursor: hasChildren || node.Filter || node.Index ? 'pointer' : 'default',
                     }}
                     onClick={() => {
                         toggleExpand(nodeId);
@@ -327,7 +304,7 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
                             {node['Node Type']}
                         </span>
 
-                        <span style={styles.nodeHeader}>
+                        <span style={styles.nodeTitle}>
                             {node.Filter && <Filter size={12} />}
                             {node.Plans && node.Plans.length > 0 && `(${node.Plans.length} child)`}
                         </span>
@@ -423,7 +400,7 @@ const QueryPlanViewer: React.FC<QueryPlanViewerProps> = ({ planData = null, onCl
                 {/* Child Nodes */}
                 {isExpanded && hasChildren && (
                     <div>
-                        {node.Plans!.map((child, idx) =>
+                        {node.Plans.map((child, idx) =>
                             renderNode(child, `${nodeId}-${idx}`, depth + 1)
                         )}
                     </div>

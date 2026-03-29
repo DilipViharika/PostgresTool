@@ -1,12 +1,11 @@
-// @ts-nocheck
 /**
- * AuditAndSecurity.tsx
- * Audit logging and security panel components
- * Path: src/usermanagement/PermissionMatrix/AuditAndSecurity.tsx
+ * AuditAndSecurity.jsx — FULL REPLACEMENT
+ * Path: src/usermanagement/PermissionMatrix/AuditAndSecurity.jsx
+ * 100% self-contained — zero imports from ui.jsx or shared components
  */
 
-import React, { useState, memo, FC, CSSProperties } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import React, { useState, memo } from 'react';
+import { THEME, useAdaptiveTheme } from '../../utils/theme';
 
 /* ─── Theme ─────────────────────────────────────────────────────── */
 const T = {
@@ -29,7 +28,7 @@ const T = {
 const STYLE_ID = 'as2-styles';
 function ensureStyles() {
     if (typeof document === 'undefined') return;
-    let el = document.getElementById(STYLE_ID);
+    var el = document.getElementById(STYLE_ID);
     if (!el) {
         el = document.createElement('style');
         el.id = STYLE_ID;
@@ -61,7 +60,7 @@ function ensureStyles() {
 }
 
 /* ─── SVG icons ──────────────────────────────────────────────────── */
-function Svg(props: { size?: number; color?: string; children: React.ReactNode }): React.ReactElement {
+function Svg(props) {
     return React.createElement('svg', {
         width: props.size || 14,
         height: props.size || 14,
@@ -75,219 +74,211 @@ function Svg(props: { size?: number; color?: string; children: React.ReactNode }
     }, props.children);
 }
 
-interface IconFunc {
-    (sz: number, c: string): React.ReactElement;
-}
-
-const ICONS: Record<string, IconFunc> = {
-    alert: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }),
-        React.createElement('line', { x1: '12', y1: '9', x2: '12', y2: '13' }),
-        React.createElement('line', { x1: '12', y1: '17', x2: '12.01', y2: '17' })
-    ),
-    check: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('polyline', { points: '20 6 9 17 4 12' })
-    ),
-    activity: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('polyline', { points: '22 12 18 12 15 21 9 3 6 12 2 12' })
-    ),
-    users: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('path', { d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
-        React.createElement('circle', { cx: '9', cy: '7', r: '4' }),
-        React.createElement('path', { d: 'M23 21v-2a4 4 0 0 0-3-3.87' }),
-        React.createElement('path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' })
-    ),
-    download: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
-        React.createElement('polyline', { points: '7 10 12 15 17 10' }),
-        React.createElement('line', { x1: '12', y1: '15', x2: '12', y2: '3' })
-    ),
-    key: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('path', { d: 'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4' })
-    ),
-    trash: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('polyline', { points: '3 6 5 6 21 6' }),
-        React.createElement('path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' })
-    ),
-    plus: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('line', { x1: '12', y1: '5', x2: '12', y2: '19' }),
-        React.createElement('line', { x1: '5', y1: '12', x2: '19', y2: '12' })
-    ),
-    monitor: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('rect', { x: '2', y: '3', width: '20', height: '14', rx: '2', ry: '2' }),
-        React.createElement('line', { x1: '8', y1: '21', x2: '16', y2: '21' }),
-        React.createElement('line', { x1: '12', y1: '17', x2: '12', y2: '21' })
-    ),
-    globe: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
-        React.createElement('line', { x1: '2', y1: '12', x2: '22', y2: '12' }),
-        React.createElement('path', { d: 'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z' })
-    ),
-    logOut: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('path', { d: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' }),
-        React.createElement('polyline', { points: '16 17 21 12 16 7' }),
-        React.createElement('line', { x1: '21', y1: '12', x2: '9', y2: '12' })
-    ),
-    shield: (sz, c) => React.createElement(Svg, { size: sz, color: c },
-        React.createElement('path', { d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' })
-    ),
+var ICONS = {
+    alert: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('path', { d:'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }),
+            React.createElement('line', { x1:'12', y1:'9', x2:'12', y2:'13' }),
+            React.createElement('line', { x1:'12', y1:'17', x2:'12.01', y2:'17' })
+        );
+    },
+    check: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('polyline', { points:'20 6 9 17 4 12' })
+        );
+    },
+    activity: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('polyline', { points:'22 12 18 12 15 21 9 3 6 12 2 12' })
+        );
+    },
+    users: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('path', { d:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
+            React.createElement('circle', { cx:'9', cy:'7', r:'4' }),
+            React.createElement('path', { d:'M23 21v-2a4 4 0 0 0-3-3.87' }),
+            React.createElement('path', { d:'M16 3.13a4 4 0 0 1 0 7.75' })
+        );
+    },
+    download: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('path', { d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+            React.createElement('polyline', { points:'7 10 12 15 17 10' }),
+            React.createElement('line', { x1:'12', y1:'15', x2:'12', y2:'3' })
+        );
+    },
+    key: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('path', { d:'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4' })
+        );
+    },
+    trash: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('polyline', { points:'3 6 5 6 21 6' }),
+            React.createElement('path', { d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' })
+        );
+    },
+    plus: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('line', { x1:'12', y1:'5', x2:'12', y2:'19' }),
+            React.createElement('line', { x1:'5', y1:'12', x2:'19', y2:'12' })
+        );
+    },
+    monitor: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('rect', { x:'2', y:'3', width:'20', height:'14', rx:'2', ry:'2' }),
+            React.createElement('line', { x1:'8', y1:'21', x2:'16', y2:'21' }),
+            React.createElement('line', { x1:'12', y1:'17', x2:'12', y2:'21' })
+        );
+    },
+    globe: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('circle', { cx:'12', cy:'12', r:'10' }),
+            React.createElement('line', { x1:'2', y1:'12', x2:'22', y2:'12' }),
+            React.createElement('path', { d:'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z' })
+        );
+    },
+    logOut: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('path', { d:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' }),
+            React.createElement('polyline', { points:'16 17 21 12 16 7' }),
+            React.createElement('line', { x1:'21', y1:'12', x2:'9', y2:'12' })
+        );
+    },
+    shield: function(sz, c) {
+        return React.createElement(Svg, { size:sz, color:c },
+            React.createElement('path', { d:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' })
+        );
+    },
 };
 
-interface IcoProps {
-    name: string;
-    size?: number;
-    color?: string;
-}
-
-function Ico(props: IcoProps): React.ReactElement | null {
-    const fn = ICONS[props.name];
+function Ico(props) {
+    var fn = ICONS[props.name];
     if (!fn) return null;
     return React.createElement('span', {
-        style: { display: 'inline-flex', alignItems: 'center', flexShrink: 0 }
+        style: { display:'inline-flex', alignItems:'center', flexShrink:0 }
     }, fn(props.size || 14, props.color || 'currentColor'));
 }
 
 /* ─── Level config ───────────────────────────────────────────────── */
-const LEVEL_COLOR: Record<string, string> = {
+var LEVEL_COLOR = {
     info:     '#6c63ff',
     warn:     '#f59e0b',
     critical: '#ef4444',
     success:  '#10b981',
 };
 
-const RISK_COLOR: Record<string, string> = {
+var RISK_COLOR = {
     low:      '#10b981',
     medium:   '#f59e0b',
     high:     '#ef4444',
     critical: '#ff2d6b',
 };
 
-/* ─── Mock data ──────────────────────────────────────────────────── */
-interface AuditEvent {
-    id: number;
-    user: string;
-    action: string;
-    resource: string;
-    level: string;
-    ts: string;
-    detail: string;
-}
+/* ─── Data (loaded from API when available) ──────────────────────── */
+var AUDIT_EVENTS = [];
 
-const AUDIT_EVENTS: AuditEvent[] = [];
+var INITIAL_SESSIONS = [];
 
-interface Session {
-    id: number;
-    user: string;
-    ip: string;
-    device: string;
-    location: string;
-    active: boolean;
-    risk: string;
-}
-
-const INITIAL_SESSIONS: Session[] = [];
-
-interface ApiKey {
-    id: number;
-    name: string;
-    prefix: string;
-    scope: string;
-    created: string;
-    calls: number;
-    status: string;
-}
-
-const INITIAL_API_KEYS: ApiKey[] = [];
+var INITIAL_API_KEYS = [];
 
 /* ─── Audit Log ──────────────────────────────────────────────────── */
-interface AuditLogProps {}
-
-export const AuditLog: FC<AuditLogProps> = memo(function AuditLog() {
+export var AuditLog = function AuditLog() {
     useAdaptiveTheme();
     ensureStyles();
-    const [filter, setFilter] = useState<string>('all');
+    var _f = useState('all');
+    var filter    = _f[0];
+    var setFilter = _f[1];
 
-    const filtered = AUDIT_EVENTS.filter((e) => filter === 'all' || e.level === filter);
+    var filtered = AUDIT_EVENTS.filter(function(e) {
+        return filter === 'all' || e.level === filter;
+    });
 
-    return React.createElement('div', { className: 'as2' },
+    return React.createElement('div', { className:'as2' },
 
         /* Filter bar */
         React.createElement('div', {
-                style: { display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }
+                style:{ display:'flex', gap:8, marginBottom:16, alignItems:'center', flexWrap:'wrap' }
             },
-            ['all', 'info', 'warn', 'critical', 'success'].map((l) => {
-                const lc = l !== 'all' ? LEVEL_COLOR[l] : undefined;
-                const isOn = filter === l;
+            ['all','info','warn','critical','success'].map(function(l) {
+                var lc = l !== 'all' ? LEVEL_COLOR[l] : undefined;
+                var isOn = filter === l;
                 return React.createElement('button', {
                     key: l,
                     className: 'as2-pill' + (isOn ? ' on' : ''),
-                    onClick: () => setFilter(l),
-                    style: isOn && lc ? { borderColor: lc, color: lc, background: lc + '15' } : {},
+                    onClick: function() { setFilter(l); },
+                    style: isOn && lc ? { borderColor:lc, color:lc, background:lc+'15' } : {},
                 }, l === 'all' ? 'All' : l.charAt(0).toUpperCase() + l.slice(1));
             }),
             React.createElement('button', {
-                    className: 'as2-btn as2-btn-ghost as2-btn-sm',
-                    style: { marginLeft: 'auto' }
+                    className:'as2-btn as2-btn-ghost as2-btn-sm',
+                    style:{ marginLeft:'auto' }
                 },
-                React.createElement(Ico, { name: 'download', size: 12 }),
+                React.createElement(Ico, { name:'download', size:12 }),
                 ' Export'
             )
         ),
 
         /* Event list */
-        React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        React.createElement('div', { style:{ display:'flex', flexDirection:'column', gap:8 } },
             filtered.length === 0
-                ? React.createElement('div', { style: { textAlign: 'center', padding: '40px', color: T.textMuted, fontSize: 13 } }, 'No events found')
-                : filtered.map((entry, i) => {
-                    const lc = LEVEL_COLOR[entry.level] || T.textDim;
-                    const iconName = (entry.level === 'critical' || entry.level === 'warn') ? 'alert'
+                ? React.createElement('div', { style:{ textAlign:'center', padding:'40px', color:T.textMuted, fontSize:13 } }, 'No events found')
+                : filtered.map(function(entry, i) {
+                    var lc = LEVEL_COLOR[entry.level] || T.textDim;
+                    var iconName = (entry.level === 'critical' || entry.level === 'warn') ? 'alert'
                         : entry.level === 'success' ? 'check' : 'activity';
                     return React.createElement('div', {
                             key: entry.id,
                             className: 'as2-card as2-in',
-                            style: { padding: '14px 16px', animationDelay: (i * 40) + 'ms' } as CSSProperties
+                            style: { padding:'14px 16px', animationDelay: (i*40)+'ms' }
                         },
-                        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 14 } },
+                        React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:14 } },
+                            /* level icon */
                             React.createElement('div', {
-                                style: { width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                                    background: lc + '15', border: '1px solid ' + lc + '30',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                            }, React.createElement(Ico, { name: iconName, size: 16, color: lc })),
+                                style:{ width:38, height:38, borderRadius:10, flexShrink:0,
+                                    background:lc+'15', border:'1px solid '+lc+'30',
+                                    display:'flex', alignItems:'center', justifyContent:'center' }
+                            }, React.createElement(Ico, { name:iconName, size:16, color:lc })),
 
+                            /* grid */
                             React.createElement('div', {
-                                    style: { flex: 1, display: 'grid',
-                                        gridTemplateColumns: '1.4fr 1fr 2fr 90px',
-                                        gap: 12, alignItems: 'center' }
+                                    style:{ flex:1, display:'grid',
+                                        gridTemplateColumns:'1.4fr 1fr 2fr 90px',
+                                        gap:12, alignItems:'center' }
                                 },
+                                /* action + time */
                                 React.createElement('div', null,
                                     React.createElement('div', {
-                                        style: { fontSize: 12, fontWeight: 700, color: T.text,
+                                        style:{ fontSize:12, fontWeight:700, color:T.text,
                                             fontFamily: THEME.fontMono }
                                     }, entry.action),
                                     React.createElement('div', {
-                                        style: { fontSize: 11, color: T.textDim, marginTop: 2 }
+                                        style:{ fontSize:11, color:T.textDim, marginTop:2 }
                                     }, new Date(entry.ts).toLocaleString())
                                 ),
+                                /* user */
                                 React.createElement('div', {
-                                        style: { fontSize: 12, color: T.textDim,
-                                            display: 'flex', alignItems: 'center', gap: 5 }
+                                        style:{ fontSize:12, color:T.textDim,
+                                            display:'flex', alignItems:'center', gap:5 }
                                     },
-                                    React.createElement(Ico, { name: 'users', size: 11, color: T.textMuted }),
+                                    React.createElement(Ico, { name:'users', size:11, color:T.textMuted }),
                                     entry.user
                                 ),
+                                /* detail */
                                 React.createElement('div', {
-                                    style: { fontSize: 11, color: T.textDim,
+                                    style:{ fontSize:11, color:T.textDim,
                                         fontFamily: THEME.fontMono,
-                                        background: T.surfaceHigh, padding: '4px 8px',
-                                        borderRadius: 5, overflow: 'hidden',
-                                        textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+                                        background:T.surfaceHigh, padding:'4px 8px',
+                                        borderRadius:5, overflow:'hidden',
+                                        textOverflow:'ellipsis', whiteSpace:'nowrap' }
                                 }, entry.detail),
-                                React.createElement('div', { style: { textAlign: 'right' } },
+                                /* badge */
+                                React.createElement('div', { style:{ textAlign:'right' } },
                                     React.createElement('span', {
-                                        style: { display: 'inline-flex', alignItems: 'center', gap: 5,
-                                            padding: '3px 9px', borderRadius: 6, fontSize: 10,
-                                            fontWeight: 700, background: lc + '18', color: lc,
-                                            border: '1px solid ' + lc + '30' }
+                                        style:{ display:'inline-flex', alignItems:'center', gap:5,
+                                            padding:'3px 9px', borderRadius:6, fontSize:10,
+                                            fontWeight:700, background:lc+'18', color:lc,
+                                            border:'1px solid '+lc+'30' }
                                     }, entry.level.toUpperCase())
                                 )
                             )
@@ -296,55 +287,56 @@ export const AuditLog: FC<AuditLogProps> = memo(function AuditLog() {
                 })
         )
     );
-});
+};
 
 /* ─── Security Panel ─────────────────────────────────────────────── */
-interface SecurityPanelProps {
-    users?: Array<{ id: string; name: string; riskScore?: number }>;
-}
-
-export const SecurityPanel: FC<SecurityPanelProps> = memo(function SecurityPanel(props) {
+export var SecurityPanel = function SecurityPanel(props) {
     useAdaptiveTheme();
     ensureStyles();
-    const users = props.users || [];
+    var users = props.users || [];
 
-    const [sessions, setSessions] = useState<Session[]>(INITIAL_SESSIONS);
-    const [apiKeys, setApiKeys] = useState<ApiKey[]>(INITIAL_API_KEYS);
+    var _s = useState(INITIAL_SESSIONS);
+    var sessions    = _s[0];
+    var setSessions = _s[1];
 
-    const highRisk = users.filter((u) => (u.riskScore || 0) > 70);
+    var _k = useState(INITIAL_API_KEYS);
+    var apiKeys    = _k[0];
+    var setApiKeys = _k[1];
 
-    const revokeSession    = (id: number) => setSessions((p) => p.filter((s) => s.id !== id));
-    const revokeAll        = () => setSessions([]);
-    const revokeApiKey     = (id: number) => setApiKeys((p) => p.filter((k) => k.id !== id));
+    var highRisk = users.filter(function(u) { return (u.riskScore || 0) > 70; });
 
-    return React.createElement('div', { className: 'as2', style: { display: 'flex', flexDirection: 'column', gap: 24 } },
+    var revokeSession    = function(id) { setSessions(function(p) { return p.filter(function(s) { return s.id !== id; }); }); };
+    var revokeAll        = function()   { setSessions([]); };
+    var revokeApiKey     = function(id) { setApiKeys(function(p)   { return p.filter(function(k) { return k.id !== id; }); }); };
+
+    return React.createElement('div', { className:'as2', style:{ display:'flex', flexDirection:'column', gap:24 } },
 
         /* High-risk alert */
         highRisk.length > 0 && React.createElement('div', {
-                style: { padding: 16, borderRadius: 12,
-                    background: T.danger + '0d', border: '1px solid ' + T.danger + '30' }
+                style:{ padding:16, borderRadius:12,
+                    background:T.danger+'0d', border:'1px solid '+T.danger+'30' }
             },
             React.createElement('div', {
-                    style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }
+                    style:{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }
                 },
-                React.createElement(Ico, { name: 'alert', size: 18, color: T.danger }),
+                React.createElement(Ico, { name:'alert', size:18, color:T.danger }),
                 React.createElement('div', {
-                    style: { fontSize: 14, fontWeight: 700, color: T.danger }
+                    style:{ fontSize:14, fontWeight:700, color:T.danger }
                 }, highRisk.length + ' High-Risk User' + (highRisk.length !== 1 ? 's' : '') + ' Detected')
             ),
-            React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-                highRisk.map((u) => {
+            React.createElement('div', { style:{ display:'flex', flexWrap:'wrap', gap:8 } },
+                highRisk.map(function(u) {
                     return React.createElement('div', {
                             key: u.id,
-                            style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px',
-                                borderRadius: 8, background: T.danger + '15', border: '1px solid ' + T.danger + '30' }
+                            style:{ display:'flex', alignItems:'center', gap:8, padding:'6px 12px',
+                                borderRadius:8, background:T.danger+'15', border:'1px solid '+T.danger+'30' }
                         },
                         React.createElement('span', {
-                            style: { fontSize: 13, fontWeight: 600, color: T.text }
+                            style:{ fontSize:13, fontWeight:600, color:T.text }
                         }, u.name),
                         React.createElement('span', {
-                            style: { fontSize: 11, fontWeight: 700, color: T.danger,
-                                background: T.danger + '20', padding: '2px 6px', borderRadius: 4 }
+                            style:{ fontSize:11, fontWeight:700, color:T.danger,
+                                background:T.danger+'20', padding:'2px 6px', borderRadius:4 }
                         }, 'Risk: ' + u.riskScore)
                     );
                 })
@@ -354,84 +346,85 @@ export const SecurityPanel: FC<SecurityPanelProps> = memo(function SecurityPanel
         /* Active Sessions */
         React.createElement('section', null,
             React.createElement('div', {
-                    style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }
+                    style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }
                 },
                 React.createElement('div', {
-                        style: { display: 'flex', alignItems: 'center', gap: 8,
-                            fontSize: 14, fontWeight: 700, color: T.text }
+                        style:{ display:'flex', alignItems:'center', gap:8,
+                            fontSize:14, fontWeight:700, color:T.text }
                     },
-                    React.createElement(Ico, { name: 'globe', size: 15, color: T.primary }),
+                    React.createElement(Ico, { name:'globe', size:15, color:T.primary }),
                     'Active Sessions',
                     React.createElement('span', {
-                        style: { display: 'inline-flex', padding: '3px 9px', borderRadius: 6,
-                            fontSize: 10, fontWeight: 700,
-                            background: T.primaryDim, color: T.primary }
-                    }, sessions.filter((s) => s.active).length + ' live')
+                        style:{ display:'inline-flex', padding:'3px 9px', borderRadius:6,
+                            fontSize:10, fontWeight:700,
+                            background:T.primaryDim, color:T.primary }
+                    }, sessions.filter(function(s) { return s.active; }).length + ' live')
                 ),
                 React.createElement('button', {
-                        className: 'as2-btn as2-btn-danger as2-btn-sm',
+                        className:'as2-btn as2-btn-danger as2-btn-sm',
                         onClick: revokeAll
                     },
-                    React.createElement(Ico, { name: 'logOut', size: 12, color: '#fff' }),
+                    React.createElement(Ico, { name:'logOut', size:12, color:'#fff' }),
                     ' Revoke All'
                 )
             ),
 
             React.createElement('div', {
-                    style: { border: '1px solid ' + T.border, borderRadius: 12, overflow: 'hidden',
-                        background: T.surface }
+                    style:{ border:'1px solid '+T.border, borderRadius:12, overflow:'hidden',
+                        background:T.surface }
                 },
                 sessions.length === 0
                     ? React.createElement('div', {
-                        style: { padding: 32, textAlign: 'center', color: T.textDim, fontSize: 13 }
+                        style:{ padding:32, textAlign:'center', color:T.textDim, fontSize:13 }
                     }, 'No active sessions')
-                    : sessions.map((s, i) => {
-                        const rc = RISK_COLOR[s.risk] || T.textDim;
+                    : sessions.map(function(s, i) {
+                        var rc = RISK_COLOR[s.risk] || T.textDim;
                         return React.createElement('div', {
                                 key: s.id,
-                                style: { padding: '14px 18px',
-                                    borderBottom: i < sessions.length - 1 ? '1px solid ' + T.border : 'none',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    background: s.risk === 'critical' ? T.danger + '08' : T.surface }
+                                style:{ padding:'14px 18px',
+                                    borderBottom: i < sessions.length-1 ? '1px solid '+T.border : 'none',
+                                    display:'flex', alignItems:'center', justifyContent:'space-between',
+                                    background: s.risk === 'critical' ? T.danger+'08' : T.surface }
                             },
                             React.createElement('div', {
-                                    style: { display: 'flex', alignItems: 'center', gap: 14 }
+                                    style:{ display:'flex', alignItems:'center', gap:14 }
                                 },
+                                /* device icon */
                                 React.createElement('div', {
-                                    style: { width: 40, height: 40, borderRadius: 10,
-                                        background: rc + '15', border: '1px solid ' + rc + '30',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                                }, React.createElement(Ico, { name: 'monitor', size: 18, color: rc })),
+                                    style:{ width:40, height:40, borderRadius:10,
+                                        background:rc+'15', border:'1px solid '+rc+'30',
+                                        display:'flex', alignItems:'center', justifyContent:'center' }
+                                }, React.createElement(Ico, { name:'monitor', size:18, color:rc })),
 
                                 React.createElement('div', null,
                                     React.createElement('div', {
-                                            style: { display: 'flex', alignItems: 'center', gap: 8,
-                                                fontSize: 13, fontWeight: 600, color: T.text }
+                                            style:{ display:'flex', alignItems:'center', gap:8,
+                                                fontSize:13, fontWeight:600, color:T.text }
                                         },
                                         s.user,
                                         s.active && React.createElement('span', {
-                                            className: 'as2-pulse',
-                                            style: { width: 7, height: 7, borderRadius: '50%',
-                                                background: T.success, display: 'inline-block' }
+                                            className:'as2-pulse',
+                                            style:{ width:7, height:7, borderRadius:'50%',
+                                                background:T.success, display:'inline-block' }
                                         }),
                                         React.createElement('span', {
-                                            style: { display: 'inline-flex', padding: '2px 7px',
-                                                borderRadius: 5, fontSize: 9, fontWeight: 700,
-                                                background: rc + '18', color: rc, border: '1px solid ' + rc + '30' }
+                                            style:{ display:'inline-flex', padding:'2px 7px',
+                                                borderRadius:5, fontSize:9, fontWeight:700,
+                                                background:rc+'18', color:rc, border:'1px solid '+rc+'30' }
                                         }, s.risk.toUpperCase())
                                     ),
                                     React.createElement('div', {
-                                        style: { fontSize: 11, color: T.textDim, marginTop: 2,
+                                        style:{ fontSize:11, color:T.textDim, marginTop:2,
                                             fontFamily: THEME.fontMono }
                                     }, s.ip + ' · ' + s.location),
                                     React.createElement('div', {
-                                        style: { fontSize: 11, color: T.textDim }
+                                        style:{ fontSize:11, color:T.textDim }
                                     }, s.device)
                                 )
                             ),
                             React.createElement('button', {
-                                className: 'as2-btn as2-btn-danger as2-btn-sm',
-                                onClick: () => revokeSession(s.id)
+                                className:'as2-btn as2-btn-danger as2-btn-sm',
+                                onClick: function() { revokeSession(s.id); }
                             }, 'Revoke')
                         );
                     })
@@ -441,75 +434,75 @@ export const SecurityPanel: FC<SecurityPanelProps> = memo(function SecurityPanel
         /* API Keys */
         React.createElement('section', null,
             React.createElement('div', {
-                    style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }
+                    style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }
                 },
                 React.createElement('div', {
-                        style: { display: 'flex', alignItems: 'center', gap: 8,
-                            fontSize: 14, fontWeight: 700, color: T.text }
+                        style:{ display:'flex', alignItems:'center', gap:8,
+                            fontSize:14, fontWeight:700, color:T.text }
                     },
-                    React.createElement(Ico, { name: 'key', size: 15, color: T.warning }),
+                    React.createElement(Ico, { name:'key', size:15, color:T.warning }),
                     'API Keys'
                 ),
-                React.createElement('button', { className: 'as2-btn as2-btn-ghost as2-btn-sm' },
-                    React.createElement(Ico, { name: 'plus', size: 13 }),
+                React.createElement('button', { className:'as2-btn as2-btn-ghost as2-btn-sm' },
+                    React.createElement(Ico, { name:'plus', size:13 }),
                     ' New Key'
                 )
             ),
 
-            React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-                apiKeys.map((key) => {
+            React.createElement('div', { style:{ display:'flex', flexDirection:'column', gap:10 } },
+                apiKeys.map(function(key) {
                     return React.createElement('div', {
                             key: key.id,
                             className: 'as2-card',
-                            style: { display: 'flex', alignItems: 'center',
-                                justifyContent: 'space-between', padding: '14px 16px' }
+                            style:{ display:'flex', alignItems:'center',
+                                justifyContent:'space-between', padding:'14px 16px' }
                         },
                         React.createElement('div', {
-                                style: { display: 'flex', alignItems: 'center', gap: 14 }
+                                style:{ display:'flex', alignItems:'center', gap:14 }
                             },
                             React.createElement('div', {
-                                style: { width: 36, height: 36, borderRadius: 9,
-                                    background: T.warningDim, border: '1px solid ' + T.warning + '30',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                            }, React.createElement(Ico, { name: 'key', size: 16, color: T.warning })),
+                                style:{ width:36, height:36, borderRadius:9,
+                                    background:T.warningDim, border:'1px solid '+T.warning+'30',
+                                    display:'flex', alignItems:'center', justifyContent:'center' }
+                            }, React.createElement(Ico, { name:'key', size:16, color:T.warning })),
 
                             React.createElement('div', null,
                                 React.createElement('div', {
-                                    style: { fontSize: 13, fontWeight: 600, color: T.text }
+                                    style:{ fontSize:13, fontWeight:600, color:T.text }
                                 }, key.name),
                                 React.createElement('div', {
-                                        style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }
+                                        style:{ display:'flex', alignItems:'center', gap:8, marginTop:3 }
                                     },
                                     React.createElement('code', {
-                                        style: { fontSize: 11, color: T.textDim,
+                                        style:{ fontSize:11, color:T.textDim,
                                             fontFamily: THEME.fontMono,
-                                            background: T.surfaceHigh, padding: '2px 6px', borderRadius: 4 }
+                                            background:T.surfaceHigh, padding:'2px 6px', borderRadius:4 }
                                     }, key.prefix + '............'),
                                     React.createElement('span', {
-                                        style: { fontSize: 10, color: T.textDim }
+                                        style:{ fontSize:10, color:T.textDim }
                                     }, key.scope)
                                 )
                             )
                         ),
 
                         React.createElement('div', {
-                                style: { display: 'flex', alignItems: 'center', gap: 12 }
+                                style:{ display:'flex', alignItems:'center', gap:12 }
                             },
-                            React.createElement('div', { style: { textAlign: 'right' } },
+                            React.createElement('div', { style:{ textAlign:'right' } },
                                 React.createElement('div', {
-                                    style: { fontSize: 12, fontWeight: 700, color: T.text,
+                                    style:{ fontSize:12, fontWeight:700, color:T.text,
                                         fontFamily: THEME.fontMono }
                                 }, key.calls.toLocaleString()),
                                 React.createElement('div', {
-                                    style: { fontSize: 10, color: T.textDim }
+                                    style:{ fontSize:10, color:T.textDim }
                                 }, 'total calls')
                             ),
                             React.createElement('button', {
-                                className: 'as2-btn as2-btn-ghost as2-btn-sm',
+                                className:'as2-btn as2-btn-ghost as2-btn-sm',
                                 'aria-label': 'Revoke ' + key.name,
-                                onClick: () => revokeApiKey(key.id),
-                                style: { padding: '5px 8px' }
-                            }, React.createElement(Ico, { name: 'trash', size: 13, color: T.danger }))
+                                onClick: function() { revokeApiKey(key.id); },
+                                style:{ padding:'5px 8px' }
+                            }, React.createElement(Ico, { name:'trash', size:13, color:T.danger }))
                         )
                     );
                 })
@@ -518,19 +511,19 @@ export const SecurityPanel: FC<SecurityPanelProps> = memo(function SecurityPanel
 
         /* Security overview footer */
         React.createElement('div', {
-                style: { padding: '16px 20px', borderRadius: 12,
-                    background: T.surfaceMid, border: '1px solid ' + T.border,
-                    display: 'flex', alignItems: 'center', gap: 12 }
+                style:{ padding:'16px 20px', borderRadius:12,
+                    background:T.surfaceMid, border:'1px solid '+T.border,
+                    display:'flex', alignItems:'center', gap:12 }
             },
-            React.createElement(Ico, { name: 'shield', size: 16, color: T.primary }),
+            React.createElement(Ico, { name:'shield', size:16, color:T.primary }),
             React.createElement('div', null,
                 React.createElement('div', {
-                    style: { fontSize: 13, fontWeight: 600, color: T.text }
+                    style:{ fontSize:13, fontWeight:600, color:T.text }
                 }, 'Security Status'),
                 React.createElement('div', {
-                    style: { fontSize: 11, color: T.textDim, marginTop: 2 }
-                }, sessions.filter((s) => s.risk === 'critical').length + ' critical sessions · ' + apiKeys.length + ' active API keys · ' + highRisk.length + ' high-risk users')
+                    style:{ fontSize:11, color:T.textDim, marginTop:2 }
+                }, sessions.filter(function(s) { return s.risk === 'critical'; }).length + ' critical sessions · ' + apiKeys.length + ' active API keys · ' + highRisk.length + ' high-risk users')
             )
         )
     );
-});
+};

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import React, { useState, useEffect, useRef, useCallback, FC } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -11,45 +10,22 @@ import {
     AlertTriangle, AlertCircle, TrendingUp, TrendingDown
 } from 'lucide-react';
 
-// Types
-interface PoolMetrics {
-    active_connections: number;
-    idle_connections: number;
-    waiting_requests: number;
-    total_created: number;
-    total_destroyed: number;
-    max_connections: number;
-    utilization_percent: number;
-    avg_connect_time: number;
-    avg_query_time: number;
-    max_idle_time: number;
-    dead_connections: number;
-    config?: {
-        min: number;
-        max: number;
-        idleTimeout: number;
-    };
-}
+/* ── Styles ───────────────────────────────────────────────────────────────── */
+const Styles = () => (
+    <style>{`
+        @keyframes pmdFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pmdSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .pmd-card { background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 12px; padding: 20px; animation: pmdFade 0.3s ease; }
+        .pmd-metric { display: flex; align-items: center; gap: 12px; padding: 12px; background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 10px; }
+        .pmd-spin { animation: pmdSpin 1s linear infinite; }
+        .pmd-slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: ${THEME.grid}; outline: none; cursor: pointer; }
+        .pmd-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${THEME.primary}; cursor: pointer; }
+        .pmd-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${THEME.primary}; cursor: pointer; border: none; }
+    `}</style>
+);
 
-interface HistoryEntry {
-    timestamp: string;
-    active: number;
-    idle: number;
-    waiting: number;
-    utilization: number;
-}
-
-interface MetricCardProps {
-    icon: any;
-    label: string;
-    value: string;
-    unit?: string;
-    sub?: string;
-    color?: string;
-    warn?: boolean;
-}
-
-const fmt = (n: number | null | undefined) => {
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const fmt = (n) => {
     if (n === null || n === undefined) return '—';
     const num = Number(n);
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -57,47 +33,65 @@ const fmt = (n: number | null | undefined) => {
     return num.toFixed(0);
 };
 
-const fmtMs = (ms: number | null | undefined) => {
+const fmtMs = (ms) => {
     if (ms === null || ms === undefined) return '—';
     const m = Number(ms);
     if (m < 1000) return `${m.toFixed(0)}ms`;
     return `${(m / 1000).toFixed(2)}s`;
 };
 
-const MetricCard: FC<MetricCardProps> = ({ icon: Icon, label, value, unit = '', sub, color = THEME.primary, warn }) => (
+/* ── Metric Card ──────────────────────────────────────────────────────────── */
+const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.primary, warn }) => (
     <div
-        className={`flex items-center gap-3 p-3 border rounded-xl transition-all
-            ${warn ? `border-vigil-amber/40 bg-vigil-amber/8` : `border-vigil-accent/20 bg-vigil-surface`}
-        `}
+        className="pmd-metric"
+        style={{
+            borderColor: warn ? `${THEME.warning}40` : THEME.grid,
+            background: warn ? `${THEME.warning}08` : THEME.surface,
+        }}
     >
         <div
-            className="w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0"
             style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
                 background: `${color}15`,
-                borderColor: `${color}40`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                border: `1px solid ${color}40`,
             }}
         >
-            <Icon size={18} style={{ color }} />
+            <Icon size={18} color={color} />
         </div>
-        <div className="flex-1">
-            <div className="text-lg font-bold text-vigil-text leading-none">
+        <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}>
                 {value}
-                {unit && <span className="text-xs ml-1 font-semibold text-vigil-muted">{unit}</span>}
+                {unit && <span style={{ fontSize: '12px', marginLeft: '4px', fontWeight: 600, color: THEME.textMuted }}>{unit}</span>}
             </div>
-            <div className="text-xs font-semibold text-vigil-muted mt-1 uppercase tracking-wider">
+            <div style={{ fontSize: '11px', color: THEME.textMuted, marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 {label}
             </div>
-            {sub && <div className="text-xs mt-0.5" style={{ color: warn ? THEME.warning : THEME.textDim }}>{sub}</div>}
+            {sub && <div style={{ fontSize: '11px', color: warn ? THEME.warning : THEME.textDim, marginTop: 2 }}>{sub}</div>}
         </div>
     </div>
 );
 
-const ChartTip: FC<any> = ({ active, payload, label }) => {
+/* ── Custom Chart Tooltip ─────────────────────────────────────────────────── */
+const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div className="bg-vigil-surface border border-vigil-accent/20 rounded-lg p-2 text-xs">
-            <div className="text-vigil-muted mb-1">{label}</div>
-            {payload.map((p: any) => (
+        <div
+            style={{
+                background: THEME.surface,
+                border: `1px solid ${THEME.grid}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            <div style={{ color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
+            {payload.map(p => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -106,20 +100,18 @@ const ChartTip: FC<any> = ({ active, payload, label }) => {
     );
 };
 
-interface PoolConfigSectionProps {
-    config?: { min: number; max: number; idleTimeout: number };
-    onUpdate: () => void;
-}
-
-const PoolConfigSection: FC<PoolConfigSectionProps> = ({ config, onUpdate }) => {
-    const [localConfig, setLocalConfig] = useState(config || { min: 5, max: 20, idleTimeout: 30 });
+/* ═══════════════════════════════════════════════════════════════════════════
+   POOL CONFIGURATION SECTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+const PoolConfigSection = ({ config, onUpdate }) => {
+    const [localConfig, setLocalConfig] = useState(config || { min: 0, max: 0, idleTimeout: 0 });
     const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
-        setLocalConfig(config || { min: 5, max: 20, idleTimeout: 30 });
+        setLocalConfig(config || { min: 0, max: 0, idleTimeout: 0 });
     }, [config]);
 
-    const handleChange = (field: string, value: number) => {
+    const handleChange = (field, value) => {
         const newConfig = { ...localConfig, [field]: value };
         setLocalConfig(newConfig);
         setUpdated(true);
@@ -127,26 +119,29 @@ const PoolConfigSection: FC<PoolConfigSectionProps> = ({ config, onUpdate }) => 
 
     const handleApply = async () => {
         try {
+            // In real implementation, send to API
+            // await postData('/api/pool/config', localConfig);
             setUpdated(false);
+            // Show success message
         } catch (err) {
             console.error('Failed to update config:', err);
         }
     };
 
     return (
-        <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5">
-            <div className="flex items-center gap-2.5 mb-4">
-                <Settings size={18} className="text-vigil-cyan" />
-                <h3 className="text-sm font-bold text-vigil-text m-0">
+        <div className="pmd-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <Settings size={18} color={THEME.primary} />
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0 }}>
                     Pool Configuration
                 </h3>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                 {/* Min Size */}
                 <div>
-                    <label className="block text-xs font-semibold text-vigil-muted mb-2 uppercase">
-                        Min Connections: <span className="text-vigil-cyan font-bold">{localConfig.min}</span>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginBottom: '8px', display: 'block' }}>
+                        Min Connections: <span style={{ color: THEME.primary, fontWeight: 700 }}>{localConfig.min}</span>
                     </label>
                     <input
                         type="range"
@@ -154,14 +149,15 @@ const PoolConfigSection: FC<PoolConfigSectionProps> = ({ config, onUpdate }) => 
                         max="50"
                         value={localConfig.min}
                         onChange={(e) => handleChange('min', Number(e.target.value))}
-                        className="w-full"
+                        className="pmd-slider"
+                        style={{ width: '100%' }}
                     />
                 </div>
 
                 {/* Max Size */}
                 <div>
-                    <label className="block text-xs font-semibold text-vigil-muted mb-2 uppercase">
-                        Max Connections: <span className="text-vigil-cyan font-bold">{localConfig.max}</span>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginBottom: '8px', display: 'block' }}>
+                        Max Connections: <span style={{ color: THEME.primary, fontWeight: 700 }}>{localConfig.max}</span>
                     </label>
                     <input
                         type="range"
@@ -169,14 +165,15 @@ const PoolConfigSection: FC<PoolConfigSectionProps> = ({ config, onUpdate }) => 
                         max="100"
                         value={localConfig.max}
                         onChange={(e) => handleChange('max', Number(e.target.value))}
-                        className="w-full"
+                        className="pmd-slider"
+                        style={{ width: '100%' }}
                     />
                 </div>
 
                 {/* Idle Timeout */}
                 <div>
-                    <label className="block text-xs font-semibold text-vigil-muted mb-2 uppercase">
-                        Idle Timeout (sec): <span className="text-vigil-cyan font-bold">{localConfig.idleTimeout}</span>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginBottom: '8px', display: 'block' }}>
+                        Idle Timeout (sec): <span style={{ color: THEME.primary, fontWeight: 700 }}>{localConfig.idleTimeout}</span>
                     </label>
                     <input
                         type="range"
@@ -185,22 +182,57 @@ const PoolConfigSection: FC<PoolConfigSectionProps> = ({ config, onUpdate }) => 
                         step="10"
                         value={localConfig.idleTimeout}
                         onChange={(e) => handleChange('idleTimeout', Number(e.target.value))}
-                        className="w-full"
+                        className="pmd-slider"
+                        style={{ width: '100%' }}
                     />
                 </div>
             </div>
 
             {updated && (
-                <div className="flex justify-end gap-2.5 pt-4 border-t border-vigil-accent/10">
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                     <button
-                        onClick={() => setLocalConfig(config || { min: 5, max: 20, idleTimeout: 30 })}
-                        className="px-4 py-2 rounded-lg border border-vigil-accent/20 text-vigil-muted text-xs font-semibold hover:border-vigil-accent/40 transition-colors"
+                        onClick={() => setLocalConfig(config || { min: 0, max: 0, idleTimeout: 0 })}
+                        style={{
+                            padding: '8px 16px',
+                            background: THEME.glassLight,
+                            color: THEME.textMain,
+                            border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            fontFamily: THEME.fontBody,
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.borderColor = THEME.borderHot;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.borderColor = THEME.border;
+                        }}
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleApply}
-                        className="px-4 py-2 rounded-lg bg-vigil-cyan/20 border border-vigil-cyan/40 text-vigil-cyan text-xs font-semibold hover:bg-vigil-cyan/30 transition-colors"
+                        style={{
+                            padding: '8px 16px',
+                            background: THEME.primary,
+                            color: THEME.void,
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            fontFamily: THEME.fontBody,
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.boxShadow = `0 0 12px ${THEME.primary}40`;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.boxShadow = 'none';
+                        }}
                     >
                         Apply
                     </button>
@@ -210,16 +242,20 @@ const PoolConfigSection: FC<PoolConfigSectionProps> = ({ config, onUpdate }) => 
     );
 };
 
-const PoolMetricsDashboard: FC = () => {
+/* ═══════════════════════════════════════════════════════════════════════════
+   POOL METRICS DASHBOARD (Main Component)
+   ═══════════════════════════════════════════════════════════════════════════ */
+export default function PoolMetricsDashboard() {
     useAdaptiveTheme();
-    const [metrics, setMetrics] = useState<PoolMetrics | null>(null);
-    const [history, setHistory] = useState<HistoryEntry[]>([]);
+    const [metrics, setMetrics] = useState(null);
+    const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+    const [error, setError] = useState(null);
+    const [lastUpdate, setLastUpdate] = useState(null);
     const [autoRefresh, setAutoRefresh] = useState(10);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const intervalRef = useRef(null);
 
+    /* ── Load metrics ────────────────────────────────────────────────────── */
     const loadMetrics = useCallback(async () => {
         try {
             const data = await fetchData('/api/pool/metrics');
@@ -227,6 +263,7 @@ const PoolMetricsDashboard: FC = () => {
             setLastUpdate(new Date());
             setError(null);
 
+            // Add to history (keep last 20 points)
             setHistory(prev => [
                 ...prev,
                 {
@@ -237,7 +274,7 @@ const PoolMetricsDashboard: FC = () => {
                     utilization: data.utilization_percent || 0,
                 },
             ].slice(-20));
-        } catch (err: any) {
+        } catch (err) {
             console.error('Failed to load pool metrics:', err);
             setError(err.message || 'Failed to load pool metrics');
         } finally {
@@ -245,6 +282,7 @@ const PoolMetricsDashboard: FC = () => {
         }
     }, []);
 
+    /* ── Initial load and auto-refresh ───────────────────────────────────── */
     useEffect(() => {
         loadMetrics();
     }, [loadMetrics]);
@@ -260,40 +298,46 @@ const PoolMetricsDashboard: FC = () => {
 
     if (loading && !metrics) {
         return (
-            <div className="p-5 text-center text-vigil-muted">
-                <div className="inline-block mb-2.5" style={{ animation: 'spin 1s linear infinite' }}>
+            <div style={{ padding: '20px', textAlign: 'center', color: THEME.textMuted }}>
+                <div className="pmd-spin" style={{ display: 'inline-block', marginBottom: '10px' }}>
                     ⟳
                 </div>
-                <div className="text-sm">Loading pool metrics...</div>
+                <div style={{ fontSize: '14px' }}>Loading pool metrics...</div>
             </div>
         );
     }
 
     return (
-        <div className="p-5">
-            <style>{`
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            `}</style>
+        <div style={{ padding: '20px' }}>
+            <Styles />
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <div>
-                    <h2 className="text-xl font-bold text-vigil-text m-0 mb-1">
+                    <h2 style={{ fontSize: '20px', fontWeight: 800, color: THEME.textMain, margin: 0, marginBottom: '4px' }}>
                         Connection Pool Metrics
                     </h2>
-                    <p className="text-xs text-vigil-muted m-0">
+                    <p style={{ fontSize: '13px', color: THEME.textMuted, margin: 0 }}>
                         {lastUpdate && `Last updated: ${lastUpdate.toLocaleTimeString()}`}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div>
-                        <label className="text-xs font-semibold text-vigil-muted mr-2">
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginRight: '8px' }}>
                             Auto-refresh:
                         </label>
                         <select
                             value={autoRefresh}
                             onChange={(e) => setAutoRefresh(Number(e.target.value))}
-                            className="px-2.5 py-1.5 bg-vigil-surface border border-vigil-accent/10 rounded-lg text-vigil-text text-xs font-semibold"
+                            style={{
+                                padding: '6px 10px',
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.border}`,
+                                borderRadius: '6px',
+                                color: THEME.textMain,
+                                fontSize: '12px',
+                                fontFamily: THEME.fontBody,
+                            }}
                         >
                             <option value="0">Off</option>
                             <option value="5">5s</option>
@@ -303,7 +347,27 @@ const PoolMetricsDashboard: FC = () => {
                     </div>
                     <button
                         onClick={loadMetrics}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-vigil-cyan/20 border border-vigil-cyan/40 text-vigil-cyan text-xs font-semibold cursor-pointer hover:bg-vigil-cyan/30 transition-colors"
+                        style={{
+                            padding: '8px 12px',
+                            background: THEME.primary,
+                            color: THEME.void,
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            transition: 'all 0.2s ease',
+                            fontFamily: THEME.fontBody,
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.boxShadow = `0 0 12px ${THEME.primary}40`;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.boxShadow = 'none';
+                        }}
                     >
                         <RefreshCw size={14} />
                         Refresh
@@ -313,13 +377,24 @@ const PoolMetricsDashboard: FC = () => {
 
             {/* Error Banner */}
             {error && (
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-vigil-rose/10 border border-vigil-rose/30 mb-5">
-                    <AlertTriangle size={16} className="text-vigil-rose flex-shrink-0 mt-0.5" />
+                <div
+                    style={{
+                        background: `${THEME.danger}15`,
+                        border: `1px solid ${THEME.danger}40`,
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px',
+                    }}
+                >
+                    <AlertTriangle size={16} color={THEME.danger} style={{ marginTop: '2px', flexShrink: 0 }} />
                     <div>
-                        <div className="text-xs font-semibold text-vigil-rose">
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: THEME.danger }}>
                             Error
                         </div>
-                        <div className="text-xs text-vigil-muted">
+                        <div style={{ fontSize: '12px', color: THEME.textMuted }}>
                             {error}
                         </div>
                     </div>
@@ -330,7 +405,7 @@ const PoolMetricsDashboard: FC = () => {
             {metrics && (
                 <>
                     {/* Top Stats */}
-                    <div className="grid grid-cols-auto-fit gap-3 mb-5">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '20px' }}>
                         <MetricCard
                             icon={Activity}
                             label="Active Connections"
@@ -361,50 +436,51 @@ const PoolMetricsDashboard: FC = () => {
                     </div>
 
                     {/* Utilization */}
-                    <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                        <div className="flex items-center justify-between mb-3">
+                    <div className="pmd-card" style={{ marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                             <div>
-                                <h3 className="text-sm font-bold text-vigil-text m-0 mb-1">
+                                <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0, marginBottom: '4px' }}>
                                     Pool Utilization
                                 </h3>
-                                <div className="text-xs text-vigil-muted">
+                                <div style={{ fontSize: '13px', color: THEME.textMuted }}>
                                     {(metrics.utilization_percent || 0).toFixed(1)}% of {metrics.max_connections} connections in use
                                 </div>
                             </div>
                         </div>
-                        <div className="w-full h-2 bg-vigil-accent/20 rounded-full overflow-hidden">
+                        <div style={{ width: '100%', height: '8px', background: THEME.grid, borderRadius: '4px', overflow: 'hidden' }}>
                             <div
-                                className="h-full transition-all duration-300"
                                 style={{
                                     width: `${Math.min(metrics.utilization_percent || 0, 100)}%`,
+                                    height: '100%',
                                     background: metrics.utilization_percent > 80 ? THEME.danger : THEME.primary,
+                                    transition: 'all 0.3s ease',
                                 }}
                             />
                         </div>
                     </div>
 
                     {/* Lifecycle Metrics */}
-                    <div className="grid grid-cols-2 gap-5 mb-5">
-                        <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5">
-                            <h3 className="text-sm font-bold text-vigil-text m-0 mb-4">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                        <div className="pmd-card">
+                            <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0, marginBottom: '16px' }}>
                                 Connection Lifecycle
                             </h3>
-                            <div className="flex flex-col gap-3">
-                                <div className="flex justify-between items-center pb-3 border-b border-vigil-accent/10">
-                                    <span className="text-xs text-vigil-muted">Avg Connect Time</span>
-                                    <span className="text-sm font-bold text-vigil-text">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: `1px solid ${THEME.grid}` }}>
+                                    <span style={{ fontSize: '13px', color: THEME.textMuted }}>Avg Connect Time</span>
+                                    <span style={{ fontSize: '14px', fontWeight: 700, color: THEME.textMain }}>
                                         {fmtMs(metrics.avg_connect_time)}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center pb-3 border-b border-vigil-accent/10">
-                                    <span className="text-xs text-vigil-muted">Avg Query Time</span>
-                                    <span className="text-sm font-bold text-vigil-text">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: `1px solid ${THEME.grid}` }}>
+                                    <span style={{ fontSize: '13px', color: THEME.textMuted }}>Avg Query Time</span>
+                                    <span style={{ fontSize: '14px', fontWeight: 700, color: THEME.textMain }}>
                                         {fmtMs(metrics.avg_query_time)}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-xs text-vigil-muted">Max Idle Time</span>
-                                    <span className="text-sm font-bold text-vigil-text">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '13px', color: THEME.textMuted }}>Max Idle Time</span>
+                                    <span style={{ fontSize: '14px', fontWeight: 700, color: THEME.textMain }}>
                                         {fmtMs(metrics.max_idle_time)}
                                     </span>
                                 </div>
@@ -412,39 +488,42 @@ const PoolMetricsDashboard: FC = () => {
                         </div>
 
                         {/* Dead Connection Detection */}
-                        <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5">
-                            <h3 className="text-sm font-bold text-vigil-text m-0 mb-4">
+                        <div className="pmd-card">
+                            <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0, marginBottom: '16px' }}>
                                 Connection Health
                             </h3>
-                            <div className="flex flex-col gap-3">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <div
-                                    className={`flex items-center gap-2.5 p-3 rounded-lg border
-                                        ${metrics.dead_connections > 0
-                                            ? `bg-vigil-amber/10 border-vigil-amber/30`
-                                            : `bg-vigil-emerald/10 border-vigil-emerald/30`
-                                        }
-                                    `}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        padding: '12px',
+                                        background: metrics.dead_connections > 0 ? `${THEME.warning}15` : `${THEME.success}15`,
+                                        border: metrics.dead_connections > 0 ? `1px solid ${THEME.warning}40` : `1px solid ${THEME.success}40`,
+                                        borderRadius: '8px',
+                                    }}
                                 >
                                     {metrics.dead_connections > 0 ? (
-                                        <AlertCircle size={18} className="text-vigil-amber" />
+                                        <AlertCircle size={18} color={THEME.warning} />
                                     ) : (
-                                        <CheckIcon size={18} className="text-vigil-emerald" />
+                                        <CheckIcon size={18} color={THEME.success} />
                                     )}
                                     <div>
-                                        <div className="text-xs font-semibold text-vigil-text">
+                                        <div style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMain }}>
                                             Dead Connections
                                         </div>
-                                        <div
-                                            className="text-sm font-bold mt-0.5"
-                                            style={{
-                                                color: metrics.dead_connections > 0 ? THEME.warning : THEME.success,
-                                            }}
-                                        >
+                                        <div style={{
+                                            fontSize: '14px',
+                                            fontWeight: 700,
+                                            color: metrics.dead_connections > 0 ? THEME.warning : THEME.success,
+                                            marginTop: '2px',
+                                        }}>
                                             {fmt(metrics.dead_connections)}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-xs text-vigil-muted leading-relaxed">
+                                <div style={{ fontSize: '12px', color: THEME.textMuted, lineHeight: '1.4' }}>
                                     {metrics.dead_connections > 0
                                         ? 'Some connections have been detected as dead and will be recycled.'
                                         : 'All connections are healthy. No dead connections detected.'}
@@ -455,8 +534,8 @@ const PoolMetricsDashboard: FC = () => {
 
                     {/* History Chart */}
                     {history.length > 1 && (
-                        <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                            <h3 className="text-sm font-bold text-vigil-text m-0 mb-4">
+                        <div className="pmd-card" style={{ marginBottom: '20px' }}>
+                            <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0, marginBottom: '16px' }}>
                                 Connection History
                             </h3>
                             <ResponsiveContainer width="100%" height={250}>
@@ -490,28 +569,11 @@ const PoolMetricsDashboard: FC = () => {
             )}
         </div>
     );
-};
-
-/* ── Check Icon (simple SVG) ──────────────────────────────────────────────── */
-interface CheckIconProps {
-    size?: number;
-    className?: string;
 }
 
-const CheckIcon: FC<CheckIconProps> = ({ size = 24, className }) => (
-    <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-    >
+/* ── Check Icon (simple SVG) ──────────────────────────────────────────────── */
+const CheckIcon = ({ size = 24, color = '#00ff88' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="20 6 9 17 4 12"></polyline>
     </svg>
 );
-
-export default PoolMetricsDashboard;

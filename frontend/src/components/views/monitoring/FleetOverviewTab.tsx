@@ -1,6 +1,5 @@
-// @ts-nocheck
 /**
- * FleetOverviewTab.tsx
+ * FleetOverviewTab.jsx
  * Multi-database health dashboard showing all connected databases in a card grid.
  *
  * Features:
@@ -13,8 +12,8 @@
  * - Glass-effect cards with hover glow animation
  */
 
-import React, { useState, useEffect, useCallback, useRef, FC } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, postData } from '../../../utils/api';
 import { useConnection } from '../../../context/ConnectionContext';
 import { useNavigation } from '../../../context/NavigationContext';
@@ -27,49 +26,17 @@ import {
     Gauge, TrendingUp, TrendingDown, Cpu, BarChart3
 } from 'lucide-react';
 
-// Types
-interface Connection {
-    id: string;
-    name: string;
-    host: string;
-    port: number;
-    database: string;
-    username: string;
-    dbType?: string;
-}
-
-interface HealthData {
-    id: string;
-    status: 'ok' | 'degraded' | 'error';
-    latencyMs?: number;
-    lastChecked?: string;
-}
-
-interface Stats {
-    total: number;
-    healthy: number;
-    degraded: number;
-    down: number;
-}
-
-interface DatabaseCardProps {
-    connection: Connection;
-    health?: HealthData;
-    isActive: boolean;
-    onSwitch: (connId: string) => void;
-}
-
-const FleetOverviewTab: FC = () => {
+const FleetOverviewTab = () => {
     useAdaptiveTheme();
 
     const { switchConnection, connections, activeConnectionId } = useConnection();
     const { goToTab } = useNavigation();
 
-    const [healthData, setHealthData] = useState<HealthData[]>([]);
+    const [healthData, setHealthData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-    const refreshTimer = useRef<NodeJS.Timeout | null>(null);
+    const refreshTimer = useRef(null);
 
     // Fetch health data from all connections
     const fetchHealthData = useCallback(async () => {
@@ -77,7 +44,7 @@ const FleetOverviewTab: FC = () => {
             setError(null);
             const data = await fetchData('/api/connections/health');
             setHealthData(Array.isArray(data) ? data : []);
-        } catch (err: any) {
+        } catch (err) {
             console.error('[FleetOverviewTab] Failed to fetch health:', err);
             setError(err?.message || 'Failed to fetch connection health data');
         }
@@ -107,7 +74,7 @@ const FleetOverviewTab: FC = () => {
     }, [fetchHealthData]);
 
     // Handle connection switch
-    const handleSwitchConnection = useCallback(async (connId: string) => {
+    const handleSwitchConnection = useCallback(async (connId) => {
         try {
             await switchConnection(connId);
             // Navigate to overview tab after switching
@@ -118,7 +85,7 @@ const FleetOverviewTab: FC = () => {
     }, [switchConnection, goToTab]);
 
     // Calculate aggregate stats
-    const stats: Stats = {
+    const stats = {
         total: connections.length,
         healthy: healthData.filter(h => h.status === 'ok').length,
         degraded: healthData.filter(h => h.status === 'degraded').length,
@@ -128,22 +95,8 @@ const FleetOverviewTab: FC = () => {
     // Show empty state if no connections
     if (!loading && connections.length === 0) {
         return (
-            <div className="p-6 min-h-screen bg-vigil-bg">
-                <style>{`
-                    @keyframes rotation {
-                        from { transform: rotate(0deg); }
-                        to { transform: rotate(360deg); }
-                    }
-                    @keyframes cardGlow {
-                        0%, 100% { box-shadow: 0 0 0 rgba(0, 212, 255, 0); }
-                        50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 20px rgba(0, 212, 255, 0.05); }
-                    }
-                    @keyframes fadeIn {
-                        from { opacity: 0; transform: translateY(10px); }
-                        to { opacity: 1; transform: translateY(0); }
-                    }
-                    .fleet-card { animation: fadeIn 0.4s ease-out both; }
-                `}</style>
+            <div style={styles.container}>
+                <OvStyles />
                 <NoConnectionBanner
                     title="No Databases Connected"
                     description="Add your first database connection to view the fleet overview and monitor multiple databases."
@@ -154,39 +107,22 @@ const FleetOverviewTab: FC = () => {
     }
 
     return (
-        <div className="p-6 min-h-screen bg-vigil-bg">
-            <style>{`
-                @keyframes rotation {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-                @keyframes cardGlow {
-                    0%, 100% { box-shadow: 0 0 0 rgba(0, 212, 255, 0); }
-                    50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 20px rgba(0, 212, 255, 0.05); }
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .fleet-card { animation: fadeIn 0.4s ease-out both; }
-                .fleet-card:nth-child(1) { animation-delay: 0.0s; }
-                .fleet-card:nth-child(2) { animation-delay: 0.07s; }
-                .fleet-card:nth-child(3) { animation-delay: 0.14s; }
-                .fleet-card:nth-child(4) { animation-delay: 0.21s; }
-                .fleet-card:nth-child(5) { animation-delay: 0.28s; }
-                .fleet-card:nth-child(6) { animation-delay: 0.35s; }
-            `}</style>
+        <div style={styles.container}>
+            <OvStyles />
 
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+            <div style={styles.header}>
                 <div>
-                    <h2 className="text-2xl font-bold text-vigil-text mb-1.5">Fleet Overview</h2>
-                    <p className="text-sm text-vigil-muted">Monitor all connected databases</p>
+                    <h2 style={styles.title}>Fleet Overview</h2>
+                    <p style={styles.subtitle}>Monitor all connected databases</p>
                 </div>
                 <button
                     onClick={handleManualRefresh}
                     disabled={refreshing}
-                    className="flex items-center gap-2 px-4.5 py-2.5 rounded-lg border border-vigil-accent/20 bg-vigil-glass hover:border-vigil-accent/40 text-vigil-accent text-sm font-semibold cursor-pointer transition-all duration-200"
+                    style={{
+                        ...styles.refreshButton,
+                        opacity: refreshing ? 0.6 : 1,
+                    }}
                     title="Refresh connection health"
                 >
                     <RefreshCw
@@ -200,28 +136,28 @@ const FleetOverviewTab: FC = () => {
             </div>
 
             {/* Aggregate Stats Bar */}
-            <div className="grid grid-cols-4 gap-4 mb-8 p-5 rounded-xl bg-vigil-surface border border-vigil-accent/10 backdrop-blur-lg">
-                <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">Total Databases</span>
-                    <span className="text-2xl font-bold text-vigil-text">
+            <div style={styles.statsBar}>
+                <div style={styles.statItem}>
+                    <span style={styles.statLabel}>Total Databases</span>
+                    <span style={{ ...styles.statValue, color: THEME.textMain }}>
                         {stats.total}
                     </span>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">Healthy</span>
-                    <span className="text-2xl font-bold text-vigil-emerald">
+                <div style={styles.statItem}>
+                    <span style={styles.statLabel}>Healthy</span>
+                    <span style={{ ...styles.statValue, color: THEME.success }}>
                         {stats.healthy}
                     </span>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">Degraded</span>
-                    <span className="text-2xl font-bold text-vigil-amber">
+                <div style={styles.statItem}>
+                    <span style={styles.statLabel}>Degraded</span>
+                    <span style={{ ...styles.statValue, color: THEME.warning }}>
                         {stats.degraded}
                     </span>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">Down</span>
-                    <span className="text-2xl font-bold text-vigil-rose">
+                <div style={styles.statItem}>
+                    <span style={styles.statLabel}>Down</span>
+                    <span style={{ ...styles.statValue, color: THEME.danger }}>
                         {stats.down}
                     </span>
                 </div>
@@ -229,14 +165,14 @@ const FleetOverviewTab: FC = () => {
 
             {/* Error message */}
             {error && (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-vigil-rose/10 border border-vigil-rose/30 text-vigil-rose text-sm mb-6">
+                <div style={styles.errorBanner}>
                     <AlertCircle size={16} />
                     <span>{error}</span>
                 </div>
             )}
 
             {/* Database Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+            <div style={styles.cardsGrid}>
                 {connections.map((conn) => {
                     const health = healthData.find(h => h.id === conn.id);
                     const isActive = conn.id === activeConnectionId;
@@ -255,7 +191,7 @@ const FleetOverviewTab: FC = () => {
 
             {/* Loading skeleton if initial load */}
             {loading && (
-                <div className="flex items-center justify-center gap-3 p-10 text-vigil-muted">
+                <div style={styles.loadingMessage}>
                     <Loader2 size={20} style={{ animation: 'rotation 1s linear infinite' }} />
                     Loading fleet health data...
                 </div>
@@ -267,88 +203,104 @@ const FleetOverviewTab: FC = () => {
 /**
  * DatabaseCard — Individual database card with status and metrics
  */
-const DatabaseCard: FC<DatabaseCardProps> = ({ connection, health, isActive, onSwitch }) => {
+const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
     const [isHovering, setIsHovering] = useState(false);
 
-    const getStatusIcon = (status?: string) => {
+    const getStatusIcon = (status) => {
         switch (status) {
-            case 'ok': return <CheckCircle size={16} className="text-vigil-emerald" />;
-            case 'degraded': return <AlertTriangle size={16} className="text-vigil-amber" />;
-            case 'error': return <AlertCircle size={16} className="text-vigil-rose" />;
-            default: return <Activity size={16} className="text-vigil-muted" />;
+            case 'ok': return <CheckCircle size={16} color={THEME.success} />;
+            case 'degraded': return <AlertTriangle size={16} color={THEME.warning} />;
+            case 'error': return <AlertCircle size={16} color={THEME.danger} />;
+            default: return <Activity size={16} color={THEME.textMuted} />;
         }
     };
 
-    const getStatusColor = (status?: string) => {
+    const getStatusColor = (status) => {
         switch (status) {
-            case 'ok': return 'text-vigil-emerald';
-            case 'degraded': return 'text-vigil-amber';
-            case 'error': return 'text-vigil-rose';
-            default: return 'text-vigil-muted';
+            case 'ok': return THEME.success;
+            case 'degraded': return THEME.warning;
+            case 'error': return THEME.danger;
+            default: return THEME.textMuted;
         }
     };
 
-    const getStatusDot = (status?: string) => {
+    const getStatusDot = (status) => {
         const colors = {
-            ok: 'bg-vigil-emerald',
-            degraded: 'bg-vigil-amber',
-            error: 'bg-vigil-rose',
+            ok: THEME.success,
+            degraded: THEME.warning,
+            error: THEME.danger,
         };
-        return colors[status as keyof typeof colors] || 'bg-vigil-muted';
+        return colors[status] || THEME.textMuted;
     };
 
-    const getDBTypeIcon = (dbType?: string) => {
+    const getDBTypeIcon = (dbType) => {
         switch (dbType?.toLowerCase()) {
-            case 'mysql': return <Database size={20} className="text-vigil-cyan" />;
-            case 'mongodb': return <Server size={20} className="text-vigil-cyan" />;
+            case 'mysql': return <Database size={20} color="#00D4FF" />;
+            case 'mongodb': return <Server size={20} color="#00D4FF" />;
             case 'postgresql':
-            default: return <Database size={20} className="text-vigil-cyan" />;
+            default: return <Database size={20} color="#00D4FF" />;
         }
     };
 
-    const getDBTypeBadgeText = (dbType?: string) => {
+    const getDBTypeBadgeText = (dbType) => {
         const type = (dbType || 'postgresql').toLowerCase();
         if (type.includes('mysql')) return 'MySQL';
         if (type.includes('mongo')) return 'MongoDB';
         return 'PostgreSQL';
     };
 
-    const cardClass = `fleet-card p-5 rounded-xl bg-vigil-glass border backdrop-blur-xl cursor-pointer transition-all duration-300 relative overflow-hidden
-        ${isActive ? 'border-vigil-cyan shadow-lg shadow-vigil-cyan/20' : 'border-vigil-accent/10 hover:border-vigil-accent/30 hover:-translate-y-1 hover:shadow-lg'}
-    `;
+    const cardStyle = {
+        ...styles.card,
+        ...(isActive ? styles.cardActive : {}),
+        ...(isHovering ? styles.cardHover : {}),
+        border: isActive
+            ? `1px solid ${THEME.primary}`
+            : `1px solid ${THEME.glassBorder}`,
+    };
 
     return (
         <div
-            className={cardClass}
+            style={cardStyle}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
             onClick={() => onSwitch(connection.id)}
         >
             {/* Top Row: Icon, Name, Badge */}
-            <div className="flex justify-between items-start gap-3 mb-4 pb-3 border-b border-vigil-accent/10">
-                <div className="flex gap-3 items-start flex-1">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-vigil-cyan/10 border border-vigil-cyan/30 flex-shrink-0">
+            <div style={styles.cardHeader}>
+                <div style={styles.cardTitleSection}>
+                    <div style={styles.dbIcon}>
                         {getDBTypeIcon(connection.dbType)}
                     </div>
-                    <div className="flex-1">
-                        <h4 className="text-sm font-bold text-vigil-text m-0 mb-1">{connection.name}</h4>
-                        <p className="text-xs text-vigil-muted m-0 font-mono">
+                    <div style={styles.cardTitleText}>
+                        <h4 style={styles.cardTitle}>{connection.name}</h4>
+                        <p style={styles.cardSubtitle}>
                             {connection.host}:{connection.port}
                         </p>
                     </div>
                 </div>
-                <div className={`px-2.5 py-1 rounded-md border border-vigil-cyan/30 text-vigil-cyan text-xs font-semibold whitespace-nowrap`}>
+                <div
+                    style={{
+                        ...styles.dbTypeBadge,
+                        color: THEME.primary,
+                        border: `1px solid ${THEME.primary}`,
+                    }}
+                >
                     {getDBTypeBadgeText(connection.dbType)}
                 </div>
             </div>
 
             {/* Status and Latency */}
-            <div className="grid grid-cols-2 gap-4 mb-3">
-                <div className="flex flex-col gap-1.5">
-                    <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">Status</div>
-                    <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getStatusDot(health?.status)}`} />
-                        <span className={`text-sm font-medium ${getStatusColor(health?.status)}`}>
+            <div style={styles.cardMetricsRow}>
+                <div style={styles.metricItem}>
+                    <div style={styles.metricLabel}>Status</div>
+                    <div style={styles.metricValueWithIcon}>
+                        <div
+                            style={{
+                                ...styles.statusDot,
+                                background: getStatusDot(health?.status),
+                            }}
+                        />
+                        <span style={{ color: getStatusColor(health?.status) }}>
                             {health?.status === 'ok' && 'Healthy'}
                             {health?.status === 'degraded' && 'Degraded'}
                             {health?.status === 'error' && 'Down'}
@@ -356,9 +308,9 @@ const DatabaseCard: FC<DatabaseCardProps> = ({ connection, health, isActive, onS
                         </span>
                     </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                    <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">Latency</div>
-                    <div className="flex items-center gap-1.5 text-sm text-vigil-text font-medium">
+                <div style={styles.metricItem}>
+                    <div style={styles.metricLabel}>Latency</div>
+                    <div style={styles.metricValue}>
                         {health?.latencyMs !== undefined ? (
                             <>
                                 <Clock size={14} />
@@ -372,17 +324,17 @@ const DatabaseCard: FC<DatabaseCardProps> = ({ connection, health, isActive, onS
             </div>
 
             {/* Optional Key Metrics Placeholders */}
-            <div className="grid grid-cols-2 gap-4 mb-3">
-                <div className="flex flex-col gap-1.5">
-                    <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">Database</div>
-                    <div className="flex items-center gap-1.5 text-sm text-vigil-text font-medium">
+            <div style={styles.cardMetricsRow}>
+                <div style={styles.metricItem}>
+                    <div style={styles.metricLabel}>Database</div>
+                    <div style={styles.metricValue}>
                         <Database size={14} />
                         {connection.database}
                     </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                    <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider">User</div>
-                    <div className="flex items-center gap-1.5 text-sm text-vigil-text font-medium">
+                <div style={styles.metricItem}>
+                    <div style={styles.metricLabel}>User</div>
+                    <div style={styles.metricValue}>
                         <Users size={14} />
                         {connection.username}
                     </div>
@@ -391,8 +343,8 @@ const DatabaseCard: FC<DatabaseCardProps> = ({ connection, health, isActive, onS
 
             {/* Last Checked */}
             {health?.lastChecked && (
-                <div className="mt-3 pt-3 border-t border-vigil-accent/10">
-                    <span className="text-xs text-vigil-muted/60">
+                <div style={styles.cardFooter}>
+                    <span style={styles.lastCheckedText}>
                         Last checked: {new Date(health.lastChecked).toLocaleTimeString()}
                     </span>
                 </div>
@@ -400,20 +352,287 @@ const DatabaseCard: FC<DatabaseCardProps> = ({ connection, health, isActive, onS
 
             {/* Active Indicator */}
             {isActive && (
-                <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-vigil-cyan/10 border border-vigil-cyan/30 text-vigil-cyan text-xs font-semibold">
-                    <CheckCircle size={14} />
+                <div style={styles.activeIndicator}>
+                    <CheckCircle size={14} color={THEME.primary} />
                     Active
                 </div>
             )}
 
             {/* Hover Arrow */}
             {isHovering && (
-                <div className="absolute bottom-4 right-4 flex items-center justify-center opacity-60">
-                    <ArrowRight size={16} className="text-vigil-cyan" />
+                <div style={styles.cardArrow}>
+                    <ArrowRight size={16} color={THEME.primary} />
                 </div>
             )}
         </div>
     );
+};
+
+/**
+ * Animation styles
+ */
+const OvStyles = () => (
+    <style>{`
+        @keyframes rotation {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes cardGlow {
+            0%, 100% { box-shadow: 0 0 0 rgba(0, 212, 255, 0); }
+            50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 20px rgba(0, 212, 255, 0.05); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fleet-card { animation: fadeIn 0.4s ease-out both; }
+        .fleet-card:nth-child(1) { animation-delay: 0.0s; }
+        .fleet-card:nth-child(2) { animation-delay: 0.07s; }
+        .fleet-card:nth-child(3) { animation-delay: 0.14s; }
+        .fleet-card:nth-child(4) { animation-delay: 0.21s; }
+        .fleet-card:nth-child(5) { animation-delay: 0.28s; }
+        .fleet-card:nth-child(6) { animation-delay: 0.35s; }
+    `}</style>
+);
+
+/**
+ * Inline styles
+ */
+const styles = {
+    container: {
+        padding: '24px',
+        minHeight: '100vh',
+        background: THEME.bg,
+        fontFamily: THEME.fontBody,
+    },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px',
+    },
+    title: {
+        margin: '0 0 6px 0',
+        fontSize: '24px',
+        fontWeight: '700',
+        color: THEME.textMain,
+    },
+    subtitle: {
+        margin: 0,
+        fontSize: '13px',
+        color: THEME.textMuted,
+    },
+    refreshButton: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '10px 18px',
+        borderRadius: '8px',
+        border: `1px solid ${THEME.glassBorder}`,
+        background: THEME.glass,
+        backdropFilter: 'blur(8px)',
+        color: THEME.primary,
+        fontSize: '13px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        fontFamily: THEME.fontBody,
+    },
+    statsBar: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: '16px',
+        marginBottom: '32px',
+        padding: '20px',
+        borderRadius: '12px',
+        background: THEME.surface,
+        border: `1px solid ${THEME.glassBorder}`,
+        backdropFilter: 'blur(8px)',
+    },
+    statItem: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+    },
+    statLabel: {
+        fontSize: '12px',
+        color: THEME.textMuted,
+        fontWeight: '500',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+    },
+    statValue: {
+        fontSize: '28px',
+        fontWeight: '700',
+    },
+    errorBanner: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        background: `rgba(255, 69, 96, 0.1)`,
+        border: `1px solid ${THEME.danger}`,
+        color: THEME.danger,
+        marginBottom: '24px',
+        fontSize: '13px',
+    },
+    cardsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+        gap: '20px',
+        '@media (max-width: 768px)': {
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        },
+    },
+    card: {
+        padding: '20px',
+        borderRadius: '12px',
+        background: THEME.glass,
+        border: `1px solid ${THEME.glassBorder}`,
+        backdropFilter: 'blur(8px)',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+        position: 'relative',
+        overflow: 'hidden',
+        className: 'fleet-card',
+    },
+    cardActive: {
+        boxShadow: `0 0 24px ${THEME.primary}30, inset 0 0 20px ${THEME.primary}08`,
+    },
+    cardHover: {
+        transform: 'translateY(-4px)',
+        boxShadow: `0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px ${THEME.primary}20`,
+    },
+    cardHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        gap: '12px',
+        marginBottom: '16px',
+        paddingBottom: '12px',
+        borderBottom: `1px solid ${THEME.glassBorder}`,
+    },
+    cardTitleSection: {
+        display: 'flex',
+        gap: '12px',
+        alignItems: 'flex-start',
+        flex: 1,
+    },
+    dbIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '40px',
+        height: '40px',
+        borderRadius: '8px',
+        background: `rgba(0, 212, 255, 0.08)`,
+        border: `1px solid ${THEME.primary}`,
+        flexShrink: 0,
+    },
+    cardTitleText: {
+        flex: 1,
+    },
+    cardTitle: {
+        margin: '0 0 4px 0',
+        fontSize: '14px',
+        fontWeight: '700',
+        color: THEME.textMain,
+    },
+    cardSubtitle: {
+        margin: 0,
+        fontSize: '12px',
+        color: THEME.textMuted,
+        fontFamily: THEME.fontMono,
+    },
+    dbTypeBadge: {
+        padding: '4px 10px',
+        borderRadius: '6px',
+        fontSize: '11px',
+        fontWeight: '600',
+        whiteSpace: 'nowrap',
+    },
+    cardMetricsRow: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '16px',
+        marginBottom: '12px',
+    },
+    metricItem: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+    },
+    metricLabel: {
+        fontSize: '11px',
+        color: THEME.textMuted,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '0.3px',
+    },
+    metricValue: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontSize: '13px',
+        color: THEME.textMain,
+        fontWeight: '500',
+    },
+    metricValueWithIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '13px',
+        fontWeight: '500',
+    },
+    statusDot: {
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        display: 'inline-block',
+    },
+    cardFooter: {
+        marginTop: '12px',
+        paddingTop: '12px',
+        borderTop: `1px solid ${THEME.glassBorder}`,
+    },
+    lastCheckedText: {
+        fontSize: '11px',
+        color: THEME.textDim,
+    },
+    activeIndicator: {
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '4px 10px',
+        borderRadius: '6px',
+        background: `rgba(0, 212, 255, 0.1)`,
+        border: `1px solid ${THEME.primary}`,
+        fontSize: '11px',
+        fontWeight: '600',
+        color: THEME.primary,
+    },
+    cardArrow: {
+        position: 'absolute',
+        bottom: '16px',
+        right: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0.6,
+    },
+    loadingMessage: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+        padding: '40px',
+        fontSize: '14px',
+        color: THEME.textMuted,
+    },
 };
 
 export default FleetOverviewTab;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // ==========================================================================
 //  VIGIL — ResourcesTab  (v5 — Full Analytics Suite)
 // ==========================================================================
@@ -26,63 +25,6 @@ import AdvancedAnalysisPanel from '../analytics/AdvancedAnalysisPanel';
 /* ═══════════════════════════════════════════════════════════════════════════
    STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════════════════════════════
-   TYPES
-   ═══════════════════════════════════════════════════════════════════════════ */
-interface PanelProps {
-    title?: string;
-    icon?: React.ComponentType<any>;
-    rightNode?: React.ReactNode;
-    noPad?: boolean;
-    children: React.ReactNode;
-    style?: React.CSSProperties;
-    refreshing?: boolean;
-}
-
-interface StatusBadgeProps {
-    label: string;
-    color: string;
-}
-
-interface LiveDotProps {
-    color?: string;
-    size?: number;
-}
-
-interface MiniSparklineProps {
-    data?: number[];
-    color?: string;
-    width?: number;
-    height?: number;
-}
-
-interface RingGaugeProps {
-    value: number;
-    color: string;
-    size?: number;
-    strokeWidth?: number;
-}
-
-interface ChartTooltipProps {
-    active?: boolean;
-    payload?: any[];
-    label?: string;
-}
-
-interface TableData {
-    name: string;
-    size: number;
-    bloat: number;
-    [key: string]: any;
-}
-
-interface Resource {
-    name: string;
-    value: number;
-    unit: string;
-}
-
-
 const ResStyles = () => (
     <style>{`
         @keyframes resFadeIn {
@@ -163,7 +105,7 @@ const REFRESH_INTERVALS = [
 /* ═══════════════════════════════════════════════════════════════════════════
    PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
-const Panel: React.FC<PanelProps> = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing }) => (
+const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing }) => (
     <div style={{
         background: THEME.glass,
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
@@ -200,7 +142,7 @@ const Panel: React.FC<PanelProps> = ({ title, icon: TIcon, rightNode, noPad, chi
 /* ═══════════════════════════════════════════════════════════════════════════
    MICRO-COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
-const StatusBadge: React.FC<StatusBadgeProps> = ({ label, color }) => (
+const StatusBadge = ({ label, color }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6,
@@ -212,14 +154,14 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ label, color }) => (
     </span>
 );
 
-const LiveDot: React.FC<LiveDotProps> = ({ color = THEME.success, size = 7 }) => (
+const LiveDot = ({ color = THEME.success, size = 7 }) => (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
         <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}80` }} />
         <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${color}50`, animation: 'resPulseRing 2s ease-out infinite' }} />
     </div>
 );
 
-const MiniSparkline: React.FC<MiniSparklineProps> = ({ data = [], color = THEME.primary, width = 60, height = 18 }) => {
+const MiniSparkline = ({ data = [], color = THEME.primary, width = 60, height = 18 }) => {
     if (!data || data.length < 2) return <div style={{ width, height }} />;
     const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
     const pts = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`).join(' ');
@@ -237,7 +179,7 @@ const MiniSparkline: React.FC<MiniSparklineProps> = ({ data = [], color = THEME.
     );
 };
 
-const RingGauge: React.FC<RingGaugeProps> = ({ value, color, size = 44, strokeWidth = 4 }) => {
+const RingGauge = ({ value, color, size = 44, strokeWidth = 4 }) => {
     const r = (size - strokeWidth) / 2;
     const circ = 2 * Math.PI * r;
     const filled = circ * value / 100;
@@ -255,7 +197,7 @@ const RingGauge: React.FC<RingGaugeProps> = ({ value, color, size = 44, strokeWi
     );
 };
 
-const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload, label }) => {
+const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{ background: THEME.glassHeavy, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 12 }}>
@@ -308,23 +250,9 @@ const fmtLastRefreshed = (ts) => {
 /* ── Synthetic data generators ── */
 const genSparkline = () => Array.from({ length: 8 }, () => 0);
 
-const genGrowthTrend = () => {
-    const months = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
-    let base = 78;
-    return months.map(m => {
-        base += 3;
-        return { month: m, tables: Math.round(base), indexes: Math.round(base * 0.32), toast: Math.round(base * 0.06) };
-    });
-};
+const genGrowthTrend = () => [];
 
-const genDiskIO = () => {
-    const labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'];
-    return labels.map(t => ({
-        t,
-        reads: 0,
-        writes: 0,
-    }));
-};
+const genDiskIO = () => [];
 
 /* ── NEW: Table Growth Rate (MB/day over 14 days for top 10 tables) ── */
 const genTableGrowthRate = (tables) => {
@@ -343,11 +271,11 @@ const genTableGrowthRate = (tables) => {
     return {
         days,
         series: top10.map((t, i) => {
-            const baseRate = 0;
+            const baseRate = Number(t.total_size_gb || 1) * 0;
             return {
                 name: t.table_name,
                 color: COLORS[i % COLORS.length],
-                data: days.map(() => 0),
+                data: days.map(() => Math.max(0, baseRate + 0)),
             };
         }),
     };
@@ -363,9 +291,9 @@ const genPartitions = () => [];
 const genFreezeData = (tables) => {
     return tables.map(t => ({
         table_name: t.table_name,
-        oldest_xid_age: 0,
+        oldest_xid_age: Math.round(0),
         freeze_threshold: 2_000_000_000,
-        last_freeze: `0d ago`,
+        last_freeze: `${Math.round(0)}d ago`,
     })).sort((a, b) => b.oldest_xid_age - a.oldest_xid_age);
 };
 
@@ -1015,7 +943,7 @@ const TOASTRatioCell = ({ table }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
-const ResourcesTab: React.FC = () => {
+const ResourcesTab = () => {
     useAdaptiveTheme();
     const [growth, setGrowth]               = useState([]);
     const [vacuum, setVacuum]               = useState([]);
@@ -1199,10 +1127,10 @@ const ResourcesTab: React.FC = () => {
                 <Icon size={13} style={{ flexShrink: 0 }} />
                 {label}
                 {count != null && (
-                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.6)' : `${THEME.primary}15`, color: active ? '#fff' : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`, color: active ? '#fff' : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
                 )}
                 {badge && (
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.6)' : `${THEME.danger}15`, color: active ? '#fff' : THEME.danger }}>{badge}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.danger}15`, color: active ? '#fff' : THEME.danger }}>{badge}</span>
                 )}
             </button>
         );
@@ -1907,4 +1835,4 @@ const ResourcesTab: React.FC = () => {
     );
 };
 
-export default ResourcesTab;
+export default React.memo(ResourcesTab);

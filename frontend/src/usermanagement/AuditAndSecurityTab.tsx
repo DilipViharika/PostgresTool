@@ -1,5 +1,5 @@
 import React from 'react';
-import { SecurityPanel } from './PermissionMatrix/AuditAndSecurity.jsx';
+import { SecurityPanel } from './PermissionMatrix/AuditAndSecurity';
 
 /**
  * AuditAndSecurityTab.jsx

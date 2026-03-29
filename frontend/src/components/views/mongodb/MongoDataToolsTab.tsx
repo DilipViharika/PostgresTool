@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchData, postData } from '../../../utils/api';
 import {
@@ -9,29 +8,9 @@ import {
     AlertCircle, ChevronDown, ChevronUp, Copy, X, Check
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────────
-interface PipelineStage {
-    stage: string;
-    content: string;
-}
-
-interface MongoDataToolsTabState {
-    collections: string[];
-    selectedCollection: string;
-    queryMode: 'find' | 'insert' | 'update' | 'delete';
-    queryJSON: string;
-    updateJSON: string;
-    queryResult: any;
-    resultLoading: boolean;
-    resultError: string | null;
-    resultSuccess: string | null;
-    pipelineStages: PipelineStage[];
-    importJSON: string;
-    exportLoading: boolean;
-}
-
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* THEME & CONSTANTS */
+/* ─────────────────────────────────────────────────────────────────────────── */
 const DARK_THEME = {
     bg: '#0d1117',
     card: '#161b22',
@@ -45,7 +24,7 @@ const DARK_THEME = {
     green: '#3fb950',
 };
 
-const Styles: React.FC = () => (
+const Styles = () => (
     <style>{`
         @keyframes mongoFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes mongoPulse { 0%{opacity:1} 50%{opacity:0.6} 100%{opacity:1} }
@@ -179,6 +158,15 @@ const Styles: React.FC = () => (
             border-color: ${DARK_THEME.accent};
         }
 
+        .mongo-collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .mongo-collapsible:hover {
+            background: ${DARK_THEME.bg};
+        }
+
         .mongo-stage-card {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
@@ -243,29 +231,31 @@ const Styles: React.FC = () => (
     `}</style>
 );
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MONGO DATA TOOLS TAB COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════
-const MongoDataToolsTab: React.FC = () => {
-    const [collections, setCollections] = useState<string[]>(['users', 'products', 'orders', 'sessions']);
-    const [selectedCollection, setSelectedCollection] = useState<string>('users');
-    const [queryMode, setQueryMode] = useState<'find' | 'insert' | 'update' | 'delete'>('find');
-    const [queryJSON, setQueryJSON] = useState<string>('{\n  "status": "active"\n}');
-    const [updateJSON, setUpdateJSON] = useState<string>('{\n  "$set": { "status": "inactive" }\n}');
-    const [queryResult, setQueryResult] = useState<any>(null);
-    const [resultLoading, setResultLoading] = useState<boolean>(false);
-    const [resultError, setResultError] = useState<string | null>(null);
-    const [resultSuccess, setResultSuccess] = useState<string | null>(null);
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* MONGO DATA TOOLS TAB COMPONENT */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+export default function MongoDataToolsTab() {
+    const [collections, setCollections] = useState(['users', 'products', 'orders', 'sessions']);
+    const [selectedCollection, setSelectedCollection] = useState('users');
+    const [queryMode, setQueryMode] = useState('find'); // find, insert, update, delete
+    const [queryJSON, setQueryJSON] = useState('{\n  "status": "active"\n}');
+    const [updateJSON, setUpdateJSON] = useState('{\n  "$set": { "status": "inactive" }\n}');
+    const [queryResult, setQueryResult] = useState(null);
+    const [resultLoading, setResultLoading] = useState(false);
+    const [resultError, setResultError] = useState(null);
+    const [resultSuccess, setResultSuccess] = useState(null);
 
-    const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([
+    // Aggregation pipeline
+    const [pipelineStages, setPipelineStages] = useState([
         { stage: '$match', content: '{ "status": "active" }' },
         { stage: '$group', content: '{ "_id": "$category", "count": { "$sum": 1 } }' },
     ]);
 
-    const [importJSON, setImportJSON] = useState<string>('');
-    const [exportLoading, setExportLoading] = useState<boolean>(false);
+    // Import/Export
+    const [importJSON, setImportJSON] = useState('');
+    const [exportLoading, setExportLoading] = useState(false);
 
-    const loadCollections = useCallback(async (): Promise<void> => {
+    const loadCollections = useCallback(async () => {
         try {
             const data = await fetchData('/api/mongodb/collections');
             setCollections(data?.collections || collections);
@@ -278,13 +268,13 @@ const MongoDataToolsTab: React.FC = () => {
         loadCollections();
     }, [loadCollections]);
 
-    const executeQuery = async (): Promise<void> => {
+    const executeQuery = async () => {
         try {
             setResultLoading(true);
             setResultError(null);
             setResultSuccess(null);
 
-            let payload: any = { collection: selectedCollection };
+            let payload = { collection: selectedCollection };
 
             if (queryMode === 'find') {
                 payload.query = JSON.parse(queryJSON);
@@ -308,20 +298,20 @@ const MongoDataToolsTab: React.FC = () => {
                 setQueryResult(result);
                 setResultSuccess(`Deleted ${result.deletedCount || 0} documents`);
             }
-        } catch (err: any) {
+        } catch (err) {
             setResultError(err.message || 'Query execution failed');
         } finally {
             setResultLoading(false);
         }
     };
 
-    const executeAggregation = async (): Promise<void> => {
+    const executeAggregation = async () => {
         try {
             setResultLoading(true);
             setResultError(null);
 
             const pipeline = pipelineStages.map(s => {
-                const obj: any = {};
+                const obj = {};
                 obj[s.stage] = JSON.parse(s.content);
                 return obj;
             });
@@ -332,27 +322,27 @@ const MongoDataToolsTab: React.FC = () => {
             });
             setQueryResult(result.results || []);
             setResultSuccess(`Aggregation returned ${result.results?.length || 0} results`);
-        } catch (err: any) {
+        } catch (err) {
             setResultError(err.message || 'Aggregation failed');
         } finally {
             setResultLoading(false);
         }
     };
 
-    const exportCollection = async (): Promise<void> => {
+    const exportCollection = async () => {
         try {
             setExportLoading(true);
             const result = await fetchData(`/api/mongodb/export/${selectedCollection}`);
             setImportJSON(JSON.stringify(result.documents || [], null, 2));
             setResultSuccess('Collection exported');
-        } catch (err: any) {
+        } catch (err) {
             setResultError('Export failed: ' + err.message);
         } finally {
             setExportLoading(false);
         }
     };
 
-    const importCollection = async (): Promise<void> => {
+    const importCollection = async () => {
         try {
             setResultLoading(true);
             const docs = JSON.parse(importJSON);
@@ -362,24 +352,24 @@ const MongoDataToolsTab: React.FC = () => {
             });
             setResultSuccess(`Imported ${result.insertedCount || 0} documents`);
             setImportJSON('');
-        } catch (err: any) {
+        } catch (err) {
             setResultError('Import failed: ' + err.message);
         } finally {
             setResultLoading(false);
         }
     };
 
-    const addStage = (): void => {
+    const addStage = () => {
         setPipelineStages([...pipelineStages, { stage: '$project', content: '{ "_id": 1 }' }]);
     };
 
-    const removeStage = (idx: number): void => {
+    const removeStage = (idx) => {
         setPipelineStages(pipelineStages.filter((_, i) => i !== idx));
     };
 
-    const updateStage = (idx: number, field: string, value: string): void => {
+    const updateStage = (idx, field, value) => {
         const updated = [...pipelineStages];
-        (updated[idx] as any)[field] = value;
+        updated[idx][field] = value;
         setPipelineStages(updated);
     };
 
@@ -412,7 +402,7 @@ const MongoDataToolsTab: React.FC = () => {
                                 Operation
                             </label>
                             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                {(['find', 'insert', 'update', 'delete'] as const).map(op => (
+                                {['find', 'insert', 'update', 'delete'].map(op => (
                                     <button
                                         key={op}
                                         onClick={() => setQueryMode(op)}
@@ -586,6 +576,4 @@ const MongoDataToolsTab: React.FC = () => {
             </div>
         </>
     );
-};
-
-export default MongoDataToolsTab;
+}

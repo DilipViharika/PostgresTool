@@ -1,71 +1,11 @@
-// @ts-nocheck
-import React, { useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
-import {
-    LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
-    AreaChart, Area
-} from 'recharts';
-import {
-    Server, Clock, AlertTriangle, AlertCircle, TrendingUp, CheckCircle,
-    RefreshCw, Activity
-} from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from 'recharts';
+import { Server, Clock, AlertTriangle, AlertCircle, TrendingUp, CheckCircle, RefreshCw, Activity } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────────
-interface ReplicaMember {
-    _id: number;
-    name: string;
-    host: string;
-    state: number;
-    stateStr: string;
-    uptime: number;
-    lag: number;
-    health: number;
-}
-
-interface ReplicationStatus {
-    set: string;
-    ismaster: boolean;
-    secondary: boolean;
-    primary: string;
-    me: string;
-    term: number;
-    electionDate: Date;
-    ok: number;
-}
-
-interface LagDataPoint {
-    time: string;
-    [key: string]: string | number;
-}
-
-interface ElectionEvent {
-    term: number;
-    type: string;
-    winner: string;
-    timestamp: Date;
-    reason: string;
-}
-
-interface OplogStats {
-    oplogSize: number;
-    oplogUsed: number;
-    oplogWindow: number;
-    firstOpTime: Date;
-    lastOpTime: Date;
-    opsCaptured: number;
-}
-
-interface ChartTooltipProps {
-    active?: boolean;
-    payload?: Array<{
-        name: string;
-        value: number;
-        color: string;
-    }>;
-}
-
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* THEME & CONSTANTS */
+/* ─────────────────────────────────────────────────────────────────────────── */
 const DARK_THEME = {
     bg: '#0d1117',
     card: '#161b22',
@@ -79,7 +19,7 @@ const DARK_THEME = {
     green: '#3fb950',
 };
 
-const Styles: React.FC = () => (
+const Styles = () => (
     <style>{`
         @keyframes mongoFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes mongoPulse { 0%{opacity:1} 50%{opacity:0.6} 100%{opacity:1} }
@@ -247,25 +187,27 @@ const Styles: React.FC = () => (
     `}</style>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPER FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────────
-const fmt = (n: number | null | undefined): string => {
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* HELPER FUNCTIONS */
+/* ─────────────────────────────────────────────────────────────────────────── */
+const fmt = (n) => {
     if (n === null || n === undefined) return '—';
     return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
 };
 
-const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
+const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -274,20 +216,20 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
     );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MONGO REPLICATION TAB COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════
-const MongoReplicationTab: React.FC = () => {
-    const [members, setMembers] = useState<ReplicaMember[]>([]);
-    const [replicationStatus, setReplicationStatus] = useState<ReplicationStatus>({} as ReplicationStatus);
-    const [lagChart, setLagChart] = useState<LagDataPoint[]>([]);
-    const [electionHistory, setElectionHistory] = useState<ElectionEvent[]>([]);
-    const [oplogStats, setOplogStats] = useState<OplogStats>({} as OplogStats);
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* MONGO REPLICATION TAB COMPONENT */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+export default function MongoReplicationTab() {
+    const [members, setMembers] = useState([]);
+    const [replicationStatus, setReplicationStatus] = useState({});
+    const [lagChart, setLagChart] = useState([]);
+    const [electionHistory, setElectionHistory] = useState([]);
+    const [oplogStats, setOplogStats] = useState({});
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const [error, setError] = useState(null);
+    const pollIntervalRef = useRef(null);
 
-    const loadData = useCallback(async (): Promise<void> => {
+    const loadData = useCallback(async () => {
         try {
             setError(null);
             const [mem, rep, lag, elec, oplog] = await Promise.all([
@@ -300,30 +242,34 @@ const MongoReplicationTab: React.FC = () => {
 
             setMembers(mem || []);
 
-            setReplicationStatus(rep || {
-                set: '',
-                ismaster: false,
-                secondary: false,
-                primary: '',
-                me: '',
-                term: 0,
-                electionDate: new Date(),
-                ok: 0,
-            });
+            setReplicationStatus(
+                rep || {
+                    set: '',
+                    ismaster: false,
+                    secondary: false,
+                    primary: '',
+                    me: '',
+                    term: 0,
+                    electionDate: null,
+                    ok: 0,
+                },
+            );
 
             setLagChart(lag || []);
 
             setElectionHistory(elec || []);
 
-            setOplogStats(oplog || {
-                oplogSize: 0,
-                oplogUsed: 0,
-                oplogWindow: 0,
-                firstOpTime: new Date(),
-                lastOpTime: new Date(),
-                opsCaptured: 0,
-            });
-        } catch (err: any) {
+            setOplogStats(
+                oplog || {
+                    oplogSize: 0,
+                    oplogUsed: 0,
+                    oplogWindow: 0,
+                    firstOpTime: null,
+                    lastOpTime: null,
+                    opsCaptured: 0,
+                },
+            );
+        } catch (err) {
             setError(err.message || 'Failed to load replication data');
         } finally {
             setLoading(false);
@@ -333,9 +279,7 @@ const MongoReplicationTab: React.FC = () => {
     useEffect(() => {
         loadData();
         pollIntervalRef.current = setInterval(loadData, 30000);
-        return () => {
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-        };
+        return () => clearInterval(pollIntervalRef.current);
     }, [loadData]);
 
     if (loading) {
@@ -352,7 +296,7 @@ const MongoReplicationTab: React.FC = () => {
         );
     }
 
-    const getMemberColor = (state: number | string): string => {
+    const getMemberColor = (state) => {
         if (state === 1 || state === 'PRIMARY') return DARK_THEME.green;
         if (state === 2 || state === 'SECONDARY') return DARK_THEME.success;
         return DARK_THEME.danger;
@@ -376,10 +320,18 @@ const MongoReplicationTab: React.FC = () => {
                         <Server size={16} /> Replica Set Overview
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Replica Set</div>
-                                <div className="mongo-metric-value" style={{ fontSize: 16 }}>{replicationStatus.set || 'rs0'}</div>
+                                <div className="mongo-metric-value" style={{ fontSize: 16 }}>
+                                    {replicationStatus.set || 'rs0'}
+                                </div>
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Replication Term</div>
@@ -404,37 +356,64 @@ const MongoReplicationTab: React.FC = () => {
                     <h3 className="mongo-section-title">
                         <Activity size={16} /> Replica Set Members
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                            gap: 16,
+                        }}
+                    >
                         {members.map((member) => (
-                            <div key={member._id} className={`mongo-member-card ${member.stateStr === 'PRIMARY' ? 'primary' : 'secondary'}`}>
+                            <div
+                                key={member._id}
+                                className={`mongo-member-card ${member.stateStr === 'PRIMARY' ? 'primary' : 'secondary'}`}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                                    <div className={`mongo-member-status ${member.stateStr.toLowerCase().replace('_', '-')}`} />
+                                    <div
+                                        className={`mongo-member-status ${member.stateStr.toLowerCase().replace('_', '-')}`}
+                                    />
                                     <div>
                                         <div style={{ fontWeight: 700, color: DARK_THEME.text, fontSize: 14 }}>
                                             {member.name}
                                         </div>
-                                        <div style={{ fontSize: 12, color: DARK_THEME.textMuted, fontFamily: 'monospace' }}>
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                color: DARK_THEME.textMuted,
+                                                fontFamily: 'monospace',
+                                            }}
+                                        >
                                             {member.host}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div style={{ marginBottom: 12 }}>
-                                    <span className={`mongo-badge mongo-badge-${member.health === 1 ? 'success' : 'danger'}`}>
+                                    <span
+                                        className={`mongo-badge mongo-badge-${member.health === 1 ? 'success' : 'danger'}`}
+                                    >
                                         {member.health === 1 ? 'HEALTHY' : 'DOWN'}
                                     </span>
-                                    <span className={`mongo-badge mongo-badge-${member.stateStr === 'PRIMARY' ? 'success' : 'warning'}`}>
+                                    <span
+                                        className={`mongo-badge mongo-badge-${member.stateStr === 'PRIMARY' ? 'success' : 'warning'}`}
+                                    >
                                         {member.stateStr}
                                     </span>
                                 </div>
 
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted, marginBottom: 4 }}>
-                                    Uptime: <span style={{ color: DARK_THEME.accent }}>{Math.round(member.uptime / 86400)}d</span>
+                                    Uptime:{' '}
+                                    <span style={{ color: DARK_THEME.accent }}>
+                                        {Math.round(member.uptime / 86400)}d
+                                    </span>
                                 </div>
 
                                 {member.lag > 0 && (
                                     <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                        Replication Lag: <span style={{ color: member.lag > 1 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                        Replication Lag:{' '}
+                                        <span
+                                            style={{ color: member.lag > 1 ? DARK_THEME.warning : DARK_THEME.success }}
+                                        >
                                             {fmt(member.lag)}s
                                         </span>
                                     </div>
@@ -453,11 +432,26 @@ const MongoReplicationTab: React.FC = () => {
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={lagChart}>
                                 <XAxis dataKey="time" stroke={DARK_THEME.textMuted} />
-                                <YAxis label={{ value: 'Lag (seconds)', angle: -90, position: 'insideLeft' }} stroke={DARK_THEME.textMuted} />
+                                <YAxis
+                                    label={{ value: 'Lag (seconds)', angle: -90, position: 'insideLeft' }}
+                                    stroke={DARK_THEME.textMuted}
+                                />
                                 <Tooltip content={<ChartTooltip />} />
                                 <Legend />
-                                <Line type="monotone" dataKey="secondary1" stroke={DARK_THEME.success} name="Secondary 1" strokeWidth={2} />
-                                <Line type="monotone" dataKey="secondary2" stroke={DARK_THEME.warning} name="Secondary 2" strokeWidth={2} />
+                                <Line
+                                    type="monotone"
+                                    dataKey="secondary1"
+                                    stroke={DARK_THEME.success}
+                                    name="Secondary 1"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="secondary2"
+                                    stroke={DARK_THEME.warning}
+                                    name="Secondary 2"
+                                    strokeWidth={2}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -469,25 +463,45 @@ const MongoReplicationTab: React.FC = () => {
                         <TrendingUp size={16} /> Oplog Status
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                                marginBottom: 16,
+                            }}
+                        >
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Oplog Size
                                 </div>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent, marginBottom: 8 }}>
+                                <div
+                                    style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent, marginBottom: 8 }}
+                                >
                                     {fmt(oplogStats.oplogUsed)} / {fmt(oplogStats.oplogSize)} MB
                                 </div>
-                                <div style={{
-                                    height: 8,
-                                    background: DARK_THEME.border,
-                                    borderRadius: 14,
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${(oplogStats.oplogUsed / oplogStats.oplogSize) * 100}%`,
-                                        background: DARK_THEME.accent
-                                    }} />
+                                <div
+                                    style={{
+                                        height: 8,
+                                        background: DARK_THEME.border,
+                                        borderRadius: 14,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${(oplogStats.oplogUsed / oplogStats.oplogSize) * 100}%`,
+                                            background: DARK_THEME.accent,
+                                        }}
+                                    />
                                 </div>
                             </div>
                             <div className="mongo-metric-box">
@@ -507,17 +521,34 @@ const MongoReplicationTab: React.FC = () => {
 
                         {oplogStats.oplogWindow < 3600 && (
                             <div className="mongo-info-box">
-                                <AlertTriangle size={14} style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'text-top' }} />
-                                Oplog window is less than 1 hour. Secondary nodes may struggle to catch up during extended outages.
+                                <AlertTriangle
+                                    size={14}
+                                    style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'text-top' }}
+                                />
+                                Oplog window is less than 1 hour. Secondary nodes may struggle to catch up during
+                                extended outages.
                             </div>
                         )}
 
-                        <div style={{ paddingTop: 16, borderTop: `1px solid ${DARK_THEME.border}`, fontSize: 12, color: DARK_THEME.textMuted }}>
+                        <div
+                            style={{
+                                paddingTop: 16,
+                                borderTop: `1px solid ${DARK_THEME.border}`,
+                                fontSize: 12,
+                                color: DARK_THEME.textMuted,
+                            }}
+                        >
                             <div style={{ marginBottom: 4 }}>
-                                First entry: <span style={{ color: DARK_THEME.accent }}>{new Date(oplogStats.firstOpTime).toLocaleString()}</span>
+                                First entry:{' '}
+                                <span style={{ color: DARK_THEME.accent }}>
+                                    {new Date(oplogStats.firstOpTime).toLocaleString()}
+                                </span>
                             </div>
                             <div>
-                                Last entry: <span style={{ color: DARK_THEME.accent }}>{new Date(oplogStats.lastOpTime).toLocaleString()}</span>
+                                Last entry:{' '}
+                                <span style={{ color: DARK_THEME.accent }}>
+                                    {new Date(oplogStats.lastOpTime).toLocaleString()}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -534,8 +565,12 @@ const MongoReplicationTab: React.FC = () => {
                                 <div key={idx} className="mongo-timeline-item">
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                         <div>
-                                            <span style={{ fontWeight: 700, color: DARK_THEME.text }}>Term {event.term}</span>
-                                            <span className={`mongo-badge mongo-badge-${event.type === 'election' ? 'success' : 'warning'}`}>
+                                            <span style={{ fontWeight: 700, color: DARK_THEME.text }}>
+                                                Term {event.term}
+                                            </span>
+                                            <span
+                                                className={`mongo-badge mongo-badge-${event.type === 'election' ? 'success' : 'warning'}`}
+                                            >
                                                 {event.type.toUpperCase()}
                                             </span>
                                         </div>
@@ -561,18 +596,39 @@ const MongoReplicationTab: React.FC = () => {
                         <AlertTriangle size={16} /> Failover Readiness
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                                     <CheckCircle size={16} style={{ color: DARK_THEME.success, marginRight: 8 }} />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Healthy Secondaries</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                    {members.filter(m => m.stateStr === 'SECONDARY' && m.health === 1).length} / {members.filter(m => m.stateStr === 'SECONDARY').length}
+                                    {members.filter((m) => m.stateStr === 'SECONDARY' && m.health === 1).length} /{' '}
+                                    {members.filter((m) => m.stateStr === 'SECONDARY').length}
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                                     <CheckCircle size={16} style={{ color: DARK_THEME.success, marginRight: 8 }} />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Oplog Available</span>
@@ -582,13 +638,20 @@ const MongoReplicationTab: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                                     <CheckCircle size={16} style={{ color: DARK_THEME.success, marginRight: 8 }} />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Low Lag</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                    Max: {fmt(Math.max(...members.map(m => m.lag || 0)))}s
+                                    Max: {fmt(Math.max(...members.map((m) => m.lag || 0)))}s
                                 </div>
                             </div>
                         </div>
@@ -597,6 +660,4 @@ const MongoReplicationTab: React.FC = () => {
             </div>
         </>
     );
-};
-
-export default MongoReplicationTab;
+}

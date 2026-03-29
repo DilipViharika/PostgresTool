@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { THEME } from './theme';
 
@@ -6,7 +5,7 @@ import { THEME } from './theme';
 // SVG DEFS — Gradients, Filters, Patterns
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export const ChartDefs: React.FC = () => (
+export const ChartDefs = () => (
     <svg style={{ height: 0, width: 0, position: 'absolute' }} aria-hidden="true">
         <defs>
 
@@ -187,7 +186,7 @@ export const ChartDefs: React.FC = () => (
 // GLOBAL STYLES
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export const GlobalStyles: React.FC = () => (
+export const GlobalStyles = () => (
     <style>{`
     /* ── Google Font Import ── */
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,600&family=JetBrains+Mono:wght@300;400;500&display=swap');

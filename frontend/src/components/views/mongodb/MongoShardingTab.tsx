@@ -1,67 +1,33 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
 import {
-    BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    Legend, PieChart, Pie, Cell
+    BarChart,
+    Bar,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    PieChart,
+    Pie,
+    Cell,
 } from 'recharts';
 import {
-    Network, TrendingUp, AlertTriangle, Activity, AlertCircle, CheckCircle,
-    RefreshCw, ArrowRight, Database
+    Network,
+    TrendingUp,
+    AlertTriangle,
+    Activity,
+    AlertCircle,
+    CheckCircle,
+    RefreshCw,
+    ArrowRight,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────────
-interface Shard {
-    _id: string;
-    host: string;
-    state: string;
-    chunks: number;
-    size: number;
-}
-
-interface ShardStats {
-    totalShards: number;
-    totalChunks: number;
-    totalSize: number;
-    databaseCount: number;
-    collectionCount: number;
-    imbalancePercent: number;
-}
-
-interface ChunkDistribution {
-    shard: string;
-    chunks: number;
-}
-
-interface BalancerStatus {
-    enabled: boolean;
-    running: boolean;
-    balanceStarted: Date;
-    balanceCompleted: Date;
-    balanceRound: number;
-    autoBalance: boolean;
-}
-
-interface Migration {
-    _id: string;
-    ns: string;
-    shard: string;
-    chunks: number[];
-    status: string;
-    startTime: Date;
-}
-
-interface ChartTooltipProps {
-    active?: boolean;
-    payload?: Array<{
-        name: string;
-        value: number;
-        color: string;
-    }>;
-}
-
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* THEME & CONSTANTS */
+/* ─────────────────────────────────────────────────────────────────────────── */
 const DARK_THEME = {
     bg: '#0d1117',
     card: '#161b22',
@@ -75,7 +41,7 @@ const DARK_THEME = {
     green: '#3fb950',
 };
 
-const Styles: React.FC = () => (
+const Styles = () => (
     <style>{`
         @keyframes mongoFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes mongoPulse { 0%{opacity:1} 50%{opacity:0.6} 100%{opacity:1} }
@@ -244,25 +210,27 @@ const Styles: React.FC = () => (
     `}</style>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPER FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────────
-const fmt = (n: number | null | undefined): string => {
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* HELPER FUNCTIONS */
+/* ─────────────────────────────────────────────────────────────────────────── */
+const fmt = (n) => {
     if (n === null || n === undefined) return '—';
     return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
 };
 
-const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
+const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -271,20 +239,20 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
     );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MONGO SHARDING TAB COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════
-const MongoShardingTab: React.FC = () => {
-    const [shards, setShards] = useState<Shard[]>([]);
-    const [shardStats, setShardStats] = useState<ShardStats>({} as ShardStats);
-    const [chunkDistribution, setChunkDistribution] = useState<ChunkDistribution[]>([]);
-    const [balancerStatus, setBalancerStatus] = useState<BalancerStatus>({} as BalancerStatus);
-    const [migrations, setMigrations] = useState<Migration[]>([]);
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* MONGO SHARDING TAB COMPONENT */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+export default function MongoShardingTab() {
+    const [shards, setShards] = useState([]);
+    const [shardStats, setShardStats] = useState({});
+    const [chunkDistribution, setChunkDistribution] = useState([]);
+    const [balancerStatus, setBalancerStatus] = useState({});
+    const [migrations, setMigrations] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const [error, setError] = useState(null);
+    const pollIntervalRef = useRef(null);
 
-    const loadData = useCallback(async (): Promise<void> => {
+    const loadData = useCallback(async () => {
         try {
             setError(null);
             const [shard, stats, chunk, balancer, mig] = await Promise.all([
@@ -297,28 +265,32 @@ const MongoShardingTab: React.FC = () => {
 
             setShards(shard || []);
 
-            setShardStats(stats || {
-                totalShards: 0,
-                totalChunks: 0,
-                totalSize: 0,
-                databaseCount: 0,
-                collectionCount: 0,
-                imbalancePercent: 0,
-            });
+            setShardStats(
+                stats || {
+                    totalShards: 0,
+                    totalChunks: 0,
+                    totalSize: 0,
+                    databaseCount: 0,
+                    collectionCount: 0,
+                    imbalancePercent: 0,
+                },
+            );
 
             setChunkDistribution(chunk || []);
 
-            setBalancerStatus(balancer || {
-                enabled: false,
-                running: false,
-                balanceStarted: new Date(),
-                balanceCompleted: new Date(),
-                balanceRound: 0,
-                autoBalance: false,
-            });
+            setBalancerStatus(
+                balancer || {
+                    enabled: false,
+                    running: false,
+                    balanceStarted: null,
+                    balanceCompleted: null,
+                    balanceRound: 0,
+                    autoBalance: false,
+                },
+            );
 
             setMigrations(mig || []);
-        } catch (err: any) {
+        } catch (err) {
             setError(err.message || 'Failed to load sharding data');
         } finally {
             setLoading(false);
@@ -328,9 +300,7 @@ const MongoShardingTab: React.FC = () => {
     useEffect(() => {
         loadData();
         pollIntervalRef.current = setInterval(loadData, 30000);
-        return () => {
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-        };
+        return () => clearInterval(pollIntervalRef.current);
     }, [loadData]);
 
     if (loading) {
@@ -380,7 +350,13 @@ const MongoShardingTab: React.FC = () => {
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Imbalance</div>
-                                <div className="mongo-metric-value" style={{ color: shardStats.imbalancePercent > 5 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                <div
+                                    className="mongo-metric-value"
+                                    style={{
+                                        color:
+                                            shardStats.imbalancePercent > 5 ? DARK_THEME.warning : DARK_THEME.success,
+                                    }}
+                                >
                                     {shardStats.imbalancePercent}%
                                 </div>
                             </div>
@@ -410,7 +386,9 @@ const MongoShardingTab: React.FC = () => {
                                         <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>{shard._id}</td>
                                         <td style={{ fontSize: 12, fontFamily: 'monospace' }}>{shard.host}</td>
                                         <td>
-                                            <span className={`mongo-badge mongo-badge-${shard.state === 'READY' ? 'active' : 'inactive'}`}>
+                                            <span
+                                                className={`mongo-badge mongo-badge-${shard.state === 'READY' ? 'active' : 'inactive'}`}
+                                            >
                                                 {shard.state}
                                             </span>
                                         </td>
@@ -447,15 +425,24 @@ const MongoShardingTab: React.FC = () => {
                     </h3>
                     <div className="mongo-card">
                         <div className="mongo-grid">
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                                    <div style={{
-                                        width: 12,
-                                        height: 12,
-                                        borderRadius: '50%',
-                                        background: balancerStatus.enabled ? DARK_THEME.green : DARK_THEME.danger,
-                                        marginRight: 8
-                                    }} />
+                                    <div
+                                        style={{
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: '50%',
+                                            background: balancerStatus.enabled ? DARK_THEME.green : DARK_THEME.danger,
+                                            marginRight: 8,
+                                        }}
+                                    />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Status</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
@@ -463,15 +450,26 @@ const MongoShardingTab: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                                    <div style={{
-                                        width: 12,
-                                        height: 12,
-                                        borderRadius: '50%',
-                                        background: balancerStatus.running ? DARK_THEME.warning : DARK_THEME.success,
-                                        marginRight: 8
-                                    }} />
+                                    <div
+                                        style={{
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: '50%',
+                                            background: balancerStatus.running
+                                                ? DARK_THEME.warning
+                                                : DARK_THEME.success,
+                                            marginRight: 8,
+                                        }}
+                                    />
                                     <span style={{ fontWeight: 600, color: DARK_THEME.text }}>Running</span>
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
@@ -479,8 +477,22 @@ const MongoShardingTab: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 4 }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 4,
+                                    }}
+                                >
                                     Balance Rounds
                                 </div>
                                 <div style={{ fontSize: 20, fontWeight: 700, color: DARK_THEME.accent }}>
@@ -488,8 +500,22 @@ const MongoShardingTab: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: 12, background: DARK_THEME.bg, borderRadius: 8, border: `1px solid ${DARK_THEME.border}` }}>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 4 }}>
+                            <div
+                                style={{
+                                    padding: 12,
+                                    background: DARK_THEME.bg,
+                                    borderRadius: 8,
+                                    border: `1px solid ${DARK_THEME.border}`,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 4,
+                                    }}
+                                >
                                     Last Balanced
                                 </div>
                                 <div style={{ fontSize: 12, color: DARK_THEME.accent }}>
@@ -500,7 +526,8 @@ const MongoShardingTab: React.FC = () => {
 
                         {balancerStatus.autoBalance && (
                             <div className="mongo-info-box" style={{ marginTop: 16 }}>
-                                Auto-balancing is enabled. The balancer will automatically distribute chunks to maintain cluster balance.
+                                Auto-balancing is enabled. The balancer will automatically distribute chunks to maintain
+                                cluster balance.
                             </div>
                         )}
                     </div>
@@ -513,23 +540,39 @@ const MongoShardingTab: React.FC = () => {
                     </h3>
                     <div className="mongo-card">
                         {migrations.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: 20, color: DARK_THEME.textMuted, fontSize: 13 }}>
+                            <div
+                                style={{ textAlign: 'center', padding: 20, color: DARK_THEME.textMuted, fontSize: 13 }}
+                            >
                                 No recent migrations
                             </div>
                         ) : (
                             <div>
                                 {migrations.map((mig) => (
                                     <div key={mig._id} className="mongo-migration-item">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'flex-start',
+                                                marginBottom: 8,
+                                            }}
+                                        >
                                             <div>
-                                                <div style={{ fontWeight: 700, color: DARK_THEME.text, marginBottom: 4 }}>
+                                                <div
+                                                    style={{ fontWeight: 700, color: DARK_THEME.text, marginBottom: 4 }}
+                                                >
                                                     {mig.ns}
                                                 </div>
                                                 <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>
-                                                    To: <span style={{ fontFamily: 'monospace', color: DARK_THEME.accent }}>{mig.shard}</span>
+                                                    To:{' '}
+                                                    <span style={{ fontFamily: 'monospace', color: DARK_THEME.accent }}>
+                                                        {mig.shard}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <span className={`mongo-badge mongo-badge-${mig.status === 'completed' ? 'active' : 'balancing'}`}>
+                                            <span
+                                                className={`mongo-badge mongo-badge-${mig.status === 'completed' ? 'active' : 'balancing'}`}
+                                            >
                                                 {mig.status.toUpperCase()}
                                             </span>
                                         </div>
@@ -549,7 +592,7 @@ const MongoShardingTab: React.FC = () => {
                 {/* Collection Sharding Info */}
                 <div className="mongo-section">
                     <h3 className="mongo-section-title">
-                        <Database size={16} /> Sharded Collections
+                        <Database size={16} style={{ display: 'none' }} /> Sharded Collections
                     </h3>
                     <div className="mongo-card" style={{ padding: 0, overflow: 'hidden' }}>
                         <table className="mongo-table">
@@ -591,6 +634,4 @@ const MongoShardingTab: React.FC = () => {
             </div>
         </>
     );
-};
-
-export default MongoShardingTab;
+}

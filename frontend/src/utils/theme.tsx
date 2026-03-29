@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -10,84 +10,8 @@ import { useTheme } from '../context/ThemeContext';
 // automatically picks up the right tokens without prop-drilling.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-// ── Type Definitions ───────────────────────────────────────────────────────
-
-interface ThemeTokenSet {
-    bg: string;
-    bgAlt: string;
-    surface: string;
-    surfaceHover: string;
-    surfaceRaised: string;
-    glass: string;
-    glassHeavy: string;
-    glassBorder: string;
-    glassBorderHover: string;
-    textMain: string;
-    textMuted: string;
-    textDim: string;
-    textInverse: string;
-    primary: string;
-    primaryDark: string;
-    primaryLight: string;
-    primaryFaint: string;
-    secondary: string;
-    secondaryDark: string;
-    secondaryLight: string;
-    secondaryFaint: string;
-    success: string;
-    successDark: string;
-    successLight: string;
-    danger: string;
-    dangerDark: string;
-    dangerLight: string;
-    warning: string;
-    warningDark: string;
-    warningLight: string;
-    info: string;
-    infoDark: string;
-    infoLight: string;
-    ai: string;
-    aiDark: string;
-    aiLight: string;
-    grid: string;
-    gridAlt: string;
-    pearl: string;
-    deepTeal: string;
-    inkBlack: string;
-    phosphor: string;
-    biolume: string;
-    mariana: string;
-    shadowSm: string;
-    shadowMd: string;
-    shadowLg: string;
-    shadowXl: string;
-    shadowInner: string;
-    shadowNeon: (color: string) => string;
-    shadowNeonStrong: (color: string) => string;
-    shadowGold: string;
-    shadowTeal: string;
-    shadowDeep: string;
-    radiusXs: string;
-    radiusSm: string;
-    radiusMd: string;
-    radiusLg: string;
-    radiusXl: string;
-    radius2Xl: string;
-    radiusFull: string;
-    transitionFast: string;
-    transitionBase: string;
-    transitionSlow: string;
-    transitionSpring: string;
-    transitionBounce: string;
-    fontDisplay: string;
-    fontBody: string;
-    fontMono: string;
-    fontDecorative: string;
-    space: (n: number) => string;
-}
-
 // ── Internal token sets (not exported) ───────────────────────────────────────
-const _DARK: ThemeTokenSet = {
+const _DARK = {
     // ── Backgrounds — purple-void, deepest night ──────────────────────────────
     bg:            '#07030D',
     bgAlt:         '#0C0516',
@@ -193,7 +117,7 @@ const _DARK: ThemeTokenSet = {
 };
 
 // ── Internal light-mode token set ────────────────────────────────────────────
-const _LIGHT: ThemeTokenSet = {
+const _LIGHT = {
     // ── Backgrounds — clean slate ─────────────────────────────────────────────
     bg:            '#f0f4f8',
     bgAlt:         '#e2e8f0',
@@ -303,14 +227,14 @@ const _LIGHT: ThemeTokenSet = {
 // useAdaptiveTheme() mutates it in-place, every sub-component that reads
 // THEME.xxx inside a function body automatically gets the updated value
 // on the next render triggered by ThemeContext.
-export const THEME: ThemeTokenSet = { ..._DARK };
+export const THEME = { ..._DARK };
 
 // ── Hook: subscribe + update THEME in-place ───────────────────────────────────
 // Call this once at the top of any tab/panel component. It:
 //   1. Subscribes the component to ThemeContext (re-renders on toggle).
 //   2. Mutates THEME so module-level sub-components (Styles, MetricCard…)
 //      also see the correct tokens when they render.
-export const useAdaptiveTheme = (): ThemeTokenSet => {
+export const useAdaptiveTheme = () => {
     const { isDark } = useTheme();
     Object.assign(THEME, isDark ? _DARK : _LIGHT);
     return THEME;
@@ -320,7 +244,7 @@ export const useAdaptiveTheme = (): ThemeTokenSet => {
 // SVG DEFS — Gradients, Filters, Patterns
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export const ChartDefs: React.FC = () => (
+export const ChartDefs = () => (
     <svg style={{ height: 0, width: 0, position: 'absolute' }} aria-hidden="true">
         <defs>
 
@@ -510,7 +434,7 @@ export const ChartDefs: React.FC = () => (
 // GLOBAL STYLES
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export const GlobalStyles: React.FC = () => (
+export const GlobalStyles = () => (
     <style>{`
     /* ── Google Font Import ── */
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,600&family=JetBrains+Mono:wght@300;400;500&display=swap');

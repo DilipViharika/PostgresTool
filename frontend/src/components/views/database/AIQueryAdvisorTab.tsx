@@ -1,42 +1,9 @@
-// @ts-nocheck
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, postData } from '../../../utils/api';
 import { Sparkles, Zap, AlertTriangle, CheckCircle, Search, Lightbulb, Target, RefreshCw } from 'lucide-react';
 
-/* ── Type Definitions ─────────────────────────────────────────────────────── */
-interface QueryAnalysis {
-    complexityScore: number;
-    suggestions: QuerySuggestion[];
-    antiPatterns: AntiPattern[];
-}
-
-interface QuerySuggestion {
-    title: string;
-    severity: 'low' | 'medium' | 'high';
-    description: string;
-    recommendation?: string;
-}
-
-interface AntiPattern {
-    pattern: string;
-    description: string;
-}
-
-interface DiscoveredQuery {
-    query: string;
-    avgDuration: number;
-    calls: number;
-    suggestion: string;
-}
-
-interface IndexRecommendation {
-    indexName: string;
-    columns: string[];
-    expectedImprovementPercent: number;
-}
-
-/* ── Styles Component ─────────────────────────────────────────────────────── */
+/* ── Styles ───────────────────────────────────────────────────────────────── */
 const Styles = () => (
     <style>{`
         @keyframes aqSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
@@ -47,7 +14,6 @@ const Styles = () => (
         .aq-textarea:focus { outline:none; border-color:${THEME.primary}; }
         .aq-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
         .aq-button:hover { background:${THEME.primaryLight}; }
-        .aq-button:disabled { opacity:0.5; cursor:not-allowed; }
         .aq-button-secondary { background:${THEME.secondary}; }
         .aq-button-secondary:hover { background:${THEME.secondaryLight}; }
         .aq-suggestion-card { background:${THEME.grid}; border-left:4px solid; border-radius:8px; padding:12px; margin-bottom:12px; }
@@ -64,28 +30,28 @@ const Styles = () => (
     `}</style>
 );
 
-/* ── Helper Functions ─────────────────────────────────────────────────────── */
-const getComplexityColor = (score: number): string => {
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const getComplexityColor = (score) => {
     if (score < 30) return THEME.success;
     if (score < 70) return THEME.warning;
     return THEME.danger;
 };
 
-const fmt = (n: number | null): string => n === null ? '—' : Number(n).toLocaleString();
+const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AI QUERY ADVISOR TAB
    ═══════════════════════════════════════════════════════════════════════════ */
-const AIQueryAdvisorTab: React.FC = () => {
+export default function AIQueryAdvisorTab() {
     useAdaptiveTheme();
-    const [sqlQuery, setSqlQuery] = useState<string>('SELECT * FROM pg_stat_statements LIMIT 10;');
-    const [analyzing, setAnalyzing] = useState<boolean>(false);
-    const [analysis, setAnalysis] = useState<QueryAnalysis | null>(null);
-    const [suggestions, setSuggestions] = useState<DiscoveredQuery[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [selectedTable, setSelectedTable] = useState<string>('');
-    const [indexRecs, setIndexRecs] = useState<IndexRecommendation[]>([]);
-    const [error, setError] = useState<string | null>(null);
+    const [sqlQuery, setSqlQuery] = useState('SELECT * FROM pg_stat_statements LIMIT 10;');
+    const [analyzing, setAnalyzing] = useState(false);
+    const [analysis, setAnalysis] = useState(null);
+    const [suggestions, setSuggestions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedTable, setSelectedTable] = useState('');
+    const [indexRecs, setIndexRecs] = useState([]);
+    const [error, setError] = useState(null);
 
     // Auto-discover slow queries
     const handleAutoDiscover = async () => {
@@ -95,7 +61,7 @@ const AIQueryAdvisorTab: React.FC = () => {
             setSuggestions(data?.suggestions || []);
             setError(null);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         } finally {
             setLoading(false);
         }
@@ -113,7 +79,7 @@ const AIQueryAdvisorTab: React.FC = () => {
             setAnalysis(result);
             setError(null);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         } finally {
             setAnalyzing(false);
         }
@@ -131,7 +97,7 @@ const AIQueryAdvisorTab: React.FC = () => {
             setIndexRecs(data?.recommendations || []);
             setError(null);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         } finally {
             setLoading(false);
         }
@@ -150,85 +116,85 @@ const AIQueryAdvisorTab: React.FC = () => {
             element.click();
             document.body.removeChild(element);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         }
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1400px' }}>
+        <div style={{ padding:'20px', maxWidth:'1400px' }}>
             <Styles />
 
             {error && (
                 <div style={{
-                    background: `${THEME.danger}15`,
-                    border: `1px solid ${THEME.danger}40`,
-                    borderRadius: 10,
-                    padding: '12px 16px',
-                    marginBottom: 20,
-                    color: THEME.danger,
-                    fontSize: 13
+                    background:`${THEME.danger}15`,
+                    border:`1px solid ${THEME.danger}40`,
+                    borderRadius:10,
+                    padding:'12px 16px',
+                    marginBottom:20,
+                    color:THEME.danger,
+                    fontSize:13
                 }}>
-                    <AlertTriangle size={16} style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }} />
+                    <AlertTriangle size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                     {error}
                 </div>
             )}
 
             {/* Query Input */}
-            <div className="aq-card" style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 12 }}>
-                    <Sparkles size={18} style={{ display: 'inline-block', marginRight: 10, verticalAlign: 'middle' }} />
+            <div className="aq-card" style={{ marginBottom:20 }}>
+                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:12 }}>
+                    <Sparkles size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                     Analyze SQL Query
                 </div>
-                <div className="aq-label" style={{ marginBottom: 12 }}>SQL Query</div>
+                <div className="aq-label" style={{ marginBottom:12 }}>SQL Query</div>
                 <textarea
                     className="aq-textarea"
                     value={sqlQuery}
                     onChange={(e) => setSqlQuery(e.target.value)}
                     placeholder="Paste your SQL query here..."
                 />
-                <button className="aq-button" onClick={handleAnalyze} disabled={analyzing} style={{ marginTop: 12 }}>
-                    {analyzing ? <RefreshCw size={14} className="aq-spinner" style={{ marginRight: 6 }} /> : <Zap size={14} style={{ marginRight: 6 }} />}
+                <button className="aq-button" onClick={handleAnalyze} disabled={analyzing} style={{ marginTop:12 }}>
+                    {analyzing ? <RefreshCw size={14} className="aq-spinner" style={{ marginRight:6 }} /> : <Zap size={14} style={{ marginRight:6 }} />}
                     {analyzing ? 'Analyzing...' : 'Analyze Query'}
                 </button>
             </div>
 
             {/* Analysis Results */}
             {analysis && (
-                <div className="aq-card" style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 20 }}>
-                        <Zap size={18} style={{ display: 'inline-block', marginRight: 10, verticalAlign: 'middle' }} />
+                <div className="aq-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:20 }}>
+                        <Zap size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Analysis Results
                     </div>
 
                     {/* Complexity Score */}
-                    <div style={{ marginBottom: 20 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>
-                            Complexity Score: <span style={{ color: getComplexityColor(analysis.complexityScore) }}>{analysis.complexityScore}/100</span>
+                    <div style={{ marginBottom:20 }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:8 }}>
+                            Complexity Score: <span style={{ color:getComplexityColor(analysis.complexityScore) }}>{analysis.complexityScore}/100</span>
                         </div>
                         <div className="aq-gauge">
                             <div className="aq-gauge-fill" style={{
-                                width: `${analysis.complexityScore}%`,
-                                background: getComplexityColor(analysis.complexityScore)
+                                width:`${analysis.complexityScore}%`,
+                                background:getComplexityColor(analysis.complexityScore)
                             }} />
                         </div>
                     </div>
 
                     {/* Optimization Suggestions */}
                     {analysis.suggestions && analysis.suggestions.length > 0 && (
-                        <div style={{ marginBottom: 20 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 12 }}>
-                                <Lightbulb size={14} style={{ display: 'inline-block', marginRight: 6, verticalAlign: 'middle' }} />
+                        <div style={{ marginBottom:20 }}>
+                            <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:12 }}>
+                                <Lightbulb size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
                                 Optimization Suggestions
                             </div>
                             {analysis.suggestions.map((sug, i) => (
                                 <div key={i} className={`aq-suggestion-card aq-severity-${sug.severity}`}>
-                                    <div style={{ marginBottom: 6 }}>
+                                    <div style={{ marginBottom:6 }}>
                                         <span className={`aq-badge aq-badge-${sug.severity}`}>{sug.severity.toUpperCase()}</span>
-                                        <span style={{ color: THEME.textMain, fontWeight: 700, fontSize: 13 }}>{sug.title}</span>
+                                        <span style={{ color:THEME.textMain, fontWeight:700, fontSize:13 }}>{sug.title}</span>
                                     </div>
-                                    <div style={{ color: THEME.textDim, fontSize: 12 }}>{sug.description}</div>
+                                    <div style={{ color:THEME.textDim, fontSize:12 }}>{sug.description}</div>
                                     {sug.recommendation && (
-                                        <div style={{ marginTop: 8, padding: 8, background: `${THEME.bg}40`, borderRadius: 14, fontSize: 12, color: THEME.textMuted }}>
+                                        <div style={{ marginTop:8, padding:8, background:`${THEME.bg}40`, borderRadius:4, fontSize:12, color:THEME.textMuted }}>
                                             <strong>Recommendation:</strong> {sug.recommendation}
                                         </div>
                                     )}
@@ -240,19 +206,19 @@ const AIQueryAdvisorTab: React.FC = () => {
                     {/* Anti-patterns */}
                     {analysis.antiPatterns && analysis.antiPatterns.length > 0 && (
                         <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 12 }}>
-                                <AlertTriangle size={14} style={{ display: 'inline-block', marginRight: 6, verticalAlign: 'middle' }} />
+                            <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:12 }}>
+                                <AlertTriangle size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
                                 Anti-pattern Detection
                             </div>
                             {analysis.antiPatterns.map((ap, i) => (
                                 <div key={i} style={{
-                                    background: `${THEME.warning}15`,
-                                    border: `1px solid ${THEME.warning}40`,
-                                    borderRadius: 8,
-                                    padding: 12,
-                                    marginBottom: 12,
-                                    fontSize: 12,
-                                    color: THEME.warning
+                                    background:`${THEME.warning}15`,
+                                    border:`1px solid ${THEME.warning}40`,
+                                    borderRadius:8,
+                                    padding:12,
+                                    marginBottom:12,
+                                    fontSize:12,
+                                    color:THEME.warning
                                 }}>
                                     <strong>{ap.pattern}</strong> - {ap.description}
                                 </div>
@@ -263,30 +229,30 @@ const AIQueryAdvisorTab: React.FC = () => {
             )}
 
             {/* Auto-Discover Slow Queries */}
-            <div className="aq-card" style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 16 }}>
-                    <Search size={18} style={{ display: 'inline-block', marginRight: 10, verticalAlign: 'middle' }} />
+            <div className="aq-card" style={{ marginBottom:20 }}>
+                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                    <Search size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                     Auto-Discover Slow Queries
                 </div>
-                <p style={{ color: THEME.textMuted, fontSize: 13, marginBottom: 12 }}>
+                <p style={{ color:THEME.textMuted, fontSize:13, marginBottom:12 }}>
                     Find the slowest queries in your database and get optimization suggestions.
                 </p>
                 <button className="aq-button aq-button-secondary" onClick={handleAutoDiscover} disabled={loading}>
-                    {loading ? <RefreshCw size={14} className="aq-spinner" style={{ marginRight: 6 }} /> : <Search size={14} style={{ marginRight: 6 }} />}
+                    {loading ? <RefreshCw size={14} className="aq-spinner" style={{ marginRight:6 }} /> : <Search size={14} style={{ marginRight:6 }} />}
                     {loading ? 'Discovering...' : 'Discover Queries'}
                 </button>
 
                 {suggestions.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
+                    <div style={{ marginTop:16 }}>
                         {suggestions.map((sug, i) => (
                             <div key={i} className="aq-suggestion-card aq-severity-high">
-                                <div style={{ color: THEME.textMain, fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
+                                <div style={{ color:THEME.textMain, fontWeight:700, fontSize:13, marginBottom:6 }}>
                                     {sug.query.substring(0, 60)}...
                                 </div>
-                                <div style={{ fontSize: 12, color: THEME.textDim, marginBottom: 6 }}>
+                                <div style={{ fontSize:12, color:THEME.textDim, marginBottom:6 }}>
                                     Avg Duration: {fmt(sug.avgDuration)}ms | Calls: {fmt(sug.calls)}
                                 </div>
-                                <div style={{ fontSize: 11, color: THEME.textMuted }}>
+                                <div style={{ fontSize:11, color:THEME.textMuted }}>
                                     Suggestion: {sug.suggestion}
                                 </div>
                             </div>
@@ -296,30 +262,30 @@ const AIQueryAdvisorTab: React.FC = () => {
             </div>
 
             {/* Index Recommendations */}
-            <div className="aq-card" style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 16 }}>
-                    <Target size={18} style={{ display: 'inline-block', marginRight: 10, verticalAlign: 'middle' }} />
+            <div className="aq-card" style={{ marginBottom:20 }}>
+                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                    <Target size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                     Index Recommendations
                 </div>
                 <div className="aq-label">Table Name</div>
                 <input
                     type="text"
                     style={{
-                        background: THEME.surfaceHover,
-                        border: `1px solid ${THEME.grid}`,
-                        borderRadius: 8,
-                        padding: '10px 12px',
-                        color: THEME.textMain,
-                        fontSize: 13,
-                        width: '100%',
-                        marginBottom: 12
+                        background:THEME.surfaceHover,
+                        border:`1px solid ${THEME.grid}`,
+                        borderRadius:8,
+                        padding:'10px 12px',
+                        color:THEME.textMain,
+                        fontSize:13,
+                        width:'100%',
+                        marginBottom:12
                     }}
                     placeholder="e.g., pg_stat_statements"
                     value={selectedTable}
                     onChange={(e) => setSelectedTable(e.target.value)}
                 />
-                <button className="aq-button" onClick={handleGetIndexRecs} disabled={loading} style={{ marginBottom: 16 }}>
-                    {loading ? <RefreshCw size={14} className="aq-spinner" style={{ marginRight: 6 }} /> : <Target size={14} style={{ marginRight: 6 }} />}
+                <button className="aq-button" onClick={handleGetIndexRecs} disabled={loading} style={{ marginBottom:16 }}>
+                    {loading ? <RefreshCw size={14} className="aq-spinner" style={{ marginRight:6 }} /> : <Target size={14} style={{ marginRight:6 }} />}
                     Get Recommendations
                 </button>
 
@@ -327,17 +293,17 @@ const AIQueryAdvisorTab: React.FC = () => {
                     <div>
                         {indexRecs.map((rec, i) => (
                             <div key={i} style={{
-                                background: THEME.grid,
-                                borderRadius: 8,
-                                padding: 12,
-                                marginBottom: 12,
-                                borderLeft: `4px solid ${THEME.success}`
+                                background:THEME.grid,
+                                borderRadius:8,
+                                padding:12,
+                                marginBottom:12,
+                                borderLeft:`4px solid ${THEME.success}`
                             }}>
-                                <div style={{ color: THEME.textMain, fontWeight: 700, fontSize: 12, marginBottom: 6, fontFamily: 'monospace' }}>
+                                <div style={{ color:THEME.textMain, fontWeight:700, fontSize:12, marginBottom:6, fontFamily:'monospace' }}>
                                     {rec.indexName}
                                 </div>
-                                <div style={{ fontSize: 11, color: THEME.textDim }}>
-                                    <strong>Columns:</strong> {rec.columns.join(', ')}<br />
+                                <div style={{ fontSize:11, color:THEME.textDim }}>
+                                    <strong>Columns:</strong> {rec.columns.join(', ')}<br/>
                                     <strong>Expected Impact:</strong> {rec.expectedImprovementPercent}% faster
                                 </div>
                             </div>
@@ -348,20 +314,18 @@ const AIQueryAdvisorTab: React.FC = () => {
 
             {/* Full Report */}
             <div className="aq-card">
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 12 }}>
-                    <CheckCircle size={18} style={{ display: 'inline-block', marginRight: 10, verticalAlign: 'middle' }} />
+                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:12 }}>
+                    <CheckCircle size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                     Generate Report
                 </div>
-                <p style={{ color: THEME.textMuted, fontSize: 13, marginBottom: 12 }}>
+                <p style={{ color:THEME.textMuted, fontSize:13, marginBottom:12 }}>
                     Download a comprehensive JSON report of all query analysis and recommendations.
                 </p>
                 <button className="aq-button aq-button-secondary" onClick={handleGetReport}>
-                    <Zap size={14} style={{ marginRight: 6 }} />
+                    <Zap size={14} style={{ marginRight:6 }} />
                     Download Full Report
                 </button>
             </div>
         </div>
     );
-};
-
-export default AIQueryAdvisorTab;
+}

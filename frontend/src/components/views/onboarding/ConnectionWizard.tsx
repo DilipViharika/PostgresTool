@@ -1,64 +1,20 @@
-// @ts-nocheck
 /**
- * ConnectionWizard.tsx
+ * ConnectionWizard.jsx
  * Multi-step wizard for connecting a database.
  * Steps: Type → Details → Options → Test → Success
  */
-import React, { useState, useEffect, useCallback, FC } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChevronRight, ChevronLeft, CheckCircle, Loader, AlertCircle,
   Database, Key, Zap, Shield, Wifi, Globe, Lock, Plus
 } from 'lucide-react';
 import { postData } from '../../../utils/api';
 import ConnectionStringParser from '../../shared/ConnectionStringParser';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { useNavigation } from '../../../context/NavigationContext';
 import { useConnection } from '../../../context/ConnectionContext';
 
-interface DBType {
-  label: string;
-  defaultPort: number;
-  color: string;
-  icon: string;
-  description: string;
-}
-
-interface ProviderTemplate {
-  label: string;
-  icon: string;
-  template: {
-    hostPattern: string;
-    ssl: boolean;
-    hint: string;
-  };
-}
-
-interface FormData {
-  type: string | null;
-  host: string;
-  port: string;
-  username: string;
-  password: string;
-  database: string;
-  ssl: boolean;
-  sshTunnel: boolean;
-  sshHost: string;
-  sshUsername: string;
-  sshPassword: string;
-  sshKey: string;
-}
-
-interface ParsedConnection {
-  type?: string;
-  host: string;
-  port?: string;
-  username: string;
-  password: string;
-  database: string;
-  ssl?: boolean;
-}
-
-const DB_TYPES: Record<string, DBType> = {
+const DB_TYPES = {
   postgresql: {
     label: 'PostgreSQL',
     defaultPort: 5432,
@@ -82,7 +38,7 @@ const DB_TYPES: Record<string, DBType> = {
   },
 };
 
-const PROVIDER_TEMPLATES: Record<string, ProviderTemplate> = {
+const PROVIDER_TEMPLATES = {
   aws_rds: {
     label: 'AWS RDS',
     icon: '☁️',
@@ -130,11 +86,11 @@ const PROVIDER_TEMPLATES: Record<string, ProviderTemplate> = {
   },
 };
 
-const ConnectionWizard: FC = () => {
+const ConnectionWizard = () => {
   useAdaptiveTheme();
   const [step, setStep] = useState(1); // 1: Type, 2: Details, 3: Options, 4: Test, 5: Success
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [formData, setFormData] = useState<FormData>({
+  const [selectedType, setSelectedType] = useState(null);
+  const [formData, setFormData] = useState({
     type: null,
     host: '',
     port: '',
@@ -148,17 +104,17 @@ const ConnectionWizard: FC = () => {
     sshPassword: '',
     sshKey: '',
   });
-  const [testStatus, setTestStatus] = useState<'loading' | 'success' | 'error' | null>(null);
-  const [testError, setTestError] = useState<string | null>(null);
-  const [connectionId, setConnectionId] = useState<string | null>(null);
+  const [testStatus, setTestStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  const [testError, setTestError] = useState(null);
+  const [connectionId, setConnectionId] = useState(null);
   const [useConnectionString, setUseConnectionString] = useState(false);
-  const [parsedFromString, setParsedFromString] = useState<ParsedConnection | null>(null);
+  const [parsedFromString, setParsedFromString] = useState(null);
 
   const { goToTab } = useNavigation();
   const { refreshConnections } = useConnection();
 
   // Step 1: Select database type
-  const handleSelectType = (type: string): void => {
+  const handleSelectType = (type) => {
     setSelectedType(type);
     setFormData(prev => ({
       ...prev,
@@ -169,7 +125,7 @@ const ConnectionWizard: FC = () => {
   };
 
   // Step 2: Form input changes
-  const handleFormChange = (field: keyof FormData, value: string | boolean): void => {
+  const handleFormChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -177,7 +133,7 @@ const ConnectionWizard: FC = () => {
   };
 
   // Parse connection string
-  const handleParsedConnection = (parsed: ParsedConnection): void => {
+  const handleParsedConnection = (parsed) => {
     setParsedFromString(parsed);
     setFormData(prev => ({
       ...prev,
@@ -192,12 +148,12 @@ const ConnectionWizard: FC = () => {
   };
 
   // Step 3: Additional options (SSH, SSL details)
-  const handleProceedToTest = (): void => {
+  const handleProceedToTest = () => {
     setStep(4);
   };
 
   // Step 4: Test connection
-  const handleTestConnection = useCallback(async (): Promise<void> => {
+  const handleTestConnection = useCallback(async () => {
     setTestStatus('loading');
     setTestError(null);
     try {
@@ -221,12 +177,12 @@ const ConnectionWizard: FC = () => {
       }
     } catch (err) {
       setTestStatus('error');
-      setTestError(err instanceof Error ? err.message : 'Failed to test connection');
+      setTestError(err.message || 'Failed to test connection');
     }
   }, [formData]);
 
   // Create connection in database
-  const handleCreateConnection = useCallback(async (): Promise<void> => {
+  const handleCreateConnection = useCallback(async () => {
     try {
       const response = await postData('/api/connections', {
         type: formData.type,
@@ -236,7 +192,7 @@ const ConnectionWizard: FC = () => {
         password: formData.password,
         database: formData.database,
         ssl: formData.ssl,
-        name: `${formData.type ? DB_TYPES[formData.type]?.label : 'Database'} - ${formData.host}`,
+        name: `${DB_TYPES[formData.type].label} - ${formData.host}`,
         isDefault: true, // Make it default on creation
       });
 
@@ -254,11 +210,11 @@ const ConnectionWizard: FC = () => {
       }
     } catch (err) {
       setTestStatus('error');
-      setTestError(err instanceof Error ? err.message : 'Failed to create connection');
+      setTestError(err.message || 'Failed to create connection');
     }
   }, [formData, refreshConnections]);
 
-  const handleBackStep = (): void => {
+  const handleBackStep = () => {
     if (step > 1) {
       setStep(step - 1);
       if (step === 4) {
@@ -268,13 +224,13 @@ const ConnectionWizard: FC = () => {
     }
   };
 
-  const handleGoToDashboard = (): void => {
+  const handleGoToDashboard = () => {
     goToTab('dashboard');
   };
 
   const styles = {
     container: {
-      width: '100%' as const,
+      width: '100%',
       maxWidth: '700px',
       margin: '0 auto',
       padding: '40px 24px',
@@ -288,21 +244,21 @@ const ConnectionWizard: FC = () => {
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
     },
     stepIndicator: {
-      display: 'flex' as const,
-      justifyContent: 'space-between' as const,
-      alignItems: 'center' as const,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       marginBottom: '32px',
-      position: 'relative' as const,
+      position: 'relative',
     },
     stepDot: {
       width: '32px',
       height: '32px',
       borderRadius: '50%',
-      display: 'flex' as const,
-      alignItems: 'center' as const,
-      justifyContent: 'center' as const,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       fontSize: '12px',
-      fontWeight: '600' as const,
+      fontWeight: '600',
       zIndex: 2,
       transition: 'all 0.2s',
     },
@@ -320,7 +276,7 @@ const ConnectionWizard: FC = () => {
       color: '#07030D',
     },
     stepLine: {
-      position: 'absolute' as const,
+      position: 'absolute',
       top: '16px',
       left: '0',
       right: '0',
@@ -330,7 +286,7 @@ const ConnectionWizard: FC = () => {
     },
     title: {
       fontSize: '20px',
-      fontWeight: '700' as const,
+      fontWeight: '700',
       color: THEME.textMain,
       marginBottom: '8px',
       fontFamily: THEME.fontBody,
@@ -342,7 +298,7 @@ const ConnectionWizard: FC = () => {
       fontFamily: THEME.fontBody,
     },
     typeGrid: {
-      display: 'grid' as const,
+      display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
       gap: '12px',
       marginBottom: '24px',
@@ -354,7 +310,7 @@ const ConnectionWizard: FC = () => {
       background: 'rgba(0, 212, 255, 0.02)',
       cursor: 'pointer',
       transition: 'all 0.2s',
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     typeCardHover: {
       borderColor: 'rgba(0, 212, 255, 0.4)',
@@ -368,7 +324,7 @@ const ConnectionWizard: FC = () => {
     },
     typeLabel: {
       fontSize: '13px',
-      fontWeight: '600' as const,
+      fontWeight: '600',
       color: THEME.textMain,
       marginBottom: '4px',
       fontFamily: THEME.fontBody,
@@ -383,13 +339,13 @@ const ConnectionWizard: FC = () => {
     },
     formLabel: {
       fontSize: '12px',
-      fontWeight: '600' as const,
+      fontWeight: '600',
       color: THEME.textMuted,
       marginBottom: '8px',
-      textTransform: 'uppercase' as const,
+      textTransform: 'uppercase',
       letterSpacing: '0.5px',
       fontFamily: THEME.fontMono,
-      display: 'block' as const,
+      display: 'block',
     },
     formInput: {
       width: '100%',
@@ -401,7 +357,7 @@ const ConnectionWizard: FC = () => {
       fontSize: '13px',
       fontFamily: THEME.fontMono,
       transition: 'all 0.2s',
-      boxSizing: 'border-box' as const,
+      boxSizing: 'border-box',
     },
     formInputFocus: {
       borderColor: 'rgba(0, 212, 255, 0.4)',
@@ -410,7 +366,7 @@ const ConnectionWizard: FC = () => {
       outline: 'none',
     },
     formGrid: {
-      display: 'grid' as const,
+      display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       gap: '12px',
       marginBottom: '12px',
@@ -426,12 +382,12 @@ const ConnectionWizard: FC = () => {
       marginBottom: '16px',
     },
     toggleLabel: {
-      display: 'flex' as const,
-      alignItems: 'center' as const,
+      display: 'flex',
+      alignItems: 'center',
       gap: '8px',
       cursor: 'pointer',
       fontSize: '13px',
-      fontWeight: '500' as const,
+      fontWeight: '500',
       color: THEME.textMain,
       fontFamily: THEME.fontBody,
     },
@@ -442,15 +398,16 @@ const ConnectionWizard: FC = () => {
       background: 'rgba(0, 212, 255, 0.2)',
       border: '1px solid rgba(0, 212, 255, 0.3)',
       cursor: 'pointer',
-      position: 'relative' as const,
+      position: 'relative',
       transition: 'all 0.2s',
-      display: 'flex' as const,
-      alignItems: 'center' as const,
+      display: 'flex',
+      alignItems: 'center',
       paddingRight: '3px',
     },
     toggleActive: {
       background: 'linear-gradient(135deg, #00D4FF, #2AFFD4)',
       borderColor: '#00D4FF',
+      paddingRight: 'auto',
       paddingLeft: '3px',
     },
     toggleDot: {
@@ -463,8 +420,8 @@ const ConnectionWizard: FC = () => {
     testStatusBox: {
       padding: '16px',
       borderRadius: '8px',
-      display: 'flex' as const,
-      alignItems: 'center' as const,
+      display: 'flex',
+      alignItems: 'center',
       gap: '12px',
       marginBottom: '24px',
       fontFamily: THEME.fontBody,
@@ -485,7 +442,7 @@ const ConnectionWizard: FC = () => {
       color: '#00D4FF',
     },
     successScreen: {
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     successIcon: {
       fontSize: '56px',
@@ -493,9 +450,9 @@ const ConnectionWizard: FC = () => {
       animation: 'pulse 2s ease-in-out infinite',
     },
     buttonsContainer: {
-      display: 'flex' as const,
+      display: 'flex',
       gap: '12px',
-      justifyContent: 'space-between' as const,
+      justifyContent: 'space-between',
       marginTop: '32px',
     },
     button: {
@@ -503,12 +460,12 @@ const ConnectionWizard: FC = () => {
       borderRadius: '8px',
       border: 'none',
       fontSize: '13px',
-      fontWeight: '600' as const,
+      fontWeight: '600',
       cursor: 'pointer',
       transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
       fontFamily: THEME.fontBody,
-      display: 'flex' as const,
-      alignItems: 'center' as const,
+      display: 'flex',
+      alignItems: 'center',
       gap: '8px',
     },
     buttonSecondary: {
@@ -533,9 +490,9 @@ const ConnectionWizard: FC = () => {
     },
   };
 
-  const [hoveredType, setHoveredType] = useState<string | null>(null);
-  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const [hoveredType, setHoveredType] = useState(null);
+  const [hoveredButton, setHoveredButton] = useState(null);
+  const [focusedInput, setFocusedInput] = useState(null);
 
   return (
     <div style={styles.container}>
@@ -628,7 +585,7 @@ const ConnectionWizard: FC = () => {
           <>
             <h2 style={styles.title}>Connection Details</h2>
             <p style={styles.description}>
-              {selectedType && `Connect to your ${DB_TYPES[selectedType]?.label} database`}
+              {selectedType && `Connect to your ${DB_TYPES[selectedType].label} database`}
             </p>
 
             {/* Connection String Option */}
@@ -673,7 +630,7 @@ const ConnectionWizard: FC = () => {
                     <label style={styles.formLabel}>Port</label>
                     <input
                       type="number"
-                      placeholder={selectedType ? String(DB_TYPES[selectedType]?.defaultPort) : ''}
+                      placeholder={DB_TYPES[selectedType]?.defaultPort}
                       value={formData.port}
                       onChange={(e) => handleFormChange('port', e.target.value)}
                       onFocus={() => setFocusedInput('port')}
@@ -881,7 +838,7 @@ const ConnectionWizard: FC = () => {
                 }}
               >
                 <div style={{ fontSize: '12px', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
-                  <div>Type: <strong>{formData.type ? DB_TYPES[formData.type]?.label : 'Unknown'}</strong></div>
+                  <div>Type: <strong>{DB_TYPES[formData.type]?.label}</strong></div>
                   <div>Host: <strong>{formData.host}</strong>:{formData.port}</div>
                   <div>Database: <strong>{formData.database}</strong></div>
                   <div>SSL: {formData.ssl ? 'Enabled' : 'Disabled'}</div>

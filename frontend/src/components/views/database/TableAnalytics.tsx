@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
@@ -730,7 +729,7 @@ function S_Deps() {
     const { data, loading, error } = useTableData('/api/tables/dependencies');
     const [selected, setSelected] = useState(null);
     const [hovered, setHovered]   = useState(null);
-    const [viewMode, setViewMode] = useState('table');
+    const [viewMode, setViewMode] = useState('map');
 
     if (loading) return <Loader />;
     if (error)   return <ErrUI msg={error} />;
@@ -739,7 +738,7 @@ function S_Deps() {
     const rows = f.table
         ? normalized.filter(t => t.name === f.table || t.refsTo.includes(f.table) || t.refsBy.includes(f.table))
         : normalized.filter(t => matchFilter(t, f));
-    if (!rows.length) return <EmptyUI msg="No table data available. Select a database and schema from the filters above, or ensure your connection has the pg_stat_user_tables view accessible." />;
+    if (!rows.length) return <EmptyUI />;
 
     const focusName = f.table || selected;
     const focusRow  = focusName ? (normalized.find(r => r.name === focusName) || null) : null;
@@ -1179,10 +1178,10 @@ function S_Deps() {
             {/* Header + toggle */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                 <SecHead Icon={Zap} accent={THEME.cyan}
-                         title="Foreign Key Relationships"
-                         sub="Parent-child table dependencies with cascade actions" />
+                         title="Dependency Mind Map"
+                         sub="FK relationships & cascade chains — click any branch to explore" />
                 <div style={{ display: 'flex', gap: 6 }}>
-                    {['table', 'map'].map(m => (
+                    {['map', 'table'].map(m => (
                         <button key={m} className="ud-btn" onClick={() => setViewMode(m)}
                                 style={{
                                     padding: '5px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600,
@@ -1191,7 +1190,7 @@ function S_Deps() {
                                     border: `1px solid ${viewMode === m ? THEME.cyan : THEME.glassBorder}`,
                                     color: viewMode === m ? THEME.cyan : THEME.textDim,
                                 }}>
-                            {m === 'table' ? '☰ Table' : '✦ Mind Map'}
+                            {m === 'map' ? '✦ Mind Map' : '☰ Table'}
                         </button>
                     ))}
                     {selected && (
@@ -1206,29 +1205,23 @@ function S_Deps() {
                 </div>
             </div>
 
-            {/* Legend for table view */}
-            {viewMode === 'table' && (
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '12px 16px', borderRadius: 10, background: `${THEME.glassBorder}22`, fontSize: 12, color: THEME.textDim }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: 2, background: THEME.danger }} />
-                        <span>Delete/Restrict</span>
+            {/* Legend */}
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '7px 14px', borderRadius: 8, background: `${THEME.glassBorder}22` }}>
+                {[
+                    { color: '#FF6B6B', label: 'Depends On (outgoing FK)' },
+                    { color: '#4ECDC4', label: 'Referenced By (incoming FK)' },
+                    { color: THEME.danger, label: 'Critical node (3+ refs)' },
+                    { color: THEME.textDim, label: 'Sub-branch (2nd-level link)', dash: true },
+                ].map(({ color, label, dash }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        {dash
+                            ? <svg width={18} height={8}><line x1={0} y1={4} x2={18} y2={4} stroke={color} strokeWidth={1.5} strokeDasharray="4 2" /></svg>
+                            : <div style={{ width: 22, height: 3, borderRadius: 2, background: color, boxShadow: `0 0 5px ${color}70` }} />
+                        }
+                        <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{label}</span>
                     </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: 2, background: THEME.warning }} />
-                        <span>Set Null/Default</span>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: 2, background: THEME.success }} />
-                        <span>Cascade Action</span>
-                    </div>
-                </div>
+                ))}
             </div>
-            )}
 
             {viewMode === 'map' ? (
                 <div style={{
@@ -1285,53 +1278,17 @@ function S_Deps() {
                 </div>
             ) : (
                 <Card>
-                    <THead cols="1.2fr 1.8fr 1.8fr 1.2fr" labels={['Table', 'References (Parent ← FK)', 'Referenced By (Child → FK)', 'Status']} />
-                    {rows.map((t, i) => {
-                        const isCritical = t.refsBy.length > 2;
-                        const actionColor = isCritical ? THEME.danger : t.refsBy.length > 0 ? THEME.warning : THEME.success;
-                        return (
-                        <TRow key={i} cols="1.2fr 1.8fr 1.8fr 1.2fr" i={i}>
+                    <THead cols="1fr 1.5fr 1.5fr" labels={['Table', 'Depends On (FK)', 'Referenced By']} />
+                    {rows.map((t, i) => (
+                        <TRow key={i} cols="1fr 1.5fr 1.5fr" i={i}>
                             <div>
                                 <div style={{ fontWeight: 600, fontSize: 13, color: THEME.cyan }}>{t.name}</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, marginTop: 2 }}>{t.schema}</div>
+                                {t.refsBy.length > 2 && <Chip color={THEME.danger} size="sm">Critical</Chip>}
                             </div>
-                            <div style={{ fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textMuted }}>
-                                {t.refsTo.length > 0 ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                        {t.refsTo.map((ref, j) => (
-                                            <div key={j} style={{ fontSize: 11, color: THEME.textMuted }}>→ {ref}</div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <span style={{ color: THEME.textDim }}>—</span>
-                                )}
-                            </div>
-                            <div style={{ fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textMuted }}>
-                                {t.refsBy.length > 0 ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                        {t.refsBy.slice(0, 3).map((ref, j) => (
-                                            <div key={j} style={{ fontSize: 11, color: THEME.textMuted }}>← {ref}</div>
-                                        ))}
-                                        {t.refsBy.length > 3 && (
-                                            <div style={{ fontSize: 10, color: THEME.textDim }}>+{t.refsBy.length - 3} more</div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <span style={{ color: THEME.textDim }}>—</span>
-                                )}
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                                {isCritical ? (
-                                    <Chip color={THEME.danger} size="sm">Critical</Chip>
-                                ) : t.refsBy.length > 0 ? (
-                                    <Chip color={THEME.warning} size="sm">Linked</Chip>
-                                ) : (
-                                    <Chip color={THEME.success} size="sm">Isolated</Chip>
-                                )}
-                            </div>
+                            <span style={{ fontSize: 12, color: THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsTo.length ? t.refsTo.join(', ') : '—'}</span>
+                            <span style={{ fontSize: 12, color: t.refsBy.length ? THEME.textMuted : THEME.textDim, fontFamily: THEME.fontMono }}>{t.refsBy.length ? t.refsBy.join(', ') : '—'}</span>
                         </TRow>
-                        );
-                    })}
+                    ))}
                 </Card>
             )}
         </div>

@@ -1,9 +1,7 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { Search, ZoomIn, ZoomOut, Filter, Eye, Code } from 'lucide-react';
-import type { Column, Table, TreeNode, TableRelationship, ChartData } from './types';
 
 /**
  * SchemaVisualizerTab

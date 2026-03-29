@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ConnectionContext — provides the currently-active database connection
  * to any component in the tree without prop drilling.
@@ -6,43 +5,15 @@
  * Usage:
  *   const { activeConnectionId, setActiveConnectionId, connections, activeConnection } = useConnection();
  */
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { fetchData, postData, setActiveConnectionId as persistConnectionId } from '../utils/api';
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  TYPES
-// ═══════════════════════════════════════════════════════════════════════════
+const ConnectionContext = createContext(null);
 
-interface Connection {
-    id: string;
-    [key: string]: unknown;
-    isDefault?: boolean;
-}
-
-interface ConnectionContextValue {
-    connections: Connection[];
-    activeConnectionId: string | null;
-    activeConnection: Connection | null;
-    loading: boolean;
-    switchConnection: (id: string) => Promise<Record<string, unknown>>;
-    refreshConnections: () => Promise<void>;
-    setActiveConnectionId: (id: string | null) => void;
-}
-
-interface ConnectionProviderProps {
-    children: ReactNode;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  CONTEXT
-// ═══════════════════════════════════════════════════════════════════════════
-
-const ConnectionContext = createContext<ConnectionContextValue | null>(null);
-
-export function ConnectionProvider({ children }: ConnectionProviderProps): React.ReactElement {
-    const [connections, setConnections] = useState<Connection[]>([]);
-    const [activeConnectionId, setActiveConnectionIdState] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+export function ConnectionProvider({ children }) {
+    const [connections, setConnections]               = useState([]);
+    const [activeConnectionId, setActiveConnectionIdState] = useState(null);
+    const [loading, setLoading]                       = useState(true);
 
     // Load connections + current active from backend on mount
     useEffect(() => {
@@ -55,16 +26,14 @@ export function ConnectionProvider({ children }: ConnectionProviderProps): React
                 setConnections(Array.isArray(conns) ? conns : []);
                 // active.connectionId is null if no switch has been made yet
                 // In that case default to the connection marked isDefault (or first)
-                const defaultConn = (Array.isArray(conns) ? conns : []).find(
-                    (c: Connection) => c.isDefault
-                ) || (Array.isArray(conns) ? conns[0] : undefined);
-                const resolvedId = (active as Record<string, unknown>).connectionId ?? defaultConn?.id ?? null;
-                setActiveConnectionIdState(resolvedId as string | null);
-                persistConnectionId(resolvedId as string | null);
+                const defaultConn = conns.find(c => c.isDefault) || conns[0];
+                const resolvedId = active.connectionId ?? defaultConn?.id ?? null;
+                setActiveConnectionIdState(resolvedId);
+                persistConnectionId(resolvedId);
             } catch (err) {
                 // Non-fatal — dashboard still works with the env-pool fallback.
                 // Log so developers can spot auth/network issues during debug.
-                console.warn('[ConnectionContext] Failed to load connections:', (err as Error)?.message ?? err);
+                console.warn('[ConnectionContext] Failed to load connections:', err?.message ?? err);
             } finally {
                 setLoading(false);
             }
@@ -73,10 +42,10 @@ export function ConnectionProvider({ children }: ConnectionProviderProps): React
     }, []);
 
     /** Switch the active connection — calls backend and updates local state */
-    const switchConnection = useCallback(async (id: string): Promise<Record<string, unknown>> => {
+    const switchConnection = useCallback(async (id) => {
         try {
             const data = await postData(`/api/connections/${id}/switch`);
-            if ((data as Record<string, unknown>).success) {
+            if (data.success) {
                 setActiveConnectionIdState(id);
                 persistConnectionId(id); // persist so fetchData picks it up immediately
                 // Refresh connection list so isDefault flag is updated
@@ -85,7 +54,7 @@ export function ConnectionProvider({ children }: ConnectionProviderProps): React
             }
             return data;
         } catch (err) {
-            console.error('[ConnectionContext] switchConnection failed:', (err as Error)?.message ?? err);
+            console.error('[ConnectionContext] switchConnection failed:', err?.message ?? err);
             throw err; // re-throw so the caller can surface an error toast if needed
         }
     }, []);
@@ -98,26 +67,24 @@ export function ConnectionProvider({ children }: ConnectionProviderProps): React
         } catch {}
     }, []);
 
-    const activeConnection = connections.find((c: Connection) => c.id === activeConnectionId) ?? null;
-
-    const value: ConnectionContextValue = {
-        connections,
-        activeConnectionId,
-        activeConnection,
-        loading,
-        switchConnection,
-        refreshConnections,
-        setActiveConnectionId: setActiveConnectionIdState,
-    };
+    const activeConnection = connections.find(c => c.id === activeConnectionId) ?? null;
 
     return (
-        <ConnectionContext.Provider value={value}>
+        <ConnectionContext.Provider value={{
+            connections,
+            activeConnectionId,
+            activeConnection,
+            loading,
+            switchConnection,
+            refreshConnections,
+            setActiveConnectionId: setActiveConnectionIdState,
+        }}>
             {children}
         </ConnectionContext.Provider>
     );
 }
 
-export function useConnection(): ConnectionContextValue {
+export function useConnection() {
     const ctx = useContext(ConnectionContext);
     if (!ctx) throw new Error('useConnection must be used inside <ConnectionProvider>');
     return ctx;

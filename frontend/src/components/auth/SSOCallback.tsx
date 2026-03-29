@@ -1,22 +1,14 @@
-// @ts-nocheck
-import React, { useEffect, useState, useRef, ReactNode } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { THEME } from '../../utils/theme';
 
-interface UserData {
-    id?: string;
-    email?: string;
-    name?: string;
-    [key: string]: any;
-}
-
-const SSOCallback: React.FC = () => {
+const SSOCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { handleSSOCallback } = useAuth();
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const hasProcessed = useRef(false);
 
     useEffect(() => {
@@ -42,10 +34,14 @@ const SSOCallback: React.FC = () => {
                 }
 
                 // 2. Parse the user object
-                let userData: UserData;
+                let userData;
                 if (userParam) {
                     // If backend passes user object explicitly
                     userData = JSON.parse(decodeURIComponent(userParam));
+                    // Validate the parsed user data to prevent JSON injection attacks
+                    if (!userData || typeof userData !== 'object' || !userData.id || !userData.username) {
+                        throw new Error('Invalid user data from SSO');
+                    }
                 } else {
                     // Fallback: Decode the JWT token payload to get user data
                     const base64Url = token.split('.')[1];
@@ -64,7 +60,7 @@ const SSOCallback: React.FC = () => {
 
             } catch (err) {
                 console.error("SSO Callback Error:", err);
-                setError((err as Error).message || "An unexpected error occurred during authentication.");
+                setError(err.message || "An unexpected error occurred during authentication.");
             }
         };
 

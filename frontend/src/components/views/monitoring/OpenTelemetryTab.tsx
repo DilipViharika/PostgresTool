@@ -1,52 +1,57 @@
-// @ts-nocheck
-import React, { useState, useEffect, useCallback, FC } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import React, { useState, useEffect, useCallback } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { Activity, Search, Clock, BarChart2, Filter, RefreshCw, AlertTriangle } from 'lucide-react';
 
-// Types
-interface Stats {
-    avg: number;
-    min: number;
-    max: number;
-    p95: number;
-    lastIngested?: string;
-}
+/* ── Styles ───────────────────────────────────────────────────────────────── */
+const Styles = () => (
+    <style>{`
+        @keyframes otSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes otFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .ot-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:otFade .3s ease; }
+        .ot-section { margin-bottom:24px; }
+        .ot-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+        .ot-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:14px; width:100%; cursor:pointer; }
+        .ot-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .ot-stat { display:inline-block; padding:12px 16px; background:${THEME.grid}; border-radius:8px; margin-right:12px; margin-bottom:8px; }
+        .ot-spinner { animation:otSpin 1s linear infinite; }
+        .ot-badge { display:inline-block; padding:4px 10px; background:${THEME.primary}20; color:${THEME.primary}; border-radius:6px; font-size:11px; font-weight:700; }
+    `}</style>
+);
 
-interface ChartDataPoint {
-    timestamp: string;
-    value: number;
-}
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
+const fmtDate = (d) => d ? new Date(d).toLocaleString() : '—';
 
-const fmt = (n: number | null | undefined) => n === null || n === undefined ? '—' : Number(n).toLocaleString();
-const fmtDate = (d: string | null | undefined) => d ? new Date(d).toLocaleString() : '—';
-
-const ChartTip: FC<any> = ({ active, payload, label }) => {
+const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div className="bg-vigil-surface border border-vigil-accent/20 rounded-lg p-2 text-xs">
-            <div className="text-vigil-muted mb-1">{label}</div>
-            {payload.map((p: any) => (
-                <div key={p.name} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {fmt(p.value)}</div>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+            <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
+            {payload.map(p => (
+                <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {fmt(p.value)}</div>
             ))}
         </div>
     );
 };
 
-const OpenTelemetryTab: FC = () => {
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPENTELEMETRY TAB
+   ═══════════════════════════════════════════════════════════════════════════ */
+export default function OpenTelemetryTab() {
     useAdaptiveTheme();
-    const [services, setServices] = useState<string[]>([]);
-    const [metricNames, setMetricNames] = useState<string[]>([]);
-    const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-    const [stats, setStats] = useState<Stats | null>(null);
+    const [services, setServices] = useState([]);
+    const [metricNames, setMetricNames] = useState([]);
+    const [chartData, setChartData] = useState([]);
+    const [stats, setStats] = useState(null);
     const [selectedService, setSelectedService] = useState('');
     const [selectedMetric, setSelectedMetric] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [timeRange, setTimeRange] = useState('6h');
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
 
     // Load services and metric names
     useEffect(() => {
@@ -61,7 +66,7 @@ const OpenTelemetryTab: FC = () => {
                 if (svcs?.services?.[0]) setSelectedService(svcs.services[0]);
                 if (metrics?.names?.[0]) setSelectedMetric(metrics.names[0]);
                 setError(null);
-            } catch (e: any) {
+            } catch (e) {
                 setError(e.message);
             } finally {
                 setLoading(false);
@@ -83,7 +88,7 @@ const OpenTelemetryTab: FC = () => {
                 setChartData(data?.data || []);
                 setStats(data?.stats || null);
                 setError(null);
-            } catch (e: any) {
+            } catch (e) {
                 setError(e.message);
             } finally {
                 setRefreshing(false);
@@ -98,70 +103,78 @@ const OpenTelemetryTab: FC = () => {
 
     if (loading) {
         return (
-            <div className="p-5 text-center">
-                <style>{`
-                    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-                `}</style>
-                <RefreshCw size={32} className="text-vigil-cyan mx-auto mb-4" style={{ animation: 'spin 1s linear infinite' }} />
-                <div className="text-vigil-muted">Loading OpenTelemetry metrics...</div>
+            <div style={{ padding:'40px 20px', textAlign:'center' }}>
+                <Styles />
+                <RefreshCw size={32} color={THEME.primary} className="ot-spinner" style={{ margin:'0 auto 16px' }} />
+                <div style={{ color:THEME.textMuted }}>Loading OpenTelemetry metrics...</div>
             </div>
         );
     }
 
     return (
-        <div className="p-5 max-w-5xl mx-auto">
+        <div style={{ padding:'20px', maxWidth:'1400px' }}>
+            <Styles />
+
             {error && (
-                <div className="flex items-center gap-2.5 p-4 rounded-xl bg-vigil-rose/10 border border-vigil-rose/30 text-vigil-rose text-xs font-semibold mb-5">
-                    <AlertTriangle size={16} className="flex-shrink-0" />
+                <div style={{
+                    background:`${THEME.danger}15`,
+                    border:`1px solid ${THEME.danger}40`,
+                    borderRadius:10,
+                    padding:'12px 16px',
+                    marginBottom:20,
+                    color:THEME.danger,
+                    fontSize:13
+                }}>
+                    <AlertTriangle size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                     {error}
                 </div>
             )}
 
             {/* Service & Metric Selection */}
-            <div className="grid grid-cols-2 gap-5 bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-vigil-muted uppercase tracking-wider mb-2">
-                        <Activity size={14} />
+            <div className="ot-card" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, marginBottom:20 }}>
+                <div className="ot-section">
+                    <div className="ot-label">
+                        <Activity size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
                         Service
                     </div>
-                    <select className="w-full px-3 py-2 bg-vigil-accent/5 border border-vigil-accent/10 rounded-lg text-vigil-text text-sm cursor-pointer" value={selectedService} onChange={(e) => setSelectedService(e.target.value)}>
+                    <select className="ot-select" value={selectedService} onChange={(e) => setSelectedService(e.target.value)}>
                         {services.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
 
-                <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-vigil-muted uppercase tracking-wider mb-2">
-                        <BarChart2 size={14} />
+                <div className="ot-section">
+                    <div className="ot-label">
+                        <BarChart2 size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
                         Metric Name
                     </div>
-                    <select className="w-full px-3 py-2 bg-vigil-accent/5 border border-vigil-accent/10 rounded-lg text-vigil-text text-sm cursor-pointer" value={selectedMetric} onChange={(e) => setSelectedMetric(e.target.value)}>
+                    <select className="ot-select" value={selectedMetric} onChange={(e) => setSelectedMetric(e.target.value)}>
                         {filteredMetrics.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                 </div>
             </div>
 
             {/* Search & Filters */}
-            <div className="grid grid-cols-2 gap-5 bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-vigil-muted uppercase tracking-wider mb-2">
-                        <Search size={14} />
+            <div className="ot-card" style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:20, marginBottom:20 }}>
+                <div className="ot-section">
+                    <div className="ot-label">
+                        <Search size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
                         Search Metrics
                     </div>
                     <input
                         type="text"
-                        className="w-full px-3 py-2 bg-vigil-accent/5 border border-vigil-accent/10 rounded-lg text-vigil-text text-sm"
+                        className="ot-input"
                         placeholder="Filter metric names..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
 
-                <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-vigil-muted uppercase tracking-wider mb-2">
-                        <Clock size={14} />
+                <div className="ot-section">
+                    <div className="ot-label">
+                        <Clock size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
                         Time Range
                     </div>
-                    <select className="w-full px-3 py-2 bg-vigil-accent/5 border border-vigil-accent/10 rounded-lg text-vigil-text text-sm cursor-pointer" value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
+                    <select className="ot-select" value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
                         <option value="1h">Last 1 Hour</option>
                         <option value="6h">Last 6 Hours</option>
                         <option value="24h">Last 24 Hours</option>
@@ -172,75 +185,73 @@ const OpenTelemetryTab: FC = () => {
             </div>
 
             {/* Time Series Chart */}
-            <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-2 text-sm font-bold text-vigil-text">
-                        <BarChart2 size={16} />
+            <div className="ot-card" style={{ marginBottom:20 }}>
+                <div style={{ marginBottom:12, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:THEME.textMain }}>
+                        <BarChart2 size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                         Metric Timeline
                     </div>
-                    {refreshing && <RefreshCw size={14} className="text-vigil-cyan" style={{ animation: 'spin 1s linear infinite' }} />}
+                    {refreshing && <RefreshCw size={14} color={THEME.primary} className="ot-spinner" />}
                 </div>
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={250}>
                         <LineChart data={chartData}>
-                            <XAxis dataKey="timestamp" stroke={THEME.textDim} style={{ fontSize: 12 }} />
-                            <YAxis stroke={THEME.textDim} style={{ fontSize: 12 }} />
+                            <XAxis dataKey="timestamp" stroke={THEME.textDim} style={{ fontSize:12 }} />
+                            <YAxis stroke={THEME.textDim} style={{ fontSize:12 }} />
                             <Tooltip content={<ChartTip />} />
                             <Line type="monotone" dataKey="value" stroke={THEME.primary} dot={false} isAnimationActive={false} />
                         </LineChart>
                     </ResponsiveContainer>
                 ) : (
-                    <div className="text-center p-10 text-vigil-muted text-xs">No data available</div>
+                    <div style={{ textAlign:'center', padding:'40px 20px', color:THEME.textDim }}>No data available</div>
                 )}
             </div>
 
             {/* Stats Table */}
             {stats && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                    <div className="flex items-center gap-2 text-sm font-bold text-vigil-text mb-4">
-                        <Filter size={16} />
+                <div className="ot-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Filter size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                         Metric Statistics
                     </div>
-                    <div className="grid grid-cols-4 gap-3">
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="text-xs font-semibold text-vigil-muted uppercase mb-1">Average</div>
-                            <div className="text-lg font-black text-vigil-cyan">{fmt(stats.avg)}</div>
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12 }}>
+                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>Average</div>
+                            <div style={{ fontSize:18, fontWeight:800, color:THEME.primary }}>{fmt(stats.avg)}</div>
                         </div>
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="text-xs font-semibold text-vigil-muted uppercase mb-1">Min</div>
-                            <div className="text-lg font-black text-vigil-emerald">{fmt(stats.min)}</div>
+                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>Min</div>
+                            <div style={{ fontSize:18, fontWeight:800, color:THEME.success }}>{fmt(stats.min)}</div>
                         </div>
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="text-xs font-semibold text-vigil-muted uppercase mb-1">Max</div>
-                            <div className="text-lg font-black text-vigil-amber">{fmt(stats.max)}</div>
+                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>Max</div>
+                            <div style={{ fontSize:18, fontWeight:800, color:THEME.warning }}>{fmt(stats.max)}</div>
                         </div>
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="text-xs font-semibold text-vigil-muted uppercase mb-1">P95</div>
-                            <div className="text-lg font-black text-vigil-violet">{fmt(stats.p95)}</div>
+                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>P95</div>
+                            <div style={{ fontSize:18, fontWeight:800, color:THEME.ai }}>{fmt(stats.p95)}</div>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Ingestion Stats */}
-            <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5">
-                <div className="flex items-center gap-2 text-sm font-bold text-vigil-text mb-4">
-                    <Activity size={16} />
+            <div className="ot-card">
+                <div style={{ fontSize:14, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                    <Activity size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                     Ingestion Statistics
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-vigil-accent/5 rounded-lg p-4">
-                        <div className="text-xs font-semibold text-vigil-muted uppercase mb-1">Total Metrics</div>
-                        <div className="text-2xl font-black text-vigil-cyan">{fmt(metricNames.length)}</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                    <div style={{ background:THEME.grid, borderRadius:8, padding:16 }}>
+                        <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700, textTransform:'uppercase' }}>Total Metrics</div>
+                        <div style={{ fontSize:24, fontWeight:800, color:THEME.primary }}>{fmt(metricNames.length)}</div>
                     </div>
-                    <div className="bg-vigil-accent/5 rounded-lg p-4">
-                        <div className="text-xs font-semibold text-vigil-muted uppercase mb-1">Last Ingested</div>
-                        <div className="text-sm text-vigil-text font-semibold">{fmtDate(stats?.lastIngested)}</div>
+                    <div style={{ background:THEME.grid, borderRadius:8, padding:16 }}>
+                        <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700, textTransform:'uppercase' }}>Last Ingested</div>
+                        <div style={{ fontSize:13, color:THEME.textMain, fontWeight:600 }}>{fmtDate(stats?.lastIngested)}</div>
                     </div>
                 </div>
             </div>
         </div>
     );
-};
-
-export default OpenTelemetryTab;
+}

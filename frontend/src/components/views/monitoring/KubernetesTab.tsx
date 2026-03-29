@@ -1,54 +1,34 @@
-// @ts-nocheck
-import React, { useState, useEffect, FC } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
+import React, { useState, useEffect } from 'react';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Box, Server, Cpu, MemoryStick, Network, Activity, CheckCircle, XCircle, RefreshCw, AlertTriangle } from 'lucide-react';
 
-// Types
-interface PodInfo {
-    name?: string;
-    namespace?: string;
-    node?: string;
-    containerId?: string;
-}
+/* ── Styles ───────────────────────────────────────────────────────────────── */
+const Styles = () => (
+    <style>{`
+        @keyframes kSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes kFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .k-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:kFade .3s ease; }
+        .k-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+        .k-metric { background:${THEME.grid}; border-radius:10px; padding:16px; margin-bottom:12px; }
+        .k-progress-bar { width:100%; height:8px; background:${THEME.grid}; border-radius:4px; overflow:hidden; margin-top:8px; }
+        .k-progress-fill { height:100%; border-radius:4px; }
+        .k-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px; }
+        .k-status-ok { color:${THEME.success}; }
+        .k-status-fail { color:${THEME.danger}; }
+        .k-spinner { animation:kSpin 1s linear infinite; }
+        .k-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .k-table th { text-align:left; padding:12px; border-bottom:1px solid ${THEME.grid}; color:${THEME.textMuted}; font-weight:700; }
+        .k-table td { padding:12px; border-bottom:1px solid ${THEME.grid}40; }
+        .k-table tr:hover { background:${THEME.grid}30; }
+    `}</style>
+);
 
-interface Resources {
-    cpuUsagePercent: number;
-    cpuUsage: string;
-    cpuLimit: string;
-    memoryUsagePercent: number;
-    memoryUsage: number;
-    memoryLimit: number;
-}
-
-interface Metrics {
-    readinessProbe?: boolean;
-    livenessProbe?: boolean;
-}
-
-interface Connection {
-    podName: string;
-    activeConnections: number;
-    maxConnections: number;
-    usagePercent: number;
-}
-
-interface Topology {
-    primary: string;
-    replicas?: string[];
-}
-
-interface HistoryEntry {
-    timestamp: string;
-    cpuPercent: number;
-    memoryPercent: number;
-}
-
-const fmt = (n: number | null | undefined) => n === null || n === undefined ? '—' : Number(n).toLocaleString();
-
-const fmtBytes = (b: number | null | undefined) => {
-    if (b === null || b === undefined) return '—';
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
+const fmtBytes = (b) => {
+    if (b === null) return '—';
     const n = Number(b);
     if (n < 1024) return `${n}B`;
     if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)}KB`;
@@ -56,29 +36,32 @@ const fmtBytes = (b: number | null | undefined) => {
     return `${(n / (1024 * 1024 * 1024)).toFixed(1)}GB`;
 };
 
-const ChartTip: FC<any> = ({ active, payload, label }) => {
+const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div className="bg-vigil-surface border border-vigil-accent/20 rounded-lg p-2 text-xs">
-            <div className="text-vigil-muted mb-1">{label}</div>
-            {payload.map((p: any) => (
-                <div key={p.name} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {p.value}%</div>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+            <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
+            {payload.map(p => (
+                <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {p.value}%</div>
             ))}
         </div>
     );
 };
 
-const KubernetesTab: FC = () => {
+/* ═══════════════════════════════════════════════════════════════════════════
+   KUBERNETES TAB
+   ═══════════════════════════════════════════════════════════════════════════ */
+export default function KubernetesTab() {
     useAdaptiveTheme();
-    const [podInfo, setPodInfo] = useState<PodInfo | null>(null);
-    const [metrics, setMetrics] = useState<Metrics | null>(null);
-    const [resources, setResources] = useState<Resources | null>(null);
-    const [connections, setConnections] = useState<Connection[]>([]);
-    const [topology, setTopology] = useState<Topology | null>(null);
-    const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
+    const [podInfo, setPodInfo] = useState(null);
+    const [metrics, setMetrics] = useState(null);
+    const [resources, setResources] = useState(null);
+    const [connections, setConnections] = useState([]);
+    const [topology, setTopology] = useState(null);
+    const [historyData, setHistoryData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [k8sDetected, setK8sDetected] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const load = async () => {
@@ -104,7 +87,7 @@ const KubernetesTab: FC = () => {
                     setHistoryData(hist?.history || []);
                     setError(null);
                 }
-            } catch (e: any) {
+            } catch (e) {
                 setError(e.message);
             } finally {
                 setLoading(false);
@@ -115,24 +98,23 @@ const KubernetesTab: FC = () => {
 
     if (loading) {
         return (
-            <div className="p-5 text-center">
-                <RefreshCw size={32} className="text-vigil-cyan mx-auto mb-4" style={{ animation: 'spin 1s linear infinite' }} />
-                <div className="text-vigil-muted">Loading Kubernetes data...</div>
+            <div style={{ padding:'40px 20px', textAlign:'center' }}>
+                <Styles />
+                <RefreshCw size={32} color={THEME.primary} className="k-spinner" style={{ margin:'0 auto 16px' }} />
+                <div style={{ color:THEME.textMuted }}>Loading Kubernetes data...</div>
             </div>
         );
     }
 
     if (!k8sDetected) {
         return (
-            <div className="p-5 text-center">
-                <style>{`
-                    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-                `}</style>
-                <AlertTriangle size={48} className="text-vigil-amber mx-auto mb-4" />
-                <div className="text-base font-bold text-vigil-text mb-2">
+            <div style={{ padding:'40px 20px', textAlign:'center' }}>
+                <Styles />
+                <AlertTriangle size={48} color={THEME.warning} style={{ margin:'0 auto 16px' }} />
+                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:8 }}>
                     Not Detected
                 </div>
-                <div className="text-vigil-muted text-xs">
+                <div style={{ color:THEME.textMuted, fontSize:13 }}>
                     PostgreSQL is not running in a Kubernetes cluster. This monitoring view is only available for containerized deployments.
                 </div>
             </div>
@@ -140,41 +122,47 @@ const KubernetesTab: FC = () => {
     }
 
     return (
-        <div className="p-5 max-w-5xl mx-auto">
-            <style>{`
-                @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-            `}</style>
+        <div style={{ padding:'20px', maxWidth:'1400px' }}>
+            <Styles />
 
             {error && (
-                <div className="flex items-center gap-2.5 p-4 rounded-xl bg-vigil-rose/10 border border-vigil-rose/30 text-vigil-rose text-xs font-semibold mb-5">
-                    <AlertTriangle size={16} className="flex-shrink-0" />
+                <div style={{
+                    background:`${THEME.danger}15`,
+                    border:`1px solid ${THEME.danger}40`,
+                    borderRadius:10,
+                    padding:'12px 16px',
+                    marginBottom:20,
+                    color:THEME.danger,
+                    fontSize:13
+                }}>
+                    <AlertTriangle size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                     {error}
                 </div>
             )}
 
             {/* Pod Info Card */}
             {podInfo && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                        <Box size={18} />
+                <div className="k-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Box size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Pod Information
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
                         <div>
-                            <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider mb-1">Pod Name</div>
-                            <div className="text-sm text-vigil-text font-semibold">{podInfo.name || '—'}</div>
+                            <div className="k-label">Pod Name</div>
+                            <div style={{ fontSize:14, color:THEME.textMain, fontWeight:600 }}>{podInfo.name || '—'}</div>
                         </div>
                         <div>
-                            <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider mb-1">Namespace</div>
-                            <div className="text-sm text-vigil-text font-semibold">{podInfo.namespace || '—'}</div>
+                            <div className="k-label">Namespace</div>
+                            <div style={{ fontSize:14, color:THEME.textMain, fontWeight:600 }}>{podInfo.namespace || '—'}</div>
                         </div>
                         <div>
-                            <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider mb-1">Node</div>
-                            <div className="text-sm text-vigil-text font-semibold">{podInfo.node || '—'}</div>
+                            <div className="k-label">Node</div>
+                            <div style={{ fontSize:14, color:THEME.textMain, fontWeight:600 }}>{podInfo.node || '—'}</div>
                         </div>
                         <div>
-                            <div className="text-xs font-semibold text-vigil-muted uppercase tracking-wider mb-1">Container ID</div>
-                            <div className="text-xs text-vigil-muted font-mono">{podInfo.containerId?.substring(0, 20)}...</div>
+                            <div className="k-label">Container ID</div>
+                            <div style={{ fontSize:12, color:THEME.textMuted, fontFamily:'monospace' }}>{podInfo.containerId?.substring(0, 20)}...</div>
                         </div>
                     </div>
                 </div>
@@ -182,56 +170,50 @@ const KubernetesTab: FC = () => {
 
             {/* Resource Gauges */}
             {resources && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                        <Activity size={18} />
+                <div className="k-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Activity size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Resource Usage
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <Cpu size={16} className="text-vigil-cyan" />
-                                    <div className="text-xs font-semibold text-vigil-muted uppercase">CPU Usage</div>
+                    <div className="k-row">
+                        <div className="k-metric">
+                            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                    <Cpu size={16} color={THEME.primary} />
+                                    <div className="k-label" style={{ marginBottom:0 }}>CPU Usage</div>
                                 </div>
-                                <div className="text-base font-black text-vigil-cyan">
+                                <div style={{ fontSize:16, fontWeight:800, color:THEME.primary }}>
                                     {fmt(resources.cpuUsagePercent)}%
                                 </div>
                             </div>
-                            <div className="w-full h-2 bg-vigil-accent/20 rounded-full overflow-hidden mb-1">
-                                <div
-                                    className="h-full transition-all duration-300"
-                                    style={{
-                                        width: `${Math.min(resources.cpuUsagePercent, 100)}%`,
-                                        background: resources.cpuUsagePercent > 80 ? THEME.danger : THEME.primary,
-                                    }}
-                                />
+                            <div className="k-progress-bar">
+                                <div className="k-progress-fill" style={{
+                                    width:`${Math.min(resources.cpuUsagePercent, 100)}%`,
+                                    background:resources.cpuUsagePercent > 80 ? THEME.danger : THEME.primary
+                                }} />
                             </div>
-                            <div className="text-xs text-vigil-muted">
+                            <div style={{ fontSize:11, color:THEME.textDim, marginTop:6 }}>
                                 {resources.cpuUsage}m / {resources.cpuLimit}m
                             </div>
                         </div>
 
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <MemoryStick size={16} className="text-vigil-secondary" />
-                                    <div className="text-xs font-semibold text-vigil-muted uppercase">Memory Usage</div>
+                        <div className="k-metric">
+                            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                    <MemoryStick size={16} color={THEME.secondary} />
+                                    <div className="k-label" style={{ marginBottom:0 }}>Memory Usage</div>
                                 </div>
-                                <div className="text-base font-black text-vigil-secondary">
+                                <div style={{ fontSize:16, fontWeight:800, color:THEME.secondary }}>
                                     {fmt(resources.memoryUsagePercent)}%
                                 </div>
                             </div>
-                            <div className="w-full h-2 bg-vigil-accent/20 rounded-full overflow-hidden mb-1">
-                                <div
-                                    className="h-full transition-all duration-300"
-                                    style={{
-                                        width: `${Math.min(resources.memoryUsagePercent, 100)}%`,
-                                        background: resources.memoryUsagePercent > 80 ? THEME.danger : THEME.secondary,
-                                    }}
-                                />
+                            <div className="k-progress-bar">
+                                <div className="k-progress-fill" style={{
+                                    width:`${Math.min(resources.memoryUsagePercent, 100)}%`,
+                                    background:resources.memoryUsagePercent > 80 ? THEME.danger : THEME.secondary
+                                }} />
                             </div>
-                            <div className="text-xs text-vigil-muted">
+                            <div style={{ fontSize:11, color:THEME.textDim, marginTop:6 }}>
                                 {fmtBytes(resources.memoryUsage)} / {fmtBytes(resources.memoryLimit)}
                             </div>
                         </div>
@@ -241,40 +223,40 @@ const KubernetesTab: FC = () => {
 
             {/* Health Status */}
             {metrics && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                        <Server size={18} />
+                <div className="k-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Server size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Health Check Status
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="text-xs font-bold text-vigil-text mb-2">Readiness Probe</div>
-                            <div className="flex items-center gap-2">
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                            <div style={{ fontSize:13, fontWeight:700, marginBottom:8, color:THEME.textMain }}>Readiness Probe</div>
+                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                                 {metrics.readinessProbe ? (
                                     <>
-                                        <CheckCircle size={20} className="text-vigil-emerald" />
-                                        <span className="text-vigil-emerald font-bold">Ready</span>
+                                        <CheckCircle size={20} className="k-status-ok" />
+                                        <span style={{ color:THEME.success, fontWeight:700 }}>Ready</span>
                                     </>
                                 ) : (
                                     <>
-                                        <XCircle size={20} className="text-vigil-rose" />
-                                        <span className="text-vigil-rose font-bold">Not Ready</span>
+                                        <XCircle size={20} className="k-status-fail" />
+                                        <span style={{ color:THEME.danger, fontWeight:700 }}>Not Ready</span>
                                     </>
                                 )}
                             </div>
                         </div>
-                        <div className="bg-vigil-accent/5 rounded-lg p-3">
-                            <div className="text-xs font-bold text-vigil-text mb-2">Liveness Probe</div>
-                            <div className="flex items-center gap-2">
+                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                            <div style={{ fontSize:13, fontWeight:700, marginBottom:8, color:THEME.textMain }}>Liveness Probe</div>
+                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                                 {metrics.livenessProbe ? (
                                     <>
-                                        <CheckCircle size={20} className="text-vigil-emerald" />
-                                        <span className="text-vigil-emerald font-bold">Healthy</span>
+                                        <CheckCircle size={20} className="k-status-ok" />
+                                        <span style={{ color:THEME.success, fontWeight:700 }}>Healthy</span>
                                     </>
                                 ) : (
                                     <>
-                                        <XCircle size={20} className="text-vigil-rose" />
-                                        <span className="text-vigil-rose font-bold">Unhealthy</span>
+                                        <XCircle size={20} className="k-status-fail" />
+                                        <span style={{ color:THEME.danger, fontWeight:700 }}>Unhealthy</span>
                                     </>
                                 )}
                             </div>
@@ -285,61 +267,65 @@ const KubernetesTab: FC = () => {
 
             {/* Connections by Pod */}
             {connections.length > 0 && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                        <Network size={18} />
+                <div className="k-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Network size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Connections by Pod
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                            <thead>
-                                <tr className="border-b border-vigil-accent/10">
-                                    <th className="text-left p-3 font-semibold text-vigil-muted">Pod Name</th>
-                                    <th className="text-left p-3 font-semibold text-vigil-muted">Active Connections</th>
-                                    <th className="text-left p-3 font-semibold text-vigil-muted">Max Connections</th>
-                                    <th className="text-left p-3 font-semibold text-vigil-muted">Usage %</th>
+                    <table className="k-table">
+                        <thead>
+                            <tr>
+                                <th>Pod Name</th>
+                                <th>Active Connections</th>
+                                <th>Max Connections</th>
+                                <th>Usage %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {connections.map((conn, i) => (
+                                <tr key={i}>
+                                    <td>{conn.podName}</td>
+                                    <td>{fmt(conn.activeConnections)}</td>
+                                    <td>{fmt(conn.maxConnections)}</td>
+                                    <td style={{ color:conn.usagePercent > 80 ? THEME.warning : THEME.textMain }}>
+                                        {fmt(conn.usagePercent)}%
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {connections.map((conn, i) => (
-                                    <tr key={i} className="border-b border-vigil-accent/10 last:border-b-0 hover:bg-vigil-accent/5 transition-colors">
-                                        <td className="p-3 text-vigil-text">{conn.podName}</td>
-                                        <td className="p-3 text-vigil-text">{fmt(conn.activeConnections)}</td>
-                                        <td className="p-3 text-vigil-text">{fmt(conn.maxConnections)}</td>
-                                        <td className="p-3" style={{ color: conn.usagePercent > 80 ? THEME.warning : THEME.textMain }}>
-                                            {fmt(conn.usagePercent)}%
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
             {/* Replica Topology */}
             {topology && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5 mb-5">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                        <Server size={18} />
+                <div className="k-card" style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Server size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Replica Topology
                     </div>
-                    <div className="bg-vigil-accent/5 rounded-lg p-4 text-center">
-                        <div className="text-xs font-bold text-vigil-cyan mb-1">
+                    <div style={{ background:THEME.grid, borderRadius:8, padding:16, textAlign:'center' }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:THEME.primary, marginBottom:16 }}>
                             {topology.primary}
                         </div>
-                        <div className="text-xs text-vigil-muted mb-3">Primary</div>
+                        <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:12 }}>Primary</div>
                         {topology.replicas && topology.replicas.length > 0 && (
                             <>
-                                <div className="text-xl text-vigil-muted mb-3">↓</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(topology.replicas.length, 3)}, 1fr)`, gap: 12 }}>
+                                <div style={{ fontSize:20, color:THEME.textDim, marginBottom:12 }}>↓</div>
+                                <div style={{ display:'grid', gridTemplateColumns:`repeat(${Math.min(topology.replicas.length, 3)}, 1fr)`, gap:12 }}>
                                     {topology.replicas.map((rep, i) => (
-                                        <div key={i} className="bg-vigil-surface rounded-lg p-2 text-xs text-vigil-secondary font-semibold">
+                                        <div key={i} style={{
+                                            background:THEME.surfaceHover,
+                                            borderRadius:6,
+                                            padding:8,
+                                            fontSize:12,
+                                            color:THEME.secondary
+                                        }}>
                                             {rep}
                                         </div>
                                     ))}
                                 </div>
-                                <div className="text-xs text-vigil-muted mt-3">
+                                <div style={{ fontSize:11, color:THEME.textMuted, marginTop:12 }}>
                                     {topology.replicas.length} Replicas
                                 </div>
                             </>
@@ -350,15 +336,15 @@ const KubernetesTab: FC = () => {
 
             {/* Resource History Chart */}
             {historyData.length > 0 && (
-                <div className="bg-vigil-surface border border-vigil-accent/10 rounded-xl p-5">
-                    <div className="flex items-center gap-2.5 text-sm font-bold text-vigil-text mb-4">
-                        <Activity size={18} />
+                <div className="k-card">
+                    <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
+                        <Activity size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Resource History (24h)
                     </div>
                     <ResponsiveContainer width="100%" height={250}>
                         <LineChart data={historyData}>
-                            <XAxis dataKey="timestamp" stroke={THEME.textDim} style={{ fontSize: 12 }} />
-                            <YAxis stroke={THEME.textDim} style={{ fontSize: 12 }} />
+                            <XAxis dataKey="timestamp" stroke={THEME.textDim} style={{ fontSize:12 }} />
+                            <YAxis stroke={THEME.textDim} style={{ fontSize:12 }} />
                             <Tooltip content={<ChartTip />} />
                             <Line type="monotone" dataKey="cpuPercent" stroke={THEME.primary} dot={false} name="CPU %" isAnimationActive={false} />
                             <Line type="monotone" dataKey="memoryPercent" stroke={THEME.secondary} dot={false} name="Memory %" isAnimationActive={false} />
@@ -368,6 +354,4 @@ const KubernetesTab: FC = () => {
             )}
         </div>
     );
-};
-
-export default KubernetesTab;
+}

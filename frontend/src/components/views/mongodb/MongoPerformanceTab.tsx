@@ -1,73 +1,35 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
 import {
-    LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    Legend, ScatterChart, Scatter, Cell, TooltipProps
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    ScatterChart,
+    Scatter,
+    Cell,
 } from 'recharts';
 import {
-    Zap, Clock, AlertTriangle, Activity, Lock, TrendingUp, RefreshCw,
-    AlertCircle, ChevronDown, ChevronUp
+    Zap,
+    Clock,
+    AlertTriangle,
+    Activity,
+    Lock,
+    TrendingUp,
+    RefreshCw,
+    AlertCircle,
+    ChevronDown,
+    ChevronUp,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────── //
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────── //
-interface LatencyStats {
-    time: string;
-    p50: number;
-    p95: number;
-    p99: number;
-}
-
-interface OpsBreakdown {
-    [key: string]: number;
-}
-
-interface ActiveOperation {
-    opid: number;
-    ns: string;
-    operation: string;
-    duration: number;
-    status: string;
-}
-
-interface SlowQuery {
-    _id: string;
-    query: string;
-    collection: string;
-    duration: number;
-    count: number;
-}
-
-interface LockStats {
-    globalQueueDepth: number;
-    dbQueueDepth: number;
-    collectionQueueDepth: number;
-    globalTickets: number;
-    globalTicketsUsed: number;
-}
-
-interface WiredTigerStats {
-    cacheSize: number;
-    cacheFilled: number;
-    cacheDirty: number;
-    cacheHitRatio: number;
-    evictionRate: number;
-}
-
-interface ChartTooltipProps extends TooltipProps<number, string> {
-    active?: boolean;
-    payload?: Array<{
-        name: string;
-        value: number;
-        color: string;
-    }>;
-}
-
-// ─────────────────────────────────────────────────────────────────────────── //
-// THEME & CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────── //
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* THEME & CONSTANTS */
+/* ─────────────────────────────────────────────────────────────────────────── */
 const DARK_THEME = {
     bg: '#0d1117',
     card: '#161b22',
@@ -81,7 +43,7 @@ const DARK_THEME = {
     green: '#3fb950',
 };
 
-const Styles: React.FC = () => (
+const Styles = () => (
     <style>{`
         @keyframes mongoFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes mongoPulse { 0%{opacity:1} 50%{opacity:0.6} 100%{opacity:1} }
@@ -225,25 +187,27 @@ const Styles: React.FC = () => (
     `}</style>
 );
 
-// ─────────────────────────────────────────────────────────────────────────── //
-// HELPER FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────── //
-const fmt = (n: number | null | undefined): string => {
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* HELPER FUNCTIONS */
+/* ─────────────────────────────────────────────────────────────────────────── */
+const fmt = (n) => {
     if (n === null || n === undefined) return '—';
     return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
 };
 
-const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
+const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -252,20 +216,20 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
     );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════ //
-// MONGO PERFORMANCE TAB COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════ //
-const MongoPerformanceTab: React.FC = () => {
-    const [latencyStats, setLatencyStats] = useState<LatencyStats[]>([]);
-    const [opsBreakdown, setOpsBreakdown] = useState<OpsBreakdown>({});
-    const [activeOps, setActiveOps] = useState<ActiveOperation[]>([]);
-    const [slowQueries, setSlowQueries] = useState<SlowQuery[]>([]);
-    const [lockStats, setLockStats] = useState<LockStats>({} as LockStats);
-    const [wiredTiger, setWiredTiger] = useState<WiredTigerStats>({} as WiredTigerStats);
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* MONGO PERFORMANCE TAB COMPONENT */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+export default function MongoPerformanceTab() {
+    const [latencyStats, setLatencyStats] = useState([]);
+    const [opsBreakdown, setOpsBreakdown] = useState({});
+    const [activeOps, setActiveOps] = useState([]);
+    const [slowQueries, setSlowQueries] = useState([]);
+    const [lockStats, setLockStats] = useState({});
+    const [wiredTiger, setWiredTiger] = useState({});
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [expandedRows, setExpandedRows] = useState<{ [key: string]: boolean }>({});
-    const pollIntervalRef = useRef<NodeJS.Timer | null>(null);
+    const [error, setError] = useState(null);
+    const [expandedRows, setExpandedRows] = useState({});
+    const pollIntervalRef = useRef(null);
 
     const loadData = useCallback(async () => {
         try {
@@ -281,29 +245,41 @@ const MongoPerformanceTab: React.FC = () => {
 
             setLatencyStats(lat || []);
 
-            setOpsBreakdown(ops || {});
+            setOpsBreakdown(
+                ops || {
+                    find: 0,
+                    insert: 0,
+                    update: 0,
+                    delete: 0,
+                    aggregate: 0,
+                },
+            );
 
             setActiveOps(active || []);
 
             setSlowQueries(slow || []);
 
-            setLockStats(lock || {
-                globalQueueDepth: 0,
-                dbQueueDepth: 0,
-                collectionQueueDepth: 0,
-                globalTickets: 0,
-                globalTicketsUsed: 0,
-            });
+            setLockStats(
+                lock || {
+                    globalQueueDepth: 0,
+                    dbQueueDepth: 0,
+                    collectionQueueDepth: 0,
+                    globalTickets: 0,
+                    globalTicketsUsed: 0,
+                },
+            );
 
-            setWiredTiger(wt || {
-                cacheSize: 0,
-                cacheFilled: 0,
-                cacheDirty: 0,
-                cacheHitRatio: 0,
-                evictionRate: 0,
-            });
+            setWiredTiger(
+                wt || {
+                    cacheSize: 0,
+                    cacheFilled: 0,
+                    cacheDirty: 0,
+                    cacheHitRatio: 0,
+                    evictionRate: 0,
+                },
+            );
         } catch (err) {
-            setError((err as Error).message || 'Failed to load performance data');
+            setError(err.message || 'Failed to load performance data');
         } finally {
             setLoading(false);
         }
@@ -312,15 +288,13 @@ const MongoPerformanceTab: React.FC = () => {
     useEffect(() => {
         loadData();
         pollIntervalRef.current = setInterval(loadData, 30000);
-        return () => {
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-        };
+        return () => clearInterval(pollIntervalRef.current);
     }, [loadData]);
 
-    const toggleRowExpand = (key: string) => {
-        setExpandedRows(prev => ({
+    const toggleRowExpand = (key) => {
+        setExpandedRows((prev) => ({
             ...prev,
-            [key]: !prev[key]
+            [key]: !prev[key],
         }));
     };
 
@@ -340,7 +314,7 @@ const MongoPerformanceTab: React.FC = () => {
 
     const opsChartData = Object.entries(opsBreakdown).map(([key, value]) => ({
         name: key,
-        value
+        value,
     }));
 
     return (
@@ -392,9 +366,27 @@ const MongoPerformanceTab: React.FC = () => {
                                 <YAxis stroke={DARK_THEME.textMuted} />
                                 <Tooltip content={<ChartTooltip />} />
                                 <Legend />
-                                <Line type="monotone" dataKey="p50" stroke={DARK_THEME.success} name="P50" strokeWidth={2} />
-                                <Line type="monotone" dataKey="p95" stroke={DARK_THEME.warning} name="P95" strokeWidth={2} />
-                                <Line type="monotone" dataKey="p99" stroke={DARK_THEME.danger} name="P99" strokeWidth={2} />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p50"
+                                    stroke={DARK_THEME.success}
+                                    name="P50"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p95"
+                                    stroke={DARK_THEME.warning}
+                                    name="P95"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p99"
+                                    stroke={DARK_THEME.danger}
+                                    name="P99"
+                                    strokeWidth={2}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -438,7 +430,11 @@ const MongoPerformanceTab: React.FC = () => {
                                     <tr key={op.opid}>
                                         <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{op.opid}</td>
                                         <td>{op.ns}</td>
-                                        <td><span className="mongo-badge mongo-badge-normal">{op.operation.toUpperCase()}</span></td>
+                                        <td>
+                                            <span className="mongo-badge mongo-badge-normal">
+                                                {op.operation.toUpperCase()}
+                                            </span>
+                                        </td>
                                         <td>{fmt(op.duration)}</td>
                                         <td style={{ color: DARK_THEME.success }}>{op.status}</td>
                                     </tr>
@@ -457,14 +453,32 @@ const MongoPerformanceTab: React.FC = () => {
                         {slowQueries.map((query, idx) => (
                             <div key={query._id} className="mongo-card" style={{ marginBottom: 12 }}>
                                 <div
-                                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                                    style={{
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                    }}
                                     onClick={() => toggleRowExpand(query._id)}
                                 >
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text, marginBottom: 4 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                fontWeight: 600,
+                                                color: DARK_THEME.text,
+                                                marginBottom: 4,
+                                            }}
+                                        >
                                             {query.collection}
                                         </div>
-                                        <div style={{ fontSize: 12, color: DARK_THEME.textMuted, fontFamily: 'monospace' }}>
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                color: DARK_THEME.textMuted,
+                                                fontFamily: 'monospace',
+                                            }}
+                                        >
                                             {query.query.substring(0, 60)}...
                                         </div>
                                     </div>
@@ -481,8 +495,21 @@ const MongoPerformanceTab: React.FC = () => {
                                     </div>
                                 </div>
                                 {expandedRows[query._id] && (
-                                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${DARK_THEME.border}` }}>
-                                        <div style={{ fontSize: 12, fontFamily: 'monospace', color: DARK_THEME.textMuted, wordBreak: 'break-word' }}>
+                                    <div
+                                        style={{
+                                            marginTop: 12,
+                                            paddingTop: 12,
+                                            borderTop: `1px solid ${DARK_THEME.border}`,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                fontFamily: 'monospace',
+                                                color: DARK_THEME.textMuted,
+                                                wordBreak: 'break-word',
+                                            }}
+                                        >
                                             {query.query}
                                         </div>
                                     </div>
@@ -498,42 +525,85 @@ const MongoPerformanceTab: React.FC = () => {
                         <Lock size={16} /> Lock Analysis
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Global Queue Depth
                                 </div>
-                                <div style={{ fontSize: 24, fontWeight: 700, color: lockStats.globalQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                <div
+                                    style={{
+                                        fontSize: 24,
+                                        fontWeight: 700,
+                                        color: lockStats.globalQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success,
+                                    }}
+                                >
                                     {lockStats.globalQueueDepth}
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     DB Queue Depth
                                 </div>
-                                <div style={{ fontSize: 24, fontWeight: 700, color: lockStats.dbQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success }}>
+                                <div
+                                    style={{
+                                        fontSize: 24,
+                                        fontWeight: 700,
+                                        color: lockStats.dbQueueDepth > 0 ? DARK_THEME.warning : DARK_THEME.success,
+                                    }}
+                                >
                                     {lockStats.dbQueueDepth}
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Global Tickets
                                 </div>
                                 <div style={{ fontSize: 14, color: DARK_THEME.text }}>
                                     {lockStats.globalTicketsUsed} / {lockStats.globalTickets}
                                 </div>
-                                <div style={{
-                                    height: 6,
-                                    background: DARK_THEME.border,
-                                    borderRadius: 10,
-                                    overflow: 'hidden',
-                                    marginTop: 4
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${(lockStats.globalTicketsUsed / lockStats.globalTickets) * 100}%`,
-                                        background: DARK_THEME.accent
-                                    }} />
+                                <div
+                                    style={{
+                                        height: 6,
+                                        background: DARK_THEME.border,
+                                        borderRadius: 10,
+                                        overflow: 'hidden',
+                                        marginTop: 4,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${(lockStats.globalTicketsUsed / lockStats.globalTickets) * 100}%`,
+                                            background: DARK_THEME.accent,
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -546,9 +616,22 @@ const MongoPerformanceTab: React.FC = () => {
                         <TrendingUp size={16} /> WiredTiger State
                     </h3>
                     <div className="mongo-card">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                gap: 16,
+                            }}
+                        >
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Cache Size
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
@@ -556,7 +639,14 @@ const MongoPerformanceTab: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Cache Filled
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
@@ -564,7 +654,14 @@ const MongoPerformanceTab: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Cache Hit Ratio
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.success }}>
@@ -572,7 +669,14 @@ const MongoPerformanceTab: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, textTransform: 'uppercase', marginBottom: 8 }}>
+                                <div
+                                    style={{
+                                        fontSize: 11,
+                                        color: DARK_THEME.textMuted,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 8,
+                                    }}
+                                >
                                     Eviction Rate
                                 </div>
                                 <div style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.warning }}>
@@ -585,6 +689,4 @@ const MongoPerformanceTab: React.FC = () => {
             </div>
         </>
     );
-};
-
-export default MongoPerformanceTab;
+}

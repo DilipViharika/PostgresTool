@@ -7,8 +7,8 @@ import { THEME } from '../../../utils/theme';
  * CSS-in-JS at this level keeps the bundle self-contained while avoiding
  * repeated style recalculations from inline-style-heavy components.
  */
-export const GlobalStyles: React.FC = () => (
-  <style>{`
+export const GlobalStyles = () => (
+    <style>{`
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     .um-root {
@@ -18,7 +18,7 @@ export const GlobalStyles: React.FC = () => (
         min-height: 100vh;
     }
 
-    /* ── Animations ───────────────────────────────────────────────────────── */
+    /* ── Animations ───────────────────────────────────────────────────── */
     @keyframes umFadeUp     { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
     @keyframes umFadeIn     { from { opacity:0; } to { opacity:1; } }
     @keyframes umSlideRight { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
@@ -147,5 +147,5 @@ export const GlobalStyles: React.FC = () => (
         outline: 2px solid ${T.primary};
         outline-offset: 2px;
     }
-  `}</style>
+    `}</style>
 );

@@ -1,7 +1,2 @@
-// @ts-nocheck
-import React from 'react';
-import DemoDataTab from './DemoDataTab.jsx';
-
-const DemoPostgresTab: React.FC = () => <DemoDataTab dbKey="postgresql" />;
-
-export default DemoPostgresTab;
+import DemoDataTab from './DemoDataTab';
+export default function DemoPostgresTab() { return <DemoDataTab dbKey="postgresql" />; }

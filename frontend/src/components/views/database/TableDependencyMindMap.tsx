@@ -1,9 +1,7 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { Search, ZoomIn, ZoomOut, Filter } from 'lucide-react';
-import type { Column, Table, TreeNode, TableRelationship, ChartData } from './types';
 
 /**
  * TableDependencyMindMap

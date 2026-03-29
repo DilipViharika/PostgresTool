@@ -7,45 +7,38 @@
 //         </LicenseGate>
 // ==========================================================================
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { useLicense } from '../context/LicenseContext';
 import UpgradeBanner from './UpgradeBanner';
 
-interface LicenseGateProps {
-  feature: string;
-  tier?: string | null;
-  children: ReactNode;
-  fallback?: ReactNode | null;
-}
-
-const LicenseGate: React.FC<LicenseGateProps> = ({
-  feature,
-  tier = null,
-  children,
-  fallback = null,
+const LicenseGate = ({
+    feature,
+    tier = null,
+    children,
+    fallback = null,
 }) => {
-  const { isFeatureAvailable, tier: currentTier } = useLicense();
+    const { isFeatureAvailable, tier: currentTier } = useLicense();
 
-  // Check if feature is available
-  const hasAccess = isFeatureAvailable(feature);
+    // Check if feature is available
+    const hasAccess = isFeatureAvailable(feature);
 
-  // If tier is specified, check against current tier
-  if (tier) {
-    const tierHierarchy: Record<string, number> = { community: 0, pro: 1, enterprise: 2 };
-    const requiredLevel = tierHierarchy[tier] || 0;
-    const currentLevel = tierHierarchy[currentTier] || 0;
-    if (currentLevel < requiredLevel) {
-      return fallback || <UpgradeBanner feature={feature} tier={tier} />;
+    // If tier is specified, check against current tier
+    if (tier) {
+        const tierHierarchy = { community: 0, pro: 1, enterprise: 2 };
+        const requiredLevel = tierHierarchy[tier] || 0;
+        const currentLevel = tierHierarchy[currentTier] || 0;
+        if (currentLevel < requiredLevel) {
+            return fallback || <UpgradeBanner feature={feature} tier={tier} />;
+        }
     }
-  }
 
-  // Check feature availability
-  if (!hasAccess) {
-    return fallback || <UpgradeBanner feature={feature} />;
-  }
+    // Check feature availability
+    if (!hasAccess) {
+        return fallback || <UpgradeBanner feature={feature} />;
+    }
 
-  // Feature is available, render children
-  return <>{children}</>;
+    // Feature is available, render children
+    return children;
 };
 
 export default LicenseGate;

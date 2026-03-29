@@ -1,302 +1,254 @@
-/**
- * utils/api.ts — Typed HTTP client for VIGIL frontend
- * ────────────────────────────────────────────────────
- * Drop-in replacement for api.js with full TypeScript support.
- * Import from './utils/api' — Vite resolves .ts over .js automatically.
- *
- * Features:
- *  - Generic typed responses: fetchData<T>('/api/alerts') → Promise<T>
- *  - AbortController with configurable timeout
- *  - GET request deduplication
- *  - Auto auth header injection
- *  - connectionId routing for monitoring endpoints
- *  - 401 auto-logout
- */
+import { isDemoMode, getDemoData } from './demoData';
 
-import { isDemoMode, getDemoData } from './demoData.js';
+const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API_URL not set, using relative URLs'); return ''; })();
 
-/** Shape of error responses from the backend */
-interface ApiError {
-  error?: string;
-  message?: string;
-}
+// ── Request deduplication ──────────────────────────────────────────────────
+// Prevents duplicate GET requests to the same URL while one is in-flight.
+const inflightRequests = new Map();
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────────────────────────────────────
-
-const API_BASE: string =
-  import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
-
+// ── Default request timeout (30 seconds) ───────────────────────────────────
 const DEFAULT_TIMEOUT_MS = 30_000;
 
-// ── Request deduplication ────────────────────────────────────────────────────
-const inflightRequests = new Map<string, Promise<unknown>>();
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('vigil_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-function getActiveConnectionId(): string | null {
-  try {
-    return localStorage.getItem('vigil_active_connection_id') || null;
-  } catch {
-    return null;
-  }
-}
-
-/** Endpoints that use the admin pool (not user-connection-scoped) */
-const SKIP_CONNECTION_PATTERNS: readonly string[] = [
-  '/api/auth',
-  '/api/connections',
-  '/api/feedback',
-  '/api/admin/feedback',
-  '/api/users',
-  '/api/sessions',
-  '/api/audit',
-  '/api/repo',
-] as const;
-
-function appendConnectionId(path: string): string {
-  const connId = getActiveConnectionId();
-  if (!connId) return path;
-  if (SKIP_CONNECTION_PATTERNS.some((p) => path.startsWith(p))) return path;
-  const sep = path.includes('?') ? '&' : '?';
-  return `${path}${sep}connectionId=${connId}`;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Request Options
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface RequestOptions extends Omit<RequestInit, 'body'> {
-  body?: string;
-  timeout?: number;
-  signal?: AbortSignal;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Core Request Function
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function request<T = unknown>(
-  path: string,
-  options: RequestOptions = {}
-): Promise<T> {
-  // ── Demo mode ──────────────────────────────────────────────────────────
-  if (isDemoMode()) {
-    await new Promise((r) => setTimeout(r, Math.random() * 300 + 100));
-    return getDemoData(path) as T;
-  }
-
-  const isGet = options.method === 'GET' || !options.method;
-  const resolvedPath = isGet ? appendConnectionId(path) : path;
-  const url = resolvedPath.startsWith('http')
-    ? resolvedPath
-    : `${API_BASE}${resolvedPath}`;
-
-  // ── Deduplicate in-flight GET requests ─────────────────────────────────
-  if (isGet && inflightRequests.has(url)) {
-    return inflightRequests.get(url) as Promise<T>;
-  }
-
-  // ── AbortController with timeout ───────────────────────────────────────
-  const controller = new AbortController();
-  const timeoutMs = options.timeout || DEFAULT_TIMEOUT_MS;
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  const promise = (async (): Promise<T> => {
-    try {
-      const res = await fetch(url, {
-        ...options,
-        signal: options.signal || controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders(),
-          ...options.headers,
-        },
-      });
-
-      if (res.status === 401) {
-        window.dispatchEvent(new CustomEvent('auth:logout'));
-        const data: ApiError = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Session expired. Please sign in again.');
-      }
-
-      if (!res.ok) {
-        const data: ApiError = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Request failed (${res.status})`);
-      }
-
-      return (await res.json()) as T;
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        throw new Error(`Request to ${path} timed out after ${timeoutMs}ms`);
-      }
-      throw err;
-    } finally {
-      clearTimeout(timeoutId);
-      if (isGet) inflightRequests.delete(url);
-    }
-  })();
-
-  if (isGet) inflightRequests.set(url, promise);
-
-  return promise;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Legacy fetchMetrics (kept for backward compat)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const fetchMetrics = async <T = unknown>(): Promise<T> => {
-  if (isDemoMode()) return getDemoData('/api/metrics') as T;
-  const res = await fetch(`${API_BASE}/api/metrics`, {
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-  });
-  return res.json() as Promise<T>;
+export const fetchMetrics = async () => {
+    if (isDemoMode()) return getDemoData('/api/metrics');
+    const res = await fetch(`${API_BASE}/api/metrics`, {
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    });
+    return res.json();
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WebSocket Polling (Vercel-compatible)
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface WsMessage<T = unknown> {
-  type: 'snapshot' | 'alert';
-  payload?: T;
+function getAuthHeaders() {
+    const token = localStorage.getItem('vigil_token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function connectWS(
-  onMessage?: (msg: WsMessage) => void,
-  intervalMs = 10000
-): () => void {
-  if (isDemoMode()) {
-    if (onMessage) setTimeout(() => onMessage({ type: 'snapshot' }), 500);
-    return () => {};
-  }
+/**
+ * Get the currently active connectionId from localStorage.
+ * The ConnectionContext persists this so API calls automatically target the right DB.
+ */
+function getActiveConnectionId() {
+    try { return localStorage.getItem('vigil_active_connection_id') || null; }
+    catch { return null; }
+}
 
-  const token = localStorage.getItem('vigil_token');
-  if (!token) return () => {};
+/**
+ * Append ?connectionId=X to a path, if an active connection is set and
+ * the path is a monitoring endpoint (not auth / connections / feedback / admin-meta).
+ */
+function appendConnectionId(path) {
+    const connId = getActiveConnectionId();
+    if (!connId) return path;
 
-  let lastAlertId: string | number | null = null;
-  let stopped = false;
-  let retryCount = 0;
-  let reconnectDelay = 1000;
-  const MAX_DELAY = 30000;
-  const MAX_RETRIES = 10;
-  let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    // Don't forward connectionId to these endpoints (they use the app's own pool)
+    const skipPatterns = [
+        '/api/auth',
+        '/api/connections',
+        '/api/feedback',
+        '/api/admin/feedback',
+        '/api/users',
+        '/api/sessions',
+        '/api/audit',
+        '/api/repo',
+    ];
+    if (skipPatterns.some(p => path.startsWith(p))) return path;
 
-  const poll = async (): Promise<void> => {
-    if (stopped) return;
-    try {
-      const res = await fetch(`${API_BASE}/api/alerts/recent?limit=10`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
+    const sep = path.includes('?') ? '&' : '?';
+    return `${path}${sep}connectionId=${connId}`;
+}
 
-      retryCount = 0;
-      reconnectDelay = 1000;
-
-      if (lastAlertId === null) {
-        onMessage?.({ type: 'snapshot' });
-      }
-
-      if (data.alerts?.length > 0) {
-        const newestId = data.alerts[0].id;
-        if (newestId !== lastAlertId) {
-          if (lastAlertId !== null) {
-            const cutoff = data.alerts.findIndex(
-              (a: { id: string | number }) => a.id === lastAlertId
-            );
-            const newAlerts =
-              cutoff === -1 ? data.alerts : data.alerts.slice(0, cutoff);
-            newAlerts.forEach((alert: unknown) => {
-              onMessage?.({ type: 'alert', payload: alert });
-            });
-          }
-          lastAlertId = newestId;
-        }
-      }
-    } catch (e) {
-      console.error('Alert poll error', e);
-      if (retryCount < MAX_RETRIES) {
-        retryCount++;
-        reconnectTimer = setTimeout(poll, reconnectDelay);
-        reconnectDelay = Math.min(reconnectDelay * 2, MAX_DELAY);
-      }
+async function request(path, options = {}) {
+    // ── Demo mode: return mock data without hitting backend ──────────────
+    if (isDemoMode()) {
+        // Simulate a small network delay for realism
+        await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
+        return getDemoData(path);
     }
-  };
 
-  poll();
-  const timer = setInterval(poll, intervalMs);
+    const isGet = options.method === 'GET' || !options.method;
+    const resolvedPath = isGet ? appendConnectionId(path) : path;
+    const url = resolvedPath.startsWith('http') ? resolvedPath : `${API_BASE}${resolvedPath}`;
 
-  return () => {
-    stopped = true;
-    clearInterval(timer);
-    if (reconnectTimer) clearTimeout(reconnectTimer);
-  };
+    // ── Deduplicate identical in-flight GET requests ─────────────────────
+    if (isGet && inflightRequests.has(url)) {
+        return inflightRequests.get(url).catch(err => { inflightRequests.delete(url); throw err; });
+    }
+
+    // ── AbortController with configurable timeout ───────────────────────
+    const controller = new AbortController();
+    const timeoutMs = options.timeout || DEFAULT_TIMEOUT_MS;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const promise = (async () => {
+        try {
+            const res = await fetch(url, {
+                ...options,
+                signal: options.signal || controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders(),
+                    ...options.headers,
+                },
+            });
+
+            if (res.status === 401) {
+                window.dispatchEvent(new CustomEvent('auth:logout'));
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || 'Session expired. Please sign in again.');
+            }
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Request failed (${res.status})`);
+            }
+
+            return res.json();
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                throw new Error(`Request to ${path} timed out after ${timeoutMs}ms`);
+            }
+            throw err;
+        } finally {
+            clearTimeout(timeoutId);
+            if (isGet) inflightRequests.delete(url);
+        }
+    })();
+
+    // Store the promise so duplicate GET calls share the same in-flight request
+    if (isGet) inflightRequests.set(url, promise);
+
+    return promise;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Typed HTTP Methods
-// ─────────────────────────────────────────────────────────────────────────────
+// --- POLLING REPLACEMENT FOR WEBSOCKET ---
+// WebSockets are not supported on Vercel (serverless). This polls /api/alerts/recent instead.
+export function connectWS(onMessage, intervalMs = 10000) {
+    // Demo mode: simulate a connected state with no real alerts
+    if (isDemoMode()) {
+        if (onMessage) setTimeout(() => onMessage({ type: 'snapshot' }), 500);
+        return () => {};
+    }
 
-export async function fetchData<T = unknown>(path: string): Promise<T> {
-  return request<T>(path, { method: 'GET' });
+    const token = localStorage.getItem('vigil_token');
+    if (!token) return () => {};
+
+    let lastAlertId = null;
+    let stopped = false;
+
+    // Exponential backoff state
+    let retryCount = 0;
+    let reconnectDelay = 1000; // Start with 1 second
+    const MAX_DELAY = 30000; // Max 30 seconds
+    const MAX_RETRIES = 10;
+    let reconnectTimer = null;
+
+    const poll = async () => {
+        if (stopped) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/alerts/recent?limit=10`, {
+                headers: { Authorization: `Bearer ${token}` },
+                signal: AbortSignal.timeout(10000),
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            // Connection successful: reset backoff state
+            retryCount = 0;
+            reconnectDelay = 1000;
+
+            // Signal "connected" on first successful poll
+            if (lastAlertId === null) {
+                if (onMessage) onMessage({ type: 'snapshot' });
+            }
+
+            // Only fire if there are new alerts since last poll
+            if (data.alerts && data.alerts.length > 0) {
+                const newestId = data.alerts[0].id;
+                if (newestId !== lastAlertId) {
+                    if (lastAlertId !== null) {
+                        // Emit only alerts that appeared AFTER the last-seen alert.
+                        // data.alerts is sorted newest-first; slice up to the position of
+                        // lastAlertId so we never re-emit already-seen entries.
+                        const cutoff = data.alerts.findIndex(a => a.id === lastAlertId);
+                        const newAlerts = cutoff === -1
+                            ? data.alerts            // entire window is new (edge case: window scrolled)
+                            : data.alerts.slice(0, cutoff);
+                        newAlerts.forEach(alert => {
+                            if (onMessage) onMessage({ type: 'alert', payload: alert });
+                        });
+                    }
+                    lastAlertId = newestId;
+                }
+            }
+        } catch (e) {
+            console.error('Alert poll error', e);
+
+            // Connection failed: apply exponential backoff
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                reconnectTimer = setTimeout(poll, reconnectDelay);
+                // Double the delay up to max
+                reconnectDelay = Math.min(reconnectDelay * 2, MAX_DELAY);
+            } else {
+                console.warn(`Alert poll: max retries (${MAX_RETRIES}) exceeded, stopping reconnection attempts`);
+            }
+        }
+    };
+
+    // Immediate first poll
+    poll();
+    let pollInterval = setInterval(poll, intervalMs);
+
+    // Visibility-aware polling: pause when tab is hidden, resume when visible
+    const visHandler = () => {
+        if (document.hidden) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        } else if (!pollInterval) {
+            poll();
+            pollInterval = setInterval(poll, intervalMs);
+        }
+    };
+    document.addEventListener('visibilitychange', visHandler);
+
+    // Return cleanup function (mirrors old WS cleanup interface)
+    return () => {
+        stopped = true;
+        if (pollInterval) clearInterval(pollInterval);
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        document.removeEventListener('visibilitychange', visHandler);
+    };
 }
 
-export async function postData<T = unknown>(
-  path: string,
-  body: unknown = {}
-): Promise<T> {
-  return request<T>(path, { method: 'POST', body: JSON.stringify(body) });
+export async function fetchData(path) {
+    return request(path, { method: 'GET' });
 }
 
-export async function putData<T = unknown>(
-  path: string,
-  body: unknown = {}
-): Promise<T> {
-  return request<T>(path, { method: 'PUT', body: JSON.stringify(body) });
+export async function postData(path, body = {}) {
+    return request(path, { method: 'POST', body: JSON.stringify(body) });
 }
 
-export async function patchData<T = unknown>(
-  path: string,
-  body: unknown = {}
-): Promise<T> {
-  return request<T>(path, { method: 'PATCH', body: JSON.stringify(body) });
+export async function putData(path, body = {}) {
+    return request(path, { method: 'PUT', body: JSON.stringify(body) });
 }
 
-export async function deleteData<T = unknown>(path: string): Promise<T> {
-  return request<T>(path, { method: 'DELETE' });
+export async function patchData(path, body = {}) {
+    return request(path, { method: 'PATCH', body: JSON.stringify(body) });
 }
 
-export function setActiveConnectionId(id: number | string | null): void {
-  try {
-    if (id == null) localStorage.removeItem('vigil_active_connection_id');
-    else localStorage.setItem('vigil_active_connection_id', String(id));
-  } catch {
-    // localStorage unavailable (e.g., in tests)
-  }
+export async function deleteData(path) {
+    return request(path, { method: 'DELETE' });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Exports
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Persist the active connectionId so all subsequent fetchData calls target that DB.
+ * Called by ConnectionContext when the user switches connections.
+ */
+export function setActiveConnectionId(id) {
+    try {
+        if (id == null) localStorage.removeItem('vigil_active_connection_id');
+        else localStorage.setItem('vigil_active_connection_id', String(id));
+    } catch {}
+}
 
 export { API_BASE };
-export default {
-  fetchData,
-  postData,
-  putData,
-  patchData,
-  deleteData,
-  connectWS,
-  API_BASE,
-  setActiveConnectionId,
-};
+export default { fetchData, postData, putData, patchData, deleteData, connectWS, API_BASE, setActiveConnectionId };

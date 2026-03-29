@@ -1,50 +1,36 @@
-import { useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect } from 'react';
 
-/**
- * Debounce hook
- * @param value - Value to debounce
- * @param delay - Delay in ms
- * @returns Debounced value
- */
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+export function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
 
-  return debouncedValue;
+    return debouncedValue;
 }
 
-/**
- * Click outside hook
- * @param ref - Ref to element
- * @param handler - Callback when clicking outside
- */
-export function useClickOutside(
-  ref: React.RefObject<HTMLElement>,
-  handler: (event: MouseEvent | TouchEvent) => void
-): void {
-  useEffect(() => {
-    const listener = (event: MouseEvent | TouchEvent) => {
-      if (!ref.current || ref.current.contains(event.target as Node)) {
-        return;
-      }
-      handler(event);
-    };
+export function useClickOutside(ref, handler) {
+    useEffect(() => {
+        const listener = (event) => {
+            if (!ref.current || ref.current.contains(event.target)) {
+                return;
+            }
+            handler(event);
+        };
 
-    document.addEventListener('mousedown', listener as EventListener);
-    document.addEventListener('touchstart', listener as EventListener);
+        document.addEventListener('mousedown', listener);
+        document.addEventListener('touchstart', listener);
 
-    return () => {
-      document.removeEventListener('mousedown', listener as EventListener);
-      document.removeEventListener('touchstart', listener as EventListener);
-    };
-  }, [ref, handler]);
+        return () => {
+            document.removeEventListener('mousedown', listener);
+            document.removeEventListener('touchstart', listener);
+        };
+    }, [ref, handler]);
 }

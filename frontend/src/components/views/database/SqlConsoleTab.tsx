@@ -1,4 +1,3 @@
-// @ts-nocheck
 // ==========================================================================
 //  VIGIL — SqlConsoleTab  (v6 — Maximum Power Edition)
 // ==========================================================================
@@ -7,7 +6,7 @@ import React, {
     useReducer, createContext, useContext, Suspense
 } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
-import { postData } from '../../../utils/api';
+import { postData, fetchData } from '../../../utils/api';
 
 import {
     Play, Eraser, Copy, Check, ChevronDown, ChevronUp,
@@ -198,7 +197,8 @@ const SNIPPETS = [
     { id:'s8', name:'LATERAL Join', tag:'advanced', sql:`SELECT t.*, agg.*\nFROM :table t\nCROSS JOIN LATERAL (\n  SELECT COUNT(*) AS related_count,\n    MAX(:col) AS max_val\n  FROM :related_table r\n  WHERE r.:fk_col = t.id\n) agg\nORDER BY agg.related_count DESC\nLIMIT :n;` },
 ];
 
-const SCHEMA_MOCK: { name: string; tables: { name: string; cols: { n: string; t: string }[] }[] }[] = [];
+const SCHEMA_MOCK_INITIAL = {};
+// Empty state: "Schema browser will populate when connected to a database."
 
 const TYPE_COLOR_MAP = {
     uuid: THEME.secondary, text: THEME.textDim, varchar: THEME.textDim,
@@ -684,18 +684,25 @@ const ParamEditor = ({ sql, params, onChange }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SCHEMA BROWSER
    ═══════════════════════════════════════════════════════════════════════════ */
-const SchemaBrowser = ({ onInsert }) => {
+const SchemaBrowser = ({ onInsert, schema = {} }) => {
     const [expanded, setExpanded] = useState({ public:true });
     const [expandedTables, setExpandedTables] = useState({});
     const [search, setSearch] = useState('');
     const filtered = useMemo(() => {
-        if (!search) return SCHEMA_MOCK;
-        return SCHEMA_MOCK.map(s => ({
+        const schemaArray = Object.entries(schema).map(([schemaName, tables]) => ({
+            name: schemaName,
+            tables: Object.entries(tables || {}).map(([tableName, cols]) => ({
+                name: tableName,
+                cols: Array.isArray(cols) ? cols.map(c => ({ n: c.name, t: c.type })) : []
+            }))
+        }));
+        if (!search) return schemaArray;
+        return schemaArray.map(s => ({
             ...s, tables:s.tables.filter(t =>
                 t.name.includes(search.toLowerCase()) || t.cols.some(c => c.n.includes(search.toLowerCase()))
             )
         })).filter(s => s.tables.length > 0);
-    }, [search]);
+    }, [search, schema]);
     return (
         <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
             <div style={{ padding:'8px 10px', borderBottom:`1px solid ${THEME.glassBorder}` }}>
@@ -901,6 +908,7 @@ const SqlConsoleTab = () => {
     const [liveRefreshSecs, setLiveRefreshSecs] = useState(5);
     const [showLiveConfig, setShowLiveConfig] = useState(false);
     const [rowHeight, setRowHeight] = useState('compact'); // 'compact'|'normal'|'relaxed'
+    const [schema, setSchema] = useState({});
 
     const editorRef = useRef(null);
     const timerRef = useRef(null);
@@ -924,6 +932,19 @@ const SqlConsoleTab = () => {
     }, []);
     const stopTimer = useCallback(() => { clearInterval(timerRef.current); timerRef.current = null; }, []);
     useEffect(() => () => { clearInterval(timerRef.current); clearInterval(liveTimerRef.current); }, []);
+
+    /* ── Fetch schema ── */
+    useEffect(() => {
+        const loadSchema = async () => {
+            try {
+                const data = await fetchData('/api/schema/browser');
+                setSchema(data || {});
+            } catch (err) {
+                console.error('Failed to load schema:', err);
+            }
+        };
+        loadSchema();
+    }, []);
 
     /* ── Autocomplete ── */
     const handleSuggest = useCallback((e) => {
@@ -2041,7 +2062,7 @@ const SqlConsoleTab = () => {
                             {/* ── Schema Browser ── */}
                             {activePanel === 'schema' && (
                                 <div style={{ height:'100%', overflow:'hidden', display:'flex', flexDirection:'column', margin:'-13px -16px' }}>
-                                    <SchemaBrowser onInsert={(text)=>{
+                                    <SchemaBrowser schema={schema} onInsert={(text)=>{
                                         const ta = editorRef.current;
                                         if (!ta) return;
                                         const pos = ta.selectionStart;

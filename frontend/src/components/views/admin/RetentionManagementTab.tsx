@@ -1,45 +1,11 @@
-// @ts-nocheck
-import React, { useState, useEffect, useCallback, FC } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, putData, postData } from '../../../utils/api';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Database, HardDrive, Trash2, TrendingDown, Save, AlertTriangle, RefreshCw, RotateCcw } from 'lucide-react';
+import { Database, HardDrive, Trash2, TrendingDown, Save, AlertTriangle, RefreshCw } from 'lucide-react';
 
-/* ── TYPE DEFINITIONS ───────────────────────────────────────────────────── */
-interface RetentionPolicy {
-    metricsRetentionDays: number;
-    logsRetentionDays: number;
-    alertsRetentionDays: number;
-    auditRetentionDays: number;
-}
-
-interface RetentionStats {
-    metricsSize: number;
-    logsSize: number;
-    alertsSize: number;
-    auditSize: number;
-}
-
-interface FormValues {
-    metrics: number | string;
-    logs: number | string;
-    alerts: number | string;
-    audit: number | string;
-}
-
-interface GrowthPoint {
-    date: string;
-    totalSize: number;
-}
-
-interface ChartTipProps {
-    active?: boolean;
-    payload?: any[];
-    label?: string;
-}
-
-/* ── STYLES ───────────────────────────────────────────────────────────────── */
-const Styles: FC = () => (
+/* ── Styles ───────────────────────────────────────────────────────────────── */
+const Styles = () => (
     <style>{`
         @keyframes rmSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rmFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
@@ -56,7 +22,9 @@ const Styles: FC = () => (
     `}</style>
 );
 
-const fmtBytes = (b: number | null): string => {
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
+const fmtBytes = (b) => {
     if (b === null) return '—';
     const n = Number(b);
     if (n < 1024) return `${n}B`;
@@ -65,9 +33,7 @@ const fmtBytes = (b: number | null): string => {
     return `${(n / (1024 * 1024 * 1024)).toFixed(1)}GB`;
 };
 
-const fmt = (n: number | null): string => n === null ? '—' : Number(n).toLocaleString();
-
-const ChartTip: FC<ChartTipProps> = ({ active, payload, label }) => {
+const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
@@ -82,20 +48,20 @@ const ChartTip: FC<ChartTipProps> = ({ active, payload, label }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    RETENTION MANAGEMENT TAB
    ═══════════════════════════════════════════════════════════════════════════ */
-const RetentionManagementTab: FC = () => {
+export default function RetentionManagementTab() {
     useAdaptiveTheme();
-    const [policy, setPolicy] = useState<RetentionPolicy | null>(null);
-    const [formValues, setFormValues] = useState<FormValues>({ metrics: 30, logs: 7, alerts: 90, audit: 365 });
-    const [stats, setStats] = useState<RetentionStats | null>(null);
-    const [growthData, setGrowthData] = useState<GrowthPoint[]>([]);
+    const [policy, setPolicy] = useState(null);
+    const [formValues, setFormValues] = useState({ metrics: 30, logs: 7, alerts: 90, audit: 365 });
+    const [stats, setStats] = useState(null);
+    const [growthData, setGrowthData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [cleaning, setCleaning] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
+    // Load retention policy and stats
     useEffect(() => {
         const load = async () => {
             try {
@@ -115,7 +81,7 @@ const RetentionManagementTab: FC = () => {
                 });
                 setError(null);
             } catch (e) {
-                setError((e as Error).message);
+                setError(e.message);
             } finally {
                 setLoading(false);
             }
@@ -137,7 +103,7 @@ const RetentionManagementTab: FC = () => {
             setError(null);
             setTimeout(() => setSuccess(null), 3000);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         } finally {
             setSaving(false);
         }
@@ -153,44 +119,9 @@ const RetentionManagementTab: FC = () => {
             setShowCleanupConfirm(false);
             setTimeout(() => setSuccess(null), 3000);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         } finally {
             setCleaning(false);
-        }
-    };
-
-    const handleResetDefaults = async () => {
-        setFormValues({ metrics: 30, logs: 7, alerts: 90, audit: 365 });
-        setSuccess('Retention policy reset to defaults');
-        setTimeout(() => setSuccess(null), 3000);
-    };
-
-    const handleSaveSinglePolicy = async (category: string, days: number) => {
-        setSaving(true);
-        try {
-            const payload: any = {};
-            const categoryMap: any = {
-                Metrics: 'metricsRetentionDays',
-                Logs: 'logsRetentionDays',
-                Alerts: 'alertsRetentionDays',
-                Audit: 'auditRetentionDays',
-            };
-            payload[categoryMap[category]] = days;
-            payload.metricsRetentionDays = payload.metricsRetentionDays || Number(formValues.metrics);
-            payload.logsRetentionDays = payload.logsRetentionDays || Number(formValues.logs);
-            payload.alertsRetentionDays = payload.alertsRetentionDays || Number(formValues.alerts);
-            payload.auditRetentionDays = payload.auditRetentionDays || Number(formValues.audit);
-
-            const result = await putData('/api/retention/policy', payload);
-            setPolicy(result);
-            setEditingIndex(null);
-            setSuccess(`${category} retention updated to ${days} days`);
-            setError(null);
-            setTimeout(() => setSuccess(null), 3000);
-        } catch (e) {
-            setError((e as Error).message);
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -204,8 +135,8 @@ const RetentionManagementTab: FC = () => {
         );
     }
 
-    const estimatedSavings = stats && policy ? (
-        (Number(formValues.metrics) - policy.metricsRetentionDays) * (stats.metricsSize / policy.metricsRetentionDays || 0)
+    const estimatedSavings = stats ? (
+        (Number(formValues.metrics) - policy?.metricsRetentionDays) * (stats.metricsSize / policy?.metricsRetentionDays || 0)
     ) : 0;
 
     return (
@@ -241,81 +172,7 @@ const RetentionManagementTab: FC = () => {
                 </div>
             )}
 
-            {/* New Retention Policies Table */}
-            <div className="rm-card" style={{ marginBottom:20 }}>
-                <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:20 }}>
-                    <Database size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
-                    Retention Policies
-                </div>
-
-                <div style={{ overflowX:'auto' }}>
-                    <table style={{
-                        width:'100%',
-                        borderCollapse:'collapse',
-                        fontSize:13
-                    }}>
-                        <thead>
-                            <tr style={{ borderBottom:`1px solid ${THEME.grid}` }}>
-                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Category</th>
-                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Current</th>
-                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Custom Retention</th>
-                                <th style={{ padding:'12px', textAlign:'left', color:THEME.textMuted, fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.5px' }}>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {[
-                                { label: 'Metrics', key: 'metrics', current: policy?.metricsRetentionDays || 30 },
-                                { label: 'Logs', key: 'logs', current: policy?.logsRetentionDays || 7 },
-                                { label: 'Alerts', key: 'alerts', current: policy?.alertsRetentionDays || 90 },
-                                { label: 'Audit', key: 'audit', current: policy?.auditRetentionDays || 365 }
-                            ].map((item, idx) => (
-                                <tr key={idx} style={{ borderBottom:`1px solid ${THEME.grid}` }}>
-                                    <td style={{ padding:'12px', color:THEME.textMain }}>{item.label}</td>
-                                    <td style={{ padding:'12px', color:THEME.textMuted }}>{item.current} days</td>
-                                    <td style={{ padding:'12px' }}>
-                                        <input
-                                            type="number"
-                                            className="rm-input"
-                                            min="1"
-                                            max="3650"
-                                            value={formValues[item.key as keyof FormValues]}
-                                            onChange={(e) => setFormValues({ ...formValues, [item.key]: e.target.value })}
-                                            style={{ width:'100px', padding:'6px 8px', fontSize:12 }}
-                                        />
-                                    </td>
-                                    <td style={{ padding:'12px' }}>
-                                        <button
-                                            className="rm-button"
-                                            onClick={() => handleSaveSinglePolicy(item.label, Number(formValues[item.key as keyof FormValues]))}
-                                            disabled={saving}
-                                            style={{ padding:'6px 12px', fontSize:12, background: THEME.primary }}
-                                        >
-                                            {saving ? <RefreshCw size={12} style={{ display:'inline', marginRight:4 }} className="rm-spinner" /> : <Save size={12} style={{ display:'inline', marginRight:4 }} />}
-                                            Save
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style={{ display:'flex', gap:10, marginTop:20 }}>
-                    <button className="rm-button" onClick={handleSavePolicy} disabled={saving} style={{ marginTop:0 }}>
-                        {saving ? <RefreshCw size={14} className="rm-spinner" style={{ marginRight:6, display:'inline' }} /> : <Save size={14} style={{ marginRight:6, display:'inline' }} />}
-                        {saving ? 'Saving All...' : 'Save All Policies'}
-                    </button>
-                    <button
-                        className="rm-button"
-                        onClick={handleResetDefaults}
-                        style={{ background: THEME.secondary, marginTop:0 }}
-                    >
-                        <RotateCcw size={14} style={{ marginRight:6, display:'inline' }} />
-                        Reset to Defaults
-                    </button>
-                </div>
-            </div>
-
+            {/* Retention Settings Form */}
             <div className="rm-card" style={{ marginBottom:20 }}>
                 <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:20 }}>
                     <Database size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
@@ -373,7 +230,7 @@ const RetentionManagementTab: FC = () => {
                 </div>
 
                 <button className="rm-button" onClick={handleSavePolicy} disabled={saving} style={{ marginTop:16 }}>
-                    {saving ? <RefreshCw size={14} className="rm-spinner" style={{ marginRight:6, display:'inline' }} /> : <Save size={14} style={{ marginRight:6, display:'inline' }} />}
+                    {saving ? <RefreshCw size={14} className="rm-spinner" style={{ marginRight:6 }} /> : <Save size={14} style={{ marginRight:6 }} />}
                     {saving ? 'Saving...' : 'Save Policy'}
                 </button>
 
@@ -393,6 +250,7 @@ const RetentionManagementTab: FC = () => {
                 )}
             </div>
 
+            {/* Data Size Visualization */}
             {stats && (
                 <div className="rm-card" style={{ marginBottom:20 }}>
                     <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
@@ -419,6 +277,7 @@ const RetentionManagementTab: FC = () => {
                 </div>
             )}
 
+            {/* Growth Trend */}
             {growthData.length > 0 && (
                 <div className="rm-card" style={{ marginBottom:20 }}>
                     <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
@@ -436,6 +295,7 @@ const RetentionManagementTab: FC = () => {
                 </div>
             )}
 
+            {/* Manual Cleanup */}
             <div className="rm-card">
                 <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
                     <Trash2 size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
@@ -457,7 +317,7 @@ const RetentionManagementTab: FC = () => {
                         </div>
                         <div style={{ display:'flex', gap:10 }}>
                             <button className="rm-button rm-button-danger" onClick={handleCleanup} disabled={cleaning}>
-                                {cleaning ? <RefreshCw size={14} className="rm-spinner" style={{ marginRight:4 }} /> : <Trash2 size={14} style={{ marginRight:4 }} />}
+                                {cleaning ? <RefreshCw size={14} className="rm-spinner" /> : <Trash2 size={14} />}
                                 {cleaning ? 'Cleaning...' : 'Confirm Cleanup'}
                             </button>
                             <button className="rm-button" style={{ background:THEME.surfaceHover }} onClick={() => setShowCleanupConfirm(false)}>
@@ -469,6 +329,4 @@ const RetentionManagementTab: FC = () => {
             </div>
         </div>
     );
-};
-
-export default RetentionManagementTab;
+}

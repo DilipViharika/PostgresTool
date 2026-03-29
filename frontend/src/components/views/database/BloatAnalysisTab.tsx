@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
@@ -392,6 +391,7 @@ export default function BloatAnalysisTab() {
     const intervalRef = useRef(null);
 
     const load = useCallback(async (initial = false) => {
+        let cancelled = false;
         if (!initial) setRefreshing(true);
         try {
             const [tRes, iRes, sRes] = await Promise.allSettled([
@@ -399,6 +399,9 @@ export default function BloatAnalysisTab() {
                 fetchData('/api/bloat/indexes'),
                 fetchData('/api/bloat/summary'),
             ]);
+
+            if (cancelled) return;
+
             const val = r => (r.status === 'fulfilled' ? r.value : null);
             const rejected = [tRes, iRes, sRes].find(r => r.status === 'rejected');
             setTables(((val(tRes)) || []).map(normaliseTable));
@@ -407,11 +410,15 @@ export default function BloatAnalysisTab() {
             // Only show an error if ALL three requests failed (real connection issue)
             setError((!val(tRes) && !val(iRes) && !val(sRes)) ? (rejected?.reason?.message || 'Failed to load bloat data') : null);
         } catch (e) {
-            setError(e.message);
+            if (!cancelled) {
+                setError(e.message);
+            }
         } finally {
-            setLastAt(Date.now());
-            setRefreshing(false);
-            if (initial) setLoading(false);
+            if (!cancelled) {
+                setLastAt(Date.now());
+                setRefreshing(false);
+                if (initial) setLoading(false);
+            }
         }
     }, []);
 
@@ -419,7 +426,9 @@ export default function BloatAnalysisTab() {
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         if (autoRfsh > 0) intervalRef.current = setInterval(() => load(false), autoRfsh * 1000);
-        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
     }, [autoRfsh, load]);
 
     const fmtRel = d => {

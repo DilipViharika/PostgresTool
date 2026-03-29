@@ -1,8 +1,7 @@
-// @ts-nocheck
 // ==========================================================================
-//  VIGIL — Capacity Planning & Forecasting (v1.0) [TypeScript]
+//  VIGIL — Capacity Planning & Forecasting (v1.0)
 // ==========================================================================
-import React, { useState, useMemo, FC } from 'react';
+import React, { useState, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import {
     TrendingUp, HardDrive, Database, DollarSign, Calendar,
@@ -16,78 +15,9 @@ import {
 } from 'recharts';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TYPE DEFINITIONS
-   ═══════════════════════════════════════════════════════════════════════════ */
-interface StorageForecastPoint {
-    date: string;
-    used: number;
-    limit: number;
-    type: 'forecast' | 'history';
-    predicted: number | null;
-}
-
-interface ConnectionPoint {
-    time: string;
-    connections: number;
-    limit: number;
-    safe_threshold: number;
-}
-
-interface CostPoint {
-    month: string;
-    cost: number;
-    projected: boolean;
-}
-
-interface Recommendation {
-    type: 'upgrade' | 'downgrade' | 'config';
-    resource: string;
-    urgency: 'high' | 'medium' | 'low';
-    title: string;
-    desc: string;
-    action: string;
-    cost: string;
-    tooltip: string;
-}
-
-interface GaugeBarProps {
-    used: number;
-    total: number;
-    color: string;
-    unit?: string;
-}
-
-interface StatTileProps {
-    label: string;
-    value: string;
-    sub: string;
-    icon: React.ComponentType<any>;
-    color: string;
-    gauge?: {
-        used: number;
-        total: number;
-        unit?: string;
-    };
-}
-
-interface RecommendationCardProps {
-    rec: Recommendation;
-}
-
-interface Scenario {
-    growth: string | number;
-    users: string | number;
-}
-
-interface Thresholds {
-    storage: number;
-    connections: number;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
    STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
-const CapStyles: FC = () => (
+const CapStyles = () => (
     <style>{`
         .cap-card {
             background: ${THEME.surface};
@@ -154,8 +84,8 @@ const CapStyles: FC = () => (
 /* ═══════════════════════════════════════════════════════════════════════════
    MOCK DATA GENERATORS
    ═══════════════════════════════════════════════════════════════════════════ */
-const generateStorageForecast = (windowDays: number = 90): StorageForecastPoint[] => {
-    const data: StorageForecastPoint[] = [];
+const generateStorageForecast = (windowDays = 90) => {
+    const data = [];
     let used = 450;
     const total = 1000;
     const growthRate = 1.2;
@@ -179,8 +109,8 @@ const generateStorageForecast = (windowDays: number = 90): StorageForecastPoint[
     return data;
 };
 
-const generateConnectionForecast = (): ConnectionPoint[] => {
-    const data: ConnectionPoint[] = [];
+const generateConnectionForecast = () => {
+    const data = [];
     const conns = 65;
     for (let i = 0; i < 24; i++) {
         const hourLoad = Math.sin((i - 6) / 24 * Math.PI * 2) * 40;
@@ -195,7 +125,7 @@ const generateConnectionForecast = (): ConnectionPoint[] => {
     return data;
 };
 
-const generateCostForecast = (): CostPoint[] => {
+const generateCostForecast = () => {
     const months = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
     let cost = 380;
     return months.map((m, i) => {
@@ -204,7 +134,7 @@ const generateCostForecast = (): CostPoint[] => {
     });
 };
 
-const RECOMMENDATIONS: Recommendation[] = [
+const RECOMMENDATIONS = [
     {
         type: 'upgrade', resource: 'Storage', urgency: 'high',
         title: 'Expand Disk Volume',
@@ -232,7 +162,8 @@ const RECOMMENDATIONS: Recommendation[] = [
    SUB-COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const GaugeBar: FC<GaugeBarProps> = ({ used, total, color, unit = '' }) => {
+// Gauge Bar
+const GaugeBar = ({ used, total, color, unit = '' }) => {
     const pct = Math.min(100, Math.round((used / total) * 100));
     const barColor = pct > 85 ? THEME.danger : pct > 65 ? THEME.warning : color;
     return (
@@ -252,9 +183,10 @@ const GaugeBar: FC<GaugeBarProps> = ({ used, total, color, unit = '' }) => {
     );
 };
 
-const StatTile: FC<StatTileProps> = ({ label, value, sub, icon: Icon, color, gauge }) => {
+// Stat Tile
+const StatTile = ({ label, value, sub, icon: Icon, color, gauge }) => {
     const valueColor = label === 'Storage Runway'
-        ? (parseInt(String(value)) < 30 ? THEME.danger : parseInt(String(value)) < 60 ? THEME.warning : THEME.textMain)
+        ? (parseInt(value) < 30 ? THEME.danger : parseInt(value) < 60 ? THEME.warning : THEME.textMain)
         : THEME.textMain;
 
     return (
@@ -270,9 +202,10 @@ const StatTile: FC<StatTileProps> = ({ label, value, sub, icon: Icon, color, gau
     );
 };
 
-const RecommendationCard: FC<RecommendationCardProps> = ({ rec }) => {
+// Recommendation Card
+const RecommendationCard = ({ rec }) => {
     const [showTip, setShowTip] = useState(false);
-    const colors: Record<string, string> = { high: THEME.danger, medium: THEME.warning, low: THEME.success };
+    const colors = { high: THEME.danger, medium: THEME.warning, low: THEME.success };
     const c = colors[rec.urgency];
 
     return (
@@ -319,30 +252,33 @@ const RecommendationCard: FC<RecommendationCardProps> = ({ rec }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
-const CapacityPlanningTab: FC = () => {
-    useAdaptiveTheme();
+const CapacityPlanningTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [forecastWindow, setForecastWindow] = useState(90);
-    const [scenario, setScenario] = useState<Scenario>({ growth: 10, users: 500 });
-    const [thresholds, setThresholds] = useState<Thresholds>({ storage: 85, connections: 80 });
+    const [scenario, setScenario] = useState({ growth: 10, users: 500 });
+    const [thresholds, setThresholds] = useState({ storage: 85, connections: 80 });
     const [connData] = useState(generateConnectionForecast());
     const [costData] = useState(generateCostForecast());
     const [lastUpdated] = useState(new Date().toLocaleTimeString());
 
     const storageData = useMemo(() => generateStorageForecast(forecastWindow), [forecastWindow]);
 
+    // Days until full (respects forecast window)
     const daysUntilFull = useMemo(() => {
         const current = storageData.find(d => d.type === 'forecast');
-        const fullDay = storageData.find(d => d.predicted !== null && d.predicted >= d.limit);
+        const fullDay = storageData.find(d => d.predicted >= d.limit);
         if (!current || !fullDay) return `> ${forecastWindow} days`;
-        const diffTime = Math.abs(new Date(fullDay.date).getTime() - new Date(current.date).getTime());
+        const diffTime = Math.abs(new Date(fullDay.date) - new Date(current.date));
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + ' days';
     }, [storageData, forecastWindow]);
 
+    // Current storage used
     const currentUsedGB = useMemo(() => {
         const today = storageData.find(d => d.type === 'history');
         return today ? today.used : 450;
     }, [storageData]);
 
+    // Dynamic What-If Analysis
     const scenarioImpact = useMemo(() => {
         const baseGrowth = 1.2;
         const adjustedGrowth = baseGrowth * (1 + Number(scenario.growth) / 100);
@@ -361,6 +297,7 @@ const CapacityPlanningTab: FC = () => {
         return { daysLeft, connExceededAt, projectedConns, storageImpactDays };
     }, [scenario, currentUsedGB, thresholds]);
 
+    // CSV Export
     const exportForecast = () => {
         const csv = [
             ['Date', 'Used (GB)', 'Predicted (GB)', 'Type'],
@@ -376,6 +313,7 @@ const CapacityPlanningTab: FC = () => {
         URL.revokeObjectURL(url);
     };
 
+    // Peak connection
     const peakConn = useMemo(() => Math.max(...connData.map(d => d.connections)), [connData]);
     const connHeadroom = Math.round(((200 - peakConn) / 200) * 100);
 
@@ -383,6 +321,7 @@ const CapacityPlanningTab: FC = () => {
         <div style={{ padding: '0 24px 40px', maxWidth: 1600, margin: '0 auto' }}>
             <CapStyles />
 
+            {/* ── Header ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 12 }}>
                 <div>
                     <h1 style={{ fontSize: 24, fontWeight: 800, color: THEME.textMain, margin: 0 }}>Capacity Planning</h1>
@@ -417,6 +356,7 @@ const CapacityPlanningTab: FC = () => {
                 </div>
             </div>
 
+            {/* ── KPI Tiles ── */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
                 <StatTile
                     label="Storage Runway"
@@ -452,8 +392,10 @@ const CapacityPlanningTab: FC = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
 
+                {/* ── Left Column: Charts ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
+                    {/* Storage Forecast Chart */}
                     <div className="cap-card" style={{ padding: 20 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
                             <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Storage Utilization Forecast</h3>
@@ -483,6 +425,7 @@ const CapacityPlanningTab: FC = () => {
                         </div>
                     </div>
 
+                    {/* Connection Saturation Chart */}
                     <div className="cap-card" style={{ padding: 20 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, marginBottom: 20 }}>Daily Connection Saturation</h3>
                         <div style={{ height: 200, width: '100%' }}>
@@ -511,6 +454,7 @@ const CapacityPlanningTab: FC = () => {
                         </div>
                     </div>
 
+                    {/* Monthly Cost Trend Chart */}
                     <div className="cap-card" style={{ padding: 20 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
                             <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Monthly Cost Trend</h3>
@@ -537,8 +481,10 @@ const CapacityPlanningTab: FC = () => {
 
                 </div>
 
+                {/* ── Right Column ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
+                    {/* What-If Modeling */}
                     <div className="cap-card" style={{ padding: 20 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                             <Calculator size={16} color={THEME.primary} />
@@ -575,6 +521,7 @@ const CapacityPlanningTab: FC = () => {
                         </div>
                     </div>
 
+                    {/* Alert Thresholds */}
                     <div className="cap-card" style={{ padding: 20 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                             <Sliders size={16} color={THEME.primary} />
@@ -614,6 +561,7 @@ const CapacityPlanningTab: FC = () => {
                         </div>
                     </div>
 
+                    {/* Smart Recommendations */}
                     <div className="cap-card" style={{ padding: 20 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                             <Zap size={16} color={THEME.warning} />

@@ -1,73 +1,40 @@
-// @ts-nocheck
-import React, { useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../../utils/api';
 import {
-    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip,
-    ResponsiveContainer, Legend, AreaChart, Area, TooltipProps
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+    PieChart,
+    Pie,
+    Cell,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+    AreaChart,
+    Area,
 } from 'recharts';
 import {
-    Activity, AlertTriangle, TrendingUp, Zap, Database, CheckCircle, RefreshCw,
-    AlertCircle, Clock, Server, Cpu, HardDrive, Gauge
+    Activity,
+    AlertTriangle,
+    TrendingUp,
+    Zap,
+    Database,
+    CheckCircle,
+    RefreshCw,
+    AlertCircle,
+    Clock,
+    Server,
+    Cpu,
+    HardDrive,
+    Gauge,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────── //
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────── //
-interface OverviewData {
-    connections: number;
-    opsPerSec: number;
-    avgLatency: number;
-    replicationLag: number;
-    cpuUsage: number;
-    memoryUsage: number;
-    diskIOPS: number;
-    cacheFillRatio: number;
-    healthScore: number;
-}
-
-interface OpsChartData {
-    time: string;
-    ops: number;
-}
-
-interface LatencyChartData {
-    time: string;
-    p50: number;
-    p95: number;
-    p99: number;
-}
-
-interface ReplicationMember {
-    name: string;
-    state: string;
-    lag: number;
-}
-
-interface ReplicationStatus {
-    isPrimary: boolean;
-    members: ReplicationMember[];
-    oplogWindow: number;
-}
-
-interface Alert {
-    id: number;
-    severity: 'critical' | 'warning' | 'info';
-    message: string;
-    time: Date;
-}
-
-interface ChartTooltipProps extends TooltipProps<number, string> {
-    active?: boolean;
-    payload?: Array<{
-        name: string;
-        value: number;
-        color: string;
-    }>;
-}
-
-// ─────────────────────────────────────────────────────────────────────────── //
-// THEME & CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────── //
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* THEME & CONSTANTS */
+/* ─────────────────────────────────────────────────────────────────────────── */
 const DARK_THEME = {
     bg: '#0d1117',
     card: '#161b22',
@@ -81,7 +48,7 @@ const DARK_THEME = {
     green: '#3fb950',
 };
 
-const Styles: React.FC = () => (
+const Styles = () => (
     <style>{`
         @keyframes mongoFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes mongoPulse { 0%{opacity:1} 50%{opacity:0.6} 100%{opacity:1} }
@@ -233,32 +200,34 @@ const Styles: React.FC = () => (
     `}</style>
 );
 
-// ─────────────────────────────────────────────────────────────────────────── //
-// HELPER FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────── //
-const fmt = (n: number | null | undefined): string => {
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* HELPER FUNCTIONS */
+/* ─────────────────────────────────────────────────────────────────────────── */
+const fmt = (n) => {
     if (n === null || n === undefined) return '—';
     return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
 };
 
-const getHealthColor = (score: number): string => {
+const getHealthColor = (score) => {
     if (score >= 90) return DARK_THEME.green;
     if (score >= 75) return DARK_THEME.warning;
     if (score >= 50) return '#ff6633';
     return DARK_THEME.danger;
 };
 
-const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
+const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{
-            background: DARK_THEME.card,
-            border: `1px solid ${DARK_THEME.border}`,
-            borderRadius: 8,
-            padding: '8px 12px',
-            fontSize: 12
-        }}>
-            {payload.map(p => (
+        <div
+            style={{
+                background: DARK_THEME.card,
+                border: `1px solid ${DARK_THEME.border}`,
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: 12,
+            }}
+        >
+            {payload.map((p) => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
                 </div>
@@ -267,18 +236,18 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({ active, payload }) => {
     );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════ //
-// MONGO OVERVIEW TAB COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════ //
-const MongoOverviewTab: React.FC = () => {
-    const [overview, setOverview] = useState<OverviewData | null>(null);
-    const [opsChart, setOpsChart] = useState<OpsChartData[]>([]);
-    const [latencyChart, setLatencyChart] = useState<LatencyChartData[]>([]);
-    const [replicationStatus, setReplicationStatus] = useState<ReplicationStatus | null>(null);
-    const [alerts, setAlerts] = useState<Alert[]>([]);
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* MONGO OVERVIEW TAB COMPONENT */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+export default function MongoOverviewTab() {
+    const [overview, setOverview] = useState(null);
+    const [opsChart, setOpsChart] = useState([]);
+    const [latencyChart, setLatencyChart] = useState([]);
+    const [replicationStatus, setReplicationStatus] = useState(null);
+    const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const pollIntervalRef = useRef<NodeJS.Timer | null>(null);
+    const [error, setError] = useState(null);
+    const pollIntervalRef = useRef(null);
 
     const loadData = useCallback(async () => {
         try {
@@ -291,31 +260,35 @@ const MongoOverviewTab: React.FC = () => {
                 fetchData('/api/mongodb/alerts').catch(() => null),
             ]);
 
-            setOverview(ovData || {
-                connections: 0,
-                opsPerSec: 0,
-                avgLatency: 0,
-                replicationLag: 0,
-                cpuUsage: 0,
-                memoryUsage: 0,
-                diskIOPS: 0,
-                cacheFillRatio: 0,
-                healthScore: 0,
-            });
+            setOverview(
+                ovData || {
+                    connections: 0,
+                    opsPerSec: 0,
+                    avgLatency: 0,
+                    replicationLag: 0,
+                    cpuUsage: 0,
+                    memoryUsage: 0,
+                    diskIOPS: 0,
+                    cacheFillRatio: 0,
+                    healthScore: 0,
+                },
+            );
 
             setOpsChart(ops || []);
 
             setLatencyChart(lat || []);
 
-            setReplicationStatus(rep || {
-                isPrimary: false,
-                members: [],
-                oplogWindow: 0,
-            });
+            setReplicationStatus(
+                rep || {
+                    isPrimary: false,
+                    members: [],
+                    oplogWindow: 0,
+                },
+            );
 
             setAlerts(alrt || []);
         } catch (err) {
-            setError((err as Error).message || 'Failed to load MongoDB overview');
+            setError(err.message || 'Failed to load MongoDB overview');
         } finally {
             setLoading(false);
         }
@@ -324,9 +297,7 @@ const MongoOverviewTab: React.FC = () => {
     useEffect(() => {
         loadData();
         pollIntervalRef.current = setInterval(loadData, 30000);
-        return () => {
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-        };
+        return () => clearInterval(pollIntervalRef.current);
     }, [loadData]);
 
     if (loading) {
@@ -361,19 +332,26 @@ const MongoOverviewTab: React.FC = () => {
                         <Activity size={16} /> Overall Health
                     </h3>
                     <div className="mongo-card" style={{ textAlign: 'center', padding: 30 }}>
-                        <div className="mongo-gauge-container" style={{
-                            background: `conic-gradient(${getHealthColor(overview?.healthScore || 0)} 0deg ${(overview?.healthScore || 0) * 3.6}deg, ${DARK_THEME.border} ${(overview?.healthScore || 0) * 3.6}deg 360deg)`,
-                        }}>
-                            <div style={{
-                                position: 'absolute',
-                                width: 120,
-                                height: 120,
-                                background: DARK_THEME.card,
-                                borderRadius: '50%',
-                            }} />
+                        <div
+                            className="mongo-gauge-container"
+                            style={{
+                                background: `conic-gradient(${getHealthColor(overview?.healthScore || 0)} 0deg ${(overview?.healthScore || 0) * 3.6}deg, ${DARK_THEME.border} ${(overview?.healthScore || 0) * 3.6}deg 360deg)`,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    width: 120,
+                                    height: 120,
+                                    background: DARK_THEME.card,
+                                    borderRadius: '50%',
+                                }}
+                            />
                             <div style={{ position: 'relative', textAlign: 'center' }}>
                                 <div className="mongo-gauge-value">{overview?.healthScore || 0}</div>
-                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, marginTop: 4 }}>Health Score</div>
+                                <div style={{ fontSize: 11, color: DARK_THEME.textMuted, marginTop: 4 }}>
+                                    Health Score
+                                </div>
                             </div>
                         </div>
 
@@ -384,15 +362,15 @@ const MongoOverviewTab: React.FC = () => {
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Ops/Sec</div>
-                                <div className="mongo-metric-value">{fmt(overview?.opsPerSec || 0)}</div>
+                                <div className="mongo-metric-value">{fmt(overview?.opsPerSec)}</div>
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Avg Latency (ms)</div>
-                                <div className="mongo-metric-value">{fmt(overview?.avgLatency || 0)}</div>
+                                <div className="mongo-metric-value">{fmt(overview?.avgLatency)}</div>
                             </div>
                             <div className="mongo-metric-box">
                                 <div className="mongo-metric-label">Replication Lag (s)</div>
-                                <div className="mongo-metric-value">{fmt(overview?.replicationLag || 0)}</div>
+                                <div className="mongo-metric-value">{fmt(overview?.replicationLag)}</div>
                             </div>
                         </div>
                     </div>
@@ -405,67 +383,119 @@ const MongoOverviewTab: React.FC = () => {
                     </h3>
                     <div className="mongo-grid">
                         <div className="mongo-card">
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    marginBottom: 12,
+                                }}
+                            >
                                 <span style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>CPU Usage</span>
-                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>{overview?.cpuUsage || 0}%</span>
+                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
+                                    {overview?.cpuUsage || 0}%
+                                </span>
                             </div>
-                            <div style={{
-                                height: 8,
-                                background: DARK_THEME.border,
-                                borderRadius: 14,
-                                overflow: 'hidden'
-                            }}>
-                                <div style={{
-                                    height: '100%',
-                                    width: `${overview?.cpuUsage || 0}%`,
-                                    background: getHealthColor(100 - (overview?.cpuUsage || 0))
-                                }} />
-                            </div>
-                        </div>
-
-                        <div className="mongo-card">
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>Memory Usage</span>
-                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>{overview?.memoryUsage || 0}%</span>
-                            </div>
-                            <div style={{
-                                height: 8,
-                                background: DARK_THEME.border,
-                                borderRadius: 14,
-                                overflow: 'hidden'
-                            }}>
-                                <div style={{
-                                    height: '100%',
-                                    width: `${overview?.memoryUsage || 0}%`,
-                                    background: getHealthColor(100 - (overview?.memoryUsage || 0))
-                                }} />
+                            <div
+                                style={{
+                                    height: 8,
+                                    background: DARK_THEME.border,
+                                    borderRadius: 14,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        width: `${overview?.cpuUsage || 0}%`,
+                                        background: getHealthColor(100 - (overview?.cpuUsage || 0)),
+                                    }}
+                                />
                             </div>
                         </div>
 
                         <div className="mongo-card">
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <span style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>
+                                    Memory Usage
+                                </span>
+                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
+                                    {overview?.memoryUsage || 0}%
+                                </span>
+                            </div>
+                            <div
+                                style={{
+                                    height: 8,
+                                    background: DARK_THEME.border,
+                                    borderRadius: 14,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        width: `${overview?.memoryUsage || 0}%`,
+                                        background: getHealthColor(100 - (overview?.memoryUsage || 0)),
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mongo-card">
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    marginBottom: 12,
+                                }}
+                            >
                                 <span style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>Disk IOPS</span>
-                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>{overview?.diskIOPS || 0}</span>
+                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
+                                    {overview?.diskIOPS || 0}
+                                </span>
                             </div>
                             <div style={{ fontSize: 12, color: DARK_THEME.textMuted }}>operations/sec</div>
                         </div>
 
                         <div className="mongo-card">
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>Cache Fill</span>
-                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>{overview?.cacheFillRatio || 0}%</span>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <span style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>
+                                    Cache Fill
+                                </span>
+                                <span style={{ fontSize: 18, fontWeight: 700, color: DARK_THEME.accent }}>
+                                    {overview?.cacheFillRatio || 0}%
+                                </span>
                             </div>
-                            <div style={{
-                                height: 8,
-                                background: DARK_THEME.border,
-                                borderRadius: 14,
-                                overflow: 'hidden'
-                            }}>
-                                <div style={{
-                                    height: '100%',
-                                    width: `${overview?.cacheFillRatio || 0}%`,
-                                    background: DARK_THEME.success
-                                }} />
+                            <div
+                                style={{
+                                    height: 8,
+                                    background: DARK_THEME.border,
+                                    borderRadius: 14,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        width: `${overview?.cacheFillRatio || 0}%`,
+                                        background: DARK_THEME.success,
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>
@@ -506,9 +536,27 @@ const MongoOverviewTab: React.FC = () => {
                                 <YAxis stroke={DARK_THEME.textMuted} />
                                 <Tooltip content={<ChartTooltip />} />
                                 <Legend />
-                                <Line type="monotone" dataKey="p50" stroke={DARK_THEME.success} name="P50" strokeWidth={2} />
-                                <Line type="monotone" dataKey="p95" stroke={DARK_THEME.warning} name="P95" strokeWidth={2} />
-                                <Line type="monotone" dataKey="p99" stroke={DARK_THEME.danger} name="P99" strokeWidth={2} />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p50"
+                                    stroke={DARK_THEME.success}
+                                    name="P50"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p95"
+                                    stroke={DARK_THEME.warning}
+                                    name="P95"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="p99"
+                                    stroke={DARK_THEME.danger}
+                                    name="P99"
+                                    strokeWidth={2}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -521,17 +569,30 @@ const MongoOverviewTab: React.FC = () => {
                             <Server size={16} /> Replica Set Status
                         </h3>
                         <div className="mongo-card">
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                    gap: 16,
+                                }}
+                            >
                                 {replicationStatus.members?.map((member, idx) => (
-                                    <div key={idx} style={{
-                                        padding: 12,
-                                        background: DARK_THEME.bg,
-                                        border: `1px solid ${DARK_THEME.border}`,
-                                        borderRadius: 8
-                                    }}>
+                                    <div
+                                        key={idx}
+                                        style={{
+                                            padding: 12,
+                                            background: DARK_THEME.bg,
+                                            border: `1px solid ${DARK_THEME.border}`,
+                                            borderRadius: 8,
+                                        }}
+                                    >
                                         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                                            <div className={`mongo-status-indicator mongo-status-${member.state === 'PRIMARY' ? 'healthy' : 'healthy'}`} />
-                                            <span style={{ fontWeight: 600, color: DARK_THEME.text, fontSize: 13 }}>{member.name}</span>
+                                            <div
+                                                className={`mongo-status-indicator mongo-status-${member.state === 'PRIMARY' ? 'healthy' : 'healthy'}`}
+                                            />
+                                            <span style={{ fontWeight: 600, color: DARK_THEME.text, fontSize: 13 }}>
+                                                {member.name}
+                                            </span>
                                         </div>
                                         <div style={{ fontSize: 12, color: DARK_THEME.textMuted, marginBottom: 4 }}>
                                             State: <span style={{ color: DARK_THEME.accent }}>{member.state}</span>
@@ -542,8 +603,19 @@ const MongoOverviewTab: React.FC = () => {
                                     </div>
                                 ))}
                             </div>
-                            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${DARK_THEME.border}`, fontSize: 12, color: DARK_THEME.textMuted }}>
-                                Oplog Window: <span style={{ color: DARK_THEME.accent, fontWeight: 600 }}>{replicationStatus.oplogWindow} seconds</span>
+                            <div
+                                style={{
+                                    marginTop: 16,
+                                    paddingTop: 16,
+                                    borderTop: `1px solid ${DARK_THEME.border}`,
+                                    fontSize: 12,
+                                    color: DARK_THEME.textMuted,
+                                }}
+                            >
+                                Oplog Window:{' '}
+                                <span style={{ color: DARK_THEME.accent, fontWeight: 600 }}>
+                                    {replicationStatus.oplogWindow} seconds
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -563,7 +635,9 @@ const MongoOverviewTab: React.FC = () => {
                                             {alert.severity.toUpperCase()}
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>{alert.message}</div>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: DARK_THEME.text }}>
+                                                {alert.message}
+                                            </div>
                                             <div style={{ fontSize: 11, color: DARK_THEME.textMuted, marginTop: 4 }}>
                                                 {new Date(alert.time).toLocaleTimeString()}
                                             </div>
@@ -577,6 +651,4 @@ const MongoOverviewTab: React.FC = () => {
             </div>
         </>
     );
-};
-
-export default MongoOverviewTab;
+}

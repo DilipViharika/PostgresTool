@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, postData, deleteData } from '../../../utils/api';

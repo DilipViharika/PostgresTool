@@ -1,36 +1,18 @@
 /**
- * ConnectionStringParser.tsx
+ * ConnectionStringParser.jsx
  * Parses connection strings (postgresql://, mysql://, mongodb+srv://)
  * and auto-fills wizard form fields via onChange callback.
  */
 import React, { useState, useCallback } from 'react';
 import { Copy, Check, AlertCircle } from 'lucide-react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme';
 
-interface ParsedConnection {
-  type: string;
-  host: string;
-  port: string | number;
-  username: string;
-  password: string;
-  database: string;
-  ssl: boolean;
-  sslmode: string;
-  rawParams: Record<string, string>;
-}
-
-interface ConnectionStringParserProps {
-  onChange?: (parsed: ParsedConnection) => void;
-  onError?: (error: string) => void;
-}
-
-const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChange, onError }) => {
+const ConnectionStringParser = ({ onChange, onError }) => {
   useAdaptiveTheme();
-  const [connectionString, setConnectionString] = useState<string>('');
-  const [parsedData, setParsedData] = useState<ParsedConnection | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
-  const [focused, setFocused] = useState<boolean>(false);
+  const [connectionString, setConnectionString] = useState('');
+  const [parsedData, setParsedData] = useState(null);
+  const [error, setError] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
   /**
    * Parse connection string formats:
@@ -39,18 +21,18 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
    * MongoDB SRV: mongodb+srv://user:pass@cluster.mongodb.net/database?retryWrites=true
    * MongoDB Standard: mongodb://user:pass@host:port/database
    */
-  const parseConnectionString = useCallback((str: string): ParsedConnection | null => {
+  const parseConnectionString = useCallback((str) => {
     if (!str.trim()) {
       setParsedData(null);
       setError(null);
-      return null;
+      return;
     }
 
     try {
       const url = new URL(str.trim());
       const protocol = url.protocol.replace(':', '');
 
-      let dbType: string | null = null;
+      let dbType = null;
       if (protocol === 'postgresql' || protocol === 'postgres') {
         dbType = 'postgresql';
       } else if (protocol === 'mysql' || protocol === 'mysql2') {
@@ -65,13 +47,14 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       const password = url.password || '';
       const hostname = url.hostname || '';
       const port = url.port || '';
-      const database = url.pathname?.slice(1) || '';
+      const database = url.pathname?.slice(1) || ''; // Remove leading /
 
+      // Parse query parameters
       const params = Object.fromEntries(url.searchParams);
       const sslmode = params.sslmode || params.ssl || '';
       const useSSL = sslmode === 'require' || sslmode === 'true';
 
-      const parsed: ParsedConnection = {
+      const parsed = {
         type: dbType,
         host: hostname,
         port: port || getDefaultPort(dbType),
@@ -86,13 +69,14 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       setParsedData(parsed);
       setError(null);
 
+      // Call onChange with parsed fields
       if (onChange) {
         onChange(parsed);
       }
 
       return parsed;
     } catch (err) {
-      const errorMsg = `Invalid connection string: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      const errorMsg = `Invalid connection string: ${err.message}`;
       setError(errorMsg);
       setParsedData(null);
       if (onError) {
@@ -102,20 +86,20 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
     }
   }, [onChange, onError]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+  const handleInputChange = (e) => {
     const value = e.target.value;
     setConnectionString(value);
     parseConnectionString(value);
   };
 
-  const handleCopyField = (label: string, value: string): void => {
+  const handleCopyField = (label, value) => {
     navigator.clipboard.writeText(value);
     setCopiedIndex(label);
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  const getDefaultPort = (dbType: string): string | number => {
-    const ports: Record<string, number> = {
+  const getDefaultPort = (dbType) => {
+    const ports = {
       postgresql: 5432,
       mysql: 3306,
       mongodb: 27017,
@@ -129,7 +113,7 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       flexDirection: 'column',
       gap: '16px',
       width: '100%',
-    } as React.CSSProperties,
+    },
     label: {
       fontSize: '12px',
       fontWeight: '600',
@@ -137,7 +121,7 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       textTransform: 'uppercase',
       letterSpacing: '0.5px',
       fontFamily: THEME.fontMono,
-    } as React.CSSProperties,
+    },
     textarea: {
       width: '100%',
       padding: '12px',
@@ -152,13 +136,13 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       resize: 'vertical',
       transition: 'all 0.2s',
       boxSizing: 'border-box',
-    } as React.CSSProperties,
+    },
     textareaFocus: {
       borderColor: 'rgba(0, 212, 255, 0.4)',
       background: 'rgba(18, 10, 31, 0.6)',
       boxShadow: '0 0 12px rgba(0, 212, 255, 0.1)',
       outline: 'none',
-    } as React.CSSProperties,
+    },
     errorBox: {
       padding: '12px',
       borderRadius: '8px',
@@ -167,17 +151,17 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       display: 'flex',
       gap: '10px',
       alignItems: 'flex-start',
-    } as React.CSSProperties,
+    },
     errorText: {
       fontSize: '12px',
       color: '#FF4560',
       fontFamily: THEME.fontBody,
-    } as React.CSSProperties,
+    },
     parsedSection: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
       gap: '12px',
-    } as React.CSSProperties,
+    },
     fieldCard: {
       padding: '12px',
       borderRadius: '8px',
@@ -186,7 +170,7 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       display: 'flex',
       flexDirection: 'column',
       gap: '6px',
-    } as React.CSSProperties,
+    },
     fieldLabel: {
       fontSize: '11px',
       fontWeight: '600',
@@ -194,7 +178,7 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       textTransform: 'uppercase',
       letterSpacing: '0.3px',
       fontFamily: THEME.fontMono,
-    } as React.CSSProperties,
+    },
     fieldValue: {
       fontSize: '13px',
       color: THEME.textMain,
@@ -204,7 +188,7 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-    } as React.CSSProperties,
+    },
     copyButton: {
       background: 'none',
       border: 'none',
@@ -216,18 +200,20 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
       alignItems: 'center',
       transition: 'all 0.2s',
       flexShrink: 0,
-    } as React.CSSProperties,
+    },
     copyButtonHover: {
       background: 'rgba(0, 212, 255, 0.1)',
       color: '#00D4FF',
-    } as React.CSSProperties,
+    },
     successText: {
       fontSize: '11px',
       color: '#2EE89C',
       fontWeight: '500',
       fontFamily: THEME.fontMono,
-    } as React.CSSProperties,
+    },
   };
+
+  const [focused, setFocused] = React.useState(false);
 
   return (
     <div style={styles.container}>
@@ -260,7 +246,7 @@ const ConnectionStringParser: React.FC<ConnectionStringParserProps> = ({ onChang
             {[
               { label: 'Type', value: parsedData.type, key: 'type' },
               { label: 'Host', value: parsedData.host, key: 'host' },
-              { label: 'Port', value: String(parsedData.port), key: 'port' },
+              { label: 'Port', value: parsedData.port, key: 'port' },
               { label: 'Database', value: parsedData.database, key: 'database' },
               { label: 'Username', value: parsedData.username, key: 'username' },
               { label: 'Password', value: parsedData.password ? '••••••••' : '(none)', key: 'password' },

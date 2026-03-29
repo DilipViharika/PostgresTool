@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme.jsx';
-import { useNavigation } from '../../../context/NavigationContext.jsx';
+import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { useNavigation } from '../../../context/NavigationContext';
 import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, Database } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════

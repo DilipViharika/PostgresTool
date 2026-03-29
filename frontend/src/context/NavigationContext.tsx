@@ -6,37 +6,10 @@
  *   const { goToTab } = useNavigation();
  *   goToTab('pool'); // navigates to Connection Pool tab
  */
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext } from 'react';
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  TYPES
-// ═══════════════════════════════════════════════════════════════════════════
+export const NavigationContext = createContext(null);
 
-interface NavigationContextValue {
-    goToTab: (tabName: string) => void;
-}
-
-interface NavigationProviderProps {
-    children: ReactNode;
-    value: NavigationContextValue;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  CONTEXT
-// ═══════════════════════════════════════════════════════════════════════════
-
-export const NavigationContext = createContext<NavigationContextValue | null>(null);
-
-export function useNavigation(): NavigationContextValue {
+export function useNavigation() {
     return useContext(NavigationContext) || { goToTab: () => {} };
 }
-
-export function NavigationProvider({ children, value }: NavigationProviderProps): React.ReactElement {
-    return (
-        <NavigationContext.Provider value={value}>
-            {children}
-        </NavigationContext.Provider>
-    );
-}
-
-export default NavigationContext;

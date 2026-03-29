@@ -1,5 +1,5 @@
 /**
- * NoConnectionBanner.tsx
+ * NoConnectionBanner.jsx
  * Reusable component shown when no database is connected.
  * Matches VIGIL design with glassmorphism, cyan accents, and animations.
  */
@@ -7,15 +7,9 @@ import React, { useState, useEffect } from 'react';
 import { Database, Plus, Shield, Key, Wifi, Zap } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useConnection } from '../../context/ConnectionContext';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import { THEME, useAdaptiveTheme } from '../../utils/theme';
 
-interface NoConnectionBannerProps {
-  title?: string;
-  description?: string;
-  showAddButton?: boolean;
-}
-
-const NoConnectionBanner: React.FC<NoConnectionBannerProps> = ({
+const NoConnectionBanner = ({
   title = 'No Database Connected',
   description = 'Create a new connection or select an existing one to get started.',
   showAddButton = true,
@@ -23,9 +17,9 @@ const NoConnectionBanner: React.FC<NoConnectionBannerProps> = ({
   useAdaptiveTheme();
   const { goToTab } = useNavigation();
   const { connections } = useConnection();
-  const [borderGlow, setBorderGlow] = useState<boolean>(false);
-  const [isHovering, setIsHovering] = useState<boolean>(false);
+  const [borderGlow, setBorderGlow] = useState(false);
 
+  // Pulsing animation effect
   useEffect(() => {
     const interval = setInterval(() => {
       setBorderGlow(prev => !prev);
@@ -33,7 +27,7 @@ const NoConnectionBanner: React.FC<NoConnectionBannerProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  const handleAddConnection = (): void => {
+  const handleAddConnection = () => {
     goToTab('pool');
   };
 
@@ -52,14 +46,14 @@ const NoConnectionBanner: React.FC<NoConnectionBannerProps> = ({
         : '0 8px 32px rgba(0, 0, 0, 0.3)',
       transition: 'all 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
       overflow: 'hidden',
-    } as React.CSSProperties,
+    },
     content: {
       display: 'flex',
       alignItems: 'center',
       gap: '20px',
       position: 'relative',
       zIndex: 2,
-    } as React.CSSProperties,
+    },
     iconWrapper: {
       position: 'relative',
       flexShrink: 0,
@@ -72,30 +66,30 @@ const NoConnectionBanner: React.FC<NoConnectionBannerProps> = ({
       background: 'rgba(0, 212, 255, 0.08)',
       border: '1px solid rgba(0, 212, 255, 0.2)',
       animation: borderGlow ? 'pulse 2s ease-in-out infinite' : 'none',
-    } as React.CSSProperties,
+    },
     textContent: {
       flex: 1,
-    } as React.CSSProperties,
+    },
     title: {
       fontSize: '16px',
       fontWeight: '600',
       color: THEME.textMain,
       margin: '0 0 6px 0',
       fontFamily: THEME.fontBody,
-    } as React.CSSProperties,
+    },
     description: {
       fontSize: '13px',
       color: THEME.textMuted,
       margin: '0 0 12px 0',
       lineHeight: '1.5',
       fontFamily: THEME.fontBody,
-    } as React.CSSProperties,
+    },
     chipsContainer: {
       display: 'flex',
       gap: '8px',
       flexWrap: 'wrap',
       margin: '12px 0 0 0',
-    } as React.CSSProperties,
+    },
     chip: {
       display: 'inline-flex',
       alignItems: 'center',
@@ -108,13 +102,13 @@ const NoConnectionBanner: React.FC<NoConnectionBannerProps> = ({
       border: '1px solid rgba(0, 212, 255, 0.15)',
       color: THEME.textMuted,
       fontFamily: THEME.fontMono,
-    } as React.CSSProperties,
+    },
     buttonsContainer: {
       display: 'flex',
       gap: '12px',
       alignItems: 'center',
       flexShrink: 0,
-    } as React.CSSProperties,
+    },
     button: {
       padding: '10px 20px',
       borderRadius: '8px',
@@ -128,26 +122,28 @@ const NoConnectionBanner: React.FC<NoConnectionBannerProps> = ({
       alignItems: 'center',
       gap: '8px',
       whiteSpace: 'nowrap',
-    } as React.CSSProperties,
+    },
     buttonPrimary: {
       background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(42, 255, 212, 0.1) 100%)',
       border: '1px solid rgba(0, 212, 255, 0.4)',
       color: '#00D4FF',
-    } as React.CSSProperties,
+    },
     buttonPrimaryHover: {
       background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.35) 0%, rgba(42, 255, 212, 0.2) 100%)',
       border: '1px solid rgba(0, 212, 255, 0.6)',
       boxShadow: '0 0 20px rgba(0, 212, 255, 0.2)',
       transform: 'translateY(-2px)',
-    } as React.CSSProperties,
+    },
     decorativeBackground: {
       position: 'absolute',
       inset: 0,
       background: `radial-gradient(circle 600px at 20% 50%, rgba(0, 212, 255, 0.04) 0%, transparent 100%)`,
       pointerEvents: 'none',
       zIndex: 1,
-    } as React.CSSProperties,
+    },
   };
+
+  const [isHovering, setIsHovering] = useState(false);
 
   return (
     <>

@@ -1,8 +1,7 @@
-// @ts-nocheck
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
-import type { PlanNode, QueryPlan, IndexInfo, TableBloat, Column, Table, SchemaMigration, QueryResult } from './types';
 
 /* ─────────────────────────────────────────────────────────────────────────
    DESIGN SYSTEM — Adaptive light/dark via THEME
@@ -47,6 +46,7 @@ function useIndexData(live) {
     const [error, setError] = useState(null);
 
     const load = useCallback(async () => {
+        let cancelled = false;
         setLoading(true); setError(null);
         try {
             const [health, missing, unused, dupes, bloat] = await Promise.all([
@@ -56,6 +56,8 @@ function useIndexData(live) {
                 fetchData('/api/indexes/duplicates').catch(() => []),
                 fetchData('/api/indexes/bloat').catch(() => []),
             ]);
+
+            if (cancelled) return;
 
             // normalise missing rows
             const missingNorm = (Array.isArray(missing) ? missing : []).map((r, i) => ({
@@ -147,19 +149,27 @@ function useIndexData(live) {
                 history: EMPTY_DATA.history,
             });
         } catch (e) {
-            setError(e.message);
+            if (!cancelled) {
+                setError(e.message);
+            }
         } finally {
-            setLoading(false);
+            if (!cancelled) {
+                setLoading(false);
+            }
         }
     }, []);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => {
+        load();
+    }, [load]);
 
     // Refresh every 60 s when live mode is on
     useEffect(() => {
         if (!live) return;
         const t = setInterval(load, 60_000);
-        return () => clearInterval(t);
+        return () => {
+            clearInterval(t);
+        };
     }, [live, load]);
 
     return { data, loading, error, refresh: load };
@@ -313,7 +323,7 @@ const SqlBlock = ({sql}) => {
         </div>
         <pre style={{margin:0,padding:'14px 16px',fontSize:12,lineHeight:1.8,background:C.bg,
             color:C.textPrimary,fontFamily:THEME.fontMono,overflowX:'auto',whiteSpace:'pre-wrap'}}>
-      <code dangerouslySetInnerHTML={{__html:h}}/>
+      <code dangerouslySetInnerHTML={{__html:DOMPurify.sanitize(h)}}/>
     </pre>
     </div>;
 };

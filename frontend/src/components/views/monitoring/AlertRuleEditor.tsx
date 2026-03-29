@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, postData, deleteData } from '../../../utils/api';
@@ -6,50 +5,6 @@ import {
     Bell, Plus, Trash2, Edit3, Save, X, AlertTriangle, Info, AlertCircle,
     ToggleLeft, ToggleRight, Mail, MessageSquare, Monitor
 } from 'lucide-react';
-
-/* ── Types ────────────────────────────────────────────────────────────────── */
-interface AlertRule {
-    id?: string;
-    name: string;
-    metric: string;
-    condition: string;
-    threshold: number;
-    duration: string;
-    severity: 'info' | 'warning' | 'critical';
-    notification_channels: string[];
-    enabled: boolean;
-}
-
-interface Channel {
-    id: string;
-    label: string;
-    icon: React.ComponentType<{ size?: number }>;
-}
-
-interface RuleFormProps {
-    rule?: AlertRule | null;
-    onSave: (rule: AlertRule) => void;
-    onCancel: () => void;
-    saving: boolean;
-}
-
-interface RuleCardProps {
-    rule: AlertRule;
-    onEdit: (rule: AlertRule) => void;
-    onDelete: (ruleId: string) => void;
-    onToggle: () => void;
-    deleting: boolean;
-}
-
-interface AlertRuleEditorContextType {
-    rules: AlertRule[];
-    loading: boolean;
-    error: string | null;
-    editingRule: AlertRule | null;
-    showForm: boolean;
-    saving: boolean;
-    deleting: string | null;
-}
 
 /* ── Styles ───────────────────────────────────────────────────────────────── */
 const Styles = () => (
@@ -66,15 +21,15 @@ const Styles = () => (
 const METRICS = ['CPU Usage', 'Memory', 'Replication Lag', 'Long Queries', 'Cache Hit Ratio', 'Connections', 'Disk Usage'];
 const CONDITIONS = ['Greater Than', 'Less Than', 'Equals'];
 const DURATIONS = ['1m', '5m', '15m', '30m', '1h'];
-const SEVERITIES: Array<'info' | 'warning' | 'critical'> = ['info', 'warning', 'critical'];
-const CHANNELS: Channel[] = [
+const SEVERITIES = ['info', 'warning', 'critical'];
+const CHANNELS = [
     { id: 'in-app', label: 'In-App', icon: Monitor },
     { id: 'email', label: 'Email', icon: Mail },
     { id: 'slack', label: 'Slack Webhook', icon: MessageSquare },
 ];
 
 /* ── Severity color mapping ──────────────────────────────────────────────── */
-const getSeverityColor = (severity: string): string => {
+const getSeverityColor = (severity) => {
     switch (severity) {
         case 'info': return THEME.info;
         case 'warning': return THEME.warning;
@@ -84,8 +39,8 @@ const getSeverityColor = (severity: string): string => {
 };
 
 /* ── Get metric unit ─────────────────────────────────────────────────────── */
-const getMetricUnit = (metric: string): string => {
-    const units: Record<string, string> = {
+const getMetricUnit = (metric) => {
+    const units = {
         'CPU Usage': '%',
         'Memory': '%',
         'Replication Lag': 'ms',
@@ -100,8 +55,8 @@ const getMetricUnit = (metric: string): string => {
 /* ═══════════════════════════════════════════════════════════════════════════
    RULE FORM (Edit/Create)
    ═══════════════════════════════════════════════════════════════════════════ */
-const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) => {
-    const [form, setForm] = useState<AlertRule>(rule || {
+const RuleForm = ({ rule, onSave, onCancel, saving }) => {
+    const [form, setForm] = useState(rule || {
         name: '',
         metric: 'CPU Usage',
         condition: 'Greater Than',
@@ -112,11 +67,11 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
         enabled: true,
     });
 
-    const handleChange = (field: keyof AlertRule, value: unknown) => {
+    const handleChange = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleChannelToggle = (channelId: string) => {
+    const handleChannelToggle = (channelId) => {
         setForm(prev => ({
             ...prev,
             notification_channels: prev.notification_channels.includes(channelId)
@@ -125,7 +80,7 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         if (!form.name.trim()) {
             alert('Please enter a rule name');
@@ -159,14 +114,20 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                         placeholder="e.g., High CPU Alert"
                         value={form.name}
                         onChange={(e) => handleChange('name', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm font-sans border transition-all duration-200"
                         style={{
+                            width: '100%',
+                            padding: '10px 12px',
                             background: THEME.surface,
-                            borderColor: THEME.border,
+                            border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px',
                             color: THEME.textMain,
+                            fontSize: '13px',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
                         }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = THEME.borderHot; }}
-                        onBlur={(e) => { e.currentTarget.style.borderColor = THEME.border; }}
+                        onFocus={(e) => { e.target.style.borderColor = THEME.borderHot; }}
+                        onBlur={(e) => { e.target.style.borderColor = THEME.border; }}
                     />
                 </div>
 
@@ -178,14 +139,20 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                     <select
                         value={form.metric}
                         onChange={(e) => handleChange('metric', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm font-sans border transition-all duration-200"
                         style={{
+                            width: '100%',
+                            padding: '10px 12px',
                             background: THEME.surface,
-                            borderColor: THEME.border,
+                            border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px',
                             color: THEME.textMain,
+                            fontSize: '13px',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
                         }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = THEME.borderHot; }}
-                        onBlur={(e) => { e.currentTarget.style.borderColor = THEME.border; }}
+                        onFocus={(e) => { e.target.style.borderColor = THEME.borderHot; }}
+                        onBlur={(e) => { e.target.style.borderColor = THEME.border; }}
                     >
                         {METRICS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
@@ -199,14 +166,20 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                     <select
                         value={form.condition}
                         onChange={(e) => handleChange('condition', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm font-sans border transition-all duration-200"
                         style={{
+                            width: '100%',
+                            padding: '10px 12px',
                             background: THEME.surface,
-                            borderColor: THEME.border,
+                            border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px',
                             color: THEME.textMain,
+                            fontSize: '13px',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
                         }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = THEME.borderHot; }}
-                        onBlur={(e) => { e.currentTarget.style.borderColor = THEME.border; }}
+                        onFocus={(e) => { e.target.style.borderColor = THEME.borderHot; }}
+                        onBlur={(e) => { e.target.style.borderColor = THEME.border; }}
                     >
                         {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -222,14 +195,20 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                         placeholder="80"
                         value={form.threshold}
                         onChange={(e) => handleChange('threshold', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg text-sm font-sans border transition-all duration-200"
                         style={{
+                            width: '100%',
+                            padding: '10px 12px',
                             background: THEME.surface,
-                            borderColor: THEME.border,
+                            border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px',
                             color: THEME.textMain,
+                            fontSize: '13px',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
                         }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = THEME.borderHot; }}
-                        onBlur={(e) => { e.currentTarget.style.borderColor = THEME.border; }}
+                        onFocus={(e) => { e.target.style.borderColor = THEME.borderHot; }}
+                        onBlur={(e) => { e.target.style.borderColor = THEME.border; }}
                     />
                 </div>
 
@@ -241,14 +220,20 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                     <select
                         value={form.duration}
                         onChange={(e) => handleChange('duration', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm font-sans border transition-all duration-200"
                         style={{
+                            width: '100%',
+                            padding: '10px 12px',
                             background: THEME.surface,
-                            borderColor: THEME.border,
+                            border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px',
                             color: THEME.textMain,
+                            fontSize: '13px',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
                         }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = THEME.borderHot; }}
-                        onBlur={(e) => { e.currentTarget.style.borderColor = THEME.border; }}
+                        onFocus={(e) => { e.target.style.borderColor = THEME.borderHot; }}
+                        onBlur={(e) => { e.target.style.borderColor = THEME.border; }}
                     >
                         {DURATIONS.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
@@ -261,15 +246,21 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                     </label>
                     <select
                         value={form.severity}
-                        onChange={(e) => handleChange('severity', e.target.value as 'info' | 'warning' | 'critical')}
-                        className="w-full px-3 py-2 rounded-lg text-sm font-sans border transition-all duration-200"
+                        onChange={(e) => handleChange('severity', e.target.value)}
                         style={{
+                            width: '100%',
+                            padding: '10px 12px',
                             background: THEME.surface,
-                            borderColor: THEME.border,
+                            border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px',
                             color: THEME.textMain,
+                            fontSize: '13px',
+                            fontFamily: THEME.fontBody,
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
                         }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = THEME.borderHot; }}
-                        onBlur={(e) => { e.currentTarget.style.borderColor = THEME.border; }}
+                        onFocus={(e) => { e.target.style.borderColor = THEME.borderHot; }}
+                        onBlur={(e) => { e.target.style.borderColor = THEME.border; }}
                     >
                         {SEVERITIES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -290,11 +281,20 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                                 key={channel.id}
                                 type="button"
                                 onClick={() => handleChannelToggle(channel.id)}
-                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-200"
                                 style={{
+                                    padding: '8px 12px',
                                     background: isActive ? `${THEME.primary}20` : THEME.surface,
-                                    borderColor: isActive ? THEME.borderHot : THEME.border,
+                                    border: `1px solid ${isActive ? THEME.borderHot : THEME.border}`,
+                                    borderRadius: '8px',
                                     color: isActive ? THEME.primary : THEME.textSub,
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.2s ease',
+                                    fontFamily: THEME.fontBody,
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.borderColor = THEME.borderHot;
@@ -321,8 +321,12 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                 <button
                     type="button"
                     onClick={() => handleChange('enabled', !form.enabled)}
-                    className="border-0 cursor-pointer p-0"
-                    style={{ background: 'none' }}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                    }}
                 >
                     {form.enabled ? (
                         <ToggleRight size={24} color={THEME.success} />
@@ -337,19 +341,25 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold border transition-all duration-200"
                     style={{
+                        padding: '10px 16px',
                         background: THEME.glassLight,
                         color: THEME.textMain,
-                        borderColor: THEME.border,
+                        border: `1px solid ${THEME.border}`,
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        fontFamily: THEME.fontBody,
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = THEME.borderHot;
-                        e.currentTarget.style.background = THEME.border;
+                        e.target.style.borderColor = THEME.borderHot;
+                        e.target.style.background = THEME.border;
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = THEME.border;
-                        e.currentTarget.style.background = THEME.glassLight;
+                        e.target.style.borderColor = THEME.border;
+                        e.target.style.background = THEME.glassLight;
                     }}
                 >
                     Cancel
@@ -357,24 +367,33 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
                 <button
                     type="submit"
                     disabled={saving}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 border-0 transition-all duration-200"
                     style={{
+                        padding: '10px 16px',
                         background: THEME.primary,
                         color: THEME.void,
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 600,
                         cursor: saving ? 'wait' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease',
+                        fontFamily: THEME.fontBody,
                     }}
                     onMouseEnter={(e) => {
                         if (!saving) {
-                            (e.currentTarget as HTMLButtonElement).style.background = THEME.borderGlow;
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 12px ${THEME.primary}40`;
+                            e.target.style.background = THEME.borderGlow;
+                            e.target.style.boxShadow = `0 0 12px ${THEME.primary}40`;
                         }
                     }}
                     onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.background = THEME.primary;
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                        e.target.style.background = THEME.primary;
+                        e.target.style.boxShadow = 'none';
                     }}
                 >
-                    {saving ? <span className="are-spin inline-block">⟳</span> : <Save size={14} />}
+                    {saving ? <span className="are-spin" style={{ display: 'inline-block' }}>⟳</span> : <Save size={14} />}
                     {saving ? 'Saving...' : 'Save Rule'}
                 </button>
             </div>
@@ -385,10 +404,16 @@ const RuleForm: React.FC<RuleFormProps> = ({ rule, onSave, onCancel, saving }) =
 /* ═══════════════════════════════════════════════════════════════════════════
    RULE CARD
    ═══════════════════════════════════════════════════════════════════════════ */
-const RuleCard: React.FC<RuleCardProps> = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
+const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
     return (
         <div
-            className="are-card flex justify-between items-start gap-4"
+            className="are-card"
+            style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: '16px',
+            }}
         >
             <div style={{ flex: 1 }}>
                 {/* Rule Header */}
@@ -462,43 +487,60 @@ const RuleCard: React.FC<RuleCardProps> = ({ rule, onEdit, onDelete, onToggle, d
             <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
                 <button
                     onClick={() => onEdit(rule)}
-                    className="px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all duration-200"
                     style={{
+                        padding: '8px 12px',
                         background: THEME.glassLight,
                         color: THEME.textMain,
-                        borderColor: THEME.border,
+                        border: `1px solid ${THEME.border}`,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease',
+                        fontFamily: THEME.fontBody,
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = THEME.borderHot;
-                        e.currentTarget.style.background = THEME.border;
+                        e.target.style.borderColor = THEME.borderHot;
+                        e.target.style.background = THEME.border;
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = THEME.border;
-                        e.currentTarget.style.background = THEME.glassLight;
+                        e.target.style.borderColor = THEME.border;
+                        e.target.style.background = THEME.glassLight;
                     }}
                 >
                     <Edit3 size={13} />
                     Edit
                 </button>
                 <button
-                    onClick={() => onDelete(rule.id || '')}
+                    onClick={() => onDelete(rule.id)}
                     disabled={deleting}
-                    className="px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all duration-200"
                     style={{
+                        padding: '8px 12px',
                         background: `${THEME.danger}15`,
                         color: THEME.danger,
-                        borderColor: `${THEME.danger}40`,
+                        border: `1px solid ${THEME.danger}40`,
+                        borderRadius: '8px',
                         cursor: deleting ? 'wait' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease',
+                        fontFamily: THEME.fontBody,
                     }}
                     onMouseEnter={(e) => {
                         if (!deleting) {
-                            e.currentTarget.style.background = `${THEME.danger}25`;
-                            e.currentTarget.style.borderColor = `${THEME.danger}60`;
+                            e.target.style.background = `${THEME.danger}25`;
+                            e.target.style.borderColor = `${THEME.danger}60`;
                         }
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = `${THEME.danger}15`;
-                        e.currentTarget.style.borderColor = `${THEME.danger}40`;
+                        e.target.style.background = `${THEME.danger}15`;
+                        e.target.style.borderColor = `${THEME.danger}40`;
                     }}
                 >
                     <Trash2 size={13} />
@@ -512,15 +554,15 @@ const RuleCard: React.FC<RuleCardProps> = ({ rule, onEdit, onDelete, onToggle, d
 /* ═══════════════════════════════════════════════════════════════════════════
    ALERT RULE EDITOR (Main Component)
    ═══════════════════════════════════════════════════════════════════════════ */
-const AlertRuleEditor: React.FC = () => {
+export default function AlertRuleEditor() {
     useAdaptiveTheme();
-    const [rules, setRules] = useState<AlertRule[]>([]);
+    const [rules, setRules] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
+    const [error, setError] = useState(null);
+    const [editingRule, setEditingRule] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [deleting, setDeleting] = useState<string | null>(null);
+    const [deleting, setDeleting] = useState(null);
 
     /* ── Load rules ──────────────────────────────────────────────────────── */
     useEffect(() => {
@@ -531,18 +573,18 @@ const AlertRuleEditor: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await fetchData('/api/alerts/rules') as { rules: AlertRule[] };
+            const data = await fetchData('/api/alerts/rules');
             setRules(data.rules || []);
         } catch (err) {
             console.error('Failed to load rules:', err);
-            setError((err as Error).message || 'Failed to load alert rules');
+            setError(err.message || 'Failed to load alert rules');
         } finally {
             setLoading(false);
         }
     }, []);
 
     /* ── Save rule ───────────────────────────────────────────────────────── */
-    const handleSaveRule = useCallback(async (rule: AlertRule) => {
+    const handleSaveRule = useCallback(async (rule) => {
         setSaving(true);
         try {
             if (editingRule) {
@@ -557,14 +599,14 @@ const AlertRuleEditor: React.FC = () => {
             setEditingRule(null);
         } catch (err) {
             console.error('Failed to save rule:', err);
-            alert(`Error: ${(err as Error).message}`);
+            alert(`Error: ${err.message}`);
         } finally {
             setSaving(false);
         }
     }, [editingRule, loadRules]);
 
     /* ── Delete rule ──────────────────────────────────────────────────────── */
-    const handleDeleteRule = useCallback(async (ruleId: string) => {
+    const handleDeleteRule = useCallback(async (ruleId) => {
         if (!confirm('Delete this alert rule? This cannot be undone.')) return;
         setDeleting(ruleId);
         try {
@@ -572,14 +614,14 @@ const AlertRuleEditor: React.FC = () => {
             await loadRules();
         } catch (err) {
             console.error('Failed to delete rule:', err);
-            alert(`Error: ${(err as Error).message}`);
+            alert(`Error: ${err.message}`);
         } finally {
             setDeleting(null);
         }
     }, [loadRules]);
 
     /* ── Handle edit ──────────────────────────────────────────────────────── */
-    const handleEditRule = (rule: AlertRule) => {
+    const handleEditRule = (rule) => {
         setEditingRule(rule);
         setShowForm(true);
     };
@@ -597,34 +639,44 @@ const AlertRuleEditor: React.FC = () => {
     };
 
     return (
-        <div className="p-5">
+        <div style={{ padding: '20px' }}>
             <Styles />
 
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <div>
-                    <h2 className="text-2xl font-bold mb-1" style={{ color: THEME.textMain }}>
+                    <h2 style={{ fontSize: '20px', fontWeight: 800, color: THEME.textMain, margin: 0, marginBottom: '4px' }}>
                         Alert Rules
                     </h2>
-                    <p className="text-xs" style={{ color: THEME.textMuted }}>
+                    <p style={{ fontSize: '13px', color: THEME.textMuted, margin: 0 }}>
                         Configure conditions to trigger notifications
                     </p>
                 </div>
                 {!showForm && (
                     <button
                         onClick={handleAddNew}
-                        className="px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 border-0 transition-all duration-200"
                         style={{
+                            padding: '10px 16px',
                             background: THEME.primary,
                             color: THEME.void,
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.2s ease',
+                            fontFamily: THEME.fontBody,
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.background = THEME.borderGlow;
-                            e.currentTarget.style.boxShadow = `0 0 12px ${THEME.primary}40`;
+                            e.target.style.background = THEME.borderGlow;
+                            e.target.style.boxShadow = `0 0 12px ${THEME.primary}40`;
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.background = THEME.primary;
-                            e.currentTarget.style.boxShadow = 'none';
+                            e.target.style.background = THEME.primary;
+                            e.target.style.boxShadow = 'none';
                         }}
                     >
                         <Plus size={16} />
@@ -645,26 +697,31 @@ const AlertRuleEditor: React.FC = () => {
                 <>
                     {/* Loading */}
                     {loading && (
-                        <div className="text-center py-10" style={{ color: THEME.textMuted }}>
-                            <div className="text-sm mb-2.5">Loading alert rules...</div>
+                        <div style={{ textAlign: 'center', padding: '40px 20px', color: THEME.textMuted }}>
+                            <div style={{ fontSize: '14px', marginBottom: '10px' }}>Loading alert rules...</div>
                         </div>
                     )}
 
                     {/* Error */}
                     {error && (
                         <div
-                            className="rounded-lg p-4 mb-5 flex items-start gap-3"
                             style={{
                                 background: `${THEME.danger}15`,
                                 border: `1px solid ${THEME.danger}40`,
+                                borderRadius: '12px',
+                                padding: '16px',
+                                marginBottom: '20px',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '12px',
                             }}
                         >
-                            <AlertTriangle size={16} color={THEME.danger} className="flex-shrink-0 mt-0.5" />
+                            <AlertTriangle size={16} color={THEME.danger} style={{ marginTop: '2px', flexShrink: 0 }} />
                             <div>
-                                <div className="text-xs font-semibold mb-1" style={{ color: THEME.danger }}>
+                                <div style={{ fontSize: '13px', fontWeight: 600, color: THEME.danger, marginBottom: '4px' }}>
                                     Error
                                 </div>
-                                <div className="text-xs" style={{ color: THEME.textMuted }}>
+                                <div style={{ fontSize: '12px', color: THEME.textMuted }}>
                                     {error}
                                 </div>
                             </div>
@@ -690,34 +747,46 @@ const AlertRuleEditor: React.FC = () => {
                     {/* Empty State */}
                     {!loading && rules.length === 0 && !error && (
                         <div
-                            className="text-center py-10 rounded-lg border"
                             style={{
+                                textAlign: 'center',
+                                padding: '40px 20px',
                                 background: `linear-gradient(135deg, ${THEME.surface}80, ${THEME.elevated}80)`,
-                                borderColor: THEME.grid,
+                                border: `1px solid ${THEME.grid}`,
+                                borderRadius: '12px',
                                 backdropFilter: 'blur(8px)',
                             }}
                         >
-                            <Bell size={40} className="mx-auto mb-3" color={THEME.textMuted} style={{ opacity: 0.5 }} />
-                            <div className="text-sm font-semibold mb-2" style={{ color: THEME.textMain }}>
+                            <Bell size={40} color={THEME.textMuted} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                            <div style={{ fontSize: '14px', fontWeight: 600, color: THEME.textMain, marginBottom: '8px' }}>
                                 No alert rules yet
                             </div>
-                            <div className="text-xs mb-4" style={{ color: THEME.textMuted }}>
+                            <div style={{ fontSize: '12px', color: THEME.textMuted, marginBottom: '16px' }}>
                                 Create your first alert rule to get started
                             </div>
                             <button
                                 onClick={handleAddNew}
-                                className="px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2 border-0 transition-all duration-200"
                                 style={{
+                                    padding: '10px 16px',
                                     background: THEME.primary,
                                     color: THEME.void,
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    fontSize: '13px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s ease',
+                                    fontFamily: THEME.fontBody,
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = THEME.borderGlow;
-                                    e.currentTarget.style.boxShadow = `0 0 12px ${THEME.primary}40`;
+                                    e.target.style.background = THEME.borderGlow;
+                                    e.target.style.boxShadow = `0 0 12px ${THEME.primary}40`;
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = THEME.primary;
-                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.target.style.background = THEME.primary;
+                                    e.target.style.boxShadow = 'none';
                                 }}
                             >
                                 <Plus size={16} />
@@ -729,6 +798,4 @@ const AlertRuleEditor: React.FC = () => {
             )}
         </div>
     );
-};
-
-export default AlertRuleEditor;
+}

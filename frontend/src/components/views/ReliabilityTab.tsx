@@ -1,10 +1,9 @@
-// @ts-nocheck
 // ==========================================================================
-//  VIGIL — ReliabilityTab  (v6 — Live API Integration) [TYPESCRIPT]
+//  VIGIL — ReliabilityTab  (v6 — Live API Integration)
 // ==========================================================================
-import React, { useState, useEffect, useMemo, useCallback, useRef, ReactNode, FC, CSSProperties } from 'react';
-import { fetchData, postData } from '../../utils/api.js';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { fetchData, postData } from '../../utils/api';
+import { THEME, useAdaptiveTheme } from '../../utils/theme';
 
 import {
     AlertTriangle, AlertCircle, CheckCircle, Bell, BellRing, BellOff,
@@ -17,8 +16,7 @@ import {
     Calendar, BarChart3, Radio, History, Settings,
     CheckCheck, XCircle, Info, Flame, Gauge, Wifi, WifiOff,
     Link2, Users, BookOpen, Layers, TrendingDown as TrendD,
-    Snowflake, Target, Percent, AlertOctagon, Hash, LayoutGrid,
-    LucideIcon
+    Snowflake, Target, Percent, AlertOctagon, Hash, LayoutGrid
 } from 'lucide-react';
 import {
     ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -26,179 +24,9 @@ import {
 } from 'recharts';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TYPE DEFINITIONS
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-interface Alert {
-    id: number;
-    severity: 'critical' | 'warning' | 'info';
-    category: string;
-    title: string;
-    message: string;
-    created_at: string;
-    acknowledged: boolean;
-    source?: string;
-    metric_value?: string;
-    threshold?: string;
-    runbook?: string;
-    rootCauseGroup?: string;
-    autoResolved?: boolean;
-}
-
-interface Incident {
-    id: string;
-    title: string;
-    severity: 'critical' | 'warning' | 'info';
-    started: string;
-    resolved: string;
-    duration: string;
-    impact: string;
-    root_cause: string;
-    rca_tag: string;
-    runbook?: string;
-}
-
-interface OnCallMember {
-    name: string;
-    role: string;
-    avatar: string;
-    status: 'active' | 'standby' | 'off';
-    since: string;
-    until: string;
-    tz: string;
-    contact: string;
-}
-
-interface SLO {
-    name: string;
-    target: number;
-    current: number;
-    budgetRemaining: number;
-    window: string;
-    burnRate1h: number;
-    burnRate6h: number;
-    alert: boolean;
-}
-
-interface FreezeWindow {
-    id: number;
-    label: string;
-    start: string;
-    end: string;
-    reason: string;
-    active: boolean;
-    color: string;
-}
-
-interface UptimeDay {
-    date: string;
-    label: string;
-    status: 'up' | 'degraded' | 'outage';
-    uptime: number;
-}
-
-interface AlertTrendData {
-    h: string;
-    critical: number;
-    warning: number;
-    info: number;
-}
-
-interface MetricCardData {
-    label: string;
-    value: string;
-    sub: string;
-    color: string;
-    icon: LucideIcon;
-}
-
-interface PanelProps {
-    title?: string;
-    icon?: LucideIcon;
-    rightNode?: ReactNode;
-    noPad?: boolean;
-    children: ReactNode;
-    style?: CSSProperties;
-    refreshing?: boolean;
-    accent?: string;
-}
-
-interface StatusBadgeProps {
-    label: string;
-    color: string;
-    pulse?: boolean;
-}
-
-interface AlertCardProps {
-    alert: Alert;
-    onAcknowledge: (id: number) => void;
-    expanded: boolean;
-    onToggle: () => void;
-    isNew: boolean;
-}
-
-interface UptimeHeatmapProps {
-    days: UptimeDay[];
-}
-
-interface AlertGroupViewProps {
-    alerts: Alert[];
-}
-
-interface NoiseReductionPanelProps {
-    alerts: Alert[];
-}
-
-interface SloBurnRatePanelProps {
-    burnData: Array<{ day: string; consumed: number; budget: number }>;
-}
-
-interface ChangFreezePanelProps {}
-
-interface RefreshBarProps {
-    lastRefreshed: number | null;
-    isRefreshing: boolean;
-    intervalSec: number;
-    onIntervalChange: (sec: number) => void;
-    onRefresh: () => void;
-    error: boolean;
-}
-
-interface CountdownBarProps {
-    intervalSec: number;
-    lastRefreshed: number | null;
-}
-
-interface ChartTooltipProps {
-    active?: boolean;
-    payload?: Array<{ color: string; name: string; value: number }>;
-    label?: string;
-    unit?: string;
-}
-
-interface LiveDotProps {
-    color?: string;
-    size?: number;
-}
-
-interface TabBtnProps {
-    id: string;
-    label: string;
-    icon: LucideIcon;
-    count?: number;
-}
-
-interface FilterPillProps {
-    id: string;
-    label: string;
-    color: string;
-    count: number;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
    STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
-const RelStyles: FC = () => (
+const RelStyles = () => (
     <style>{`
         @keyframes relFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes relPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
@@ -248,7 +76,7 @@ const REFRESH_INTERVALS = [
 ];
 
 /* ─── Panel ─────────────────────────────────────────────────────────────── */
-const Panel: FC<PanelProps> = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing, accent }) => (
+const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing, accent }) => (
     <div style={{
         background: THEME.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: `1px solid ${accent ? `${accent}25` : refreshing ? `${THEME.primary}35` : THEME.glassBorder}`,
@@ -276,7 +104,7 @@ const Panel: FC<PanelProps> = ({ title, icon: TIcon, rightNode, noPad, children,
 );
 
 /* ─── Micro components ───────────────────────────────────────────────────── */
-const StatusBadge: FC<StatusBadgeProps> = ({ label, color, pulse }) => (
+const StatusBadge = ({ label, color, pulse }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5,
@@ -287,14 +115,14 @@ const StatusBadge: FC<StatusBadgeProps> = ({ label, color, pulse }) => (
     </span>
 );
 
-const LiveDot: FC<LiveDotProps> = ({ color = THEME.success, size = 7 }) => (
+const LiveDot = ({ color = THEME.success, size = 7 }) => (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
         <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}80` }} />
         <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${color}50`, animation: 'relPulseRing 2s ease-out infinite' }} />
     </div>
 );
 
-const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, label, unit = '' }) => {
+const ChartTooltip = ({ active, payload, label, unit = '' }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{ background: THEME.glassHeavy, backdropFilter: 'blur(12px)', border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
@@ -315,23 +143,22 @@ const SEV = {
     warning:  { color: THEME.warning, icon: AlertTriangle, label: 'Warning', bg: `${THEME.warning}06`, border: `${THEME.warning}18` },
     info:     { color: THEME.info, icon: Info, label: 'Info', bg: `${THEME.info}05`, border: `${THEME.info}15` },
 };
-const getSev = (s: string) => SEV[s as keyof typeof SEV] || SEV.info;
+const getSev = (s) => SEV[s] || SEV.info;
 
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
+const CATEGORY_ICONS = {
     cpu: Cpu, memory: Server, disk: HardDrive, connection: Network,
     replication: RefreshCw, query: Database, lock: ShieldAlert, vacuum: Activity,
 };
 
-const fmtTime = (ts: string): string => {
+const fmtTime = (ts) => {
     if (!ts) return '—';
-    const diff = (new Date() as any - new Date(ts) as any) / 1000;
+    const diff = (new Date() - new Date(ts)) / 1000;
     if (diff < 60) return 'Just now';
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
 };
-
-const fmtLastRefreshed = (ts: number | null): string => {
+const fmtLastRefreshed = (ts) => {
     if (!ts) return 'Never';
     const diff = Math.floor((Date.now() - ts) / 1000);
     if (diff < 5) return 'Just now';
@@ -342,24 +169,24 @@ const fmtLastRefreshed = (ts: number | null): string => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SYNTHETIC DATA GENERATORS
    ═══════════════════════════════════════════════════════════════════════════ */
-const genAlertTrend = (): AlertTrendData[] => Array.from({ length: 24 }, (_, i) => ({
+const genAlertTrend = () => Array.from({ length: 24 }, (_, i) => ({
     h: `${String(i).padStart(2, '0')}:00`,
     critical: 0,
     warning: 0,
     info: 0,
 }));
 
-const genUptimeDays = (): UptimeDay[] => Array.from({ length: 90 }, (_, idx) => {
+const genUptimeDays = () => Array.from({ length: 90 }, (_, idx) => {
     const d = new Date(Date.now() - (89 - idx) * 86400000);
-    const r = 0;
     return {
         date: d.toISOString().split('T')[0],
         label: `${d.getMonth() + 1}/${d.getDate()}`,
         status: 'up',
-        uptime: 99.9,
+        uptime: 0,
     };
 });
 
+/* Weekly MTTR trend — last 12 weeks */
 const genMttrTrend = () => Array.from({ length: 12 }, (_, i) => {
     const wk = new Date(Date.now() - (11 - i) * 7 * 86400000);
     return {
@@ -369,6 +196,7 @@ const genMttrTrend = () => Array.from({ length: 12 }, (_, i) => {
     };
 });
 
+/* Alert fatigue — alerts fired per day last 30 days */
 const genAlertFatigue = () => Array.from({ length: 30 }, (_, i) => {
     const d = new Date(Date.now() - (29 - i) * 86400000);
     return {
@@ -379,9 +207,9 @@ const genAlertFatigue = () => Array.from({ length: 30 }, (_, i) => {
     };
 });
 
+/* SLO burn-rate data — 30-day error budget consumption */
 const genSloBurnRate = () => Array.from({ length: 30 }, (_, i) => {
     const d = new Date(Date.now() - (29 - i) * 86400000);
-    const consumed = 0;
     return {
         day: `${d.getMonth() + 1}/${d.getDate()}`,
         consumed: 0,
@@ -390,15 +218,15 @@ const genSloBurnRate = () => Array.from({ length: 30 }, (_, i) => {
 });
 
 /* MOCK DATA */
-const MOCK_ALERTS: Alert[] = [];
+const MOCK_ALERTS = [];
 
-const MOCK_INCIDENTS: Incident[] = [];
+const MOCK_INCIDENTS = [];
 
-const MOCK_ONCALL: OnCallMember[] = [];
+const MOCK_ONCALL = [];
 
-const MOCK_SLOs: SLO[] = [];
+const MOCK_SLOs = [];
 
-const MOCK_FREEZE_WINDOWS: FreezeWindow[] = [];
+const MOCK_FREEZE_WINDOWS = [];
 
 const RCA_TAGS = [
     { tag: 'resource-exhaustion', color: THEME.danger },
@@ -415,7 +243,7 @@ const RCA_TAGS = [
 /* ═══════════════════════════════════════════════════════════════════════════
    COUNTDOWN BAR
    ═══════════════════════════════════════════════════════════════════════════ */
-const CountdownBar: FC<CountdownBarProps> = ({ intervalSec, lastRefreshed }) => {
+const CountdownBar = ({ intervalSec, lastRefreshed }) => {
     const [progress, setProgress] = useState(100);
     useEffect(() => {
         if (!intervalSec || !lastRefreshed) { setProgress(100); return; }
@@ -435,7 +263,7 @@ const CountdownBar: FC<CountdownBarProps> = ({ intervalSec, lastRefreshed }) => 
 /* ═══════════════════════════════════════════════════════════════════════════
    REFRESH BAR
    ═══════════════════════════════════════════════════════════════════════════ */
-const RefreshBar: FC<RefreshBarProps> = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange, onRefresh, error }) => {
+const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange, onRefresh, error }) => {
     const [, setTick] = useState(0);
     useEffect(() => { const id = setInterval(() => setTick(t => t + 1), 1000); return () => clearInterval(id); }, []);
     return (
@@ -490,7 +318,7 @@ const RefreshBar: FC<RefreshBarProps> = ({ lastRefreshed, isRefreshing, interval
 /* ═══════════════════════════════════════════════════════════════════════════
    ALERT CARD  (with Runbook link)
    ═══════════════════════════════════════════════════════════════════════════ */
-const AlertCard: FC<AlertCardProps> = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
+const AlertCard = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
     const sev = getSev(alert.severity);
     const CatIcon = CATEGORY_ICONS[alert.category] || AlertCircle;
     const isCritical = alert.severity === 'critical';
@@ -554,8 +382,8 @@ const AlertCard: FC<AlertCardProps> = ({ alert, onAcknowledge, expanded, onToggl
                                 fontSize: 11, fontWeight: 700, background: `${THEME.success}15`, color: THEME.success,
                                 display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'all 0.15s',
                             }}
-                                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = `${THEME.success}25`}
-                                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = `${THEME.success}15`}
+                                    onMouseEnter={e => e.currentTarget.style.background = `${THEME.success}25`}
+                                    onMouseLeave={e => e.currentTarget.style.background = `${THEME.success}15`}
                             >
                                 <CheckCheck size={12} />Acknowledge
                             </button>
@@ -570,9 +398,9 @@ const AlertCard: FC<AlertCardProps> = ({ alert, onAcknowledge, expanded, onToggl
 /* ═══════════════════════════════════════════════════════════════════════════
    UPTIME HEATMAP
    ═══════════════════════════════════════════════════════════════════════════ */
-const UptimeHeatmap: FC<UptimeHeatmapProps> = ({ days }) => {
-    const [hoveredDay, setHoveredDay] = useState<UptimeDay | null>(null);
-    const statusColor = (s: string) => s === 'outage' ? THEME.danger : s === 'degraded' ? THEME.warning : THEME.success;
+const UptimeHeatmap = ({ days }) => {
+    const [hoveredDay, setHoveredDay] = useState(null);
+    const statusColor = (s) => s === 'outage' ? THEME.danger : s === 'degraded' ? THEME.warning : THEME.success;
     const weeks = [];
     for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
     return (
@@ -612,9 +440,29 @@ const UptimeHeatmap: FC<UptimeHeatmapProps> = ({ days }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    ON-CALL WIDGET
    ═══════════════════════════════════════════════════════════════════════════ */
-const OnCallWidget: FC = () => {
-    const statusColor = (s: string) => s === 'active' ? THEME.success : s === 'standby' ? THEME.warning : THEME.textDim;
-    const statusLabel = (s: string) => s === 'active' ? 'On duty' : s === 'standby' ? 'Standby' : 'Off shift';
+const OnCallWidget = () => {
+    const statusColor = (s) => s === 'active' ? THEME.success : s === 'standby' ? THEME.warning : THEME.textDim;
+    const statusLabel = (s) => s === 'active' ? 'On duty' : s === 'standby' ? 'Standby' : 'Off shift';
+
+    if (MOCK_ONCALL.length === 0) {
+        return (
+            <Panel title="On-Call Rotation" icon={Users} accent={THEME.primary}>
+                <div style={{
+                    padding: '24px 16px', textAlign: 'center',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+                }}>
+                    <Users size={28} color={THEME.textDim} />
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>On-call rotation not configured</div>
+                        <div style={{ fontSize: 11, color: THEME.textDim }}>
+                            Set up team schedules in Settings → Team Management.
+                        </div>
+                    </div>
+                </div>
+            </Panel>
+        );
+    }
+
     return (
         <Panel title="On-Call Rotation" icon={Users} accent={THEME.primary}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -653,7 +501,7 @@ const OnCallWidget: FC = () => {
 /* ═══════════════════════════════════════════════════════════════════════════
    NOISE REDUCTION SCORE
    ═══════════════════════════════════════════════════════════════════════════ */
-const NoiseReductionPanel: FC<NoiseReductionPanelProps> = ({ alerts }) => {
+const NoiseReductionPanel = ({ alerts }) => {
     const autoResolved = alerts.filter(a => a.autoResolved).length;
     const total = alerts.length;
     const score = total > 0 ? Math.round((autoResolved / total) * 100) : 0;
@@ -690,7 +538,7 @@ const NoiseReductionPanel: FC<NoiseReductionPanelProps> = ({ alerts }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    ALERT FATIGUE CHART
    ═══════════════════════════════════════════════════════════════════════════ */
-const AlertFatiguePanel: FC<{ data: any[] }> = ({ data }) => (
+const AlertFatiguePanel = ({ data }) => (
     <Panel title="Alert Fatigue Score (30d)" icon={Activity} rightNode={
         <div style={{ display: 'flex', gap: 10, fontSize: 10, color: THEME.textDim }}>
             {[{ l: 'Actionable', c: THEME.success }, { l: 'Noise', c: THEME.danger }].map(x => (
@@ -728,7 +576,7 @@ const AlertFatiguePanel: FC<{ data: any[] }> = ({ data }) => (
 /* ═══════════════════════════════════════════════════════════════════════════
    MTTR TREND CHART
    ═══════════════════════════════════════════════════════════════════════════ */
-const MttrTrendPanel: FC<{ data: any[] }> = ({ data }) => (
+const MttrTrendPanel = ({ data }) => (
     <Panel title="MTTR Trend (12 Weeks)" icon={TrendingUp} rightNode={
         <span style={{ fontSize: 10, color: THEME.textDim, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <Timer size={9} />avg time to resolve
@@ -761,10 +609,10 @@ const MttrTrendPanel: FC<{ data: any[] }> = ({ data }) => (
 /* ═══════════════════════════════════════════════════════════════════════════
    ALERT GROUPING VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const AlertGroupView: FC<AlertGroupViewProps> = ({ alerts }) => {
-    const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+const AlertGroupView = ({ alerts }) => {
+    const [expandedGroup, setExpandedGroup] = useState(null);
     const groups = useMemo(() => {
-        const map: Record<string, Alert[]> = {};
+        const map = {};
         alerts.forEach(a => {
             const g = a.rootCauseGroup || 'uncategorized';
             if (!map[g]) map[g] = [];
@@ -774,12 +622,12 @@ const AlertGroupView: FC<AlertGroupViewProps> = ({ alerts }) => {
             key, items,
             severity: items.some(i => i.severity === 'critical') ? 'critical' : items.some(i => i.severity === 'warning') ? 'warning' : 'info',
             active: items.filter(i => !i.acknowledged).length,
-        })).sort((a, b) => { const o: Record<string, number> = { critical: 0, warning: 1, info: 2 }; return (o[a.severity] ?? 3) - (o[b.severity] ?? 3); });
+        })).sort((a, b) => { const o = { critical: 0, warning: 1, info: 2 }; return (o[a.severity] ?? 3) - (o[b.severity] ?? 3); });
     }, [alerts]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {groups.map((g) => {
+            {groups.map((g, idx) => {
                 const sev = getSev(g.severity);
                 const isExpanded = expandedGroup === g.key;
                 return (
@@ -827,10 +675,29 @@ const AlertGroupView: FC<AlertGroupViewProps> = ({ alerts }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SLO BURN-RATE PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
-const SloBurnRatePanel: FC<SloBurnRatePanelProps> = ({ burnData }) => {
+const SloBurnRatePanel = ({ burnData }) => {
     const [selectedSlo, setSelectedSlo] = useState(0);
     const slo = MOCK_SLOs[selectedSlo];
-    const burnColor = slo.burnRate6h > 3 ? THEME.danger : slo.burnRate6h > 1.5 ? THEME.warning : THEME.success;
+    const burnColor = slo?.burnRate6h > 3 ? THEME.danger : slo?.burnRate6h > 1.5 ? THEME.warning : THEME.success;
+
+    if (MOCK_SLOs.length === 0) {
+        return (
+            <div style={{
+                padding: '40px 24px', textAlign: 'center', background: THEME.surface,
+                border: `1px solid ${THEME.grid}`, borderRadius: 12,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12
+            }}>
+                <Gauge size={32} color={THEME.textDim} />
+                <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>No Service Level Objectives</div>
+                    <div style={{ fontSize: 12, color: THEME.textDim, maxWidth: 360 }}>
+                        No Service Level Objectives configured. Define SLOs in Settings to track uptime and latency targets.
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* SLO selector row */}
@@ -861,7 +728,7 @@ const SloBurnRatePanel: FC<SloBurnRatePanelProps> = ({ burnData }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <Panel title={`Error Budget — ${slo.name}`} icon={Gauge} accent={burnColor}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{ display: 'flex', align: 'center', gap: 16 }}>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                     <span style={{ fontSize: 11, color: THEME.textDim }}>Budget Consumed</span>
@@ -925,8 +792,34 @@ const SloBurnRatePanel: FC<SloBurnRatePanelProps> = ({ burnData }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    CHANGE FREEZE WINDOWS
    ═══════════════════════════════════════════════════════════════════════════ */
-const ChangeFreezePanel: FC<ChangFreezePanelProps> = () => {
+const ChangeFreezePanel = () => {
     const [showAdd, setShowAdd] = useState(false);
+
+    if (MOCK_FREEZE_WINDOWS.length === 0 && !showAdd) {
+        return (
+            <Panel title="Change Freeze Windows" icon={Snowflake} accent={THEME.info} rightNode={
+                <button onClick={() => setShowAdd(!showAdd)} style={{
+                    padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    fontSize: 10, fontWeight: 700, background: `${THEME.primary}15`, color: THEME.primary,
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                }}>+ Add Window</button>
+            }>
+                <div style={{
+                    padding: '32px 24px', textAlign: 'center',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+                }}>
+                    <Snowflake size={28} color={THEME.textDim} />
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>No freeze windows scheduled</div>
+                        <div style={{ fontSize: 11, color: THEME.textDim }}>
+                            Configure freeze windows for maintenance periods.
+                        </div>
+                    </div>
+                </div>
+            </Panel>
+        );
+    }
+
     return (
         <Panel title="Change Freeze Windows" icon={Snowflake} accent={THEME.info} rightNode={
             <button onClick={() => setShowAdd(!showAdd)} style={{
@@ -974,46 +867,49 @@ const ChangeFreezePanel: FC<ChangFreezePanelProps> = () => {
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
-const ReliabilityTab: FC = () => {
-    useAdaptiveTheme();
-    const [alerts, setAlerts] = useState<Alert[]>([]);
-    const [uptimeDays, setUptimeDays] = useState<UptimeDay[]>(() => genUptimeDays());
-    const [alertTrend, setAlertTrend] = useState<AlertTrendData[]>(() => genAlertTrend());
-    const [incidents, setIncidents] = useState<Incident[]>(MOCK_INCIDENTS);
-    const [mttrData] = useState(() => genMttrTrend());
-    const [fatigueData] = useState(() => genAlertFatigue());
-    const [burnData] = useState(() => genSloBurnRate());
+const ReliabilityTab = () => {
+    useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
+    const [alerts, setAlerts]           = useState([]);
+    const [uptimeDays, setUptimeDays]   = useState(() => genUptimeDays());
+    const [alertTrend, setAlertTrend]   = useState(() => genAlertTrend());
+    const [incidents, setIncidents]     = useState(MOCK_INCIDENTS);
+    const [mttrData]                    = useState(() => genMttrTrend());
+    const [fatigueData]                 = useState(() => genAlertFatigue());
+    const [burnData]                    = useState(() => genSloBurnRate());
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading]         = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [lastRefreshed, setLastRefreshed] = useState<number | null>(null);
+    const [lastRefreshed, setLastRefreshed] = useState(null);
     const [refreshInterval, setRefreshInterval] = useState(30);
     const [refreshError, setRefreshError] = useState(false);
-    const [newAlertIds, setNewAlertIds] = useState<Set<string>>(new Set());
-    const [refreshingPanels, setRefreshingPanels] = useState<Set<string>>(new Set());
+    const [newAlertIds, setNewAlertIds] = useState(new Set());
+    const [refreshingPanels, setRefreshingPanels] = useState(new Set());
 
-    const [activeTab, setActiveTab] = useState<'alerts' | 'uptime' | 'slo' | 'incidents' | 'ops'>('alerts');
-    const [alertView, setAlertView] = useState<'feed' | 'grouped'>('feed');
-    const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'info'>('all');
-    const [showAcked, setShowAcked] = useState(true);
-    const [expandedId, setExpandedId] = useState<number | null>(null);
-    const [sortBy, setSortBy] = useState<'time' | 'severity'>('time');
+    const [activeTab, setActiveTab]     = useState('alerts');
+    const [alertView, setAlertView]     = useState('feed'); // 'feed' | 'grouped'
+    const [filter, setFilter]           = useState('all');
+    const [showAcked, setShowAcked]     = useState(true);
+    const [expandedId, setExpandedId]   = useState(null);
+    const [sortBy, setSortBy]           = useState('time');
 
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    const prevAlertIdsRef = useRef<Set<string>>(new Set());
+    const intervalRef = useRef(null);
+    const prevAlertIdsRef = useRef(new Set());
 
     const fetchAll = useCallback(async (isInitial = false) => {
         if (!isInitial) setIsRefreshing(true);
         setRefreshingPanels(new Set(['alerts', 'trend', 'uptime', 'incidents']));
         setRefreshError(false);
         try {
+            // Fetch alerts and statistics in parallel
             const [alertsData, statsData] = await Promise.all([
                 fetchData('/api/alerts?limit=50').catch(() => null),
                 fetchData('/api/alerts/statistics?timeRange=24h').catch(() => null),
             ]);
 
+            // Update alerts from real API
             if (alertsData?.alerts) {
-                const incoming = alertsData.alerts as Alert[];
+                const incoming = alertsData.alerts;
+                // Detect new alert IDs for flash animation
                 const currentIds = new Set(incoming.map(a => String(a.id)));
                 const newIds = new Set([...currentIds].filter(id => !prevAlertIdsRef.current.has(id)));
                 if (newIds.size > 0) setNewAlertIds(newIds);
@@ -1021,13 +917,16 @@ const ReliabilityTab: FC = () => {
                 setAlerts(incoming);
             }
 
+            // Build alert trend from statistics hourly breakdown if available
             if (statsData?.hourlyBreakdown) {
                 setAlertTrend(statsData.hourlyBreakdown);
             } else if (statsData) {
+                // Re-generate trend using real counts as rough guide
                 setAlertTrend(genAlertTrend());
             }
         } catch (e) {
             setRefreshError(true);
+            // Fall back to mock data so UI is never blank
             if (isInitial && alerts.length === 0) {
                 setAlerts(MOCK_ALERTS);
                 setAlertTrend(genAlertTrend());
@@ -1038,7 +937,7 @@ const ReliabilityTab: FC = () => {
             setIsRefreshing(false);
             if (isInitial) setLoading(false);
         }
-    }, [alerts.length]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => { fetchAll(true); }, [fetchAll]);
 
@@ -1048,39 +947,38 @@ const ReliabilityTab: FC = () => {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [refreshInterval, fetchAll]);
 
-    const handleAcknowledge = useCallback(async (id: number) => {
+    const handleAcknowledge = useCallback(async (id) => {
+        // Optimistic update
         setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true } : a));
+        // Persist to backend
         try { await postData(`/api/alerts/${id}/acknowledge`, {}); }
-        catch { setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: false } : a)); }
+        catch { /* revert on error */ setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: false } : a)); }
     }, []);
-
     const handleAcknowledgeAll = useCallback(async () => {
         const unackedIds = alerts.filter(a => !a.acknowledged).map(a => a.id);
         if (unackedIds.length === 0) return;
+        // Optimistic update
         setAlerts(prev => prev.map(a => ({ ...a, acknowledged: true })));
+        // Persist to backend
         try { await postData('/api/alerts/bulk-acknowledge', { alertIds: unackedIds }); }
-        catch { fetchAll(false); }
+        catch { /* refresh to restore correct state */ fetchAll(false); }
     }, [alerts, fetchAll]);
 
     const processedAlerts = useMemo(() => {
         let list = [...alerts];
         if (filter !== 'all') list = list.filter(a => a.severity === filter);
         if (!showAcked) list = list.filter(a => !a.acknowledged);
-        if (sortBy === 'severity') {
-            const order: Record<string, number> = { critical: 0, warning: 1, info: 2 };
-            list.sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
-        } else {
-            list.sort((a, b) => new Date(b.created_at) as any - new Date(a.created_at) as any);
-        }
+        if (sortBy === 'severity') { const order = { critical: 0, warning: 1, info: 2 }; list.sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3)); }
+        else list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return list;
     }, [alerts, filter, showAcked, sortBy]);
 
     const counts = useMemo(() => ({
         total: alerts.length,
         critical: alerts.filter(a => a.severity === 'critical' && !a.acknowledged).length,
-        warning: alerts.filter(a => a.severity === 'warning' && !a.acknowledged).length,
-        info: alerts.filter(a => a.severity === 'info' && !a.acknowledged).length,
-        active: alerts.filter(a => !a.acknowledged).length,
+        warning:  alerts.filter(a => a.severity === 'warning' && !a.acknowledged).length,
+        info:     alerts.filter(a => a.severity === 'info' && !a.acknowledged).length,
+        active:   alerts.filter(a => !a.acknowledged).length,
         acknowledged: alerts.filter(a => a.acknowledged).length,
     }), [alerts]);
 
@@ -1090,10 +988,10 @@ const ReliabilityTab: FC = () => {
         degraded: uptimeDays.filter(d => d.status === 'degraded').length,
     }), [uptimeDays]);
 
-    const TabBtn: FC<TabBtnProps> = ({ id, label, icon: Icon, count }) => {
+    const TabBtn = ({ id, label, icon: Icon, count }) => {
         const active = activeTab === id;
         return (
-            <button className="rel-tab-btn" onClick={() => setActiveTab(id as any)} style={{
+            <button className="rel-tab-btn" onClick={() => setActiveTab(id)} style={{
                 padding: '9px 18px', borderRadius: 8, cursor: 'pointer', border: 'none',
                 display: 'inline-flex', alignItems: 'center', gap: 7,
                 fontWeight: 700, fontSize: 12, lineHeight: 1, whiteSpace: 'nowrap',
@@ -1105,16 +1003,16 @@ const ReliabilityTab: FC = () => {
                 <Icon size={13} />
                 {label}
                 {count != null && count > 0 && (
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.6)' : `${THEME.danger}20`, color: active ? '#fff' : THEME.danger }}>{count}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.danger}20`, color: active ? '#fff' : THEME.danger }}>{count}</span>
                 )}
             </button>
         );
     };
 
-    const FilterPill: FC<FilterPillProps> = ({ id, label, color, count }) => {
+    const FilterPill = ({ id, label, color, count }) => {
         const active = filter === id;
         return (
-            <button onClick={() => setFilter(id as any)} style={{
+            <button onClick={() => setFilter(id)} style={{
                 padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
                 fontSize: 11, fontWeight: 600, transition: 'all 0.15s',
                 background: active ? `${color}18` : 'transparent',
@@ -1138,12 +1036,12 @@ const ReliabilityTab: FC = () => {
         );
     }
 
-    const metricCards: MetricCardData[] = [
+    const metricCards = [
         { label: 'Active Alerts', value: String(counts.active), sub: `${counts.total} total`, color: counts.critical > 0 ? THEME.danger : THEME.success, icon: counts.critical > 0 ? BellRing : CheckCircle },
         { label: 'Critical', value: String(counts.critical), sub: counts.critical > 0 ? 'Immediate attention' : 'All clear', color: counts.critical > 0 ? THEME.danger : THEME.success, icon: Flame },
         { label: 'Uptime (90d)', value: `${uptimeStats.avg.toFixed(2)}%`, sub: `${uptimeStats.outages} outages`, color: uptimeStats.avg > 99.9 ? THEME.success : uptimeStats.avg > 99 ? THEME.warning : THEME.danger, icon: Shield },
         { label: 'MTTR', value: '16m', sub: 'avg resolution', color: THEME.primary, icon: Timer },
-        { label: 'Noise Ratio', value: `${Math.round((alerts.filter(a => a.autoResolved).length / (alerts.length || 1)) * 100)}%`, sub: 'auto-resolved', color: THEME.info, icon: Activity },
+        { label: 'Noise Ratio', value: `${Math.round((alerts.filter(a => a.autoResolved).length / alerts.length) * 100)}%`, sub: 'auto-resolved', color: THEME.info, icon: Activity },
     ];
 
     return (
@@ -1159,11 +1057,11 @@ const ReliabilityTab: FC = () => {
             {/* Tab row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', gap: 8 }}>
-                    <TabBtn id="alerts" label="Alert Feed" icon={Bell} count={counts.active} />
-                    <TabBtn id="uptime" label="Uptime & SLA" icon={Shield} />
-                    <TabBtn id="slo" label="SLO Burn Rate" icon={Gauge} count={MOCK_SLOs.filter(s => s.alert).length} />
-                    <TabBtn id="incidents" label="Incidents" icon={History} count={incidents.length} />
-                    <TabBtn id="ops" label="Ops Center" icon={Settings} />
+                    <TabBtn id="alerts"    label="Alert Feed"     icon={Bell}    count={counts.active} />
+                    <TabBtn id="uptime"    label="Uptime & SLA"   icon={Shield} />
+                    <TabBtn id="slo"       label="SLO Burn Rate"  icon={Gauge}   count={MOCK_SLOs.filter(s => s.alert).length} />
+                    <TabBtn id="incidents" label="Incidents"      icon={History} count={incidents.length} />
+                    <TabBtn id="ops"       label="Ops Center"     icon={Settings} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
                     <LiveDot color={counts.critical > 0 ? THEME.danger : THEME.success} size={6} />
@@ -1198,16 +1096,16 @@ const ReliabilityTab: FC = () => {
                         {/* Toolbar */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <FilterPill id="all" label="All" color={THEME.primary} count={counts.total} />
-                                <FilterPill id="critical" label="Critical" color={THEME.danger} count={counts.critical} />
-                                <FilterPill id="warning" label="Warning" color={THEME.warning} count={counts.warning} />
-                                <FilterPill id="info" label="Info" color={THEME.info} count={counts.info} />
+                                <FilterPill id="all"      label="All"      color={THEME.primary} count={counts.total} />
+                                <FilterPill id="critical" label="Critical" color={THEME.danger}  count={counts.critical} />
+                                <FilterPill id="warning"  label="Warning"  color={THEME.warning} count={counts.warning} />
+                                <FilterPill id="info"     label="Info"     color={THEME.info}    count={counts.info} />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 {/* View toggle */}
                                 <div style={{ display: 'flex', background: THEME.surface, borderRadius: 7, overflow: 'hidden', border: `1px solid ${THEME.grid}50` }}>
                                     {[{ id: 'feed', icon: Bell, label: 'Feed' }, { id: 'grouped', icon: LayoutGrid, label: 'Grouped' }].map(v => (
-                                        <button key={v.id} onClick={() => setAlertView(v.id as any)} style={{
+                                        <button key={v.id} onClick={() => setAlertView(v.id)} style={{
                                             padding: '4px 10px', border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700,
                                             background: alertView === v.id ? `${THEME.primary}20` : 'transparent',
                                             color: alertView === v.id ? THEME.primary : THEME.textDim,
@@ -1242,7 +1140,7 @@ const ReliabilityTab: FC = () => {
                                             <AlertCard key={alert.id} alert={alert} onAcknowledge={handleAcknowledge}
                                                        expanded={expandedId === alert.id}
                                                        onToggle={() => setExpandedId(expandedId === alert.id ? null : alert.id)}
-                                                       isNew={newAlertIds.has(alert.id.toString())}
+                                                       isNew={newAlertIds.has(alert.id)}
                                             />
                                         ))
                                     }
@@ -1291,8 +1189,8 @@ const ReliabilityTab: FC = () => {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 {[
                                     { label: 'Critical', count: alerts.filter(a => a.severity === 'critical').length, active: counts.critical, color: THEME.danger },
-                                    { label: 'Warning', count: alerts.filter(a => a.severity === 'warning').length, active: counts.warning, color: THEME.warning },
-                                    { label: 'Info', count: alerts.filter(a => a.severity === 'info').length, active: counts.info, color: THEME.info },
+                                    { label: 'Warning',  count: alerts.filter(a => a.severity === 'warning').length,  active: counts.warning,  color: THEME.warning },
+                                    { label: 'Info',     count: alerts.filter(a => a.severity === 'info').length,     active: counts.info,     color: THEME.info },
                                 ].map((s, i) => {
                                     const maxC = Math.max(alerts.filter(a => a.severity === 'critical').length, alerts.filter(a => a.severity === 'warning').length, alerts.filter(a => a.severity === 'info').length, 1);
                                     return (
@@ -1319,8 +1217,8 @@ const ReliabilityTab: FC = () => {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {[
                                     { sev: 'Critical', target: '5m', actual: '3m', met: true, color: THEME.danger },
-                                    { sev: 'Warning', target: '30m', actual: '22m', met: true, color: THEME.warning },
-                                    { sev: 'Info', target: '4h', actual: '1.5h', met: true, color: THEME.info },
+                                    { sev: 'Warning',  target: '30m', actual: '22m', met: true, color: THEME.warning },
+                                    { sev: 'Info',     target: '4h', actual: '1.5h', met: true, color: THEME.info },
                                 ].map((r, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1347,7 +1245,7 @@ const ReliabilityTab: FC = () => {
                         {[
                             { label: '30-Day Uptime', value: `${(uptimeDays.slice(-30).reduce((s, d) => s + d.uptime, 0) / 30).toFixed(3)}%`, target: '99.95%', icon: Shield, color: THEME.success },
                             { label: '90-Day Uptime', value: `${uptimeStats.avg.toFixed(3)}%`, target: '99.90%', icon: ShieldCheck, color: THEME.primary },
-                            { label: 'Error Budget', value: '63%', target: 'remaining this month', icon: Gauge, color: THEME.warning },
+                            { label: 'Error Budget',  value: '63%', target: 'remaining this month', icon: Gauge, color: THEME.warning },
                         ].map((s, i) => (
                             <Panel key={i} refreshing={refreshingPanels.has('sla')}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '10px 0' }}>
@@ -1523,4 +1421,4 @@ const ReliabilityTab: FC = () => {
     );
 };
 
-export default ReliabilityTab;
+export default React.memo(ReliabilityTab);

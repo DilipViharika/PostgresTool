@@ -1,11 +1,11 @@
-// @ts-nocheck
 /**
- * TableAndMatrix.tsx - FULL REPLACEMENT
- * Path: src/usermanagement/Toggle/TableAndMatrix.tsx
+ * TableAndMatrix.jsx - FULL REPLACEMENT
+ * Path: src/usermanagement/Toggle/TableAndMatrix.jsx
+ * NOTE: ASCII-only file - no special unicode characters
  */
 
-import React, { useState, useMemo, useCallback, memo, FC, CSSProperties } from 'react';
-import { THEME, useAdaptiveTheme } from '../../utils/theme.jsx';
+import React, { useState, useMemo, useCallback, memo } from 'react';
+import { THEME, useAdaptiveTheme } from '../../utils/theme';
 
 const T = {
     get surface()     { return THEME.surface; },
@@ -22,7 +22,7 @@ const T = {
     get textMuted()   { return THEME.textDim; },
 };
 
-const ROLE_CFG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+const ROLE_CFG = {
     superadmin: { label: 'Super Admin', color: '#f59e0b', bg: '#f59e0b18', icon: 'SA' },
     admin:      { label: 'Admin',       color: '#6c63ff', bg: '#6c63ff1a', icon: 'AD' },
     editor:     { label: 'Editor',      color: '#00d4ff', bg: '#00d4ff14', icon: 'ED' },
@@ -30,42 +30,42 @@ const ROLE_CFG: Record<string, { label: string; color: string; bg: string; icon:
     guest:      { label: 'Guest',       color: '#9395a5', bg: '#9395a518', icon: 'GS' },
 };
 
-const STATUS_CFG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+const STATUS_CFG = {
     active:    { label: 'Active',    color: '#10b981', bg: '#10b98116', dot: '#10b981' },
     inactive:  { label: 'Inactive',  color: '#9395a5', bg: '#9395a516', dot: '#9395a5' },
     suspended: { label: 'Suspended', color: '#ef4444', bg: '#ef444416', dot: '#ef4444' },
 };
 
-const RISK_CFG: Record<string, { label: string; color: string; pct: number }> = {
+const RISK_CFG = {
     low:      { label: 'Low',  color: '#10b981', pct: 25 },
     medium:   { label: 'Med',  color: '#f59e0b', pct: 55 },
     high:     { label: 'High', color: '#ef4444', pct: 82 },
     critical: { label: 'Crit', color: '#ff2d6b', pct: 100 },
 };
 
-const getInitials = (n: string): string => {
+const getInitials = (n) => {
     if (!n) return '?';
-    return n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    return n.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
 };
 
-const getAvatarColor = (n: string): string => {
-    const p = ['#6c63ff','#00d4ff','#10b981','#f59e0b','#8b5cf6','#ec4899','#ff6b35'];
-    let h = 0;
-    const str = n || '';
-    for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+const getAvatarColor = (n) => {
+    var p = ['#6c63ff','#00d4ff','#10b981','#f59e0b','#8b5cf6','#ec4899','#ff6b35'];
+    var h = 0;
+    var str = n || '';
+    for (var i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
     return p[Math.abs(h) % p.length];
 };
 
-const formatDate = (raw: string | null): string => {
+const formatDate = (raw) => {
     if (!raw) return '--';
-    const d = new Date(raw);
+    var d = new Date(raw);
     if (isNaN(d.getTime())) return '--';
-    const diff = Date.now() - d.getTime();
-    const m = Math.floor(diff / 60000);
+    var diff = Date.now() - d.getTime();
+    var m = Math.floor(diff / 60000);
     if (m < 60) return m + 'm ago';
-    const h = Math.floor(diff / 3600000);
+    var h = Math.floor(diff / 3600000);
     if (h < 24) return h + 'h ago';
-    const dy = Math.floor(diff / 86400000);
+    var dy = Math.floor(diff / 86400000);
     if (dy < 7) return dy + 'd ago';
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 };
@@ -73,7 +73,7 @@ const formatDate = (raw: string | null): string => {
 const STYLE_ID = 'ut2-styles-v3';
 function ensureStyles() {
     if (typeof document === 'undefined') return;
-    let el = document.getElementById(STYLE_ID);
+    var el = document.getElementById(STYLE_ID);
     if (!el) {
         el = document.createElement('style');
         el.id = STYLE_ID;
@@ -133,66 +133,71 @@ function ensureStyles() {
     ].join('\n');
 }
 
-const EditSVG = () => React.createElement('svg', { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' },
-    React.createElement('path', { d: 'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7' }),
-    React.createElement('path', { d: 'M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' })
-);
+/* SVG icons - no special chars */
+var EditSVG = function() {
+    return React.createElement('svg', { width:12, height:12, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2', strokeLinecap:'round', strokeLinejoin:'round' },
+        React.createElement('path', { d:'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7' }),
+        React.createElement('path', { d:'M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' })
+    );
+};
 
-const TrashSVG = () => React.createElement('svg', { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' },
-    React.createElement('polyline', { points: '3 6 5 6 21 6' }),
-    React.createElement('path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' })
-);
+var TrashSVG = function() {
+    return React.createElement('svg', { width:12, height:12, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:'2', strokeLinecap:'round', strokeLinejoin:'round' },
+        React.createElement('polyline', { points:'3 6 5 6 21 6' }),
+        React.createElement('path', { d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' })
+    );
+};
 
-const RoleBadge = memo<{ role: string }>(function(props) {
-    const role = props.role || '';
-    const key = role.toLowerCase().replace(/\s+/g, '');
-    const c = ROLE_CFG[key] || ROLE_CFG.guest;
+var RoleBadge = memo(function(props) {
+    var role = props.role || '';
+    var key = role.toLowerCase().replace(/\s+/g, '');
+    var c = ROLE_CFG[key] || ROLE_CFG.guest;
     return React.createElement('span', {
             style: {
-                display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px',
-                borderRadius: 20, background: c.bg, color: c.color, fontSize: 11, fontWeight: 700,
-                whiteSpace: 'nowrap'
+                display:'inline-flex', alignItems:'center', gap:4, padding:'3px 9px',
+                borderRadius:20, background:c.bg, color:c.color, fontSize:11, fontWeight:700,
+                whiteSpace:'nowrap'
             }
         },
-        React.createElement('span', { style: { fontSize: 9, fontWeight: 900, opacity: 0.7 } }, c.icon),
+        React.createElement('span', { style:{ fontSize:9, fontWeight:900, opacity:0.7 } }, c.icon),
         c.label
     );
 });
 
-const StatusBadge = memo<{ status: string }>(function(props) {
-    const status = props.status || '';
-    const c = STATUS_CFG[status.toLowerCase()] || STATUS_CFG.inactive;
+var StatusBadge = memo(function(props) {
+    var status = props.status || '';
+    var c = STATUS_CFG[status.toLowerCase()] || STATUS_CFG.inactive;
     return React.createElement('span', {
             style: {
-                display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px',
-                borderRadius: 20, background: c.bg, color: c.color, fontSize: 11, fontWeight: 600,
-                whiteSpace: 'nowrap'
+                display:'inline-flex', alignItems:'center', gap:5, padding:'3px 9px',
+                borderRadius:20, background:c.bg, color:c.color, fontSize:11, fontWeight:600,
+                whiteSpace:'nowrap'
             }
         },
         React.createElement('span', {
-            style: { width: 5, height: 5, borderRadius: '50%', background: c.dot,
-                boxShadow: '0 0 5px ' + c.dot, flexShrink: 0 }
+            style:{ width:5, height:5, borderRadius:'50%', background:c.dot,
+                boxShadow:'0 0 5px ' + c.dot, flexShrink:0 }
         }),
         c.label
     );
 });
 
-const RiskCell = memo<{ risk: string }>(function(props) {
+var RiskCell = memo(function(props) {
     useAdaptiveTheme();
-    const risk = props.risk || '';
-    if (!risk) return React.createElement('span', { style: { color: T.textMuted, fontSize: 12 } }, '--');
-    const c = RISK_CFG[risk.toLowerCase()] || { label: risk, color: T.textDim, pct: 30 };
+    var risk = props.risk || '';
+    if (!risk) return React.createElement('span', { style:{ color:T.textMuted, fontSize:12 } }, '--');
+    var c = RISK_CFG[risk.toLowerCase()] || { label: risk, color: T.textDim, pct: 30 };
     return React.createElement('div', null,
-        React.createElement('span', { style: { fontSize: 11, fontWeight: 700, color: c.color } }, c.label),
-        React.createElement('div', { className: 'ut2-rbar' },
-            React.createElement('div', { className: 'ut2-rfil', style: { width: c.pct + '%', background: c.color } })
+        React.createElement('span', { style:{ fontSize:11, fontWeight:700, color:c.color } }, c.label),
+        React.createElement('div', { className:'ut2-rbar' },
+            React.createElement('div', { className:'ut2-rfil', style:{ width: c.pct + '%', background:c.color } })
         )
     );
 });
 
-const Pill: FC<{ label: string; active: boolean; onClick: () => void; color?: string; bg?: string }> = function(props) {
-    const extraStyle = (props.active && props.color)
-        ? { borderColor: props.color, color: props.color, background: props.bg || 'transparent' }
+var Pill = function(props) {
+    var extraStyle = (props.active && props.color)
+        ? { borderColor:props.color, color:props.color, background:props.bg || 'transparent' }
         : {};
     return React.createElement('button', {
         className: 'ut2-pill' + (props.active ? ' on' : ''),
@@ -201,267 +206,265 @@ const Pill: FC<{ label: string; active: boolean; onClick: () => void; color?: st
     }, props.label);
 };
 
-const PAGE_SIZE = 10;
+var PAGE_SIZE = 10;
 
-const COLS = [
-    { k: 'name',       label: 'User',       w: '28%' },
-    { k: 'role',       label: 'Role',       w: '14%' },
-    { k: 'status',     label: 'Status',     w: '12%' },
-    { k: 'department', label: 'Dept',       w: '14%' },
-    { k: 'last_login', label: 'Last Login', w: '13%' },
-    { k: 'risk',       label: 'Risk',       w: '10%', ns: true },
-    { k: '_a',         label: '',           w: '9%',  ns: true },
+var COLS = [
+    { k:'name',       label:'User',       w:'28%' },
+    { k:'role',       label:'Role',       w:'14%' },
+    { k:'status',     label:'Status',     w:'12%' },
+    { k:'department', label:'Dept',       w:'14%' },
+    { k:'last_login', label:'Last Login', w:'13%' },
+    { k:'risk',       label:'Risk',       w:'10%', ns:true },
+    { k:'_a',         label:'',           w:'9%',  ns:true },
 ];
 
-interface User {
-    id: string;
-    name?: string;
-    email?: string;
-    role?: string;
-    status?: string;
-    department?: string;
-    last_login?: string;
-    risk?: string;
-}
-
-interface UsersTableProps {
-    users: User[];
-    onSelectUser?: (user: User) => void;
-    onEditUser?: (user: User | null) => void;
-    onDeleteUsers?: (ids: string | string[]) => void;
-}
-
-export const UsersTable = memo<UsersTableProps>(function UsersTable(props) {
+export var UsersTable = memo(function UsersTable(props) {
     useAdaptiveTheme();
-    const users        = props.users || [];
-    const onSelectUser = props.onSelectUser;
-    const onEditUser   = props.onEditUser;
-    const onDeleteUsers = props.onDeleteUsers;
+    var users        = props.users || [];
+    var onSelectUser = props.onSelectUser;
+    var onEditUser   = props.onEditUser;
+    var onDeleteUsers = props.onDeleteUsers;
 
     ensureStyles();
 
-    const [search, setSearch]  = useState('');
-    const [roleFil, setRoleFil] = useState('all');
-    const [statFil, setStatFil] = useState('all');
-    const [sortK, setSortK]   = useState('name');
-    const [sortD, setSortD]   = useState<'asc' | 'desc'>('asc');
-    const [sel, setSel]     = useState<Set<string>>(new Set());
-    const [page, setPage]    = useState(1);
+    var _s = useState('');      var search  = _s[0]; var setSearch  = _s[1];
+    var _r = useState('all');   var roleFil = _r[0]; var setRoleFil = _r[1];
+    var _t = useState('all');   var statFil = _t[0]; var setStatFil = _t[1];
+    var _k = useState('name');  var sortK   = _k[0]; var setSortK   = _k[1];
+    var _d = useState('asc');   var sortD   = _d[0]; var setSortD   = _d[1];
+    var _e = useState(new Set()); var sel   = _e[0]; var setSel     = _e[1];
+    var _p = useState(1);       var page    = _p[0]; var setPage    = _p[1];
 
-    const filtered = useMemo(() => {
-        let list = users.slice();
+    var filtered = useMemo(function() {
+        var list = users.slice();
         if (search.trim()) {
-            const q = search.toLowerCase();
-            list = list.filter(u =>
-                (u.name || '').toLowerCase().indexOf(q) >= 0 ||
-                (u.email || '').toLowerCase().indexOf(q) >= 0 ||
-                (u.department || '').toLowerCase().indexOf(q) >= 0
-            );
+            var q = search.toLowerCase();
+            list = list.filter(function(u) {
+                return (u.name||'').toLowerCase().indexOf(q) >= 0 ||
+                    (u.email||'').toLowerCase().indexOf(q) >= 0 ||
+                    (u.department||'').toLowerCase().indexOf(q) >= 0;
+            });
         }
         if (roleFil !== 'all') {
-            list = list.filter(u => (u.role || '').toLowerCase().replace(/\s+/g, '') === roleFil);
+            list = list.filter(function(u) {
+                return (u.role||'').toLowerCase().replace(/\s+/g,'') === roleFil;
+            });
         }
         if (statFil !== 'all') {
-            list = list.filter(u => (u.status || '').toLowerCase() === statFil);
+            list = list.filter(function(u) {
+                return (u.status||'').toLowerCase() === statFil;
+            });
         }
-        list.sort((a, b) => {
-            const av = String(a[sortK as keyof User] || '').toLowerCase();
-            const bv = String(b[sortK as keyof User] || '').toLowerCase();
+        list.sort(function(a,b) {
+            var av = String(a[sortK]||'').toLowerCase();
+            var bv = String(b[sortK]||'').toLowerCase();
             return sortD === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
         });
         return list;
     }, [users, search, roleFil, statFil, sortK, sortD]);
 
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    const rows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    var rows = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
 
-    const doSort = useCallback((k: string) => {
-        if (k === sortK) setSortD(d => d === 'asc' ? 'desc' : 'asc');
+    var doSort = useCallback(function(k) {
+        if (k === sortK) setSortD(function(d) { return d==='asc'?'desc':'asc'; });
         else { setSortK(k); setSortD('asc'); }
     }, [sortK]);
 
-    const toggleRow = useCallback((id: string, e: React.MouseEvent) => {
+    var toggleRow = useCallback(function(id, e) {
         e.stopPropagation();
-        setSel(prev => {
-            const s = new Set(prev);
+        setSel(function(prev) {
+            var s = new Set(prev);
             if (s.has(id)) s.delete(id); else s.add(id);
             return s;
         });
     }, []);
 
-    const toggleAll = () => {
-        setSel(prev => prev.size === rows.length ? new Set() : new Set(rows.map(u => u.id)));
+    var toggleAll = function() {
+        setSel(function(prev) {
+            return prev.size === rows.length ? new Set() : new Set(rows.map(function(u) { return u.id; }));
+        });
     };
 
-    const go = (fn: () => void) => { fn(); setPage(1); };
+    var go = function(fn) { fn(); setPage(1); };
 
-    const roleOpts = useMemo(() => {
-        const seen = new Set(users.map(u => (u.role || '').toLowerCase().replace(/\s+/g, '')));
-        return ['superadmin', 'admin', 'editor', 'viewer', 'guest'].filter(r => seen.has(r) || !users.length);
+    var roleOpts = useMemo(function() {
+        var seen = new Set(users.map(function(u) { return (u.role||'').toLowerCase().replace(/\s+/g,''); }));
+        return ['superadmin','admin','editor','viewer','guest'].filter(function(r) {
+            return seen.has(r) || !users.length;
+        });
     }, [users]);
 
-    const allChecked = rows.length > 0 && sel.size === rows.length;
+    var allChecked = rows.length > 0 && sel.size === rows.length;
 
-    return React.createElement('div', { className: 'ut2' },
+    return React.createElement('div', { className:'ut2' },
 
         /* Toolbar */
-        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
+        React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:14 } },
 
             /* Search */
-            React.createElement('div', { className: 'ut2-search' },
-                React.createElement('span', { className: 'ut2-sico' },
-                    React.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'none', stroke: T.textMuted, strokeWidth: '2.5', strokeLinecap: 'round', strokeLinejoin: 'round' },
-                        React.createElement('circle', { cx: '11', cy: '11', r: '8' }),
-                        React.createElement('line', { x1: '21', y1: '21', x2: '16.65', y2: '16.65' })
+            React.createElement('div', { className:'ut2-search' },
+                React.createElement('span', { className:'ut2-sico' },
+                    React.createElement('svg', { width:13, height:13, viewBox:'0 0 24 24', fill:'none', stroke:T.textMuted, strokeWidth:'2.5', strokeLinecap:'round', strokeLinejoin:'round' },
+                        React.createElement('circle', { cx:'11', cy:'11', r:'8' }),
+                        React.createElement('line', { x1:'21', y1:'21', x2:'16.65', y2:'16.65' })
                     )
                 ),
                 React.createElement('input', {
-                    id: 'um-search-input', type: 'text',
-                    placeholder: 'Search name, email, dept...',
-                    value: search,
-                    onChange: (e) => go(() => setSearch(e.target.value)),
-                    'aria-label': 'Search users'
+                    id:'um-search-input', type:'text',
+                    placeholder:'Search name, email, dept...',
+                    value:search,
+                    onChange:function(e){ go(function(){ setSearch(e.target.value); }); },
+                    'aria-label':'Search users'
                 })
             ),
 
             /* Role pills */
-            React.createElement(Pill, { label: 'All Roles', active: roleFil === 'all', onClick: () => go(() => setRoleFil('all')) }),
-            roleOpts.map(r => {
-                const c = ROLE_CFG[r];
-                return React.createElement(Pill, { key: r, label: c.label, active: roleFil === r, color: c.color, bg: c.bg, onClick: () => go(() => setRoleFil(r)) });
+            React.createElement(Pill, { label:'All Roles', active:roleFil==='all', onClick:function(){ go(function(){ setRoleFil('all'); }); } }),
+            roleOpts.map(function(r) {
+                var c = ROLE_CFG[r];
+                return React.createElement(Pill, { key:r, label:c.label, active:roleFil===r, color:c.color, bg:c.bg, onClick:function(){ go(function(){ setRoleFil(r); }); } });
             }),
 
-            React.createElement('div', { style: { flex: 1 } }),
+            React.createElement('div', { style:{ flex:1 } }),
 
             /* Status pills */
-            React.createElement(Pill, { label: 'All Status', active: statFil === 'all', onClick: () => go(() => setStatFil('all')) }),
-            ['active', 'inactive', 'suspended'].map(s => {
-                const c = STATUS_CFG[s];
-                return React.createElement(Pill, { key: s, label: c.label, active: statFil === s, color: c.color, bg: c.bg, onClick: () => go(() => setStatFil(s)) });
+            React.createElement(Pill, { label:'All Status', active:statFil==='all', onClick:function(){ go(function(){ setStatFil('all'); }); } }),
+            ['active','inactive','suspended'].map(function(s) {
+                var c = STATUS_CFG[s];
+                return React.createElement(Pill, { key:s, label:c.label, active:statFil===s, color:c.color, bg:c.bg, onClick:function(){ go(function(){ setStatFil(s); }); } });
             }),
 
             /* Export */
-            React.createElement('button', { className: 'ut2-btn ut2-btn-g' }, 'Export'),
+            React.createElement('button', { className:'ut2-btn ut2-btn-g' }, 'Export'),
 
             /* Add User */
             React.createElement('button', {
-                className: 'ut2-btn ut2-btn-p',
-                onClick: () => onEditUser?.(null)
+                className:'ut2-btn ut2-btn-p',
+                onClick:function(){ if(onEditUser) onEditUser(null); }
             }, '+ Add User')
         ),
 
         /* Meta row */
         React.createElement('div', {
-                style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    marginBottom: 10, fontSize: 12, color: T.textMuted }
+                style:{ display:'flex', alignItems:'center', justifyContent:'space-between',
+                    marginBottom:10, fontSize:12, color:T.textMuted }
             },
-            React.createElement('span', null, filtered.length + ' result' + (filtered.length !== 1 ? 's' : '')),
-            sel.size > 0 && React.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                React.createElement('span', { style: { color: T.primary, fontWeight: 600 } }, sel.size + ' selected'),
+            React.createElement('span', null, filtered.length + ' result' + (filtered.length!==1?'s':'')),
+            sel.size > 0 && React.createElement('span', { style:{ display:'flex', alignItems:'center', gap:8 } },
+                React.createElement('span', { style:{ color:T.primary, fontWeight:600 } }, sel.size + ' selected'),
                 React.createElement('button', {
-                    onClick: () => onDeleteUsers?.([...sel]),
-                    style: { fontSize: 11, fontWeight: 600, color: T.red, background: T.red + '15',
-                        border: '1px solid ' + T.red + '40', borderRadius: 6, padding: '2px 8px',
-                        cursor: 'pointer', fontFamily: 'inherit' }
+                    onClick:function(){ if(onDeleteUsers) onDeleteUsers([...sel]); },
+                    style:{ fontSize:11, fontWeight:600, color:T.red, background:T.red+'15',
+                        border:'1px solid '+T.red+'40', borderRadius:6, padding:'2px 8px',
+                        cursor:'pointer', fontFamily:'inherit' }
                 }, 'Delete selected')
             )
         ),
 
         /* Table */
         React.createElement('div', {
-                style: { border: '1px solid ' + T.border, borderRadius: 12, overflow: 'hidden', background: T.surface }
+                style:{ border:'1px solid '+T.border, borderRadius:12, overflow:'hidden', background:T.surface }
             },
-            React.createElement('table', { className: 'ut2-tbl' },
+            React.createElement('table', { className:'ut2-tbl' },
                 React.createElement('colgroup', null,
-                    React.createElement('col', { style: { width: 44 } }),
-                    COLS.map(c => React.createElement('col', { key: c.k, style: { width: c.w } }))
+                    React.createElement('col', { style:{ width:44 } }),
+                    COLS.map(function(c) { return React.createElement('col', { key:c.k, style:{ width:c.w } }); })
                 ),
                 React.createElement('thead', null,
                     React.createElement('tr', null,
                         React.createElement('th', null,
                             React.createElement('input', {
-                                type: 'checkbox', className: 'ut2-cb',
-                                checked: allChecked, onChange: toggleAll,
-                                'aria-label': 'Select all'
+                                type:'checkbox', className:'ut2-cb',
+                                checked:allChecked, onChange:toggleAll,
+                                'aria-label':'Select all'
                             })
                         ),
-                        COLS.map(col =>
-                            React.createElement('th', {
-                                    key: col.k,
+                        COLS.map(function(col) {
+                            return React.createElement('th', {
+                                    key:col.k,
                                     className: col.ns ? '' : 's',
-                                    onClick: col.ns ? undefined : () => doSort(col.k)
+                                    onClick: col.ns ? undefined : function(){ doSort(col.k); }
                                 },
                                 col.label,
                                 !col.ns && React.createElement('span', {
-                                    style: { marginLeft: 3, fontSize: 10,
-                                        opacity: sortK === col.k ? 1 : 0.25,
-                                        color: sortK === col.k ? T.primary : 'inherit' }
-                                }, sortK === col.k ? (sortD === 'asc' ? ' ^' : ' v') : ' ^v')
-                            )
-                        )
+                                    style:{ marginLeft:3, fontSize:10,
+                                        opacity: sortK===col.k ? 1 : 0.25,
+                                        color: sortK===col.k ? T.primary : 'inherit' }
+                                }, sortK===col.k ? (sortD==='asc' ? ' ^' : ' v') : ' ^v')
+                            );
+                        })
                     )
                 ),
                 React.createElement('tbody', null,
                     rows.length === 0
                         ? React.createElement('tr', null,
-                            React.createElement('td', { colSpan: 8, style: { textAlign: 'center', padding: '56px 20px' } },
-                                React.createElement('div', { style: { color: T.textMuted, fontSize: 13 } },
+                            React.createElement('td', { colSpan:8, style:{ textAlign:'center', padding:'56px 20px' } },
+                                React.createElement('div', { style:{ color:T.textMuted, fontSize:13 } },
                                     'No users found' + (search ? ' for "' + search + '"' : '')
                                 )
                             )
                         )
-                        : rows.map((u, i) => {
-                            const isS = sel.has(u.id);
-                            const ac  = getAvatarColor(u.name || '');
+                        : rows.map(function(u, i) {
+                            var isS = sel.has(u.id);
+                            var ac  = getAvatarColor(u.name);
                             return React.createElement('tr', {
-                                    key: u.id || ('u' + i),
+                                    key: u.id || ('u'+i),
                                     className: 'ut2-in' + (isS ? ' sel' : ''),
-                                    style: { animationDelay: (i * 25) + 'ms' } as CSSProperties,
-                                    onClick: () => onSelectUser?.(u)
+                                    style:{ animationDelay: (i*25)+'ms' },
+                                    onClick: function(){ if(onSelectUser) onSelectUser(u); }
                                 },
-                                React.createElement('td', { onClick: (e) => toggleRow(u.id, e) },
+                                /* checkbox */
+                                React.createElement('td', { onClick:function(e){ toggleRow(u.id,e); } },
                                     React.createElement('input', {
-                                        type: 'checkbox', className: 'ut2-cb',
-                                        checked: isS,
-                                        onChange: (e) => toggleRow(u.id, e as any),
-                                        'aria-label': 'Select ' + u.name
+                                        type:'checkbox', className:'ut2-cb',
+                                        checked:isS,
+                                        onChange:function(e){ toggleRow(u.id,e); },
+                                        'aria-label':'Select '+u.name
                                     })
                                 ),
+                                /* user */
                                 React.createElement('td', null,
-                                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' } },
-                                        React.createElement('div', { className: 'ut2-av', style: { background: ac + '22', color: ac } },
-                                            getInitials(u.name || '')
+                                    React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:10, overflow:'hidden' } },
+                                        React.createElement('div', { className:'ut2-av', style:{ background:ac+'22', color:ac } },
+                                            getInitials(u.name)
                                         ),
-                                        React.createElement('div', { style: { overflow: 'hidden', minWidth: 0 } },
+                                        React.createElement('div', { style:{ overflow:'hidden', minWidth:0 } },
                                             React.createElement('div', {
-                                                style: { fontSize: 13, fontWeight: 600, color: T.text,
-                                                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+                                                style:{ fontSize:13, fontWeight:600, color:T.text,
+                                                    whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }
                                             }, u.name || '--'),
                                             React.createElement('div', {
-                                                style: { fontSize: 11, color: T.textMuted, marginTop: 1,
-                                                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+                                                style:{ fontSize:11, color:T.textMuted, marginTop:1,
+                                                    whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }
                                             }, u.email || '')
                                         )
                                     )
                                 ),
-                                React.createElement('td', null, React.createElement(RoleBadge, { role: u.role || '' })),
-                                React.createElement('td', null, React.createElement(StatusBadge, { status: u.status || '' })),
+                                /* role */
+                                React.createElement('td', null, React.createElement(RoleBadge, { role:u.role||'' })),
+                                /* status */
+                                React.createElement('td', null, React.createElement(StatusBadge, { status:u.status||'' })),
+                                /* dept */
                                 React.createElement('td', {
-                                    style: { fontSize: 12, color: T.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+                                    style:{ fontSize:12, color:T.textDim, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }
                                 }, u.department || '--'),
+                                /* last login */
                                 React.createElement('td', {
-                                    style: { fontSize: 12, color: T.textDim, fontFamily: THEME.fontMono, whiteSpace: 'nowrap' }
-                                }, formatDate(u.last_login || null)),
-                                React.createElement('td', null, React.createElement(RiskCell, { risk: u.risk || '' })),
-                                React.createElement('td', { onClick: (e) => e.stopPropagation() },
-                                    React.createElement('div', { style: { display: 'flex', gap: 5 } },
+                                    style:{ fontSize:12, color:T.textDim, fontFamily: THEME.fontMono, whiteSpace:'nowrap' }
+                                }, formatDate(u.last_login)),
+                                /* risk */
+                                React.createElement('td', null, React.createElement(RiskCell, { risk:u.risk||'' })),
+                                /* actions */
+                                React.createElement('td', { onClick:function(e){ e.stopPropagation(); } },
+                                    React.createElement('div', { style:{ display:'flex', gap:5 } },
                                         React.createElement('button', {
-                                            className: 'ut2-ib', title: 'Edit',
-                                            onClick: (e) => { e.stopPropagation(); onEditUser?.(u); }
+                                            className:'ut2-ib', title:'Edit',
+                                            onClick:function(e){ e.stopPropagation(); if(onEditUser) onEditUser(u); }
                                         }, React.createElement(EditSVG)),
                                         React.createElement('button', {
-                                            className: 'ut2-ib d', title: 'Delete',
-                                            onClick: (e) => { e.stopPropagation(); onDeleteUsers?.(u.id); }
+                                            className:'ut2-ib d', title:'Delete',
+                                            onClick:function(e){ e.stopPropagation(); if(onDeleteUsers) onDeleteUsers(u.id); }
                                         }, React.createElement(TrashSVG))
                                     )
                                 )
@@ -473,30 +476,30 @@ export const UsersTable = memo<UsersTableProps>(function UsersTable(props) {
 
         /* Pagination */
         React.createElement('div', {
-                style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    marginTop: 12, fontSize: 12, color: T.textMuted }
+                style:{ display:'flex', alignItems:'center', justifyContent:'space-between',
+                    marginTop:12, fontSize:12, color:T.textMuted }
             },
             React.createElement('span', null,
-                'Showing ' + (filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1) +
-                '-' + Math.min(page * PAGE_SIZE, filtered.length) +
+                'Showing ' + (filtered.length===0?0:(page-1)*PAGE_SIZE+1) +
+                '-' + Math.min(page*PAGE_SIZE, filtered.length) +
                 ' of ' + filtered.length + ' users'
             ),
-            totalPages > 1 && React.createElement('div', { style: { display: 'flex', gap: 5, alignItems: 'center' } },
+            totalPages > 1 && React.createElement('div', { style:{ display:'flex', gap:5, alignItems:'center' } },
                 React.createElement('button', {
-                    className: 'ut2-pg', disabled: page === 1,
-                    onClick: () => setPage(p => p - 1)
+                    className:'ut2-pg', disabled:page===1,
+                    onClick:function(){ setPage(function(p){ return p-1; }); }
                 }, '<'),
-                Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                    const p = i + 1;
+                Array.from({ length: Math.min(totalPages, 7) }, function(_, i) {
+                    var p = i+1;
                     return React.createElement('button', {
-                        key: p, className: 'ut2-pg' + (page === p ? ' on' : ''),
-                        onClick: () => setPage(p)
+                        key:p, className:'ut2-pg' + (page===p?' on':''),
+                        onClick:function(){ setPage(p); }
                     }, p);
                 }),
                 totalPages > 7 && React.createElement('span', null, '...'),
                 React.createElement('button', {
-                    className: 'ut2-pg', disabled: page === totalPages,
-                    onClick: () => setPage(p => p + 1)
+                    className:'ut2-pg', disabled:page===totalPages,
+                    onClick:function(){ setPage(function(p){ return p+1; }); }
                 }, '>')
             )
         )
@@ -504,51 +507,52 @@ export const UsersTable = memo<UsersTableProps>(function UsersTable(props) {
 });
 UsersTable.displayName = 'UsersTable';
 
-export const PermissionMatrix = memo(function PermissionMatrix() {
+
+export var PermissionMatrix = memo(function PermissionMatrix() {
     useAdaptiveTheme();
-    const roles   = ['superadmin', 'admin', 'editor', 'viewer', 'guest'];
-    const actions = ['View', 'Create', 'Edit', 'Delete', 'Export', 'Admin'];
-    const perms: Record<string, number[]> = {
-        superadmin: [1, 1, 1, 1, 1, 1],
-        admin:      [1, 1, 1, 1, 1, 0],
-        editor:     [1, 1, 1, 0, 0, 0],
-        viewer:     [1, 0, 0, 0, 1, 0],
-        guest:      [1, 0, 0, 0, 0, 0],
+    var roles   = ['superadmin','admin','editor','viewer','guest'];
+    var actions = ['View','Create','Edit','Delete','Export','Admin'];
+    var perms   = {
+        superadmin:[1,1,1,1,1,1],
+        admin:     [1,1,1,1,1,0],
+        editor:    [1,1,1,0,0,0],
+        viewer:    [1,0,0,0,1,0],
+        guest:     [1,0,0,0,0,0],
     };
 
-    return React.createElement('div', { style: { fontFamily: 'inherit' } },
-        React.createElement('div', { style: { marginBottom: 20 } },
-            React.createElement('div', { style: { fontSize: 15, fontWeight: 700, color: T.text } }, 'Permission Matrix'),
-            React.createElement('div', { style: { fontSize: 12, color: T.textDim, marginTop: 3 } }, 'Role-based access control')
+    return React.createElement('div', { style:{ fontFamily:'inherit' } },
+        React.createElement('div', { style:{ marginBottom:20 } },
+            React.createElement('div', { style:{ fontSize:15, fontWeight:700, color:T.text } }, 'Permission Matrix'),
+            React.createElement('div', { style:{ fontSize:12, color:T.textDim, marginTop:3 } }, 'Role-based access control')
         ),
         React.createElement('div', {
-                style: { overflowX: 'auto', border: '1px solid ' + T.border, borderRadius: 12, background: T.surface }
+                style:{ overflowX:'auto', border:'1px solid '+T.border, borderRadius:12, background:T.surface }
             },
-            React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 500 } },
+            React.createElement('table', { style:{ width:'100%', borderCollapse:'collapse', minWidth:500 } },
                 React.createElement('thead', null,
-                    React.createElement('tr', { style: { background: T.surfaceMid, borderBottom: '1px solid ' + T.border } },
-                        React.createElement('th', { style: { padding: '11px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Role'),
-                        actions.map(a =>
-                            React.createElement('th', { key: a, style: { padding: '11px 14px', textAlign: 'center', fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '.07em' } }, a)
-                        )
+                    React.createElement('tr', { style:{ background:T.surfaceMid, borderBottom:'1px solid '+T.border } },
+                        React.createElement('th', { style:{ padding:'11px 16px', textAlign:'left', fontSize:11, fontWeight:700, color:T.textMuted, textTransform:'uppercase', letterSpacing:'.07em' } }, 'Role'),
+                        actions.map(function(a) {
+                            return React.createElement('th', { key:a, style:{ padding:'11px 14px', textAlign:'center', fontSize:11, fontWeight:700, color:T.textMuted, textTransform:'uppercase', letterSpacing:'.07em' } }, a);
+                        })
                     )
                 ),
                 React.createElement('tbody', null,
-                    roles.map((role, ri) =>
-                        React.createElement('tr', {
-                                key: role,
-                                style: { borderBottom: ri < roles.length - 1 ? '1px solid ' + T.border + '33' : 'none' }
+                    roles.map(function(role, ri) {
+                        return React.createElement('tr', {
+                                key:role,
+                                style:{ borderBottom: ri < roles.length-1 ? '1px solid '+T.border+'33' : 'none' }
                             },
-                            React.createElement('td', { style: { padding: '13px 16px' } }, React.createElement(RoleBadge, { role })),
-                            perms[role].map((on, ai) =>
-                                React.createElement('td', { key: ai, style: { padding: '13px 14px', textAlign: 'center' } },
+                            React.createElement('td', { style:{ padding:'13px 16px' } }, React.createElement(RoleBadge, { role:role })),
+                            perms[role].map(function(on, ai) {
+                                return React.createElement('td', { key:ai, style:{ padding:'13px 14px', textAlign:'center' } },
                                     on
-                                        ? React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 6, background: T.green + '1a', color: T.green, fontSize: 12, fontWeight: 700 } }, 'Y')
-                                        : React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 6, background: T.border + '55', color: T.textMuted, fontSize: 11 } }, '-')
-                                )
-                            )
-                        )
-                    )
+                                        ? React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:6, background:T.green+'1a', color:T.green, fontSize:12, fontWeight:700 } }, 'Y')
+                                        : React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:6, background:T.border+'55', color:T.textMuted, fontSize:11 } }, '-')
+                                );
+                            })
+                        );
+                    })
                 )
             )
         )

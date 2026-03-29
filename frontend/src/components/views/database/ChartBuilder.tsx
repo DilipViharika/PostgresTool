@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import {
@@ -21,7 +20,6 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 import { BarChart2, TrendingUp, PieChart as PieIcon, Maximize2, Download, X, Table2 } from 'lucide-react';
-import type { Column, Table, TreeNode, TableRelationship, ChartData } from './types';
 
 /**
  * ChartBuilder

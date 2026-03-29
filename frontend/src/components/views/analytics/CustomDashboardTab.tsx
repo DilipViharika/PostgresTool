@@ -1,61 +1,11 @@
-// @ts-nocheck
-import React, { useState, useEffect, FC, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Layout, Plus, Trash2, Settings, Grid, Move, Save, AlertTriangle, RefreshCw, Download, Upload, MoreVertical, Edit2 } from 'lucide-react';
 
-/* ── TYPE DEFINITIONS ──────────────────────────────────────────────────── */
-interface Widget {
-    id: number;
-    type: 'stat_card' | 'metric_chart' | 'gauge' | 'health_grid' | 'alert_feed' | 'sparkline' | 'text_note';
-    title: string;
-    subtitle?: string;
-    metricId?: string;
-    size: 'small' | 'medium' | 'large';
-    refreshInterval?: number;
-    thresholdWarning?: number;
-    thresholdCritical?: number;
-    content?: string;
-    status?: string;
-    unit?: string;
-    metricLabel?: string;
-}
-
-interface Metric {
-    id: string;
-    label: string;
-    category: string;
-    description: string;
-}
-
-interface WidgetData {
-    [key: number]: any;
-}
-
-interface LoadingState {
-    [key: number]: boolean;
-}
-
-interface Dashboard {
-    name: string;
-    widgets: Widget[];
-    timestamp: string;
-}
-
-interface HealthItem {
-    label: string;
-    status: 'ok' | 'warning';
-}
-
-interface AlertFeed {
-    title: string;
-    message: string;
-    severity: 'critical' | 'warning' | 'success';
-}
-
 /* ── Styles ───────────────────────────────────────────────────────────────── */
-const Styles: FC = () => (
+const Styles = () => (
     <style>{`
         @keyframes cdFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
@@ -97,54 +47,33 @@ const Styles: FC = () => (
         .cd-health-dot { fontSize:32px; marginBottom:8px; }
         .cd-health-label { fontSize:11px; color:${THEME.textMuted}; }
         .cd-spinner { animation:spin 1s linear infinite; display:inline-block; }
-        .cd-templateGallery { display:grid; gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))'; gap:16px; }
-        .cd-templateCard { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; borderRadius:8px; padding:16px; cursor:pointer; transition:all .2s ease; position:relative; overflow:hidden; }
-        .cd-templateCard::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:linear-gradient(135deg, ${THEME.primary}00 0%, ${THEME.primary}10 100%); opacity:0; transition:opacity .2s ease; pointer-events:none; }
-        .cd-templateCard:hover { borderColor:${THEME.primary}; background:${THEME.surface}; box-shadow:0 4px 12px ${THEME.primary}15; }
-        .cd-templateCard:hover::before { opacity:1; }
-        .cd-templateCard.selected { borderColor:${THEME.primary}; background:${THEME.primary}15; box-shadow:0 0 0 2px ${THEME.primary}40; }
-        .cd-templateIcon { fontSize:28px; marginBottom:12px; display:block; }
-        .cd-templateName { fontSize:13px; fontWeight:700; color:${THEME.textMain}; marginBottom:8px; }
-        .cd-templateDesc { fontSize:11px; color:${THEME.textMuted}; lineHeight:1.4; }
-        .cd-templateBadge { display:inline-block; background:${THEME.primary}20; color:${THEME.primary}; fontSize:10px; fontWeight:700; padding:4px 8px; borderRadius:4px; marginTop:12px; }
-        .cd-templateCount { fontSize:10px; color:${THEME.textDim}; marginTop:8px; }
+        .cd-templateGallery { display:grid; gridTemplateColumns:'repeat(2, 1fr)'; gap:12px; }
+        .cd-templateCard { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; borderRadius:8px; padding:16px; cursor:pointer; transition:all .2s ease; }
+        .cd-templateCard:hover { borderColor:${THEME.primary}40; background:${THEME.surface}; }
+        .cd-templateCard.selected { borderColor:${THEME.primary}; background:${THEME.primary}15; }
+        .cd-templateIcon { fontSize:24px; marginBottom:8px; }
+        .cd-templateName { fontSize:13px; fontWeight:700; color:${THEME.textMain}; marginBottom:4px; }
+        .cd-templateDesc { fontSize:11px; color:${THEME.textMuted}; }
     `}</style>
 );
 
-/* ── Widget Component ──────────────────────────────────────────────────── */
-interface DashboardWidgetProps {
-    widget: Widget;
-    onRemove: (id: number) => void;
-    onEdit: (widget: Widget) => void;
-    data?: any;
-    loading?: boolean;
-}
-
-const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, data, loading }) => {
+/* ── Widget Component ──────────────────────────────────────────────────────── */
+const DashboardWidget = ({ widget, onRemove, onEdit, data, loading }) => {
     const [showMenu, setShowMenu] = useState(false);
 
-    const handleEditClick = () => onEdit(widget);
-
-    const renderContent = (): ReactNode => {
+    const renderContent = () => {
         if (loading) return <div style={{ color:THEME.textDim, textAlign:'center', padding:'20px 0' }}>
             <RefreshCw size={16} className="cd-spinner" style={{ marginRight:8 }} />
             Loading...
         </div>;
+        if (!data) return <div style={{ color:THEME.textDim, textAlign:'center', padding:'20px 0' }}>No data</div>;
 
         if (widget.type === 'stat_card') {
-            if (!data && !widget.metricId) {
-                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px 0', fontSize:12 }}>
-                    <div style={{ marginBottom:8 }}>Configure metric</div>
-                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
-                        Edit Widget
-                    </button>
-                </div>;
-            }
             const healthColor = widget.status === 'critical' ? THEME.danger : widget.status === 'warning' ? THEME.warning : THEME.success;
             return (
                 <div style={{ textAlign:'center', padding:'20px 0' }}>
                     <div style={{ fontSize:28, fontWeight:800, color:healthColor, marginBottom:8 }}>
-                        {data !== undefined && data !== null ? (typeof data === 'object' ? data.value || 'N/A' : data) : 'N/A'} {widget.unit || ''}
+                        {data.value !== undefined ? data.value : 'N/A'} {widget.unit}
                     </div>
                     <div style={{ fontSize:12, color:THEME.textMuted }}>{widget.metricLabel}</div>
                 </div>
@@ -152,18 +81,9 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'metric_chart') {
-            if (!data && !widget.metricId) {
-                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'40px 20px', fontSize:12 }}>
-                    <div style={{ marginBottom:8 }}>Configure metric to display chart</div>
-                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
-                        Edit Widget
-                    </button>
-                </div>;
-            }
-            const chartData = Array.isArray(data) ? data : [];
             return (
                 <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={chartData}>
+                    <LineChart data={Array.isArray(data) ? data : []}>
                         <XAxis dataKey="timestamp" stroke={THEME.textDim} style={{ fontSize:10 }} />
                         <YAxis stroke={THEME.textDim} style={{ fontSize:10 }} />
                         <Tooltip />
@@ -174,16 +94,8 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'gauge') {
-            if (!data && !widget.metricId) {
-                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'40px 20px', fontSize:12 }}>
-                    <div style={{ marginBottom:8 }}>Configure metric for gauge</div>
-                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
-                        Edit Widget
-                    </button>
-                </div>;
-            }
             const percentage = typeof data === 'number' ? Math.min(Math.max(data, 0), 100) : 0;
-            const gaugeColor = percentage > (widget.thresholdCritical || 95) ? THEME.danger : percentage > (widget.thresholdWarning || 80) ? THEME.warning : THEME.success;
+            const gaugeColor = percentage > widget.thresholdCritical ? THEME.danger : percentage > widget.thresholdWarning ? THEME.warning : THEME.success;
             return (
                 <div className="cd-gauge-container">
                     <div style={{ width:'100%', height:'100%', borderRadius:'50%', border:`3px solid ${THEME.grid}`, position:'relative' }}>
@@ -206,7 +118,7 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'health_grid') {
-            const items: HealthItem[] = [
+            const items = [
                 { label: 'Performance', status: data?.performance > 80 ? 'ok' : 'warning' },
                 { label: 'Connections', status: data?.connections < 80 ? 'ok' : 'warning' },
                 { label: 'Cache', status: data?.cache > 90 ? 'ok' : 'warning' },
@@ -227,15 +139,9 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'alert_feed') {
-            const alerts = Array.isArray(data) ? data : [];
-            if (alerts.length === 0 && !data) {
-                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
-                    No alerts to display
-                </div>;
-            }
             return (
                 <div style={{ maxHeight:'250px', overflowY:'auto' }}>
-                    {alerts.slice(0, 5).map((alert: AlertFeed, i: number) => (
+                    {(data || []).slice(0, 5).map((alert, i) => (
                         <div key={i} style={{
                             padding:'8px',
                             borderLeft:`3px solid ${alert.severity === 'critical' ? THEME.danger : alert.severity === 'warning' ? THEME.warning : THEME.success}`,
@@ -253,15 +159,9 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'sparkline') {
-            if (!data && !widget.metricId) {
-                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
-                    Configure metric for sparkline
-                </div>;
-            }
-            const chartData = Array.isArray(data) ? data : [];
             return (
                 <ResponsiveContainer width="100%" height={60}>
-                    <LineChart data={chartData}>
+                    <LineChart data={Array.isArray(data) ? data : []}>
                         <Line type="monotone" dataKey="value" stroke={THEME.primary} dot={false} isAnimationActive={false} strokeWidth={2} />
                     </LineChart>
                 </ResponsiveContainer>
@@ -269,24 +169,14 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
         }
 
         if (widget.type === 'text_note') {
-            if (!widget.content) {
-                return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
-                    <div style={{ marginBottom:8 }}>No content added</div>
-                    <button className="cd-button" style={{ fontSize:11, padding:'6px 12px' }} onClick={handleEditClick}>
-                        Edit Widget
-                    </button>
-                </div>;
-            }
             return (
                 <div style={{ fontSize:13, color:THEME.textDim, lineHeight:'1.6', fontFamily:'monospace' }}>
-                    {widget.content}
+                    {widget.content || 'No content'}
                 </div>
             );
         }
 
-        return <div style={{ color:THEME.textMuted, textAlign:'center', padding:'20px', fontSize:12 }}>
-            Unknown widget type: {widget.type}
-        </div>;
+        return <div style={{ color:THEME.textDim }}>Unknown widget type</div>;
     };
 
     return (
@@ -337,8 +227,8 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
                                     onRemove(widget.id);
                                     setShowMenu(false);
                                 }}
-                                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = THEME.surfaceHover}
-                                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                                onMouseEnter={(e) => e.target.style.background = THEME.surfaceHover}
+                                onMouseLeave={(e) => e.target.style.background = 'transparent'}
                             >
                                 Remove Widget
                             </div>
@@ -357,18 +247,9 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ widget, onRemove, onEdit, d
     );
 };
 
-/* ── Widget Configuration Modal ───────────────────────────────────────── */
-interface WidgetConfigModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (config: Widget) => void;
-    widget?: Widget;
-    metrics: Metric[];
-    categories: string[];
-}
-
-const WidgetConfigModal: FC<WidgetConfigModalProps> = ({ isOpen, onClose, onSave, widget, metrics, categories }) => {
-    const [config, setConfig] = useState<Widget>(widget || {
+/* ── Widget Configuration Modal ─────────────────────────────────────────── */
+const WidgetConfigModal = ({ isOpen, onClose, onSave, widget, metrics, categories }) => {
+    const [config, setConfig] = useState(widget || {
         type:'stat_card',
         title:'',
         subtitle:'',
@@ -378,7 +259,6 @@ const WidgetConfigModal: FC<WidgetConfigModalProps> = ({ isOpen, onClose, onSave
         thresholdWarning:80,
         thresholdCritical:95,
         content:'',
-        id: 0,
     });
 
     const handleSave = () => {
@@ -404,7 +284,7 @@ const WidgetConfigModal: FC<WidgetConfigModalProps> = ({ isOpen, onClose, onSave
                     <select
                         className="cd-select"
                         value={config.type}
-                        onChange={(e) => setConfig({ ...config, type: e.target.value as Widget['type'] })}
+                        onChange={(e) => setConfig({ ...config, type:e.target.value })}
                     >
                         <option value="stat_card">Stat Card</option>
                         <option value="metric_chart">Metric Chart (Line)</option>
@@ -487,7 +367,7 @@ const WidgetConfigModal: FC<WidgetConfigModalProps> = ({ isOpen, onClose, onSave
                         <select
                             className="cd-select"
                             value={config.size}
-                            onChange={(e) => setConfig({ ...config, size: e.target.value as Widget['size'] })}
+                            onChange={(e) => setConfig({ ...config, size:e.target.value })}
                         >
                             <option value="small">Small (1 column)</option>
                             <option value="medium">Medium (1 column)</option>
@@ -543,132 +423,51 @@ const WidgetConfigModal: FC<WidgetConfigModalProps> = ({ isOpen, onClose, onSave
     );
 };
 
-/* ── Template Gallery Modal ───────────────────────────────────────────── */
-interface Template {
-    id: string;
-    name: string;
-    icon: string;
-    description: string;
-    widgets: Widget[];
-}
-
-interface TemplateGalleryModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onApply: (widgets: Widget[]) => void;
-}
-
-const TemplateGalleryModal: FC<TemplateGalleryModalProps> = ({ isOpen, onClose, onApply }) => {
-    const templates: Template[] = [
-        {
-            id:'blank',
-            name:'Blank Canvas',
-            icon:'📋',
-            description:'Start from scratch with an empty dashboard',
-            widgets:[]
-        },
-        {
-            id:'dba-overview',
-            name:'DBA Overview',
-            icon:'🗄️',
-            description:'Essential metrics for database administrators',
-            widgets:[
-                { id:1, type:'stat_card', title:'Active Connections', metricId:'connections_active', size:'medium' },
-                { id:2, type:'stat_card', title:'Cache Hit Ratio', metricId:'cache_hit_ratio', size:'medium' },
-                { id:3, type:'stat_card', title:'Transactions/sec', metricId:'tps', size:'medium' },
-                { id:4, type:'stat_card', title:'Replication Lag', metricId:'replication_lag', size:'medium' },
-                { id:5, type:'metric_chart', title:'Query Performance', metricId:'query_time_avg', size:'large' },
-                { id:6, type:'metric_chart', title:'Connection Pool', metricId:'connections_active', size:'large' },
-                { id:7, type:'alert_feed', title:'Recent Alerts', size:'large' },
-                { id:8, type:'health_grid', title:'System Health', size:'large' },
-            ]
-        },
+/* ── Template Gallery Modal ────────────────────────────────────────────── */
+const TemplateGalleryModal = ({ isOpen, onClose, onApply }) => {
+    const templates = [
         {
             id:'performance',
-            name:'Performance Monitor',
+            name:'Performance Overview',
             icon:'⚡',
-            description:'Deep-dive into query and system performance',
+            description:'Cache, TPS, and query metrics',
             widgets:[
-                { id:1, type:'gauge', title:'CPU Usage', metricId:'cpu_usage', size:'medium' },
-                { id:2, type:'gauge', title:'Memory Usage', metricId:'memory_usage', size:'medium' },
-                { id:3, type:'gauge', title:'Disk I/O', metricId:'disk_io', size:'medium' },
-                { id:4, type:'gauge', title:'Cache Hit', metricId:'cache_hit_ratio', size:'medium' },
-                { id:5, type:'metric_chart', title:'Query Latency (P99)', metricId:'query_time_p99', size:'large' },
-                { id:6, type:'metric_chart', title:'Throughput', metricId:'tps', size:'large' },
-                { id:7, type:'sparkline', title:'Slow Queries', metricId:'slow_queries', size:'large' },
-                { id:8, type:'sparkline', title:'Lock Waits', metricId:'lock_waits', size:'large' },
+                { id:1, type:'stat_card', title:'Cache Hit Ratio', metricId:'cache_hit_ratio', size:'medium' },
+                { id:2, type:'stat_card', title:'Active Connections', metricId:'active_connections', size:'medium' },
+                { id:3, type:'metric_chart', title:'Transactions/sec', metricId:'transactions_per_sec', size:'large' },
             ]
         },
         {
-            id:'capacity',
-            name:'Capacity Planning',
+            id:'health',
+            name:'Connection Health',
+            icon:'💚',
+            description:'Connection and lock monitoring',
+            widgets:[
+                { id:1, type:'health_grid', title:'System Health', size:'large' },
+                { id:2, type:'gauge', title:'Connection Usage', metricId:'active_connections', size:'medium' },
+                { id:3, type:'alert_feed', title:'Recent Alerts', size:'medium' },
+            ]
+        },
+        {
+            id:'storage',
+            name:'Storage Analysis',
             icon:'💾',
-            description:'Storage, growth trends and resource utilization',
+            description:'Database and table growth',
             widgets:[
                 { id:1, type:'stat_card', title:'Database Size', metricId:'db_size', size:'medium' },
-                { id:2, type:'stat_card', title:'Table Count', metricId:'table_count', size:'medium' },
-                { id:3, type:'stat_card', title:'Index Size', metricId:'index_size', size:'medium' },
-                { id:4, type:'stat_card', title:'Dead Tuples', metricId:'dead_tuples', size:'medium' },
-                { id:5, type:'metric_chart', title:'Storage Growth', metricId:'db_size', size:'large' },
-                { id:6, type:'health_grid', title:'Table Health', size:'large' },
-                { id:7, type:'metric_chart', title:'Bloat Trend', metricId:'bloat_ratio', size:'large' },
-            ]
-        },
-        {
-            id:'security',
-            name:'Security & Compliance',
-            icon:'🔒',
-            description:'Authentication events, access patterns and alerts',
-            widgets:[
-                { id:1, type:'stat_card', title:'Failed Logins', metricId:'failed_logins', size:'medium' },
-                { id:2, type:'stat_card', title:'Active Users', metricId:'active_users', size:'medium' },
-                { id:3, type:'stat_card', title:'Open Alerts', metricId:'open_alerts', size:'medium' },
-                { id:4, type:'stat_card', title:'Compliance Score', metricId:'compliance_score', size:'medium' },
-                { id:5, type:'alert_feed', title:'Security Alerts', size:'large' },
-                { id:6, type:'metric_chart', title:'Auth Events', metricId:'auth_events', size:'large' },
+                { id:2, type:'stat_card', title:'Dead Tuples', metricId:'dead_tuples_ratio', size:'medium' },
+                { id:3, type:'metric_chart', title:'Maintenance Activity', metricId:'vacuum_running', size:'large' },
             ]
         },
         {
             id:'replication',
             name:'Replication Monitor',
             icon:'🔄',
-            description:'Monitor replica health, lag and WAL metrics',
+            description:'Replication lag and WAL metrics',
             widgets:[
-                { id:1, type:'stat_card', title:'Replicas', metricId:'replica_count', size:'medium' },
-                { id:2, type:'stat_card', title:'Max Lag', metricId:'replication_lag', size:'medium' },
-                { id:3, type:'stat_card', title:'WAL Rate', metricId:'wal_rate', size:'medium' },
-                { id:4, type:'stat_card', title:'Sync Status', metricId:'sync_state', size:'medium' },
-                { id:5, type:'metric_chart', title:'Replication Lag History', metricId:'replication_lag', size:'large' },
-                { id:6, type:'health_grid', title:'Replica Health', size:'large' },
-                { id:7, type:'metric_chart', title:'WAL Generation', metricId:'wal_rate', size:'large' },
-            ]
-        },
-        {
-            id:'executive',
-            name:'Executive Summary',
-            icon:'📊',
-            description:'High-level KPIs for management reporting',
-            widgets:[
-                { id:1, type:'stat_card', title:'Uptime', metricId:'uptime', size:'medium' },
-                { id:2, type:'stat_card', title:'Avg Response', metricId:'query_time_avg', size:'medium' },
-                { id:3, type:'stat_card', title:'Error Rate', metricId:'error_rate', size:'medium' },
-                { id:4, type:'stat_card', title:'SLA Status', metricId:'sla_score', size:'medium' },
-                { id:5, type:'gauge', title:'Overall Health', metricId:'health_score', size:'large' },
-                { id:6, type:'metric_chart', title:'Availability Trend', metricId:'uptime', size:'large' },
-            ]
-        },
-        {
-            id:'mongodb',
-            name:'MongoDB Monitor',
-            icon:'🍃',
-            description:'Monitor MongoDB connections, operations and storage',
-            widgets:[
-                { id:1, type:'stat_card', title:'Connections', metricId:'connections_active', size:'medium' },
-                { id:2, type:'stat_card', title:'Ops/sec', metricId:'tps', size:'medium' },
-                { id:3, type:'stat_card', title:'Data Size', metricId:'db_size', size:'medium' },
-                { id:4, type:'stat_card', title:'Cache Usage', metricId:'cache_hit_ratio', size:'medium' },
-                { id:5, type:'metric_chart', title:'Operation Types', metricId:'tps', size:'large' },
-                { id:6, type:'metric_chart', title:'WiredTiger Cache', metricId:'cache_hit_ratio', size:'large' },
+                { id:1, type:'gauge', title:'Replication Lag', metricId:'replication_lag', size:'medium' },
+                { id:2, type:'sparkline', title:'WAL Rate', metricId:'wal_generation_rate', size:'medium' },
+                { id:3, type:'metric_chart', title:'Lag Trend', metricId:'replication_lag', size:'large' },
             ]
         },
     ];
@@ -677,14 +476,8 @@ const TemplateGalleryModal: FC<TemplateGalleryModalProps> = ({ isOpen, onClose, 
 
     return (
         <div className="cd-modal" onClick={onClose}>
-            <div className="cd-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth:900, maxHeight:'85vh' }}>
-                <div className="cd-modal-title" style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
-                    <Grid size={20} />
-                    Dashboard Templates
-                </div>
-                <div style={{ fontSize:12, color:THEME.textMuted, marginBottom:20 }}>
-                    Choose a template to pre-populate your dashboard with relevant widgets, or start with a blank canvas.
-                </div>
+            <div className="cd-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="cd-modal-title">Dashboard Templates</div>
                 <div className="cd-templateGallery">
                     {templates.map(t => (
                         <div
@@ -694,18 +487,14 @@ const TemplateGalleryModal: FC<TemplateGalleryModalProps> = ({ isOpen, onClose, 
                                 onApply(t.widgets);
                                 onClose();
                             }}
-                            title={t.description}
                         >
                             <div className="cd-templateIcon">{t.icon}</div>
                             <div className="cd-templateName">{t.name}</div>
                             <div className="cd-templateDesc">{t.description}</div>
-                            <div className="cd-templateCount">
-                                {t.widgets.length === 0 ? 'Empty template' : `${t.widgets.length} widget${t.widgets.length !== 1 ? 's' : ''}`}
-                            </div>
                         </div>
                     ))}
                 </div>
-                <div style={{ marginTop:24, display:'flex', justifyContent:'flex-end', gap:10 }}>
+                <div style={{ marginTop:20 }}>
                     <button className="cd-button" style={{ background:THEME.surfaceHover }} onClick={onClose}>Close</button>
                 </div>
             </div>
@@ -716,13 +505,13 @@ const TemplateGalleryModal: FC<TemplateGalleryModalProps> = ({ isOpen, onClose, 
 /* ═══════════════════════════════════════════════════════════════════════════
    CUSTOM DASHBOARD TAB
    ═══════════════════════════════════════════════════════════════════════════ */
-const CustomDashboardTab: FC = () => {
+export default function CustomDashboardTab() {
     useAdaptiveTheme();
-    const [widgets, setWidgets] = useState<Widget[]>(() => {
+    const [widgets, setWidgets] = useState(() => {
         try {
             const saved = localStorage.getItem('vigil_custom_dashboards');
             if (saved) {
-                const dashboards: Dashboard[] = JSON.parse(saved);
+                const dashboards = JSON.parse(saved);
                 const activeName = localStorage.getItem('vigil_active_dashboard');
                 const active = dashboards.find(d => d.name === activeName);
                 return active ? active.widgets : [];
@@ -733,65 +522,87 @@ const CustomDashboardTab: FC = () => {
         }
     });
 
-    const [metrics, setMetrics] = useState<Metric[]>([]);
-    const [categories, setCategories] = useState<string[]>([]);
-    const [widgetData, setWidgetData] = useState<WidgetData>({});
-    const [loadingWidgets, setLoadingWidgets] = useState<LoadingState>({});
+    const [metrics, setMetrics] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [widgetData, setWidgetData] = useState({});
+    const [loadingWidgets, setLoadingWidgets] = useState({});
+    const [error, setError] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
-    const [editingWidget, setEditingWidget] = useState<Widget | null>(null);
+    const [editingWidget, setEditingWidget] = useState(null);
     const [dashboardName, setDashboardName] = useState('Custom Dashboard');
 
+    // Load available metrics
     useEffect(() => {
         const load = async () => {
             try {
                 const data = await fetchData('/api/metrics/registry');
                 setMetrics(data?.metrics || []);
+                setError(null);
                 const cats = await fetchData('/api/metrics/categories');
                 setCategories(cats?.categories || []);
             } catch (e) {
                 console.error('Failed to load metrics:', e);
+                setError('Failed to load metrics: ' + e.message);
             }
         };
         load();
     }, []);
 
-    useEffect(() => {
-        const loadData = async () => {
-            for (const widget of widgets) {
-                if (!widget.metricId) continue;
+    // Load widget data with useCallback
+    const loadWidgetData = useCallback(async () => {
+        let cancelled = false;
 
-                setLoadingWidgets(prev => ({ ...prev, [widget.id]:true }));
-                try {
-                    let data;
-                    if (widget.type === 'metric_chart' || widget.type === 'sparkline') {
-                        data = await fetchData(`/api/metrics/history/${widget.metricId}?hours=24`);
-                        data = data?.history || [];
-                    } else {
-                        const current = await fetchData('/api/metrics/current');
-                        data = current?.current?.[widget.metricId]?.value;
-                    }
-                    setWidgetData(prev => ({ ...prev, [widget.id]:data }));
-                } catch (e) {
-                    console.error(`Failed to load data for widget ${widget.id}:`, e);
+        for (const widget of widgets) {
+            if (!widget.metricId) continue;
+
+            if (cancelled) return;
+            setLoadingWidgets(prev => ({ ...prev, [widget.id]:true }));
+            try {
+                let data;
+                if (widget.type === 'metric_chart' || widget.type === 'sparkline') {
+                    data = await fetchData(`/api/metrics/history/${widget.metricId}?hours=24`);
+                    data = data?.history || [];
+                } else {
+                    const current = await fetchData('/api/metrics/current');
+                    data = current?.current?.[widget.metricId]?.value;
                 }
-                setLoadingWidgets(prev => ({ ...prev, [widget.id]:false }));
+                if (!cancelled) {
+                    setWidgetData(prev => ({ ...prev, [widget.id]:data }));
+                    setError(null);
+                }
+            } catch (e) {
+                console.error(`Failed to load data for widget ${widget.id}:`, e);
+                if (!cancelled) {
+                    setError(`Failed to load widget data: ${e.message}`);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoadingWidgets(prev => ({ ...prev, [widget.id]:false }));
+                }
             }
-        };
-
-        loadData();
-        const interval = setInterval(loadData, 30000);
-        return () => clearInterval(interval);
+        }
     }, [widgets]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        loadWidgetData();
+        const interval = setInterval(loadWidgetData, 30000);
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+        };
+    }, [loadWidgetData]);
 
     const saveDashboard = () => {
         try {
-            const dashboards: Dashboard[] = localStorage.getItem('vigil_custom_dashboards')
-                ? JSON.parse(localStorage.getItem('vigil_custom_dashboards')!)
+            const dashboards = localStorage.getItem('vigil_custom_dashboards')
+                ? JSON.parse(localStorage.getItem('vigil_custom_dashboards'))
                 : [];
 
             const existingIndex = dashboards.findIndex(d => d.name === dashboardName);
-            const dashboard: Dashboard = { name:dashboardName, widgets, timestamp:new Date().toISOString() };
+            const dashboard = { name:dashboardName, widgets, timestamp:new Date().toISOString() };
 
             if (existingIndex >= 0) {
                 dashboards[existingIndex] = dashboard;
@@ -803,33 +614,33 @@ const CustomDashboardTab: FC = () => {
             localStorage.setItem('vigil_active_dashboard', dashboardName);
             alert('Dashboard saved successfully');
         } catch (e) {
-            alert('Failed to save dashboard: ' + (e instanceof Error ? e.message : 'Unknown error'));
+            alert('Failed to save dashboard: ' + e.message);
         }
     };
 
-    const handleAddWidget = (config: Widget) => {
-        const newWidget: Widget = {
+    const handleAddWidget = (config) => {
+        const newWidget = {
             ...config,
             id: Date.now(),
         };
         setWidgets([...widgets, newWidget]);
     };
 
-    const handleEditWidget = (widget: Widget) => {
+    const handleEditWidget = (widget) => {
         setEditingWidget(widget);
         setModalOpen(true);
     };
 
-    const handleUpdateWidget = (config: Widget) => {
-        setWidgets(widgets.map(w => w.id === editingWidget?.id ? { ...config, id:w.id } : w));
+    const handleUpdateWidget = (config) => {
+        setWidgets(widgets.map(w => w.id === editingWidget.id ? { ...config, id:w.id } : w));
         setEditingWidget(null);
     };
 
-    const handleRemoveWidget = (id: number) => {
+    const handleRemoveWidget = (id) => {
         setWidgets(widgets.filter(w => w.id !== id));
     };
 
-    const applyTemplate = (templateWidgets: Widget[]) => {
+    const applyTemplate = (templateWidgets) => {
         setWidgets(templateWidgets.map(w => ({ ...w, id:Date.now() + 0 })));
     };
 
@@ -844,7 +655,7 @@ const CustomDashboardTab: FC = () => {
             element.click();
             document.body.removeChild(element);
         } catch (e) {
-            alert('Failed to export: ' + (e instanceof Error ? e.message : 'Unknown error'));
+            alert('Failed to export: ' + e.message);
         }
     };
 
@@ -852,6 +663,7 @@ const CustomDashboardTab: FC = () => {
         <div style={{ padding:'20px', maxWidth:'1600px' }}>
             <Styles />
 
+            {/* Header */}
             <div className="cd-card" style={{ marginBottom:20, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div>
                     <div style={{ fontSize:18, fontWeight:700, color:THEME.textMain, display:'flex', alignItems:'center', gap:10 }}>
@@ -886,6 +698,7 @@ const CustomDashboardTab: FC = () => {
                 </div>
             </div>
 
+            {/* Widgets Grid */}
             {widgets.length > 0 ? (
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:20, marginBottom:20 }}>
                     {widgets.map(widget => (
@@ -912,6 +725,7 @@ const CustomDashboardTab: FC = () => {
                 </div>
             )}
 
+            {/* Modals */}
             <WidgetConfigModal
                 isOpen={modalOpen}
                 onClose={() => {
@@ -919,7 +733,7 @@ const CustomDashboardTab: FC = () => {
                     setEditingWidget(null);
                 }}
                 onSave={editingWidget ? handleUpdateWidget : handleAddWidget}
-                widget={editingWidget || undefined}
+                widget={editingWidget}
                 metrics={metrics}
                 categories={categories}
             />
@@ -931,6 +745,4 @@ const CustomDashboardTab: FC = () => {
             />
         </div>
     );
-};
-
-export default CustomDashboardTab;
+}

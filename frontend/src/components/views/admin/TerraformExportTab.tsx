@@ -1,26 +1,10 @@
-// @ts-nocheck
-import React, { useState, useEffect, FC } from 'react';
+import React, { useState, useEffect } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { FileCode, Download, Copy, Package, Settings, Code, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react';
 
-/* ── TYPE DEFINITIONS ───────────────────────────────────────────────────── */
-interface CodePreviewProps {
-    code: string;
-    format?: 'hcl' | 'json';
-}
-
-interface ExportCardProps {
-    title: string;
-    description: string;
-    icon: React.ComponentType<any>;
-    format: string;
-    onPreview: () => void;
-    onDownload: () => void;
-}
-
-/* ── STYLES ───────────────────────────────────────────────────────────────── */
-const Styles: FC = () => (
+/* ── Styles ───────────────────────────────────────────────────────────────── */
+const Styles = () => (
     <style>{`
         @keyframes tfFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         .tf-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:tfFade .3s ease; }
@@ -38,8 +22,8 @@ const Styles: FC = () => (
     `}</style>
 );
 
-/* ── CODE PREVIEW COMPONENT ────────────────────────────────────────────── */
-const CodePreview: FC<CodePreviewProps> = ({ code, format = 'hcl' }) => {
+/* ── Code Preview Component ──────────────────────────────────────────────────── */
+const CodePreview = ({ code, format = 'hcl' }) => {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -58,8 +42,8 @@ const CodePreview: FC<CodePreviewProps> = ({ code, format = 'hcl' }) => {
     );
 };
 
-/* ── EXPORT CARD COMPONENT ────────────────────────────────────────────── */
-const ExportCard: FC<ExportCardProps> = ({ title, description, icon: Icon, format, onPreview, onDownload }) => {
+/* ── Export Card Component ──────────────────────────────────────────────────── */
+const ExportCard = ({ title, description, icon: Icon, format, onPreview, onDownload }) => {
     return (
         <div className="tf-export-card">
             <div>
@@ -89,22 +73,22 @@ const ExportCard: FC<ExportCardProps> = ({ title, description, icon: Icon, forma
 /* ═══════════════════════════════════════════════════════════════════════════
    TERRAFORM EXPORT TAB
    ═══════════════════════════════════════════════════════════════════════════ */
-const TerraformExportTab: FC = () => {
+export default function TerraformExportTab() {
     useAdaptiveTheme();
     const [exports, setExports] = useState({
-        alertRules: null as string | null,
-        connections: null as string | null,
-        retention: null as string | null,
-        users: null as string | null,
+        alertRules: null,
+        connections: null,
+        retention: null,
+        users: null,
     });
-    const [previewType, setPreviewType] = useState<string | null>(null);
+    const [previewType, setPreviewType] = useState(null);
     const [previewCode, setPreviewCode] = useState('');
     const [exportFormat, setExportFormat] = useState('hcl');
     const [loading, setLoading] = useState(false);
     const [bundleLoading, setBundleLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
 
-    const handlePreview = async (type: string) => {
+    const handlePreview = async (type) => {
         setLoading(true);
         try {
             const data = await fetchData(`/api/export/${type}?format=${exportFormat}`);
@@ -112,13 +96,13 @@ const TerraformExportTab: FC = () => {
             setPreviewType(type);
             setError(null);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDownload = async (type: string) => {
+    const handleDownload = async (type) => {
         try {
             const data = await fetchData(`/api/export/${type}?format=${exportFormat}`);
             const code = data?.code || '';
@@ -132,7 +116,7 @@ const TerraformExportTab: FC = () => {
             document.body.removeChild(element);
             setError(null);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         }
     };
 
@@ -151,7 +135,7 @@ const TerraformExportTab: FC = () => {
             document.body.removeChild(element);
             setError(null);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e.message);
         } finally {
             setBundleLoading(false);
         }
@@ -176,6 +160,7 @@ const TerraformExportTab: FC = () => {
                 </div>
             )}
 
+            {/* Format Selector */}
             <div className="tf-card" style={{ marginBottom:20 }}>
                 <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
                     <Code size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
@@ -192,6 +177,7 @@ const TerraformExportTab: FC = () => {
                 </div>
             </div>
 
+            {/* Export Cards */}
             <div className="tf-card" style={{ marginBottom:20 }}>
                 <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:20 }}>
                     <FileCode size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
@@ -235,6 +221,7 @@ const TerraformExportTab: FC = () => {
                 />
             </div>
 
+            {/* Full Bundle Export */}
             <div className="tf-card" style={{ marginBottom:20 }}>
                 <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:16 }}>
                     <Package size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
@@ -249,6 +236,7 @@ const TerraformExportTab: FC = () => {
                 </button>
             </div>
 
+            {/* Code Preview */}
             {previewCode && (
                 <div className="tf-card">
                     <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:12 }}>
@@ -261,11 +249,12 @@ const TerraformExportTab: FC = () => {
                             <div style={{ color:THEME.textMuted }}>Generating preview...</div>
                         </div>
                     ) : (
-                        <CodePreview code={previewCode} format={exportFormat as any} />
+                        <CodePreview code={previewCode} format={exportFormat} />
                     )}
                 </div>
             )}
 
+            {/* Info Box */}
             <div style={{ marginTop:20, padding:'16px', background:`${THEME.info}15`, border:`1px solid ${THEME.info}40`, borderRadius:10 }}>
                 <div style={{ fontSize:12, color:THEME.info, fontWeight:700, marginBottom:8 }}>
                     Tips for IaC Integration:
@@ -279,6 +268,4 @@ const TerraformExportTab: FC = () => {
             </div>
         </div>
     );
-};
-
-export default TerraformExportTab;
+}
