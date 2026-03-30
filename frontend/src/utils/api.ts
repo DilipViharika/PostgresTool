@@ -61,7 +61,10 @@ async function request(path, options = {}) {
     if (isDemoMode()) {
         // Simulate a small network delay for realism
         await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
-        return getDemoData(path);
+        const method = (options.method || 'GET').toUpperCase();
+        let body = null;
+        if (options.body) { try { body = JSON.parse(options.body); } catch {} }
+        return getDemoData(path, method, body);
     }
 
     const isGet = options.method === 'GET' || !options.method;

@@ -12,17 +12,22 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 //  Order matters: more specific patterns first.
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ── In-memory connection store for demo mode ────────────────────────────────
+// Seeded with defaults; the ConnectionWizard can add more via POST /api/connections
+let _demoConnections = [
+    { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'vigil_prod', dbType: 'postgresql', isDefault: true, status: 'connected', created_at: ago(43200) },
+    { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'vigil_staging', dbType: 'postgresql', isDefault: false, status: 'disconnected', created_at: ago(21600) },
+];
+let _activeConnectionId = 'demo-conn-1';
+
 const DEMO_ROUTES = [
 
     // ── ConnectionContext ────────────────────────────────────────────────────
-    [/\/api\/connections\/active/, () => ({ connectionId: 'demo-conn-1' })],
+    [/\/api\/connections\/active/, () => ({ connectionId: _activeConnectionId })],
     [/\/api\/connections\/[^/]+\/test/, () => ({ success: true })],
     [/\/api\/connections\/[^/]+\/default/, () => ({ success: true })],
     [/\/api\/connections\/[^/]+\/switch/, () => ({ success: true })],
-    [/\/api\/connections$/, () => ([
-        { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'vigil_prod', dbType: 'postgresql', isDefault: true, status: 'connected', created_at: ago(43200) },
-        { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'vigil_staging', dbType: 'postgresql', isDefault: false, status: 'disconnected', created_at: ago(21600) },
-    ])],
+    [/\/api\/connections$/, () => ([..._demoConnections])],
 
     // ── Overview (flat object with specific keys) ────────────────────────────
     [/\/api\/overview\/stats/, () => ({
@@ -1473,15 +1478,67 @@ const DEMO_ROUTES = [
 
 /**
  * Look up demo data for a given API path.
+ * Supports GET (default), POST, PUT, PATCH, DELETE for demo-mode mutations.
  */
-export function getDemoData(path) {
+export function getDemoData(path, method = 'GET', body = null) {
     const [cleanPath, queryString] = path.split('?');
+    const upperMethod = (method || 'GET').toUpperCase();
+
+    // ── POST /api/connections/test — test a connection (always succeeds in demo) ──
+    if (upperMethod === 'POST' && /\/api\/connections\/test$/.test(cleanPath)) {
+        return { success: true, message: 'Connection test successful (demo mode)' };
+    }
+
+    // ── POST /api/connections — create a new connection ──────────────────
+    if (upperMethod === 'POST' && /\/api\/connections$/.test(cleanPath) && body) {
+        const TYPE_TO_DBTYPE = { postgresql: 'postgresql', postgres: 'postgresql', mysql: 'mysql', mongodb: 'mongodb' };
+        const dbType = TYPE_TO_DBTYPE[(body.type || '').toLowerCase()] || body.type || 'postgresql';
+        const newConn = {
+            id: `demo-conn-${Date.now()}`,
+            name: body.name || `${dbType} Connection`,
+            host: body.host || 'localhost',
+            port: body.port || (dbType === 'mysql' ? 3306 : dbType === 'mongodb' ? 27017 : 5432),
+            database: body.database || 'mydb',
+            dbType,
+            isDefault: _demoConnections.length === 0,
+            status: 'connected',
+            created_at: now(),
+        };
+        _demoConnections.push(newConn);
+        _activeConnectionId = newConn.id;
+        return { success: true, connection: newConn, connectionId: newConn.id };
+    }
+
+    // ── POST /api/connections/:id/switch — switch active connection ──────
+    const switchMatch = cleanPath.match(/\/api\/connections\/([^/]+)\/switch/);
+    if (upperMethod === 'POST' && switchMatch) {
+        const targetId = switchMatch[1];
+        const conn = _demoConnections.find(c => c.id === targetId);
+        if (conn) {
+            _activeConnectionId = targetId;
+            return { success: true, connectionId: targetId, dbType: conn.dbType };
+        }
+        return { success: false, error: 'Connection not found' };
+    }
+
+    // ── DELETE /api/connections/:id — remove a connection ────────────────
+    const deleteMatch = cleanPath.match(/\/api\/connections\/(demo-conn-[^/]+)$/);
+    if (upperMethod === 'DELETE' && deleteMatch) {
+        const targetId = deleteMatch[1];
+        _demoConnections = _demoConnections.filter(c => c.id !== targetId);
+        if (_activeConnectionId === targetId) {
+            _activeConnectionId = _demoConnections[0]?.id || null;
+        }
+        return { success: true };
+    }
+
+    // ── Default: match against DEMO_ROUTES (GET and other reads) ────────
     for (const [regex, generator] of DEMO_ROUTES) {
         if (regex.test(cleanPath)) {
             return generator(cleanPath, queryString || '');
         }
     }
-    console.warn(`[DEMO] No mock data for: ${cleanPath}`);
+    console.warn(`[DEMO] No mock data for: ${upperMethod} ${cleanPath}`);
     return {};
 }
 

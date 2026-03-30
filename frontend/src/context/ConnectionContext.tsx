@@ -72,11 +72,20 @@ export function ConnectionProvider({ children }) {
         }
     }, []);
 
-    /** Refresh connections list (called after add/edit/delete) */
+    /** Refresh connections list + active connection (called after add/edit/delete) */
     const refreshConnections = useCallback(async () => {
         try {
-            const conns = await fetchData('/api/connections');
-            setConnections(Array.isArray(conns) ? conns : []);
+            const [conns, active] = await Promise.all([
+                fetchData('/api/connections'),
+                fetchData('/api/connections/active'),
+            ]);
+            const connList = Array.isArray(conns) ? conns : [];
+            setConnections(connList);
+            // Update active connection if backend reports a new one
+            if (active?.connectionId) {
+                setActiveConnectionIdState(active.connectionId);
+                persistConnectionId(active.connectionId);
+            }
         } catch {}
     }, []);
 
