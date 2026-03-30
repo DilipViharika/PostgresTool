@@ -6,9 +6,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChevronRight, ChevronLeft, CheckCircle, Loader, AlertCircle,
-  Database, Key, Zap, Shield, Wifi, Globe, Lock, Plus
+  Database, Key, Zap, Shield, Wifi, Globe, Lock, Plus, Trash2, Power, Circle
 } from 'lucide-react';
-import { postData } from '../../../utils/api';
+import { postData, deleteData } from '../../../utils/api';
 import ConnectionStringParser from '../../shared/ConnectionStringParser';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { useNavigation } from '../../../context/NavigationContext';
@@ -111,7 +111,44 @@ const ConnectionWizard = () => {
   const [parsedFromString, setParsedFromString] = useState(null);
 
   const { goToTab } = useNavigation();
-  const { refreshConnections } = useConnection();
+  const { connections, activeConnectionId, switchConnection, refreshConnections } = useConnection();
+  const [showWizard, setShowWizard] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const handleDeleteConnection = async (id) => {
+    if (!window.confirm('Remove this connection?')) return;
+    setDeletingId(id);
+    try {
+      await deleteData(`/api/connections/${id}`);
+      await refreshConnections();
+    } catch (err) {
+      console.error('Delete failed:', err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleSwitchConnection = async (id) => {
+    try {
+      await switchConnection(id);
+    } catch (err) {
+      console.error('Switch failed:', err);
+    }
+  };
+
+  const dbIcon = (type) => {
+    const t = (type || '').toLowerCase();
+    if (t.includes('mysql')) return '🐬';
+    if (t.includes('mongo')) return '🍃';
+    return '🐘';
+  };
+
+  const dbColor = (type) => {
+    const t = (type || '').toLowerCase();
+    if (t.includes('mysql')) return '#f29111';
+    if (t.includes('mongo')) return '#13aa52';
+    return '#336791';
+  };
 
   // Step 1: Select database type
   const handleSelectType = (type) => {
@@ -508,9 +545,105 @@ const ConnectionWizard = () => {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+        .conn-row:hover { background: ${THEME.surfaceHover} !important; }
       `}</style>
 
-      <div style={styles.card}>
+      {/* ── Active Connections List ───────────────────────────────────── */}
+      {connections.length > 0 && (
+        <div style={{ ...styles.card, marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontBody }}>
+              <Database size={16} style={{ marginRight: 8, verticalAlign: -2, color: '#8b5cf6' }} />
+              Connections
+            </h3>
+            <button
+              onClick={() => { setShowWizard(!showWizard); setStep(1); setSelectedType(null); setTestStatus(null); setTestError(null); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px', borderRadius: 8,
+                background: showWizard ? `${THEME.grid}40` : 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                color: showWizard ? THEME.textMuted : '#fff',
+                border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <Plus size={14} /> {showWizard ? 'Cancel' : 'New Connection'}
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {connections.map(conn => {
+              const isActive = conn.id === activeConnectionId;
+              const isConnected = conn.status === 'connected' || conn.status === 'success';
+              return (
+                <div
+                  key={conn.id}
+                  className="conn-row"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 14px', borderRadius: 10,
+                    background: isActive ? `${dbColor(conn.dbType)}10` : 'transparent',
+                    border: `1.5px solid ${isActive ? dbColor(conn.dbType) + '50' : THEME.glassBorder}`,
+                    transition: 'all 0.2s',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => handleSwitchConnection(conn.id)}
+                >
+                  <span style={{ fontSize: 22 }}>{dbIcon(conn.dbType)}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: THEME.textMain, fontFamily: THEME.fontBody }}>
+                        {conn.name}
+                      </span>
+                      {isActive && (
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
+                          padding: '2px 7px', borderRadius: 6,
+                          background: '#8b5cf620', color: '#8b5cf6',
+                        }}>Active</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {conn.host}:{conn.port}/{conn.database}
+                      <span style={{ marginLeft: 8, color: isConnected ? '#22c55e' : THEME.textDim }}>
+                        ● {isConnected ? 'Connected' : conn.status || 'Unknown'}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{
+                      fontSize: 10, padding: '3px 8px', borderRadius: 6,
+                      background: `${dbColor(conn.dbType)}15`, color: dbColor(conn.dbType),
+                      fontWeight: 600, textTransform: 'capitalize',
+                    }}>
+                      {(conn.dbType || 'postgresql').replace('postgresql', 'PostgreSQL').replace('mysql', 'MySQL').replace('mongodb', 'MongoDB')}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteConnection(conn.id); }}
+                      disabled={deletingId === conn.id}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: 30, height: 30, borderRadius: 8,
+                        background: 'transparent', border: `1px solid transparent`,
+                        color: THEME.textDim, cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#ef444415'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#ef444430'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = THEME.textDim; e.currentTarget.style.borderColor = 'transparent'; }}
+                      title="Delete connection"
+                    >
+                      {deletingId === conn.id ? <Loader size={14} className="loading-spinner" /> : <Trash2 size={14} />}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Connection Wizard (shown when no connections or "New Connection" clicked) ── */}
+      {(connections.length === 0 || showWizard) && <div style={styles.card}>
         {/* Step Indicator */}
         {step < 5 && (
           <div style={styles.stepIndicator}>
@@ -949,7 +1082,7 @@ const ConnectionWizard = () => {
             </button>
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 };

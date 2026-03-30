@@ -4132,18 +4132,7 @@ const DashboardInner = ({ onLogout }) => {
                                         {activeTabMeta?.label || ''}
                                     </h2>
                                 </div>
-                                <span
-                                    style={{
-                                        fontSize: 10,
-                                        color: DS.textMuted,
-                                        fontFamily: DS.fontMono,
-                                        padding: '2px 8px',
-                                        borderRadius: 14,
-                                        background: `${DS.cyan}10`,
-                                    }}
-                                >
-                                    Tab {TABS_ONLY.findIndex((t) => t.id === activeTab) + 1} of {TABS_ONLY.length}
-                                </span>
+                                {/* Tab counter removed */}
                             </div>
 
                             {reconnecting && (
