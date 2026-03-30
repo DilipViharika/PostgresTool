@@ -60,7 +60,7 @@ const OrgSwitcher = () => {
         },
         buttonHover: {
             backgroundColor: 'rgba(255,255,255,0.08)',
-            borderColor: 'rgba(56,189,248,0.2)',
+            borderColor: 'rgba(139,92,246,0.2)',
         },
         dropdown: {
             position: 'absolute',
@@ -69,7 +69,7 @@ const OrgSwitcher = () => {
             right: 0,
             marginTop: '4px',
             backgroundColor: '#0d1224',
-            border: '1px solid rgba(56,189,248,0.2)',
+            border: '1px solid rgba(139,92,246,0.2)',
             borderRadius: '6px',
             boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
             zIndex: 1000,
@@ -89,12 +89,12 @@ const OrgSwitcher = () => {
             transition: 'all 0.15s ease',
         },
         orgItemHover: {
-            backgroundColor: 'rgba(56,189,248,0.1)',
+            backgroundColor: 'rgba(139,92,246,0.1)',
             color: '#f1f5f9',
         },
         orgItemActive: {
-            backgroundColor: 'rgba(56,189,248,0.15)',
-            color: '#38bdf8',
+            backgroundColor: 'rgba(139,92,246,0.15)',
+            color: '#8b5cf6',
             fontWeight: '600',
         },
         avatar: {
@@ -103,7 +103,7 @@ const OrgSwitcher = () => {
             justifyContent: 'center',
             width: '28px',
             height: '28px',
-            backgroundColor: 'rgba(56,189,248,0.2)',
+            backgroundColor: 'rgba(139,92,246,0.2)',
             borderRadius: '4px',
             fontSize: '11px',
             fontWeight: '600',

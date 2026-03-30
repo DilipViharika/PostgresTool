@@ -133,7 +133,7 @@ const LicenseManagement = () => {
             marginBottom: '30px',
             padding: '20px',
             backgroundColor: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(56,189,248,0.1)',
+            border: '1px solid rgba(139,92,246,0.1)',
             borderRadius: '8px',
         },
         sectionTitle: {
@@ -152,8 +152,8 @@ const LicenseManagement = () => {
         },
         licenseCard: {
             padding: '12px',
-            backgroundColor: 'rgba(56,189,248,0.05)',
-            border: '1px solid rgba(56,189,248,0.15)',
+            backgroundColor: 'rgba(139,92,246,0.05)',
+            border: '1px solid rgba(139,92,246,0.15)',
             borderRadius: '6px',
         },
         label: {
@@ -166,7 +166,7 @@ const LicenseManagement = () => {
         value: {
             fontSize: '14px',
             fontWeight: '600',
-            color: '#38bdf8',
+            color: '#8b5cf6',
             margin: '0',
             wordBreak: 'break-all',
         },
@@ -192,7 +192,7 @@ const LicenseManagement = () => {
             justifyContent: 'center',
             gap: '8px',
             padding: '10px 16px',
-            backgroundColor: '#38bdf8',
+            backgroundColor: '#8b5cf6',
             color: '#0a0e27',
             border: 'none',
             borderRadius: '6px',
@@ -236,7 +236,7 @@ const LicenseManagement = () => {
         },
         tierColumn: {
             fontWeight: '600',
-            color: '#38bdf8',
+            color: '#8b5cf6',
         },
         checkIcon: {
             color: '#10b981',

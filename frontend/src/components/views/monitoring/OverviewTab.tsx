@@ -106,8 +106,8 @@ const OvStyles = () => (
             to   { transform: scaleX(1); }
         }
         @keyframes ovGlowPulse {
-            0%, 100% { box-shadow: 0 0 0px rgba(14,165,233,0); }
-            50%      { box-shadow: 0 0 22px rgba(14,165,233,0.18); }
+            0%, 100% { box-shadow: 0 0 0px rgba(139,92,246,0); }
+            50%      { box-shadow: 0 0 22px rgba(139,92,246,0.18); }
         }
         @keyframes ovGlowPulseWarn {
             0%, 100% { box-shadow: 0 0 0px rgba(251,146,60,0); }
@@ -718,7 +718,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const MOCK_ALERTS = [];
 
-const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#38bdf8' };
+const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#8b5cf6' };
 const SEVERITY_ICON = { critical: AlertCircle, warning: AlertTriangle, info: Info };
 
 const NotificationBell = () => {

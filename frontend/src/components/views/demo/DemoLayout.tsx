@@ -41,11 +41,11 @@ const LT = {
     footerBg: 'rgba(248,250,252,0.95)',
     border: '#e2e8f0',
     borderLight: '#f1f5f9',
-    borderAccent: 'rgba(14,165,233,0.15)',
+    borderAccent: 'rgba(139,92,246,0.15)',
     text: '#0f172a',
     textMuted: '#475569',
     textDim: '#94a3b8',
-    primary: '#0ea5e9',
+    primary: '#8b5cf6',
     secondary: '#10b981',
     success: '#16a34a',
     danger: '#dc2626',
@@ -56,17 +56,17 @@ const LT = {
     cardBorder: '#e2e8f0',
     cardShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
     cardShadowHover: '0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)',
-    activeItemBg: 'rgba(14,165,233,0.08)',
-    activeItemBorder: '#0ea5e9',
-    hoverBg: 'rgba(14,165,233,0.04)',
-    badgeBg: 'rgba(14,165,233,0.1)',
+    activeItemBg: 'rgba(139,92,246,0.08)',
+    activeItemBorder: '#8b5cf6',
+    hoverBg: 'rgba(139,92,246,0.04)',
+    badgeBg: 'rgba(139,92,246,0.1)',
     badgeColor: '#0284c7',
     liveBg: 'rgba(22,163,74,0.08)',
     liveBorder: 'rgba(22,163,74,0.2)',
     liveColor: '#16a34a',
     buttonBg: '#f1f5f9',
     buttonHoverBg: '#e2e8f0',
-    accentGradient: 'linear-gradient(135deg, #0ea5e9, #10b981)',
+    accentGradient: 'linear-gradient(135deg, #8b5cf6, #10b981)',
 };
 
 const DemoLayout = ({
@@ -730,7 +730,7 @@ const DemoLayout = ({
                                     transition: 'all 0.2s ease',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.boxShadow = '0 0 8px rgba(14,165,233,0.3)';
+                                    e.currentTarget.style.boxShadow = '0 0 8px rgba(139,92,246,0.3)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.boxShadow = 'none';
@@ -820,7 +820,7 @@ const DemoStyles = () => (
         .demo-nav-item::-webkit-scrollbar { display: none; }
         .dpg-glow { animation: dpgGlowPulse 3.5s ease-in-out infinite; }
         .dpg-glow-warn { animation: dpgGlowPulseWarn 2.8s ease-in-out infinite; }
-        @keyframes dpgGlowPulse { 0%,100%{box-shadow:0 1px 3px rgba(0,0,0,0.08)} 50%{box-shadow:0 2px 8px rgba(14,165,233,0.12)} }
+        @keyframes dpgGlowPulse { 0%,100%{box-shadow:0 1px 3px rgba(0,0,0,0.08)} 50%{box-shadow:0 2px 8px rgba(139,92,246,0.12)} }
         @keyframes dpgGlowPulseWarn { 0%,100%{box-shadow:0 1px 3px rgba(0,0,0,0.08)} 50%{box-shadow:0 2px 8px rgba(217,119,6,0.12)} }
     `}</style>
 );

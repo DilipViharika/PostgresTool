@@ -995,7 +995,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 <Line
                                                     type="monotone"
                                                     dataKey="query"
-                                                    stroke="#0ea5e9"
+                                                    stroke="#8b5cf6"
                                                     strokeWidth={2}
                                                     dot={false}
                                                     name="Query"
@@ -3306,7 +3306,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="4.2 KB"
                                         label="Avg size"
                                         subtitle="Per document"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard
                                         value="2m ago"
@@ -3408,7 +3408,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="23"
                                         label="COLLECTIONS"
                                         subtitle="With pipelines"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                 </div>
                                 <Panel title="Pipeline Stages" icon={Workflow} accentColor={THEME.primary}>
@@ -3512,7 +3512,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="12ms"
                                         label="AVG GENERATION"
                                         subtitle="Response time"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard value="8" label="COLLECTIONS" subtitle="Supported" color="#d97706" />
                                 </div>
@@ -3579,7 +3579,7 @@ function DemoMongoDBTab({ tabId }) {
                                 >
                                     <ExecStatCard value="2.4 GB" label="IMPORTED" subtitle="Last 7d" color="#16a34a" />
                                     <ExecStatCard value="1.8 GB" label="EXPORTED" subtitle="Last 7d" color="#0284c7" />
-                                    <ExecStatCard value="142" label="OPERATIONS" subtitle="Last 7d" color="#0ea5e9" />
+                                    <ExecStatCard value="142" label="OPERATIONS" subtitle="Last 7d" color="#8b5cf6" />
                                     <ExecStatCard
                                         value="99.8%"
                                         label="SUCCESS RATE"
@@ -3649,7 +3649,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="8ms"
                                         label="AVG SPEED"
                                         subtitle="Translation time"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard
                                         value="12"
@@ -3823,7 +3823,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="2.4 km"
                                         label="AVG DISTANCE"
                                         subtitle="Avg search radius"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard
                                         value="89%"
@@ -4085,7 +4085,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="90d"
                                         label="TIME RANGE"
                                         subtitle="Historical"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard value="7" label="ANOMALIES" subtitle="Detected" color="#dc2626" />
                                     <ExecStatCard
@@ -4162,7 +4162,7 @@ function DemoMongoDBTab({ tabId }) {
                                         subtitle="If applied"
                                         color="#16a34a"
                                     />
-                                    <ExecStatCard value="5" label="APPLIED" subtitle="This month" color="#0ea5e9" />
+                                    <ExecStatCard value="5" label="APPLIED" subtitle="This month" color="#8b5cf6" />
                                 </div>
                                 <Panel title="Performance Advisor v2" icon={Lightbulb} accentColor={THEME.warning}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -4289,7 +4289,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="1,240/s"
                                         label="THROUGHPUT"
                                         subtitle="Current"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                 </div>
                                 <Panel title="Trace Correlator" icon={Radio} accentColor={THEME.primary}>
@@ -4518,7 +4518,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="1,240/s"
                                         label="ENTRIES/SEC"
                                         subtitle="Current"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard
                                         value="47h ago"
@@ -4710,7 +4710,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="131"
                                         label="METRICS EXPORTED"
                                         subtitle="Total"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard value="3" label="TARGETS" subtitle="Registered" color="#d97706" />
                                 </div>
@@ -4773,7 +4773,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="89%"
                                         label="MFA ENABLED"
                                         subtitle="Compliance"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard value="3" label="FAILED LOGINS" subtitle="Last 24h" color="#d97706" />
                                 </div>
@@ -4979,7 +4979,7 @@ function DemoMongoDBTab({ tabId }) {
                                 >
                                     <ExecStatCard value="8" label="DASHBOARDS" subtitle="Created" color="#0284c7" />
                                     <ExecStatCard value="24" label="WIDGETS" subtitle="Total" color="#16a34a" />
-                                    <ExecStatCard value="3" label="SHARED" subtitle="With team" color="#0ea5e9" />
+                                    <ExecStatCard value="3" label="SHARED" subtitle="With team" color="#8b5cf6" />
                                     <ExecStatCard
                                         value="2h ago"
                                         label="LAST VIEWED"
@@ -5017,7 +5017,7 @@ function DemoMongoDBTab({ tabId }) {
                                 >
                                     <ExecStatCard value="24" label="REPORTS" subtitle="Generated" color="#0284c7" />
                                     <ExecStatCard value="8" label="SCHEDULED" subtitle="Active" color="#16a34a" />
-                                    <ExecStatCard value="12" label="TEMPLATES" subtitle="Available" color="#0ea5e9" />
+                                    <ExecStatCard value="12" label="TEMPLATES" subtitle="Available" color="#8b5cf6" />
                                     <ExecStatCard
                                         value="2h ago"
                                         label="LAST RUN"
@@ -5100,7 +5100,7 @@ function DemoMongoDBTab({ tabId }) {
                                         value="648"
                                         label="DATA ACCESS"
                                         subtitle="Read/write"
-                                        color="#0ea5e9"
+                                        color="#8b5cf6"
                                     />
                                     <ExecStatCard
                                         value="250"
@@ -5162,7 +5162,7 @@ function DemoMongoDBTab({ tabId }) {
                                     <ExecStatCard value="4" label="TOTAL USERS" subtitle="Active" color="#0284c7" />
                                     <ExecStatCard value="1" label="ADMINS" subtitle="Full access" color="#d97706" />
                                     <ExecStatCard value="50%" label="MFA ENABLED" subtitle="2 of 4" color="#16a34a" />
-                                    <ExecStatCard value="2h ago" label="LAST LOGIN" subtitle="Recent" color="#0ea5e9" />
+                                    <ExecStatCard value="2h ago" label="LAST LOGIN" subtitle="Recent" color="#8b5cf6" />
                                 </div>
                                 <Panel title="User Management" icon={Users} accentColor={THEME.primary}>
                                     <DataTable

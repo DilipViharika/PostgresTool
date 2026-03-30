@@ -26,7 +26,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
    THEME
    ───────────────────────────────────────────────────────────────── */
 const buildTheme = (isDark) => ({
-    primary: isDark ? '#00D4FF' : '#0ea5e9',
+    primary: isDark ? '#00D4FF' : '#8b5cf6',
     secondary: isDark ? '#2AFFD4' : '#10b981',
     success: isDark ? '#2EE89C' : '#22c55e',
     danger: isDark ? '#FF4560' : '#ef4444',

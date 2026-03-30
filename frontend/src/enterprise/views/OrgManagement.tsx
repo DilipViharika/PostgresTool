@@ -11,7 +11,7 @@ import { postData, deleteData, patchData } from '../../utils/api';
 
 const ROLE_CONFIG = {
     owner: { label: 'Owner', color: '#a78bfa' },
-    admin: { label: 'Admin', color: '#38bdf8' },
+    admin: { label: 'Admin', color: '#8b5cf6' },
     member: { label: 'Member', color: '#94a3b8' },
     viewer: { label: 'Viewer', color: '#64748b' },
 };
@@ -120,7 +120,7 @@ const OrgManagement = () => {
             marginBottom: '30px',
             padding: '20px',
             backgroundColor: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(56,189,248,0.1)',
+            border: '1px solid rgba(139,92,246,0.1)',
             borderRadius: '8px',
         },
         sectionTitle: {
@@ -139,8 +139,8 @@ const OrgManagement = () => {
         },
         detail: {
             padding: '12px',
-            backgroundColor: 'rgba(56,189,248,0.05)',
-            border: '1px solid rgba(56,189,248,0.15)',
+            backgroundColor: 'rgba(139,92,246,0.05)',
+            border: '1px solid rgba(139,92,246,0.15)',
             borderRadius: '6px',
         },
         label: {
@@ -153,7 +153,7 @@ const OrgManagement = () => {
         value: {
             fontSize: '14px',
             fontWeight: '600',
-            color: '#38bdf8',
+            color: '#8b5cf6',
             margin: '0',
         },
         form: {
@@ -191,7 +191,7 @@ const OrgManagement = () => {
             justifyContent: 'center',
             gap: '8px',
             padding: '10px 16px',
-            backgroundColor: '#38bdf8',
+            backgroundColor: '#8b5cf6',
             color: '#0a0e27',
             border: 'none',
             borderRadius: '6px',

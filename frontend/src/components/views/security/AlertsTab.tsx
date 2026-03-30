@@ -22,7 +22,7 @@ import { fetchData, postData } from '../../../utils/api';
 const SEVERITY = {
   critical: { color: '#ff3b5c', glow: 'rgba(255,59,92,0.25)', bg: 'rgba(255,59,92,0.08)', icon: AlertOctagon, label: 'CRIT' },
   warning:  { color: '#ffaa00', glow: 'rgba(255,170,0,0.2)',   bg: 'rgba(255,170,0,0.07)',  icon: AlertTriangle, label: 'WARN' },
-  info:     { color: '#38bdf8', glow: 'rgba(56,189,248,0.18)', bg: 'rgba(56,189,248,0.06)', icon: Info, label: 'INFO' },
+  info:     { color: '#8b5cf6', glow: 'rgba(139,92,246,0.18)', bg: 'rgba(139,92,246,0.06)', icon: Info, label: 'INFO' },
   resolved: { color: '#22d3a5', glow: 'rgba(34,211,165,0.15)', bg: 'rgba(34,211,165,0.05)', icon: CheckCircle2, label: 'RSLV' },
 };
 
@@ -394,7 +394,7 @@ const VIGILDashboard = () => {
                   </div>
                   <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontBody, lineHeight: 1.5 }}>
                     {c.text.split(/(@\w+\.\w+)/g).map((part, i) =>
-                        part.startsWith('@') ? <span key={i} style={{ color: '#38bdf8', fontWeight: 600 }}>{part}</span> : part
+                        part.startsWith('@') ? <span key={i} style={{ color: '#8b5cf6', fontWeight: 600 }}>{part}</span> : part
                     )}
                   </div>
                 </div>
@@ -572,9 +572,9 @@ const VIGILDashboard = () => {
                                 <button onClick={() => snoozeAlert(alert.id)} style={css.btn('ghost')}><Clock size={11} /> Snooze 1h</button>
                                 <button onClick={() => escalateAlert(alert.id)} style={{ ...css.btn('ghost'), color: '#f87171', borderColor: 'rgba(248,113,113,0.2)' }}><ArrowUpRight size={11} /> Escalate</button>
                                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 5 }}>
-                                  <button onClick={() => setShowImpactPanel(isImpact ? null : alert.id)} style={{ ...css.btn('ghost'), color: isImpact ? '#38bdf8' : '#6b7280', borderColor: isImpact ? 'rgba(56,189,248,0.25)' : 'transparent' }}>
+                                  <button onClick={() => setShowImpactPanel(isImpact ? null : alert.id)} style={{ ...css.btn('ghost'), color: isImpact ? '#8b5cf6' : '#6b7280', borderColor: isImpact ? 'rgba(139,92,246,0.25)' : 'transparent' }}>
                                     <GitMerge size={11} /> Impact
-                                    {alert.impactRadius?.users > 0 && <span style={{ fontSize: 9, background: 'rgba(56,189,248,0.15)', color: '#38bdf8', borderRadius: 2, padding: '1px 4px' }}>{alert.impactRadius.users >= 1000 ? `${(alert.impactRadius.users/1000).toFixed(0)}k` : alert.impactRadius.users}</span>}
+                                    {alert.impactRadius?.users > 0 && <span style={{ fontSize: 9, background: 'rgba(139,92,246,0.15)', color: '#8b5cf6', borderRadius: 2, padding: '1px 4px' }}>{alert.impactRadius.users >= 1000 ? `${(alert.impactRadius.users/1000).toFixed(0)}k` : alert.impactRadius.users}</span>}
                                   </button>
                                   <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), color: isComments ? '#818cf8' : '#6b7280', borderColor: isComments ? 'rgba(99,102,241,0.3)' : 'transparent' }}>
                                     <MessageSquare size={11} />

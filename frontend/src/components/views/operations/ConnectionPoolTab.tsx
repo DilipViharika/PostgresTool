@@ -1031,8 +1031,8 @@ const ConnectionsTab = () => {
                                     disabled={conn.id === activeConnectionId || switchingId === conn.id}
                                     style={{
                                         ...S.btn(
-                                            conn.id === activeConnectionId ? 'rgba(56,189,248,0.15)' : 'rgba(56,189,248,0.08)',
-                                            'rgba(56,189,248,0.3)', '#38bdf8'
+                                            conn.id === activeConnectionId ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.08)',
+                                            'rgba(139,92,246,0.3)', '#8b5cf6'
                                         ),
                                         opacity: conn.id === activeConnectionId ? 0.6 : 1,
                                         cursor: conn.id === activeConnectionId ? 'default' : 'pointer',

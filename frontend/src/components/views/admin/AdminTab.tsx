@@ -42,7 +42,7 @@ const T = {
     get success()     { return THEME.success     || '#10b981'; },
     get warning()     { return THEME.warning     || '#f59e0b'; },
     get danger()      { return THEME.danger      || '#ef4444'; },
-    get info()        { return THEME.info        || '#38bdf8'; },
+    get info()        { return THEME.info        || '#8b5cf6'; },
     get teal()        { return THEME.primary     || '#14b8a6'; },
     get glass()       { return THEME.glass       || 'rgba(255,255,255,0.04)'; },
     get glassBorder() { return THEME.glassBorder || 'rgba(255,255,255,0.08)'; },
@@ -178,7 +178,7 @@ const SETTING_CATEGORIES = {
     connections: { label: 'Connections',    icon: Network,     color: '#3b82f6', keys: ['max_connections','superuser_reserved_connections','max_prepared_transactions','tcp_keepalives','listen_addresses','port'] },
     performance: { label: 'Performance',    icon: Zap,         color: '#f59e0b', keys: ['max_worker_processes','max_parallel_workers','max_parallel_workers_per_gather','random_page_cost','effective_io_concurrency','parallel_tuple_cost','jit'] },
     wal:         { label: 'WAL & Recovery', icon: Shield,      color: '#10b981', keys: ['wal_level','max_wal_size','min_wal_size','checkpoint_timeout','checkpoint_completion_target','archive_mode','wal_compression'] },
-    logging:     { label: 'Logging',        icon: FileText,    color: '#38bdf8', keys: ['log_statement','log_min_duration_statement','log_connections','log_disconnections','logging_collector','log_destination'] },
+    logging:     { label: 'Logging',        icon: FileText,    color: '#8b5cf6', keys: ['log_statement','log_min_duration_statement','log_connections','log_disconnections','logging_collector','log_destination'] },
     autovacuum:  { label: 'Autovacuum',     icon: RefreshCw,   color: '#14b8a6', keys: ['autovacuum','autovacuum_max_workers','autovacuum_naptime','autovacuum_vacuum_threshold','autovacuum_analyze_threshold','autovacuum_vacuum_scale_factor'] },
     security:    { label: 'Security',       icon: Lock,        color: '#a78bfa', keys: ['ssl','password_encryption','krb_server_keyfile','pg_hba','row_security','fsync','synchronous_commit'] },
 };
@@ -1100,7 +1100,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
 
-    const EXT_CATEGORY_COLORS = { monitoring:'#3b82f6', security:'#a78bfa', utility:'#f59e0b', search:'#10b981', geospatial:'#14b8a6', partitioning:'#818cf8', timeseries:'#38bdf8', ai:'#f97316', maintenance:'#64748b' };
+    const EXT_CATEGORY_COLORS = { monitoring:'#3b82f6', security:'#a78bfa', utility:'#f59e0b', search:'#10b981', geospatial:'#14b8a6', partitioning:'#818cf8', timeseries:'#8b5cf6', ai:'#f97316', maintenance:'#64748b' };
 
     const filtered = useMemo(() => {
         let list = Array.isArray(extData) ? extData : [];

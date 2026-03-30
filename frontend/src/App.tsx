@@ -317,7 +317,7 @@ const AppStyles = () => (
         @keyframes bounce          { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         @keyframes shimmer         { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
         @keyframes scanline        { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
-        @keyframes glowPulse       { 0%, 100% { box-shadow: 0 0 8px rgba(56,189,248,0.2); } 50% { box-shadow: 0 0 24px rgba(56,189,248,0.5); } }
+        @keyframes glowPulse       { 0%, 100% { box-shadow: 0 0 8px rgba(139,92,246,0.2); } 50% { box-shadow: 0 0 24px rgba(139,92,246,0.4); } }
         @keyframes orb             { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-20px) scale(1.05); } 66% { transform: translate(-20px,15px) scale(0.97); } }
         @keyframes rotate          { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes tabIn           { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -331,8 +331,8 @@ const AppStyles = () => (
 
         /* ── Sidebar: gradient glass background ── */
         aside {
-            background: linear-gradient(180deg, ${DS._dark ? '#030712' : '#f0f4f8'}, ${DS._dark ? '#0a1020' : '#e8eef5'}) !important;
-            border-right: 1px solid ${DS._dark ? 'rgba(56,189,248,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            background: linear-gradient(180deg, ${DS._dark ? '#080a18' : '#f0f4f8'}, ${DS._dark ? '#0e1225' : '#e8eef5'}) !important;
+            border-right: 1px solid ${DS._dark ? 'rgba(139,92,246,0.08)' : 'rgba(0,0,0,0.06)'} !important;
             box-shadow: ${DS._dark ? '4px 0 24px rgba(0,0,0,0.4)' : '2px 0 12px rgba(0,0,0,0.04)'} !important;
         }
 
@@ -352,7 +352,7 @@ const AppStyles = () => (
         header {
             backdrop-filter: blur(24px) saturate(1.4) !important;
             -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
-            box-shadow: ${DS._dark ? '0 1px 0 rgba(56,189,248,0.06), 0 4px 20px rgba(0,0,0,0.3)' : '0 1px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)'} !important;
+            box-shadow: ${DS._dark ? '0 1px 0 rgba(139,92,246,0.06), 0 4px 20px rgba(0,0,0,0.3)' : '0 1px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)'} !important;
         }
 
         header::after {
@@ -375,12 +375,12 @@ const AppStyles = () => (
         }
 
         .nav-item:hover {
-            background: ${DS._dark ? 'rgba(56,189,248,0.08)' : 'rgba(14,165,233,0.06)'} !important;
+            background: ${DS._dark ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.06)'} !important;
             transform: translateX(3px);
         }
 
         .nav-item[aria-selected="true"] {
-            box-shadow: ${DS._dark ? 'inset 0 0 20px rgba(56,189,248,0.05)' : 'inset 0 0 12px rgba(14,165,233,0.04)'};
+            box-shadow: ${DS._dark ? 'inset 0 0 20px rgba(139,92,246,0.05)' : 'inset 0 0 12px rgba(139,92,246,0.04)'};
         }
 
         .section-btn {
@@ -390,7 +390,7 @@ const AppStyles = () => (
         }
 
         .section-btn:hover {
-            background: ${DS._dark ? 'rgba(56,189,248,0.05)' : 'rgba(14,165,233,0.04)'} !important;
+            background: ${DS._dark ? 'rgba(139,92,246,0.05)' : 'rgba(139,92,246,0.04)'} !important;
         }
 
         /* ── Tab content animation ── */
@@ -421,8 +421,8 @@ const AppStyles = () => (
             font-size: 10.5px !important;
             font-weight: 700 !important;
             padding: 12px 16px !important;
-            background: ${DS._dark ? 'rgba(56,189,248,0.03)' : 'rgba(14,165,233,0.02)'} !important;
-            border-bottom: 1px solid ${DS._dark ? 'rgba(56,189,248,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            background: ${DS._dark ? 'rgba(139,92,246,0.03)' : 'rgba(139,92,246,0.02)'} !important;
+            border-bottom: 1px solid ${DS._dark ? 'rgba(139,92,246,0.08)' : 'rgba(0,0,0,0.06)'} !important;
             color: ${DS.textMuted} !important;
         }
 
@@ -433,7 +433,7 @@ const AppStyles = () => (
         }
 
         table tr:hover td {
-            background: ${DS._dark ? 'rgba(56,189,248,0.03)' : 'rgba(14,165,233,0.02)'} !important;
+            background: ${DS._dark ? 'rgba(139,92,246,0.03)' : 'rgba(139,92,246,0.02)'} !important;
         }
 
         table tr:last-child td {
@@ -448,16 +448,16 @@ const AppStyles = () => (
         /* Primary/accent-colored buttons get glow */
         button[style*="background: linear-gradient"],
         button[style*="background:linear-gradient"],
-        button[style*="background: rgb(56, 189"],
-        button[style*="background: #38bdf8"],
-        button[style*="background:#38bdf8"] {
-            box-shadow: 0 4px 14px rgba(56,189,248,0.3), 0 1px 3px rgba(0,0,0,0.2) !important;
+        button[style*="background: rgb(139, 92"],
+        button[style*="background: #8b5cf6"],
+        button[style*="background:#8b5cf6"] {
+            box-shadow: 0 4px 14px rgba(139,92,246,0.3), 0 1px 3px rgba(0,0,0,0.2) !important;
             border-radius: 10px !important;
         }
 
         button[style*="background: linear-gradient"]:hover,
         button[style*="background:linear-gradient"]:hover {
-            box-shadow: 0 6px 20px rgba(56,189,248,0.4), 0 2px 6px rgba(0,0,0,0.2) !important;
+            box-shadow: 0 6px 20px rgba(139,92,246,0.4), 0 2px 6px rgba(0,0,0,0.2) !important;
             transform: translateY(-1px) !important;
             filter: brightness(1.08) !important;
         }
@@ -490,15 +490,15 @@ const AppStyles = () => (
             border-radius: 99px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: ${DS.cyan}50;
+            background: rgba(139,92,246,0.5);
         }
 
         /* ═══ RECHARTS TOOLTIP OVERRIDE ═══ */
         .recharts-default-tooltip {
             background: ${DS._dark ? 'rgba(4,6,15,0.92)' : 'rgba(255,255,255,0.95)'} !important;
-            border: 1px solid ${DS._dark ? 'rgba(56,189,248,0.15)' : 'rgba(0,0,0,0.08)'} !important;
+            border: 1px solid ${DS._dark ? 'rgba(139,92,246,0.15)' : 'rgba(0,0,0,0.08)'} !important;
             border-radius: 12px !important;
-            box-shadow: ${DS._dark ? '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.06)' : '0 8px 24px rgba(0,0,0,0.08)'} !important;
+            box-shadow: ${DS._dark ? '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.06)' : '0 8px 24px rgba(0,0,0,0.08)'} !important;
             backdrop-filter: blur(16px) !important;
             padding: 10px 14px !important;
         }
@@ -533,8 +533,8 @@ const AppStyles = () => (
             transform: translateY(-2px) !important;
             box-shadow: ${
                 DS._dark
-                    ? '0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,189,248,0.1)'
-                    : '0 8px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(14,165,233,0.08)'
+                    ? '0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.1)'
+                    : '0 8px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(139,92,246,0.08)'
             } !important;
         }
 
@@ -572,7 +572,7 @@ const AppStyles = () => (
             right: -200px;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, ${DS._dark ? 'rgba(56,189,248,0.04)' : 'rgba(56,189,248,0.03)'} 0%, transparent 70%);
+            background: radial-gradient(circle, ${DS._dark ? 'rgba(139,92,246,0.04)' : 'rgba(139,92,246,0.03)'} 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
@@ -597,7 +597,7 @@ const AppStyles = () => (
         .sidebar-nav::-webkit-scrollbar { width: 3px; }
         .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
         .sidebar-nav::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 2px; }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: ${DS.cyan}60; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.6); }
 
         /* ── Section tab animation ── */
         .section-open { animation: sectionOpen 0.18s ease-out both; }
@@ -605,15 +605,15 @@ const AppStyles = () => (
         /* ── Notification panel ── */
         .notif-panel { animation: slideDown 0.22s cubic-bezier(0.34,1.4,0.64,1) both; }
         .notif-item { transition: background 0.15s ease; }
-        .notif-item:hover { background: rgba(56,189,248,0.05) !important; }
+        .notif-item:hover { background: rgba(139,92,246,0.05) !important; }
 
         /* ── Feedback overlay ── */
         .feedback-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
         .feedback-modal   { animation: slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both; }
-        .fb-input:focus   { border-color: rgba(56,189,248,0.5) !important; box-shadow: 0 0 0 3px rgba(56,189,248,0.1) !important; }
+        .fb-input:focus   { border-color: rgba(139,92,246,0.5) !important; box-shadow: 0 0 0 3px rgba(139,92,246,0.1) !important; }
         .fb-tab:hover     { opacity: 1 !important; }
         .fb-prio:hover    { opacity: 1 !important; }
-        .fb-opt:hover     { background: rgba(56,189,248,0.06) !important; }
+        .fb-opt:hover     { background: rgba(139,92,246,0.06) !important; }
         .fb-submit:not(:disabled):hover { filter: brightness(1.12); transform: translateY(-1px); }
         .fb-submit:not(:disabled):active { transform: translateY(0); }
 
@@ -701,7 +701,7 @@ const AmbientOrbs = () => (
             transition: 'opacity 0.4s ease',
         }}
     >
-        {/* Top-left cyan orb */}
+        {/* Top-left purple orb */}
         <div
             style={{
                 position: 'absolute',
@@ -710,11 +710,11 @@ const AmbientOrbs = () => (
                 width: 500,
                 height: 500,
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)',
                 animation: 'orb 18s ease-in-out infinite',
             }}
         />
-        {/* Bottom-right violet orb */}
+        {/* Bottom-right cyan orb */}
         <div
             style={{
                 position: 'absolute',
@@ -723,11 +723,11 @@ const AmbientOrbs = () => (
                 width: 600,
                 height: 600,
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(129,140,248,0.06) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(6,182,212,0.05) 0%, transparent 70%)',
                 animation: 'orb 24s ease-in-out infinite reverse',
             }}
         />
-        {/* Center subtle emerald hint */}
+        {/* Center subtle purple hint */}
         <div
             style={{
                 position: 'absolute',
@@ -736,7 +736,7 @@ const AmbientOrbs = () => (
                 width: 800,
                 height: 300,
                 borderRadius: '50%',
-                background: 'radial-gradient(ellipse, rgba(52,211,153,0.03) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse, rgba(139,92,246,0.02) 0%, transparent 70%)',
                 transform: 'translate(-50%,-50%)',
             }}
         />
@@ -850,8 +850,8 @@ const ThemeToggle = () => {
                 width: 38,
                 height: 38,
                 borderRadius: 10,
-                background: isDark ? 'rgba(251,191,36,0.08)' : 'rgba(14,165,233,0.08)',
-                border: `1px solid ${isDark ? 'rgba(251,191,36,0.25)' : 'rgba(14,165,233,0.3)'}`,
+                background: isDark ? 'rgba(251,191,36,0.08)' : 'rgba(139,92,246,0.08)',
+                border: `1px solid ${isDark ? 'rgba(251,191,36,0.25)' : 'rgba(139,92,246,0.3)'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -865,7 +865,7 @@ const ThemeToggle = () => {
                 e.currentTarget.style.transform = 'scale(1)';
             }}
         >
-            {isDark ? <Sun size={16} color="rgba(251,191,36,0.9)" /> : <Moon size={16} color="rgba(14,165,233,0.9)" />}
+            {isDark ? <Sun size={16} color="rgba(251,191,36,0.9)" /> : <Moon size={16} color="rgba(139,92,246,0.9)" />}
         </button>
     );
 };
@@ -1918,7 +1918,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                             fontFamily: DS.fontUI,
                             transition: 'filter 0.2s, transform 0.15s, box-shadow 0.2s',
                             opacity: submitting ? 0.7 : 1,
-                            boxShadow: ready ? '0 4px 20px rgba(56,189,248,0.22)' : 'none',
+                            boxShadow: ready ? '0 4px 20px rgba(139,92,246,0.22)' : 'none',
                         }}
                     >
                         {submitting ? (
@@ -2453,7 +2453,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                             fontFamily: DS.fontUI,
                             transition: 'all 0.2s',
                             opacity: saving ? 0.7 : 1,
-                            boxShadow: '0 4px 20px rgba(56,189,248,0.22)',
+                            boxShadow: '0 4px 20px rgba(139,92,246,0.22)',
                         }}
                     >
                         {saved ? (
@@ -2862,7 +2862,7 @@ const Sidebar = ({
                     width: 1,
                     pointerEvents: 'none',
                     background:
-                        'linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.18) 40%, rgba(129,140,248,0.12) 75%, transparent 100%)',
+                        'linear-gradient(180deg, transparent 0%, rgba(139,92,246,0.18) 40%, rgba(129,140,248,0.12) 75%, transparent 100%)',
                 }}
             />
 
@@ -3158,21 +3158,21 @@ const Sidebar = ({
                             gap: 10,
                             padding: '8px 10px',
                             marginBottom: 2,
-                            background: 'rgba(56,189,248,0.04)',
+                            background: 'rgba(139,92,246,0.04)',
                             borderRadius: 8,
-                            border: '1px solid rgba(56,189,248,0.1)',
+                            border: '1px solid rgba(139,92,246,0.1)',
                             cursor: 'pointer',
                             width: '100%',
                             textAlign: 'left',
                             transition: 'all 0.15s ease',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(56,189,248,0.1)';
-                            e.currentTarget.style.borderColor = 'rgba(56,189,248,0.25)';
+                            e.currentTarget.style.background = 'rgba(139,92,246,0.1)';
+                            e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(56,189,248,0.04)';
-                            e.currentTarget.style.borderColor = 'rgba(56,189,248,0.1)';
+                            e.currentTarget.style.background = 'rgba(139,92,246,0.04)';
+                            e.currentTarget.style.borderColor = 'rgba(139,92,246,0.1)';
                         }}
                     >
                         <div
@@ -3181,8 +3181,8 @@ const Sidebar = ({
                                 height: 30,
                                 borderRadius: 8,
                                 flexShrink: 0,
-                                background: 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(129,140,248,0.25))',
-                                border: '1px solid rgba(56,189,248,0.2)',
+                                background: 'linear-gradient(135deg, rgba(139,92,246,0.25), rgba(129,140,248,0.25))',
+                                border: '1px solid rgba(139,92,246,0.2)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -4170,7 +4170,7 @@ const DashboardInner = ({ onLogout }) => {
                                     alignItems: 'center',
                                     gap: 8,
                                     padding: '5px 10px',
-                                    background: 'rgba(56,189,248,0.05)',
+                                    background: 'rgba(139,92,246,0.05)',
                                     borderRadius: 8,
                                     border: `1px solid ${DS.border}`,
                                 }}
@@ -4212,7 +4212,7 @@ const DashboardInner = ({ onLogout }) => {
                         <div
                             style={{
                                 padding: '8px 28px',
-                                background: 'linear-gradient(90deg, rgba(52,211,153,.12), rgba(56,189,248,.12))',
+                                background: 'linear-gradient(90deg, rgba(52,211,153,.12), rgba(139,92,246,.12))',
                                 borderBottom: '1px solid rgba(52,211,153,.20)',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -4274,7 +4274,7 @@ const DashboardInner = ({ onLogout }) => {
                             position: 'relative',
                             background: isDemoFullPage
                                 ? 'transparent'
-                                : `linear-gradient(135deg, ${DS.bg} 0%, rgba(56,189,248,0.02) 100%)`,
+                                : `linear-gradient(135deg, ${DS.bg} 0%, rgba(139,92,246,0.02) 100%)`,
                         }}
                     >
                         {/* Floating alert toast */}

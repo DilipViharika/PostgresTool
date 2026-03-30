@@ -47,11 +47,11 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
 
     const styles = isDark ? {
         bg: '#0d1224',
-        border: 'rgba(56,189,248,0.2)',
+        border: 'rgba(139,92,246,0.2)',
         text: '#f0f4ff',
         muted: '#94a3b8',
-        accent: '#38bdf8',
-        accentDark: '#0ea5e9',
+        accent: '#8b5cf6',
+        accentDark: '#8b5cf6',
     } : {
         bg: '#f8fafc',
         border: 'rgba(99,102,241,0.2)',
