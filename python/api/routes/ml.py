@@ -4,7 +4,7 @@ Provides REST API endpoints that connect to ML modules for advanced time series 
 query optimization, and capacity planning.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException

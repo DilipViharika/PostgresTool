@@ -19,7 +19,7 @@ jobs:
           cache: npm
 
       - name: Install all dependencies
-        run: npm ci
+        run: npm install --no-audit
 
       - name: Type check shared types
         run: cd shared/types && npx tsc --noEmit
@@ -45,7 +45,7 @@ jobs:
           cache: npm
 
       - name: Install all dependencies
-        run: npm ci
+        run: npm install --no-audit
 
       - name: Lint frontend
         run: cd frontend && npx eslint src/ --max-warnings 50
@@ -71,7 +71,7 @@ jobs:
           cache: npm
 
       - name: Install all dependencies
-        run: npm ci
+        run: npm install --no-audit
 
       - name: Run frontend tests
         run: cd frontend && npm test -- --run --reporter=verbose
@@ -99,7 +99,7 @@ jobs:
           cache: npm
 
       - name: Install all dependencies
-        run: npm ci
+        run: npm install --no-audit
 
       - name: Audit frontend dependencies
         run: cd frontend && npm audit --audit-level=high || true

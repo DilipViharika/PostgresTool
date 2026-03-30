@@ -391,7 +391,7 @@ async def identify_slow_queries(request: SlowQueriesRequest) -> SlowQueriesRespo
 
         # In a real implementation, query pg_stat_statements from PostgreSQL
         # For now, create sample slow queries based on the threshold
-        analyzer = QueryAnalyzer()
+        _ = QueryAnalyzer()  # Instantiate to validate availability
 
         sample_queries = [
             {

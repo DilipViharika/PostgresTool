@@ -314,7 +314,7 @@ class TableStatsAnalyzer:
         # Dead tuple check
         if stats.dead_tuple_count > self.dead_tuple_threshold * stats.live_tuple_count:
             recommendations.append(
-                f"High dead tuple ratio - run VACUUM and ANALYZE"
+                "High dead tuple ratio - run VACUUM and ANALYZE"
             )
 
         # Vacuum age check

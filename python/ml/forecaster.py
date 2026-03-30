@@ -5,7 +5,6 @@ Combines linear regression, exponential smoothing, and moving averages.
 
 from typing import Any
 import numpy as np
-from datetime import datetime, timedelta
 
 
 class MetricForecaster:

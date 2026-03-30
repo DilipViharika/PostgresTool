@@ -5,7 +5,6 @@ Detects outliers using Z-score and IQR methods, and identifies trend changes.
 
 from typing import Any
 import numpy as np
-from datetime import datetime, timedelta
 
 
 class AnomalyDetector:
