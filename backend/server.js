@@ -1941,7 +1941,9 @@ app.post('/api/connections', authenticate, async (req, res) => {
     try {
         // Unwrap RSA-encrypted sensitive fields from the frontend
         const body = unwrapSensitiveFields(req.body);
-        const { name, host, port, database, username, password, ssl, isDefault, dbType } = body;
+        const { name, host, port, database, username, password, ssl, isDefault, dbType: rawDbType, type: rawType } = body;
+        // Wizard sends `type`, backend historically uses `dbType` — accept either
+        const dbType = rawDbType || rawType || 'postgresql';
         if (!name || !host || !port || !database || !username || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
@@ -1981,11 +1983,24 @@ app.post('/api/connections', authenticate, async (req, res) => {
                 await testConn.query('SELECT 1');
                 await testConn.end();
             } else {
-                const testPool = new Pool({ ...cfg, connectionTimeoutMillis: 8000 });
-                const client = await testPool.connect();
-                await client.query('SELECT 1');
-                client.release();
-                await testPool.end();
+                // Try as-is first; on cert errors, retry with rejectUnauthorized: false
+                let pgOk = false;
+                for (const sslOverride of [undefined, { rejectUnauthorized: false }]) {
+                    try {
+                        const poolOpts = { ...cfg, connectionTimeoutMillis: 8000 };
+                        if (sslOverride) poolOpts.ssl = sslOverride;
+                        const testPool = new Pool(poolOpts);
+                        const client = await testPool.connect();
+                        await client.query('SELECT 1');
+                        client.release();
+                        await testPool.end();
+                        pgOk = true;
+                        break;
+                    } catch (pgErr) {
+                        if (!pgErr.message.includes('certificate') && !pgErr.message.includes('SSL')) throw pgErr;
+                    }
+                }
+                if (!pgOk) throw new Error('Connection failed — could not establish SSL connection');
             }
             await dbUpdateConnection(newConn.id, { status: 'success', lastTested: new Date().toISOString() });
             testResult = { success: true, message: 'Connection verified' };
@@ -2118,16 +2133,30 @@ app.post('/api/connections/test', authenticate, async (req, res) => {
                 await testConn.query('SELECT 1');
                 await testConn.end();
             } else {
-                const testPool = new Pool({
-                    host, port: port || 5432, database: database || 'postgres',
-                    user: username, password,
-                    ssl: ssl ? { rejectUnauthorized: false } : undefined,
-                    connectionTimeoutMillis: 8000,
-                });
-                const client = await testPool.connect();
-                await client.query('SELECT 1');
-                client.release();
-                await testPool.end();
+                // Try with the user's SSL preference first; on cert errors, retry with rejectUnauthorized: false
+                const sslOpt = ssl ? { rejectUnauthorized: false } : undefined;
+                let lastErr;
+                for (const sslAttempt of [sslOpt, sslOpt ? null : { rejectUnauthorized: false }]) {
+                    try {
+                        const testPool = new Pool({
+                            host, port: port || 5432, database: database || 'postgres',
+                            user: username, password,
+                            ssl: sslAttempt === null ? undefined : sslAttempt,
+                            connectionTimeoutMillis: 8000,
+                        });
+                        const client = await testPool.connect();
+                        await client.query('SELECT 1');
+                        client.release();
+                        await testPool.end();
+                        lastErr = null;
+                        break;
+                    } catch (e) {
+                        lastErr = e;
+                        // Only retry if it's a certificate error
+                        if (!e.message.includes('certificate') && !e.message.includes('SSL')) break;
+                    }
+                }
+                if (lastErr) throw lastErr;
             }
 
             res.json({ success: true, message: 'Connection successful' });
