@@ -71,6 +71,7 @@ const CONFIG = Object.freeze({
         'http://localhost:5173',
         'http://localhost:3000',
         'https://postgres-tool.vercel.app',
+        process.env.FRONTEND_URL,
         process.env.CORS_ORIGIN,
     ].filter(Boolean),
     SLOW_QUERY_MIN:  Number(process.env.SLOW_QUERY_MINUTES) || 5,
@@ -5215,16 +5216,14 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
 
 // ─────────────────────────────────────────────────────────────────────────────
-// VERCEL SERVERLESS EXPORT
-// When deployed to Vercel (serverless), the module is imported rather than run
-// as a script, so startup() is never called.  We export the Express `app` as
-// the default export so Vercel's @vercel/node runtime can invoke it as a
-// serverless function handler.  In local / traditional server mode the
-// startup() call below starts the HTTP server as normal.
+// EXPORTS & STARTUP
 // ─────────────────────────────────────────────────────────────────────────────
+// Export the Express app for any environment that imports this module
+// (e.g. Vercel serverless, tests, etc.)
 export default app;
 
-// Start the server only when running directly (not imported by Vercel runtime)
+// Start the server when running directly (Railway, local dev, Docker, etc.)
+// Skip startup only when imported by Vercel's serverless runtime.
 if (process.env.VERCEL !== '1') {
     startup();
 }

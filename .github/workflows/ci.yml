@@ -53,7 +53,7 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
         env:
-          VITE_API_URL: https://postgrestoolbackend.vercel.app
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://postgres-tool-backend.up.railway.app' }}
 
       - name: Check backend syntax
         run: node --check backend/server.js
