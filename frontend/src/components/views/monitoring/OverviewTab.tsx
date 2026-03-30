@@ -565,7 +565,11 @@ const genSparkline = (n = 10, base = 40, variance = 30) =>
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: ENVIRONMENT SWITCHER
    ═══════════════════════════════════════════════════════════════════════════ */
-const ENVIRONMENTS = [];
+const ENVIRONMENTS = [
+    { id: 'prod', label: 'Production', color: '#8b5cf6', icon: Globe, host: 'primary', pg: '16.2' },
+    { id: 'staging', label: 'Staging', color: '#06b6d4', icon: FlaskConical, host: 'staging', pg: '16.2' },
+    { id: 'dev', label: 'Development', color: '#22c55e', icon: Terminal, host: 'localhost', pg: '16.2' },
+];
 
 const EnvSwitcher = ({ currentEnv, onChange }) => {
     const [open, setOpen] = useState(false);

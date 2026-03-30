@@ -4494,71 +4494,10 @@ app.get('/api/pool/metrics', authenticate, cached('pool:metrics', CONFIG.CACHE_T
     }
 });
 
-/* ── Schema (for Schema Visualizer & Schema Browser) ──────────────────────── */
-app.get('/api/schema/relationships', authenticate, cached('schema:rels', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
-    try {
-        const p = await reqPool(req);
-        const { rows } = await p.query(`
-            SELECT
-                tc.table_schema AS schema,
-                tc.table_name AS source_table,
-                kcu.column_name AS source_column,
-                ccu.table_name AS target_table,
-                ccu.column_name AS target_column,
-                tc.constraint_name
-            FROM information_schema.table_constraints tc
-            JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
-            JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name AND ccu.table_schema = tc.table_schema
-            WHERE tc.constraint_type = 'FOREIGN KEY'
-              AND tc.table_schema NOT IN ('pg_catalog','information_schema')
-            ORDER BY tc.table_schema, tc.table_name
-        `);
-        res.json(rows);
-    } catch (e) {
-        log('ERROR', `[/api/schema/relationships] ${e.message}`);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-app.get('/api/schema/dependencies', authenticate, cached('schema:deps', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
-    try {
-        const p = await reqPool(req);
-        const { rows } = await p.query(`
-            SELECT
-                n.nspname AS schema,
-                c.relname AS table_name,
-                c.relkind AS type,
-                pg_total_relation_size(c.oid) AS total_size,
-                s.n_live_tup AS row_estimate
-            FROM pg_class c
-            JOIN pg_namespace n ON n.oid = c.relnamespace
-            LEFT JOIN pg_stat_user_tables s ON s.relid = c.oid
-            WHERE n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
-              AND c.relkind IN ('r','v','m')
-            ORDER BY n.nspname, c.relname
-        `);
-        res.json(rows);
-    } catch (e) {
-        log('ERROR', `[/api/schema/dependencies] ${e.message}`);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-app.get('/api/schema/columns/:schema/:table', authenticate, cached('schema:cols', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
-    try {
-        const p = await reqPool(req);
-        const { rows } = await p.query(`
-            SELECT column_name, data_type, is_nullable, column_default, ordinal_position
-            FROM information_schema.columns
-            WHERE table_schema = $1 AND table_name = $2
-            ORDER BY ordinal_position
-        `, [req.params.schema, req.params.table]);
-        res.json(rows);
-    } catch (e) {
-        log('ERROR', `[/api/schema/columns] ${e.message}`);
-        res.status(500).json({ error: e.message });
-    }
-});
+/* ── Schema routes are provided by schemaRoutes module ──────────────────────
+   Endpoints: /api/schema/relationships, /api/schema/dependencies,
+   /api/schema/columns/:schema/:table, /api/schema/tree
+   ──────────────────────────────────────────────────────────────────────── */
 
 /* ── Observability Hub ────────────────────────────────────────────────────── */
 app.get('/api/observability/api-metrics', authenticate, async (req, res) => {
@@ -4738,7 +4677,7 @@ app.post('/api/retention/cleanup', authenticate, async (_req, res) => {
         });
     } catch (e) {
         log('ERROR', `[/api/retention/cleanup] ${e.message}`);
-        res.status(500).json({ error: e.message });
+        res.json({ success: false, deleted: { alerts: 0, audit_logs: 0 }, error: e.message });
     }
 });
 

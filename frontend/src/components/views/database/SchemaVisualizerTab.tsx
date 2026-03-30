@@ -49,8 +49,8 @@ const SchemaVisualizerTab = () => {
                     fetchData('/api/schema/relationships'),
                     fetchData('/api/schema/dependencies'),
                 ]);
-                setRelationships(relData);
-                setDependencies(depData);
+                setRelationships(relData?.error ? { tables: [], relationships: [] } : relData);
+                setDependencies(depData?.error ? { dependencies: [] } : depData);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -70,7 +70,7 @@ const SchemaVisualizerTab = () => {
         const fetchColumns = async () => {
             try {
                 const cols = await fetchData(`/api/schema/columns/${schema}/${table}`);
-                setSelectedTableColumns(cols);
+                setSelectedTableColumns(cols?.error ? { columns: [] } : cols);
             } catch (err) {
                 console.error('Failed to fetch columns:', err);
             }
@@ -82,14 +82,14 @@ const SchemaVisualizerTab = () => {
     const schemas = useMemo(() => {
         if (!relationships) return [];
         const schemaSet = new Set();
-        relationships.tables.forEach(t => schemaSet.add(t.schema));
+        (relationships.tables || []).forEach(t => schemaSet.add(t?.schema));
         return Array.from(schemaSet).sort();
     }, [relationships]);
 
     // Filter and search
     const filteredTables = useMemo(() => {
         if (!relationships) return [];
-        return relationships.tables.filter(t => {
+        return (relationships.tables || []).filter(t => {
             const matchesSchema = !filterSchema || t.schema === filterSchema;
             const matchesSearch = !searchTerm || t.name.toLowerCase().includes(searchTerm.toLowerCase());
             return matchesSchema && matchesSearch;
@@ -99,7 +99,7 @@ const SchemaVisualizerTab = () => {
     const filteredRelationships = useMemo(() => {
         if (!relationships) return [];
         const tableIds = new Set(filteredTables.map(t => t.id));
-        return relationships.relationships.filter(
+        return (relationships.relationships || []).filter(
             r => tableIds.has(r.from) && tableIds.has(r.to)
         );
     }, [relationships, filteredTables]);

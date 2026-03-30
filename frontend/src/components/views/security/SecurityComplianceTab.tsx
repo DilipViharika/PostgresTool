@@ -390,9 +390,10 @@ const ChartTooltip = ({ active, payload, label }) => {
 /* ── Threat Monitor ─────────────────────────────────────────────────────── */
 const ThreatMonitor = ({ search, threatLogs = [] }) => {
     const [expanded, setExpanded] = useState(null);
-    const filtered = threatLogs.filter(t =>
-        !search || t.type.toLowerCase().includes(search.toLowerCase()) ||
-        t.user.toLowerCase().includes(search.toLowerCase())
+    const safeThreatLogs = Array.isArray(threatLogs) ? threatLogs : [];
+    const filtered = safeThreatLogs.filter(t =>
+        !search || (t.type?.toLowerCase?.() || '').includes(search.toLowerCase()) ||
+        (t.user?.toLowerCase?.() || '').includes(search.toLowerCase())
     );
 
     return (
@@ -493,12 +494,14 @@ const ThreatTimeline = () => (
 );
 
 /* ── GEO Threat Map ─────────────────────────────────────────────────────── */
-const GeoThreatPanel = () => (
+const GeoThreatPanel = () => {
+    const safeGeoThreats = Array.isArray(GEO_THREATS) ? GEO_THREATS : [];
+    return (
     <div className="card" style={{ padding: 20 }}>
         <SectionHeader icon={Globe} title="Attack Origin" iconColor="#63d7ff"
                        right={<Badge label="last 24h" color="#63d7ff" />} />
         <div style={{ marginTop: 16 }}>
-            {GEO_THREATS.map((g, i) => (
+            {safeGeoThreats.map((g, i) => (
                 <div key={i} className="geo-cell" style={{ background: `${g.color}08`, border: `1px solid ${g.color}15` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: g.color, width: 24 }}>{g.code}</span>
@@ -514,21 +517,23 @@ const GeoThreatPanel = () => (
             ))}
         </div>
     </div>
-);
+    );
+};
 
 /* ── Compliance Panel ───────────────────────────────────────────────────── */
 const CompliancePanel = ({ complianceChecks = [] }) => {
     const [filter, setFilter] = useState('all');
     const standards = ['all', 'SOC2', 'GDPR', 'HIPAA', 'ISO27001', 'CIS'];
-    const filtered = filter === 'all' ? complianceChecks : complianceChecks.filter(c => c.standard === filter);
-    const passCount = complianceChecks.filter(c => c.status === 'pass').length;
+    const safeChecks = Array.isArray(complianceChecks) ? complianceChecks : [];
+    const filtered = filter === 'all' ? safeChecks : safeChecks.filter(c => c.standard === filter);
+    const passCount = safeChecks.filter(c => c.status === 'pass').length;
 
     return (
         <div className="card">
             <SectionHeader icon={FileCheck} title="Compliance Posture"
                            right={
                                <div className="mono" style={{ fontSize: 12, color: '#4ade80', fontWeight: 700 }}>
-                                   {passCount}/{complianceChecks.length} Pass
+                                   {passCount}/{safeChecks.length} Pass
                                </div>
                            }
             />
@@ -576,7 +581,9 @@ const SecurityRadar = () => (
 );
 
 /* ── PII Access Log ─────────────────────────────────────────────────────── */
-const PIIAccessLog = () => (
+const PIIAccessLog = () => {
+    const safePIIAccess = Array.isArray(PII_ACCESS) ? PII_ACCESS : [];
+    return (
     <div className="card">
         <SectionHeader icon={Fingerprint} title="PII / Sensitive Access" iconColor="#f472b6"
                        right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>last 24h</span>} />
@@ -587,7 +594,7 @@ const PIIAccessLog = () => (
                 <div>Trend</div>
                 <div>Risk</div>
             </div>
-            {PII_ACCESS.map((a, i) => (
+            {safePIIAccess.map((a, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', padding: '11px 0', borderBottom: `1px solid ${THEME.grid}`, alignItems: 'center', fontSize: 12 }}>
                     <div>
                         <div>
@@ -596,7 +603,7 @@ const PIIAccessLog = () => (
                         </div>
                         <div className="mono" style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>{a.user}</div>
                     </div>
-                    <div className="mono" style={{ fontWeight: 700, color: THEME.textMain }}>{a.hits.toLocaleString()}</div>
+                    <div className="mono" style={{ fontWeight: 700, color: THEME.textMain }}>{(a.hits || 0).toLocaleString()}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         {a.trend > 0
                             ? <TrendingUp size={12} color="#f5c518" />
@@ -612,11 +619,13 @@ const PIIAccessLog = () => (
             ))}
         </div>
     </div>
-);
+    );
+};
 
 /* ── Encryption Key Vault ───────────────────────────────────────────────── */
 const KeyVault = () => {
     const statusColors = { active: '#4ade80', expiring: '#ff465a', warning: '#f5c518' };
+    const safeEncryptionKeys = Array.isArray(ENCRYPTION_KEYS) ? ENCRYPTION_KEYS : [];
     return (
         <div className="card" style={{ padding: 0 }}>
             <SectionHeader icon={Key} title="Encryption Key Vault" iconColor="#fbbf24"
@@ -627,9 +636,9 @@ const KeyVault = () => {
                            }
             />
             <div style={{ padding: '12px 16px' }}>
-                {ENCRYPTION_KEYS.map((k, i) => {
+                {safeEncryptionKeys.map((k, i) => {
                     const color = statusColors[k.status];
-                    const pct = (k.daysLeft / k.total) * 100;
+                    const pct = ((k.daysLeft || 0) / (k.total || 1)) * 100;
                     return (
                         <div key={i} className="key-item">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -657,12 +666,14 @@ const KeyVault = () => {
 };
 
 /* ── Audit Timeline ─────────────────────────────────────────────────────── */
-const AuditTimeline = ({ auditEvents = [] }) => (
+const AuditTimeline = ({ auditEvents = [] }) => {
+    const safeAuditEvents = Array.isArray(auditEvents) ? auditEvents : [];
+    return (
     <div className="card" style={{ padding: 0 }}>
         <SectionHeader icon={Clock} title="Audit Events" iconColor="#63d7ff"
                        right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
         <div style={{ padding: '16px 20px' }}>
-            {auditEvents.map((ev, i) => {
+            {safeAuditEvents.map((ev, i) => {
                 const color = SEV_COLORS[ev.severity] || '#888';
                 return (
                     <div key={i} className="timeline-event">
@@ -683,7 +694,8 @@ const AuditTimeline = ({ auditEvents = [] }) => (
             })}
         </div>
     </div>
-);
+    );
+};
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ★ NEW HIGH: SUPERUSER ACTIVITY MONITOR
@@ -704,17 +716,24 @@ const SuperuserMonitor = () => {
         try {
             const data = await fetchData('/api/security/superuser-activity');
             // Backend returns { active_sessions: [...], superuser_roles: [...] }
-            const sessions = data?.active_sessions ?? (Array.isArray(data) ? data : null);
-            setRows(sessions && sessions.length > 0 ? sessions : SUPERUSER_SAMPLE);
-        } catch {
+            let sessions = null;
+            if (data?.active_sessions && Array.isArray(data.active_sessions)) {
+                sessions = data.active_sessions;
+            } else if (Array.isArray(data)) {
+                sessions = data;
+            }
+            setRows((sessions && sessions.length > 0) ? sessions : SUPERUSER_SAMPLE);
+        } catch (err) {
+            console.error('Failed to load superuser activity:', err);
             setRows(SUPERUSER_SAMPLE);
         } finally { setLoading(false); }
     };
 
     useEffect(() => { fetchActivity(); }, []);
 
-    const visible = filter === 'all' ? rows : rows.filter(r => r.risk === filter);
-    const counts  = rows.reduce((acc, r) => { acc[r.risk] = (acc[r.risk] || 0) + 1; return acc; }, {});
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const visible = filter === 'all' ? safeRows : safeRows.filter(r => r.risk === filter);
+    const counts  = safeRows.reduce((acc, r) => { acc[r.risk] = (acc[r.risk] || 0) + 1; return acc; }, {});
 
     return (
         <div>
@@ -823,22 +842,39 @@ const ComplianceReportGenerator = () => {
     const [includeDetails, setIncludeDetails] = useState(true);
     const [includeRemediation, setIncludeRemediation] = useState(true);
 
-    const fw = FRAMEWORKS.find(f => f.id === selected);
-    const pct = Math.round((fw.passed / fw.checks) * 100);
+    const safeFrameworks = Array.isArray(FRAMEWORKS) ? FRAMEWORKS : [];
+    const fw = safeFrameworks.find(f => f.id === selected);
+    const pct = fw ? Math.round((fw.passed / (fw.checks || 1)) * 100) : 0;
 
     const handleGenerate = async () => {
         setGenerating(true);
-        await new Promise(r => setTimeout(r, 1600)); // simulate generation
-        setLastGenerated(new Date().toLocaleString());
-        setGenerating(false);
+        try {
+            await new Promise(r => setTimeout(r, 1600)); // simulate generation
+            setLastGenerated(new Date().toLocaleString());
+        } catch (err) {
+            console.error('Failed to generate report:', err);
+        } finally {
+            setGenerating(false);
+        }
     };
+
+    if (!fw) {
+        return (
+            <div className="card" style={{ padding: 20, marginTop: 18 }}>
+                <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#a78bfa" />
+                <div style={{ padding: '20px', textAlign: 'center', color: THEME.textDim }}>
+                    No compliance frameworks configured
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="card" style={{ padding: 20, marginTop: 18 }}>
             <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#a78bfa" />
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, margin: '16px 0' }}>
-                {FRAMEWORKS.map(f => (
+                {safeFrameworks.map(f => (
                     <div key={f.id} onClick={() => setSelected(f.id)}
                         style={{ padding: '14px 16px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${selected === f.id ? f.color : THEME.border}`, background: selected === f.id ? `${f.color}15` : 'transparent', transition: 'all 0.15s' }}>
                         <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
@@ -947,12 +983,16 @@ const SecurityComplianceTab = () => {
                     fetchData('/api/security/audit-events').catch(() => []),
                     fetchData('/api/security/superuser-activity').catch(() => ({})),
                 ]);
-                setThreatLogs(threats || []);
-                setComplianceChecks(compliance || []);
-                setAuditEvents(audit || []);
-                setSuperuserActivity(superuser || {});
+                setThreatLogs(Array.isArray(threats) ? threats : []);
+                setComplianceChecks(Array.isArray(compliance) ? compliance : []);
+                setAuditEvents(Array.isArray(audit) ? audit : []);
+                setSuperuserActivity((superuser && typeof superuser === 'object') ? superuser : {});
             } catch (err) {
                 console.error('Failed to load security data:', err);
+                setThreatLogs([]);
+                setComplianceChecks([]);
+                setAuditEvents([]);
+                setSuperuserActivity({});
             }
         };
         loadSecurityData();
@@ -1047,7 +1087,7 @@ const SecurityComplianceTab = () => {
                 <div style={{ padding: '0 24px' }} className="fade-in">
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 18 }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                            <ThreatMonitor search={search} />
+                            <ThreatMonitor search={search} threatLogs={threatLogs} />
                             <ThreatTimeline />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -1107,7 +1147,7 @@ const SecurityComplianceTab = () => {
             {activeTab === 'audit' && (
                 <div style={{ padding: '0 24px' }} className="fade-in">
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 18 }}>
-                        <AuditTimeline />
+                        <AuditTimeline auditEvents={auditEvents} />
                         <PIIAccessLog />
                     </div>
                 </div>
@@ -1132,7 +1172,7 @@ const SecurityComplianceTab = () => {
                     <div className="card" style={{ padding: 20, marginTop: 18 }}>
                         <SectionHeader icon={Shield} title="Superuser Role Summary" iconColor="#63d7ff" />
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 14 }}>
-                            {(SUPERUSER_SAMPLE.length > 0 ? SUPERUSER_SAMPLE.map(s => ({ role: s.user, sessions: 1, queries_24h: 0, last_seen: s.ts, critical: s.risk === 'critical' ? 1 : 0 })) : []).map(r => (
+                            {(Array.isArray(SUPERUSER_SAMPLE) && SUPERUSER_SAMPLE.length > 0 ? SUPERUSER_SAMPLE.map(s => ({ role: s.user || 'unknown', sessions: 1, queries_24h: 0, last_seen: s.ts || 'N/A', critical: s.risk === 'critical' ? 1 : 0 })) : []).map(r => (
                                 <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? '1px solid rgba(255,70,90,0.3)' : `1px solid ${THEME.border}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                         <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{r.role}</span>

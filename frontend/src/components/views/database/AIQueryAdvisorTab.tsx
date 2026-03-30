@@ -37,7 +37,14 @@ const getComplexityColor = (score) => {
     return THEME.danger;
 };
 
-const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
+const fmt = (n) => {
+    if (n === null || n === undefined) return '—';
+    try {
+        return Number(n).toLocaleString();
+    } catch {
+        return '—';
+    }
+};
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AI QUERY ADVISOR TAB
@@ -58,10 +65,12 @@ export default function AIQueryAdvisorTab() {
         setLoading(true);
         try {
             const data = await fetchData('/api/ai-query/suggestions');
-            setSuggestions(data?.suggestions || []);
+            const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
+            setSuggestions(suggestions);
             setError(null);
         } catch (e) {
-            setError(e.message);
+            setSuggestions([]);
+            setError(e?.message || 'Failed to fetch suggestions');
         } finally {
             setLoading(false);
         }
@@ -76,10 +85,16 @@ export default function AIQueryAdvisorTab() {
         setAnalyzing(true);
         try {
             const result = await postData('/api/ai-query/analyze', { query: sqlQuery });
-            setAnalysis(result);
-            setError(null);
+            if (result && typeof result === 'object') {
+                setAnalysis(result);
+                setError(null);
+            } else {
+                setAnalysis(null);
+                setError('Invalid analysis response');
+            }
         } catch (e) {
-            setError(e.message);
+            setAnalysis(null);
+            setError(e?.message || 'Failed to analyze query');
         } finally {
             setAnalyzing(false);
         }
@@ -94,10 +109,12 @@ export default function AIQueryAdvisorTab() {
         setLoading(true);
         try {
             const data = await fetchData(`/api/ai-query/indexes?table=${encodeURIComponent(selectedTable)}`);
-            setIndexRecs(data?.recommendations || []);
+            const recommendations = Array.isArray(data?.recommendations) ? data.recommendations : [];
+            setIndexRecs(recommendations);
             setError(null);
         } catch (e) {
-            setError(e.message);
+            setIndexRecs([]);
+            setError(e?.message || 'Failed to fetch recommendations');
         } finally {
             setLoading(false);
         }
@@ -159,7 +176,7 @@ export default function AIQueryAdvisorTab() {
             </div>
 
             {/* Analysis Results */}
-            {analysis && (
+            {analysis && typeof analysis === 'object' && (
                 <div className="aq-card" style={{ marginBottom:20 }}>
                     <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:20 }}>
                         <Zap size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
@@ -169,31 +186,31 @@ export default function AIQueryAdvisorTab() {
                     {/* Complexity Score */}
                     <div style={{ marginBottom:20 }}>
                         <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:8 }}>
-                            Complexity Score: <span style={{ color:getComplexityColor(analysis.complexityScore) }}>{analysis.complexityScore}/100</span>
+                            Complexity Score: <span style={{ color:getComplexityColor(analysis.complexityScore || 0) }}>{analysis.complexityScore || 0}/100</span>
                         </div>
                         <div className="aq-gauge">
                             <div className="aq-gauge-fill" style={{
-                                width:`${analysis.complexityScore}%`,
-                                background:getComplexityColor(analysis.complexityScore)
+                                width:`${Math.min(analysis.complexityScore || 0, 100)}%`,
+                                background:getComplexityColor(analysis.complexityScore || 0)
                             }} />
                         </div>
                     </div>
 
                     {/* Optimization Suggestions */}
-                    {analysis.suggestions && analysis.suggestions.length > 0 && (
+                    {Array.isArray(analysis.suggestions) && analysis.suggestions.length > 0 && (
                         <div style={{ marginBottom:20 }}>
                             <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:12 }}>
                                 <Lightbulb size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
                                 Optimization Suggestions
                             </div>
                             {analysis.suggestions.map((sug, i) => (
-                                <div key={i} className={`aq-suggestion-card aq-severity-${sug.severity}`}>
+                                <div key={i} className={`aq-suggestion-card aq-severity-${sug?.severity || 'low'}`}>
                                     <div style={{ marginBottom:6 }}>
-                                        <span className={`aq-badge aq-badge-${sug.severity}`}>{sug.severity.toUpperCase()}</span>
-                                        <span style={{ color:THEME.textMain, fontWeight:700, fontSize:13 }}>{sug.title}</span>
+                                        <span className={`aq-badge aq-badge-${sug?.severity || 'low'}`}>{(sug?.severity || 'low').toUpperCase()}</span>
+                                        <span style={{ color:THEME.textMain, fontWeight:700, fontSize:13 }}>{sug?.title || 'Suggestion'}</span>
                                     </div>
-                                    <div style={{ color:THEME.textDim, fontSize:12 }}>{sug.description}</div>
-                                    {sug.recommendation && (
+                                    <div style={{ color:THEME.textDim, fontSize:12 }}>{sug?.description || ''}</div>
+                                    {sug?.recommendation && (
                                         <div style={{ marginTop:8, padding:8, background:`${THEME.bg}40`, borderRadius:4, fontSize:12, color:THEME.textMuted }}>
                                             <strong>Recommendation:</strong> {sug.recommendation}
                                         </div>
@@ -204,7 +221,7 @@ export default function AIQueryAdvisorTab() {
                     )}
 
                     {/* Anti-patterns */}
-                    {analysis.antiPatterns && analysis.antiPatterns.length > 0 && (
+                    {Array.isArray(analysis.antiPatterns) && analysis.antiPatterns.length > 0 && (
                         <div>
                             <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:12 }}>
                                 <AlertTriangle size={14} style={{ display:'inline-block', marginRight:6, verticalAlign:'middle' }} />
@@ -220,7 +237,7 @@ export default function AIQueryAdvisorTab() {
                                     fontSize:12,
                                     color:THEME.warning
                                 }}>
-                                    <strong>{ap.pattern}</strong> - {ap.description}
+                                    <strong>{ap?.pattern || 'Pattern'}</strong> - {ap?.description || ''}
                                 </div>
                             ))}
                         </div>
@@ -242,18 +259,18 @@ export default function AIQueryAdvisorTab() {
                     {loading ? 'Discovering...' : 'Discover Queries'}
                 </button>
 
-                {suggestions.length > 0 && (
+                {Array.isArray(suggestions) && suggestions.length > 0 && (
                     <div style={{ marginTop:16 }}>
                         {suggestions.map((sug, i) => (
                             <div key={i} className="aq-suggestion-card aq-severity-high">
                                 <div style={{ color:THEME.textMain, fontWeight:700, fontSize:13, marginBottom:6 }}>
-                                    {sug.query.substring(0, 60)}...
+                                    {(sug?.query || '').substring(0, 60)}...
                                 </div>
                                 <div style={{ fontSize:12, color:THEME.textDim, marginBottom:6 }}>
-                                    Avg Duration: {fmt(sug.avgDuration)}ms | Calls: {fmt(sug.calls)}
+                                    Avg Duration: {fmt(sug?.avgDuration)}ms | Calls: {fmt(sug?.calls)}
                                 </div>
                                 <div style={{ fontSize:11, color:THEME.textMuted }}>
-                                    Suggestion: {sug.suggestion}
+                                    Suggestion: {sug?.suggestion || ''}
                                 </div>
                             </div>
                         ))}
@@ -289,7 +306,7 @@ export default function AIQueryAdvisorTab() {
                     Get Recommendations
                 </button>
 
-                {indexRecs.length > 0 && (
+                {Array.isArray(indexRecs) && indexRecs.length > 0 && (
                     <div>
                         {indexRecs.map((rec, i) => (
                             <div key={i} style={{
@@ -300,11 +317,11 @@ export default function AIQueryAdvisorTab() {
                                 borderLeft:`4px solid ${THEME.success}`
                             }}>
                                 <div style={{ color:THEME.textMain, fontWeight:700, fontSize:12, marginBottom:6, fontFamily:'monospace' }}>
-                                    {rec.indexName}
+                                    {rec?.indexName || 'Index'}
                                 </div>
                                 <div style={{ fontSize:11, color:THEME.textDim }}>
-                                    <strong>Columns:</strong> {rec.columns.join(', ')}<br/>
-                                    <strong>Expected Impact:</strong> {rec.expectedImprovementPercent}% faster
+                                    <strong>Columns:</strong> {Array.isArray(rec?.columns) ? rec.columns.join(', ') : '—'}<br/>
+                                    <strong>Expected Impact:</strong> {rec?.expectedImprovementPercent || 0}% faster
                                 </div>
                             </div>
                         ))}

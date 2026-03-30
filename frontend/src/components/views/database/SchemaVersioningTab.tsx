@@ -757,8 +757,12 @@ const DependencyGraph = ({ data }) => {
 
     const positions = useMemo(() => {
         const nodeMap = {};
-        data.nodes.forEach((node, i) => {
-            nodeMap[node.id] = { x: 100 + (i % 3) * 180, y: 80 + Math.floor(i / 3) * 100, ...node };
+        const nodes = Array.isArray(data?.nodes) ? data.nodes : [];
+        if (nodes.length === 0) return nodeMap;
+        nodes.forEach((node, i) => {
+            if (node && node.id) {
+                nodeMap[node.id] = { x: 100 + (i % 3) * 180, y: 80 + Math.floor(i / 3) * 100, ...node };
+            }
         });
         return nodeMap;
     }, [data]);
@@ -776,29 +780,35 @@ const DependencyGraph = ({ data }) => {
                     </filter>
                 </defs>
                 <g opacity="0.5">
-                    {data.edges.map((edge, i) => {
-                        const from = positions[edge.from];
-                        const to = positions[edge.to];
-                        if (!from || !to) return null;
-                        const dx = to.x - from.x, dy = to.y - from.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        const ox = (dx / dist) * 35, oy = (dy / dist) * 35;
-                        return (
-                            <line key={i}
-                                  x1={from.x + ox} y1={from.y + oy}
-                                  x2={to.x - ox} y2={to.y - oy}
-                                  stroke={THEME.grid} strokeWidth="1.5"
-                                  markerEnd="url(#sv-arrowhead)"
-                            />
-                        );
-                    })}
+                    {(() => {
+                        const edges = Array.isArray(data?.edges) ? data.edges : [];
+                        return edges.map((edge, i) => {
+                            if (!edge) return null;
+                            const from = positions[edge.from];
+                            const to = positions[edge.to];
+                            if (!from || !to) return null;
+                            const dx = to.x - from.x, dy = to.y - from.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist === 0) return null;
+                            const ox = (dx / dist) * 35, oy = (dy / dist) * 35;
+                            return (
+                                <line key={i}
+                                      x1={from.x + ox} y1={from.y + oy}
+                                      x2={to.x - ox} y2={to.y - oy}
+                                      stroke={THEME.grid} strokeWidth="1.5"
+                                      markerEnd="url(#sv-arrowhead)"
+                                />
+                            );
+                        });
+                    })()}
                 </g>
-                {Object.values(positions).map((node) => {
+                {Object.values(positions).map((node: any) => {
+                    if (!node || !node.id) return null;
                     const isSelected = node.id === selectedNode;
                     const isHov = node.id === hoveredNode;
                     const scale = isSelected || isHov ? 1.08 : 1;
-                    const tx = node.x * (1 - scale);
-                    const ty = node.y * (1 - scale);
+                    const tx = (node.x || 0) * (1 - scale);
+                    const ty = (node.y || 0) * (1 - scale);
                     const nodeColor = getNodeColor(node.type);
                     return (
                         <g key={node.id} className="sv-dep-node"
@@ -808,20 +818,20 @@ const DependencyGraph = ({ data }) => {
                            transform={`translate(${tx}, ${ty}) scale(${scale})`}
                            filter={isSelected ? 'url(#sv-glow)' : ''}
                         >
-                            <circle cx={node.x} cy={node.y} r={isSelected ? 35 : 30}
+                            <circle cx={node.x || 0} cy={node.y || 0} r={isSelected ? 35 : 30}
                                     fill="rgba(20,20,35,.9)"
                                     stroke={nodeColor}
                                     strokeWidth={isSelected ? 2.5 : 1.5}
                                     opacity={isSelected ? 1 : 0.9}
                             />
-                            <text x={node.x} y={node.y - 2} textAnchor="middle" fill="#f1f5f9" fontSize="10" fontWeight="700" fontFamily="inherit">
-                                {node.id.length > 12 ? node.id.slice(0, 10) + '…' : node.id}
+                            <text x={node.x || 0} y={(node.y || 0) - 2} textAnchor="middle" fill="#f1f5f9" fontSize="10" fontWeight="700" fontFamily="inherit">
+                                {String(node.id || 'unknown').length > 12 ? String(node.id || '').slice(0, 10) + '…' : String(node.id || 'unknown')}
                             </text>
-                            <text x={node.x} y={node.y + 11} textAnchor="middle" fill={THEME.textMuted} fontSize="9" fontFamily="inherit">{node.type}</text>
-                            {node.connections > 0 && (
+                            <text x={node.x || 0} y={(node.y || 0) + 11} textAnchor="middle" fill={THEME.textMuted} fontSize="9" fontFamily="inherit">{node.type || 'unknown'}</text>
+                            {(node.connections || 0) > 0 && (
                                 <g>
-                                    <circle cx={node.x + 20} cy={node.y - 20} r="10" fill={nodeColor} opacity="0.85" />
-                                    <text x={node.x + 20} y={node.y - 17} textAnchor="middle" fill="white" fontSize="10" fontWeight="700">{node.connections}</text>
+                                    <circle cx={(node.x || 0) + 20} cy={(node.y || 0) - 20} r="10" fill={nodeColor} opacity="0.85" />
+                                    <text x={(node.x || 0) + 20} y={(node.y || 0) - 17} textAnchor="middle" fill="white" fontSize="10" fontWeight="700">{node.connections || 0}</text>
                                 </g>
                             )}
                         </g>
@@ -840,11 +850,11 @@ const DependencyGraph = ({ data }) => {
                 ))}
             </div>
 
-            {selectedNode && (
-                <div style={{ position: 'absolute', bottom: 12, left: 12, background: THEME.surface, border: `2px solid ${getNodeColor(positions[selectedNode].type)}`, borderRadius: 10, padding: '12px 16px', minWidth: 200, backdropFilter: 'blur(8px)' }}>
+            {selectedNode && positions[selectedNode] && (
+                <div style={{ position: 'absolute', bottom: 12, left: 12, background: THEME.surface, border: `2px solid ${getNodeColor(positions[selectedNode]?.type)}`, borderRadius: 10, padding: '12px 16px', minWidth: 200, backdropFilter: 'blur(8px)' }}>
                     <div className="sv-mono" style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>{selectedNode}</div>
-                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 3 }}>Type: <span style={{ color: THEME.primary }}>{positions[selectedNode].type}</span></div>
-                    <div style={{ fontSize: 10, color: THEME.textDim }}>Outgoing: <span style={{ color: THEME.primary }}>{positions[selectedNode].connections}</span></div>
+                    <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 3 }}>Type: <span style={{ color: THEME.primary }}>{positions[selectedNode]?.type || 'unknown'}</span></div>
+                    <div style={{ fontSize: 10, color: THEME.textDim }}>Outgoing: <span style={{ color: THEME.primary }}>{positions[selectedNode]?.connections || 0}</span></div>
                 </div>
             )}
         </div>
@@ -875,11 +885,26 @@ const SchemaVersioningTab = () => {
         const loadMigrations = async () => {
             try {
                 const data = await fetchData('/api/schema/migrations');
-                setMigrations(data.migrations || []);
-                setPendingMigrations(data.pending || []);
-                if (data.message) setSchemaMessage(data.message);
+                // Validate API response is an object with expected structure
+                if (!data || typeof data !== 'object') {
+                    console.error('Invalid API response:', data);
+                    setMigrations([]);
+                    setPendingMigrations([]);
+                    setSchemaMessage('Invalid response from server.');
+                    return;
+                }
+                // Ensure migrations and pending are arrays
+                const safeData = Array.isArray(data.migrations) ? data.migrations : [];
+                const safePending = Array.isArray(data.pending) ? data.pending : [];
+                setMigrations(safeData);
+                setPendingMigrations(safePending);
+                if (data.message && typeof data.message === 'string') {
+                    setSchemaMessage(data.message);
+                }
             } catch (err) {
                 console.error('Failed to load migrations:', err);
+                setMigrations([]);
+                setPendingMigrations([]);
                 setSchemaMessage('Failed to load schema migrations.');
             }
         };
@@ -891,21 +916,34 @@ const SchemaVersioningTab = () => {
 
     const allTags = useMemo(() => {
         const tags = new Set();
-        [...migrations, ...pendingMigrations].forEach(m => m.tags?.forEach(t => tags.add(t)));
+        [...migrations, ...pendingMigrations].forEach(m => {
+            if (m && Array.isArray(m.tags)) {
+                m.tags.forEach(t => {
+                    if (t) tags.add(t);
+                });
+            }
+        });
         return Array.from(tags);
     }, [migrations, pendingMigrations]);
 
     const filteredMigrations = useMemo(() => {
         let filtered = [...migrations, ...pendingMigrations];
         if (debouncedSearch) {
-            filtered = filtered.filter(m =>
-                m.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                m.version.includes(debouncedSearch) ||
-                m.author.toLowerCase().includes(debouncedSearch.toLowerCase())
-            );
+            filtered = filtered.filter(m => {
+                if (!m) return false;
+                const name = (m.name && typeof m.name === 'string') ? m.name.toLowerCase() : '';
+                const version = (m.version && typeof m.version === 'string') ? m.version : '';
+                const author = (m.author && typeof m.author === 'string') ? m.author.toLowerCase() : '';
+                return name.includes(debouncedSearch.toLowerCase()) ||
+                       version.includes(debouncedSearch) ||
+                       author.includes(debouncedSearch.toLowerCase());
+            });
         }
         if (filterTags.length > 0) {
-            filtered = filtered.filter(m => m.tags?.some(t => filterTags.includes(t)));
+            filtered = filtered.filter(m => {
+                if (!m || !Array.isArray(m.tags)) return false;
+                return m.tags.some(t => filterTags.includes(t));
+            });
         }
         return filtered;
     }, [debouncedSearch, filterTags, migrations, pendingMigrations]);
@@ -923,20 +961,42 @@ const SchemaVersioningTab = () => {
     }, [setFavorites]);
 
     const handleExportSchema = useCallback(() => {
-        const blob = new Blob(
-            [JSON.stringify({ migrations: MIGRATIONS, diff: SCHEMA_DIFF }, null, 2)],
-            { type: 'application/json' }
-        );
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `schema_export_${new Date().toISOString()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }, []);
+        try {
+            const blob = new Blob(
+                [JSON.stringify({ migrations: migrations || [], pending: pendingMigrations || [], diff: SCHEMA_DIFF || [] }, null, 2)],
+                { type: 'application/json' }
+            );
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `schema_export_${new Date().toISOString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Failed to export schema:', err);
+            setSchemaMessage('Failed to export schema.');
+        }
+    }, [migrations, pendingMigrations]);
 
-    const pendingIds = useMemo(() => new Set(PENDING_MIGRATIONS.map(p => p.id)), []);
-    const appliedIds = useMemo(() => new Set(MIGRATIONS.map(m => m.id)), []);
+    const pendingIds = useMemo(() => {
+        const ids = new Set();
+        if (Array.isArray(pendingMigrations)) {
+            pendingMigrations.forEach(p => {
+                if (p && p.id) ids.add(p.id);
+            });
+        }
+        return ids;
+    }, [pendingMigrations]);
+
+    const appliedIds = useMemo(() => {
+        const ids = new Set();
+        if (Array.isArray(migrations)) {
+            migrations.forEach(m => {
+                if (m && m.id) ids.add(m.id);
+            });
+        }
+        return ids;
+    }, [migrations]);
 
     const TabButton = ({ id, icon: Icon, label }) => (
         <button
@@ -973,7 +1033,7 @@ const SchemaVersioningTab = () => {
                             <span style={{ color: THEME.textDim }}>·</span>
                             <span style={{ color: '#34d399' }}>✓ Synced</span>
                             <span style={{ color: THEME.textDim }}>·</span>
-                            <span>{MIGRATIONS.length} applied, {PENDING_MIGRATIONS.length} pending</span>
+                            <span>{migrations.length} applied, {pendingMigrations.length} pending</span>
                         </div>
                     </div>
                     {isConnected && (
@@ -998,8 +1058,8 @@ const SchemaVersioningTab = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                 <MetricCard icon={CheckCircle} label="Success Rate" value="98.5%" sub="Last 90 days" accent="#10b981" delay={0} />
                 <MetricCard icon={Zap}          label="Avg Duration" value="2.3s"  sub="Per migration"  accent="#f59e0b" warn delay={60} />
-                <MetricCard icon={AlertTriangle} label="Pending Review" value={PENDING_MIGRATIONS.length} sub="1 high-risk" accent="#f59e0b" warn={PENDING_MIGRATIONS.length > 0} delay={120} />
-                <MetricCard icon={Layers} label="Schema Objects" value={DEPENDENCY_DATA.nodes.length} sub={`${DEPENDENCY_DATA.edges.length} dependencies`} accent="#6366f1" delay={180} />
+                <MetricCard icon={AlertTriangle} label="Pending Review" value={pendingMigrations.length} sub={pendingMigrations.length > 0 ? '1 high-risk' : 'None'} accent="#f59e0b" warn={pendingMigrations.length > 0} delay={120} />
+                <MetricCard icon={Layers} label="Schema Objects" value={DEPENDENCY_DATA?.nodes?.length || 0} sub={`${DEPENDENCY_DATA?.edges?.length || 0} dependencies`} accent="#6366f1" delay={180} />
             </div>
 
             {/* ── View tabs ── */}
@@ -1146,12 +1206,12 @@ const SchemaVersioningTab = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, fontSize: 13, fontWeight: 800, color: THEME.textMain }}>
                                         <Star size={14} color="#f59e0b" fill="#f59e0b" /> Starred ({favorites.length})
                                     </div>
-                                    {[...MIGRATIONS, ...PENDING_MIGRATIONS]
-                                        .filter(m => favorites.includes(m.id))
+                                    {[...(migrations || []), ...(pendingMigrations || [])]
+                                        .filter(m => m && favorites.includes(m.id))
                                         .map(m => (
-                                            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${THEME.grid}`, fontSize: 12 }}>
-                                                <span className="sv-mono" style={{ color: THEME.primary }}>{m.name}</span>
-                                                <span style={{ color: THEME.textDim, fontSize: 11 }}>{m.version}</span>
+                                            m && <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${THEME.grid}`, fontSize: 12 }}>
+                                                <span className="sv-mono" style={{ color: THEME.primary }}>{m.name || 'Unknown'}</span>
+                                                <span style={{ color: THEME.textDim, fontSize: 11 }}>{m.version || 'N/A'}</span>
                                             </div>
                                         ))
                                     }
@@ -1181,7 +1241,7 @@ const SchemaVersioningTab = () => {
                             <div className="sv-card">
                                 <div style={{ fontSize: 13, fontWeight: 800, color: THEME.textMain, marginBottom: 14 }}>Recent Activity</div>
                                 <ResponsiveContainer width="100%" height={140}>
-                                    <AreaChart data={MIGRATION_STATS}>
+                                    <AreaChart data={Array.isArray(MIGRATION_STATS) ? MIGRATION_STATS : []}>
                                         <defs>
                                             <linearGradient id="sv-colorSuccess" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -1253,54 +1313,72 @@ const SchemaVersioningTab = () => {
                     <div style={{ padding: 24, overflowY: 'auto' }}>
                         {/* Summary */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-                            {[
-                                { label: 'Added',   count: SCHEMA_DIFF.filter(d => d.type === 'added').length,    color: '#10b981' },
-                                { label: 'Modified', count: SCHEMA_DIFF.filter(d => d.type === 'modified').length, color: '#f59e0b' },
-                                { label: 'Removed', count: SCHEMA_DIFF.filter(d => d.type === 'removed').length,  color: '#ef4444' },
-                                { label: 'Total Changes', count: SCHEMA_DIFF.reduce((s, d) => s + (d.changes?.length || 0), 0), color: '#6366f1' },
-                            ].map(({ label, count, color }) => (
-                                <div key={label} className="sv-metric-card" style={{ borderColor: `${color}25`, animationDelay: '0ms' }}>
-                                    <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1 }}>{count}</div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
-                                </div>
-                            ))}
+                            {(() => {
+                                const safeDiff = Array.isArray(SCHEMA_DIFF) ? SCHEMA_DIFF : [];
+                                return [
+                                    { label: 'Added',   count: safeDiff.filter(d => d && d.type === 'added').length,    color: '#10b981' },
+                                    { label: 'Modified', count: safeDiff.filter(d => d && d.type === 'modified').length, color: '#f59e0b' },
+                                    { label: 'Removed', count: safeDiff.filter(d => d && d.type === 'removed').length,  color: '#ef4444' },
+                                    { label: 'Total Changes', count: safeDiff.reduce((s, d) => s + (Array.isArray(d?.changes) ? d.changes.length : 0), 0), color: '#6366f1' },
+                                ].map(({ label, count, color }) => (
+                                    <div key={label} className="sv-metric-card" style={{ borderColor: `${color}25`, animationDelay: '0ms' }}>
+                                        <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1 }}>{count}</div>
+                                        <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                                    </div>
+                                ));
+                            })()}
                         </div>
 
                         {/* ★ NEW: SQL / DDL diff mode */}
                         {diffSqlMode && (
                             <div style={{ marginBottom: 28, background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
                                 <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>DDL Diff — {envDiff.source} → {envDiff.target}</span>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>DDL Diff — {envDiff?.source || 'source'} → {envDiff?.target || 'target'}</span>
                                     <span style={{ fontSize: 11, color: THEME.textDim }}>git-style unified diff</span>
                                 </div>
                                 <pre style={{ margin: 0, padding: '16px', overflowX: 'auto', fontSize: 11.5, lineHeight: 1.7, fontFamily: THEME.fontMono, color: THEME.textMuted }}>
-                                    {SCHEMA_DIFF.flatMap(item => {
-                                        const lines = [];
-                                        lines.push(`--- ${envDiff.source}/${item.schema}.${item.table}`);
-                                        lines.push(`+++ ${envDiff.target}/${item.schema}.${item.table}`);
-                                        (item.changes || []).forEach(c => {
-                                            if (c.status === 'added')   lines.push(`+ ADD COLUMN ${c.field} ${c.type}${c.nullable?' NULL':' NOT NULL'}${c.default?` DEFAULT ${c.default}`:''};`);
-                                            if (c.status === 'removed') lines.push(`- DROP COLUMN ${c.field}; -- was ${c.type}`);
-                                            if (c.status === 'changed') lines.push(`~ ALTER COLUMN ${c.field} TYPE ${c.to}; -- was ${c.from}`);
-                                        });
-                                        (item.indexes || []).forEach(idx => {
-                                            if (idx.status === 'added') lines.push(`+ CREATE${idx.unique?' UNIQUE':''} INDEX ${idx.name} ON ${item.schema}.${item.table} (${idx.columns.join(', ')});`);
-                                        });
-                                        return lines;
-                                    }).map((line, i) => (
-                                        <span key={i} style={{
-                                            display: 'block',
-                                            background: line.startsWith('+') ? 'rgba(16,185,129,0.08)' : line.startsWith('-') ? 'rgba(239,68,68,0.08)' : line.startsWith('~') ? 'rgba(245,158,11,0.07)' : 'transparent',
-                                            color: line.startsWith('+') ? '#34d399' : line.startsWith('-') ? '#f87171' : line.startsWith('~') ? '#fbbf24' : line.startsWith('---') || line.startsWith('+++') ? '#a5b4fc' : THEME.textMuted,
-                                            paddingLeft: 8,
-                                        }}>{line}</span>
-                                    ))}
+                                    {(() => {
+                                        const safeDiff = Array.isArray(SCHEMA_DIFF) ? SCHEMA_DIFF : [];
+                                        return safeDiff.flatMap(item => {
+                                            if (!item) return [];
+                                            const lines = [];
+                                            lines.push(`--- ${envDiff?.source || 'source'}/${item.schema || 'unknown'}.${item.table || 'unknown'}`);
+                                            lines.push(`+++ ${envDiff?.target || 'target'}/${item.schema || 'unknown'}.${item.table || 'unknown'}`);
+                                            if (Array.isArray(item.changes)) {
+                                                item.changes.forEach(c => {
+                                                    if (!c) return;
+                                                    if (c.status === 'added')   lines.push(`+ ADD COLUMN ${c.field || 'column'} ${c.type || 'type'}${c.nullable?' NULL':' NOT NULL'}${c.default?` DEFAULT ${c.default}`:''};`);
+                                                    if (c.status === 'removed') lines.push(`- DROP COLUMN ${c.field || 'column'}; -- was ${c.type || 'type'}`);
+                                                    if (c.status === 'changed') lines.push(`~ ALTER COLUMN ${c.field || 'column'} TYPE ${c.to || 'type'}; -- was ${c.from || 'type'}`);
+                                                });
+                                            }
+                                            if (Array.isArray(item.indexes)) {
+                                                item.indexes.forEach(idx => {
+                                                    if (idx && idx.status === 'added' && Array.isArray(idx.columns)) {
+                                                        lines.push(`+ CREATE${idx.unique?' UNIQUE':''} INDEX ${idx.name || 'index'} ON ${item.schema || 'schema'}.${item.table || 'table'} (${idx.columns.join(', ')});`);
+                                                    }
+                                                });
+                                            }
+                                            return lines;
+                                        }).map((line, i) => (
+                                            <span key={i} style={{
+                                                display: 'block',
+                                                background: line.startsWith('+') ? 'rgba(16,185,129,0.08)' : line.startsWith('-') ? 'rgba(239,68,68,0.08)' : line.startsWith('~') ? 'rgba(245,158,11,0.07)' : 'transparent',
+                                                color: line.startsWith('+') ? '#34d399' : line.startsWith('-') ? '#f87171' : line.startsWith('~') ? '#fbbf24' : line.startsWith('---') || line.startsWith('+++') ? '#a5b4fc' : THEME.textMuted,
+                                                paddingLeft: 8,
+                                            }}>{line}</span>
+                                        ));
+                                    })()}
                                 </pre>
                             </div>
                         )}
 
                         {/* Diff items */}
-                        {SCHEMA_DIFF.map((item, i) => (
+                        {(() => {
+                            const safeDiff = Array.isArray(SCHEMA_DIFF) ? SCHEMA_DIFF : [];
+                            return safeDiff.map((item, i) => {
+                                if (!item) return null;
+                                return (
                             <div key={i} style={{ marginBottom: 28 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, paddingBottom: 10, borderBottom: `1px solid ${THEME.grid}` }}>
                                     {item.type === 'added'    && <CheckCircle size={16} color="#10b981" />}
@@ -1316,11 +1394,13 @@ const SchemaVersioningTab = () => {
                                 </div>
 
                                 {/* Columns */}
-                                {item.changes?.length > 0 && (
+                                {Array.isArray(item.changes) && item.changes.length > 0 && (
                                     <div style={{ marginBottom: 14 }}>
                                         <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Columns</div>
                                         <div style={{ background: THEME.surfaceHover, borderRadius: 10, border: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
-                                            {item.changes.map((c, j) => (
+                                            {item.changes.map((c, j) => {
+                                                if (!c) return null;
+                                                return (
                                                 <div key={j} style={{
                                                     display: 'grid', gridTemplateColumns: '180px 1fr', gap: 16, padding: '10px 14px',
                                                     borderBottom: j < item.changes.length - 1 ? `1px solid ${THEME.grid}` : 'none',
@@ -1348,17 +1428,20 @@ const SchemaVersioningTab = () => {
                                                         </span>
                                                     )}
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )}
 
                                 {/* Indexes */}
-                                {item.indexes?.length > 0 && (
+                                {Array.isArray(item.indexes) && item.indexes.length > 0 && (
                                     <div style={{ marginBottom: 14 }}>
                                         <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Indexes</div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                                            {item.indexes.map((idx, j) => (
+                                            {item.indexes.map((idx, j) => {
+                                                if (!idx || !Array.isArray(idx.columns)) return null;
+                                                return (
                                                 <div key={j} className="sv-mono" style={{ padding: '8px 12px', background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 8, fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <span style={{ color: THEME.textMain }}>
                                                         {idx.status === 'added' && <span style={{ color: '#34d399', marginRight: 6 }}>+</span>}
@@ -1370,33 +1453,39 @@ const SchemaVersioningTab = () => {
                                                         {idx.primary && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: 'rgba(16,185,129,.15)', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>PRIMARY</span>}
                                                     </div>
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )}
 
                                 {/* Constraints */}
-                                {item.constraints?.length > 0 && (
+                                {Array.isArray(item.constraints) && item.constraints.length > 0 && (
                                     <div>
                                         <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Constraints</div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                                            {item.constraints.map((con, j) => (
-                                                <div key={j} className="sv-mono" style={{ padding: '9px 12px', background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 8, fontSize: 11 }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                                        <span style={{ color: THEME.textMain }}>
-                                                            {con.status === 'added' && <span style={{ color: '#34d399', marginRight: 6 }}>+</span>}
-                                                            {con.name}
-                                                        </span>
-                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{con.type.replace('_', ' ')}</span>
+                                            {item.constraints.map((con, j) => {
+                                                if (!con) return null;
+                                                return (
+                                                    <div key={j} className="sv-mono" style={{ padding: '9px 12px', background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 8, fontSize: 11 }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                                            <span style={{ color: THEME.textMain }}>
+                                                                {con.status === 'added' && <span style={{ color: '#34d399', marginRight: 6 }}>+</span>}
+                                                                {con.name || 'constraint'}
+                                                            </span>
+                                                            <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{(con.type || '').replace('_', ' ')}</span>
+                                                        </div>
+                                                        <div style={{ fontSize: 10, color: THEME.textDim, fontStyle: 'italic' }}>{con.definition || 'No definition'}</div>
                                                     </div>
-                                                    <div style={{ fontSize: 10, color: THEME.textDim, fontStyle: 'italic' }}>{con.definition}</div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        ))}
+                                );
+                            });
+                        })()}
                     </div>
                 </div>
             )}
@@ -1444,11 +1533,15 @@ const SchemaVersioningTab = () => {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {DEPENDENCY_DATA.nodes.map(node => {
-                                    const deps = DEPENDENCY_DATA.edges.filter(e => e.from === node.id).length;
-                                    const dependents = DEPENDENCY_DATA.edges.filter(e => e.to === node.id).length;
-                                    const riskLevel = deps > 3 ? 'high' : deps > 1 ? 'medium' : 'low';
-                                    return (
+                                {(() => {
+                                    const nodes = Array.isArray(DEPENDENCY_DATA?.nodes) ? DEPENDENCY_DATA.nodes : [];
+                                    const edges = Array.isArray(DEPENDENCY_DATA?.edges) ? DEPENDENCY_DATA.edges : [];
+                                    return nodes.map(node => {
+                                        if (!node || !node.id) return null;
+                                        const deps = edges.filter(e => e && e.from === node.id).length;
+                                        const dependents = edges.filter(e => e && e.to === node.id).length;
+                                        const riskLevel = deps > 3 ? 'high' : deps > 1 ? 'medium' : 'low';
+                                        return (
                                         <tr key={node.id}
                                             style={{ borderBottom: `1px solid ${THEME.grid}`, transition: 'background .15s' }}
                                             onMouseEnter={e => e.currentTarget.style.background = THEME.surfaceHover}
@@ -1462,8 +1555,9 @@ const SchemaVersioningTab = () => {
                                             <td className="sv-mono" style={{ padding: '10px 14px', color: THEME.textDim }}>{dependents}</td>
                                             <td style={{ padding: '10px 14px' }}><RiskBadge risk={riskLevel} /></td>
                                         </tr>
-                                    );
-                                })}
+                                        );
+                                    });
+                                })()}
                                 </tbody>
                             </table>
                         </div>
@@ -1479,7 +1573,7 @@ const SchemaVersioningTab = () => {
                     <div className="sv-card">
                         <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Migration Success Rate (90d)</div>
                         <ResponsiveContainer width="100%" height={240}>
-                            <LineChart data={MIGRATION_STATS}>
+                            <LineChart data={Array.isArray(MIGRATION_STATS) ? MIGRATION_STATS : []}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
                                 <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
@@ -1519,7 +1613,7 @@ const SchemaVersioningTab = () => {
                     <div className="sv-card" style={{ gridColumn: 'span 2' }}>
                         <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Migration Volume by Month</div>
                         <ResponsiveContainer width="100%" height={240}>
-                            <BarChart data={MIGRATION_STATS}>
+                            <BarChart data={Array.isArray(MIGRATION_STATS) ? MIGRATION_STATS : []}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
                                 <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />

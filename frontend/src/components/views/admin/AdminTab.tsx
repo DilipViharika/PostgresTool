@@ -304,59 +304,86 @@ const RingGauge = ({ value, color, size = 80, strokeWidth = 6, label, sublabel }
 
 /* ── Sparkline ── */
 const MiniSparkline = ({ data, color, height = 28, width = 80, filled = false }) => {
-    if (!data || data.length < 2) return null;
-    const min = Math.min(...data), max = Math.max(...data);
-    const range = max - min || 1;
-    const pts = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4)}`).join(' ');
-    const lastPt = pts.split(' ').pop();
-    const lx = parseFloat(lastPt.split(',')[0]);
-    const ly = parseFloat(lastPt.split(',')[1]);
-    return (
-        <svg width={width} height={height} style={{ overflow: 'visible' }}>
-            {filled && (
-                <polygon
-                    points={`0,${height} ${pts} ${width},${height}`}
-                    fill={`${color}12`}
-                />
-            )}
-            <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
-                      style={{ filter: `drop-shadow(0 0 3px ${color}50)` }} />
-            <circle cx={lx} cy={ly} r={3} fill={color} style={{ filter: `drop-shadow(0 0 4px ${color})` }} />
-        </svg>
-    );
+    if (!Array.isArray(data) || data.length < 2) return null;
+    try {
+        const safeData = data.filter(v => typeof v === 'number' && !isNaN(v));
+        if (safeData.length < 2) return null;
+        const min = Math.min(...safeData), max = Math.max(...safeData);
+        const range = max - min || 1;
+        const pts = safeData.map((v, i) => `${(i / (safeData.length - 1)) * width},${height - ((v - min) / range) * (height - 4)}`).join(' ');
+        if (!pts) return null;
+        const lastPt = pts.split(' ').pop();
+        const lx = parseFloat(lastPt?.split(',')[0] || '0');
+        const ly = parseFloat(lastPt?.split(',')[1] || '0');
+        return (
+            <svg width={width} height={height} style={{ overflow: 'visible' }}>
+                {filled && (
+                    <polygon
+                        points={`0,${height} ${pts} ${width},${height}`}
+                        fill={`${color}12`}
+                    />
+                )}
+                <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
+                          style={{ filter: `drop-shadow(0 0 3px ${color}50)` }} />
+                <circle cx={lx} cy={ly} r={3} fill={color} style={{ filter: `drop-shadow(0 0 4px ${color})` }} />
+            </svg>
+        );
+    } catch {
+        return null;
+    }
 };
 
 /* ── TPS Gauge ── */
-const TPSIndicator = ({ value, history, color }) => (
+const TPSIndicator = ({ value, history, color }) => {
+    const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    const formattedValue = (() => {
+        try {
+            return safeValue.toLocaleString();
+        } catch {
+            return '0';
+        }
+    })();
+    const safeHistory = Array.isArray(history) ? history : [];
+    return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span style={{ fontSize: 22, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1 }}>{value.toLocaleString()}</span>
+            <span style={{ fontSize: 22, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1 }}>{formattedValue}</span>
             <span style={{ fontSize: 9, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.08em' }}>TPS</span>
         </div>
-        <MiniSparkline data={history} color={color} width={140} height={28} filled />
+        <MiniSparkline data={safeHistory} color={color} width={140} height={28} filled />
     </div>
-);
+    );
+};
 
 /* ── Stat Card ── */
-const StatCard = ({ label, value, icon: Icon, color, sub, spark, trend }) => (
+const StatCard = ({ label, value, icon: Icon, color, sub, spark, trend }) => {
+    const safeValue = (() => {
+        if (value === null || value === undefined) return '—';
+        if (typeof value === 'number') return value;
+        return value;
+    })();
+    const safeTrend = typeof trend === 'number' && !isNaN(trend) ? trend : null;
+    const safeSpark = Array.isArray(spark) ? spark : null;
+    return (
     <div className="adm-stat-card" style={{ '--card-color': color, padding: '16px 18px', borderRadius: 14, background: T.glass, border: `1px solid ${T.glassBorder}`, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: `${color}06`, filter: 'blur(20px)' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
             <div style={{ padding: 8, borderRadius: 9, background: `${color}14`, border: `1px solid ${color}20` }}>
                 <Icon size={14} color={color} />
             </div>
-            {trend != null && (
-                <span style={{ fontSize: 9, fontWeight: 700, color: trend > 0 ? T.success : T.danger, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    {trend > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />} {Math.abs(trend)}%
+            {safeTrend != null && (
+                <span style={{ fontSize: 9, fontWeight: 700, color: safeTrend > 0 ? T.success : T.danger, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {safeTrend > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />} {Math.abs(safeTrend)}%
                 </span>
             )}
         </div>
-        <div style={{ fontSize: 24, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1, marginBottom: 4 }}>{value}</div>
-        <div style={{ fontSize: 10, color: T.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: spark ? 8 : 0 }}>{label}</div>
-        {sub && <div style={{ fontSize: 10, color: T.textDim, marginBottom: spark ? 6 : 0 }}>{sub}</div>}
-        {spark && <MiniSparkline data={spark} color={color} width="100%" height={24} filled />}
+        <div style={{ fontSize: 24, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1, marginBottom: 4 }}>{safeValue}</div>
+        <div style={{ fontSize: 10, color: T.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: safeSpark ? 8 : 0 }}>{label}</div>
+        {sub && <div style={{ fontSize: 10, color: T.textDim, marginBottom: safeSpark ? 6 : 0 }}>{sub}</div>}
+        {safeSpark && <MiniSparkline data={safeSpark} color={color} width="100%" height={24} filled />}
     </div>
-);
+    );
+};
 
 /* ── Panel ── */
 const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, accent, className = '' }) => (
@@ -565,7 +592,8 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
 
     const getCurrent = (key) => { const f = currentSettings.find(s => s.name === key); return f ? `${f.setting}${f.unit || ''}` : '—'; };
     const toggleSel = (name) => { const n = new Set(selected); n.has(name) ? n.delete(name) : n.add(name); setSelected(n); };
-    const restartCount = recommendations.filter(r => selected.has(r.name) && r.impact === 'restart').length;
+    const safeRecommendations = Array.isArray(recommendations) ? recommendations : [];
+    const restartCount = safeRecommendations.filter(r => selected.has(r?.name) && r?.impact === 'restart').length;
 
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}>
@@ -692,9 +720,9 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             </div>
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: 11, color: T.textDim }}>{selected.size} of {recommendations.length} selected</span>
+                                <span style={{ fontSize: 11, color: T.textDim }}>{selected.size} of {safeRecommendations.length} selected</span>
                                 <div style={{ display: 'flex', gap: 6 }}>
-                                    <button onClick={() => setSelected(new Set(recommendations.map(r => r.name)))} style={{ fontSize: 10, padding: '4px 9px', borderRadius: 5, background: 'transparent', border: `1px solid ${T.grid}50`, color: T.textDim, cursor: 'pointer' }}>All</button>
+                                    <button onClick={() => setSelected(new Set(safeRecommendations.map(r => r?.name).filter(n => n)))} style={{ fontSize: 10, padding: '4px 9px', borderRadius: 5, background: 'transparent', border: `1px solid ${T.grid}50`, color: T.textDim, cursor: 'pointer' }}>All</button>
                                     <button onClick={() => setSelected(new Set())} style={{ fontSize: 10, padding: '4px 9px', borderRadius: 5, background: 'transparent', border: `1px solid ${T.grid}50`, color: T.textDim, cursor: 'pointer' }}>None</button>
                                 </div>
                             </div>
@@ -711,10 +739,10 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {recommendations.map(rec => {
-                                        const curr = getCurrent(rec.name);
-                                        const changed = curr.replace(/ /g,'') !== rec.val.replace(/ /g,'');
-                                        const isSel = selected.has(rec.name);
+                                    {safeRecommendations.map(rec => {
+                                        const curr = getCurrent(rec?.name || '');
+                                        const changed = (curr || '').replace(/ /g,'') !== (rec?.val || '').replace(/ /g,'');
+                                        const isSel = selected.has(rec?.name);
                                         return (
                                             <tr key={rec.name} onClick={() => toggleSel(rec.name)} style={{ borderTop: `1px solid ${T.grid}20`, background: isSel && changed ? `${T.success}04` : 'transparent', cursor: 'pointer', transition: 'background 0.15s' }}>
                                                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>
@@ -723,16 +751,16 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '10px 14px' }}>
-                                                    <div style={{ fontWeight: 600, color: T.textMain, fontFamily: T.fontMono, fontSize: 11 }}>{rec.name}</div>
-                                                    <div style={{ fontSize: 9, color: T.textDim }}>{rec.reason}</div>
+                                                    <div style={{ fontWeight: 600, color: T.textMain, fontFamily: T.fontMono, fontSize: 11 }}>{rec?.name || '—'}</div>
+                                                    <div style={{ fontSize: 9, color: T.textDim }}>{rec?.reason || ''}</div>
                                                 </td>
-                                                <td style={{ padding: '10px 14px', fontFamily: T.fontMono, color: T.textMuted, fontSize: 11 }}>{curr}</td>
+                                                <td style={{ padding: '10px 14px', fontFamily: T.fontMono, color: T.textMuted, fontSize: 11 }}>{curr || '—'}</td>
                                                 <td style={{ padding: '10px 14px', fontFamily: T.fontMono, fontWeight: 700, color: changed ? T.success : T.textDim, fontSize: 11 }}>
-                                                    {rec.val}{changed && <ArrowUpRight size={9} style={{ marginLeft: 3, display: 'inline', verticalAlign: 'middle' }} />}
+                                                    {rec?.val || '—'}{changed && <ArrowUpRight size={9} style={{ marginLeft: 3, display: 'inline', verticalAlign: 'middle' }} />}
                                                 </td>
                                                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: rec.impact === 'restart' ? `${T.warning}15` : `${T.success}10`, color: rec.impact === 'restart' ? T.warning : T.success, fontWeight: 700 }}>
-                                                            {rec.impact === 'restart' ? '⚡ restart' : '↺ reload'}
+                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: (rec?.impact === 'restart') ? `${T.warning}15` : `${T.success}10`, color: (rec?.impact === 'restart') ? T.warning : T.success, fontWeight: 700 }}>
+                                                            {(rec?.impact === 'restart') ? '⚡ restart' : '↺ reload'}
                                                         </span>
                                                 </td>
                                             </tr>
@@ -746,7 +774,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 <button onClick={() => setStep(1)} style={{ flex: 1, padding: '12px', background: 'transparent', border: `1px solid ${T.grid}50`, borderRadius: 10, color: T.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
                                     <CornerUpLeft size={13} /> Back
                                 </button>
-                                <button onClick={() => onApply(recommendations.filter(r => selected.has(r.name)))} disabled={!selected.size} style={{ flex: 2, padding: '12px', background: selected.size ? `linear-gradient(135deg, ${T.success}, ${T.teal})` : T.grid, border: 'none', borderRadius: 10, color: selected.size ? '#000' : T.textDim, fontWeight: 800, cursor: selected.size ? 'pointer' : 'not-allowed', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: T.fontBody, boxShadow: selected.size ? `0 4px 16px ${T.success}40` : 'none' }}>
+                                <button onClick={() => onApply(safeRecommendations.filter(r => selected.has(r?.name)))} disabled={!selected.size} style={{ flex: 2, padding: '12px', background: selected.size ? `linear-gradient(135deg, ${T.success}, ${T.teal})` : T.grid, border: 'none', borderRadius: 10, color: selected.size ? '#000' : T.textDim, fontWeight: 800, cursor: selected.size ? 'pointer' : 'not-allowed', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: T.fontBody, boxShadow: selected.size ? `0 4px 16px ${T.success}40` : 'none' }}>
                                     <Save size={14} /> Apply {selected.size} Recommendations
                                 </button>
                             </div>
@@ -847,8 +875,8 @@ const CacheView = ({ onClear }) => {
                         {/* Stats below ring */}
                         <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                             {[
-                                { label: 'Avg TTL',       val: c.avgTtl,       color: T.info    },
-                                { label: 'Last Cleared',  val: new Date(c.lastCleared).toLocaleDateString(), color: T.textMuted },
+                                { label: 'Avg TTL',       val: c?.avgTtl || '—',       color: T.info    },
+                                { label: 'Last Cleared',  val: c?.lastCleared ? new Date(c.lastCleared).toLocaleDateString() : '—', color: T.textMuted },
                             ].map(item => (
                                 <div key={item.label} style={{ padding: '9px 10px', background: T.surface, borderRadius: 8, border: `1px solid ${T.grid}40` }}>
                                     <div style={{ fontSize: 9, color: T.textDim, marginBottom: 3 }}>{item.label}</div>
@@ -874,17 +902,17 @@ const CacheView = ({ onClear }) => {
                     <div style={{ marginBottom: 18 }}>
                         <div style={{ fontSize: 9.5, color: T.textDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Composition</div>
                         <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', gap: 1 }}>
-                            {c.breakdown.map((b, i) => (
-                                <Tooltip key={i} content={`${b.label}: ${b.pct}%`}>
-                                    <div style={{ flex: b.pct, background: b.color, transition: 'flex 0.8s ease', minWidth: 4 }} />
+                            {Array.isArray(c?.breakdown) && c.breakdown.map((b, i) => (
+                                <Tooltip key={i} content={`${b?.label || 'Item'}: ${b?.pct || 0}%`}>
+                                    <div style={{ flex: (typeof b?.pct === 'number' ? b.pct : 0), background: b?.color || T.grid, transition: 'flex 0.8s ease', minWidth: 4 }} />
                                 </Tooltip>
                             ))}
                         </div>
                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
-                            {c.breakdown.map((b, i) => (
+                            {Array.isArray(c?.breakdown) && c.breakdown.map((b, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <div style={{ width: 8, height: 8, borderRadius: 2, background: b.color, flexShrink: 0 }} />
-                                    <span style={{ fontSize: 9, color: T.textDim }}>{b.label} ({b.pct}%)</span>
+                                    <div style={{ width: 8, height: 8, borderRadius: 2, background: b?.color || T.grid, flexShrink: 0 }} />
+                                    <span style={{ fontSize: 9, color: T.textDim }}>{b?.label || 'Item'} ({b?.pct || 0}%)</span>
                                 </div>
                             ))}
                         </div>
@@ -916,21 +944,21 @@ const CacheView = ({ onClear }) => {
             <Panel title="Hit Rate Over Time" icon={TrendingUp} accent={T.success}>
                 <div style={{ padding: '4px 0 12px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
-                        <span style={{ fontSize: 32, fontWeight: 900, color: T.success, fontFamily: T.fontMono, lineHeight: 1 }}>{c.hitRate}%</span>
+                        <span style={{ fontSize: 32, fontWeight: 900, color: T.success, fontFamily: T.fontMono, lineHeight: 1 }}>{(typeof c?.hitRate === 'number' ? c.hitRate : 0)}%</span>
                         <span style={{ fontSize: 11, color: T.success }}>↑ 2.1% vs yesterday</span>
                     </div>
                     <svg width="100%" height={60} style={{ overflow: 'visible' }}>
-                        {c.history.map((v, i) => {
+                        {Array.isArray(c?.history) && c.history.map((v, i) => {
                             const x = (i / (c.history.length - 1)) * 100;
-                            const y = 60 - ((v - 70) / 30) * 54;
+                            const y = 60 - (((typeof v === 'number' ? v : 70) - 70) / 30) * 54;
                             return (
-                                <Tooltip key={i} content={`${v.toFixed(1)}%`}>
-                                    <circle cx={`${x}%`} cy={y} r={4} fill={T.success} style={{ opacity: i === c.history.length - 1 ? 1 : 0.4, filter: `drop-shadow(0 0 4px ${T.success})`, cursor: 'pointer' }} />
+                                <Tooltip key={i} content={`${typeof v === 'number' ? v.toFixed(1) : '0'}%`}>
+                                    <circle cx={`${x}%`} cy={y} r={4} fill={T.success} style={{ opacity: i === (c?.history?.length || 1) - 1 ? 1 : 0.4, filter: `drop-shadow(0 0 4px ${T.success})`, cursor: 'pointer' }} />
                                 </Tooltip>
                             );
                         })}
                         <polyline
-                            points={c.history.map((v, i) => `${(i / (c.history.length - 1)) * 100}% ${60 - ((v - 70) / 30) * 54}`).join(' ')}
+                            points={Array.isArray(c?.history) ? c.history.map((v, i) => `${(i / ((c?.history?.length || 1) - 1)) * 100}% ${60 - (((typeof v === 'number' ? v : 70) - 70) / 30) * 54}`).join(' ') : '0 60'}
                             fill="none" stroke={T.success} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
                             style={{ filter: `drop-shadow(0 0 5px ${T.success}60)` }}
                         />
@@ -955,21 +983,25 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
 
     const sorted = useMemo(() => {
         let list = Array.isArray(connData) ? [...connData] : [];
-        if (filterState !== 'all') list = list.filter(c => c.state.includes(filterState));
+        if (filterState !== 'all') list = list.filter(c => typeof c?.state === 'string' && c.state.includes(filterState));
         return list.sort((a, b) => {
-            const av = a[sortField], bv = b[sortField];
-            const cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv));
+            const av = a?.[sortField], bv = b?.[sortField];
+            const cmp = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av || '').localeCompare(String(bv || ''));
             return sortDir === 'desc' ? -cmp : cmp;
         });
     }, [connData, sortField, sortDir, filterState]);
 
-    const stats = useMemo(() => ({
-        total:    (connData||[]).length,
-        active:   (connData||[]).filter(c => c.state === 'active').length,
-        waiting:  (connData||[]).filter(c => c.wait).length,
-        idle:     (connData||[]).filter(c => c.state.includes('idle')).length,
-        maxCpu:   Math.max(...(connData||[]).map(c => c.cpu)),
-    }), [connData]);
+    const stats = useMemo(() => {
+        const safe = Array.isArray(connData) ? connData : [];
+        const cpus = safe.map(c => typeof c?.cpu === 'number' ? c.cpu : 0).filter(v => !isNaN(v));
+        return {
+            total:    safe.length,
+            active:   safe.filter(c => c?.state === 'active').length,
+            waiting:  safe.filter(c => c?.wait).length,
+            idle:     safe.filter(c => typeof c?.state === 'string' && c.state.includes('idle')).length,
+            maxCpu:   cpus.length > 0 ? Math.max(...cpus) : 0,
+        };
+    }, [connData]);
 
     const toggleSort = (f) => {
         if (sortField === f) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -1104,31 +1136,38 @@ const ExtensionsView = ({ extData, onInstall }) => {
 
     const filtered = useMemo(() => {
         let list = Array.isArray(extData) ? extData : [];
-        if (filter === 'installed') list = list.filter(e => e.installed);
-        if (filter === 'available') list = list.filter(e => !e.installed);
-        if (search) list = list.filter(e => e.name.toLowerCase().includes(search.toLowerCase()) || e.description.toLowerCase().includes(search.toLowerCase()));
+        if (filter === 'installed') list = list.filter(e => e?.installed);
+        if (filter === 'available') list = list.filter(e => !e?.installed);
+        if (search) list = list.filter(e => {
+            const name = (e?.name || '').toLowerCase();
+            const desc = (e?.description || '').toLowerCase();
+            return name.includes(search.toLowerCase()) || desc.includes(search.toLowerCase());
+        });
         return list;
     }, [extData, filter, search]);
 
-    const cats = [...new Set(filtered.map(e => e.category))];
+    const cats = [...new Set(filtered.map(e => e?.category).filter(c => c))];
 
-    const StarRating = ({ rating }) => (
+    const StarRating = ({ rating }) => {
+        const safeRating = typeof rating === 'number' && !isNaN(rating) ? rating : 0;
+        return (
         <div style={{ display: 'flex', gap: 2 }}>
             {[1,2,3,4,5].map(i => (
-                <Star key={i} size={9} color={i <= Math.round(rating) ? T.warning : T.grid} fill={i <= Math.round(rating) ? T.warning : 'none'} />
+                <Star key={i} size={9} color={i <= Math.round(safeRating) ? T.warning : T.grid} fill={i <= Math.round(safeRating) ? T.warning : 'none'} />
             ))}
-            <span style={{ fontSize: 9, color: T.textDim, marginLeft: 3 }}>{rating}</span>
+            <span style={{ fontSize: 9, color: T.textDim, marginLeft: 3 }}>{safeRating}</span>
         </div>
-    );
+        );
+    };
 
     return (
         <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                <StatCard label="Installed"  value={(extData||[]).filter(e=>e.installed).length} icon={PlugZap}  color={T.success} />
-                <StatCard label="Active"     value={(extData||[]).filter(e=>e.active).length}    icon={Zap}       color={T.primary} />
-                <StatCard label="Available"  value={(extData||[]).filter(e=>!e.installed).length} icon={Package}  color={T.info}    />
-                <StatCard label="Categories" value={[...new Set((extData||[]).map(e=>e.category))].length} icon={Layers} color={T.secondary} />
+                <StatCard label="Installed"  value={(Array.isArray(extData) ? extData : []).filter(e=>e?.installed).length} icon={PlugZap}  color={T.success} />
+                <StatCard label="Active"     value={(Array.isArray(extData) ? extData : []).filter(e=>e?.active).length}    icon={Zap}       color={T.primary} />
+                <StatCard label="Available"  value={(Array.isArray(extData) ? extData : []).filter(e=>!e?.installed).length} icon={Package}  color={T.info}    />
+                <StatCard label="Categories" value={[...new Set((Array.isArray(extData) ? extData : []).map(e=>e?.category).filter(c=>c))].length} icon={Layers} color={T.secondary} />
             </div>
 
             {/* Toolbar */}
@@ -1195,10 +1234,10 @@ const ExtensionsView = ({ extData, onInstall }) => {
                                             )}
                                         </div>
                                     </div>
-                                    <p style={{ fontSize: 11, color: T.textDim, margin: '0 0 10px', lineHeight: 1.55 }}>{ext.description}</p>
+                                    <p style={{ fontSize: 11, color: T.textDim, margin: '0 0 10px', lineHeight: 1.55 }}>{ext?.description || ''}</p>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <StarRating rating={ext.rating} />
-                                        <span style={{ fontSize: 9, color: T.textDim }}>{ext.downloads} downloads</span>
+                                        <StarRating rating={ext?.rating} />
+                                        <span style={{ fontSize: 9, color: T.textDim }}>{ext?.downloads || 0} downloads</span>
                                     </div>
                                 </div>
                             ))}
@@ -1427,15 +1466,22 @@ const SettingsView = ({
 
     const filteredSettings = useMemo(() => {
         let list = Array.isArray(settingsData) ? settingsData : [];
-        if (category !== 'all') list = list.filter(s => categorize(s.name) === category);
+        if (category !== 'all') list = list.filter(s => categorize(s?.name || '') === category);
         if (search.trim()) {
             const q = search.toLowerCase();
-            list = list.filter(s => s.name.toLowerCase().includes(q) || (s.short_desc||'').toLowerCase().includes(q));
+            list = list.filter(s => {
+                const name = (s?.name || '').toLowerCase();
+                const desc = (s?.short_desc || '').toLowerCase();
+                return name.includes(q) || desc.includes(q);
+            });
         }
-        if (viewMode === 'diff') list = list.filter(s => s.setting !== s.boot_val || pendingChanges[s.name] !== undefined);
+        if (viewMode === 'diff') list = list.filter(s => s?.setting !== s?.boot_val || pendingChanges[s?.name] !== undefined);
         if (sortField) list = [...list].sort((a, b) => {
-            const av = a[sortField]||'', bv = b[sortField]||'';
-            return sortDir === 'asc' ? av.toString().localeCompare(bv.toString()) : bv.toString().localeCompare(av.toString());
+            const av = (a?.[sortField] || '');
+            const bv = (b?.[sortField] || '');
+            const astr = String(av).toLowerCase();
+            const bstr = String(bv).toLowerCase();
+            return sortDir === 'asc' ? astr.localeCompare(bstr) : bstr.localeCompare(astr);
         });
         return list;
     }, [settingsData, category, search, viewMode, pendingChanges, sortField, sortDir]);

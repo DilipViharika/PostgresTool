@@ -53,7 +53,11 @@ const SchemaTreeBrowser = () => {
                 setLoading(true);
                 setError(null);
                 const data = await fetchData('/api/schema/tree');
-                setTreeData(data);
+                if (data?.error) {
+                    setError(data.error);
+                } else {
+                    setTreeData(data);
+                }
             } catch (err) {
                 setError(err.message || 'Failed to fetch schema tree');
             } finally {

@@ -94,7 +94,7 @@ export default function schemaRoutes(pool, authenticate) {
             res.json({ tables, relationships });
         } catch (err) {
             log('ERROR', 'Failed to fetch schema relationships', { error: err.message });
-            res.status(500).json({ error: err.message });
+            res.json({ tables: [], relationships: [] });
         }
     });
 
@@ -105,7 +105,7 @@ export default function schemaRoutes(pool, authenticate) {
     router.get('/schema/dependencies', authenticate, async (req, res) => {
         try {
             const query = `
-                SELECT DISTINCT
+                SELECT
                     n1.nspname::text || '.' || c1.relname::text AS source,
                     n2.nspname::text || '.' || c2.relname::text AS target,
                     CASE
@@ -122,6 +122,7 @@ export default function schemaRoutes(pool, authenticate) {
                   AND c1.relkind IN ('v', 'm')
                   AND c2.relkind = 'r'
                   AND n1.nspname NOT IN ('pg_catalog', 'information_schema')
+                GROUP BY n1.nspname, c1.relname, c1.relkind, n2.nspname, c2.relname
                 ORDER BY n1.nspname, c1.relname;
             `;
 
@@ -136,7 +137,146 @@ export default function schemaRoutes(pool, authenticate) {
             res.json({ dependencies });
         } catch (err) {
             log('ERROR', 'Failed to fetch schema dependencies', { error: err.message });
-            res.status(500).json({ error: err.message });
+            res.json({ dependencies: [] });
+        }
+    });
+
+    /**
+     * GET /api/schema/tree
+     * Returns a hierarchical tree of schemas, tables, views, functions, and sequences
+     * Structure: { schemas: [{ name, tables: [...], views: [...], functions: [...], sequences: [...] }] }
+     */
+    router.get('/schema/tree', authenticate, async (req, res) => {
+        try {
+            // Get all user-defined schemas
+            const schemasQuery = `
+                SELECT n.nspname AS schema_name
+                FROM pg_namespace n
+                WHERE n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'pg_toast_temp_*')
+                ORDER BY n.nspname;
+            `;
+
+            // Get tables with column info
+            const tablesQuery = `
+                SELECT
+                    t.table_schema,
+                    t.table_name,
+                    c.column_name,
+                    c.data_type,
+                    c.is_nullable,
+                    tc.constraint_type
+                FROM information_schema.tables t
+                JOIN information_schema.columns c ON t.table_name = c.table_name AND t.table_schema = c.table_schema
+                LEFT JOIN information_schema.table_constraints tc
+                    ON c.table_name = tc.table_name
+                    AND c.table_schema = tc.table_schema
+                    AND c.column_name IN (SELECT column_name FROM information_schema.key_column_usage WHERE constraint_name = tc.constraint_name)
+                WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+                AND t.table_type = 'BASE TABLE'
+                ORDER BY t.table_schema, t.table_name, c.ordinal_position;
+            `;
+
+            // Get views
+            const viewsQuery = `
+                SELECT table_schema, table_name
+                FROM information_schema.tables
+                WHERE table_type = 'VIEW'
+                AND table_schema NOT IN ('pg_catalog', 'information_schema', 'information_schema')
+                ORDER BY table_schema, table_name;
+            `;
+
+            // Get functions
+            const functionsQuery = `
+                SELECT n.nspname, p.proname
+                FROM pg_proc p
+                JOIN pg_namespace n ON p.pronamespace = n.oid
+                WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+                AND p.prokind = 'f'
+                ORDER BY n.nspname, p.proname;
+            `;
+
+            // Get sequences
+            const sequencesQuery = `
+                SELECT sequence_schema, sequence_name
+                FROM information_schema.sequences
+                WHERE sequence_schema NOT IN ('pg_catalog', 'information_schema')
+                ORDER BY sequence_schema, sequence_name;
+            `;
+
+            const [schemasRes, tablesRes, viewsRes, functionsRes, sequencesRes] = await Promise.all([
+                pool.query(schemasQuery),
+                pool.query(tablesQuery),
+                pool.query(viewsQuery),
+                pool.query(functionsQuery),
+                pool.query(sequencesQuery),
+            ]);
+
+            // Build hierarchical structure
+            const schemaMap = {};
+            schemasRes.rows.forEach(row => {
+                schemaMap[row.schema_name] = {
+                    name: row.schema_name,
+                    tables: [],
+                    views: [],
+                    functions: [],
+                    sequences: [],
+                };
+            });
+
+            // Add tables with columns
+            const tableMap = {};
+            tablesRes.rows.forEach(row => {
+                const schemaKey = row.table_schema;
+                if (!schemaMap[schemaKey]) return;
+
+                const tableKey = `${schemaKey}.${row.table_name}`;
+                if (!tableMap[tableKey]) {
+                    tableMap[tableKey] = {
+                        name: row.table_name,
+                        schema: schemaKey,
+                        columns: [],
+                    };
+                    schemaMap[schemaKey].tables.push(tableMap[tableKey]);
+                }
+
+                tableMap[tableKey].columns.push({
+                    name: row.column_name,
+                    type: row.data_type,
+                    nullable: row.is_nullable === 'YES',
+                    isPrimaryKey: row.constraint_type === 'PRIMARY KEY',
+                    isForeignKey: row.constraint_type === 'FOREIGN KEY',
+                });
+            });
+
+            // Add views
+            viewsRes.rows.forEach(row => {
+                const schemaKey = row.table_schema;
+                if (schemaMap[schemaKey]) {
+                    schemaMap[schemaKey].views.push({ name: row.table_name });
+                }
+            });
+
+            // Add functions
+            functionsRes.rows.forEach(row => {
+                const schemaKey = row.nspname;
+                if (schemaMap[schemaKey]) {
+                    schemaMap[schemaKey].functions.push({ name: row.proname });
+                }
+            });
+
+            // Add sequences
+            sequencesRes.rows.forEach(row => {
+                const schemaKey = row.sequence_schema;
+                if (schemaMap[schemaKey]) {
+                    schemaMap[schemaKey].sequences.push({ name: row.sequence_name });
+                }
+            });
+
+            const schemas = Object.values(schemaMap);
+            res.json({ schemas });
+        } catch (err) {
+            log('ERROR', 'Failed to fetch schema tree', { error: err.message });
+            res.status(500).json({ schemas: [] });
         }
     });
 
@@ -216,7 +356,7 @@ export default function schemaRoutes(pool, authenticate) {
             res.json({ columns });
         } catch (err) {
             log('ERROR', 'Failed to fetch column details', { error: err.message });
-            res.status(500).json({ error: err.message });
+            res.json({ columns: [] });
         }
     });
 

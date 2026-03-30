@@ -236,10 +236,10 @@ const getHeatmapData = (plan) => {
         if (node.Plans) node.Plans.forEach((p, i) => walk(p, `${path}-${i}`));
     };
     walk(plan);
-    const maxTime = Math.max(...nodes.map(n => n.time), 1);
+    const maxTime = nodes.length > 0 ? Math.max(...nodes.map(n => n.time), 1) : 1;
     const result = {};
     nodes.forEach(n => { result[n.id] = n.time / maxTime; });
-    return { heatmap: result, maxTime, hotNodeId: nodes.reduce((a, b) => a.time > b.time ? a : b, nodes[0])?.id };
+    return { heatmap: result, maxTime, hotNodeId: nodes.length > 0 ? nodes.reduce((a, b) => a.time > b.time ? a : b, nodes[0])?.id : null };
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -362,8 +362,8 @@ const CostBreakdownChart = ({ plan }) => {
         if (n.Plans) n.Plans.forEach(flatten);
     };
     flatten(plan?.Plan);
-    const maxCost = Math.max(...nodes.map(n => n.cost), 1);
-    const maxTime = Math.max(...nodes.map(n => n.time), 1);
+    const maxCost = nodes.length > 0 ? Math.max(...nodes.map(n => n.cost), 1) : 1;
+    const maxTime = nodes.length > 0 ? Math.max(...nodes.map(n => n.time), 1) : 1;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -552,8 +552,8 @@ const FlameGraph = ({ plan }) => {
         if (n.Plans) n.Plans.forEach(p => flatten(p, depth + 1));
     };
     flatten(plan?.Plan);
-    const maxDepth = Math.max(...nodes.map(n => n.depth), 0);
-    const maxTime = Math.max(...nodes.map(n => n.time), 1);
+    const maxDepth = nodes.length > 0 ? Math.max(...nodes.map(n => n.depth), 0) : 0;
+    const maxTime = nodes.length > 0 ? Math.max(...nodes.map(n => n.time), 1) : 1;
     const FLAME_COLORS = [THEME.primary, THEME.warning, THEME.danger, '#a78bfa', '#34d399', '#f472b6'];
 
     return (
@@ -642,7 +642,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                 max_tokens: 1500,
                 messages: [{ role: 'user', content: prompt }]
             });
-            const raw = data.content?.map(c => c.text || '').join('') || '';
+            const raw = (Array.isArray(data?.content) ? data.content : []).map(c => c.text || '').join('') || '';
 
             // Strip markdown fences that Llama/Groq often adds
             const stripped = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
@@ -842,9 +842,10 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
 const ServiceAttributionPanel = () => {
     const [sortBy, setSortBy] = useState('cost_share');
     const [view, setView] = useState('chart');
-    const sorted = [...serviceAttribution].sort((a, b) => b[sortBy] - a[sortBy]);
-    const totalTime = serviceAttribution.reduce((s, r) => s + r.total_time_ms, 0);
-    const maxCostShare = sorted.length > 0 ? Math.max(...sorted.map(s => s.cost_share)) : 0;
+    const safeAttribution = Array.isArray(serviceAttribution) ? serviceAttribution : [];
+    const sorted = [...safeAttribution].sort((a, b) => b[sortBy] - a[sortBy]);
+    const totalTime = safeAttribution.reduce((s, r) => s + (r?.total_time_ms || 0), 0);
+    const maxCostShare = sorted.length > 0 ? Math.max(...sorted.map(s => s.cost_share || 0)) : 0;
 
     const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: '#a78bfa', Growth: '#34d399', Search: '#f472b6' };
 
@@ -853,10 +854,10 @@ const ServiceAttributionPanel = () => {
             {/* Summary row */}
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Services Tracked', value: serviceAttribution.length, color: THEME.textMain },
+                    { label: 'Services Tracked', value: safeAttribution.length, color: THEME.textMain },
                     { label: 'Total DB Time', value: formatDuration(totalTime), color: THEME.primary },
-                    { label: 'Slowest Avg (ms)', value: formatDuration(serviceAttribution.length > 0 ? Math.max(...serviceAttribution.map(s => s.avg_time)) : 0), color: THEME.danger },
-                    { label: 'Top Offender', value: sorted[0]?.service, color: THEME.warning },
+                    { label: 'Slowest Avg (ms)', value: formatDuration(safeAttribution.length > 0 ? Math.max(...safeAttribution.map(s => s.avg_time || 0)) : 0), color: THEME.danger },
+                    { label: 'Top Offender', value: sorted[0]?.service || '—', color: THEME.warning },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
                         <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{k.label}</div>
@@ -1023,17 +1024,18 @@ const ParameterizationAdvisorPanel = () => {
     const riskColor = (r) => r === 'CRITICAL' ? THEME.danger : r === 'HIGH' ? '#f97316' : THEME.warning;
     const riskIcon = (r) => r === 'CRITICAL' ? <AlertOctagon size={12} color={THEME.danger} /> : r === 'HIGH' ? <ShieldAlert size={12} color="#f97316" /> : <AlertTriangle size={12} color={THEME.warning} />;
 
-    const totalCalls = paramIssues.reduce((s, q) => s + q.calls, 0);
-    const criticalCount = paramIssues.filter(q => q.risk === 'CRITICAL').length;
+    const safeParamIssues = Array.isArray(paramIssues) ? paramIssues : [];
+    const totalCalls = safeParamIssues.reduce((s, q) => s + (q?.calls || 0), 0);
+    const criticalCount = safeParamIssues.filter(q => q?.risk === 'CRITICAL').length;
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {/* Summary */}
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Unparameterized', value: paramIssues.length, color: THEME.warning, icon: AlertTriangle },
+                    { label: 'Unparameterized', value: safeParamIssues.length, color: THEME.warning, icon: AlertTriangle },
                     { label: 'Critical (Security)', value: criticalCount, color: THEME.danger, icon: ShieldAlert },
-                    { label: 'Affected Calls', value: totalCalls.toLocaleString(), color: THEME.textMain, icon: Database },
+                    { label: 'Affected Calls', value: (totalCalls || 0).toLocaleString(), color: THEME.textMain, icon: Database },
                     { label: 'Cache Waste Avg', value: '89%', color: THEME.danger, icon: Gauge },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1059,7 +1061,7 @@ const ParameterizationAdvisorPanel = () => {
             <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                 {/* Query list */}
                 <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
-                    {paramIssues.map((q, i) => (
+                    {safeParamIssues.map((q, i) => (
                         <div key={q.id}
                              onClick={() => setSelected(selected === q.id ? null : q.id)}
                              className="opt-row-hover"
@@ -1090,7 +1092,7 @@ const ParameterizationAdvisorPanel = () => {
 
                 {/* Detail panel */}
                 {selected ? (() => {
-                    const q = paramIssues.find(p => p.id === selected);
+                    const q = safeParamIssues.find(p => p.id === selected);
                     if (!q) return null;
                     return (
                         <div className="opt-scroll" style={{ width: 380, borderLeft: `1px solid ${THEME.grid}`, overflowY: 'auto', padding: 16, flexShrink: 0 }}>
@@ -1177,11 +1179,12 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
     const [searchText, setSearchText] = useState('');
     const [tagFilter, setTagFilter] = useState(null);
 
-    const allTags = [...new Set(slowQueries.flatMap(q => q.tags || []))];
-    const filtered = slowQueries
-        .filter(q => !searchText || q.query.toLowerCase().includes(searchText.toLowerCase()))
-        .filter(q => !tagFilter || (q.tags || []).includes(tagFilter))
-        .sort((a, b) => b[sortBy] - a[sortBy]);
+    const safeSlowQueries = Array.isArray(slowQueries) ? slowQueries : [];
+    const allTags = [...new Set(safeSlowQueries.flatMap(q => q?.tags || []))];
+    const filtered = safeSlowQueries
+        .filter(q => !searchText || (q?.query || '').toLowerCase().includes(searchText.toLowerCase()))
+        .filter(q => !tagFilter || (q?.tags || []).includes(tagFilter))
+        .sort((a, b) => (b?.[sortBy] || 0) - (a?.[sortBy] || 0));
 
     const selected = filtered.find(q => q.id === selectedId);
     const tagColors = { 'no-index': THEME.danger, 'seq-scan': THEME.warning, 'aggregation': THEME.primary, 'hot-table': '#a78bfa', 'wide-select': THEME.warning, 'bulk-delete': THEME.danger, 'locks': THEME.danger };
@@ -1213,35 +1216,38 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                 </div>
 
                 <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
-                    {filtered.map((q, i) => (
-                        <div key={q.id} onClick={() => setSelectedId(q.id === selectedId ? null : q.id)}
+                    {filtered.map((q, i) => {
+                        const meanTime = q?.mean_time || 0;
+                        const maxVal = q?.p99_time || meanTime || 1;
+                        return (
+                        <div key={q?.id} onClick={() => setSelectedId(q?.id === selectedId ? null : q?.id)}
                              className="opt-row-hover"
-                             style={{ padding: '10px 12px', borderBottom: `1px solid ${THEME.grid}25`, cursor: 'pointer', background: selectedId === q.id ? `${THEME.primary}08` : 'transparent', borderLeft: selectedId === q.id ? `3px solid ${THEME.primary}` : '3px solid transparent', animation: `optFadeIn 0.3s ${i * 0.04}s both` }}>
+                             style={{ padding: '10px 12px', borderBottom: `1px solid ${THEME.grid}25`, cursor: 'pointer', background: selectedId === q?.id ? `${THEME.primary}08` : 'transparent', borderLeft: selectedId === q?.id ? `3px solid ${THEME.primary}` : '3px solid transparent', animation: `optFadeIn 0.3s ${i * 0.04}s both` }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: 10, color: THEME.textMain, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 4 }}>{q.query}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textMain, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 4 }}>{q?.query || '—'}</div>
                                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                                        {(q.tags || []).map(tag => (
+                                        {(q?.tags || []).map(tag => (
                                             <span key={tag} className="tag-pill" style={{ background: `${tagColors[tag] || THEME.primary}20`, color: tagColors[tag] || THEME.primary }}>{tag}</span>
                                         ))}
-                                        <span style={{ fontSize: 9, color: THEME.textDim }}>{q.db}</span>
+                                        <span style={{ fontSize: 9, color: THEME.textDim }}>{q?.db || '—'}</span>
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: q.mean_time > 500 ? THEME.danger : q.mean_time > 100 ? THEME.warning : THEME.success }}>{formatDuration(q.mean_time)}</div>
-                                    <div style={{ fontSize: 9, color: THEME.textDim }}>{q.calls.toLocaleString()} calls</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: meanTime > 500 ? THEME.danger : meanTime > 100 ? THEME.warning : THEME.success }}>{formatDuration(meanTime)}</div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim }}>{((q?.calls) || 0).toLocaleString()} calls</div>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', gap: 3, marginTop: 6, alignItems: 'flex-end', height: 16 }}>
-                                {[q.mean_time, q.p95_time, q.p99_time].map((val, j) => {
-                                    const maxVal = q.p99_time;
+                                {[(q?.mean_time || 0), (q?.p95_time || 0), (q?.p99_time || 0)].map((val, j) => {
                                     const h = Math.max(3, (val / maxVal) * 16);
                                     return <div key={j} style={{ width: 6, height: h, borderRadius: 1, background: j === 0 ? THEME.success : j === 1 ? THEME.warning : THEME.danger, flexShrink: 0 }} />;
                                 })}
                                 <span style={{ fontSize: 8, color: THEME.textDim, marginLeft: 4 }}>p50/p95/p99</span>
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
@@ -1249,20 +1255,20 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                 <div className="opt-scroll" style={{ width: 340, overflowY: 'auto', padding: 16, flexShrink: 0 }}>
                     <div style={{ marginBottom: 12 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.06em' }}>Query Text</div>
-                        <pre style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMain, background: `${THEME.bg}80`, borderRadius: 6, padding: 10, whiteSpace: 'pre-wrap', border: `1px solid ${THEME.grid}40`, margin: 0 }}>{selected.query}</pre>
-                        <button onClick={() => onLoadQuery(selected.query)} className="opt-btn" style={{ marginTop: 8, width: '100%', padding: '6px', borderRadius: 5, border: `1px solid ${THEME.primary}40`, background: `${THEME.primary}15`, color: THEME.primary, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>
+                        <pre style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMain, background: `${THEME.bg}80`, borderRadius: 6, padding: 10, whiteSpace: 'pre-wrap', border: `1px solid ${THEME.grid}40`, margin: 0 }}>{selected?.query || '—'}</pre>
+                        <button onClick={() => onLoadQuery(selected?.query || '')} className="opt-btn" style={{ marginTop: 8, width: '100%', padding: '6px', borderRadius: 5, border: `1px solid ${THEME.primary}40`, background: `${THEME.primary}15`, color: THEME.primary, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>
                             Load into Editor & Analyze →
                         </button>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
                         {[
-                            { label: 'Mean Time', value: formatDuration(selected.mean_time), color: THEME.primary },
-                            { label: 'P95 Time', value: formatDuration(selected.p95_time), color: THEME.warning },
-                            { label: 'P99 Time', value: formatDuration(selected.p99_time), color: THEME.danger },
-                            { label: 'Total Time', value: formatDuration(selected.total_time), color: THEME.textDim },
-                            { label: 'Calls', value: selected.calls.toLocaleString(), color: THEME.textMain },
-                            { label: 'Avg Rows', value: formatRows(selected.rows), color: THEME.textMuted },
+                            { label: 'Mean Time', value: formatDuration(selected?.mean_time || 0), color: THEME.primary },
+                            { label: 'P95 Time', value: formatDuration(selected?.p95_time || 0), color: THEME.warning },
+                            { label: 'P99 Time', value: formatDuration(selected?.p99_time || 0), color: THEME.danger },
+                            { label: 'Total Time', value: formatDuration(selected?.total_time || 0), color: THEME.textDim },
+                            { label: 'Calls', value: ((selected?.calls) || 0).toLocaleString(), color: THEME.textMain },
+                            { label: 'Avg Rows', value: formatRows(selected?.rows || 0), color: THEME.textMuted },
                         ].map((s, i) => (
                             <div key={i} style={{ padding: '8px 10px', borderRadius: 7, background: `${THEME.grid}25`, textAlign: 'center' }}>
                                 <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
@@ -1274,14 +1280,14 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                     <div style={{ marginBottom: 12 }}>
                         <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8 }}>Time Distribution</div>
                         <div style={{ position: 'relative', height: 24, borderRadius: 14, overflow: 'hidden', background: `${THEME.grid}30` }}>
-                            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${(selected.mean_time / selected.p99_time) * 100}%`, background: THEME.success, borderRadius: 4 }} />
-                            <div style={{ position: 'absolute', left: `${(selected.mean_time / selected.p99_time) * 100}%`, top: 0, bottom: 0, width: `${((selected.p95_time - selected.mean_time) / selected.p99_time) * 100}%`, background: THEME.warning }} />
-                            <div style={{ position: 'absolute', left: `${(selected.p95_time / selected.p99_time) * 100}%`, top: 0, bottom: 0, right: 0, background: THEME.danger, borderRadius: '0 4px 4px 0' }} />
+                            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${((selected?.mean_time || 0) / (selected?.p99_time || 1)) * 100}%`, background: THEME.success, borderRadius: 4 }} />
+                            <div style={{ position: 'absolute', left: `${((selected?.mean_time || 0) / (selected?.p99_time || 1)) * 100}%`, top: 0, bottom: 0, width: `${(((selected?.p95_time || 0) - (selected?.mean_time || 0)) / (selected?.p99_time || 1)) * 100}%`, background: THEME.warning }} />
+                            <div style={{ position: 'absolute', left: `${((selected?.p95_time || 0) / (selected?.p99_time || 1)) * 100}%`, top: 0, bottom: 0, right: 0, background: THEME.danger, borderRadius: '0 4px 4px 0' }} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 8, color: THEME.textDim, marginTop: 4 }}>
-                            <span style={{ color: THEME.success }}>p50: {formatDuration(selected.mean_time)}</span>
-                            <span style={{ color: THEME.warning }}>p95: {formatDuration(selected.p95_time)}</span>
-                            <span style={{ color: THEME.danger }}>p99: {formatDuration(selected.p99_time)}</span>
+                            <span style={{ color: THEME.success }}>p50: {formatDuration(selected?.mean_time || 0)}</span>
+                            <span style={{ color: THEME.warning }}>p95: {formatDuration(selected?.p95_time || 0)}</span>
+                            <span style={{ color: THEME.danger }}>p99: {formatDuration(selected?.p99_time || 0)}</span>
                         </div>
                     </div>
                 </div>
@@ -1298,18 +1304,19 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
 // Lock Monitor Panel
 const LockMonitorPanel = () => {
     const [selected, setSelected] = useState(null);
-    const blockedCount = locks.filter(l => l.blocked_by).length;
-    const blockingCount = locks.filter(l => l.blocking?.length > 0).length;
+    const safeLocks = Array.isArray(locks) ? locks : [];
+    const blockedCount = safeLocks.filter(l => l?.blocked_by).length;
+    const blockingCount = safeLocks.filter(l => (l?.blocking || []).length > 0).length;
     const stateColor = (s) => s === 'active' ? THEME.success : s === 'idle in transaction' ? THEME.danger : THEME.warning;
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Total Locks', value: locks.length, color: THEME.textMain, icon: Lock },
+                    { label: 'Total Locks', value: safeLocks.length, color: THEME.textMain, icon: Lock },
                     { label: 'Blocked', value: blockedCount, color: blockedCount > 0 ? THEME.danger : THEME.success, icon: XCircle },
                     { label: 'Blocking', value: blockingCount, color: blockingCount > 0 ? THEME.warning : THEME.success, icon: ShieldAlert },
-                    { label: 'Idle in Txn', value: locks.filter(l => l.state === 'idle in transaction').length, color: THEME.warning, icon: Hourglass },
+                    { label: 'Idle in Txn', value: safeLocks.filter(l => l?.state === 'idle in transaction').length, color: THEME.warning, icon: Hourglass },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 10 }}>
                         <k.icon size={16} color={k.color} />
@@ -1327,22 +1334,22 @@ const LockMonitorPanel = () => {
                         <Siren size={12} /> Lock Chain Detected
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        {locks.filter(l => l.blocking?.length > 0).map(blocker => (
-                            <React.Fragment key={blocker.pid}>
+                        {safeLocks.filter(l => (l?.blocking || []).length > 0).map(blocker => (
+                            <React.Fragment key={blocker?.pid}>
                                 <div style={{ padding: '4px 10px', borderRadius: 6, background: `${THEME.danger}20`, border: `1px solid ${THEME.danger}40`, fontSize: 10, color: THEME.danger, fontFamily: 'monospace', fontWeight: 700 }}>
-                                    PID {blocker.pid}
+                                    PID {blocker?.pid || '?'}
                                     <span style={{ fontSize: 8, color: THEME.textDim, fontWeight: 400, marginLeft: 4 }}>blocking</span>
                                 </div>
                                 <ArrowRight size={14} color={THEME.danger} />
                                 <div style={{ display: 'flex', gap: 4 }}>
-                                    {(blocker.blocking || []).map(pid => (
+                                    {((blocker?.blocking) || []).map(pid => (
                                         <div key={pid} style={{ padding: '4px 10px', borderRadius: 6, background: `${THEME.warning}20`, border: `1px solid ${THEME.warning}40`, fontSize: 10, color: THEME.warning, fontFamily: 'monospace', fontWeight: 700 }}>
                                             PID {pid}
                                         </div>
                                     ))}
                                 </div>
                                 <div style={{ marginLeft: 8, fontSize: 9, color: THEME.textDim }}>
-                                    → <code style={{ color: THEME.textMuted, fontFamily: 'monospace' }}>SELECT pg_cancel_backend({blocker.pid});</code>
+                                    → <code style={{ color: THEME.textMuted, fontFamily: 'monospace' }}>SELECT pg_cancel_backend({blocker?.pid || '?'});</code>
                                 </div>
                             </React.Fragment>
                         ))}
@@ -1360,18 +1367,18 @@ const LockMonitorPanel = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {locks.map((lock, i) => (
-                        <tr key={i} onClick={() => setSelected(selected === lock.pid ? null : lock.pid)}
+                    {safeLocks.map((lock, i) => (
+                        <tr key={i} onClick={() => setSelected(selected === lock?.pid ? null : lock?.pid)}
                             className="opt-row-hover"
-                            style={{ borderBottom: `1px solid ${THEME.grid}25`, cursor: 'pointer', background: selected === lock.pid ? `${THEME.primary}08` : lock.blocked_by ? `${THEME.danger}05` : 'transparent' }}>
-                            <td style={{ padding: '9px 12px', color: THEME.primary, fontFamily: 'monospace', fontWeight: 700 }}>{lock.pid}</td>
-                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${stateColor(lock.state)}18`, color: stateColor(lock.state), fontSize: 9, fontWeight: 700 }}>{lock.state}</span></td>
-                            <td style={{ padding: '9px 12px', fontSize: 9, color: THEME.textMuted, fontFamily: 'monospace' }}>{lock.mode.replace('Lock', '')}</td>
-                            <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace' }}>{lock.relation}</td>
-                            <td style={{ padding: '9px 12px' }}>{lock.granted ? <CheckCircle size={13} color={THEME.success} /> : <XCircle size={13} color={THEME.danger} />}</td>
-                            <td style={{ padding: '9px 12px', color: lock.duration > 10 ? THEME.danger : THEME.textMuted }}>{lock.duration.toFixed(1)}s</td>
-                            <td style={{ padding: '9px 12px', color: THEME.warning, fontFamily: 'monospace' }}>{lock.blocked_by ? `PID ${lock.blocked_by}` : '—'}</td>
-                            <td style={{ padding: '9px 12px', color: THEME.textMuted, maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10, fontFamily: 'monospace' }}>{lock.query}</td>
+                            style={{ borderBottom: `1px solid ${THEME.grid}25`, cursor: 'pointer', background: selected === lock?.pid ? `${THEME.primary}08` : lock?.blocked_by ? `${THEME.danger}05` : 'transparent' }}>
+                            <td style={{ padding: '9px 12px', color: THEME.primary, fontFamily: 'monospace', fontWeight: 700 }}>{lock?.pid || '?'}</td>
+                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${stateColor(lock?.state)}18`, color: stateColor(lock?.state), fontSize: 9, fontWeight: 700 }}>{lock?.state || '?'}</span></td>
+                            <td style={{ padding: '9px 12px', fontSize: 9, color: THEME.textMuted, fontFamily: 'monospace' }}>{(lock?.mode || '').replace('Lock', '')}</td>
+                            <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace' }}>{lock?.relation || '?'}</td>
+                            <td style={{ padding: '9px 12px' }}>{lock?.granted ? <CheckCircle size={13} color={THEME.success} /> : <XCircle size={13} color={THEME.danger} />}</td>
+                            <td style={{ padding: '9px 12px', color: (lock?.duration || 0) > 10 ? THEME.danger : THEME.textMuted }}>{((lock?.duration) || 0).toFixed(1)}s</td>
+                            <td style={{ padding: '9px 12px', color: THEME.warning, fontFamily: 'monospace' }}>{lock?.blocked_by ? `PID ${lock.blocked_by}` : '—'}</td>
+                            <td style={{ padding: '9px 12px', color: THEME.textMuted, maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10, fontFamily: 'monospace' }}>{lock?.query || '—'}</td>
                         </tr>
                     ))}
                     </tbody>
@@ -1388,14 +1395,15 @@ const LockMonitorPanel = () => {
 // Maintenance Panel
 const MaintenancePanel = () => {
     const [running, setRunning] = useState({});
+    const safeMaintenance = Array.isArray(maintenance) ? maintenance : [];
     const triggerVacuum = (table) => {
         setRunning(r => ({ ...r, [table]: true }));
         setTimeout(() => setRunning(r => { const n = { ...r }; delete n[table]; return n; }), 2400);
     };
 
     const urgency = (row) => {
-        if (row.bloat_pct > 30 || row.dead_tuples > row.live_tuples * 0.1) return 'critical';
-        if (row.bloat_pct > 15 || row.dead_tuples > row.live_tuples * 0.05) return 'warning';
+        if ((row?.bloat_pct || 0) > 30 || (row?.dead_tuples || 0) > (row?.live_tuples || 1) * 0.1) return 'critical';
+        if ((row?.bloat_pct || 0) > 15 || (row?.dead_tuples || 0) > (row?.live_tuples || 1) * 0.05) return 'warning';
         return 'ok';
     };
     const urgencyColor = (u) => u === 'critical' ? THEME.danger : u === 'warning' ? THEME.warning : THEME.success;
@@ -1404,10 +1412,10 @@ const MaintenancePanel = () => {
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 16px', display: 'flex', gap: 12, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0 }}>
                 {[
-                    { label: 'Tables Monitored', value: maintenance.length, color: THEME.textMain },
-                    { label: 'Need Vacuum', value: maintenance.filter(t => urgency(t) !== 'ok').length, color: THEME.warning },
-                    { label: 'Critical Bloat', value: maintenance.filter(t => urgency(t) === 'critical').length, color: THEME.danger },
-                    { label: 'Total Dead Tuples', value: formatRows(maintenance.reduce((s, t) => s + t.dead_tuples, 0)), color: THEME.textMuted },
+                    { label: 'Tables Monitored', value: safeMaintenance.length, color: THEME.textMain },
+                    { label: 'Need Vacuum', value: safeMaintenance.filter(t => urgency(t) !== 'ok').length, color: THEME.warning },
+                    { label: 'Critical Bloat', value: safeMaintenance.filter(t => urgency(t) === 'critical').length, color: THEME.danger },
+                    { label: 'Total Dead Tuples', value: formatRows(safeMaintenance.reduce((s, t) => s + (t?.dead_tuples || 0), 0)), color: THEME.textMuted },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
                         <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{k.label}</div>
@@ -1426,36 +1434,36 @@ const MaintenancePanel = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {maintenance.map((t, i) => {
+                    {safeMaintenance.map((t, i) => {
                         const u = urgency(t);
                         const uc = urgencyColor(u);
-                        const isRunning = running[t.table];
+                        const isRunning = running[t?.table];
                         return (
                             <tr key={i} className="opt-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}25`, background: u === 'critical' ? `${THEME.danger}04` : 'transparent' }}>
-                                <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace', fontWeight: 600 }}>{t.table}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t.size}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{formatRows(t.live_tuples)}</td>
-                                <td style={{ padding: '9px 12px', color: t.dead_tuples > t.live_tuples * 0.05 ? THEME.warning : THEME.textMuted }}>
-                                    {formatRows(t.dead_tuples)}
-                                    {t.dead_tuples > t.live_tuples * 0.05 && <span style={{ marginLeft: 4 }}>⚠</span>}
+                                <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace', fontWeight: 600 }}>{t?.table || '—'}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t?.size || '—'}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{formatRows(t?.live_tuples || 0)}</td>
+                                <td style={{ padding: '9px 12px', color: (t?.dead_tuples || 0) > (t?.live_tuples || 1) * 0.05 ? THEME.warning : THEME.textMuted }}>
+                                    {formatRows(t?.dead_tuples || 0)}
+                                    {(t?.dead_tuples || 0) > (t?.live_tuples || 1) * 0.05 && <span style={{ marginLeft: 4 }}>⚠</span>}
                                 </td>
                                 <td style={{ padding: '9px 12px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <div style={{ width: 40, height: 5, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
-                                            <div style={{ width: `${Math.min(100, t.bloat_pct)}%`, height: '100%', background: uc }} />
+                                            <div style={{ width: `${Math.min(100, t?.bloat_pct || 0)}%`, height: '100%', background: uc }} />
                                         </div>
-                                        <span style={{ fontSize: 9, color: uc, fontWeight: 700 }}>{(t.bloat_pct || 0).toFixed(1)}%</span>
+                                        <span style={{ fontSize: 9, color: uc, fontWeight: 700 }}>{(t?.bloat_pct || 0).toFixed(1)}%</span>
                                     </div>
                                 </td>
-                                <td style={{ padding: '9px 12px', color: (t.last_vacuum || '').includes('d') ? THEME.danger : THEME.textMuted, fontSize: 10 }}>{t.last_vacuum || 'never'}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted, fontSize: 10 }}>{t.last_analyze || 'never'}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t.vacuum_count || 0}</td>
+                                <td style={{ padding: '9px 12px', color: (t?.last_vacuum || '').includes('d') ? THEME.danger : THEME.textMuted, fontSize: 10 }}>{t?.last_vacuum || 'never'}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted, fontSize: 10 }}>{t?.last_analyze || 'never'}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t?.vacuum_count || 0}</td>
                                 <td style={{ padding: '9px 12px' }}>
                                     <span style={{ padding: '2px 7px', borderRadius: 9, background: `${uc}18`, color: uc, fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{u}</span>
                                 </td>
                                 <td style={{ padding: '9px 12px' }}>
                                     <div style={{ display: 'flex', gap: 4 }}>
-                                        <button onClick={() => triggerVacuum(t.table)} disabled={isRunning}
+                                        <button onClick={() => triggerVacuum(t?.table)} disabled={isRunning}
                                                 style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: isRunning ? `${THEME.primary}10` : `${THEME.primary}15`, color: isRunning ? THEME.textDim : THEME.primary, border: `1px solid ${THEME.primary}30`, cursor: isRunning ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
                                             {isRunning ? <><RefreshCw size={8} style={{ animation: 'optSpin 1s linear infinite' }} /> Running…</> : 'VACUUM'}
                                         </button>
@@ -1477,8 +1485,9 @@ const MaintenancePanel = () => {
 // Config Advisor Panel
 const ConfigAdvisorPanel = () => {
     const [category, setCategory] = useState('All');
-    const categories = ['All', ...new Set(pgConfig.map(c => c.category))];
-    const filtered = category === 'All' ? pgConfig : pgConfig.filter(c => c.category === category);
+    const safePgConfig = Array.isArray(pgConfig) ? pgConfig : [];
+    const categories = ['All', ...new Set(safePgConfig.map(c => c?.category).filter(Boolean))];
+    const filtered = category === 'All' ? safePgConfig : safePgConfig.filter(c => c?.category === category);
     const [copiedKey, setCopiedKey] = useState(null);
     const copy = (text, key) => { navigator.clipboard?.writeText(text).catch(() => {}); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1800); };
     const impactColor = (i) => i === 'HIGH' ? THEME.danger : i === 'MEDIUM' ? THEME.warning : THEME.success;
@@ -1499,29 +1508,29 @@ const ConfigAdvisorPanel = () => {
             <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {filtered.map((cfg, i) => {
-                        const needsChange = cfg.current !== cfg.recommended;
-                        const setCmd = `ALTER SYSTEM SET ${cfg.name} = '${cfg.recommended}';`;
+                        const needsChange = (cfg?.current || '') !== (cfg?.recommended || '');
+                        const setCmd = `ALTER SYSTEM SET ${cfg?.name || '?'} = '${cfg?.recommended || '?'}';`;
                         return (
-                            <div key={i} className="opt-card" style={{ padding: '14px 16px', borderRadius: 9, borderLeft: `4px solid ${needsChange ? impactColor(cfg.impact) : THEME.success}`, animation: `optFadeIn 0.3s ${i * 0.04}s both` }}>
+                            <div key={i} className="opt-card" style={{ padding: '14px 16px', borderRadius: 9, borderLeft: `4px solid ${needsChange ? impactColor(cfg?.impact || 'LOW') : THEME.success}`, animation: `optFadeIn 0.3s ${i * 0.04}s both` }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                                            <code style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{cfg.name}</code>
-                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 10, background: `${impactColor(cfg.impact)}18`, color: impactColor(cfg.impact), fontWeight: 700 }}>{cfg.impact}</span>
-                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 10, background: `${THEME.grid}60`, color: THEME.textDim, fontWeight: 600 }}>{cfg.category}</span>
+                                            <code style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{cfg?.name || '?'}</code>
+                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 10, background: `${impactColor(cfg?.impact || 'LOW')}18`, color: impactColor(cfg?.impact || 'LOW'), fontWeight: 700 }}>{cfg?.impact || 'UNKNOWN'}</span>
+                                            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 10, background: `${THEME.grid}60`, color: THEME.textDim, fontWeight: 600 }}>{cfg?.category || '?'}</span>
                                         </div>
-                                        <div style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, marginBottom: 8 }}>{cfg.desc}</div>
+                                        <div style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, marginBottom: 8 }}>{cfg?.desc || '—'}</div>
                                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                                             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                                 <span style={{ fontSize: 9, color: THEME.textDim }}>Current:</span>
-                                                <code style={{ fontSize: 11, fontWeight: 700, color: needsChange ? THEME.danger : THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 10, background: needsChange ? `${THEME.danger}15` : `${THEME.success}15` }}>{cfg.current}</code>
+                                                <code style={{ fontSize: 11, fontWeight: 700, color: needsChange ? THEME.danger : THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 10, background: needsChange ? `${THEME.danger}15` : `${THEME.success}15` }}>{cfg?.current || '?'}</code>
                                             </div>
                                             {needsChange && (
                                                 <>
                                                     <ArrowRight size={12} color={THEME.textDim} />
                                                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                                         <span style={{ fontSize: 9, color: THEME.textDim }}>Recommended:</span>
-                                                        <code style={{ fontSize: 11, fontWeight: 700, color: THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 10, background: `${THEME.success}15` }}>{cfg.recommended}</code>
+                                                        <code style={{ fontSize: 11, fontWeight: 700, color: THEME.success, fontFamily: 'monospace', padding: '1px 6px', borderRadius: 10, background: `${THEME.success}15` }}>{cfg?.recommended || '?'}</code>
                                                     </div>
                                                 </>
                                             )}
@@ -1554,7 +1563,8 @@ const ConfigAdvisorPanel = () => {
 // Index Advisor
 const IndexAdvisorPanel = () => {
     const [filter, setFilter] = useState('all');
-    const filtered = filter === 'all' ? indexes : indexes.filter(i => i.status === filter);
+    const safeIndexes = Array.isArray(indexes) ? indexes : [];
+    const filtered = filter === 'all' ? safeIndexes : safeIndexes.filter(i => i?.status === filter);
     const statusColor = (s) => s === 'healthy' ? THEME.success : s === 'bloated' ? THEME.warning : THEME.danger;
 
     return (
@@ -1576,16 +1586,16 @@ const IndexAdvisorPanel = () => {
                     <tbody>
                     {filtered.map((idx, i) => (
                         <tr key={i} className="opt-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}30` }}>
-                            <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace' }}>{idx.table}</td>
-                            <td style={{ padding: '9px 12px', color: THEME.primary, fontFamily: 'monospace' }}>{idx.column}</td>
-                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 6px', borderRadius: 10, background: `${THEME.grid}60`, fontSize: 9, fontFamily: 'monospace', color: THEME.textMuted }}>{idx.type}</span></td>
-                            <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{idx.size}</td>
-                            <td style={{ padding: '9px 12px', color: (idx.scans || 0) === 0 ? THEME.danger : THEME.textMuted }}>{(idx.scans || 0).toLocaleString()}</td>
-                            <td style={{ padding: '9px 12px', color: parseFloat(idx.bloat) > 20 ? THEME.warning : THEME.textMuted }}>{idx.bloat}</td>
-                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${statusColor(idx.status)}18`, color: statusColor(idx.status), fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{idx.status}</span></td>
+                            <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace' }}>{idx?.table || '?'}</td>
+                            <td style={{ padding: '9px 12px', color: THEME.primary, fontFamily: 'monospace' }}>{idx?.column || '?'}</td>
+                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 6px', borderRadius: 10, background: `${THEME.grid}60`, fontSize: 9, fontFamily: 'monospace', color: THEME.textMuted }}>{idx?.type || '?'}</span></td>
+                            <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{idx?.size || '—'}</td>
+                            <td style={{ padding: '9px 12px', color: (idx?.scans || 0) === 0 ? THEME.danger : THEME.textMuted }}>{((idx?.scans) || 0).toLocaleString()}</td>
+                            <td style={{ padding: '9px 12px', color: parseFloat(idx?.bloat || '0') > 20 ? THEME.warning : THEME.textMuted }}>{idx?.bloat || '0'}</td>
+                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${statusColor(idx?.status)}18`, color: statusColor(idx?.status), fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{idx?.status || '?'}</span></td>
                             <td style={{ padding: '9px 12px' }}>
-                                {idx.status === 'unused' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}30`, cursor: 'pointer' }}>DROP</button>}
-                                {idx.status === 'bloated' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.warning}15`, color: THEME.warning, border: `1px solid ${THEME.warning}30`, cursor: 'pointer' }}>REINDEX</button>}
+                                {idx?.status === 'unused' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}30`, cursor: 'pointer' }}>DROP</button>}
+                                {idx?.status === 'bloated' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.warning}15`, color: THEME.warning, border: `1px solid ${THEME.warning}30`, cursor: 'pointer' }}>REINDEX</button>}
                             </td>
                         </tr>
                     ))}
@@ -1598,7 +1608,8 @@ const IndexAdvisorPanel = () => {
 
 // Table Stats
 const TableStatsPanel = () => {
-    const maxRows = tableStats.length > 0 ? Math.max(...tableStats.map(t => t.rows || 0)) : 1;
+    const safeTableStats = Array.isArray(tableStats) ? tableStats : [];
+    const maxRows = safeTableStats.length > 0 ? Math.max(...safeTableStats.map(t => t.rows || 0)) : 1;
     return (
         <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
@@ -1611,28 +1622,28 @@ const TableStatsPanel = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {tableStats.map((t, i) => {
-                        const seqScans = t.seq_scans || 0;
-                        const idxScans = t.idx_scans || 0;
+                    {safeTableStats.map((t, i) => {
+                        const seqScans = t?.seq_scans || 0;
+                        const idxScans = t?.idx_scans || 0;
                         const total = seqScans + idxScans;
                         const idxPct = total > 0 ? (idxScans / total) * 100 : 0;
                         const deadRatio = (t.dead_tuples || 0) / (t.rows || 1);
                         return (
                             <tr key={i} className="opt-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}30` }}>
-                                <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace', fontWeight: 600 }}>{t.table}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace', fontWeight: 600 }}>{t?.table || '—'}</td>
                                 <td style={{ padding: '9px 12px' }}>
-                                    <div style={{ fontSize: 11, color: THEME.textMain }}>{formatRows(t.rows)}</div>
+                                    <div style={{ fontSize: 11, color: THEME.textMain }}>{formatRows(t?.rows || 0)}</div>
                                     <div style={{ width: 60, height: 3, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden', marginTop: 3 }}>
-                                        <div style={{ width: `${(t.rows / maxRows) * 100}%`, height: '100%', background: THEME.primary }} />
+                                        <div style={{ width: `${((t?.rows || 0) / maxRows) * 100}%`, height: '100%', background: THEME.primary }} />
                                     </div>
                                 </td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t.size}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t?.size || '—'}</td>
                                 <td style={{ padding: '9px 12px', color: deadRatio > 0.1 ? THEME.danger : deadRatio > 0.05 ? THEME.warning : THEME.textMuted }}>
-                                    {formatRows(t.dead_tuples)}{deadRatio > 0.05 && <span style={{ marginLeft: 4, color: THEME.warning }}>⚠</span>}
+                                    {formatRows(t?.dead_tuples || 0)}{deadRatio > 0.05 && <span style={{ marginLeft: 4, color: THEME.warning }}>⚠</span>}
                                 </td>
-                                <td style={{ padding: '9px 12px', color: (t.last_vacuum || '').includes('d') ? THEME.danger : THEME.textMuted }}>{t.last_vacuum || 'never'}</td>
-                                <td style={{ padding: '9px 12px', color: seqScans > 1000 ? THEME.warning : THEME.textMuted }}>{seqScans.toLocaleString()}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{idxScans.toLocaleString()}</td>
+                                <td style={{ padding: '9px 12px', color: (t?.last_vacuum || '').includes('d') ? THEME.danger : THEME.textMuted }}>{t?.last_vacuum || 'never'}</td>
+                                <td style={{ padding: '9px 12px', color: seqScans > 1000 ? THEME.warning : THEME.textMuted }}>{(seqScans || 0).toLocaleString()}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{(idxScans || 0).toLocaleString()}</td>
                                 <td style={{ padding: '9px 12px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <div style={{ width: 48, height: 5, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
@@ -1777,16 +1788,34 @@ const QueryOptimizerTab = () => {
                     fetchData('/api/optimizer/param-issues'),
                 ]);
 
-                if (results[0].status === 'fulfilled') setIndexes(Array.isArray(results[0].value) ? results[0].value : []);
-                if (results[1].status === 'fulfilled') setTableStats(Array.isArray(results[1].value) ? results[1].value : []);
-                if (results[2].status === 'fulfilled') setSlowQueries(Array.isArray(results[2].value) ? results[2].value : []);
-                if (results[3].status === 'fulfilled') setLocks(Array.isArray(results[3].value) ? results[3].value : []);
-                if (results[4].status === 'fulfilled') setMaintenance(Array.isArray(results[4].value) ? results[4].value : []);
-                if (results[5].status === 'fulfilled') setPgConfig(Array.isArray(results[5].value) ? results[5].value : []);
-                if (results[6].status === 'fulfilled') setServiceAttribution(Array.isArray(results[6].value) ? results[6].value : []);
-                if (results[7].status === 'fulfilled') setParamIssues(Array.isArray(results[7].value) ? results[7].value : []);
+                // Helper to safely extract arrays from API responses, handling error objects
+                const toArray = (result) => {
+                    if (result.status !== 'fulfilled') return [];
+                    const value = result.value;
+                    if (Array.isArray(value)) return value;
+                    if (value?.error) return [];
+                    return Array.isArray(value?.data) ? value.data : [];
+                };
+
+                setIndexes(toArray(results[0]));
+                setTableStats(toArray(results[1]));
+                setSlowQueries(toArray(results[2]));
+                setLocks(toArray(results[3]));
+                setMaintenance(toArray(results[4]));
+                setPgConfig(toArray(results[5]));
+                setServiceAttribution(toArray(results[6]));
+                setParamIssues(toArray(results[7]));
             } catch (e) {
                 console.error('Failed to load optimizer data:', e);
+                // Ensure all state is set to empty arrays even if an error occurs
+                setIndexes([]);
+                setTableStats([]);
+                setSlowQueries([]);
+                setLocks([]);
+                setMaintenance([]);
+                setPgConfig([]);
+                setServiceAttribution([]);
+                setParamIssues([]);
             } finally {
                 setLoading(false);
             }
