@@ -262,7 +262,15 @@ const ConnectionWizard = () => {
   };
 
   const handleGoToDashboard = () => {
-    goToTab('dashboard');
+    // Navigate to the correct overview based on the connected DB type
+    const dbType = (formData.type || 'postgresql').toLowerCase();
+    if (dbType === 'mysql' || dbType === 'mariadb') {
+      goToTab('mysql-overview');
+    } else if (dbType === 'mongodb') {
+      goToTab('mongo-overview');
+    } else {
+      goToTab('overview');
+    }
   };
 
   const styles = {
