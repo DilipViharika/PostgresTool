@@ -78,7 +78,7 @@ export function buildTabConfig() {
             id: 'connections',
             icon: Link2,
             label: 'Manage Connections',
-            component: _components.ConnectionWizard,
+            component: _components.ConnectionPoolTab,
             badge: null,
         },
 
@@ -202,9 +202,8 @@ export function buildTabConfig() {
         },
 
         // ── Infrastructure ───────────────────────────────────────────
-        //    Connection pools, replication, maintenance, capacity
+        //    Replication, maintenance, capacity
         { section: 'Infrastructure', accent: DS.emerald },
-        { id: 'pool', icon: Network, label: 'Connection Pool', component: _components.ConnectionPoolTab, badge: null },
         {
             id: 'pool-metrics',
             icon: Droplets,

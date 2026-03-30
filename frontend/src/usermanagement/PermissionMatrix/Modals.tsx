@@ -45,7 +45,7 @@ const SCREEN_CATEGORIES = [
       { id: 'maintenance',  label: 'Vacuum & Maintenance', icon: '🧹' },
       { id: 'backup',       label: 'Backup & Recovery',icon: '💿' },
       { id: 'bloat',        label: 'Bloat Analysis',  icon: '📦' },
-      { id: 'pool',         label: 'Connection Pool', icon: '🌊' },
+      { id: 'connections',   label: 'Manage Connections', icon: '🔗' },
     ],
   },
   {
@@ -96,7 +96,7 @@ const SCREEN_CATEGORIES = [
 const ROLE_SCREEN_PRESETS = {
   super_admin: SCREEN_CATEGORIES.flatMap(c => c.screens.map(s => s.id)),
   admin:       SCREEN_CATEGORIES.flatMap(c => c.screens.map(s => s.id)).filter(id => id !== 'UserManagement'),
-  developer:   ['connections','overview','performance','sql','optimizer','indexes','api','schema','regression','bloat','replication','checkpoint','pool','repository'],
+  developer:   ['connections','overview','performance','sql','optimizer','indexes','api','schema','regression','bloat','replication','checkpoint','repository'],
   analyst:     ['connections','overview','performance','resources','reliability','sql','optimizer','indexes','capacity','bloat','alerts'],
   viewer:      ['connections','overview','performance','resources','reliability'],
 };

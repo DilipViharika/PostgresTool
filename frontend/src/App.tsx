@@ -3771,7 +3771,7 @@ const ConnectionSelector = () => {
                         </span>
                         <span
                             onClick={() => {
-                                goToTab?.('pool');
+                                goToTab?.('connections');
                                 setOpen(false);
                             }}
                             style={{
