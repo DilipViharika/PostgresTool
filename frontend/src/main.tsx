@@ -3,8 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { ThemeProvider } from './context/ThemeContext'
-import { isDemoMode, getDemoData } from './utils/demoData'
 import { initErrorTracking, ErrorTrackingBoundary } from './utils/errorTracking'
+
+// ── Clean up stale demo mode flag (no longer used) ────────────────────────
+try { localStorage.removeItem('vigil_demo_mode'); } catch {}
 
 // ── Initialize error tracking ──────────────────────────────────────────────
 initErrorTracking({
@@ -13,31 +15,6 @@ initErrorTracking({
   release: import.meta.env.VITE_APP_VERSION || '1.0.0',
   enabled: import.meta.env.PROD,
 })
-
-// ── Global fetch interceptor for demo mode ──────────────────────────────────
-// Catches ALL fetch calls (including those that bypass api.js) and returns
-// demo data when demo mode is active and the URL targets an API endpoint.
-const _origFetch = window.fetch;
-// Expose the original fetch so ConnectionContext can bypass the demo interceptor
-(window as any).__origFetch = _origFetch;
-
-window.fetch = function(input, init) {
-  if (isDemoMode()) {
-    const url = typeof input === 'string' ? input : input?.url || '';
-    // Only intercept API calls (not fonts, CSS, external resources, etc.)
-    // NEVER intercept /api/connections — ConnectionContext needs to reach
-    // the real backend to detect when the server is back online and auto-clear demo mode.
-    if ((url.includes('/api/') || url.includes('/health')) && !url.includes('/api/connections')) {
-      const path = url.replace(/^https?:\/\/[^/]+/, ''); // strip origin
-      const data = getDemoData(path);
-      return Promise.resolve(new Response(JSON.stringify(data), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }));
-    }
-  }
-  return _origFetch.apply(this, arguments);
-};
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

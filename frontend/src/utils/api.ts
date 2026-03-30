@@ -1,5 +1,3 @@
-import { isDemoMode, getDemoData } from './demoData';
-
 const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API_URL not set, using relative URLs'); return ''; })();
 
 // ── Request deduplication ──────────────────────────────────────────────────
@@ -10,7 +8,6 @@ const inflightRequests = new Map();
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 export const fetchMetrics = async () => {
-    if (isDemoMode()) return getDemoData('/api/metrics');
     const res = await fetch(`${API_BASE}/api/metrics`, {
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     });
@@ -57,18 +54,6 @@ function appendConnectionId(path) {
 }
 
 async function request(path, options = {}) {
-    // ── Demo mode: return mock data without hitting backend ──────────────
-    // Skip interception for /api/connections so ConnectionContext can always
-    // reach the real backend and auto-clear demo mode when it comes back.
-    if (isDemoMode() && !path.startsWith('/api/connections')) {
-        // Simulate a small network delay for realism
-        await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
-        const method = (options.method || 'GET').toUpperCase();
-        let body = null;
-        if (options.body) { try { body = JSON.parse(options.body); } catch {} }
-        return getDemoData(path, method, body);
-    }
-
     const isGet = options.method === 'GET' || !options.method;
     const resolvedPath = isGet ? appendConnectionId(path) : path;
     const url = resolvedPath.startsWith('http') ? resolvedPath : `${API_BASE}${resolvedPath}`;
@@ -127,12 +112,6 @@ async function request(path, options = {}) {
 // --- POLLING REPLACEMENT FOR WEBSOCKET ---
 // WebSockets are not supported on Vercel (serverless). This polls /api/alerts/recent instead.
 export function connectWS(onMessage, intervalMs = 10000) {
-    // Demo mode: simulate a connected state with no real alerts
-    if (isDemoMode()) {
-        if (onMessage) setTimeout(() => onMessage({ type: 'snapshot' }), 500);
-        return () => {};
-    }
-
     const token = localStorage.getItem('vigil_token');
     if (!token) return () => {};
 

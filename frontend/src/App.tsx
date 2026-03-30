@@ -4202,64 +4202,7 @@ const DashboardInner = ({ onLogout }) => {
                         </div>
                     </header>
 
-                    {/* ── DEMO MODE BANNER ── */}
-                    {isDemo && !isDemoFullPage && (
-                        <div
-                            style={{
-                                padding: '8px 28px',
-                                background: 'linear-gradient(90deg, rgba(52,211,153,.12), rgba(139,92,246,.12))',
-                                borderBottom: '1px solid rgba(52,211,153,.20)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                animation: 'fadeIn 0.3s ease',
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <div
-                                    style={{
-                                        padding: '2px 10px',
-                                        borderRadius: 20,
-                                        background: 'rgba(52,211,153,.15)',
-                                        border: '1px solid rgba(52,211,153,.30)',
-                                        fontSize: 11,
-                                        fontWeight: 700,
-                                        color: '#34d399',
-                                        fontFamily: DS.fontMono,
-                                        letterSpacing: '0.08em',
-                                    }}
-                                >
-                                    DEMO
-                                </div>
-                                <span style={{ fontSize: 12, color: DS.textSub, fontFamily: DS.fontUI }}>
-                                    Viewing sample data — no database connected
-                                </span>
-                            </div>
-                            <button
-                                onClick={logout}
-                                style={{
-                                    background: 'rgba(52,211,153,.10)',
-                                    border: '1px solid rgba(52,211,153,.25)',
-                                    borderRadius: 8,
-                                    padding: '5px 14px',
-                                    cursor: 'pointer',
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                    color: '#34d399',
-                                    fontFamily: DS.fontUI,
-                                    transition: 'all .2s',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(52,211,153,.20)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(52,211,153,.10)';
-                                }}
-                            >
-                                Exit Demo
-                            </button>
-                        </div>
-                    )}
+                    {/* Demo mode banner removed — live data only */}
 
                     {/* ── MAIN CONTENT ── */}
                     <div
