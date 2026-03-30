@@ -894,6 +894,52 @@ function DemoMongoDBTab({ tabId }) {
         },
     ];
 
+    const ExecStatCard = ({ value, label, subtitle, color }) => (
+        <div
+            style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                padding: '24px 20px',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.10)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            }}
+        >
+            <div
+                style={{
+                    fontSize: '42px',
+                    fontWeight: 800,
+                    letterSpacing: '-0.04em',
+                    color,
+                    marginBottom: 8,
+                }}
+            >
+                {value}
+            </div>
+            <div
+                style={{
+                    fontSize: '11px',
+                    uppercase: true,
+                    letterSpacing: '0.1em',
+                    color: THEME.textDim,
+                    marginBottom: 4,
+                }}
+            >
+                {label}
+            </div>
+            <div style={{ fontSize: '10.5px', color: THEME.textDim }}>{subtitle}</div>
+        </div>
+    );
+
     const renderContent = (sectionKey, itemKey) => {
         switch (sectionKey) {
             // ═════════════════════════════════════════════════════════════════════════
@@ -903,52 +949,6 @@ function DemoMongoDBTab({ tabId }) {
                 switch (itemKey) {
                     case 'executive':
                         // Executive Dashboard - Large Hero KPI Cards with Enhanced Charts
-                        const ExecStatCard = ({ value, label, subtitle, color }) => (
-                            <div
-                                style={{
-                                    background: '#ffffff',
-                                    borderRadius: '16px',
-                                    padding: '24px 20px',
-                                    border: '1px solid #e2e8f0',
-                                    transition: 'all 0.3s ease',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-3px)';
-                                    e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.10)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: '42px',
-                                        fontWeight: 800,
-                                        letterSpacing: '-0.04em',
-                                        color,
-                                        marginBottom: 8,
-                                    }}
-                                >
-                                    {value}
-                                </div>
-                                <div
-                                    style={{
-                                        fontSize: '11px',
-                                        uppercase: true,
-                                        letterSpacing: '0.1em',
-                                        color: THEME.textDim,
-                                        marginBottom: 4,
-                                    }}
-                                >
-                                    {label}
-                                </div>
-                                <div style={{ fontSize: '10.5px', color: THEME.textDim }}>{subtitle}</div>
-                            </div>
-                        );
-
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {/* Row 1: 4 Large Hero KPI Cards */}
