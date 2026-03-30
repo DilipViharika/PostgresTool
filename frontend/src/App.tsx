@@ -3824,6 +3824,8 @@ const DashboardInner = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB);
+            // Migrate legacy default: UserManagement → connections
+            if (saved === 'UserManagement') return 'connections';
             return saved || 'connections';
         } catch {
             return 'connections';

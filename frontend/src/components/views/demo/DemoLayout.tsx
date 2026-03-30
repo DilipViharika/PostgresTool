@@ -161,7 +161,7 @@ const DemoLayout = ({
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                             {goToTab && (
                                 <button
-                                    onClick={() => goToTab('UserManagement')}
+                                    onClick={() => goToTab('connections')}
                                     title="Back to main menu"
                                     style={{
                                         width: 28,
