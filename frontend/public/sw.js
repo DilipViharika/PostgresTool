@@ -2,7 +2,7 @@
 //  VIGIL — Service Worker (PWA offline + caching)
 // ==========================================================================
 
-const CACHE_NAME = 'vigil-v1';
+const CACHE_NAME = 'vigil-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
