@@ -12,7 +12,14 @@ const ConnectionContext = createContext(null);
 
 export function ConnectionProvider({ children }) {
     const [connections, setConnections]               = useState([]);
-    const [activeConnectionId, setActiveConnectionIdState] = useState(null);
+    // Hydrate activeConnectionId from localStorage immediately so activeConnection
+    // resolves as soon as connections arrive (avoids a null → value flicker)
+    const [activeConnectionId, setActiveConnectionIdState] = useState(() => {
+        try {
+            const saved = localStorage.getItem('vigil_active_connection_id');
+            return saved ? parseInt(saved, 10) : null;
+        } catch { return null; }
+    });
     const [loading, setLoading]                       = useState(true);
 
     // Load connections + current active from backend on mount

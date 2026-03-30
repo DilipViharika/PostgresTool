@@ -3873,12 +3873,17 @@ const DashboardInner = ({ onLogout }) => {
     }, []);
 
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
-    const { activeConnection } = useConnection();
+    const { activeConnection, loading: connectionsLoading } = useConnection();
 
     // Auto-navigate to appropriate overview tab when connection changes
     // This ensures users see the right dashboard after switching databases
-    // Also redirects to demo tab when no connection exists and user is on a connection-dependent tab
+    // Also redirects to connections tab when no connection exists and user is on a connection-dependent tab
     useEffect(() => {
+        // IMPORTANT: Don't redirect while connections are still loading from the backend.
+        // On page refresh, activeConnection is null until the API responds; redirecting
+        // during that window would kick the user off their current tab every refresh.
+        if (connectionsLoading) return;
+
         // No connection → only demo tabs and connections are allowed
         if (!activeConnection) {
             if (activeTab?.startsWith('demo-')) return;
@@ -3937,7 +3942,7 @@ const DashboardInner = ({ onLogout }) => {
                 localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, targetTab);
             } catch {}
         }
-    }, [activeConnection?.id, activeTab]); // Re-run when connection or active tab changes
+    }, [connectionsLoading, activeConnection?.id, activeTab]); // Re-run when loading finishes, connection changes, or tab changes
 
     const allowedTabIds = useMemo(
         () =>
