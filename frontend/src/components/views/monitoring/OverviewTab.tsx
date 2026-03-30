@@ -1976,7 +1976,7 @@ const OverviewTab = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [tick, setTick] = useState(0);
     const [refreshInterval, setRefreshInterval] = useState(5000);
-    const [currentEnv, setCurrentEnv] = useState('prod');
+    // Environment switcher removed — data comes from the real connected database
     const intervalRef = useRef(null);
     const [longTxns, setLongTxns] = useState([]);
     const [vacuumData, setVacuumData] = useState(null);
@@ -1985,8 +1985,6 @@ const OverviewTab = () => {
     const [topTables, setTopTables] = useState([]);
     const [timeseriesData, setTimeseriesData] = useState(null);
     const [alertsData, setAlertsData] = useState([]);
-
-    const env = ENVIRONMENTS.find((e) => e.id === currentEnv) || ENVIRONMENTS[0];
 
     /* ── Synthetic datasets ── */
     const velocityData = useMemo(() => {
@@ -2095,7 +2093,7 @@ const OverviewTab = () => {
             // (the !activeConnection guard below will show the welcome screen)
             setLoading(false);
         }
-    }, [currentEnv, activeConnection]);
+    }, [activeConnection]);
 
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
@@ -2203,7 +2201,7 @@ const OverviewTab = () => {
     const cacheHit = Number(stats?.indexHitRatio || 0);
     const diskGB = Number(stats?.diskUsedGB || 0);
     const uptimeHrs = (Number(stats?.uptimeSeconds || 0) / 3600).toFixed(1);
-    const pgVersion = stats?.pgVersion || env.pg;
+    const pgVersion = stats?.pgVersion || '';
 
     const fetched = Number(traffic?.tup_fetched || 0);
     const inserted = Number(traffic?.tup_inserted || 0);
@@ -2311,31 +2309,16 @@ const OverviewTab = () => {
             {/* ═══════ Connection Status / Onboarding Banner ═══════ */}
             <ConnectionStatusBanner />
 
-            {/* ═══════ Top Bar ═══════ */}
+            {/* ═══════ Top Bar: Refresh Control Only ═══════ */}
             <div
                 style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
+                    justifyContent: 'flex-end',
                     flexWrap: 'wrap',
                     gap: 10,
                 }}
             >
-                {/* Left: Status + Env Switcher + PG Badge */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                    <LiveDot color={connPct > 85 ? THEME.danger : THEME.success} size={7} />
-                    <span
-                        className="ov-display"
-                        style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.03em' }}
-                    >
-                        {connPct > 85 ? 'High Load' : 'Operational'}
-                    </span>
-                    <EnvSwitcher currentEnv={currentEnv} onChange={setCurrentEnv} />
-                    <PgVersionBadge version={pgVersion} environment={currentEnv} />
-                    <StatusBadge label={`${activeConns} connections`} color={connColor} />
-                </div>
-
-                {/* Right: Tick + Refresh Control + Notification Bell */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span className="ov-mono" style={{ fontSize: 10, color: THEME.textDim, opacity: 0.5 }}>
                         #{tick}
