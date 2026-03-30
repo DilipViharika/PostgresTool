@@ -1148,15 +1148,15 @@ const PgVersionBadge = ({ version = '16.2', environment = 'prod' }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const BackupStatusCard = ({ lastBackup }) => {
     const backup = lastBackup || {
-        timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
-        sizeGB: 12.4,
-        type: 'Full',
-        status: 'success',
-        duration: '4m 32s',
-        nextScheduled: '02:00 UTC',
+        timestamp: null,
+        sizeGB: 0,
+        type: 'N/A',
+        status: 'unknown',
+        duration: 'N/A',
+        nextScheduled: 'N/A',
     };
-    const isOld = Date.now() - new Date(backup.timestamp).getTime() > 26 * 3600 * 1000;
-    const statusColor = backup.status === 'success' ? THEME.success : THEME.danger;
+    const isOld = backup.timestamp ? (Date.now() - new Date(backup.timestamp).getTime() > 26 * 3600 * 1000) : false;
+    const statusColor = backup.status === 'success' ? THEME.success : backup.status === 'unknown' ? THEME.textDim : THEME.danger;
 
     return (
         <div
@@ -1214,7 +1214,7 @@ const BackupStatusCard = ({ lastBackup }) => {
                         </div>
                     </div>
                 </div>
-                <StatusBadge label={backup.status === 'success' ? 'Verified' : 'FAILED'} color={statusColor} />
+                <StatusBadge label={backup.status === 'success' ? 'Verified' : backup.status === 'unknown' ? 'No data' : 'FAILED'} color={statusColor} />
             </div>
 
             {/* Main value */}
@@ -1264,18 +1264,93 @@ const BackupStatusCard = ({ lastBackup }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: LONG-RUNNING TRANSACTIONS CARD
    ═══════════════════════════════════════════════════════════════════════════ */
+const formatDuration = (totalSec) => {
+    const sec = Math.round(Number(totalSec) || 0);
+    if (sec < 60) return `${sec}s`;
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}m ${String(s).padStart(2, '0')}s`;
+};
+
 const LongTxnCard = ({ data }) => {
-    const txns = data || [
-        { pid: 54231, duration: '18m 42s', query: 'UPDATE public.orders SET ...', state: 'active', waitEvent: null },
-        {
-            pid: 54188,
-            duration: '9m 11s',
-            query: 'BEGIN; SELECT * FROM sessions ...',
-            state: 'idle in transaction',
-            waitEvent: 'Lock',
-        },
-        { pid: 53990, duration: '4m 05s', query: 'VACUUM ANALYZE public.events', state: 'active', waitEvent: null },
-    ];
+    const txns = (Array.isArray(data) ? data : []).map(t => ({
+        pid: t.pid,
+        duration: t.duration || formatDuration(t.txn_duration_sec || t.query_duration_sec || 0),
+        query: t.query || 'Unknown query',
+        state: t.state || 'unknown',
+        waitEvent: t.waitEvent || t.wait_event || null,
+    }));
+
+    if (txns.length === 0) {
+        return (
+            <div
+                style={{
+                    padding: '16px 18px',
+                    borderRadius: 12,
+                    background: THEME.glass,
+                    backdropFilter: 'blur(12px)',
+                    border: `1px solid ${THEME.glassBorder}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow:
+                        '0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)',
+                }}
+            >
+                <div className="ov-card-shine" />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div
+                            style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 10,
+                                background: `${THEME.success}14`,
+                                border: `1px solid ${THEME.success}28`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: `0 0 8px ${THEME.success}25`,
+                            }}
+                        >
+                            <Hourglass size={15} color={THEME.success} />
+                        </div>
+                        <div>
+                            <div
+                                style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    color: THEME.textMuted,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.06em',
+                                    lineHeight: 1,
+                                }}
+                            >
+                                Long-Running Txns
+                            </div>
+                            <div className="ov-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
+                                threshold: &gt; 1m
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        className="ov-mono"
+                        style={{
+                            fontSize: 24,
+                            fontWeight: 800,
+                            color: THEME.success,
+                            lineHeight: 1,
+                        }}
+                    >
+                        0
+                    </div>
+                </div>
+                <div style={{ fontSize: 10.5, color: THEME.textDim, textAlign: 'center', padding: '12px 0' }}>
+                    No long-running transactions detected
+                </div>
+            </div>
+        );
+    }
+
     const maxDurMs = Math.max(
         ...txns.map((t) => {
             const [m, s] = t.duration.replace('m ', ':').replace('s', '').split(':').map(Number);
@@ -1420,14 +1495,16 @@ const LongTxnCard = ({ data }) => {
    NEW: VACUUM HEALTH CARD
    ═══════════════════════════════════════════════════════════════════════════ */
 const VacuumHealthCard = ({ data }) => {
-    const vacuum = data || {
-        urgentCount: 5,
-        warnCount: 12,
-        healthyCount: 183,
-        lastRunTable: 'public.orders',
-        lastRunAgo: '3m ago',
-        bloatPct: 4.2,
-        deadTuples: 182400,
+    const raw = data || {};
+    const summary = raw.summary || raw;
+    const vacuum = {
+        urgentCount: summary.urgentCount || summary.urgent || 0,
+        warnCount: summary.warnCount || summary.warn || 0,
+        healthyCount: summary.healthyCount || summary.healthy || 0,
+        lastRunTable: summary.lastRunTable || (Array.isArray(raw.tables) && raw.tables.length > 0 ? `${raw.tables[0].schemaname || 'public'}.${raw.tables[0].relname || ''}` : 'N/A'),
+        lastRunAgo: summary.lastRunAgo || 'N/A',
+        bloatPct: Number(summary.bloatPct || summary.avgBloatPct || 0),
+        deadTuples: Number(summary.deadTuples || summary.totalDeadTuples || 0),
     };
     const total = vacuum.urgentCount + vacuum.warnCount + vacuum.healthyCount;
     const urgentPct = Math.round((vacuum.urgentCount / total) * 100);
@@ -1901,42 +1978,60 @@ const OverviewTab = () => {
     const [refreshInterval, setRefreshInterval] = useState(5000);
     const [currentEnv, setCurrentEnv] = useState('prod');
     const intervalRef = useRef(null);
+    const [longTxns, setLongTxns] = useState([]);
+    const [vacuumData, setVacuumData] = useState(null);
+    const [backupData, setBackupData] = useState(null);
+    const [replicationData, setReplicationData] = useState(null);
+    const [topTables, setTopTables] = useState([]);
+    const [timeseriesData, setTimeseriesData] = useState(null);
+    const [alertsData, setAlertsData] = useState([]);
 
     const env = ENVIRONMENTS.find((e) => e.id === currentEnv) || ENVIRONMENTS[0];
 
     /* ── Synthetic datasets ── */
     const velocityData = useMemo(() => {
+        if (timeseriesData?.velocity && Array.isArray(timeseriesData.velocity) && timeseriesData.velocity.length > 0) {
+            return timeseriesData.velocity.map(v => ({
+                time: v.time || v.t || '',
+                qps: Number(v.qps || 0),
+                tps: Number(v.tps || 0),
+            }));
+        }
+        // Fallback: generate from current stats
         const pts = [];
         const now = Date.now();
+        const baseQps = Number(data?.traffic?.tup_fetched || 0) > 0 ? Math.round(Number(data?.traffic?.tup_fetched || 0) / 3600) : 0;
+        const baseTps = Number(data?.traffic?.xact_commit || 0) > 0 ? Math.round(Number(data?.traffic?.xact_commit || 0) / 3600) : 0;
         for (let i = 29; i >= 0; i--) {
             const t = new Date(now - i * 60000);
             pts.push({
                 time: `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`,
-                qps: Math.round(800 + Math.sin(i * 0.4) * 300 + 0),
-                tps: Math.round(120 + Math.sin(i * 0.3) * 60 + 0),
+                qps: baseQps > 0 ? Math.round(baseQps + (Math.random() - 0.5) * baseQps * 0.2) : 0,
+                tps: baseTps > 0 ? Math.round(baseTps + (Math.random() - 0.5) * baseTps * 0.2) : 0,
             });
         }
         return pts;
-    }, [tick]);
+    }, [timeseriesData, data, tick]);
 
     const opsPerSec = useMemo(() => {
+        if (timeseriesData?.opsPerSec && Array.isArray(timeseriesData.opsPerSec) && timeseriesData.opsPerSec.length > 0) {
+            return timeseriesData.opsPerSec;
+        }
         const labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'];
-        return labels.map((t) => ({
-            t,
-            reads: 0,
-            writes: 0,
-            commits: 0,
-        }));
-    }, []);
+        return labels.map((t) => ({ t, reads: 0, writes: 0, commits: 0 }));
+    }, [timeseriesData]);
 
     const txnLatencyData = useMemo(() => {
-        return Array.from({ length: 20 }, (_, i) => ({
-            i,
-            p50: 0,
-            p95: 0,
-            p99: 0,
-        }));
-    }, [tick]);
+        if (timeseriesData?.latency && Array.isArray(timeseriesData.latency) && timeseriesData.latency.length > 0) {
+            return timeseriesData.latency.map((v, i) => ({
+                i,
+                p50: Number(v.p50 || 0),
+                p95: Number(v.p95 || 0),
+                p99: Number(v.p99 || 0),
+            }));
+        }
+        return Array.from({ length: 20 }, (_, i) => ({ i, p50: 0, p95: 0, p99: 0 }));
+    }, [timeseriesData, tick]);
 
     const sessionSparks = useMemo(() => genSparkline(10), [tick]);
     const cacheSparks = useMemo(() => genSparkline(10, 98, 2), [tick]);
@@ -1947,33 +2042,42 @@ const OverviewTab = () => {
         if (!activeConnection) { setLoading(false); return; }
         if (isManual) setRefreshing(true);
         try {
-            // Add a timeout so the loading state doesn't hang forever
             const withTimeout = (p, ms = 10000) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
-            const [statsRes, trafficRes] = await Promise.allSettled([
+            const [statsRes, trafficRes, longTxnRes, vacuumRes, backupRes, replicationRes, topTablesRes, timeseriesRes, alertsRes] = await Promise.allSettled([
                 withTimeout(fetchData('/api/overview/stats')),
                 withTimeout(fetchData('/api/overview/traffic')),
+                withTimeout(fetchData('/api/overview/long-transactions')),
+                withTimeout(fetchData('/api/overview/vacuum')),
+                withTimeout(fetchData('/api/overview/backup')),
+                withTimeout(fetchData('/api/overview/replication')),
+                withTimeout(fetchData('/api/overview/top-tables')),
+                withTimeout(fetchData('/api/overview/timeseries')),
+                withTimeout(fetchData('/api/overview/alerts')),
             ]);
-            const val = (r) => (r.status === 'fulfilled' ? r.value : null);
+            const val = (r) => (r.status === 'fulfilled' && !r.value?.error ? r.value : null);
             setData({
-                stats: val(statsRes) || {
-                    activeConnections: 0,
-                    maxConnections: 0,
-                    uptimeSeconds: 0,
-                    diskUsedGB: 0,
-                    indexHitRatio: '0.0',
-                },
+                stats: val(statsRes) || { activeConnections: 0, maxConnections: 0, uptimeSeconds: 0, diskUsedGB: 0, indexHitRatio: '0.0' },
                 traffic: val(trafficRes) || { tup_fetched: 0, tup_inserted: 0, tup_updated: 0, tup_deleted: 0 },
             });
+
+            const longTxnData = val(longTxnRes);
+            setLongTxns(Array.isArray(longTxnData) ? longTxnData : (longTxnData?.transactions || []));
+
+            setVacuumData(val(vacuumRes));
+            setBackupData(val(backupRes));
+            setReplicationData(val(replicationRes));
+
+            const ttData = val(topTablesRes);
+            setTopTables(Array.isArray(ttData) ? ttData : (ttData?.tables || []));
+
+            setTimeseriesData(val(timeseriesRes));
+
+            const aData = val(alertsRes);
+            setAlertsData(Array.isArray(aData) ? aData : (aData?.alerts || []));
         } catch (e) {
             console.error('Overview load failed', e);
             setData({
-                stats: {
-                    activeConnections: 0,
-                    maxConnections: 0,
-                    uptimeSeconds: 0,
-                    diskUsedGB: 0,
-                    indexHitRatio: '0.0',
-                },
+                stats: { activeConnections: 0, maxConnections: 0, uptimeSeconds: 0, diskUsedGB: 0, indexHitRatio: '0.0' },
                 traffic: { tup_fetched: 0, tup_inserted: 0, tup_updated: 0, tup_deleted: 0 },
             });
         } finally {
@@ -2177,22 +2281,22 @@ const OverviewTab = () => {
         },
         {
             label: 'Long Txns',
-            value: '3',
+            value: String(longTxns.length),
             sub: '> 1 min',
             color: THEME.warning,
             icon: Hourglass,
             spark: genSparkline(10, 2, 4),
-            trend: '+1',
+            trend: longTxns.length > 0 ? `${longTxns.length}` : '0',
             trendUp: false,
         },
         {
             label: 'Urgent Vacuum',
-            value: '5',
+            value: String(vacuumData?.urgentCount || vacuumData?.urgent || 0),
             sub: 'tables',
             color: THEME.danger,
             icon: Leaf,
             spark: genSparkline(10, 4, 6),
-            trend: '+2',
+            trend: String(vacuumData?.warnCount || vacuumData?.warn || 0) + ' warn',
             trendUp: false,
         },
     ];
@@ -2343,9 +2447,9 @@ const OverviewTab = () => {
 
             {/* ═══════ Row 2: Backup + LongTxns + Vacuum (new focused cards) ═══════ */}
             <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-                <BackupStatusCard />
-                <LongTxnCard />
-                <VacuumHealthCard />
+                <BackupStatusCard lastBackup={backupData} />
+                <LongTxnCard data={longTxns.length > 0 ? longTxns : null} />
+                <VacuumHealthCard data={vacuumData} />
             </div>
 
             {/* ═══════ Row 3: Velocity Chart + Health + Connection Pool ═══════ */}
@@ -2563,7 +2667,7 @@ const OverviewTab = () => {
                                             value: Math.max(0, maxConns - activeConns - 5),
                                             color: THEME.textDim,
                                         },
-                                        { label: 'Waiting', value: connPct > 80 ? 3 : 0, color: THEME.warning },
+                                        { label: 'Waiting', value: Number(data?.stats?.waitingConnections || 0), color: THEME.warning },
                                         { label: 'Max', value: maxConns, color: THEME.textMuted },
                                     ].map((s, i) => (
                                         <div
@@ -2683,11 +2787,11 @@ const OverviewTab = () => {
                     }}
                 >
                     {[
-                        { label: 'P50 avg', value: '1.4 ms', color: '#34d399' },
-                        { label: 'P95 avg', value: '9.2 ms', color: THEME.warning },
-                        { label: 'P99 avg', value: '24.8 ms', color: THEME.danger },
-                        { label: 'SLA breach', value: '0', color: THEME.success },
-                        { label: 'Timeout (5m)', value: '2', color: THEME.warning },
+                        { label: 'P50 avg', value: data?.stats?.p50 ? `${Number(data.stats.p50).toFixed(1)} ms` : 'N/A', color: '#34d399' },
+                        { label: 'P95 avg', value: data?.stats?.p95 ? `${Number(data.stats.p95).toFixed(1)} ms` : 'N/A', color: THEME.warning },
+                        { label: 'P99 avg', value: data?.stats?.p99 ? `${Number(data.stats.p99).toFixed(1)} ms` : 'N/A', color: THEME.danger },
+                        { label: 'Deadlocks', value: String(data?.traffic?.deadlocks || 0), color: Number(data?.traffic?.deadlocks || 0) > 0 ? THEME.danger : THEME.success },
+                        { label: 'Rollbacks', value: String(data?.traffic?.xact_rollback || 0), color: Number(data?.traffic?.xact_rollback || 0) > 0 ? THEME.warning : THEME.success },
                     ].map((s, i) => (
                         <div
                             key={i}
@@ -2987,22 +3091,22 @@ const OverviewTab = () => {
                 {[
                     {
                         label: 'CPU Load',
-                        value: 38,
+                        value: Math.round(Number(data?.stats?.cpuUsage || 0)),
                         color: THEME.primary,
                         icon: Cpu,
-                        detail: '4 cores • 1.8 load avg',
-                        status: 'Normal',
-                        secondary: 22,
+                        detail: data?.stats?.cpuDetail || 'N/A',
+                        status: Number(data?.stats?.cpuUsage || 0) > 80 ? 'High' : Number(data?.stats?.cpuUsage || 0) > 50 ? 'Moderate' : 'Normal',
+                        secondary: Math.round(Number(data?.stats?.ioWait || 0)),
                         secondaryLabel: 'I/O Wait',
                     },
                     {
                         label: 'Memory Usage',
-                        value: 72,
+                        value: Math.round(Number(data?.stats?.memoryUsagePct || 0)),
                         color: THEME.secondary,
                         icon: MemoryStick || Server,
-                        detail: '12 GB / 16 GB allocated',
-                        status: 'Moderate',
-                        secondary: 55,
+                        detail: data?.stats?.memoryDetail || `${data?.stats?.sharedBuffersMB ? Math.round(data.stats.sharedBuffersMB / 1024 * 10) / 10 + ' GB shared buffers' : 'N/A'}`,
+                        status: Number(data?.stats?.memoryUsagePct || 0) > 80 ? 'High' : Number(data?.stats?.memoryUsagePct || 0) > 50 ? 'Moderate' : 'Normal',
+                        secondary: Math.round(Number(data?.stats?.sharedBuffersPct || 0)),
                         secondaryLabel: 'Shared Buf',
                     },
                     {
@@ -3010,9 +3114,9 @@ const OverviewTab = () => {
                         value: Math.round((diskGB / 200) * 100),
                         color: THEME.warning,
                         icon: HardDrive,
-                        detail: `${diskGB} GB / 200 GB SSD`,
+                        detail: `${diskGB} GB used`,
                         status: diskGB > 160 ? 'High' : 'Normal',
-                        secondary: 30,
+                        secondary: 0,
                         secondaryLabel: 'Write Amp',
                     },
                 ].map((r, i) => (
@@ -3108,19 +3212,16 @@ const OverviewTab = () => {
                                             display: 'block',
                                         }}
                                     >
-                                        primary-1
+                                        {replicationData?.isStandby ? 'standby' : 'primary'}
                                     </span>
                                     <span className="ov-mono" style={{ fontSize: 9, color: THEME.textDim }}>
-                                        lag: 0 ms
+                                        lag: {replicationData?.isStandby ? `${replicationData?.replayLag || 0} ms` : '0 ms'}
                                     </span>
                                 </div>
                             </div>
                             <ChevronRight size={13} color={THEME.textDim} />
                             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                {[
-                                    { name: 'replica-1', lagMs: 120 },
-                                    { name: 'replica-2', lagMs: 480 },
-                                ].map((r, i) => (
+                                {(replicationData?.replicas || []).length > 0 ? (replicationData.replicas || []).map((r, i) => (
                                     <div
                                         key={i}
                                         style={{
@@ -3144,21 +3245,23 @@ const OverviewTab = () => {
                                                         display: 'block',
                                                     }}
                                                 >
-                                                    {r.name}
+                                                    {r.application_name || r.name}
                                                 </span>
                                                 <span
                                                     className="ov-mono"
                                                     style={{
                                                         fontSize: 9,
-                                                        color: r.lagMs > 300 ? THEME.warning : THEME.textDim,
+                                                        color: (r.replay_lag_ms || r.lagMs || 0) > 300 ? THEME.warning : THEME.textDim,
                                                     }}
                                                 >
-                                                    lag: {r.lagMs} ms
+                                                    lag: {r.replay_lag_ms || r.lagMs || 0} ms
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                )) : (
+                                    <span style={{ fontSize: 10.5, color: THEME.textDim }}>No replicas detected</span>
+                                )}
                             </div>
                         </div>
 
@@ -3184,7 +3287,7 @@ const OverviewTab = () => {
                                         className="ov-mono"
                                         style={{ fontSize: 12, fontWeight: 800, color: THEME.danger }}
                                     >
-                                        3
+                                        {String(replicationData?.blockedQueries || 0)}
                                     </span>
                                 </div>
                                 <div
@@ -3199,7 +3302,7 @@ const OverviewTab = () => {
                                     <div
                                         className="ov-bar-animate"
                                         style={{
-                                            width: '60%',
+                                            width: `${replicationData?.lockContention ? Math.min(replicationData.lockContention, 100) : 0}%`,
                                             height: '100%',
                                             borderRadius: 10,
                                             background: `linear-gradient(90deg, ${THEME.danger}75, ${THEME.danger})`,
@@ -3208,23 +3311,23 @@ const OverviewTab = () => {
                                     />
                                 </div>
                                 <div style={{ marginTop: 4, fontSize: 9.5, color: THEME.textDim }}>
-                                    3 blocked, 5 waiting on row/page locks.
+                                    {String(replicationData?.blockedQueries || 0)} blocked{replicationData?.waitingQueries ? `, ${replicationData.waitingQueries} waiting` : ''} on locks.
                                 </div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <Lock size={10} color={THEME.warning} />
                                     <span style={{ fontSize: 10.5, color: THEME.textMuted }}>Lock contention</span>
-                                    <StatusBadge label="Elevated" color={THEME.warning} />
+                                    <StatusBadge label={replicationData?.lockContention > 50 ? "Elevated" : "Normal"} color={replicationData?.lockContention > 50 ? THEME.warning : THEME.success} />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <Unlock size={10} color={THEME.success} />
                                     <span style={{ fontSize: 10.5, color: THEME.textMuted }}>Deadlocks (5m)</span>
                                     <span
                                         className="ov-mono"
-                                        style={{ fontSize: 11, fontWeight: 700, color: THEME.success }}
+                                        style={{ fontSize: 11, fontWeight: 700, color: String(replicationData?.deadlocks || data?.traffic?.deadlocks || 0) > 0 ? THEME.danger : THEME.success }}
                                     >
-                                        0
+                                        {String(replicationData?.deadlocks || data?.traffic?.deadlocks || 0)}
                                     </span>
                                 </div>
                             </div>
@@ -3235,15 +3338,12 @@ const OverviewTab = () => {
                 {/* Top Impacted Tables */}
                 <Panel title="Top Impacted Tables" icon={BarChart3} noPad>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        {[
-                            { name: 'public.orders', reads: 42000, writes: 9000 },
-                            { name: 'public.events', reads: 31000, writes: 14000 },
-                            { name: 'public.sessions', reads: 26000, writes: 6000 },
-                            { name: 'audit.log_entries', reads: 18000, writes: 3000 },
-                            { name: 'public.users', reads: 15000, writes: 1200 },
-                        ].map((t, i, arr) => {
-                            const total = t.reads + t.writes;
-                            const rp = total > 0 ? Math.round((t.reads / total) * 100) : 50;
+                        {(topTables.length > 0 ? topTables : []).map((t, i, arr) => {
+                            const name = t.name || `${t.schemaname || 'public'}.${t.relname || 'unknown'}`;
+                            const reads = Number(t.reads || t.seq_tup_read || 0);
+                            const writes = Number(t.writes || 0);
+                            const total = reads + writes;
+                            const rp = total > 0 ? Math.round((reads / total) * 100) : 50;
                             return (
                                 <div
                                     key={t.name}
@@ -3271,9 +3371,9 @@ const OverviewTab = () => {
                                                 whiteSpace: 'nowrap',
                                                 maxWidth: '62%',
                                             }}
-                                            title={t.name}
+                                            title={name}
                                         >
-                                            {t.name}
+                                            {name}
                                         </span>
                                         <span style={{ fontSize: 10.5, color: THEME.textDim }}>
                                             {fmtNum(total)} ops
@@ -3323,8 +3423,8 @@ const OverviewTab = () => {
                                             marginTop: 4,
                                         }}
                                     >
-                                        <span>R: {fmtNum(t.reads)}</span>
-                                        <span>W: {fmtNum(t.writes)}</span>
+                                        <span>R: {fmtNum(reads)}</span>
+                                        <span>W: {fmtNum(writes)}</span>
                                     </div>
                                 </div>
                             );
