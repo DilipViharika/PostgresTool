@@ -239,7 +239,7 @@ const ConnectionWizard = () => {
       padding: '32px',
       borderRadius: '12px',
       background: 'rgba(18, 10, 31, 0.6)',
-      border: '1px solid rgba(0, 212, 255, 0.12)',
+      border: '1px solid rgba(139, 92, 246, 0.12)',
       backdropFilter: 'blur(8px)',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
     },
@@ -263,12 +263,12 @@ const ConnectionWizard = () => {
       transition: 'all 0.2s',
     },
     stepDotActive: {
-      background: 'linear-gradient(135deg, #00D4FF, #2AFFD4)',
+      background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)',
       color: '#07030D',
     },
     stepDotInactive: {
-      background: 'rgba(0, 212, 255, 0.1)',
-      border: '1px solid rgba(0, 212, 255, 0.2)',
+      background: 'rgba(139, 92, 246, 0.1)',
+      border: '1px solid rgba(139, 92, 246, 0.2)',
       color: THEME.textMuted,
     },
     stepDotCompleted: {
@@ -281,7 +281,7 @@ const ConnectionWizard = () => {
       left: '0',
       right: '0',
       height: '1px',
-      background: 'rgba(0, 212, 255, 0.1)',
+      background: 'rgba(139, 92, 246, 0.1)',
       zIndex: 1,
     },
     title: {
@@ -306,17 +306,17 @@ const ConnectionWizard = () => {
     typeCard: {
       padding: '16px',
       borderRadius: '8px',
-      border: '1px solid rgba(0, 212, 255, 0.15)',
-      background: 'rgba(0, 212, 255, 0.02)',
+      border: '1px solid rgba(139, 92, 246, 0.15)',
+      background: 'rgba(139, 92, 246, 0.02)',
       cursor: 'pointer',
       transition: 'all 0.2s',
       textAlign: 'center',
     },
     typeCardHover: {
-      borderColor: 'rgba(0, 212, 255, 0.4)',
-      background: 'rgba(0, 212, 255, 0.08)',
+      borderColor: 'rgba(139, 92, 246, 0.4)',
+      background: 'rgba(139, 92, 246, 0.08)',
       transform: 'translateY(-2px)',
-      boxShadow: '0 8px 20px rgba(0, 212, 255, 0.15)',
+      boxShadow: '0 8px 20px rgba(139, 92, 246, 0.15)',
     },
     typeIcon: {
       fontSize: '32px',
@@ -351,7 +351,7 @@ const ConnectionWizard = () => {
       width: '100%',
       padding: '10px 12px',
       borderRadius: '8px',
-      border: '1px solid rgba(0, 212, 255, 0.15)',
+      border: '1px solid rgba(139, 92, 246, 0.15)',
       background: 'rgba(7, 3, 13, 0.4)',
       color: THEME.textMain,
       fontSize: '13px',
@@ -360,9 +360,9 @@ const ConnectionWizard = () => {
       boxSizing: 'border-box',
     },
     formInputFocus: {
-      borderColor: 'rgba(0, 212, 255, 0.4)',
+      borderColor: 'rgba(139, 92, 246, 0.4)',
       background: 'rgba(7, 3, 13, 0.6)',
-      boxShadow: '0 0 12px rgba(0, 212, 255, 0.1)',
+      boxShadow: '0 0 12px rgba(139, 92, 246, 0.1)',
       outline: 'none',
     },
     formGrid: {
@@ -377,8 +377,8 @@ const ConnectionWizard = () => {
     toggleSection: {
       padding: '12px',
       borderRadius: '8px',
-      background: 'rgba(0, 212, 255, 0.03)',
-      border: '1px solid rgba(0, 212, 255, 0.1)',
+      background: 'rgba(139, 92, 246, 0.03)',
+      border: '1px solid rgba(139, 92, 246, 0.1)',
       marginBottom: '16px',
     },
     toggleLabel: {
@@ -395,8 +395,8 @@ const ConnectionWizard = () => {
       width: '40px',
       height: '24px',
       borderRadius: '12px',
-      background: 'rgba(0, 212, 255, 0.2)',
-      border: '1px solid rgba(0, 212, 255, 0.3)',
+      background: 'rgba(139, 92, 246, 0.2)',
+      border: '1px solid rgba(139, 92, 246, 0.3)',
       cursor: 'pointer',
       position: 'relative',
       transition: 'all 0.2s',
@@ -405,8 +405,8 @@ const ConnectionWizard = () => {
       paddingRight: '3px',
     },
     toggleActive: {
-      background: 'linear-gradient(135deg, #00D4FF, #2AFFD4)',
-      borderColor: '#00D4FF',
+      background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)',
+      borderColor: '#8b5cf6',
       paddingRight: 'auto',
       paddingLeft: '3px',
     },
@@ -437,9 +437,9 @@ const ConnectionWizard = () => {
       color: '#FF4560',
     },
     testStatusLoading: {
-      background: 'rgba(0, 212, 255, 0.08)',
-      border: '1px solid rgba(0, 212, 255, 0.2)',
-      color: '#00D4FF',
+      background: 'rgba(139, 92, 246, 0.08)',
+      border: '1px solid rgba(139, 92, 246, 0.2)',
+      color: '#8b5cf6',
     },
     successScreen: {
       textAlign: 'center',
@@ -470,22 +470,22 @@ const ConnectionWizard = () => {
     },
     buttonSecondary: {
       background: 'transparent',
-      border: '1px solid rgba(0, 212, 255, 0.2)',
+      border: '1px solid rgba(139, 92, 246, 0.2)',
       color: THEME.textMuted,
     },
     buttonSecondaryHover: {
-      borderColor: 'rgba(0, 212, 255, 0.4)',
+      borderColor: 'rgba(139, 92, 246, 0.4)',
       color: THEME.textMain,
     },
     buttonPrimary: {
-      background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(42, 255, 212, 0.1))',
-      border: '1px solid rgba(0, 212, 255, 0.4)',
-      color: '#00D4FF',
+      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.1))',
+      border: '1px solid rgba(139, 92, 246, 0.4)',
+      color: '#8b5cf6',
     },
     buttonPrimaryHover: {
-      background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.35), rgba(42, 255, 212, 0.2))',
-      borderColor: 'rgba(0, 212, 255, 0.6)',
-      boxShadow: '0 0 20px rgba(0, 212, 255, 0.2)',
+      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(6, 182, 212, 0.2))',
+      borderColor: 'rgba(139, 92, 246, 0.6)',
+      boxShadow: '0 0 20px rgba(139, 92, 246, 0.2)',
       transform: 'translateY(-2px)',
     },
   };
@@ -764,7 +764,7 @@ const ConnectionWizard = () => {
             </div>
 
             {formData.sshTunnel && (
-              <div style={{ ...styles.formSection, paddingLeft: '16px', borderLeft: '2px solid rgba(0, 212, 255, 0.2)' }}>
+              <div style={{ ...styles.formSection, paddingLeft: '16px', borderLeft: '2px solid rgba(139, 92, 246, 0.2)' }}>
                 <div style={styles.formGrid}>
                   <div>
                     <label style={styles.formLabel}>SSH Host</label>
@@ -832,8 +832,8 @@ const ConnectionWizard = () => {
                 style={{
                   ...styles.formSection,
                   padding: '16px',
-                  background: 'rgba(0, 212, 255, 0.03)',
-                  border: '1px solid rgba(0, 212, 255, 0.1)',
+                  background: 'rgba(139, 92, 246, 0.03)',
+                  border: '1px solid rgba(139, 92, 246, 0.1)',
                   borderRadius: '8px',
                 }}
               >

@@ -15,7 +15,7 @@ import { Ico, RoleBadge, StatusBadge, FormField, Toggle } from '../shared/compon
 const SCREEN_CATEGORIES = [
   {
     label: 'Core Monitoring',
-    color: '#00D4FF',
+    color: '#8b5cf6',
     screens: [
       { id: 'connections',  label: 'Connections',     icon: '🔌' },
       { id: 'overview',     label: 'Overview',        icon: '📊' },
@@ -27,7 +27,7 @@ const SCREEN_CATEGORIES = [
   },
   {
     label: 'Query & Analysis',
-    color: '#2AFFD4',
+    color: '#06b6d4',
     screens: [
       { id: 'sql',          label: 'SQL Console',     icon: '🖥️' },
       { id: 'optimizer',    label: 'Query Optimizer', icon: '🔍' },
@@ -103,7 +103,7 @@ const ROLE_SCREEN_PRESETS = {
 
 const DATA_ACCESS_LEVELS = [
   { id: 'public', label: 'Public', color: '#2EE89C' },
-  { id: 'internal', label: 'Internal', color: '#00D4FF' },
+  { id: 'internal', label: 'Internal', color: '#8b5cf6' },
   { id: 'confidential', label: 'Confidential', color: '#FFB520' },
   { id: 'restricted', label: 'Restricted', color: '#FF4560' },
 ];

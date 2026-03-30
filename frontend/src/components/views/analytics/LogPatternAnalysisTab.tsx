@@ -83,8 +83,8 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
                 transition: 'all 0.3s ease',
             }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.background = `rgba(0, 212, 255, 0.08)`;
-                e.currentTarget.style.borderColor = `rgba(0, 212, 255, 0.25)`;
+                e.currentTarget.style.background = `rgba(139, 92, 246, 0.08)`;
+                e.currentTarget.style.borderColor = `rgba(139, 92, 246, 0.25)`;
             }}
             onMouseLeave={(e) => {
                 e.currentTarget.style.background = THEME.glass;

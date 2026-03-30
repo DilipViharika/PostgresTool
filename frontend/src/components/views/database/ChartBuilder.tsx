@@ -49,8 +49,8 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
 
     // VIGIL color palette
     const chartColors = [
-        '#00D4FF', // Cyan
-        '#2AFFD4', // Aquamarine
+        '#8b5cf6', // Purple
+        '#06b6d4', // Teal
         '#2EE89C', // Emerald
         '#FFB520', // Amber
         '#FF4560', // Rose

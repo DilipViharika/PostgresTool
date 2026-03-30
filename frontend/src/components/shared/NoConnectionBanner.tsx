@@ -38,11 +38,11 @@ const NoConnectionBanner = ({
       margin: '20px 0',
       padding: '24px',
       borderRadius: '12px',
-      background: `linear-gradient(135deg, rgba(0, 212, 255, 0.03) 0%, rgba(42, 255, 212, 0.02) 100%)`,
-      border: `1.5px solid ${borderGlow ? 'rgba(0, 212, 255, 0.3)' : 'rgba(0, 212, 255, 0.12)'}`,
+      background: `linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(6, 182, 212, 0.02) 100%)`,
+      border: `1.5px solid ${borderGlow ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.12)'}`,
       backdropFilter: 'blur(8px)',
       boxShadow: borderGlow
-        ? '0 0 20px rgba(0, 212, 255, 0.15), inset 0 0 20px rgba(0, 212, 255, 0.05)'
+        ? '0 0 20px rgba(139, 92, 246, 0.15), inset 0 0 20px rgba(139, 92, 246, 0.05)'
         : '0 8px 32px rgba(0, 0, 0, 0.3)',
       transition: 'all 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
       overflow: 'hidden',
@@ -63,8 +63,8 @@ const NoConnectionBanner = ({
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: '12px',
-      background: 'rgba(0, 212, 255, 0.08)',
-      border: '1px solid rgba(0, 212, 255, 0.2)',
+      background: 'rgba(139, 92, 246, 0.08)',
+      border: '1px solid rgba(139, 92, 246, 0.2)',
       animation: borderGlow ? 'pulse 2s ease-in-out infinite' : 'none',
     },
     textContent: {
@@ -98,8 +98,8 @@ const NoConnectionBanner = ({
       borderRadius: '6px',
       fontSize: '11px',
       fontWeight: '500',
-      background: 'rgba(0, 212, 255, 0.05)',
-      border: '1px solid rgba(0, 212, 255, 0.15)',
+      background: 'rgba(139, 92, 246, 0.05)',
+      border: '1px solid rgba(139, 92, 246, 0.15)',
       color: THEME.textMuted,
       fontFamily: THEME.fontMono,
     },
@@ -124,20 +124,20 @@ const NoConnectionBanner = ({
       whiteSpace: 'nowrap',
     },
     buttonPrimary: {
-      background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(42, 255, 212, 0.1) 100%)',
-      border: '1px solid rgba(0, 212, 255, 0.4)',
-      color: '#00D4FF',
+      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.1) 100%)',
+      border: '1px solid rgba(139, 92, 246, 0.4)',
+      color: '#8b5cf6',
     },
     buttonPrimaryHover: {
-      background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.35) 0%, rgba(42, 255, 212, 0.2) 100%)',
-      border: '1px solid rgba(0, 212, 255, 0.6)',
-      boxShadow: '0 0 20px rgba(0, 212, 255, 0.2)',
+      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.35) 0%, rgba(6, 182, 212, 0.2) 100%)',
+      border: '1px solid rgba(139, 92, 246, 0.6)',
+      boxShadow: '0 0 20px rgba(139, 92, 246, 0.2)',
       transform: 'translateY(-2px)',
     },
     decorativeBackground: {
       position: 'absolute',
       inset: 0,
-      background: `radial-gradient(circle 600px at 20% 50%, rgba(0, 212, 255, 0.04) 0%, transparent 100%)`,
+      background: `radial-gradient(circle 600px at 20% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 100%)`,
       pointerEvents: 'none',
       zIndex: 1,
     },
@@ -162,7 +162,7 @@ const NoConnectionBanner = ({
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+          background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
           animation: shimmer 3s infinite;
         }
       `}</style>
@@ -173,7 +173,7 @@ const NoConnectionBanner = ({
 
         <div style={styles.content}>
           <div style={styles.iconWrapper}>
-            <Database size={28} color="#00D4FF" strokeWidth={1.5} />
+            <Database size={28} color="#8b5cf6" strokeWidth={1.5} />
           </div>
 
           <div style={styles.textContent}>

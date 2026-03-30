@@ -250,7 +250,7 @@ export const ChartDefs = () => (
 
             {/* ── Glow Filters ── */}
 
-            {/* Cyan glow — primary #00D4FF */}
+            {/* Violet glow — primary #8b5cf6 */}
             <filter id="tealGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
                 <feColorMatrix type="matrix"
@@ -259,7 +259,7 @@ export const ChartDefs = () => (
                 <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
 
-            {/* Aquamarine glow — secondary #2AFFD4 */}
+            {/* Cyan glow — secondary #06b6d4 */}
             <filter id="goldGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
                 <feColorMatrix type="matrix"

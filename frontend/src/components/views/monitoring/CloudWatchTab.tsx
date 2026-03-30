@@ -26,8 +26,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
    THEME
    ───────────────────────────────────────────────────────────────── */
 const buildTheme = (isDark) => ({
-    primary: isDark ? '#00D4FF' : '#8b5cf6',
-    secondary: isDark ? '#2AFFD4' : '#10b981',
+    primary: isDark ? '#8b5cf6' : '#8b5cf6',
+    secondary: isDark ? '#06b6d4' : '#10b981',
     success: isDark ? '#2EE89C' : '#22c55e',
     danger: isDark ? '#FF4560' : '#ef4444',
     warning: isDark ? '#FFB520' : '#f59e0b',
@@ -38,7 +38,7 @@ const buildTheme = (isDark) => ({
     surfaceHover: isDark ? '#1A1029' : '#f1f5f9',
     glass: isDark ? 'rgba(18,10,31,0.65)' : 'rgba(255,255,255,0.85)',
     glassHeavy: isDark ? 'rgba(7,3,13,0.95)' : 'rgba(255,255,255,0.97)',
-    glassBorder: isDark ? 'rgba(0,212,255,0.12)' : 'rgba(0,0,0,0.08)',
+    glassBorder: isDark ? 'rgba(139,92,246,0.12)' : 'rgba(0,0,0,0.08)',
     textMain: isDark ? '#F0ECF8' : '#0f172a',
     textMuted: isDark ? '#9888B4' : '#64748b',
     textDim: isDark ? '#4A3A5E' : '#94a3b8',
