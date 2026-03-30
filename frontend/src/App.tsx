@@ -3824,9 +3824,9 @@ const DashboardInner = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB);
-            return saved || 'UserManagement';
+            return saved || 'connections';
         } catch {
-            return 'UserManagement';
+            return 'connections';
         }
     });
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -3877,14 +3877,13 @@ const DashboardInner = ({ onLogout }) => {
     // This ensures users see the right dashboard after switching databases
     // Also redirects to demo tab when no connection exists and user is on a connection-dependent tab
     useEffect(() => {
-        // No connection → only demo tabs, connections, and user management are allowed
+        // No connection → only demo tabs and connections are allowed
         if (!activeConnection) {
             if (activeTab?.startsWith('demo-')) return;
-            if (activeTab === 'UserManagement') return;
             if (activeTab === 'connections') return;
-            setActiveTab('demo-postgres');
+            setActiveTab('connections');
             try {
-                localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'demo-postgres');
+                localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'connections');
             } catch {}
             return;
         }
