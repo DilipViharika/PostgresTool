@@ -20,8 +20,8 @@ const DEMO_ROUTES = [
     [/\/api\/connections\/[^/]+\/default/, () => ({ success: true })],
     [/\/api\/connections\/[^/]+\/switch/, () => ({ success: true })],
     [/\/api\/connections$/, () => ([
-        { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'vigil_prod', isDefault: true, status: 'connected', created_at: ago(43200) },
-        { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'vigil_staging', isDefault: false, status: 'disconnected', created_at: ago(21600) },
+        { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'vigil_prod', dbType: 'postgresql', isDefault: true, status: 'connected', created_at: ago(43200) },
+        { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'vigil_staging', dbType: 'postgresql', isDefault: false, status: 'disconnected', created_at: ago(21600) },
     ])],
 
     // ── Overview (flat object with specific keys) ────────────────────────────

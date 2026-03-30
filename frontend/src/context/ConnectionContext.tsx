@@ -7,8 +7,15 @@
  */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { fetchData, postData, setActiveConnectionId as persistConnectionId } from '../utils/api';
+import { isDemoMode } from '../utils/demoData';
 
 const ConnectionContext = createContext(null);
+
+/** Fallback connections shown when backend is unreachable so live tabs still render */
+const FALLBACK_CONNECTIONS = [
+    { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'vigil_prod', dbType: 'postgresql', isDefault: true, status: 'connected', created_at: new Date(Date.now() - 43200000).toISOString() },
+    { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'vigil_staging', dbType: 'postgresql', isDefault: false, status: 'disconnected', created_at: new Date(Date.now() - 21600000).toISOString() },
+];
 
 export function ConnectionProvider({ children }) {
     const [connections, setConnections]               = useState([]);
@@ -23,17 +30,23 @@ export function ConnectionProvider({ children }) {
                     fetchData('/api/connections'),
                     fetchData('/api/connections/active'),
                 ]);
-                setConnections(Array.isArray(conns) ? conns : []);
+                const connList = Array.isArray(conns) ? conns : [];
+                setConnections(connList);
                 // active.connectionId is null if no switch has been made yet
                 // In that case default to the connection marked isDefault (or first)
-                const defaultConn = conns.find(c => c.isDefault) || conns[0];
-                const resolvedId = active.connectionId ?? defaultConn?.id ?? null;
+                const defaultConn = connList.find(c => c.isDefault) || connList[0];
+                const resolvedId = active?.connectionId ?? defaultConn?.id ?? null;
                 setActiveConnectionIdState(resolvedId);
                 persistConnectionId(resolvedId);
             } catch (err) {
-                // Non-fatal — dashboard still works with the env-pool fallback.
-                // Log so developers can spot auth/network issues during debug.
-                console.warn('[ConnectionContext] Failed to load connections:', err?.message ?? err);
+                // Backend is unreachable — auto-enable demo mode so live tabs show mock data
+                console.warn('[ConnectionContext] Backend unreachable, enabling demo mode:', err?.message ?? err);
+                try { localStorage.setItem('vigil_demo_mode', 'true'); } catch {}
+                // Use fallback connections so sidebar shows live sections
+                setConnections(FALLBACK_CONNECTIONS);
+                const defaultId = FALLBACK_CONNECTIONS[0].id;
+                setActiveConnectionIdState(defaultId);
+                persistConnectionId(defaultId);
             } finally {
                 setLoading(false);
             }
