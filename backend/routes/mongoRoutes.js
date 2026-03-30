@@ -9,7 +9,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/overview', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const dbStats = await db.command({ dbStats: 1 });
 
@@ -56,7 +56,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/ops-chart', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const opcounters = serverStatus.opcounters || {};
 
@@ -74,7 +74,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/latency-chart', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const opLatencies = serverStatus.opLatencies || {};
 
@@ -98,7 +98,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/replication-status', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const replStatus = await db.admin().command({ replSetGetStatus: 1 });
@@ -131,7 +131,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/alerts', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const alerts = [];
 
@@ -168,7 +168,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/latency-stats', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const opLatencies = serverStatus.opLatencies || {};
 
@@ -191,7 +191,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/ops-breakdown', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const opcounters = serverStatus.opcounters || {};
 
@@ -218,7 +218,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/active-operations', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const currentOp = await db.admin().command({ currentOp: 1, active: true });
 
             return res.json((currentOp.inprog || []).map(op => ({
@@ -235,7 +235,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/slow-queries', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const profileColl = db.collection('system.profile');
             const slowOps = await profileColl
                 .find()
@@ -257,7 +257,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/lock-stats', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const locks = serverStatus.locks || {};
 
@@ -281,7 +281,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/wiredtiger', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
             const wt = serverStatus.wiredTiger || {};
             const cache = wt.cache || {};
@@ -322,7 +322,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/collection-stats', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const collections = await db.listCollections().toArray();
 
             const stats = [];
@@ -349,7 +349,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/index-stats', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const collections = await db.listCollections().toArray();
 
             let totalIndexes = 0;
@@ -400,7 +400,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/capacity-plan', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const dbStats = await db.command({ dbStats: 1 });
 
             const currentSize = Math.round((dbStats.dataSize || 0) / 1024 / 1024 / 1024);
@@ -427,7 +427,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/growth-chart', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const dbStats = await db.command({ dbStats: 1 });
 
             const currentSizeMB = Math.round((dbStats.dataSize || 0) / 1024 / 1024);
@@ -455,7 +455,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/replica-members', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const replStatus = await db.admin().command({ replSetGetStatus: 1 });
@@ -481,7 +481,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/server-status', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const serverStatus = await db.admin().serverStatus();
 
             try {
@@ -515,7 +515,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/replication-lag-chart', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const replStatus = await db.admin().command({ replSetGetStatus: 1 });
@@ -548,7 +548,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/election-history', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const replStatus = await db.admin().command({ replSetGetStatus: 1 });
@@ -571,7 +571,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/oplog-stats', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const localDb = client.db('local');
@@ -622,7 +622,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/shards', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const shardsResult = await db.admin().command({ listShards: 1 });
@@ -652,7 +652,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/shard-stats', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const shards = await db.admin().command({ listShards: 1 });
@@ -700,7 +700,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/chunk-distribution', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const configDb = client.db('config');
@@ -727,7 +727,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/balancer-status', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const status = await db.admin().command({ balancerStatus: 1 });
@@ -763,7 +763,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/migrations', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             try {
                 const configDb = client.db('config');
@@ -796,7 +796,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
 
     router.get('/api/mongodb/collections', authenticate, async (req, res) => {
         try {
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const collections = await db.listCollections().toArray();
 
             return res.json({
@@ -810,7 +810,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
     router.post('/api/mongodb/find', authenticate, async (req, res) => {
         try {
             const { collection, query = {}, limit = 100 } = req.body;
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             const documents = await db.collection(collection)
                 .find(query)
@@ -826,7 +826,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
     router.post('/api/mongodb/insert', authenticate, async (req, res) => {
         try {
             const { collection, document } = req.body;
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             const result = await db.collection(collection).insertOne(document);
 
@@ -842,7 +842,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
     router.post('/api/mongodb/update', authenticate, async (req, res) => {
         try {
             const { collection, filter = {}, update = {} } = req.body;
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             const result = await db.collection(collection).updateMany(filter, update);
 
@@ -859,7 +859,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
     router.post('/api/mongodb/delete', authenticate, async (req, res) => {
         try {
             const { collection, filter = {} } = req.body;
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             const result = await db.collection(collection).deleteMany(filter);
 
@@ -875,7 +875,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
     router.post('/api/mongodb/aggregate', authenticate, async (req, res) => {
         try {
             const { collection, pipeline = [] } = req.body;
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             const results = await db.collection(collection)
                 .aggregate(pipeline)
@@ -890,7 +890,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
     router.get('/api/mongodb/export/:collection', authenticate, async (req, res) => {
         try {
             const { collection } = req.params;
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             const documents = await db.collection(collection)
                 .find()
@@ -909,7 +909,7 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
     router.post('/api/mongodb/import', authenticate, async (req, res) => {
         try {
             const { collection, documents = [] } = req.body;
-            const { client, db } = await getMongoClient(req.query.connectionId || null);
+            const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
 
             if (!Array.isArray(documents) || documents.length === 0) {
                 return res.json({ insertedCount: 0 });

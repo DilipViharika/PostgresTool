@@ -3,9 +3,9 @@ import { Router } from 'express';
 export default function mysqlRoutes(pool, authenticate, getPool, CONNECTIONS) {
     const router = Router();
 
-    // Helper to get MySQL pool for request
+    // Helper to get MySQL pool for request (scoped to authenticated user)
     async function reqMysqlPool(req) {
-        return getPool(req.query.connectionId || null);
+        return getPool(req.query.connectionId || null, req.user?.id);
     }
 
     // GET /api/mysql/overview

@@ -55,7 +55,9 @@ function appendConnectionId(path) {
 
 async function request(path, options = {}) {
     const isGet = options.method === 'GET' || !options.method;
-    const resolvedPath = isGet ? appendConnectionId(path) : path;
+    // Always append connectionId to every request type so the backend knows
+    // which user-scoped connection to use (prevents cross-user data leakage)
+    const resolvedPath = appendConnectionId(path);
     const url = resolvedPath.startsWith('http') ? resolvedPath : `${API_BASE}${resolvedPath}`;
 
     // ── Deduplicate identical in-flight GET requests ─────────────────────

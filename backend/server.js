@@ -218,15 +218,30 @@ const connectionPools = new Map();
 // Map<connectionId, { client: MongoClient, db: Db }> — MongoDB clients
 const mongoClients = new Map();
 
-// ID of the currently active dynamic connection (null = no connection selected)
-let activeConnectionId = null;
+// Per-user active connection map: Map<userId, connectionId>
+// Each user's active connection is independent — switching in one session
+// never affects another user's active connection.
+const userActiveConnections = new Map();
+
+/** Get the active connectionId for a specific user */
+function getUserActiveConnectionId(userId) {
+    return userId ? userActiveConnections.get(userId) ?? null : null;
+}
+
+/** Set the active connectionId for a specific user */
+function setUserActiveConnectionId(userId, connectionId) {
+    if (userId) userActiveConnections.set(userId, connectionId);
+}
 
 /**
  * Resolve a connection object from the cache (or DB refresh).
+ * @param {number|string|null} connectionId - explicit connection ID
+ * @param {number|null} userId - the authenticated user's ID (for per-user fallback)
  */
-async function resolveConnection(connectionId) {
+async function resolveConnection(connectionId, userId) {
     if (!connectionId) {
-        if (activeConnectionId) return resolveConnection(activeConnectionId);
+        const userDefault = getUserActiveConnectionId(userId);
+        if (userDefault) return resolveConnection(userDefault, userId);
         throw new Error('No database connection configured. Please add a connection in the Connection Pool settings.');
     }
     const id = parseInt(connectionId, 10);
@@ -245,8 +260,8 @@ async function resolveConnection(connectionId) {
  * Supports PostgreSQL (pg.Pool) and MySQL (mysql2 pool).
  * For MongoDB, use getMongoClient() instead.
  */
-async function getPool(connectionId) {
-    const conn = await resolveConnection(connectionId);
+async function getPool(connectionId, userId) {
+    const conn = await resolveConnection(connectionId, userId);
     const id = conn.id;
 
     if (connectionPools.has(id)) return connectionPools.get(id);
@@ -302,8 +317,8 @@ async function getPool(connectionId) {
 /**
  * Return a MongoDB client + db for a given connectionId.
  */
-async function getMongoClient(connectionId) {
-    const conn = await resolveConnection(connectionId);
+async function getMongoClient(connectionId, userId) {
+    const conn = await resolveConnection(connectionId, userId);
     const id = conn.id;
 
     if (mongoClients.has(id)) return mongoClients.get(id);
@@ -352,10 +367,11 @@ async function destroyPool(connectionId) {
 
 /**
  * Shorthand: get the right pool for an Express request.
- * Reads connectionId from query param, falls back to activeConnectionId, then default pool.
+ * Reads connectionId from query param, falls back to user's active connection.
  */
 async function reqPool(req) {
-    return getPool(req.query.connectionId || null);
+    const userId = req.user?.id ?? null;
+    return getPool(req.query.connectionId || null, userId);
 }
 
 /**
@@ -364,7 +380,8 @@ async function reqPool(req) {
  */
 async function reqDbType(req) {
     try {
-        const conn = await resolveConnection(req.query.connectionId || null);
+        const userId = req.user?.id ?? null;
+        const conn = await resolveConnection(req.query.connectionId || null, userId);
         return (conn.dbType || 'postgresql').toLowerCase();
     } catch {
         return 'postgresql'; // default if no connection
@@ -405,9 +422,10 @@ const cache = new LRUCache(256);
 
 function cached(key, ttl) {
     return (req, res, next) => {
-        // Scope cache key to the active connection so different DBs don't share entries
-        const connScope = req.query.connectionId || activeConnectionId || 'default';
-        const scopedKey = `${key}:${connScope}`;
+        // Scope cache key by userId AND connectionId so users never share cache entries
+        const userId = req.user?.id ?? 'anon';
+        const connScope = req.query.connectionId || getUserActiveConnectionId(req.user?.id) || 'default';
+        const scopedKey = `${key}:u${userId}:${connScope}`;
         const hit = cache.get(scopedKey);
         if (hit) { res.setHeader('X-Cache', 'HIT'); return res.json(hit); }
         res.setHeader('X-Cache', 'MISS');
@@ -2050,7 +2068,7 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
         const sshChanged = SSH_FIELDS.some(f => req.body[f] !== undefined && req.body[f] !== existing[f]);
         if (sshChanged) await closeTunnel(id);
         await destroyPool(id);
-        if (activeConnectionId === id) cache.clear();
+        if (getUserActiveConnectionId(req.user.id) === id) cache.clear();
 
         const updated = await dbUpdateConnection(id, {
             name:     name     || existing.name,
@@ -2088,7 +2106,11 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
 
         await closeTunnel(id);
         await destroyPool(id);
-        if (activeConnectionId === id) { activeConnectionId = null; cache.clear(); }
+        // Clear per-user active connection if this was it
+        if (getUserActiveConnectionId(req.user.id) === id) {
+            setUserActiveConnectionId(req.user.id, null);
+            cache.clear();
+        }
 
         await dbDeleteConnection(id);
 
@@ -2260,11 +2282,11 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
             const dbType = (c.dbType || 'postgresql').toLowerCase();
             if (dbType === 'mongodb') {
                 // Warm-up MongoDB client
-                const { db } = await getMongoClient(id);
+                const { db } = await getMongoClient(id, req.user.id);
                 await db.command({ ping: 1 });
             } else {
                 // Warm-up PG or MySQL pool
-                const p = await getPool(id);
+                const p = await getPool(id, req.user.id);
                 if (dbType === 'mysql' || dbType === 'mariadb') {
                     const [rows] = await p.query('SELECT 1');
                 } else {
@@ -2278,10 +2300,10 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
         }
 
         await dbSetDefault(req.user.id, req.user.role, id);
-        activeConnectionId = id;
-        cache.clear();
+        setUserActiveConnectionId(req.user.id, id);
+        cache.clear(); // Clear cache to ensure fresh data for this connection
         await syncConnectionsCache();
-        log('INFO', `Active connection switched to ${id} (${c.name})`);
+        log('INFO', `Active connection switched to ${id} (${c.name}) for user ${req.user.id}`);
         res.json({ success: true, message: `Switched to "${c.name}"`, connectionId: id });
     } catch (e) { res.json({}); }
 });
@@ -2289,10 +2311,13 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
 app.get('/api/connections/active', authenticate, async (req, res) => {
     try {
         const conns = await dbLoadConnections(req.user.id, req.user.role);
-        const active = conns.find(c => c.id === activeConnectionId)
+        const userActiveId = getUserActiveConnectionId(req.user.id);
+        const active = conns.find(c => c.id === userActiveId)
                     || conns.find(c => c.isDefault)
                     || conns[0]
                     || null;
+        // If we resolved a default but the user hasn't explicitly set one, record it
+        if (active && !userActiveId) setUserActiveConnectionId(req.user.id, active.id);
         res.json({ connectionId: active?.id ?? null, connection: active ? sanitizeConn(active) : null });
     } catch (e) { res.json({}); }
 });
@@ -5061,8 +5086,9 @@ async function startup() {
 
         // Initialise connections table and warm the in-memory cache
         await initConnections();
-        const defaultConn = CONNECTIONS.find(c => c.isDefault);
-        if (defaultConn) activeConnectionId = defaultConn.id;
+        // Per-user active connections are resolved on-demand via getUserActiveConnectionId.
+        // No global default needed at startup — each user gets their own active connection
+        // resolved from their isDefault connection or first connection on first request.
         log('INFO', `Loaded ${CONNECTIONS.length} connection(s) from database`);
 
         fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true })
