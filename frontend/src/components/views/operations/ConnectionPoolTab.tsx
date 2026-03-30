@@ -647,6 +647,7 @@ const LeakDetector = () => {
 const ConnectionsTab = () => {
     useAdaptiveTheme();
     const [connections, setConnections] = useState([]);
+    const [connectionsLoading, setConnectionsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingConnection, setEditingConnection] = useState(null);
     const [testingConnection, setTestingConnection] = useState(null);
@@ -678,6 +679,8 @@ const ConnectionsTab = () => {
             }
         } catch (e) {
             console.error('Network error fetching connections:', e.message);
+        } finally {
+            setConnectionsLoading(false);
         }
     };
 
@@ -898,6 +901,20 @@ const ConnectionsTab = () => {
                     New Connection
                 </button>
             </div>
+
+            {/* ── Loading state ── */}
+            {connectionsLoading && connections.length === 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14, marginBottom: 14 }}>
+                    {[0, 1, 2].map(i => (
+                        <div key={i} style={{
+                            height: 160, borderRadius: 14, background: THEME.glass,
+                            border: `1px solid ${THEME.glassBorder}`, opacity: 0.4,
+                            animation: `fadeUp 0.3s ease-out, pulse 1.5s ease-in-out infinite`,
+                            animationDelay: `${i * 0.1}s`,
+                        }} />
+                    ))}
+                </div>
+            )}
 
             {/* ── Cards Grid ── */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>

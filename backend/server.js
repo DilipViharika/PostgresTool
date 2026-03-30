@@ -5091,6 +5091,42 @@ async function startup() {
         // resolved from their isDefault connection or first connection on first request.
         log('INFO', `Loaded ${CONNECTIONS.length} connection(s) from database`);
 
+        // ── Ensure additional schema objects exist ────────────────────────
+        if (pool) {
+            // 1. retention_policies table (used by retentionService)
+            try {
+                await pool.query(`
+                    CREATE TABLE IF NOT EXISTS pgmonitoringtool.retention_policies (
+                        id               SERIAL PRIMARY KEY,
+                        org_id           INTEGER NOT NULL DEFAULT 1,
+                        metrics_retention_days  INTEGER NOT NULL DEFAULT 30,
+                        logs_retention_days     INTEGER NOT NULL DEFAULT 7,
+                        alerts_retention_days   INTEGER NOT NULL DEFAULT 90,
+                        audit_retention_days    INTEGER NOT NULL DEFAULT 365,
+                        created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+                        updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+                        UNIQUE (org_id)
+                    )
+                `);
+                // Seed a default policy row if none exists
+                await pool.query(`
+                    INSERT INTO pgmonitoringtool.retention_policies (org_id)
+                    VALUES (1)
+                    ON CONFLICT (org_id) DO NOTHING
+                `);
+                log('INFO', 'retention_policies table ready');
+            } catch (e) { log('WARN', 'Could not ensure retention_policies table', { error: e.message }); }
+
+            // 2. resource_type column on audit_log (used by auditService)
+            try {
+                await pool.query(`
+                    ALTER TABLE pgmonitoringtool.audit_log
+                    ADD COLUMN IF NOT EXISTS resource_type TEXT DEFAULT NULL
+                `);
+                log('INFO', 'audit_log.resource_type column ready');
+            } catch (e) { log('WARN', 'Could not add resource_type to audit_log', { error: e.message }); }
+        }
+
         fs.mkdir(CONFIG.REPOSITORY_PATH, { recursive: true })
             .then(() => log('INFO', 'Repository directory ready'))
             .catch(e => log('WARN', 'Could not create repository directory', { error: e.message }));

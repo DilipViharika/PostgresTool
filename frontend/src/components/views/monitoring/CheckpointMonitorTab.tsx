@@ -20,10 +20,11 @@ const Styles = () => (
 );
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-const fmt = (n) => n === null ? '—' : Number(n).toLocaleString();
+const fmt = (n) => (n === null || n === undefined || isNaN(Number(n))) ? '—' : Number(n).toLocaleString();
 const fmtMs = (ms) => {
-    if (ms === null) return '—';
+    if (ms === null || ms === undefined) return '—';
     const m = Number(ms);
+    if (isNaN(m)) return '—';
     if (m < 1000) return `${m}ms`;
     if (m < 60000) return `${(m/1000).toFixed(1)}s`;
     return `${(m/60000).toFixed(1)}min`;

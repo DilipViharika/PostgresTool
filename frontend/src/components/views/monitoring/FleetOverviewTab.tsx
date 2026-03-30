@@ -52,8 +52,7 @@ const FleetOverviewTab = () => {
 
     // Initial load and auto-refresh
     useEffect(() => {
-        fetchHealthData();
-        setLoading(false);
+        fetchHealthData().finally(() => setLoading(false));
 
         // Auto-refresh every 30 seconds
         refreshTimer.current = setInterval(() => {
