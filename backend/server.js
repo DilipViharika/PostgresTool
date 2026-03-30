@@ -876,9 +876,11 @@ const ensureConnections = async (req, res, next) => {
     try {
         if (!_connectionsTableReady) {
             await ensureConnectionsTable();
+            await syncConnectionsCache();
             _connectionsTableReady = true;
         }
-        await syncConnectionsCache();
+        // Skip redundant sync — dbLoadConnections() queries fresh data anyway,
+        // and resolveConnection() falls back to sync when a conn isn't in cache.
         next();
     } catch (err) {
         next(err);
@@ -2310,8 +2312,17 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
 
 app.get('/api/connections/active', authenticate, async (req, res) => {
     try {
-        const conns = await dbLoadConnections(req.user.id, req.user.role);
         const userActiveId = getUserActiveConnectionId(req.user.id);
+        // Fast path: if we already know the user's active connection and it's in
+        // the global cache, skip the DB query entirely (saves ~50-200ms per refresh)
+        if (userActiveId) {
+            const cached = CONNECTIONS.find(c => c.id === userActiveId);
+            if (cached) {
+                return res.json({ connectionId: cached.id, connection: sanitizeConn(cached) });
+            }
+        }
+        // Slow path: query DB for the full list
+        const conns = await dbLoadConnections(req.user.id, req.user.role);
         const active = conns.find(c => c.id === userActiveId)
                     || conns.find(c => c.isDefault)
                     || conns[0]

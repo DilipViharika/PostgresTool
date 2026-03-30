@@ -983,7 +983,7 @@ const ReliabilityTab = () => {
     }), [alerts]);
 
     const uptimeStats = useMemo(() => ({
-        avg: uptimeDays.reduce((s, d) => s + d.uptime, 0) / uptimeDays.length,
+        avg: uptimeDays.length === 0 ? 0 : uptimeDays.reduce((s, d) => s + d.uptime, 0) / uptimeDays.length,
         outages: uptimeDays.filter(d => d.status === 'outage').length,
         degraded: uptimeDays.filter(d => d.status === 'degraded').length,
     }), [uptimeDays]);
@@ -1041,7 +1041,7 @@ const ReliabilityTab = () => {
         { label: 'Critical', value: String(counts.critical), sub: counts.critical > 0 ? 'Immediate attention' : 'All clear', color: counts.critical > 0 ? THEME.danger : THEME.success, icon: Flame },
         { label: 'Uptime (90d)', value: `${uptimeStats.avg.toFixed(2)}%`, sub: `${uptimeStats.outages} outages`, color: uptimeStats.avg > 99.9 ? THEME.success : uptimeStats.avg > 99 ? THEME.warning : THEME.danger, icon: Shield },
         { label: 'MTTR', value: '16m', sub: 'avg resolution', color: THEME.primary, icon: Timer },
-        { label: 'Noise Ratio', value: `${Math.round((alerts.filter(a => a.autoResolved).length / alerts.length) * 100)}%`, sub: 'auto-resolved', color: THEME.info, icon: Activity },
+        { label: 'Noise Ratio', value: alerts.length === 0 ? '0%' : `${Math.round((alerts.filter(a => a.autoResolved).length / alerts.length) * 100)}%`, sub: 'auto-resolved', color: THEME.info, icon: Activity },
     ];
 
     return (

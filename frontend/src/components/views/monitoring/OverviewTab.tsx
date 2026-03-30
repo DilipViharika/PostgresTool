@@ -1968,23 +1968,42 @@ const ConnectionStatusBanner = () => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 
+// ── localStorage cache for instant render on refresh ──
+const OV_CACHE_KEY = 'vigil_overview_cache';
+function readOverviewCache() {
+    try {
+        const raw = localStorage.getItem(OV_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        // Expire cache after 2 minutes
+        if (parsed._ts && Date.now() - parsed._ts > 120_000) return null;
+        return parsed;
+    } catch { return null; }
+}
+function writeOverviewCache(obj) {
+    try { localStorage.setItem(OV_CACHE_KEY, JSON.stringify({ ...obj, _ts: Date.now() })); } catch {}
+}
+
 const OverviewTab = () => {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const { activeConnection, loading: connectionsLoading } = useConnection();
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
+
+    // Hydrate from localStorage so the dashboard renders instantly on refresh
+    const cachedOv = useMemo(() => readOverviewCache(), []);
+    const [data, setData] = useState(cachedOv?.data ?? null);
+    const [loading, setLoading] = useState(!cachedOv?.data);
     const [refreshing, setRefreshing] = useState(false);
     const [tick, setTick] = useState(0);
     const [refreshInterval, setRefreshInterval] = useState(5000);
     // Environment switcher removed — data comes from the real connected database
     const intervalRef = useRef(null);
-    const [longTxns, setLongTxns] = useState([]);
-    const [vacuumData, setVacuumData] = useState(null);
-    const [backupData, setBackupData] = useState(null);
-    const [replicationData, setReplicationData] = useState(null);
-    const [topTables, setTopTables] = useState([]);
-    const [timeseriesData, setTimeseriesData] = useState(null);
-    const [alertsData, setAlertsData] = useState([]);
+    const [longTxns, setLongTxns] = useState(cachedOv?.longTxns ?? []);
+    const [vacuumData, setVacuumData] = useState(cachedOv?.vacuumData ?? null);
+    const [backupData, setBackupData] = useState(cachedOv?.backupData ?? null);
+    const [replicationData, setReplicationData] = useState(cachedOv?.replicationData ?? null);
+    const [topTables, setTopTables] = useState(cachedOv?.topTables ?? []);
+    const [timeseriesData, setTimeseriesData] = useState(cachedOv?.timeseriesData ?? null);
+    const [alertsData, setAlertsData] = useState(cachedOv?.alertsData ?? []);
 
     /* ── Synthetic datasets ── */
     const velocityData = useMemo(() => {
@@ -2040,7 +2059,7 @@ const OverviewTab = () => {
         if (!activeConnection) { setLoading(false); return; }
         if (isManual) setRefreshing(true);
         try {
-            const withTimeout = (p, ms = 10000) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+            const withTimeout = (p, ms = 5000) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
             const [statsRes, trafficRes, longTxnRes, vacuumRes, backupRes, replicationRes, topTablesRes, timeseriesRes, alertsRes] = await Promise.allSettled([
                 withTimeout(fetchData('/api/overview/stats')),
                 withTimeout(fetchData('/api/overview/traffic')),
@@ -2053,25 +2072,41 @@ const OverviewTab = () => {
                 withTimeout(fetchData('/api/overview/alerts')),
             ]);
             const val = (r) => (r.status === 'fulfilled' && !r.value?.error ? r.value : null);
-            setData({
+            const newData = {
                 stats: val(statsRes) || { activeConnections: 0, maxConnections: 0, uptimeSeconds: 0, diskUsedGB: 0, indexHitRatio: '0.0' },
                 traffic: val(trafficRes) || { tup_fetched: 0, tup_inserted: 0, tup_updated: 0, tup_deleted: 0 },
-            });
+            };
+            setData(newData);
 
             const longTxnData = val(longTxnRes);
-            setLongTxns(Array.isArray(longTxnData) ? longTxnData : (longTxnData?.transactions || []));
+            const newLongTxns = Array.isArray(longTxnData) ? longTxnData : (longTxnData?.transactions || []);
+            setLongTxns(newLongTxns);
 
-            setVacuumData(val(vacuumRes));
-            setBackupData(val(backupRes));
-            setReplicationData(val(replicationRes));
+            const newVacuumData = val(vacuumRes);
+            const newBackupData = val(backupRes);
+            const newReplicationData = val(replicationRes);
+            setVacuumData(newVacuumData);
+            setBackupData(newBackupData);
+            setReplicationData(newReplicationData);
 
             const ttData = val(topTablesRes);
-            setTopTables(Array.isArray(ttData) ? ttData : (ttData?.tables || []));
+            const newTopTables = Array.isArray(ttData) ? ttData : (ttData?.tables || []);
+            setTopTables(newTopTables);
 
-            setTimeseriesData(val(timeseriesRes));
+            const newTimeseriesData = val(timeseriesRes);
+            setTimeseriesData(newTimeseriesData);
 
             const aData = val(alertsRes);
-            setAlertsData(Array.isArray(aData) ? aData : (aData?.alerts || []));
+            const newAlertsData = Array.isArray(aData) ? aData : (aData?.alerts || []);
+            setAlertsData(newAlertsData);
+
+            // Persist to localStorage for instant render on next refresh
+            writeOverviewCache({
+                data: newData, longTxns: newLongTxns, vacuumData: newVacuumData,
+                backupData: newBackupData, replicationData: newReplicationData,
+                topTables: newTopTables, timeseriesData: newTimeseriesData,
+                alertsData: newAlertsData,
+            });
         } catch (e) {
             console.error('Overview load failed', e);
             setData({

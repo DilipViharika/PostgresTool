@@ -65,13 +65,17 @@ export default function RetentionManagementTab() {
     useEffect(() => {
         const load = async () => {
             try {
-                const [p, s, g] = await Promise.all([
+                const results = await Promise.allSettled([
                     fetchData('/api/retention/policy'),
                     fetchData('/api/retention/stats'),
                     fetchData('/api/retention/growth'),
                 ]);
-                setPolicy(p);
-                setStats(s);
+                const val = (r) => r.status === 'fulfilled' ? r.value : null;
+                const p = val(results[0]);
+                const s = val(results[1]);
+                const g = val(results[2]);
+                if (p) setPolicy(p);
+                if (s) setStats(s);
                 setGrowthData(g?.data || []);
                 setFormValues({
                     metrics: p?.metricsRetentionDays || 30,
@@ -79,7 +83,9 @@ export default function RetentionManagementTab() {
                     alerts: p?.alertsRetentionDays || 90,
                     audit: p?.auditRetentionDays || 365,
                 });
-                setError(null);
+                // Only show error if the policy fetch failed (critical)
+                const policyFailed = results[0].status === 'rejected';
+                setError(policyFailed ? results[0].reason?.message : null);
             } catch (e) {
                 setError(e.message);
             } finally {

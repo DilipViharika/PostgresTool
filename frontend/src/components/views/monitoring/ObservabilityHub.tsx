@@ -148,19 +148,23 @@ export default function ObservabilityHub() {
         const loadData = async () => {
             try {
                 setLoading(true);
-                const [api, exc, up, audit, job] = await Promise.all([
+                const results = await Promise.allSettled([
                     fetchData('/api/observability/api-metrics'),
                     fetchData('/api/observability/exceptions'),
                     fetchData('/api/observability/uptime'),
                     fetchData('/api/observability/audit-log'),
                     fetchData('/api/observability/jobs'),
                 ]);
-                setApiMetrics(api);
-                setExceptions(exc);
-                setUptime(up);
-                setAuditLog(audit);
-                setJobs(job);
-                setError(null);
+                const val = (r) => r.status === 'fulfilled' ? r.value : null;
+                if (val(results[0])) setApiMetrics(val(results[0]));
+                if (val(results[1])) setExceptions(val(results[1]));
+                if (val(results[2])) setUptime(val(results[2]));
+                if (val(results[3])) setAuditLog(val(results[3]));
+                if (val(results[4])) setJobs(val(results[4]));
+                // Show error only if ALL requests failed
+                const allFailed = results.every(r => r.status === 'rejected');
+                const firstError = results.find(r => r.status === 'rejected');
+                setError(allFailed && firstError ? firstError.reason?.message : null);
             } catch (err) {
                 setError(err.message);
                 console.error('ObservabilityHub load error:', err);

@@ -87,21 +87,46 @@ export async function listAuditEvents(pool, opts = {}) {
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     params.push(limit, offset);
 
-    const [dataRes, countRes] = await Promise.all([
-        pool.query(
-            `SELECT id, actor_id, actor_username, action, resource_type, resource_id,
-                    level, detail, metadata, ip_address, created_at
-             FROM   ${S}.audit_log
-             ${where}
-             ORDER  BY created_at DESC
-             LIMIT  $${params.length - 1} OFFSET $${params.length}`,
-            params
-        ),
-        pool.query(
-            `SELECT COUNT(*) AS total FROM ${S}.audit_log ${where}`,
-            params.slice(0, -2)
-        ),
-    ]);
+    // Try with resource_type column first; fall back without it if column doesn't exist yet
+    let dataRes, countRes;
+    try {
+        [dataRes, countRes] = await Promise.all([
+            pool.query(
+                `SELECT id, actor_id, actor_username, action, resource_type, resource_id,
+                        level, detail, metadata, ip_address, created_at
+                 FROM   ${S}.audit_log
+                 ${where}
+                 ORDER  BY created_at DESC
+                 LIMIT  $${params.length - 1} OFFSET $${params.length}`,
+                params
+            ),
+            pool.query(
+                `SELECT COUNT(*) AS total FROM ${S}.audit_log ${where}`,
+                params.slice(0, -2)
+            ),
+        ]);
+    } catch (err) {
+        if (err.message && err.message.includes('resource_type')) {
+            // Column doesn't exist yet — query without it
+            [dataRes, countRes] = await Promise.all([
+                pool.query(
+                    `SELECT id, actor_id, actor_username, action, NULL AS resource_type, resource_id,
+                            level, detail, metadata, ip_address, created_at
+                     FROM   ${S}.audit_log
+                     ${where}
+                     ORDER  BY created_at DESC
+                     LIMIT  $${params.length - 1} OFFSET $${params.length}`,
+                    params
+                ),
+                pool.query(
+                    `SELECT COUNT(*) AS total FROM ${S}.audit_log ${where}`,
+                    params.slice(0, -2)
+                ),
+            ]);
+        } else {
+            throw err;
+        }
+    }
 
     return {
         rows:   dataRes.rows,

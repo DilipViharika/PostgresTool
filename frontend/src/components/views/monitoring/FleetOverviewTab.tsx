@@ -12,7 +12,7 @@
  * - Glass-effect cards with hover glow animation
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import { fetchData, postData } from '../../../utils/api';
 import { useConnection } from '../../../context/ConnectionContext';
@@ -26,14 +26,31 @@ import {
     Gauge, TrendingUp, TrendingDown, Cpu, BarChart3
 } from 'lucide-react';
 
+// ── localStorage cache for instant fleet health render ──
+const FLEET_CACHE_KEY = 'vigil_fleet_health_cache';
+function readFleetCache() {
+    try {
+        const raw = localStorage.getItem(FLEET_CACHE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (parsed._ts && Date.now() - parsed._ts > 60_000) return []; // expire after 1 min
+        return parsed.data || [];
+    } catch { return []; }
+}
+function writeFleetCache(data) {
+    try { localStorage.setItem(FLEET_CACHE_KEY, JSON.stringify({ data, _ts: Date.now() })); } catch {}
+}
+
 const FleetOverviewTab = () => {
     useAdaptiveTheme();
 
     const { switchConnection, connections, activeConnectionId, loading: connectionsLoading } = useConnection();
     const { goToTab } = useNavigation();
 
-    const [healthData, setHealthData] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // Hydrate from cache for instant render
+    const cachedHealth = useMemo(() => readFleetCache(), []);
+    const [healthData, setHealthData] = useState(cachedHealth);
+    const [loading, setLoading] = useState(cachedHealth.length === 0);
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const refreshTimer = useRef(null);
@@ -43,7 +60,9 @@ const FleetOverviewTab = () => {
         try {
             setError(null);
             const data = await fetchData('/api/connections/health');
-            setHealthData(Array.isArray(data) ? data : []);
+            const list = Array.isArray(data) ? data : [];
+            setHealthData(list);
+            writeFleetCache(list);
         } catch (err) {
             console.error('[FleetOverviewTab] Failed to fetch health:', err);
             setError(err?.message || 'Failed to fetch connection health data');

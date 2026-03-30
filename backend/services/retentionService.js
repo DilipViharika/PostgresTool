@@ -27,25 +27,60 @@ function log(level, message, meta = {}) {
  * }>}
  */
 export async function getRetentionPolicy(pool, orgId) {
-    const res = await pool.query(
-        `SELECT org_id, metrics_retention_days, logs_retention_days,
-                alerts_retention_days, audit_retention_days, updated_at
-         FROM   ${S}.retention_policies
-         WHERE  org_id = $1`,
-        [orgId]
-    );
+    const defaults = {
+        orgId,
+        metricsRetentionDays: 30,
+        logsRetentionDays: 7,
+        alertsRetentionDays: 90,
+        auditRetentionDays: 365,
+        updatedAt: new Date(),
+    };
 
-    if (res.rows.length === 0) {
-        // Return defaults if not configured
-        return {
-            orgId,
-            metricsRetentionDays: 30,
-            logsRetentionDays: 90,
-            alertsRetentionDays: 90,
-            auditRetentionDays: 365,
-            updatedAt: new Date(),
-        };
+    let res;
+    try {
+        res = await pool.query(
+            `SELECT org_id, metrics_retention_days, logs_retention_days,
+                    alerts_retention_days, audit_retention_days, updated_at
+             FROM   ${S}.retention_policies
+             WHERE  org_id = $1`,
+            [orgId]
+        );
+    } catch (err) {
+        if (err.message && err.message.includes('does not exist')) {
+            // Table doesn't exist yet — try to create it
+            try {
+                await pool.query(`
+                    CREATE TABLE IF NOT EXISTS ${S}.retention_policies (
+                        id               SERIAL PRIMARY KEY,
+                        org_id           INTEGER NOT NULL DEFAULT 1,
+                        metrics_retention_days  INTEGER NOT NULL DEFAULT 30,
+                        logs_retention_days     INTEGER NOT NULL DEFAULT 7,
+                        alerts_retention_days   INTEGER NOT NULL DEFAULT 90,
+                        audit_retention_days    INTEGER NOT NULL DEFAULT 365,
+                        created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+                        updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+                        UNIQUE (org_id)
+                    )
+                `);
+                await pool.query(
+                    `INSERT INTO ${S}.retention_policies (org_id) VALUES ($1) ON CONFLICT (org_id) DO NOTHING`,
+                    [orgId]
+                );
+                res = await pool.query(
+                    `SELECT org_id, metrics_retention_days, logs_retention_days,
+                            alerts_retention_days, audit_retention_days, updated_at
+                     FROM   ${S}.retention_policies WHERE org_id = $1`,
+                    [orgId]
+                );
+            } catch {
+                return defaults;
+            }
+        } else {
+            throw err;
+        }
     }
+
+    if (!res || res.rows.length === 0) return defaults;
 
     const row = res.rows[0];
     return {
