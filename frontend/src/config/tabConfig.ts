@@ -71,6 +71,17 @@ export function registerComponents(components) {
 export function buildTabConfig() {
     const DS = getDS();
     return [
+        // ── Connections ─────────────────────────────────────────────
+        //    Add/manage database connections — always visible in sidebar
+        { section: 'Connections', accent: DS.violet },
+        {
+            id: 'connections',
+            icon: Link2,
+            label: 'Manage Connections',
+            component: _components.ConnectionWizard,
+            badge: null,
+        },
+
         // ── Overview & Health ────────────────────────────────────────
         //    Top-level dashboards: fleet-wide health and single-DB overview
         { section: 'Overview', accent: DS.cyan },

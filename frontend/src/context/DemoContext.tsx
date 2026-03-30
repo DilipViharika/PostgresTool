@@ -58,6 +58,7 @@ const DEMO_USER = {
         'retention',
         'terraform',
         'custom-dashboard',
+        'connections',
         'demo-data',
         'demo-postgres',
         'demo-mysql',

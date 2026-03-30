@@ -28,7 +28,7 @@ const NoConnectionBanner = ({
   }, []);
 
   const handleAddConnection = () => {
-    goToTab('pool');
+    goToTab('connections');
   };
 
   const styles = {

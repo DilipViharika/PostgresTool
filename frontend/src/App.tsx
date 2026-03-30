@@ -2816,6 +2816,8 @@ const Sidebar = ({
                 .filter((g) => {
                     // Demo always visible
                     if (g.section === 'Demo') return true;
+                    // Connections always visible so users can add/manage databases
+                    if (g.section === 'Connections') return true;
                     // User Management only for super_admin
                     if (g.section === 'User Management') return currentUser?.role === 'super_admin';
                     // No connection → hide everything else
@@ -3875,10 +3877,11 @@ const DashboardInner = ({ onLogout }) => {
     // This ensures users see the right dashboard after switching databases
     // Also redirects to demo tab when no connection exists and user is on a connection-dependent tab
     useEffect(() => {
-        // No connection → only demo tabs and user management are allowed
+        // No connection → only demo tabs, connections, and user management are allowed
         if (!activeConnection) {
             if (activeTab?.startsWith('demo-')) return;
             if (activeTab === 'UserManagement') return;
+            if (activeTab === 'connections') return;
             setActiveTab('demo-postgres');
             try {
                 localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'demo-postgres');
@@ -3898,8 +3901,9 @@ const DashboardInner = ({ onLogout }) => {
         // Only navigate if we're not already on a relevant tab for this connection
         // This avoids jarring navigation if user is already viewing a universal tab (like Alerts)
         const isRelevantTab = (tabId) => {
-            // Always allow demo tabs
+            // Always allow demo tabs and connections
             if (tabId?.startsWith('demo-')) return true;
+            if (tabId === 'connections') return true;
             // Always allow universal sections
             const universalSections = [
                 'Overview',
@@ -3909,6 +3913,7 @@ const DashboardInner = ({ onLogout }) => {
                 'Developer Tools',
                 'User Management',
                 'Admin',
+                'Connections',
             ];
             const currentSection = SECTION_GROUPS.find((g) => g.tabs.some((t) => t.id === tabId))?.section;
             if (universalSections.includes(currentSection)) return true;
