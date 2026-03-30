@@ -192,7 +192,7 @@ const ConnectionWizard = () => {
         password: formData.password,
         database: formData.database,
         ssl: formData.ssl,
-        name: `${DB_TYPES[formData.type].label} - ${formData.host}`,
+        name: `${DB_TYPES[formData.type].label} - ${formData.host}/${formData.database}`,
         isDefault: true, // Make it default on creation
       });
 

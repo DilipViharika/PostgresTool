@@ -1948,14 +1948,31 @@ app.post('/api/connections', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
         if (isDefault) await dbSetDefault(req.user.id, req.user.role, -1);
-        const newConn = await dbInsertConnection({
-            userId: req.user.id,
-            name, host, port: parseInt(port), database, username, password,
-            ssl: ssl || false, isDefault: isDefault || false,
-            dbType: dbType || 'postgresql',
-            ...pickSSH(body),
-            status: null, lastTested: null,
-        });
+
+        // Auto-deduplicate connection names: if "MyDB" exists, try "MyDB (2)", "MyDB (3)", …
+        let finalName = name;
+        let attempt = 0;
+        let newConn;
+        while (true) {
+            try {
+                newConn = await dbInsertConnection({
+                    userId: req.user.id,
+                    name: finalName, host, port: parseInt(port), database, username, password,
+                    ssl: ssl || false, isDefault: isDefault || false,
+                    dbType: dbType || 'postgresql',
+                    ...pickSSH(body),
+                    status: null, lastTested: null,
+                });
+                break; // success
+            } catch (insertErr) {
+                if (insertErr.code === '23505' && attempt < 10) {
+                    attempt++;
+                    finalName = `${name} (${attempt + 1})`;
+                } else {
+                    throw insertErr; // re-throw non-duplicate or exhausted retries
+                }
+            }
+        }
         await syncConnectionsCache();
 
         // Auto-test the new connection so the user gets immediate feedback
@@ -2010,7 +2027,7 @@ app.post('/api/connections', authenticate, async (req, res) => {
         }
         await syncConnectionsCache();
 
-        res.status(201).json({ ...sanitizeConn(newConn), testResult });
+        res.status(201).json({ success: true, ...sanitizeConn(newConn), connectionId: newConn.id, testResult });
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
         log('ERROR', 'Create connection error', { error: e.message });
