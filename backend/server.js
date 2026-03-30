@@ -156,12 +156,14 @@ const HAS_ADMIN_DB = !!(process.env.PGHOST && process.env.PGPASSWORD);
     }
 
     // ── Required variables in production ────────────────────────────────
+    // NOTE: PGHOST / PGPASSWORD are NOT required — VIGIL is a monitoring
+    //       tool where users connect their own databases at runtime.
     if (IS_PROD) {
-        const requiredProd = ['PGHOST', 'PGPASSWORD', 'CORS_ORIGIN'];
-        for (const key of requiredProd) {
-            if (!process.env[key]) {
-                errors.push(`Missing required environment variable in production: ${key}`);
-            }
+        // At least one CORS origin must be configured
+        if (!process.env.CORS_ORIGIN && !process.env.FRONTEND_URL) {
+            errors.push(
+                'Missing CORS origin in production: set CORS_ORIGIN or FRONTEND_URL.'
+            );
         }
     }
 
