@@ -305,8 +305,8 @@ const LoginPage = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    padding: '60px 56px',
-                    overflow: 'hidden',
+                    padding: '40px 44px',
+                    overflow: 'auto',
                     background: 'linear-gradient(160deg, #0f0c29 0%, #1a1040 30%, #1e1145 55%, #0d1b3e 80%, #0a0e27 100%)',
                 }}
             >
@@ -318,12 +318,12 @@ const LoginPage = () => {
                 {/* Content */}
                 <div style={{ position: 'relative', zIndex: 1, maxWidth: 480 }}>
                     {/* Logo + Name */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32, animation: 'fadeInLeft .6s ease-out' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, animation: 'fadeInLeft .6s ease-out' }}>
                         <div
                             style={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: 14,
+                                width: 40,
+                                height: 40,
+                                borderRadius: 12,
                                 background: 'linear-gradient(135deg, rgba(139,92,246,.7), rgba(6,182,212,.7))',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -332,10 +332,10 @@ const LoginPage = () => {
                                 border: '1px solid rgba(255,255,255,.1)',
                             }}
                         >
-                            <Server size={24} color="#fff" strokeWidth={1.5} />
+                            <Server size={20} color="#fff" strokeWidth={1.5} />
                         </div>
                         <div>
-                            <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '0.06em' }}>
+                            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '0.06em' }}>
                                 VIGIL
                             </h1>
                             <p style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', margin: 0, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
@@ -345,26 +345,26 @@ const LoginPage = () => {
                     </div>
 
                     {/* Tagline */}
-                    <h2 style={{ fontSize: 28, fontWeight: 700, color: '#fff', lineHeight: 1.3, marginBottom: 10, letterSpacing: '-0.01em', animation: 'fadeInLeft .6s ease-out .1s both' }}>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', lineHeight: 1.35, marginBottom: 8, letterSpacing: '-0.01em', animation: 'fadeInLeft .6s ease-out .1s both' }}>
                         Every database,{' '}
                         <span style={{ background: 'linear-gradient(135deg, #a78bfa, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                             one command center.
                         </span>
                     </h2>
-                    <p style={{ fontSize: 15, color: 'rgba(255,255,255,.4)', lineHeight: 1.7, marginBottom: 36, maxWidth: 420, animation: 'fadeInLeft .6s ease-out .2s both' }}>
+                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', lineHeight: 1.6, marginBottom: 24, maxWidth: 420, animation: 'fadeInLeft .6s ease-out .2s both' }}>
                         Monitor, analyze, and optimize your PostgreSQL, MongoDB, and MySQL databases with AI-powered insights and real-time alerting.
                     </p>
 
                     {/* Feature list */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                         {FEATURES.map(({ icon: Icon, title, desc }, i) => (
                             <div
                                 key={title}
                                 className="feature-item"
                                 style={{
                                     display: 'flex',
-                                    gap: 14,
-                                    alignItems: 'flex-start',
+                                    gap: 12,
+                                    alignItems: 'center',
                                     animation: `fadeInLeft .5s ease-out ${0.3 + i * 0.08}s both`,
                                     cursor: 'default',
                                 }}
@@ -372,9 +372,9 @@ const LoginPage = () => {
                                 <div
                                     className="feature-icon"
                                     style={{
-                                        width: 36,
-                                        height: 36,
-                                        borderRadius: 10,
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: 8,
                                         background: 'rgba(255,255,255,.04)',
                                         border: '1px solid rgba(255,255,255,.06)',
                                         display: 'flex',
@@ -384,13 +384,13 @@ const LoginPage = () => {
                                         transition: 'all .25s',
                                     }}
                                 >
-                                    <Icon size={16} color="rgba(167,139,250,.7)" strokeWidth={1.5} />
+                                    <Icon size={14} color="rgba(167,139,250,.7)" strokeWidth={1.5} />
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.85)', marginBottom: 2, letterSpacing: '0.01em' }}>
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.85)', marginBottom: 1, letterSpacing: '0.01em' }}>
                                         {title}
                                     </div>
-                                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.35)', lineHeight: 1.5 }}>
+                                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', lineHeight: 1.45 }}>
                                         {desc}
                                     </div>
                                 </div>
@@ -399,15 +399,15 @@ const LoginPage = () => {
                     </div>
 
                     {/* Stats row */}
-                    <div style={{ display: 'flex', gap: 24, marginTop: 36, animation: 'fadeInLeft .5s ease-out .8s both' }}>
+                    <div style={{ display: 'flex', gap: 24, marginTop: 24, animation: 'fadeInLeft .5s ease-out .8s both' }}>
                         {[
                             { value: '3', label: 'DB Engines' },
                             { value: '203+', label: 'Metrics' },
                             { value: '<50ms', label: 'Latency' },
                         ].map(({ value, label }) => (
                             <div key={label}>
-                                <div style={{ fontSize: 20, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>{value}</div>
-                                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 500, marginTop: 2 }}>{label}</div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>{value}</div>
+                                <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 500, marginTop: 1 }}>{label}</div>
                             </div>
                         ))}
                     </div>
