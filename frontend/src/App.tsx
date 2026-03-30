@@ -3875,14 +3875,24 @@ const DashboardInner = ({ onLogout }) => {
     const { connected, reconnecting } = useWebSocket(handleWSMessage);
     const { activeConnection, loading: connectionsLoading } = useConnection();
 
+    // Track whether ConnectionContext has completed its first load.
+    // Until that happens, we must NOT redirect — activeConnection is null
+    // simply because the API hasn't responded yet, not because there's no connection.
+    const connectionsInitialized = useRef(false);
+    useEffect(() => {
+        if (!connectionsLoading) connectionsInitialized.current = true;
+    }, [connectionsLoading]);
+
+    // Track the previous activeConnection id to detect actual connection *changes*
+    // (switch/delete), as opposed to first-load resolution.
+    const prevConnectionId = useRef(activeConnection?.id ?? '__initial__');
+
     // Auto-navigate to appropriate overview tab when connection changes
     // This ensures users see the right dashboard after switching databases
     // Also redirects to connections tab when no connection exists and user is on a connection-dependent tab
     useEffect(() => {
-        // IMPORTANT: Don't redirect while connections are still loading from the backend.
-        // On page refresh, activeConnection is null until the API responds; redirecting
-        // during that window would kick the user off their current tab every refresh.
-        if (connectionsLoading) return;
+        // Don't redirect while connections are still loading from the backend
+        if (!connectionsInitialized.current) return;
 
         // No connection → only demo tabs and connections are allowed
         if (!activeConnection) {
@@ -3892,6 +3902,7 @@ const DashboardInner = ({ onLogout }) => {
             try {
                 localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'connections');
             } catch {}
+            prevConnectionId.current = null;
             return;
         }
 
@@ -3903,6 +3914,14 @@ const DashboardInner = ({ onLogout }) => {
         } else if (dbType === 'mongodb') {
             targetTab = 'mongo-overview';
         }
+
+        // Only auto-navigate when the connection actually CHANGES (user switched DBs),
+        // NOT on initial page load where we should respect the saved tab.
+        const connectionChanged = prevConnectionId.current !== '__initial__'
+            && prevConnectionId.current !== activeConnection.id;
+        prevConnectionId.current = activeConnection.id;
+
+        if (!connectionChanged) return; // On page load, stay on the saved tab
 
         // Only navigate if we're not already on a relevant tab for this connection
         // This avoids jarring navigation if user is already viewing a universal tab (like Alerts)
