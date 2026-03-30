@@ -354,86 +354,7 @@ const MIGRATIONS_INITIAL = [];
 
 const PENDING_MIGRATIONS_INITIAL = [];
 
-const SCHEMA_DIFF = [
-    {
-        schema: 'public', table: 'users', type: 'modified',
-        changes: [
-            { field: 'phone_number', status: 'added', type: 'varchar(20)', nullable: true, default: null },
-            { field: 'last_login', status: 'changed', from: 'timestamp', to: 'timestamptz', nullable: false, default: 'NOW()' },
-            { field: 'legacy_auth_token', status: 'pending_removal', type: 'text', nullable: true, default: null }
-        ],
-        indexes: [
-            { name: 'idx_users_phone', status: 'added', columns: ['phone_number'], type: 'btree', unique: false }
-        ],
-        constraints: [
-            { name: 'chk_phone_format', status: 'added', type: 'check', definition: "phone_number ~ '^\\+[0-9]{10,15}$'" }
-        ]
-    },
-    {
-        schema: 'public', table: 'temp_cache', type: 'removed',
-        changes: [], reason: 'Deprecated in favor of Redis caching layer'
-    },
-    {
-        schema: 'public', table: 'api_keys', type: 'added',
-        changes: [
-            { field: 'id', status: 'added', type: 'uuid', nullable: false, default: 'gen_random_uuid()' },
-            { field: 'user_id', status: 'added', type: 'uuid', nullable: false, default: null },
-            { field: 'key_hash', status: 'added', type: 'text', nullable: false, default: null },
-            { field: 'scopes', status: 'added', type: 'text[]', nullable: true, default: 'ARRAY[]::text[]' },
-            { field: 'expires_at', status: 'added', type: 'timestamptz', nullable: true, default: null },
-            { field: 'created_at', status: 'added', type: 'timestamptz', nullable: false, default: 'NOW()' }
-        ],
-        indexes: [
-            { name: 'pk_api_keys', status: 'added', columns: ['id'], type: 'btree', unique: true, primary: true },
-            { name: 'idx_api_keys_user', status: 'added', columns: ['user_id'], type: 'btree', unique: false }
-        ],
-        constraints: [
-            { name: 'fk_api_keys_user', status: 'added', type: 'foreign_key', definition: 'FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE' }
-        ]
-    },
-    {
-        schema: 'public', table: 'orders', type: 'modified',
-        changes: [
-            { field: 'shipping_address_id', status: 'added', type: 'uuid', nullable: true, default: null }
-        ],
-        indexes: [
-            { name: 'idx_orders_shipping', status: 'added', columns: ['shipping_address_id'], type: 'btree', unique: false }
-        ],
-        constraints: []
-    }
-];
-
-const MIGRATION_STATS = [
-    { month: 'Oct', successful: 12, failed: 1, rolled_back: 0 },
-    { month: 'Nov', successful: 15, failed: 0, rolled_back: 1 },
-    { month: 'Dec', successful: 18, failed: 2, rolled_back: 0 },
-    { month: 'Jan', successful: 14, failed: 0, rolled_back: 0 },
-    { month: 'Feb', successful: 8, failed: 0, rolled_back: 0 }
-];
-
-const DEPENDENCY_DATA = {
-    nodes: [
-        { id: 'users', type: 'table', level: 0, connections: 4 },
-        { id: 'orders', type: 'table', level: 1, connections: 3 },
-        { id: 'order_items', type: 'table', level: 2, connections: 2 },
-        { id: 'products', type: 'table', level: 1, connections: 2 },
-        { id: 'user_preferences', type: 'table', level: 1, connections: 1 },
-        { id: 'api_keys', type: 'table', level: 1, connections: 1 },
-        { id: 'view_user_stats', type: 'view', level: 2, connections: 1 },
-        { id: 'view_order_summary', type: 'view', level: 3, connections: 0 },
-        { id: 'func_auth_check', type: 'function', level: 2, connections: 0 }
-    ],
-    edges: [
-        { from: 'users', to: 'orders', type: 'fk' },
-        { from: 'users', to: 'user_preferences', type: 'fk' },
-        { from: 'users', to: 'api_keys', type: 'fk' },
-        { from: 'users', to: 'view_user_stats', type: 'depends' },
-        { from: 'orders', to: 'order_items', type: 'fk' },
-        { from: 'orders', to: 'view_order_summary', type: 'depends' },
-        { from: 'products', to: 'order_items', type: 'fk' },
-        { from: 'users', to: 'func_auth_check', type: 'depends' }
-    ]
-};
+/* Note: SCHEMA_DIFF, MIGRATION_STATS, and DEPENDENCY_DATA are now fetched from APIs via component state */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
@@ -877,6 +798,9 @@ const SchemaVersioningTab = () => {
     const [migrations, setMigrations] = useState([]);
     const [pendingMigrations, setPendingMigrations] = useState([]);
     const [schemaMessage, setSchemaMessage] = useState('');
+    const [schemaDiff, setSchemaDiff] = useState([]);
+    const [migrationStats, setMigrationStats] = useState([]);
+    const [dependencyData, setDependencyData] = useState({ nodes: [], edges: [] });
 
     const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -910,6 +834,53 @@ const SchemaVersioningTab = () => {
         };
         loadMigrations();
     }, []);
+
+    // Fetch schema dependencies from API
+    useEffect(() => {
+        const loadDependencies = async () => {
+            try {
+                const data = await fetchData('/api/schema/dependencies');
+                if (data && typeof data === 'object') {
+                    const nodes = Array.isArray(data.nodes) ? data.nodes : [];
+                    const edges = Array.isArray(data.edges) ? data.edges : [];
+                    setDependencyData({ nodes, edges });
+                } else {
+                    console.warn('Invalid dependencies response:', data);
+                    setDependencyData({ nodes: [], edges: [] });
+                }
+            } catch (err) {
+                console.error('Failed to load schema dependencies:', err);
+                setDependencyData({ nodes: [], edges: [] });
+            }
+        };
+        loadDependencies();
+    }, []);
+
+    // Extract and set migration stats from migrations data
+    useEffect(() => {
+        if (Array.isArray(migrations) && migrations.length > 0) {
+            // Extract stats from migrations if available, or compute from migration history
+            const stats = {};
+            migrations.forEach(m => {
+                if (m && m.timestamp) {
+                    const date = new Date(m.timestamp);
+                    const month = date.toLocaleString('default', { month: 'short' });
+                    if (!stats[month]) {
+                        stats[month] = { month, successful: 0, failed: 0, rolled_back: 0 };
+                    }
+                    if (m.status === 'failed') {
+                        stats[month].failed++;
+                    } else if (m.status === 'rolled_back') {
+                        stats[month].rolled_back++;
+                    } else {
+                        stats[month].successful++;
+                    }
+                }
+            });
+            const statsArray = Object.values(stats);
+            setMigrationStats(statsArray.length > 0 ? statsArray : []);
+        }
+    }, [migrations]);
 
     const wsUrl = (import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app').replace(/^http/, 'ws');
     const { isConnected } = useWebSocket(wsUrl, () => {});
@@ -963,7 +934,7 @@ const SchemaVersioningTab = () => {
     const handleExportSchema = useCallback(() => {
         try {
             const blob = new Blob(
-                [JSON.stringify({ migrations: migrations || [], pending: pendingMigrations || [], diff: SCHEMA_DIFF || [] }, null, 2)],
+                [JSON.stringify({ migrations: migrations || [], pending: pendingMigrations || [], diff: schemaDiff || [] }, null, 2)],
                 { type: 'application/json' }
             );
             const url = URL.createObjectURL(blob);
@@ -976,7 +947,7 @@ const SchemaVersioningTab = () => {
             console.error('Failed to export schema:', err);
             setSchemaMessage('Failed to export schema.');
         }
-    }, [migrations, pendingMigrations]);
+    }, [migrations, pendingMigrations, schemaDiff]);
 
     const pendingIds = useMemo(() => {
         const ids = new Set();
@@ -1059,7 +1030,7 @@ const SchemaVersioningTab = () => {
                 <MetricCard icon={CheckCircle} label="Success Rate" value="98.5%" sub="Last 90 days" accent="#10b981" delay={0} />
                 <MetricCard icon={Zap}          label="Avg Duration" value="2.3s"  sub="Per migration"  accent="#f59e0b" warn delay={60} />
                 <MetricCard icon={AlertTriangle} label="Pending Review" value={pendingMigrations.length} sub={pendingMigrations.length > 0 ? '1 high-risk' : 'None'} accent="#f59e0b" warn={pendingMigrations.length > 0} delay={120} />
-                <MetricCard icon={Layers} label="Schema Objects" value={DEPENDENCY_DATA?.nodes?.length || 0} sub={`${DEPENDENCY_DATA?.edges?.length || 0} dependencies`} accent="#6366f1" delay={180} />
+                <MetricCard icon={Layers} label="Schema Objects" value={dependencyData?.nodes?.length || 0} sub={`${dependencyData?.edges?.length || 0} dependencies`} accent="#6366f1" delay={180} />
             </div>
 
             {/* ── View tabs ── */}
@@ -1241,7 +1212,7 @@ const SchemaVersioningTab = () => {
                             <div className="sv-card">
                                 <div style={{ fontSize: 13, fontWeight: 800, color: THEME.textMain, marginBottom: 14 }}>Recent Activity</div>
                                 <ResponsiveContainer width="100%" height={140}>
-                                    <AreaChart data={Array.isArray(MIGRATION_STATS) ? MIGRATION_STATS : []}>
+                                    <AreaChart data={Array.isArray(migrationStats) ? migrationStats : []}>
                                         <defs>
                                             <linearGradient id="sv-colorSuccess" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -1314,7 +1285,7 @@ const SchemaVersioningTab = () => {
                         {/* Summary */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
                             {(() => {
-                                const safeDiff = Array.isArray(SCHEMA_DIFF) ? SCHEMA_DIFF : [];
+                                const safeDiff = Array.isArray(schemaDiff) ? schemaDiff : [];
                                 return [
                                     { label: 'Added',   count: safeDiff.filter(d => d && d.type === 'added').length,    color: '#10b981' },
                                     { label: 'Modified', count: safeDiff.filter(d => d && d.type === 'modified').length, color: '#f59e0b' },
@@ -1338,7 +1309,7 @@ const SchemaVersioningTab = () => {
                                 </div>
                                 <pre style={{ margin: 0, padding: '16px', overflowX: 'auto', fontSize: 11.5, lineHeight: 1.7, fontFamily: THEME.fontMono, color: THEME.textMuted }}>
                                     {(() => {
-                                        const safeDiff = Array.isArray(SCHEMA_DIFF) ? SCHEMA_DIFF : [];
+                                        const safeDiff = Array.isArray(schemaDiff) ? schemaDiff : [];
                                         return safeDiff.flatMap(item => {
                                             if (!item) return [];
                                             const lines = [];
@@ -1375,7 +1346,7 @@ const SchemaVersioningTab = () => {
 
                         {/* Diff items */}
                         {(() => {
-                            const safeDiff = Array.isArray(SCHEMA_DIFF) ? SCHEMA_DIFF : [];
+                            const safeDiff = Array.isArray(schemaDiff) ? schemaDiff : [];
                             return safeDiff.map((item, i) => {
                                 if (!item) return null;
                                 return (
@@ -1503,7 +1474,7 @@ const SchemaVersioningTab = () => {
                                 <button className="sv-btn-secondary"><Settings size={13} /> Layout</button>
                             </div>
                         </div>
-                        <DependencyGraph data={DEPENDENCY_DATA} />
+                        <DependencyGraph data={dependencyData} />
                         <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(245,158,11,.06)', border: '1px solid rgba(245,158,11,.18)', borderRadius: 10, fontSize: 12, lineHeight: 1.7 }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                                 <Info size={15} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
@@ -1534,8 +1505,8 @@ const SchemaVersioningTab = () => {
                                 </thead>
                                 <tbody>
                                 {(() => {
-                                    const nodes = Array.isArray(DEPENDENCY_DATA?.nodes) ? DEPENDENCY_DATA.nodes : [];
-                                    const edges = Array.isArray(DEPENDENCY_DATA?.edges) ? DEPENDENCY_DATA.edges : [];
+                                    const nodes = Array.isArray(dependencyData?.nodes) ? dependencyData.nodes : [];
+                                    const edges = Array.isArray(dependencyData?.edges) ? dependencyData.edges : [];
                                     return nodes.map(node => {
                                         if (!node || !node.id) return null;
                                         const deps = edges.filter(e => e && e.from === node.id).length;
@@ -1573,7 +1544,7 @@ const SchemaVersioningTab = () => {
                     <div className="sv-card">
                         <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Migration Success Rate (90d)</div>
                         <ResponsiveContainer width="100%" height={240}>
-                            <LineChart data={Array.isArray(MIGRATION_STATS) ? MIGRATION_STATS : []}>
+                            <LineChart data={Array.isArray(migrationStats) ? migrationStats : []}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
                                 <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
@@ -1613,7 +1584,7 @@ const SchemaVersioningTab = () => {
                     <div className="sv-card" style={{ gridColumn: 'span 2' }}>
                         <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginBottom: 16 }}>Migration Volume by Month</div>
                         <ResponsiveContainer width="100%" height={240}>
-                            <BarChart data={Array.isArray(MIGRATION_STATS) ? MIGRATION_STATS : []}>
+                            <BarChart data={Array.isArray(migrationStats) ? migrationStats : []}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
                                 <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} fontFamily={THEME.fontMono} tickLine={false} axisLine={false} />

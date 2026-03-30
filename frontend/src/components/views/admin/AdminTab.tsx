@@ -242,7 +242,17 @@ const MOCK_CACHE = { hitRate: 0, missRate: 0, size: '—', evictions: 0, history
 
 const MOCK_CONNECTIONS = [];
 
-const MOCK_SERVER = { version: '—', uptime: '—', cpu: 0, ram: 0, disk: 0, maxConns: 0, activeConns: 0 };
+// Default fallback server stats (used when API is unavailable)
+const DEFAULT_SERVER_STATS = {
+    version: '—',
+    uptime: '—',
+    cpu: { pct: 0, cores: 0, freq: '—', history: [] },
+    ram: { usedGB: 0, totalGB: 0 },
+    disk: { usedGB: 0, totalGB: 0, readMBs: 0, writeMBs: 0 },
+    tps: { current: 0, history: [] },
+    network: { inKBs: 0, outKBs: 0 },
+    replication: { streaming: false, lag: '—', slots: 0 },
+};
 
 const MOCK_CHANGE_LOG = [];
 
@@ -450,8 +460,8 @@ const DiffTag = ({ before, after }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SERVER SIDEBAR — ADVANCED
    ═══════════════════════════════════════════════════════════════════════════ */
-const ServerSidebar = ({ collapsed, onToggle }) => {
-    const s = MOCK_SERVER;
+const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS }) => {
+    const s = serverStats;
     const cpuColor = s.cpu.pct > 80 ? T.danger : s.cpu.pct > 50 ? T.warning : T.success;
     const ramPct = Math.round((s.ram.usedGB / s.ram.totalGB) * 100);
     const diskPct = Math.round((s.disk.usedGB / s.disk.totalGB) * 100);
@@ -1737,6 +1747,7 @@ const AdminTab = () => {
     const [extData, setExtData]     = useState([]);
     const [cacheData, setCacheData] = useState(null);
     const [connData, setConnData]   = useState([]);
+    const [serverStats, setServerStats] = useState(DEFAULT_SERVER_STATS);
     const [loading, setLoading]     = useState(true);
 
     // Settings UI State
@@ -1771,6 +1782,14 @@ const AdminTab = () => {
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
+            // Always fetch server stats for the sidebar
+            const statsData = await fetchData('/api/overview/stats').catch(() => null);
+            if (statsData && typeof statsData === 'object') {
+                setServerStats(statsData);
+            } else {
+                setServerStats(DEFAULT_SERVER_STATS);
+            }
+
             if (activeSub === 'settings') {
                 const r = await fetchData('/api/admin/settings');
                 setSettingsData(Array.isArray(r) && r.length ? r : MOCK_SETTINGS);
@@ -1785,6 +1804,7 @@ const AdminTab = () => {
                 setConnData(Array.isArray(r) && r.length ? r : MOCK_CONNECTIONS);
             }
         } catch {
+            setServerStats(DEFAULT_SERVER_STATS);
             if (activeSub === 'settings')    setSettingsData(MOCK_SETTINGS);
             if (activeSub === 'extensions')  setExtData(MOCK_EXTENSIONS);
             if (activeSub === 'cache')       setCacheData(MOCK_CACHE);
@@ -1943,7 +1963,7 @@ const AdminTab = () => {
                 </div>
 
                 {showSidebar && (
-                    <ServerSidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(p => !p)} />
+                    <ServerSidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(p => !p)} serverStats={serverStats} />
                 )}
             </div>
 

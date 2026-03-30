@@ -280,14 +280,7 @@ const GEO_THREATS = [];
 
 const THREAT_TIMELINE = [];
 
-const RADAR_DATA = [
-    { axis: 'Access Ctrl', val: 0 },
-    { axis: 'Encryption', val: 0 },
-    { axis: 'Auditing', val: 0 },
-    { axis: 'Patching', val: 0 },
-    { axis: 'Network', val: 0 },
-    { axis: 'Data Privacy', val: 0 },
-];
+// RADAR_DATA is now computed from compliance data in the component
 
 const AUDIT_EVENTS = [];
 
@@ -566,19 +559,70 @@ const CompliancePanel = ({ complianceChecks = [] }) => {
 };
 
 /* ── Security Radar ─────────────────────────────────────────────────────── */
-const SecurityRadar = () => (
-    <div className="card" style={{ padding: '0 0 12px' }}>
-        <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor="#a78bfa" />
-        <ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={RADAR_DATA} cx="50%" cy="50%" outerRadius={75}>
-                <PolarGrid stroke={THEME.grid} />
-                <PolarAngleAxis dataKey="axis" tick={{ fill: THEME.textMuted, fontSize: 11 }} />
-                <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar name="Score" dataKey="val" stroke="#a78bfa" fill="#a78bfa" fillOpacity={0.15} strokeWidth={2} dot={{ fill: '#a78bfa', r: 3 }} />
-            </RadarChart>
-        </ResponsiveContainer>
-    </div>
-);
+const SecurityRadar = ({ complianceChecks = [] }) => {
+    // Compute radar data from compliance checks
+    const computeRadarData = () => {
+        const categoryScores = {
+            'Access Ctrl': [],
+            'Encryption': [],
+            'Auditing': [],
+            'Patching': [],
+            'Network': [],
+            'Data Privacy': [],
+        };
+
+        const safeChecks = Array.isArray(complianceChecks) ? complianceChecks : [];
+
+        // Map compliance categories to radar axes
+        safeChecks.forEach(check => {
+            if (!check) return;
+            const checkStatus = check.status === 'pass' ? 100 : check.status === 'warn' ? 50 : 0;
+
+            // Map compliance categories to radar dimensions
+            if (check.cat && check.cat.includes('access')) categoryScores['Access Ctrl'].push(checkStatus);
+            if (check.cat && check.cat.includes('encrypt')) categoryScores['Encryption'].push(checkStatus);
+            if (check.cat && check.cat.includes('audit')) categoryScores['Auditing'].push(checkStatus);
+            if (check.cat && check.cat.includes('patch')) categoryScores['Patching'].push(checkStatus);
+            if (check.cat && check.cat.includes('network')) categoryScores['Network'].push(checkStatus);
+            if (check.cat && check.cat.includes('privacy')) categoryScores['Data Privacy'].push(checkStatus);
+
+            // Fallback: map by standard or label keywords
+            if (check.standard === 'SOC2') {
+                categoryScores['Auditing'].push(checkStatus);
+                categoryScores['Access Ctrl'].push(checkStatus);
+            }
+            if (check.standard === 'GDPR' || check.label?.includes('GDPR')) {
+                categoryScores['Data Privacy'].push(checkStatus);
+            }
+            if (check.standard === 'HIPAA') {
+                categoryScores['Encryption'].push(checkStatus);
+                categoryScores['Data Privacy'].push(checkStatus);
+            }
+        });
+
+        // Average scores for each category
+        return Object.entries(categoryScores).map(([axis, scores]) => ({
+            axis,
+            val: scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
+        }));
+    };
+
+    const radarData = computeRadarData();
+
+    return (
+        <div className="card" style={{ padding: '0 0 12px' }}>
+            <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor="#a78bfa" />
+            <ResponsiveContainer width="100%" height={220}>
+                <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={75}>
+                    <PolarGrid stroke={THEME.grid} />
+                    <PolarAngleAxis dataKey="axis" tick={{ fill: THEME.textMuted, fontSize: 11 }} />
+                    <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+                    <Radar name="Score" dataKey="val" stroke="#a78bfa" fill="#a78bfa" fillOpacity={0.15} strokeWidth={2} dot={{ fill: '#a78bfa', r: 3 }} />
+                </RadarChart>
+            </ResponsiveContainer>
+        </div>
+    );
+};
 
 /* ── PII Access Log ─────────────────────────────────────────────────────── */
 const PIIAccessLog = () => {
@@ -1069,7 +1113,7 @@ const SecurityComplianceTab = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <ScoreRing score={score} />
                                 </div>
-                                <SecurityRadar />
+                                <SecurityRadar complianceChecks={complianceChecks} />
                             </div>
                             <GeoThreatPanel />
                         </div>
@@ -1104,7 +1148,7 @@ const SecurityComplianceTab = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 18 }}>
                         <CompliancePanel complianceChecks={complianceChecks} />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                            <SecurityRadar />
+                            <SecurityRadar complianceChecks={complianceChecks} />
                             <PIIAccessLog />
                         </div>
                     </div>
