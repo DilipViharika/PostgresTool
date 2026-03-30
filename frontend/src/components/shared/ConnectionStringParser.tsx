@@ -127,7 +127,7 @@ const ConnectionStringParser = ({ onChange, onError }) => {
       padding: '12px',
       borderRadius: '8px',
       border: `1px solid rgba(139, 92, 246, 0.15)`,
-      background: 'rgba(18, 10, 31, 0.4)',
+      background: THEME.surfaceHover,
       color: THEME.textMain,
       fontSize: '12px',
       fontFamily: THEME.fontMono,
@@ -138,9 +138,9 @@ const ConnectionStringParser = ({ onChange, onError }) => {
       boxSizing: 'border-box',
     },
     textareaFocus: {
-      borderColor: 'rgba(139, 92, 246, 0.4)',
-      background: 'rgba(18, 10, 31, 0.6)',
-      boxShadow: '0 0 12px rgba(139, 92, 246, 0.1)',
+      borderColor: '#8b5cf6',
+      background: THEME.surface,
+      boxShadow: '0 0 0 3px rgba(139, 92, 246, 0.1)',
       outline: 'none',
     },
     errorBox: {
