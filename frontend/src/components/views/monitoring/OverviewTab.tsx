@@ -1598,7 +1598,7 @@ const ConnectionStatusBanner = () => {
     const [switching, setSwitching] = useState(null);
     const [dismissed, setDismissed] = useState(false);
 
-    const goToPool = () => nav?.goToTab('pool');
+    const goToPool = () => nav?.goToTab('connections');
 
     // ── No connections at all → full onboarding card ──
     if (!loading && connections.length === 0) {
@@ -1943,9 +1943,11 @@ const OverviewTab = () => {
         if (!activeConnection) { setLoading(false); return; }
         if (isManual) setRefreshing(true);
         try {
+            // Add a timeout so the loading state doesn't hang forever
+            const withTimeout = (p, ms = 10000) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
             const [statsRes, trafficRes] = await Promise.allSettled([
-                fetchData('/api/overview/stats'),
-                fetchData('/api/overview/traffic'),
+                withTimeout(fetchData('/api/overview/stats')),
+                withTimeout(fetchData('/api/overview/traffic')),
             ]);
             const val = (r) => (r.status === 'fulfilled' ? r.value : null);
             setData({
@@ -1978,7 +1980,13 @@ const OverviewTab = () => {
     }, [activeConnection]);
 
     useEffect(() => {
-        if (activeConnection) load();
+        if (activeConnection) {
+            load();
+        } else {
+            // If no active connection yet, stop showing the loading skeleton
+            // (the !activeConnection guard below will show the welcome screen)
+            setLoading(false);
+        }
     }, [currentEnv, activeConnection]);
 
     useEffect(() => {
