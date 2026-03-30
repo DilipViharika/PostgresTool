@@ -488,8 +488,8 @@ export default function BloatAnalysisTab() {
         return [{ value: critical, fill: THEME.danger }, { value: high, fill: THEME.warning }, { value: ok, fill: THEME.success }];
     }, [tables]);
 
-    const maxDeadBytes = useMemo(() => Math.max(...tables.map(t => Number(t.total_bytes) || 0)), [tables]);
-    const maxIndexBytes = useMemo(() => Math.max(...indexes.map(i => Number(i.index_bytes) || 0)), [indexes]);
+    const maxDeadBytes = useMemo(() => tables.length > 0 ? Math.max(...tables.map(t => Number(t.total_bytes) || 0)) : 1, [tables]);
+    const maxIndexBytes = useMemo(() => indexes.length > 0 ? Math.max(...indexes.map(i => Number(i.index_bytes) || 0)) : 1, [indexes]);
 
     if (loading) return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: THEME.textMuted }}>

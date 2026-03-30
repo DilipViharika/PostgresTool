@@ -844,7 +844,7 @@ const ServiceAttributionPanel = () => {
     const [view, setView] = useState('chart');
     const sorted = [...serviceAttribution].sort((a, b) => b[sortBy] - a[sortBy]);
     const totalTime = serviceAttribution.reduce((s, r) => s + r.total_time_ms, 0);
-    const maxCostShare = Math.max(...sorted.map(s => s.cost_share));
+    const maxCostShare = sorted.length > 0 ? Math.max(...sorted.map(s => s.cost_share)) : 0;
 
     const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: '#a78bfa', Growth: '#34d399', Search: '#f472b6' };
 
@@ -855,7 +855,7 @@ const ServiceAttributionPanel = () => {
                 {[
                     { label: 'Services Tracked', value: serviceAttribution.length, color: THEME.textMain },
                     { label: 'Total DB Time', value: formatDuration(totalTime), color: THEME.primary },
-                    { label: 'Slowest Avg (ms)', value: formatDuration(Math.max(...serviceAttribution.map(s => s.avg_time))), color: THEME.danger },
+                    { label: 'Slowest Avg (ms)', value: formatDuration(serviceAttribution.length > 0 ? Math.max(...serviceAttribution.map(s => s.avg_time)) : 0), color: THEME.danger },
                     { label: 'Top Offender', value: sorted[0]?.service, color: THEME.warning },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
@@ -1177,10 +1177,10 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
     const [searchText, setSearchText] = useState('');
     const [tagFilter, setTagFilter] = useState(null);
 
-    const allTags = [...new Set(slowQueries.flatMap(q => q.tags))];
+    const allTags = [...new Set(slowQueries.flatMap(q => q.tags || []))];
     const filtered = slowQueries
         .filter(q => !searchText || q.query.toLowerCase().includes(searchText.toLowerCase()))
-        .filter(q => !tagFilter || q.tags.includes(tagFilter))
+        .filter(q => !tagFilter || (q.tags || []).includes(tagFilter))
         .sort((a, b) => b[sortBy] - a[sortBy]);
 
     const selected = filtered.find(q => q.id === selectedId);
@@ -1221,7 +1221,7 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontSize: 10, color: THEME.textMain, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 4 }}>{q.query}</div>
                                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                                        {q.tags.map(tag => (
+                                        {(q.tags || []).map(tag => (
                                             <span key={tag} className="tag-pill" style={{ background: `${tagColors[tag] || THEME.primary}20`, color: tagColors[tag] || THEME.primary }}>{tag}</span>
                                         ))}
                                         <span style={{ fontSize: 9, color: THEME.textDim }}>{q.db}</span>
@@ -1335,7 +1335,7 @@ const LockMonitorPanel = () => {
                                 </div>
                                 <ArrowRight size={14} color={THEME.danger} />
                                 <div style={{ display: 'flex', gap: 4 }}>
-                                    {blocker.blocking.map(pid => (
+                                    {(blocker.blocking || []).map(pid => (
                                         <div key={pid} style={{ padding: '4px 10px', borderRadius: 6, background: `${THEME.warning}20`, border: `1px solid ${THEME.warning}40`, fontSize: 10, color: THEME.warning, fontFamily: 'monospace', fontWeight: 700 }}>
                                             PID {pid}
                                         </div>
@@ -1444,12 +1444,12 @@ const MaintenancePanel = () => {
                                         <div style={{ width: 40, height: 5, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
                                             <div style={{ width: `${Math.min(100, t.bloat_pct)}%`, height: '100%', background: uc }} />
                                         </div>
-                                        <span style={{ fontSize: 9, color: uc, fontWeight: 700 }}>{t.bloat_pct.toFixed(1)}%</span>
+                                        <span style={{ fontSize: 9, color: uc, fontWeight: 700 }}>{(t.bloat_pct || 0).toFixed(1)}%</span>
                                     </div>
                                 </td>
-                                <td style={{ padding: '9px 12px', color: t.last_vacuum.includes('5d') || t.last_vacuum.includes('3d') ? THEME.danger : THEME.textMuted, fontSize: 10 }}>{t.last_vacuum}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted, fontSize: 10 }}>{t.last_analyze}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t.vacuum_count}</td>
+                                <td style={{ padding: '9px 12px', color: (t.last_vacuum || '').includes('d') ? THEME.danger : THEME.textMuted, fontSize: 10 }}>{t.last_vacuum || 'never'}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted, fontSize: 10 }}>{t.last_analyze || 'never'}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t.vacuum_count || 0}</td>
                                 <td style={{ padding: '9px 12px' }}>
                                     <span style={{ padding: '2px 7px', borderRadius: 9, background: `${uc}18`, color: uc, fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{u}</span>
                                 </td>
@@ -1580,7 +1580,7 @@ const IndexAdvisorPanel = () => {
                             <td style={{ padding: '9px 12px', color: THEME.primary, fontFamily: 'monospace' }}>{idx.column}</td>
                             <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 6px', borderRadius: 10, background: `${THEME.grid}60`, fontSize: 9, fontFamily: 'monospace', color: THEME.textMuted }}>{idx.type}</span></td>
                             <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{idx.size}</td>
-                            <td style={{ padding: '9px 12px', color: idx.scans === 0 ? THEME.danger : THEME.textMuted }}>{idx.scans.toLocaleString()}</td>
+                            <td style={{ padding: '9px 12px', color: (idx.scans || 0) === 0 ? THEME.danger : THEME.textMuted }}>{(idx.scans || 0).toLocaleString()}</td>
                             <td style={{ padding: '9px 12px', color: parseFloat(idx.bloat) > 20 ? THEME.warning : THEME.textMuted }}>{idx.bloat}</td>
                             <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${statusColor(idx.status)}18`, color: statusColor(idx.status), fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{idx.status}</span></td>
                             <td style={{ padding: '9px 12px' }}>
@@ -1598,7 +1598,7 @@ const IndexAdvisorPanel = () => {
 
 // Table Stats
 const TableStatsPanel = () => {
-    const maxRows = Math.max(...tableStats.map(t => t.rows));
+    const maxRows = tableStats.length > 0 ? Math.max(...tableStats.map(t => t.rows || 0)) : 1;
     return (
         <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
@@ -1612,9 +1612,11 @@ const TableStatsPanel = () => {
                     </thead>
                     <tbody>
                     {tableStats.map((t, i) => {
-                        const total = t.seq_scans + t.idx_scans;
-                        const idxPct = total > 0 ? (t.idx_scans / total) * 100 : 0;
-                        const deadRatio = t.dead_tuples / (t.rows || 1);
+                        const seqScans = t.seq_scans || 0;
+                        const idxScans = t.idx_scans || 0;
+                        const total = seqScans + idxScans;
+                        const idxPct = total > 0 ? (idxScans / total) * 100 : 0;
+                        const deadRatio = (t.dead_tuples || 0) / (t.rows || 1);
                         return (
                             <tr key={i} className="opt-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}30` }}>
                                 <td style={{ padding: '9px 12px', color: THEME.textMain, fontFamily: 'monospace', fontWeight: 600 }}>{t.table}</td>
@@ -1628,9 +1630,9 @@ const TableStatsPanel = () => {
                                 <td style={{ padding: '9px 12px', color: deadRatio > 0.1 ? THEME.danger : deadRatio > 0.05 ? THEME.warning : THEME.textMuted }}>
                                     {formatRows(t.dead_tuples)}{deadRatio > 0.05 && <span style={{ marginLeft: 4, color: THEME.warning }}>⚠</span>}
                                 </td>
-                                <td style={{ padding: '9px 12px', color: t.last_vacuum.includes('5d') ? THEME.danger : THEME.textMuted }}>{t.last_vacuum}</td>
-                                <td style={{ padding: '9px 12px', color: t.seq_scans > 1000 ? THEME.warning : THEME.textMuted }}>{t.seq_scans.toLocaleString()}</td>
-                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t.idx_scans.toLocaleString()}</td>
+                                <td style={{ padding: '9px 12px', color: (t.last_vacuum || '').includes('d') ? THEME.danger : THEME.textMuted }}>{t.last_vacuum || 'never'}</td>
+                                <td style={{ padding: '9px 12px', color: seqScans > 1000 ? THEME.warning : THEME.textMuted }}>{seqScans.toLocaleString()}</td>
+                                <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{idxScans.toLocaleString()}</td>
                                 <td style={{ padding: '9px 12px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <div style={{ width: 48, height: 5, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>

@@ -363,7 +363,7 @@ function S_Activity() {
         { key: 'idxScans', label: 'Idx Scans', color: THEME.success },
         { key: 'inserts',  label: 'Inserts',   color: THEME.primary },
     ];
-    const maxes = { seqScans: Math.max(...rows.map(t => Number(t.seqScans)), 1), idxScans: Math.max(...rows.map(t => Number(t.idxScans)), 1), inserts: Math.max(...rows.map(t => Number(t.inserts)), 1) };
+    const maxes = { seqScans: rows.length > 0 ? Math.max(...rows.map(t => Number(t.seqScans))) : 1, idxScans: rows.length > 0 ? Math.max(...rows.map(t => Number(t.idxScans))) : 1, inserts: rows.length > 0 ? Math.max(...rows.map(t => Number(t.inserts))) : 1 };
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SecHead Icon={BarChart2} accent={THEME.warning} title="Activity Heatmap" sub="Sequential vs. index scans and DML rates per table" />
@@ -484,7 +484,7 @@ function S_RowCounts() {
     if (error)   return <ErrUI msg={error} />;
     const rows = data.filter(t => matchFilter(t, f));
     if (!rows.length) return <EmptyUI />;
-    const maxLive = Math.max(...rows.map(t => Number(t.liveRows ?? t.rows ?? 0)), 1);
+    const maxLive = rows.length > 0 ? Math.max(...rows.map(t => Number(t.liveRows ?? t.rows ?? 0))) : 1;
     const chartData = rows.slice(0, 8).map(t => ({ name: t.name, live: Number(t.liveRows ?? t.rows ?? 0), dead: Number(t.deadRows ?? 0) }));
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -1497,7 +1497,7 @@ function S_QueryPerf() {
     ).slice(0, 20);
     if (!rows.length) return <EmptyUI msg="No query stats. Ensure pg_stat_statements is installed." />;
 
-    const maxMean = Math.max(...rows.map(q => safeNum(q.meanMs ?? q.mean_exec_time)), 1);
+    const maxMean = rows.length > 0 ? Math.max(...rows.map(q => safeNum(q.meanMs ?? q.mean_exec_time))) : 1;
     const chartData = rows.slice(0, 8).map(q => ({ name: (q.query || '').slice(0, 16) + '…', calls: safeNum(q.calls), mean: safeNum(q.meanMs ?? q.mean_exec_time) }));
     const totalCalls = rows.reduce((s, q) => s + safeNum(q.calls), 0);
     const slowQueries = rows.filter(q => safeNum(q.meanMs ?? q.mean_exec_time) > 100).length;

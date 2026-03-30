@@ -4760,7 +4760,20 @@ app.get('/api/optimizer/indexes', authenticate, async (req, res) => {
             JOIN pg_index ON pg_stat_user_indexes.indexrelid = pg_index.indexrelid
             ORDER BY idx_scan ASC LIMIT 50
         `);
-        res.json(rows);
+        // Normalize to shape frontend expects: { table, column, indexName, type, size, scans, status, impact }
+        const normalized = rows.map(r => ({
+            table: `${r.schemaname}.${r.tablename}`,
+            column: r.indexname.replace(`${r.tablename}_`, '').replace('_idx', '').replace('_index', ''),
+            indexName: r.indexname,
+            type: 'btree',
+            size: r.size,
+            scans: parseInt(r.idx_scan) || 0,
+            reads: parseInt(r.idx_tup_read) || 0,
+            fetches: parseInt(r.idx_tup_fetch) || 0,
+            status: parseInt(r.idx_scan) === 0 ? 'unused' : parseInt(r.idx_scan) < 10 ? 'low-usage' : 'active',
+            impact: parseInt(r.idx_scan) === 0 ? 'high' : parseInt(r.idx_scan) < 10 ? 'medium' : 'low',
+        }));
+        res.json(normalized);
     } catch (e) {
         log('ERROR', `[/api/optimizer/indexes] ${e.message}`);
         res.json([]);
@@ -4780,7 +4793,24 @@ app.get('/api/optimizer/table-stats', authenticate, async (req, res) => {
             FROM pg_stat_user_tables
             ORDER BY n_dead_tup DESC LIMIT 50
         `);
-        res.json(rows);
+        // Normalize: frontend expects { table, rows, size, dead_tuples, last_vacuum, seq_scans, idx_scans }
+        const fmtAgo = (ts) => {
+            if (!ts) return 'never';
+            const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+            if (mins < 60) return `${mins}m ago`;
+            if (mins < 1440) return `${Math.round(mins / 60)}h ago`;
+            return `${Math.round(mins / 1440)}d ago`;
+        };
+        const normalized = rows.map(r => ({
+            table: `${r.schemaname}.${r.table_name}`,
+            rows: parseInt(r.n_live_tup) || 0,
+            size: r.total_size || '0 bytes',
+            dead_tuples: parseInt(r.n_dead_tup) || 0,
+            last_vacuum: fmtAgo(r.last_vacuum || r.last_autovacuum),
+            seq_scans: parseInt(r.seq_scan) || 0,
+            idx_scans: parseInt(r.idx_scan) || 0,
+        }));
+        res.json(normalized);
     } catch (e) {
         log('ERROR', `[/api/optimizer/table-stats] ${e.message}`);
         res.json([]);
@@ -4804,7 +4834,31 @@ app.get('/api/optimizer/slow-queries', authenticate, async (req, res) => {
             WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database())
             ORDER BY mean_exec_time DESC LIMIT 30
         `);
-        res.json(rows);
+        // Normalize: frontend expects { id, query, tags[], db, mean_time, p95_time, p99_time, total_time, calls }
+        const inferTags = (q) => {
+            const tags = [];
+            const ql = (q || '').toLowerCase();
+            if (/seq scan|sequential/.test(ql)) tags.push('seq-scan');
+            if (/delete\s+from/i.test(ql)) tags.push('bulk-delete');
+            if (/group\s+by|sum\(|avg\(|count\(/i.test(ql)) tags.push('aggregation');
+            if (/select\s+\*/i.test(ql)) tags.push('wide-select');
+            if (tags.length === 0) tags.push('general');
+            return tags;
+        };
+        const dbName = (await pool.query('SELECT current_database() as db')).rows[0]?.db || 'postgres';
+        const normalized = rows.map(r => ({
+            id: String(r.queryid),
+            query: r.query,
+            tags: inferTags(r.query),
+            db: dbName,
+            mean_time: parseFloat(r.mean_exec_time) || 0,
+            p95_time: (parseFloat(r.mean_exec_time) || 0) * 1.8,
+            p99_time: parseFloat(r.max_exec_time) || 0,
+            total_time: parseFloat(r.total_exec_time) || 0,
+            calls: parseInt(r.calls) || 0,
+            rows_per_call: parseInt(r.rows) || 0,
+        }));
+        res.json(normalized);
     } catch (e) {
         log('ERROR', `[/api/optimizer/slow-queries] ${e.message}`);
         res.json([]);
@@ -4824,7 +4878,25 @@ app.get('/api/optimizer/locks', authenticate, async (req, res) => {
             WHERE NOT l.granted OR l.mode LIKE '%Exclusive%'
             ORDER BY l.waitstart NULLS LAST LIMIT 30
         `);
-        res.json(rows);
+        // Normalize: frontend expects { pid, locktype, mode, granted, query, state, table_name, blocked_by, blocking[] }
+        const waitingPids = rows.filter(r => !r.granted).map(r => r.pid);
+        const blockingPids = rows.filter(r => r.granted).map(r => r.pid);
+        const normalized = rows.map(r => ({
+            pid: r.pid,
+            locktype: r.locktype,
+            mode: r.mode,
+            granted: r.granted,
+            query: r.query,
+            state: r.state,
+            table_name: r.table_name,
+            usename: r.usename,
+            application_name: r.application_name,
+            client_addr: r.client_addr,
+            wait_event: r.wait_event,
+            blocked_by: !r.granted ? (blockingPids.find(p => p !== r.pid) || null) : null,
+            blocking: r.granted ? waitingPids.filter(p => p !== r.pid) : [],
+        }));
+        res.json(normalized);
     } catch (e) {
         log('ERROR', `[/api/optimizer/locks] ${e.message}`);
         res.json([]);
@@ -4840,13 +4912,32 @@ app.get('/api/optimizer/maintenance', authenticate, async (req, res) => {
                    CASE WHEN n_live_tup > 0
                         THEN round(100.0 * n_dead_tup / n_live_tup, 1)
                         ELSE 0 END as bloat_pct,
-                   last_vacuum, last_autovacuum,
+                   last_vacuum, last_autovacuum, last_analyze, last_autoanalyze,
+                   vacuum_count, autovacuum_count,
                    pg_size_pretty(pg_total_relation_size(relid)) as size
             FROM pg_stat_user_tables
             WHERE n_dead_tup > 0
             ORDER BY n_dead_tup DESC LIMIT 30
         `);
-        res.json(rows);
+        // Normalize: frontend expects { table, size, live_tuples, dead_tuples, bloat_pct, last_vacuum, last_analyze, vacuum_count }
+        const fmtAgo = (ts) => {
+            if (!ts) return 'never';
+            const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+            if (mins < 60) return `${mins}m ago`;
+            if (mins < 1440) return `${Math.round(mins / 60)}h ago`;
+            return `${Math.round(mins / 1440)}d ago`;
+        };
+        const normalized = rows.map(r => ({
+            table: `${r.schemaname}.${r.table_name}`,
+            size: r.size,
+            live_tuples: parseInt(r.n_live_tup) || 0,
+            dead_tuples: parseInt(r.n_dead_tup) || 0,
+            bloat_pct: parseFloat(r.bloat_pct) || 0,
+            last_vacuum: fmtAgo(r.last_vacuum || r.last_autovacuum),
+            last_analyze: fmtAgo(r.last_analyze || r.last_autoanalyze),
+            vacuum_count: (parseInt(r.vacuum_count) || 0) + (parseInt(r.autovacuum_count) || 0),
+        }));
+        res.json(normalized);
     } catch (e) {
         log('ERROR', `[/api/optimizer/maintenance] ${e.message}`);
         res.json([]);

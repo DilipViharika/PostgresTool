@@ -848,7 +848,7 @@ const TrendPanel = ({rows,view}) => {
     const row=rows[Math.min(sel,rows.length-1)];
     // Use seq_scan for missing, sizeBytes for others as the "value" metric
     const metric = view==='missing' ? (r=>r.seq_scan||0) : (r=>r.sizeBytes||r.tableSizeBytes||0);
-    const maxVal = Math.max(...rows.map(metric), 1);
+    const maxVal = rows.length > 0 ? Math.max(...rows.map(metric)) : 1;
     const color=view==='missing'?C.warn:view==='bloat'?C.err:C.accent;
     // Build a simple bar chart from sorted rows
     const barData = rows.slice(0,15).map(metric);

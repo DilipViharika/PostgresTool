@@ -417,7 +417,7 @@ const ChartView = ({ result }) => {
         </div>
     );
 
-    const maxY = Math.max(...chartData.map(d => d.y), 1);
+    const maxY = chartData.length > 0 ? Math.max(...chartData.map(d => d.y)) : 1;
 
     return (
         <div style={{ display:'flex', flexDirection:'column', height:'100%', padding:'12px 14px', gap:10 }}>
