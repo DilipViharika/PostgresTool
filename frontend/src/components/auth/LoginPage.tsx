@@ -61,32 +61,32 @@ const STYLES = `
     50% { opacity: 1; }
   }
 
-  .glass-input:focus {
+  .light-input:focus {
     outline: none;
-    border-color: rgba(255,255,255,.35) !important;
-    box-shadow: 0 0 0 3px rgba(139,92,246,.12), inset 0 0 0 1px rgba(255,255,255,.08) !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.1) !important;
   }
-  .glass-input::placeholder { color: rgba(255,255,255,.3); }
-  .glass-input:-webkit-autofill,
-  .glass-input:-webkit-autofill:hover,
-  .glass-input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,.06) inset !important;
-    -webkit-text-fill-color: rgba(255,255,255,.9) !important;
-    caret-color: rgba(255,255,255,.9);
+  .light-input::placeholder { color: #94a3b8; }
+  .light-input:-webkit-autofill,
+  .light-input:-webkit-autofill:hover,
+  .light-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
+    -webkit-text-fill-color: #1e293b !important;
+    caret-color: #1e293b;
     transition: background-color 5000s ease-in-out 0s;
   }
 
   .login-btn:not(:disabled):hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 16px 40px rgba(139,92,246,.3), 0 0 50px rgba(139,92,246,.12) !important;
+    box-shadow: 0 16px 40px rgba(139,92,246,.3), 0 0 50px rgba(139,92,246,.1) !important;
   }
   .login-btn:not(:disabled):active { transform: translateY(0) !important; }
   .sso-btn:hover {
-    background: rgba(255,255,255,.1) !important;
-    border-color: rgba(255,255,255,.2) !important;
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
     transform: translateY(-1px) !important;
   }
-  .forgot-btn:hover { color: rgba(255,255,255,.85) !important; }
+  .forgot-btn:hover { color: #8b5cf6 !important; }
   .theme-toggle:hover {
     background: rgba(255,255,255,.12) !important;
     transform: scale(1.1) rotate(15deg) !important;
@@ -120,9 +120,8 @@ const ServerStatus = ({ status }: { status: { status: string; latency?: number }
                 gap: 8,
                 padding: '5px 14px',
                 borderRadius: 100,
-                background: 'rgba(255,255,255,.05)',
-                border: '1px solid rgba(255,255,255,.08)',
-                backdropFilter: 'blur(8px)',
+                background: `${color}08`,
+                border: `1px solid ${color}18`,
                 fontSize: 9,
                 fontWeight: 600,
                 color,
@@ -402,7 +401,7 @@ const LoginPage = () => {
             </div>
 
             {/* ═══════════════════════════════════════════════════════════════════
-                RIGHT PANEL — Glass login form
+                RIGHT PANEL — Clean white login form
             ═══════════════════════════════════════════════════════════════════ */}
             <div
                 className="login-right"
@@ -414,73 +413,68 @@ const LoginPage = () => {
                     justifyContent: 'center',
                     padding: '48px 40px',
                     overflow: 'auto',
-                    background: 'linear-gradient(180deg, #0e1225 0%, #131836 50%, #0e1225 100%)',
+                    background: '#ffffff',
                 }}
             >
-                {/* Subtle accent glow */}
-                <div style={{ position: 'absolute', top: '20%', left: '-10%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,.08) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-
                 <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 380, animation: 'fadeIn .7s ease-out' }}>
                     {/* Header */}
                     <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
+                        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#1e293b', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
                             Welcome back
                         </h2>
-                        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.35)', margin: 0 }}>
+                        <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>
                             Sign in to your command center
                         </p>
                     </div>
 
-                    {/* Server status */}
+                    {/* Server status — light version */}
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 22 }}>
                         <ServerStatus status={serverStatus} />
                     </div>
 
-                    {/* Glass card */}
+                    {/* Card */}
                     <div
                         style={{
-                            background: 'rgba(255,255,255,.04)',
-                            backdropFilter: 'blur(24px) saturate(1.3)',
-                            WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
-                            borderRadius: 20,
-                            border: '1px solid rgba(255,255,255,.08)',
+                            background: '#ffffff',
+                            borderRadius: 16,
                             padding: '28px 24px',
-                            boxShadow: '0 20px 60px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05)',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 1px 3px rgba(0,0,0,.04)',
                             animation: shake ? 'shake .5s ease' : 'none',
                         }}
                     >
                         {/* Error */}
                         {(error || rateLimitError) && (
-                            <div style={{ marginBottom: 16, padding: '11px 14px', borderRadius: 12, background: 'rgba(244,63,94,.1)', border: '1px solid rgba(244,63,94,.18)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <AlertCircle size={14} color="#fb7185" style={{ flexShrink: 0 }} />
-                                <span style={{ color: '#fb7185', fontSize: 12, fontWeight: 500 }}>{error || rateLimitError}</span>
+                            <div style={{ marginBottom: 16, padding: '11px 14px', borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <AlertCircle size={14} color="#ef4444" style={{ flexShrink: 0 }} />
+                                <span style={{ color: '#ef4444', fontSize: 12, fontWeight: 500 }}>{error || rateLimitError}</span>
                             </div>
                         )}
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             {/* Username */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <label style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Username</label>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Username</label>
                                 <div style={{ position: 'relative' }}>
-                                    <User size={16} color="rgba(255,255,255,.25)" strokeWidth={1.5} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                                    <input ref={userRef} className="glass-input" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username" autoComplete="username" disabled={authLoading}
-                                        style={{ width: '100%', padding: '12px 14px 12px 42px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, color: 'rgba(255,255,255,.9)', fontSize: 14, fontFamily: 'inherit', outline: 'none', transition: 'all .25s', opacity: authLoading ? 0.5 : 1 }}
+                                    <User size={16} color="#94a3b8" strokeWidth={1.5} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                                    <input ref={userRef} className="light-input" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username" autoComplete="username" disabled={authLoading}
+                                        style={{ width: '100%', padding: '12px 14px 12px 42px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, color: '#1e293b', fontSize: 14, fontFamily: 'inherit', outline: 'none', transition: 'all .25s', opacity: authLoading ? 0.5 : 1 }}
                                     />
                                 </div>
                             </div>
 
                             {/* Password */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <label style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Password</label>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Password</label>
                                 <div style={{ position: 'relative' }}>
-                                    <KeyRound size={16} color="rgba(255,255,255,.25)" strokeWidth={1.5} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                                    <input ref={pwdRef} className="glass-input" type={showPwd ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" autoComplete="current-password" disabled={authLoading}
-                                        style={{ width: '100%', padding: '12px 44px 12px 42px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, color: 'rgba(255,255,255,.9)', fontSize: 14, fontFamily: 'inherit', outline: 'none', transition: 'all .25s', opacity: authLoading ? 0.5 : 1 }}
+                                    <KeyRound size={16} color="#94a3b8" strokeWidth={1.5} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                                    <input ref={pwdRef} className="light-input" type={showPwd ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" autoComplete="current-password" disabled={authLoading}
+                                        style={{ width: '100%', padding: '12px 44px 12px 42px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, color: '#1e293b', fontSize: 14, fontFamily: 'inherit', outline: 'none', transition: 'all .25s', opacity: authLoading ? 0.5 : 1 }}
                                     />
                                     <button type="button" onClick={() => setShowPwd((s) => !s)} tabIndex={-1}
-                                        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.25)', padding: 4, display: 'flex', transition: 'color .2s' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,.6)'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,.25)'; }}
+                                        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 4, display: 'flex', transition: 'color .2s' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.color = '#8b5cf6'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
                                     >
                                         {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
@@ -490,13 +484,13 @@ const LoginPage = () => {
                             {/* Remember + Forgot */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }} onClick={() => setRememberMe((r) => !r)}>
-                                    <div style={{ width: 16, height: 16, borderRadius: 5, flexShrink: 0, border: `1.5px solid ${rememberMe ? 'rgba(139,92,246,.7)' : 'rgba(255,255,255,.12)'}`, background: rememberMe ? 'rgba(139,92,246,.6)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .25s' }}>
+                                    <div style={{ width: 16, height: 16, borderRadius: 5, flexShrink: 0, border: `1.5px solid ${rememberMe ? '#8b5cf6' : '#cbd5e1'}`, background: rememberMe ? '#8b5cf6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .25s' }}>
                                         {rememberMe && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                                     </div>
-                                    <span style={{ color: 'rgba(255,255,255,.4)' }}>Remember me</span>
+                                    <span style={{ color: '#64748b' }}>Remember me</span>
                                 </div>
                                 <button type="button" className="forgot-btn" onClick={() => setShowForgotPassword(true)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.35)', padding: 0, fontSize: 12, transition: 'color .2s' }}>
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0, fontSize: 12, transition: 'color .2s' }}>
                                     Forgot password?
                                 </button>
                             </div>
@@ -504,11 +498,11 @@ const LoginPage = () => {
                             {/* Sign in */}
                             <button type="submit" className="login-btn" disabled={!canSubmit}
                                 style={{
-                                    marginTop: 4, background: canSubmit ? 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)' : 'rgba(255,255,255,.04)',
-                                    border: canSubmit ? 'none' : '1px solid rgba(255,255,255,.06)', padding: '13px 20px', borderRadius: 12,
-                                    color: canSubmit ? '#fff' : 'rgba(255,255,255,.2)', fontWeight: 600, fontSize: 14, fontFamily: 'inherit',
+                                    marginTop: 4, background: canSubmit ? 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)' : '#f1f5f9',
+                                    border: 'none', padding: '13px 20px', borderRadius: 10,
+                                    color: canSubmit ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 14, fontFamily: 'inherit',
                                     cursor: canSubmit ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                    transition: 'all .3s ease', boxShadow: canSubmit ? '0 12px 28px rgba(139,92,246,.25)' : 'none', letterSpacing: '0.02em',
+                                    transition: 'all .3s ease', boxShadow: canSubmit ? '0 8px 24px rgba(139,92,246,.2)' : 'none', letterSpacing: '0.02em',
                                 }}
                             >
                                 {authLoading ? (<><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Authenticating...</>) : (<>Sign In <ArrowRight size={16} strokeWidth={2} /></>)}
@@ -516,22 +510,22 @@ const LoginPage = () => {
 
                             {/* Divider */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '2px 0' }}>
-                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent)' }} />
-                                <span style={{ fontSize: 10, color: 'rgba(255,255,255,.2)', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 500 }}>or</span>
-                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent)' }} />
+                                <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+                                <span style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 500 }}>or</span>
+                                <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
                             </div>
 
                             {/* SSO */}
                             <button type="button" className="sso-btn" onClick={() => loginWithSSO('okta')}
-                                style={{ padding: '12px 20px', borderRadius: 12, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', color: 'rgba(255,255,255,.6)', fontWeight: 500, fontSize: 13, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer', transition: 'all .25s' }}>
-                                <Fingerprint size={15} color="rgba(139,92,246,.6)" strokeWidth={1.5} />
+                                style={{ padding: '12px 20px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', fontWeight: 500, fontSize: 13, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer', transition: 'all .25s' }}>
+                                <Fingerprint size={15} color="#8b5cf6" strokeWidth={1.5} />
                                 Continue with SSO
                             </button>
                         </form>
                     </div>
 
                     {/* Footer */}
-                    <div style={{ textAlign: 'center', marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, color: 'rgba(255,255,255,.18)', letterSpacing: '.04em' }}>
+                    <div style={{ textAlign: 'center', marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, color: '#cbd5e1', letterSpacing: '.04em' }}>
                         <Lock size={10} /> TLS 1.3 encrypted
                     </div>
                 </div>
