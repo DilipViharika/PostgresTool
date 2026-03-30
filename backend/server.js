@@ -2090,6 +2090,56 @@ app.post('/api/connections/:id/default', authenticate, async (req, res) => {
     }
 });
 
+// ── Test connection with raw credentials (no saved connection required) ──────
+app.post('/api/connections/test', authenticate, async (req, res) => {
+    try {
+        const { type, host, port, username, password, database, ssl } = req.body;
+        if (!host) return res.status(400).json({ success: false, error: 'Host is required' });
+        const dbType = (type || 'postgresql').toLowerCase();
+
+        try {
+            if (dbType === 'mongodb') {
+                if (!mongodb) throw new Error('MongoDB driver (mongodb) not installed on the server');
+                const userPart = username ? `${encodeURIComponent(username)}:${encodeURIComponent(password || '')}@` : '';
+                const sslParam = ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
+                const connStr = `mongodb://${userPart}${host}:${port || 27017}/${database || 'admin'}${sslParam}`;
+                const testClient = new mongodb.MongoClient(connStr, { serverSelectionTimeoutMS: 8000, connectTimeoutMS: 8000 });
+                await testClient.connect();
+                await testClient.db(database || 'admin').command({ ping: 1 });
+                await testClient.close();
+            } else if (dbType === 'mysql' || dbType === 'mariadb') {
+                if (!mysql2) throw new Error('MySQL driver (mysql2) not installed on the server');
+                const testConn = await mysql2.createConnection({
+                    host, port: port || 3306, database: database || undefined,
+                    user: username, password,
+                    ssl: ssl ? { rejectUnauthorized: false } : undefined,
+                    connectTimeout: 8000,
+                });
+                await testConn.query('SELECT 1');
+                await testConn.end();
+            } else {
+                const testPool = new Pool({
+                    host, port: port || 5432, database: database || 'postgres',
+                    user: username, password,
+                    ssl: ssl ? { rejectUnauthorized: false } : undefined,
+                    connectionTimeoutMillis: 8000,
+                });
+                const client = await testPool.connect();
+                await client.query('SELECT 1');
+                client.release();
+                await testPool.end();
+            }
+
+            res.json({ success: true, message: 'Connection successful' });
+        } catch (e) {
+            res.json({ success: false, error: e.message });
+        }
+    } catch (e) {
+        log('ERROR', 'Test connection (raw) error', { error: e.message });
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
 app.post('/api/connections/:id/test', authenticate, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
