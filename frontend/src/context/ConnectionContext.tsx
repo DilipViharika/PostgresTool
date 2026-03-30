@@ -9,6 +9,21 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { fetchData, postData, setActiveConnectionId as persistConnectionId } from '../utils/api';
 import { isDemoMode } from '../utils/demoData';
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '';
+
+/** Bypass the demo interceptor and hit the real backend directly.
+ *  Uses the original fetch stored before the global interceptor was installed,
+ *  OR falls back to normal fetch (which now skips /api/connections in demo mode). */
+async function realFetch(path: string) {
+    const origFetch = (window as any).__origFetch || window.fetch;
+    const token = localStorage.getItem('vigil_token');
+    const headers: Record<string,string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await origFetch(`${API_BASE}${path}`, { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
 const ConnectionContext = createContext(null);
 
 /** Fallback connections shown when backend is unreachable so live tabs still render */
@@ -22,27 +37,34 @@ export function ConnectionProvider({ children }) {
     const [activeConnectionId, setActiveConnectionIdState] = useState(null);
     const [loading, setLoading]                       = useState(true);
 
-    // Load connections + current active from backend on mount
+    // Load connections + current active from backend on mount.
+    // ALWAYS try the real backend first (bypass demo interceptor) so we can
+    // auto-clear demo mode when the backend is back online.
     useEffect(() => {
         async function load() {
             try {
+                // Use realFetch to bypass the demo-mode interceptor in api.ts
                 const [conns, active] = await Promise.all([
-                    fetchData('/api/connections'),
-                    fetchData('/api/connections/active'),
+                    realFetch('/api/connections'),
+                    realFetch('/api/connections/active'),
                 ]);
                 const connList = Array.isArray(conns) ? conns : [];
                 setConnections(connList);
-                // active.connectionId is null if no switch has been made yet
-                // In that case default to the connection marked isDefault (or first)
+
+                // Backend is reachable — if demo mode was on, turn it off
+                if (isDemoMode()) {
+                    console.info('[ConnectionContext] Backend reachable, exiting demo mode');
+                    try { localStorage.removeItem('vigil_demo_mode'); } catch {}
+                }
+
                 const defaultConn = connList.find(c => c.isDefault) || connList[0];
                 const resolvedId = active?.connectionId ?? defaultConn?.id ?? null;
                 setActiveConnectionIdState(resolvedId);
                 persistConnectionId(resolvedId);
             } catch (err) {
-                // Backend is unreachable — auto-enable demo mode so live tabs show mock data
+                // Backend is unreachable — enable demo mode so live tabs show mock data
                 console.warn('[ConnectionContext] Backend unreachable, enabling demo mode:', err?.message ?? err);
                 try { localStorage.setItem('vigil_demo_mode', 'true'); } catch {}
-                // Use fallback connections so sidebar shows live sections
                 setConnections(FALLBACK_CONNECTIONS);
                 const defaultId = FALLBACK_CONNECTIONS[0].id;
                 setActiveConnectionIdState(defaultId);
@@ -76,12 +98,18 @@ export function ConnectionProvider({ children }) {
     const refreshConnections = useCallback(async () => {
         try {
             const [conns, active] = await Promise.all([
-                fetchData('/api/connections'),
-                fetchData('/api/connections/active'),
+                realFetch('/api/connections'),
+                realFetch('/api/connections/active'),
             ]);
             const connList = Array.isArray(conns) ? conns : [];
             setConnections(connList);
-            // Update active connection if backend reports a new one
+
+            // Backend responded — clear demo mode if it was on
+            if (isDemoMode()) {
+                console.info('[ConnectionContext] Backend reachable on refresh, exiting demo mode');
+                try { localStorage.removeItem('vigil_demo_mode'); } catch {}
+            }
+
             if (active?.connectionId) {
                 setActiveConnectionIdState(active.connectionId);
                 persistConnectionId(active.connectionId);

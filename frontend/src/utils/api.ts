@@ -58,7 +58,9 @@ function appendConnectionId(path) {
 
 async function request(path, options = {}) {
     // ── Demo mode: return mock data without hitting backend ──────────────
-    if (isDemoMode()) {
+    // Skip interception for /api/connections so ConnectionContext can always
+    // reach the real backend and auto-clear demo mode when it comes back.
+    if (isDemoMode() && !path.startsWith('/api/connections')) {
         // Simulate a small network delay for realism
         await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
         const method = (options.method || 'GET').toUpperCase();

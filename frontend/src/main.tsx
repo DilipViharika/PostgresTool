@@ -18,11 +18,16 @@ initErrorTracking({
 // Catches ALL fetch calls (including those that bypass api.js) and returns
 // demo data when demo mode is active and the URL targets an API endpoint.
 const _origFetch = window.fetch;
+// Expose the original fetch so ConnectionContext can bypass the demo interceptor
+(window as any).__origFetch = _origFetch;
+
 window.fetch = function(input, init) {
   if (isDemoMode()) {
     const url = typeof input === 'string' ? input : input?.url || '';
     // Only intercept API calls (not fonts, CSS, external resources, etc.)
-    if (url.includes('/api/') || url.includes('/health')) {
+    // NEVER intercept /api/connections — ConnectionContext needs to reach
+    // the real backend to detect when the server is back online and auto-clear demo mode.
+    if ((url.includes('/api/') || url.includes('/health')) && !url.includes('/api/connections')) {
       const path = url.replace(/^https?:\/\/[^/]+/, ''); // strip origin
       const data = getDemoData(path);
       return Promise.resolve(new Response(JSON.stringify(data), {
