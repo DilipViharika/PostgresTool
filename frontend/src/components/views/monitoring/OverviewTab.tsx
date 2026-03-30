@@ -1970,7 +1970,7 @@ const ConnectionStatusBanner = () => {
 
 const OverviewTab = () => {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
-    const { activeConnection } = useConnection();
+    const { activeConnection, loading: connectionsLoading } = useConnection();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -2106,7 +2106,8 @@ const OverviewTab = () => {
     }, [refreshInterval, load, activeConnection]);
 
     /* ── Guard: no active connection — show welcome with demo links ── */
-    if (!activeConnection) {
+    /* During initial loading, show the loading skeleton instead of the welcome screen */
+    if (!activeConnection && !connectionsLoading) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, minHeight: 400 }}>
                 <OvStyles />

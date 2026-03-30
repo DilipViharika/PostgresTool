@@ -25,7 +25,7 @@ import {
 const ConnectionSwitcher = () => {
     useAdaptiveTheme();
 
-    const { connections, activeConnectionId, switchConnection } = useConnection();
+    const { connections, activeConnectionId, switchConnection, loading } = useConnection();
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSwitching, setIsSwitching] = useState(false);
@@ -114,10 +114,13 @@ const ConnectionSwitcher = () => {
     };
 
     if (!activeConnection) {
+        // During initial loading, show a subtle loading state instead of "No connection"
+        // to prevent the flash of "No connection" on every page refresh
+        const isLoading = loading;
         return (
             <div style={styles.emptyState}>
-                <Database size={14} color={THEME.textMuted} />
-                <span>No connection</span>
+                <Database size={14} color={isLoading ? THEME.primary : THEME.textMuted} />
+                <span>{isLoading ? 'Connecting...' : 'No connection'}</span>
             </div>
         );
     }

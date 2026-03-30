@@ -29,7 +29,7 @@ import {
 const FleetOverviewTab = () => {
     useAdaptiveTheme();
 
-    const { switchConnection, connections, activeConnectionId } = useConnection();
+    const { switchConnection, connections, activeConnectionId, loading: connectionsLoading } = useConnection();
     const { goToTab } = useNavigation();
 
     const [healthData, setHealthData] = useState([]);
@@ -92,8 +92,8 @@ const FleetOverviewTab = () => {
         down: healthData.filter(h => h.status === 'error').length,
     };
 
-    // Show empty state if no connections
-    if (!loading && connections.length === 0) {
+    // Show empty state if no connections (but not while ConnectionContext is still loading)
+    if (!loading && !connectionsLoading && connections.length === 0) {
         return (
             <div style={styles.container}>
                 <OvStyles />

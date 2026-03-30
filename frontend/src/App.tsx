@@ -2747,7 +2747,7 @@ const Sidebar = ({
     onOpenProfile,
     allowedTabIds,
 }) => {
-    const { activeConnection } = useConnection();
+    const { activeConnection, loading: connectionsLoading } = useConnection();
     const [openSections, setOpenSections] = useState(() => {
         const active = getSectionForTab(activeTab);
         const parentGrp = getGroupForTab(activeTab);
@@ -2784,6 +2784,7 @@ const Sidebar = ({
     }, [onTabChange]);
 
     // Only show DB-specific sections for real connections (demo has its own inner nav)
+    // activeConnection is hydrated from localStorage cache, so dbType is available immediately
     const connDbType = activeConnection?.dbType || null;
 
     // Sections shown per database type
