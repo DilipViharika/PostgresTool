@@ -307,13 +307,13 @@ const LoginPage = () => {
                     justifyContent: 'center',
                     padding: '40px 44px',
                     overflow: 'auto',
-                    background: 'linear-gradient(160deg, #0f0c29 0%, #1a1040 30%, #1e1145 55%, #0d1b3e 80%, #0a0e27 100%)',
+                    background: 'linear-gradient(160deg, #0b0a1a 0%, #12102a 30%, #141030 55%, #0c1428 80%, #0a0d1e 100%)',
                 }}
             >
                 {/* Gradient blobs (background only) */}
-                <div style={{ position: 'absolute', top: '5%', left: '10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,.2) 0%, transparent 65%)', filter: 'blur(80px)', animation: 'blob1 20s ease-in-out infinite', pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,.18) 0%, transparent 65%)', filter: 'blur(80px)', animation: 'blob2 25s ease-in-out infinite', pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', top: '50%', right: '30%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(244,63,94,.12) 0%, transparent 65%)', filter: 'blur(80px)', animation: 'blob3 22s ease-in-out infinite', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '5%', left: '10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,.1) 0%, transparent 65%)', filter: 'blur(90px)', animation: 'blob1 20s ease-in-out infinite', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,.08) 0%, transparent 65%)', filter: 'blur(90px)', animation: 'blob2 25s ease-in-out infinite', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '50%', right: '30%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(244,63,94,.06) 0%, transparent 65%)', filter: 'blur(90px)', animation: 'blob3 22s ease-in-out infinite', pointerEvents: 'none' }} />
 
                 {/* Content */}
                 <div style={{ position: 'relative', zIndex: 1, maxWidth: 480 }}>
@@ -324,11 +324,11 @@ const LoginPage = () => {
                                 width: 40,
                                 height: 40,
                                 borderRadius: 12,
-                                background: 'linear-gradient(135deg, rgba(139,92,246,.7), rgba(6,182,212,.7))',
+                                background: 'linear-gradient(135deg, rgba(139,92,246,.5), rgba(6,182,212,.5))',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                boxShadow: '0 8px 28px rgba(139,92,246,.25)',
+                                boxShadow: '0 6px 20px rgba(139,92,246,.15)',
                                 border: '1px solid rgba(255,255,255,.1)',
                             }}
                         >
@@ -398,19 +398,6 @@ const LoginPage = () => {
                         ))}
                     </div>
 
-                    {/* Stats row */}
-                    <div style={{ display: 'flex', gap: 24, marginTop: 24, animation: 'fadeInLeft .5s ease-out .8s both' }}>
-                        {[
-                            { value: '3', label: 'DB Engines' },
-                            { value: '203+', label: 'Metrics' },
-                            { value: '<50ms', label: 'Latency' },
-                        ].map(({ value, label }) => (
-                            <div key={label}>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>{value}</div>
-                                <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 500, marginTop: 1 }}>{label}</div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             </div>
 
