@@ -2,7 +2,7 @@
 //  VIGIL — Design Tokens (single source of truth for the visual system)
 // ==========================================================================
 
-/* Accent colors shared by both themes — VaultDB palette */
+/* Accent colors shared by both themes — VIGIL Blue palette */
 export const DS_ACCENTS = {
     cyan:         '#00b874',
     cyanDim:      'rgba(0,184,116,0.15)',
