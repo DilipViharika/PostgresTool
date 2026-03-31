@@ -1828,10 +1828,16 @@ const QueryOptimizerTab = () => {
         if (!query.trim()) return;
         setAnalyzing(true);
         try {
-            await new Promise(r => setTimeout(r, 1100 + 0 * 400));
-            const data = generateMockPlan(query);
-            setResult(data);
-            setHistory(prev => [{ id: Date.now(), query: query.substring(0, 52) + (query.length > 52 ? '…' : ''), fullQuery: query, timestamp: new Date().toLocaleTimeString(), cost: data.Plan["Total Cost"], time: data.Plan["Actual Total Time"] }, ...prev.slice(0, 19)]);
+            const raw = await postData('/api/optimizer/analyze', { query });
+            // PostgreSQL EXPLAIN (FORMAT JSON) returns { "QUERY PLAN": [{ Plan, "Planning Time", "Execution Time" }] }
+            const plan = raw?.["QUERY PLAN"]?.[0] || raw?.[0] || raw;
+            if (!plan || !plan.Plan) {
+                console.error('Invalid plan response:', raw);
+                setAnalyzing(false);
+                return;
+            }
+            setResult(plan);
+            setHistory(prev => [{ id: Date.now(), query: query.substring(0, 52) + (query.length > 52 ? '…' : ''), fullQuery: query, timestamp: new Date().toLocaleTimeString(), cost: plan.Plan["Total Cost"] || 0, time: plan.Plan["Actual Total Time"] || 0 }, ...prev.slice(0, 19)]);
             setActiveTab('plan');
         } catch (err) { console.error(err); }
         finally { setAnalyzing(false); }
