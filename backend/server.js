@@ -1410,7 +1410,7 @@ app.use('/api', (req, res, next) => {
 const modularMounts = ['/api', '/api/v1'];
 
 for (const prefix of modularMounts) {
-    app.use(prefix, userRoutes(pool, authenticate, requireScreen));
+    app.use(prefix, userRoutes(pool, authenticate, requireScreen, requireRole));
     app.use(prefix, sessionRoutes(pool, authenticate, requireScreen, requireRole));
     app.use(prefix, auditRoutes(pool, authenticate, requireScreen));
     app.use(prefix, otelRoutes(pool, authenticate, requireRole));

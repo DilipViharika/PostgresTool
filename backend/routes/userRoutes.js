@@ -64,10 +64,11 @@ function validatePasswordStrength(password) {
  * @param {import('pg').Pool} pool
  * @param {Function} authenticate  - middleware
  * @param {Function} requireScreen - middleware factory
+ * @param {Function} requireRole   - middleware factory
  */
-export default function userRoutes(pool, authenticate, requireScreen) {
+export default function userRoutes(pool, authenticate, requireScreen, requireRole) {
     const router = Router();
-    const guard  = [authenticate, requireScreen('UserManagement')];
+    const guard  = [authenticate, requireRole('super_admin'), requireScreen('UserManagement')];
 
     /* ── GET /api/users ─────────────────────────────────────────────────────
        Returns all active users enriched with login activity + risk score.    */

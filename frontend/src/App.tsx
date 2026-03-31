@@ -3213,13 +3213,13 @@ const Sidebar = ({
                     /* Collapsed: vertical icon stack */
                     <>
                         {[
-                            { icon: Users, action: () => onTabChange('UserManagement'), tip: 'User Management',
+                            currentUser?.role === 'super_admin' && { icon: Users, action: () => onTabChange('UserManagement'), tip: 'User Management',
                               active: activeTab === 'UserManagement' || activeTab === 'user-audit' },
                             { icon: Database, action: () => onTabChange('demo-postgres'), tip: 'Demo',
                               active: activeTab?.startsWith('demo-') },
                             { icon: MessageSquarePlus, action: onOpenFeedback, tip: 'Feedback', active: false },
                             { icon: LogOut, action: onLogout, tip: 'Sign Out', active: false, danger: true },
-                        ].map(({ icon: Icon, action, tip, active, danger }) => (
+                        ].filter(Boolean).map(({ icon: Icon, action, tip, active, danger }) => (
                             <button
                                 key={tip}
                                 onClick={action}
@@ -3247,14 +3247,14 @@ const Sidebar = ({
                 ) : (
                     /* Expanded: compact button rows */
                     <>
-                        {/* Nav buttons: User Management & Demo */}
+                        {/* Nav buttons: User Management (super_admin only) & Demo */}
                         <div style={{ display: 'flex', gap: 4, marginBottom: 2 }}>
                             {[
-                                { icon: Users, label: 'Users', action: () => onTabChange('UserManagement'),
+                                currentUser?.role === 'super_admin' && { icon: Users, label: 'Users', action: () => onTabChange('UserManagement'),
                                   active: activeTab === 'UserManagement' || activeTab === 'user-audit' },
                                 { icon: Database, label: 'Demo', action: () => onTabChange('demo-postgres'),
                                   active: activeTab?.startsWith('demo-') },
-                            ].map(({ icon: Icon, label, action, active }) => (
+                            ].filter(Boolean).map(({ icon: Icon, label, action, active }) => (
                                 <button
                                     key={label}
                                     onClick={action}
