@@ -2,6 +2,7 @@
     "name": "postgrestool-monorepo",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "packageManager": "npm@10.9.2",
     "workspaces": [
         "frontend",
@@ -14,7 +15,7 @@
         "type-check": "npm run type-check --workspaces --if-present",
         "test": "npm run test --workspaces --if-present",
         "lint": "npm run lint --workspaces --if-present",
-        "prepare": "node -e \"try{require('husky')()}catch(e){}\""
+        "prepare": "node --input-type=commonjs -e \"try{require('husky')()}catch(e){}\""
     },
     "devDependencies": {
         "husky": "^9.1.0",
