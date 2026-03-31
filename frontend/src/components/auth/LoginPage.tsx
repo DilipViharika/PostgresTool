@@ -365,6 +365,31 @@ const LoginPage = () => {
                                 Monitor performance, track queries, and manage your entire PostgreSQL infrastructure from a single command center.
                             </p>
 
+                            {/* Feature list */}
+                            <div style={{
+                                marginTop: 28, display: 'flex', flexDirection: 'column', gap: 14,
+                                animation: 'textIn 0.8s ease-out 0.55s both',
+                            }}>
+                                {[
+                                    { icon: '⚡', title: 'Real-time Monitoring', desc: 'Live metrics, active sessions, and query performance at a glance' },
+                                    { icon: '🔍', title: 'Query Analysis', desc: 'Identify slow queries, execution plans, and optimization opportunities' },
+                                    { icon: '🛡️', title: 'Health & Alerts', desc: 'Automated health checks, deadlock detection, and threshold alerts' },
+                                    { icon: '📊', title: 'Resource Insights', desc: 'Table bloat, index usage, disk I/O, and vacuum monitoring' },
+                                ].map((f, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                        <div style={{
+                                            width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                                            background: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.12)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: '0.85rem',
+                                        }}>{f.icon}</div>
+                                        <div>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', marginBottom: 2 }}>{f.title}</div>
+                                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.4 }}>{f.desc}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Decorative rings */}
