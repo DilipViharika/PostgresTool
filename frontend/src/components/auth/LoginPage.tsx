@@ -318,7 +318,7 @@ const LoginPage = () => {
 
                     {/* ═══ LEFT — BRAND PANEL ═══ */}
                     <div className="vdb-brand" style={{
-                        width: 400, minWidth: 400, position: 'relative',
+                        flex: 1, position: 'relative',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                         padding: '36px 36px', overflow: 'hidden', color: '#fff',
                         background: 'linear-gradient(145deg, #0b2030 0%, #0e2a3e 40%, #102535 100%)',
