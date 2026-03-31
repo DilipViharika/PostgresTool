@@ -839,7 +839,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
 // ═══════════════════════════════════════════════════════════════════════
 // NEW: Service Cost Attribution Panel
 // ═══════════════════════════════════════════════════════════════════════
-const ServiceAttributionPanel = () => {
+const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
     const [sortBy, setSortBy] = useState('cost_share');
     const [view, setView] = useState('chart');
     const safeAttribution = Array.isArray(serviceAttribution) ? serviceAttribution : [];
@@ -1016,7 +1016,7 @@ const ServiceAttributionPanel = () => {
 // ═══════════════════════════════════════════════════════════════════════
 // NEW: Parameterization Advisor Panel
 // ═══════════════════════════════════════════════════════════════════════
-const ParameterizationAdvisorPanel = () => {
+const ParameterizationAdvisorPanel = ({ paramIssues = [] }) => {
     const [selected, setSelected] = useState(null);
     const [copiedIdx, setCopiedIdx] = useState(null);
     const copy = (text, key) => { navigator.clipboard?.writeText(text).catch(() => {}); setCopiedIdx(key); setTimeout(() => setCopiedIdx(null), 1800); };
@@ -1173,7 +1173,7 @@ const ParameterizationAdvisorPanel = () => {
 };
 
 // Slow Query Log Panel
-const SlowQueryPanel = ({ onLoadQuery }) => {
+const SlowQueryPanel = ({ onLoadQuery, slowQueries = [] }) => {
     const [sortBy, setSortBy] = useState('mean_time');
     const [selectedId, setSelectedId] = useState(null);
     const [searchText, setSearchText] = useState('');
@@ -1302,7 +1302,7 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
 };
 
 // Lock Monitor Panel
-const LockMonitorPanel = () => {
+const LockMonitorPanel = ({ locks = [] }) => {
     const [selected, setSelected] = useState(null);
     const safeLocks = Array.isArray(locks) ? locks : [];
     const blockedCount = safeLocks.filter(l => l?.blocked_by).length;
@@ -1393,7 +1393,7 @@ const LockMonitorPanel = () => {
 };
 
 // Maintenance Panel
-const MaintenancePanel = () => {
+const MaintenancePanel = ({ maintenance = [] }) => {
     const [running, setRunning] = useState({});
     const safeMaintenance = Array.isArray(maintenance) ? maintenance : [];
     const triggerVacuum = (table) => {
@@ -1483,7 +1483,7 @@ const MaintenancePanel = () => {
 };
 
 // Config Advisor Panel
-const ConfigAdvisorPanel = () => {
+const ConfigAdvisorPanel = ({ pgConfig = [] }) => {
     const [category, setCategory] = useState('All');
     const safePgConfig = Array.isArray(pgConfig) ? pgConfig : [];
     const categories = ['All', ...new Set(safePgConfig.map(c => c?.category).filter(Boolean))];
@@ -1561,7 +1561,7 @@ const ConfigAdvisorPanel = () => {
 };
 
 // Index Advisor
-const IndexAdvisorPanel = () => {
+const IndexAdvisorPanel = ({ indexes = [] }) => {
     const [filter, setFilter] = useState('all');
     const safeIndexes = Array.isArray(indexes) ? indexes : [];
     const filtered = filter === 'all' ? safeIndexes : safeIndexes.filter(i => i?.status === filter);
@@ -1607,7 +1607,7 @@ const IndexAdvisorPanel = () => {
 };
 
 // Table Stats
-const TableStatsPanel = () => {
+const TableStatsPanel = ({ tableStats = [] }) => {
     const safeTableStats = Array.isArray(tableStats) ? tableStats : [];
     const maxRows = safeTableStats.length > 0 ? Math.max(...safeTableStats.map(t => t.rows || 0)) : 1;
     return (
@@ -2009,10 +2009,10 @@ const QueryOptimizerTab = () => {
                     )}
 
                     {/* SERVICE ATTRIBUTION TAB */}
-                    {activeTab === 'attribution' && <ServiceAttributionPanel />}
+                    {activeTab === 'attribution' && <ServiceAttributionPanel serviceAttribution={serviceAttribution} />}
 
                     {/* PARAMETERIZATION TAB */}
-                    {activeTab === 'parameterization' && <ParameterizationAdvisorPanel />}
+                    {activeTab === 'parameterization' && <ParameterizationAdvisorPanel paramIssues={paramIssues} />}
 
                     {/* PLAN TAB */}
                     {activeTab === 'plan' && (
@@ -2167,13 +2167,13 @@ const QueryOptimizerTab = () => {
                         </div>
                     )}
 
-                    {activeTab === 'indexes' && <IndexAdvisorPanel />}
-                    {activeTab === 'tables' && <TableStatsPanel />}
+                    {activeTab === 'indexes' && <IndexAdvisorPanel indexes={indexes} />}
+                    {activeTab === 'tables' && <TableStatsPanel tableStats={tableStats} />}
                     {activeTab === 'compare' && <ComparePanel />}
-                    {activeTab === 'slow' && <SlowQueryPanel onLoadQuery={loadQuery} />}
-                    {activeTab === 'locks' && <LockMonitorPanel />}
-                    {activeTab === 'maintenance' && <MaintenancePanel />}
-                    {activeTab === 'config' && <ConfigAdvisorPanel />}
+                    {activeTab === 'slow' && <SlowQueryPanel onLoadQuery={loadQuery} slowQueries={slowQueries} />}
+                    {activeTab === 'locks' && <LockMonitorPanel locks={locks} />}
+                    {activeTab === 'maintenance' && <MaintenancePanel maintenance={maintenance} />}
+                    {activeTab === 'config' && <ConfigAdvisorPanel pgConfig={pgConfig} />}
 
                     {/* FLAMEGRAPH TAB */}
                     {activeTab === 'flamegraph' && (
