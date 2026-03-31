@@ -62,7 +62,7 @@ const Styles = () => (
             color:${THEME.textMain};
             font-size:13px;
             width:100%;
-            font-family:${THEME.fontBody};
+            font-family:${THEME.fontBody||"'DM Sans','Outfit',sans-serif"};
         }
         .sdk-input:focus { outline:none; border-color:${THEME.primary}; }
         .sdk-select {
@@ -73,7 +73,7 @@ const Styles = () => (
             color:${THEME.textMain};
             font-size:13px;
             width:100%;
-            font-family:${THEME.fontBody};
+            font-family:${THEME.fontBody||"'DM Sans','Outfit',sans-serif"};
             cursor:pointer;
         }
         .sdk-select:focus { outline:none; border-color:${THEME.primary}; }
@@ -87,7 +87,7 @@ const Styles = () => (
             font-size:13px;
             cursor:pointer;
             transition:all 0.2s ease;
-            font-family:${THEME.fontBody};
+            font-family:${THEME.fontBody||"'DM Sans','Outfit',sans-serif"};
         }
         .sdk-button:hover { background:${THEME.primaryLight||'#3b82f6'}; }
         .sdk-button:disabled { opacity:0.6; cursor:not-allowed; }
@@ -301,7 +301,7 @@ const AppCard = ({ app, onSelect, isSelected }) => {
                     fontWeight: '700',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    fontFamily: THEME.fontBody,
+                    fontFamily: THEME.fontBody||"'DM Sans','Outfit',sans-serif",
                 }}
                 onMouseEnter={(e) => {
                     e.target.style.background = `${THEME.primary}20`;
@@ -382,7 +382,7 @@ const RegisterAppModal = ({ isOpen, onClose, onSuccess, isSubmitting }) => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            fontFamily: THEME.fontMono || 'monospace',
+                            fontFamily: THEME.fontMono||'monospace',
                             fontSize: '12px',
                         }}>
                             <code style={{ flex: 1, overflow: 'auto', color: THEME.textMain }}>
@@ -564,7 +564,7 @@ const DetailView = ({ app, onBack }) => {
                     fontWeight: '700',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    fontFamily: THEME.fontBody,
+                    fontFamily: THEME.fontBody||"'DM Sans','Outfit',sans-serif",
                 }}
             >
                 <ArrowLeft size={16} /> Back to Overview
@@ -688,7 +688,7 @@ const DetailView = ({ app, onBack }) => {
                             <tbody>
                                 {topEndpoints.map((ep, idx) => (
                                     <tr key={idx} style={{ borderBottom: `1px solid ${THEME.grid}40` }}>
-                                        <td style={{ padding: '12px', color: THEME.textMain, fontFamily: THEME.fontMono }}>{ep.endpoint}</td>
+                                        <td style={{ padding: '12px', color: THEME.textMain, fontFamily: THEME.fontMono||'monospace' }}>{ep.endpoint}</td>
                                         <td style={{ padding: '12px', color: THEME.textMuted }}>{ep.method}</td>
                                         <td style={{ padding: '12px', textAlign: 'right', color: THEME.textMain }}>{ep.calls}</td>
                                         <td style={{ padding: '12px', textAlign: 'right', color: THEME.textMain }}>{ep.avgLatency}ms</td>
@@ -781,7 +781,7 @@ const DetailView = ({ app, onBack }) => {
                                     {event.message}
                                 </p>
                                 {event.details && (
-                                    <p style={{ margin: '0', color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                                    <p style={{ margin: '0', color: THEME.textMuted, fontFamily: THEME.fontMono||'monospace' }}>
                                         {JSON.stringify(event.details).substring(0, 100)}...
                                     </p>
                                 )}
@@ -874,7 +874,7 @@ export default function SDKDashboardTab() {
     }
 
     return (
-        <div style={{ padding: '24px', minHeight: '100vh', background: THEME.bg, fontFamily: THEME.fontBody }}>
+        <div style={{ padding: '24px', minHeight: '100vh', background: THEME.bg, fontFamily: THEME.fontBody||"'DM Sans','Outfit',sans-serif" }}>
             <Styles />
 
             {selectedApp ? (
@@ -912,7 +912,7 @@ export default function SDKDashboardTab() {
                                     fontWeight: '700',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s ease',
-                                    fontFamily: THEME.fontBody,
+                                    fontFamily: THEME.fontBody||"'DM Sans','Outfit',sans-serif",
                                     opacity: refreshing ? 0.6 : 1,
                                 }}
                             >
@@ -937,7 +937,7 @@ export default function SDKDashboardTab() {
                                     cursor: 'pointer',
                                     border: 'none',
                                     transition: 'all 0.2s ease',
-                                    fontFamily: THEME.fontBody,
+                                    fontFamily: THEME.fontBody||"'DM Sans','Outfit',sans-serif",
                                 }}
                             >
                                 <Plus size={16} /> Register App
