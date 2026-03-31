@@ -203,6 +203,7 @@ import {
     Globe,
     Download,
     Clock,
+    Database,
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents';
 
@@ -3229,6 +3230,76 @@ const Sidebar = ({
 
                 {/* Enterprise: License Status (hidden — uncomment when ready) */}
                 {/* {!collapsed && <LicenseStatus />} */}
+
+                {/* User Management */}
+                <button
+                    onClick={() => onTabChange('UserManagement')}
+                    title={collapsed ? 'User Management' : undefined}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 10,
+                        background: activeTab === 'UserManagement' || activeTab === 'user-audit' ? 'rgba(129,140,248,0.10)' : 'transparent',
+                        border: 'none',
+                        color: activeTab === 'UserManagement' || activeTab === 'user-audit' ? DS.violet : DS.sidebarText,
+                        cursor: 'pointer',
+                        padding: collapsed ? '9px 0' : '8px 10px',
+                        fontSize: 13,
+                        fontWeight: activeTab === 'UserManagement' || activeTab === 'user-audit' ? 600 : 400,
+                        borderRadius: 8,
+                        width: '100%',
+                        fontFamily: DS.fontUI,
+                        transition: 'color 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.color = DS.violet;
+                        e.currentTarget.style.background = 'rgba(129,140,248,0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                        const isActive = activeTab === 'UserManagement' || activeTab === 'user-audit';
+                        e.currentTarget.style.color = isActive ? DS.violet : DS.sidebarText;
+                        e.currentTarget.style.background = isActive ? 'rgba(129,140,248,0.10)' : 'transparent';
+                    }}
+                >
+                    <Users size={15} style={{ flexShrink: 0 }} />
+                    {!collapsed && 'User Management'}
+                </button>
+
+                {/* Demo */}
+                <button
+                    onClick={() => onTabChange('demo-postgres')}
+                    title={collapsed ? 'Demo' : undefined}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 10,
+                        background: activeTab?.startsWith('demo-') ? 'rgba(129,140,248,0.10)' : 'transparent',
+                        border: 'none',
+                        color: activeTab?.startsWith('demo-') ? DS.violet : DS.sidebarText,
+                        cursor: 'pointer',
+                        padding: collapsed ? '9px 0' : '8px 10px',
+                        fontSize: 13,
+                        fontWeight: activeTab?.startsWith('demo-') ? 600 : 400,
+                        borderRadius: 8,
+                        width: '100%',
+                        fontFamily: DS.fontUI,
+                        transition: 'color 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.color = DS.violet;
+                        e.currentTarget.style.background = 'rgba(129,140,248,0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                        const isActive = activeTab?.startsWith('demo-');
+                        e.currentTarget.style.color = isActive ? DS.violet : DS.sidebarText;
+                        e.currentTarget.style.background = isActive ? 'rgba(129,140,248,0.10)' : 'transparent';
+                    }}
+                >
+                    <Database size={15} style={{ flexShrink: 0 }} />
+                    {!collapsed && 'Demo'}
+                </button>
 
                 {/* Feedback */}
                 <button

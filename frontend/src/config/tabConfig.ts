@@ -414,9 +414,8 @@ export function buildTabConfig() {
             badge: null,
         },
 
-        // ── User Management ──────────────────────────────────────────
-        //    User roles, permissions, audit logs, and security
-        { section: 'User Management', accent: DS.indigo || DS.violet },
+        // ── User Management (rendered in sidebar footer, not in scrollable list) ──
+        { section: 'User Management', accent: DS.indigo || DS.violet, hidden: true },
         {
             id: 'UserManagement',
             icon: Users,
@@ -432,8 +431,8 @@ export function buildTabConfig() {
             badge: null,
         },
 
-        // ── Demo ─────────────────────────────────────────────────────
-        { section: 'Demo', accent: DS.amber },
+        // ── Demo (rendered in sidebar footer, not in scrollable list) ──
+        { section: 'Demo', accent: DS.amber, hidden: true },
         { id: 'demo-postgres', icon: Database, label: 'PostgreSQL Demo', component: _components.DemoPostgresTab, badge: null },
         { id: 'demo-mysql', icon: Database, label: 'MySQL Demo', component: _components.DemoMySQLTab, badge: null },
         { id: 'demo-mongodb', icon: Database, label: 'MongoDB Demo', component: _components.DemoMongoDBTab, badge: null },
@@ -449,14 +448,15 @@ export function getSectionGroups(config) {
     let current = null;
     for (const item of config) {
         if (item.section) {
-            current = { section: item.section, tabs: [], accent: item.accent || getDS().cyan };
+            current = { section: item.section, tabs: [], accent: item.accent || getDS().cyan, hidden: item.hidden || false };
             if (item.group) current.group = item.group;
             groups.push(current);
         } else if (current) {
             current.tabs.push(item);
         }
     }
-    return groups;
+    // Filter out hidden sections (rendered elsewhere, e.g. sidebar footer)
+    return groups.filter(g => !g.hidden);
 }
 
 export function getSectionForTab(groups, tabId) {
