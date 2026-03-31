@@ -50,6 +50,9 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true); // initial session restore
     const [authLoading, setAuthLoading] = useState(false); // login in progress
     const [error, setError] = useState(null);
+    const [mustChangePassword, setMustChangePassword] = useState(
+        () => localStorage.getItem('vigil_must_change_password') === 'true'
+    );
 
     // ── Restore session from localStorage on mount (sync — no fetch) ───────
     useEffect(() => {
@@ -135,6 +138,10 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
             if (data.mustChangePassword) {
                 localStorage.setItem('vigil_must_change_password', 'true');
+                setMustChangePassword(true);
+            } else {
+                localStorage.removeItem('vigil_must_change_password');
+                setMustChangePassword(false);
             }
             setCurrentUser(data.user);
             return { ...data.user, mustChangePassword: data.mustChangePassword };
@@ -188,6 +195,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('pg_monitor_active_tab');
         // Clear active connection so next login starts fresh
         localStorage.removeItem('vigil_active_connection_id');
+        // Clear password-change flag so it's re-evaluated on next login
+        localStorage.removeItem('vigil_must_change_password');
+        setMustChangePassword(false);
         setCurrentUser(null);
         setError(null);
     }, []);
@@ -223,6 +233,12 @@ export const AuthProvider = ({ children }) => {
     }, [currentUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Context value ──────────────────────────────────────────────────────
+    // Allow external code (e.g. ForcePasswordChangeModal) to clear the flag
+    const clearMustChangePassword = useCallback(() => {
+        localStorage.removeItem('vigil_must_change_password');
+        setMustChangePassword(false);
+    }, []);
+
     const value = useMemo(
         () => ({
             currentUser,
@@ -231,6 +247,8 @@ export const AuthProvider = ({ children }) => {
             error,
             isAuthenticated: !!currentUser,
             sessionInfo,
+            mustChangePassword,
+            clearMustChangePassword,
             login,
             loginWithSSO,
             handleSSOCallback,
@@ -249,6 +267,8 @@ export const AuthProvider = ({ children }) => {
             authLoading,
             error,
             sessionInfo,
+            mustChangePassword,
+            clearMustChangePassword,
             login,
             loginWithSSO,
             handleSSOCallback,

@@ -14,7 +14,7 @@ interface ForcePasswordChangeModalProps {
     onLogout: () => void;
 }
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onSuccess, onLogout }) => {
     const [currentPassword, setCurrentPassword] = useState('');
