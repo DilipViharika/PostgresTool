@@ -646,8 +646,21 @@ const LeakDetector = () => {
 
 const ConnectionsTab = () => {
     useAdaptiveTheme();
-    const [connections, setConnections] = useState([]);
-    const [connectionsLoading, setConnectionsLoading] = useState(true);
+
+    // Hydrate from localStorage cache immediately to avoid "No Connections" flash
+    const readCached = () => {
+        try {
+            const raw = localStorage.getItem('vigil_cached_connections');
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch { return []; }
+    };
+
+    const [connections, setConnections] = useState(readCached);
+    // If we have cached data, don't show loading spinner — show cached data while refreshing
+    const [connectionsLoading, setConnectionsLoading] = useState(() => readCached().length === 0);
+    const [refreshing, setRefreshing] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [editingConnection, setEditingConnection] = useState(null);
     const [testingConnection, setTestingConnection] = useState(null);
@@ -667,13 +680,20 @@ const ConnectionsTab = () => {
     useEffect(() => { fetchConnections(); }, []);
 
     const fetchConnections = async () => {
+        // If we already have cached connections, show a subtle refresh indicator instead of full loading
+        if (connections.length > 0) {
+            setRefreshing(true);
+        }
         try {
             const res = await fetch(`${API_BASE}/api/connections`, {
                 headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
             if (res.ok) {
                 const data = await res.json();
-                setConnections(Array.isArray(data) ? data : []);
+                const list = Array.isArray(data) ? data : [];
+                setConnections(list);
+                // Also update the shared localStorage cache
+                try { localStorage.setItem('vigil_cached_connections', JSON.stringify(list)); } catch {}
             } else {
                 console.error('Failed to fetch connections:', res.status, res.statusText);
             }
@@ -681,6 +701,7 @@ const ConnectionsTab = () => {
             console.error('Network error fetching connections:', e.message);
         } finally {
             setConnectionsLoading(false);
+            setRefreshing(false);
         }
     };
 
@@ -1093,7 +1114,7 @@ const ConnectionsTab = () => {
                     );
                 })}
 
-                {connections.length === 0 && (
+                {connections.length === 0 && !connectionsLoading && !refreshing && (
                     <div style={{
                         gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px',
                         background: THEME.surface, border: `1px dashed ${THEME.glassBorder}`,
