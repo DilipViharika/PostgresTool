@@ -176,7 +176,7 @@ export async function ingestEvents(pool, appId, events) {
  * @returns {Promise<Array<Object>>} List of applications with event counts
  */
 export async function listApps(pool, filters = {}) {
-  let whereClause = 'WHERE 1=1';
+  let whereClause = `WHERE a.status != 'disabled'`;
   const params = [];
   let paramIndex = 1;
 
@@ -317,11 +317,11 @@ export async function updateApp(pool, appId, updates) {
  * @returns {Promise<Object|null>} The updated application record or null if not found
  */
 export async function deleteApp(pool, appId) {
+  // Hard delete — also cascades to sdk_events via ON DELETE CASCADE
   const query = `
-    UPDATE ${S}.sdk_applications
-    SET status = 'disabled', updated_at = now()
+    DELETE FROM ${S}.sdk_applications
     WHERE id = $1
-    RETURNING id, name, app_type, environment, api_key_prefix, status, config, last_heartbeat_at, created_by, created_at, updated_at
+    RETURNING id, name
   `;
 
   const result = await pool.query(query, [appId]);
