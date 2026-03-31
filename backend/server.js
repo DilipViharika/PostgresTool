@@ -1533,6 +1533,159 @@ app.get('/api/performance/table-io', authenticate, cached('perf:io', CONFIG.CACH
     } catch (e) { res.json([]); }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PERFORMANCE DEEP STATS — real data for PerformanceTab Deep Insights
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/performance/deep-stats', authenticate, cached('perf:deep', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        const results = await Promise.allSettled([
+            // 0: Wait events from pg_stat_activity
+            _p.query(`
+                SELECT wait_event_type, wait_event, COUNT(*) AS count
+                FROM pg_stat_activity
+                WHERE wait_event IS NOT NULL AND state != 'idle'
+                GROUP BY wait_event_type, wait_event
+                ORDER BY count DESC LIMIT 30
+            `),
+            // 1: Lock blocking chains
+            _p.query(`
+                SELECT
+                    blocked.pid AS blocked_pid,
+                    blocked.usename AS blocked_user,
+                    blocked.application_name AS blocked_app,
+                    left(blocked.query, 200) AS blocked_query,
+                    blocking.pid AS blocking_pid,
+                    blocking.usename AS blocking_user,
+                    blocking.application_name AS blocking_app,
+                    left(blocking.query, 200) AS blocking_query,
+                    blocked.wait_event_type,
+                    blocked.wait_event,
+                    round(EXTRACT(EPOCH FROM (now() - blocked.query_start))::numeric, 1) AS wait_sec
+                FROM pg_stat_activity blocked
+                    JOIN pg_stat_activity blocking ON blocking.pid = ANY(pg_blocking_pids(blocked.pid))
+                WHERE cardinality(pg_blocking_pids(blocked.pid)) > 0
+                LIMIT 20
+            `),
+            // 2: Deadlock count from pg_stat_database
+            _p.query(`
+                SELECT datname, deadlocks, temp_files, temp_bytes,
+                       blks_read, blks_hit,
+                       round((100.0 * blks_hit / NULLIF(blks_read + blks_hit, 0))::numeric, 2) AS cache_hit_pct,
+                       xact_commit, xact_rollback,
+                       tup_fetched, tup_inserted, tup_updated, tup_deleted
+                FROM pg_stat_database
+                WHERE datname = current_database()
+                LIMIT 1
+            `),
+            // 3: pg_stat_statements with temp file and JIT info (PG 15+)
+            _p.query(`
+                SELECT left(query, 200) AS query,
+                       calls,
+                       round(mean_exec_time::numeric, 2) AS mean_time_ms,
+                       round(max_exec_time::numeric, 2) AS max_time_ms,
+                       round(min_exec_time::numeric, 2) AS min_time_ms,
+                       round(total_exec_time::numeric, 2) AS total_time_ms,
+                       round(stddev_exec_time::numeric, 2) AS stddev_ms,
+                       rows,
+                       round((shared_blks_hit::numeric / NULLIF(shared_blks_hit + shared_blks_read, 0))*100, 1) AS cache_hit_pct,
+                       temp_blks_read,
+                       temp_blks_written
+                FROM pg_stat_statements
+                WHERE mean_exec_time > 50
+                ORDER BY total_exec_time DESC
+                LIMIT 20
+            `).catch(() => ({ rows: [] })),
+            // 4: Current locks detail
+            _p.query(`
+                SELECT l.pid, l.locktype, l.mode, l.granted, l.relation::regclass AS relation_name,
+                       a.usename, a.application_name, a.state,
+                       left(a.query, 200) AS query,
+                       round(EXTRACT(EPOCH FROM (now() - a.query_start))::numeric, 1) AS duration_sec
+                FROM pg_locks l
+                    JOIN pg_stat_activity a ON a.pid = l.pid
+                WHERE l.pid != pg_backend_pid()
+                ORDER BY l.granted, duration_sec DESC NULLS LAST
+                LIMIT 40
+            `),
+            // 5: PostgreSQL settings relevant to performance
+            _p.query(`
+                SELECT name, setting, unit
+                FROM pg_settings
+                WHERE name IN (
+                    'max_connections', 'shared_buffers', 'work_mem', 'effective_cache_size',
+                    'max_parallel_workers', 'max_parallel_workers_per_gather',
+                    'jit', 'max_worker_processes', 'random_page_cost', 'seq_page_cost',
+                    'effective_io_concurrency', 'plan_cache_mode', 'log_temp_files',
+                    'server_version'
+                )
+            `),
+            // 6: Database uptime / postmaster start
+            _p.query(`SELECT pg_postmaster_start_time() AS start_time, now() - pg_postmaster_start_time() AS uptime`),
+            // 7: Wait event type aggregation (for pie chart)
+            _p.query(`
+                SELECT wait_event_type, COUNT(*) AS count
+                FROM pg_stat_activity
+                WHERE wait_event_type IS NOT NULL AND state != 'idle'
+                GROUP BY wait_event_type
+                ORDER BY count DESC
+            `),
+            // 8: Buffer/bgwriter stats
+            _p.query(`
+                SELECT
+                    COALESCE(
+                        (SELECT buffers_checkpoint FROM pg_stat_bgwriter LIMIT 1), 0
+                    ) AS buffers_checkpoint,
+                    COALESCE(
+                        (SELECT buffers_clean FROM pg_stat_bgwriter LIMIT 1), 0
+                    ) AS buffers_clean,
+                    COALESCE(
+                        (SELECT buffers_backend FROM pg_stat_bgwriter LIMIT 1), 0
+                    ) AS buffers_backend,
+                    COALESCE(
+                        (SELECT maxwritten_clean FROM pg_stat_bgwriter LIMIT 1), 0
+                    ) AS maxwritten_clean
+            `).catch(() => ({ rows: [{}] })),
+        ]);
+
+        const val = (r) => (r.status === 'fulfilled' ? r.value.rows : []);
+
+        // Build settings map
+        const settingsArr = val(results[5]);
+        const settings = {};
+        settingsArr.forEach(s => { settings[s.name] = s.unit === 'kB' ? `${Math.round(parseInt(s.setting) / 1024)} MB` : s.unit === '8kB' ? `${Math.round(parseInt(s.setting) * 8 / 1024)} MB` : s.setting; });
+
+        // Format uptime
+        const uptimeRow = val(results[6])[0];
+        let uptimeStr = '';
+        if (uptimeRow?.uptime) {
+            const u = uptimeRow.uptime;
+            const match = String(u).match(/(\d+)\s+days?\s+(\d+):(\d+)/);
+            if (match) uptimeStr = `${match[1]}d ${match[2]}h`;
+            else uptimeStr = String(u).substring(0, 12);
+        }
+
+        const dbStats = val(results[2])[0] || {};
+
+        res.json({
+            waitEvents: val(results[0]),
+            waitEventTypes: val(results[7]),
+            lockBlocking: val(results[1]),
+            dbStats: {
+                ...dbStats,
+                uptime: uptimeStr,
+            },
+            slowQueries: val(results[3]),
+            locks: val(results[4]),
+            settings,
+            bgwriter: val(results[8])[0] || {},
+        });
+    } catch (e) {
+        log('ERROR', 'Deep stats error', { error: e.message });
+        res.json({ waitEvents: [], waitEventTypes: [], lockBlocking: [], dbStats: {}, slowQueries: [], locks: [], settings: {}, bgwriter: {} });
+    }
+});
+
 app.get('/api/reliability/active-connections', authenticate, async (req, res) => {
     try {
         const r = await (await reqPool(req)).query(`

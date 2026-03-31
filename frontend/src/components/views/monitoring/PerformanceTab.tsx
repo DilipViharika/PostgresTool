@@ -234,62 +234,29 @@ const detectN1Patterns = (queries) => {
    AI OPTIMIZER
    ═══════════════════════════════════════════════════════════════════════════ */
 const generateOptimization = (query) => {
-    if (query.includes('SELECT *')) {
-        return {
-            optimized: query.replace('SELECT *', 'SELECT id, name, created_at, status'),
-            reason: 'SELECT * fetches all columns including BLOBs and unused fields, increasing IO by 3-5×.',
-            fixType: 'Column Pruning', category: 'IO Optimization', improvement: '~40% IO Reduction',
-            costBefore: 1240, costAfter: 45,
-            planBefore: [{ op: 'Seq Scan', table: 'users', cost: 1240, rows: '125k', width: 842 }, { op: 'Sort', cost: 320, rows: '125k' }],
-            planAfter: [{ op: 'Index Scan', table: 'users', cost: 45, rows: '125k', width: 64, index: 'idx_users_pkey' }],
-        };
-    }
-    if (query.includes('OR')) {
-        return {
-            optimized: query.replace(/\bOR\b/g, '\nUNION ALL\nSELECT … WHERE'),
-            reason: 'OR conditions disable index usage, forcing full sequential scans on both predicates.',
-            fixType: 'Query Rewrite', category: 'Index Utilization', improvement: 'Enables Index Scan',
-            costBefore: 890, costAfter: 120,
-            planBefore: [{ op: 'Seq Scan', table: 'orders', cost: 890, rows: '50k', filter: 'status OR region' }],
-            planAfter: [{ op: 'Append', cost: 120, rows: '50k' }, { op: '→ Index Scan (status)', table: 'orders', cost: 60, rows: '25k', index: 'idx_orders_status' }, { op: '→ Index Scan (region)', table: 'orders', cost: 60, rows: '25k', index: 'idx_orders_region' }],
-        };
-    }
+    // Provide basic pattern-based suggestions — real EXPLAIN comes from the backend
+    const suggestions = [];
+    if (query?.includes('SELECT *')) suggestions.push({ fixType: 'Column Pruning', reason: 'SELECT * fetches all columns including unused fields. Specify only needed columns.', category: 'IO Optimization' });
+    if (query && /\bOR\b/i.test(query)) suggestions.push({ fixType: 'Query Rewrite', reason: 'OR conditions may disable index usage. Consider UNION ALL for separate index scans.', category: 'Index Utilization' });
+    if (query && /ORDER BY/i.test(query) && !/LIMIT/i.test(query)) suggestions.push({ fixType: 'Missing LIMIT', reason: 'ORDER BY without LIMIT sorts all rows. Add LIMIT to reduce work.', category: 'Sort Optimization' });
+    if (!suggestions.length) suggestions.push({ fixType: 'Review Indexes', reason: 'Run EXPLAIN ANALYZE to check for sequential scans on large tables.', category: 'General' });
+    const sug = suggestions[0];
     return {
-        optimized: query + '\n-- CREATE INDEX idx_users_email ON users(email);',
-        reason: 'No index exists on the "email" column. Every lookup triggers a full table scan across 2M+ rows.',
-        fixType: 'Index Creation', category: 'Missing Index', improvement: '95% Faster (Seek vs Scan)',
-        costBefore: 2100, costAfter: 8,
-        planBefore: [{ op: 'Seq Scan', table: 'users', cost: 2100, rows: '2.1M', filter: 'email = ?' }],
-        planAfter: [{ op: 'Index Scan', table: 'users', cost: 8, rows: 1, index: 'idx_users_email' }],
+        optimized: '-- Run EXPLAIN ANALYZE on this query for a real execution plan',
+        reason: sug.reason,
+        fixType: sug.fixType,
+        category: sug.category,
+        improvement: 'Run EXPLAIN to measure',
+        costBefore: 0,
+        costAfter: 0,
     };
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
    EXPLAIN PLAN TREE VISUALIZER
    ═══════════════════════════════════════════════════════════════════════════ */
-const generateExplainTree = (query) => {
-    const base = [
-        {
-            id: 1, op: 'Hash Join', cost: '0.43..2845.12', rows: 12840, width: 124, actualTime: '45.2..892.3',
-            detail: 'Hash Cond: (o.user_id = u.id)', children: [
-                {
-                    id: 2, op: 'Seq Scan', table: 'orders', cost: '0.00..1240.50', rows: 50000, width: 64, actualTime: '0.1..210.4',
-                    detail: 'Filter: (status = \'active\')', rowsRemoved: 45200, children: []
-                },
-                {
-                    id: 3, op: 'Hash', cost: '0.00..480.20', rows: 8000, width: 60, actualTime: '12.1..45.6',
-                    detail: 'Buckets: 8192  Batches: 1  Memory Usage: 512kB', children: [
-                        {
-                            id: 4, op: 'Index Scan', table: 'users', index: 'idx_users_pkey', cost: '0.43..420.10', rows: 8000, width: 60,
-                            actualTime: '0.04..28.3', detail: 'Index Cond: (id > 0)', children: []
-                        }
-                    ]
-                }
-            ]
-        }
-    ];
-    return base;
-};
+// generateExplainTree removed — real EXPLAIN plans come from /api/optimizer/analyze
+const generateExplainTree = () => [];
 
 const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
     const [expanded, setExpanded] = useState(true);
@@ -362,49 +329,34 @@ const WAIT_COLORS = {
     'Extension': THEME.textDim,
 };
 
-const WaitEventBreakdown = ({ conns }) => {
+const WaitEventBreakdown = ({ waitEventTypes, waitEvents }) => {
     const [hoveredWait, setHoveredWait] = useState(null);
 
     const waitData = useMemo(() => {
-        const cats = { 'Lock': 0, 'IO': 0, 'CPU': 0, 'Client': 0, 'IPC': 0, 'Timeout': 0 };
-        // Synthetic distribution with some real bias from conn states
-        const activeCount = conns.filter(c => c.state === 'active').length || 8;
-        cats['CPU'] = Math.round(activeCount * 0.35 + 0 * 5);
-        cats['IO'] = Math.round(activeCount * 0.28 + 0 * 4);
-        cats['Lock'] = Math.round(activeCount * 0.18 + 0 * 3);
-        cats['Client'] = Math.round(activeCount * 0.12 + 0 * 2);
-        cats['IPC'] = Math.round(activeCount * 0.05 + 0 * 1);
-        cats['Timeout'] = Math.round(activeCount * 0.02 + 0 * 1);
-        const total = Object.values(cats).reduce((a, b) => a + b, 0) || 1;
-        return Object.entries(cats)
-            .filter(([, v]) => v > 0)
-            .map(([name, value]) => ({ name, value, pct: ((value / total) * 100).toFixed(1), color: WAIT_COLORS[name] }))
-            .sort((a, b) => b.value - a.value);
-    }, [conns]);
+        // Use real wait_event_type aggregation from pg_stat_activity
+        if (!waitEventTypes?.length) return [];
+        const total = waitEventTypes.reduce((s, w) => s + Number(w.count), 0) || 1;
+        return waitEventTypes.map(w => ({
+            name: w.wait_event_type,
+            value: Number(w.count),
+            pct: ((Number(w.count) / total) * 100).toFixed(1),
+            color: WAIT_COLORS[w.wait_event_type] || THEME.textDim,
+        })).sort((a, b) => b.value - a.value);
+    }, [waitEventTypes]);
 
     const total = waitData.reduce((s, d) => s + d.value, 0);
 
-    // Detailed breakdown per category
-    const detailRows = {
-        'Lock': [
-            { event: 'relation', count: 12, type: 'Lock' },
-            { event: 'tuple', count: 8, type: 'Lock' },
-            { event: 'transactionid', count: 4, type: 'Lock' },
-        ],
-        'IO': [
-            { event: 'DataFileRead', count: 18, type: 'IO' },
-            { event: 'WALWrite', count: 9, type: 'IO' },
-            { event: 'SLRURead', count: 3, type: 'IO' },
-        ],
-        'CPU': [
-            { event: 'CPU (running)', count: 28, type: 'CPU' },
-            { event: 'SortRead', count: 5, type: 'CPU' },
-        ],
-        'Client': [
-            { event: 'ClientRead', count: 10, type: 'Client' },
-            { event: 'ClientWrite', count: 3, type: 'Client' },
-        ],
-    };
+    // Build detail rows from real wait_event data grouped by type
+    const detailRows = useMemo(() => {
+        if (!waitEvents?.length) return {};
+        const grouped = {};
+        waitEvents.forEach(w => {
+            const type = w.wait_event_type;
+            if (!grouped[type]) grouped[type] = [];
+            grouped[type].push({ event: w.wait_event, count: Number(w.count), type });
+        });
+        return grouped;
+    }, [waitEvents]);
 
     const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, pct }) => {
         if (parseFloat(pct) < 6) return null;
@@ -497,21 +449,19 @@ const WaitEventBreakdown = ({ conns }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    SLOW QUERY TREND (24h)  ★ NEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const SlowQueryTrend24h = ({ slowQueryCount }) => {
+const SlowQueryTrend24h = ({ slowQueries }) => {
+    // Show real slow query distribution: group by total_time contribution
     const data = useMemo(() => {
-        const now = new Date();
-        return Array.from({ length: 24 }, (_, i) => {
-            const h = new Date(now - (23 - i) * 3600000);
-            const label = `${h.getHours().toString().padStart(2, '0')}:00`;
-            // Simulate traffic patterns: peaks during business hours
-            const hourOfDay = h.getHours();
-            const baseLoad = hourOfDay >= 9 && hourOfDay <= 18 ? 1.8 : hourOfDay >= 0 && hourOfDay <= 5 ? 0.3 : 0.8;
-            const slow = Math.round((slowQueryCount || 5) * baseLoad * (0.6 + 0 * 0.8));
-            const critical = Math.round(slow * 0.15 * 0);
-            const p99 = 500 + 0 * 2000;
-            return { label, slow, critical, p99: Math.round(p99), hour: hourOfDay };
-        });
-    }, [slowQueryCount]);
+        if (!slowQueries?.length) return [];
+        // Show top queries ranked by total execution time as bar chart
+        return slowQueries.slice(0, 12).map((q, i) => ({
+            label: `Q${i + 1}`,
+            slow: Math.round(Number(q.total_time_ms || q.mean_time_ms || 0)),
+            critical: Number(q.max_time_ms || 0) > 5000 ? 1 : 0,
+            p99: Math.round(Number(q.max_time_ms || q.mean_time_ms || 0)),
+            query: q.query?.substring(0, 40) || '',
+        }));
+    }, [slowQueries]);
 
     const maxSlow = Math.max(...data.map(d => d.slow), 1);
 
@@ -569,28 +519,22 @@ const SlowQueryTrend24h = ({ slowQueryCount }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    JIT COMPILATION STATS  ★ NEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const JITCompilationPanel = ({ slowQueries }) => {
+const JITCompilationPanel = ({ slowQueries, jitEnabled }) => {
     const jitData = useMemo(() => {
-        const queries = (slowQueries || []).slice(0, 8).map((q, i) => {
-            const hasJit = 0 > 0.45;
-            const compileMs = hasJit ? Math.round(10 + 0 * 150) : 0;
-            const execMs = Number(q.mean_time_ms || 500);
-            const savings = hasJit ? Math.round(execMs * (0.2 + 0 * 0.4)) : 0;
-            return {
-                ...q,
-                id: q.id || i,
-                hasJit,
-                compileMs,
-                execMs: Math.round(execMs),
-                savings,
-                net: hasJit ? savings - compileMs : 0,
-                functions: hasJit ? Math.floor(0 * 20) + 1 : 0,
-                inlining: hasJit && 0 > 0.4,
-                optimization: hasJit && 0 > 0.6,
-                deform: hasJit && 0 > 0.3,
-            };
-        });
-        return queries;
+        // Show real slow query data — JIT columns require PG 15+ pg_stat_statements
+        return (slowQueries || []).slice(0, 8).map((q, i) => ({
+            ...q,
+            id: q.id || i,
+            hasJit: false, // True JIT status requires EXPLAIN ANALYZE per-query
+            compileMs: 0,
+            execMs: Math.round(Number(q.mean_time_ms || 0)),
+            savings: 0,
+            net: 0,
+            functions: 0,
+            inlining: false,
+            optimization: false,
+            deform: false,
+        }));
     }, [slowQueries]);
 
     const jitEnabled = jitData.filter(q => q.hasJit);
@@ -673,27 +617,16 @@ const JITCompilationPanel = ({ slowQueries }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    PARALLEL QUERY UTILIZATION  ★ NEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const ParallelQueryPanel = ({ stats }) => {
-    const maxWorkers = stats?.max_parallel_workers || 8;
-    const maxWorkersPerGather = stats?.max_parallel_workers_per_gather || 4;
+const ParallelQueryPanel = ({ stats, settings }) => {
+    const maxWorkers = Number(settings?.max_parallel_workers) || Number(stats?.max_parallel_workers) || 0;
+    const maxWorkersPerGather = Number(settings?.max_parallel_workers_per_gather) || Number(stats?.max_parallel_workers_per_gather) || 0;
 
-    const parallelData = useMemo(() => Array.from({ length: 20 }, (_, i) => ({
-        t: `${i * 3}m`,
-        workers: Math.round(0 * maxWorkers * 0.8),
-        queries: Math.round(2 + 0 * 6),
-        maxAllowed: maxWorkers,
-    })), [maxWorkers]);
+    // No synthetic data — show configuration info and note that live parallel worker tracking requires EXPLAIN
+    const parallelData = [];
+    const queryBreakdown = [];
 
-    const queryBreakdown = useMemo(() => [
-        { name: 'Parallel Seq Scan', workers: Math.ceil(0 * 4) + 1, expected: 4, query: 'SELECT COUNT(*) FROM large_table WHERE...', saving: '68%' },
-        { name: 'Parallel Hash Join', workers: Math.ceil(0 * 3) + 1, expected: 4, query: 'SELECT a.*, b.name FROM orders a JOIN...', saving: '52%' },
-        { name: 'Parallel Aggregate', workers: Math.ceil(0 * 2) + 1, expected: 3, query: 'SELECT region, SUM(revenue) FROM...', saving: '41%' },
-        { name: 'Non-parallel (fallback)', workers: 0, expected: 2, query: 'UPDATE users SET last_seen = NOW()...', saving: '0%' },
-        { name: 'Parallel Index Scan', workers: Math.ceil(0 * 2) + 1, expected: 2, query: 'SELECT * FROM events WHERE ts >...', saving: '34%' },
-    ], []);
-
-    const avgWorkers = parallelData.reduce((s, d) => s + d.workers, 0) / parallelData.length;
-    const utilizationPct = ((avgWorkers / maxWorkers) * 100).toFixed(0);
+    const avgWorkers = 0;
+    const utilizationPct = '—';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -706,49 +639,12 @@ const ParallelQueryPanel = ({ stats }) => {
                 ].map((s, i) => <StatChip key={i} {...s} small />)}
             </div>
 
-            <GlassCard title="Worker Utilization Over Time" style={{ padding: 0 }}>
-                <ResponsiveContainer width="100%" height={140}>
-                    <ComposedChart data={parallelData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={3} />
-                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[0, maxWorkers + 1]} />
-                        <Tooltip content={<ChartTooltip />} />
-                        <ReferenceLine y={maxWorkers} stroke={`${THEME.danger}50`} strokeDasharray="4 4" label={{ value: 'max', position: 'right', fontSize: 9, fill: THEME.danger }} />
-                        <Area type="monotone" dataKey="workers" stroke={THEME.primary} fill="none" strokeWidth={2} name="Active Workers" />
-                        <Bar dataKey="queries" fill={`${THEME.success}30`} radius={[2, 2, 0, 0]} name="Parallel Queries" />
-                    </ComposedChart>
-                </ResponsiveContainer>
-            </GlassCard>
-
-            {/* Per-query worker allocation */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Active Parallel Queries</div>
-                {queryBreakdown.map((q, i) => {
-                    const efficiency = q.expected > 0 ? (q.workers / q.expected) : 0;
-                    const workerColor = efficiency >= 0.8 ? THEME.success : efficiency >= 0.5 ? THEME.warning : THEME.danger;
-                    return (
-                        <div key={i} style={{ padding: '10px 12px', borderRadius: 8, background: `${THEME.grid}15`, border: `1px solid ${THEME.grid}30` }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textMain }}>{q.name}</span>
-                                    {q.workers === 0 && <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 10, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 700 }}>SERIAL FALLBACK</span>}
-                                </div>
-                                <span style={{ fontSize: 10, fontWeight: 700, color: THEME.success }}>{q.saving} faster</span>
-                            </div>
-                            <div style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textDim, marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.query}</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <div style={{ flex: 1, display: 'flex', gap: 3 }}>
-                                    {Array.from({ length: maxWorkersPerGather }, (_, j) => (
-                                        <div key={j} style={{ flex: 1, height: 6, borderRadius: 2, background: j < q.workers ? workerColor : `${THEME.grid}40` }} />
-                                    ))}
-                                </div>
-                                <span style={{ fontSize: 10, fontWeight: 700, color: workerColor, fontVariantNumeric: 'tabular-nums', minWidth: 48, textAlign: 'right' }}>
-                                    {q.workers}/{maxWorkersPerGather} workers
-                                </span>
-                            </div>
-                        </div>
-                    );
-                })}
+            <div style={{ padding: 20, borderRadius: 10, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
+                    <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
+                    Parallel worker utilization is a point-in-time metric from active queries. Use <code style={{ color: THEME.primary }}>EXPLAIN ANALYZE</code> on individual queries to see actual parallel worker allocation.
+                    Current configuration: <code style={{ color: THEME.primary }}>max_parallel_workers = {maxWorkers}</code>, <code style={{ color: THEME.primary }}>max_parallel_workers_per_gather = {maxWorkersPerGather}</code>
+                </div>
             </div>
         </div>
     );
@@ -828,38 +724,39 @@ const LockTreeNode = ({ node, depth = 0, isLast = false }) => {
     );
 };
 
-const LockBlockingTree = ({ locks, conns }) => {
+const LockBlockingTree = ({ lockBlocking }) => {
     const tree = useMemo(() => {
-        const holderPids = conns.filter(c => c.state === 'active').slice(0, 3);
-        return holderPids.map((h, i) => ({
-            pid: h.pid || (9000 + i),
-            app: h.application_name || 'app',
-            role: 'holder',
-            lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock'][i % 3],
-            relation: ['orders', 'users', 'inventory'][i % 3],
-            query: h.query || '',
-            waitTime: null,
-            blockees: locks.slice(i * 2, i * 2 + 2).map((w, j) => ({
-                pid: w.pid || (8800 + i * 10 + j),
-                app: 'rails_app',
-                role: 'waiter',
-                lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock'][j % 3],
-                relation: ['orders', 'users', 'inventory'][i % 3],
-                query: w.query || 'SELECT * FROM orders WHERE user_id = ? FOR UPDATE',
-                waitTime: `${Math.round(0 * 30) + 1}s`,
-                blockees: j === 0 && 0 > 0.6 ? [{
-                    pid: 8700 + i,
-                    app: 'worker',
-                    role: 'waiter',
-                    lockType: 'ShareLock',
-                    relation: ['orders', 'users', 'inventory'][i % 3],
-                    query: 'SELECT COUNT(*) FROM orders WHERE...',
-                    waitTime: `${Math.round(0 * 10) + 1}s`,
+        // Build tree from real lock blocking data from pg_stat_activity + pg_blocking_pids
+        if (!lockBlocking?.length) return [];
+        // Group by blocking PID
+        const holders = {};
+        lockBlocking.forEach(row => {
+            const bpid = row.blocking_pid;
+            if (!holders[bpid]) {
+                holders[bpid] = {
+                    pid: bpid,
+                    app: row.blocking_app || '',
+                    role: 'holder',
+                    lockType: row.wait_event || 'Lock',
+                    relation: '',
+                    query: row.blocking_query || '',
+                    waitTime: null,
                     blockees: [],
-                }] : [],
-            })),
-        })).filter(t => t.blockees.length > 0);
-    }, [locks, conns]);
+                };
+            }
+            holders[bpid].blockees.push({
+                pid: row.blocked_pid,
+                app: row.blocked_app || '',
+                role: 'waiter',
+                lockType: row.wait_event || 'Lock',
+                relation: '',
+                query: row.blocked_query || '',
+                waitTime: row.wait_sec ? `${row.wait_sec}s` : '',
+                blockees: [],
+            });
+        });
+        return Object.values(holders);
+    }, [lockBlocking]);
 
     const totalBlocked = tree.reduce((s, t) => s + t.blockees.length + t.blockees.flatMap(b => b.blockees).length, 0);
 
@@ -892,97 +789,37 @@ const LockBlockingTree = ({ locks, conns }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    DEADLOCK HISTORY  ★ NEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const DeadlockHistory = () => {
+const DeadlockHistory = ({ dbStats }) => {
     const [selectedDeadlock, setSelectedDeadlock] = useState(null);
 
-    const deadlocks = useMemo(() => Array.from({ length: 7 }, (_, i) => {
-        const minsAgo = Math.round(10 + 0 * 1400);
-        const tables = ['orders', 'users', 'inventory', 'sessions', 'payments'];
-        return {
-            id: i,
-            timestamp: new Date(Date.now() - minsAgo * 60000),
-            minsAgo,
-            pid1: 8800 + i * 7,
-            pid2: 9000 + i * 5,
-            table1: tables[i % tables.length],
-            table2: tables[(i + 2) % tables.length],
-            victim: 0 > 0.5 ? 'pid1' : 'pid2',
-            query1: ['UPDATE orders SET status=? WHERE id=?', 'INSERT INTO payments SELECT...', 'DELETE FROM sessions WHERE uid=?'][i % 3],
-            query2: ['UPDATE users SET balance=balance-? WHERE...', 'UPDATE orders SET user_id=? WHERE...', 'UPDATE inventory SET qty=qty-? WHERE...'][i % 3],
-            duration: Math.round(50 + 0 * 3000),
-            app: ['rails_app', 'django_api', 'node_worker', 'cron_job'][i % 4],
-        };
-    }).sort((a, b) => b.minsAgo - a.minsAgo > 0 ? -1 : 1), []);
-
-    const formatTime = (d) => {
-        const minsAgo = Math.round((Date.now() - d.timestamp) / 60000);
-        if (minsAgo < 60) return `${minsAgo}m ago`;
-        if (minsAgo < 1440) return `${Math.round(minsAgo / 60)}h ago`;
-        return `${Math.round(minsAgo / 1440)}d ago`;
-    };
+    const deadlockCount = Number(dbStats?.deadlocks || 0);
+    const deadlocks = [];
+    // PostgreSQL only exposes cumulative deadlock count via pg_stat_database
+    // Individual deadlock details require log parsing (not available via SQL)
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 4 }}>
-                <StatChip label="Total (7d)" value={deadlocks.length} color={THEME.danger} icon={ShieldAlert} small />
-                <StatChip label="Last 24h" value={deadlocks.filter(d => d.minsAgo < 1440).length} color={THEME.warning} icon={Clock} small />
-                <StatChip label="Most Affected" value={[...new Set(deadlocks.map(d => d.table1))][0] || 'orders'} color={THEME.primary} icon={Database} small />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 4 }}>
+                <StatChip label="Total Deadlocks" value={deadlockCount} color={deadlockCount > 0 ? THEME.danger : THEME.success} icon={ShieldAlert} small />
+                <StatChip label="Status" value={deadlockCount === 0 ? 'Clean' : 'Review Needed'} color={deadlockCount === 0 ? THEME.success : THEME.warning} icon={CheckCircle} small />
             </div>
 
-            {/* Timeline list */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {deadlocks.map((dl, i) => (
-                    <div key={i} onClick={() => setSelectedDeadlock(selectedDeadlock?.id === dl.id ? null : dl)}
-                         style={{ padding: '10px 14px', borderRadius: 9, cursor: 'pointer', background: selectedDeadlock?.id === dl.id ? `${THEME.danger}08` : `${THEME.grid}12`, border: `1px solid ${selectedDeadlock?.id === dl.id ? `${THEME.danger}25` : `${THEME.grid}30`}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: selectedDeadlock?.id === dl.id ? 10 : 0 }}>
-                            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.danger}12`, border: `1px solid ${THEME.danger}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <ShieldAlert size={14} color={THEME.danger} />
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>
-                                        PID {dl.pid1} ↔ PID {dl.pid2}
-                                    </span>
-                                    <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 14, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 700 }}>
-                                        victim: {dl.victim === 'pid1' ? `PID ${dl.pid1}` : `PID ${dl.pid2}`}
-                                    </span>
-                                </div>
-                                <div style={{ fontSize: 10, color: THEME.textDim }}>
-                                    <span style={{ color: THEME.primary, fontFamily: THEME.fontMono }}>{dl.table1}</span>
-                                    <span> ↔ </span>
-                                    <span style={{ color: THEME.primary, fontFamily: THEME.fontMono }}>{dl.table2}</span>
-                                    <span style={{ color: THEME.textDim }}> · {dl.app} · {dl.duration}ms</span>
-                                </div>
-                            </div>
-                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                <div style={{ fontSize: 11, color: THEME.textMuted, fontVariantNumeric: 'tabular-nums' }}>{formatTime(dl)}</div>
-                                <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>{dl.timestamp.toLocaleTimeString()}</div>
-                            </div>
-                            <div style={{ color: THEME.textDim, flexShrink: 0 }}>
-                                {selectedDeadlock?.id === dl.id ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                            </div>
-                        </div>
-
-                        {/* Expanded detail */}
-                        {selectedDeadlock?.id === dl.id && (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, paddingTop: 10, borderTop: `1px solid ${THEME.grid}30` }}>
-                                {[
-                                    { label: `PID ${dl.pid1}`, query: dl.query1, isVictim: dl.victim === 'pid1', color: dl.victim === 'pid1' ? THEME.danger : THEME.warning },
-                                    { label: `PID ${dl.pid2}`, query: dl.query2, isVictim: dl.victim === 'pid2', color: dl.victim === 'pid2' ? THEME.danger : THEME.warning },
-                                ].map((p, j) => (
-                                    <div key={j} style={{ padding: '8px 10px', borderRadius: 7, background: `${p.color}06`, border: `1px solid ${p.color}15` }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
-                                            <span style={{ fontSize: 10, fontWeight: 700, color: p.color }}>{p.label}</span>
-                                            {p.isVictim && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 10, background: `${THEME.danger}18`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 800 }}>ROLLED BACK</span>}
-                                        </div>
-                                        <div style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textMuted, lineHeight: 1.5 }}>{p.query}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+            {deadlockCount === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+                    <EmptyState icon={CheckCircle} text="No deadlocks detected (since last stats reset)" />
+                </div>
+            ) : (
+                <div style={{ padding: 16, borderRadius: 10, background: `${THEME.danger}06`, border: `1px solid ${THEME.danger}15` }}>
+                    <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
+                        <span style={{ color: THEME.danger, fontWeight: 700 }}>{deadlockCount} deadlock(s)</span> detected since the last statistics reset.
+                        PostgreSQL resolves deadlocks by aborting one of the transactions involved.
                     </div>
-                ))}
-            </div>
+                    <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 10, lineHeight: 1.6 }}>
+                        <span style={{ color: THEME.primary, fontWeight: 700 }}>Tip:</span>{' '}
+                        Enable <code style={{ color: THEME.primary }}>log_lock_waits = on</code> and check PostgreSQL server logs for detailed deadlock information including the exact queries and PIDs involved.
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -990,105 +827,84 @@ const DeadlockHistory = () => {
 /* ═══════════════════════════════════════════════════════════════════════════
    GENERIC VS CUSTOM PLAN RATIO  ★ NEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const GenericCustomPlanPanel = ({ slowQueries }) => {
+const GenericCustomPlanPanel = ({ slowQueries, settings }) => {
+    const planCacheMode = settings?.plan_cache_mode || 'auto';
+
     const planData = useMemo(() => {
+        // Real data: show actual slow query stats; generic/custom plan split requires PG 16+ columns
         const stmts = (slowQueries || []).slice(0, 10).map((q, i) => {
-            const calls = Number(q.calls || 100);
-            const genericCalls = Math.round(calls * (0.3 + 0 * 0.7));
-            const customCalls = calls - genericCalls;
-            const genericMs = Number(q.mean_time_ms || 200) * (0.8 + 0 * 0.6);
-            const customMs = genericMs * (0.7 + 0 * 0.8);
-            const ratio = calls > 0 ? genericCalls / calls : 0;
+            const calls = Number(q.calls || 0);
+            const meanMs = Math.round(Number(q.mean_time_ms || 0));
+            const stddevMs = Math.round(Number(q.stddev_ms || 0));
+            const highVariance = stddevMs > meanMs * 0.5;
             return {
                 id: i,
                 query: q.query?.substring(0, 40) + '…' || `stmt_${i}`,
                 calls,
-                genericCalls,
-                customCalls,
-                genericMs: Math.round(genericMs),
-                customMs: Math.round(customMs),
-                ratio,
-                healthy: ratio >= 0.3 && ratio <= 0.85,
-                concern: ratio > 0.85 ? 'Mostly generic — may miss optimizations' : ratio < 0.15 ? 'Never reusing plans — high replanning cost' : null,
+                meanMs,
+                stddevMs,
+                totalMs: Math.round(Number(q.total_time_ms || 0)),
+                healthy: !highVariance,
+                concern: highVariance ? 'High variance — may benefit from force_custom_plan' : null,
             };
         });
 
-        const timelineData = Array.from({ length: 20 }, (_, i) => ({
-            t: `${i * 3}m`,
-            generic: Math.round(40 + Math.sin(i / 4) * 20 + 0 * 15),
-            custom: Math.round(20 + Math.cos(i / 3) * 10 + 0 * 10),
-            replan: Math.round(2 + 0 * 5),
-        }));
-
-        return { stmts, timelineData };
+        return { stmts };
     }, [slowQueries]);
 
-    const totalGeneric = planData.stmts.reduce((s, d) => s + d.genericCalls, 0);
-    const totalCustom = planData.stmts.reduce((s, d) => s + d.customCalls, 0);
-    const totalAll = totalGeneric + totalCustom || 1;
     const unhealthyCount = planData.stmts.filter(s => !s.healthy).length;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
                 {[
-                    { label: 'Generic Plans', value: `${Math.round(totalGeneric / totalAll * 100)}%`, color: THEME.primary, icon: FileCog },
-                    { label: 'Custom Plans', value: `${Math.round(totalCustom / totalAll * 100)}%`, color: THEME.success, icon: Braces },
-                    { label: 'Concern Stmts', value: unhealthyCount, color: unhealthyCount > 0 ? THEME.warning : THEME.textDim, icon: AlertTriangle },
-                    { label: 'plan_cache_mode', value: 'auto', color: THEME.textMuted, icon: SlidersHorizontal },
+                    { label: 'Statements', value: planData.stmts.length, color: THEME.primary, icon: FileCog },
+                    { label: 'High Variance', value: unhealthyCount, color: unhealthyCount > 0 ? THEME.warning : THEME.textDim, icon: AlertTriangle },
+                    { label: 'plan_cache_mode', value: planCacheMode, color: THEME.textMuted, icon: SlidersHorizontal },
                 ].map((s, i) => <StatChip key={i} {...s} small />)}
             </div>
 
-            <GlassCard title="Plan Selection Over Time">
-                <ResponsiveContainer width="100%" height={130}>
-                    <AreaChart data={planData.timelineData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
-                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Area type="monotone" dataKey="generic" stroke={THEME.primary} fill="none" strokeWidth={1.5} name="Generic Plans" />
-                        <Area type="monotone" dataKey="custom" stroke={THEME.success} fill="none" strokeWidth={1.5} name="Custom Plans" />
-                        <Bar dataKey="replan" fill={`${THEME.warning}50`} radius={[1, 1, 0, 0]} name="Re-plans" />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </GlassCard>
-
             {/* Per-statement breakdown */}
-            <div style={{ borderRadius: 10, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                    <tr style={{ background: `${THEME.grid}15` }}>
-                        {['Statement', 'Generic', 'Custom', 'Avg Generic', 'Avg Custom', 'Status'].map((h, i) => (
-                            <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
-                        ))}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {planData.stmts.map((s, i) => (
-                        <tr key={i} className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
-                            <td style={{ padding: '8px 12px', maxWidth: 200 }}>
-                                <span style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{s.query}</span>
-                            </td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.primary, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.genericCalls.toLocaleString()}</td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.success, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.customCalls.toLocaleString()}</td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{s.genericMs}ms</td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: s.customMs < s.genericMs ? THEME.success : THEME.warning, fontWeight: 600 }}>{s.customMs}ms</td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                                {s.concern ? (
-                                    <span title={s.concern} style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700, cursor: 'help' }}>⚠ Review</span>
-                                ) : (
-                                    <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: `${THEME.success}10`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>✓ OK</span>
-                                )}
-                            </td>
+            {planData.stmts.length === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+                    <EmptyState icon={FileCog} text="No slow statements found in pg_stat_statements" />
+                </div>
+            ) : (
+                <div style={{ borderRadius: 10, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                        <tr style={{ background: `${THEME.grid}15` }}>
+                            {['Statement', 'Calls', 'Mean', 'Stddev', 'Total', 'Status'].map((h, i) => (
+                                <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
+                            ))}
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        {planData.stmts.map((s, i) => (
+                            <tr key={i} className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
+                                <td style={{ padding: '8px 12px', maxWidth: 200 }}>
+                                    <span style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{s.query}</span>
+                                </td>
+                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.primary, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.calls.toLocaleString()}</td>
+                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.warning, fontWeight: 600 }}>{s.meanMs}ms</td>
+                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{s.stddevMs}ms</td>
+                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{(s.totalMs / 1000).toFixed(1)}s</td>
+                                <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                    {s.concern ? (
+                                        <span title={s.concern} style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700, cursor: 'help' }}>⚠ Review</span>
+                                    ) : (
+                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: `${THEME.success}10`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>✓ OK</span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
             <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '6px 10px', background: `${THEME.grid}15`, borderRadius: 6 }}>
-                <span style={{ color: THEME.primary, fontWeight: 700 }}>Generic plans</span> are reused across calls (faster, but may not be optimal for skewed data).{' '}
-                <span style={{ color: THEME.success, fontWeight: 700 }}>Custom plans</span> are generated per execution (optimal, but incurs planning cost).
-                Set <code style={{ color: THEME.primary }}>plan_cache_mode = force_custom_plan</code> for queries with skewed param distributions.
+                <span style={{ color: THEME.primary, fontWeight: 700 }}>High variance</span> queries (stddev {'>'} 50% of mean) may benefit from <code style={{ color: THEME.primary }}>plan_cache_mode = force_custom_plan</code>.
+                Generic vs custom plan split requires PostgreSQL 16+ pg_stat_statements columns.
             </div>
         </div>
     );
@@ -1097,100 +913,77 @@ const GenericCustomPlanPanel = ({ slowQueries }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    TEMP FILE USAGE TRACKER  ★ NEW
    ═══════════════════════════════════════════════════════════════════════════ */
-const TempFileTracker = ({ slowQueries }) => {
+const TempFileTracker = ({ slowQueries, dbStats, settings }) => {
     const tempData = useMemo(() => {
-        const queries = (slowQueries || []).filter(q => q.tempFiles > 0).concat(
-            Array.from({ length: 6 - Math.min((slowQueries || []).filter(q => q.tempFiles > 0).length, 6) }, (_, i) => ({
-                query: ['SELECT a.*, b.c FROM large_join a JOIN...', 'SELECT DISTINCT user_id FROM events ORDER BY...', 'WITH cte AS (SELECT ...) SELECT * FROM cte JOIN...', 'SELECT * FROM audit_log ORDER BY ts DESC LIMIT...'][i % 4],
-                tempFiles: Math.ceil(0 * 8),
-                mean_time_ms: 500 + 0 * 4000,
-                calls: Math.ceil(0 * 50),
-                id: `synth-${i}`,
-            }))
-        ).slice(0, 8).map(q => ({
-            ...q,
-            tempSizeKB: Math.round(128 + 0 * 65536),
-            workMemKB: 65536,
-            spillRatio: (0 * 0.9 + 0.1),
-        }));
-
-        const timeline = Array.from({ length: 24 }, (_, i) => ({
-            t: `${i * 1}h`,
-            sizeKB: Math.round(0 * 50000 + 5000),
-            files: Math.round(0 * 20),
-        }));
-
-        return { queries, timeline };
+        // Use real temp_blks_read/written from pg_stat_statements
+        const queries = (slowQueries || [])
+            .filter(q => Number(q.temp_blks_read || 0) + Number(q.temp_blks_written || 0) > 0)
+            .slice(0, 8)
+            .map(q => ({
+                ...q,
+                tempBlksRead: Number(q.temp_blks_read || 0),
+                tempBlksWritten: Number(q.temp_blks_written || 0),
+                tempSizeKB: Math.round((Number(q.temp_blks_read || 0) + Number(q.temp_blks_written || 0)) * 8), // 8KB per block
+            }));
+        return { queries };
     }, [slowQueries]);
 
     const totalSizeKB = tempData.queries.reduce((s, q) => s + q.tempSizeKB, 0);
-    const totalFiles = tempData.queries.reduce((s, q) => s + q.tempFiles, 0);
-    const worstQuery = tempData.queries.reduce((best, q) => q.tempSizeKB > (best?.tempSizeKB || 0) ? q : best, null);
+    const dbTempFiles = Number(dbStats?.temp_files || 0);
+    const dbTempBytes = Number(dbStats?.temp_bytes || 0);
+    const workMem = settings?.work_mem || '—';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                 {[
-                    { label: 'Temp Files', value: totalFiles, color: THEME.warning, icon: HardDrive },
-                    { label: 'Total Size', value: totalSizeKB > 1024 ? `${(totalSizeKB / 1024).toFixed(1)} MB` : `${totalSizeKB} KB`, color: THEME.danger, icon: Disc },
-                    { label: 'Queries Spilling', value: tempData.queries.length, color: THEME.warning, icon: Falling },
-                    { label: 'Rec. work_mem', value: `${Math.round(worstQuery?.tempSizeKB / 1024 * 1.2 + 4)} MB`, color: THEME.success, icon: Zap },
+                    { label: 'DB Temp Files', value: dbTempFiles.toLocaleString(), color: dbTempFiles > 0 ? THEME.warning : THEME.textDim, icon: HardDrive },
+                    { label: 'DB Temp Bytes', value: dbTempBytes > 1048576 ? `${(dbTempBytes / 1048576).toFixed(1)} MB` : `${Math.round(dbTempBytes / 1024)} KB`, color: dbTempBytes > 0 ? THEME.danger : THEME.textDim, icon: Disc },
+                    { label: 'Queries Spilling', value: tempData.queries.length, color: tempData.queries.length > 0 ? THEME.warning : THEME.textDim, icon: Falling },
+                    { label: 'work_mem', value: workMem, color: THEME.primary, icon: Zap },
                 ].map((s, i) => <StatChip key={i} {...s} small />)}
             </div>
 
-            <GlassCard title="Temp File Usage — Last 24h">
-                <ResponsiveContainer width="100%" height={120}>
-                    <ComposedChart data={tempData.timeline} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="t" tick={{ fontSize: 8, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={5} />
-                        <YAxis yAxisId="size" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
-                        <YAxis yAxisId="files" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
-                        <Tooltip content={<ChartTooltip />} />
-                        <Area yAxisId="size" type="monotone" dataKey="sizeKB" stroke={THEME.warning} fill="none" strokeWidth={1.5} name="Size KB" />
-                        <Bar yAxisId="files" dataKey="files" fill={`${THEME.danger}40`} radius={[2, 2, 0, 0]} name="File Count" />
-                    </ComposedChart>
-                </ResponsiveContainer>
-            </GlassCard>
-
-            {/* Top offenders */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Top Spilling Queries</div>
-                {tempData.queries.map((q, i) => {
-                    const sizeMB = (q.tempSizeKB / 1024).toFixed(1);
-                    const sizeColor = q.tempSizeKB > 32768 ? THEME.danger : q.tempSizeKB > 8192 ? THEME.warning : THEME.textDim;
-                    const recWorkMem = Math.round(q.tempSizeKB / 1024 * 1.3);
-                    return (
-                        <div key={i} style={{ padding: '10px 14px', borderRadius: 8, background: `${sizeColor}04`, border: `1px solid ${sizeColor}15` }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: 11, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>{q.query}</div>
-                                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
-                                            Files: <span style={{ fontWeight: 700, color: THEME.warning }}>{q.tempFiles}</span>
-                                        </span>
-                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
-                                            Size: <span style={{ fontWeight: 700, color: sizeColor }}>{sizeMB} MB</span>
-                                        </span>
-                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
-                                            Calls: <span style={{ fontWeight: 700, color: THEME.textMuted }}>{q.calls || 1}</span>
-                                        </span>
-                                        <span style={{ fontSize: 10, color: THEME.textDim }}>
-                                            Exec: <span style={{ fontWeight: 700, color: THEME.warning }}>{Number(q.mean_time_ms).toFixed(0)}ms</span>
-                                        </span>
+            {/* Top offenders from pg_stat_statements */}
+            {tempData.queries.length === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+                    <EmptyState icon={CheckCircle} text="No queries using temp files detected in pg_stat_statements" />
+                </div>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Queries Using Temp Blocks</div>
+                    {tempData.queries.map((q, i) => {
+                        const sizeMB = (q.tempSizeKB / 1024).toFixed(1);
+                        const sizeColor = q.tempSizeKB > 32768 ? THEME.danger : q.tempSizeKB > 8192 ? THEME.warning : THEME.textDim;
+                        return (
+                            <div key={i} style={{ padding: '10px 14px', borderRadius: 8, background: `${sizeColor}04`, border: `1px solid ${sizeColor}15` }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: 11, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>{q.query}</div>
+                                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                            <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                                Reads: <span style={{ fontWeight: 700, color: THEME.warning }}>{q.tempBlksRead} blks</span>
+                                            </span>
+                                            <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                                Writes: <span style={{ fontWeight: 700, color: THEME.danger }}>{q.tempBlksWritten} blks</span>
+                                            </span>
+                                            <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                                Est. Size: <span style={{ fontWeight: 700, color: sizeColor }}>{sizeMB} MB</span>
+                                            </span>
+                                            <span style={{ fontSize: 10, color: THEME.textDim }}>
+                                                Calls: <span style={{ fontWeight: 700, color: THEME.textMuted }}>{Number(q.calls || 0).toLocaleString()}</span>
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                                    <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3 }}>Rec. work_mem</div>
-                                    <div style={{ fontSize: 13, fontWeight: 800, color: THEME.success }}>{recWorkMem} MB</div>
-                                    <div style={{ marginTop: 4, width: 80 }}>
-                                        <SeverityBar value={q.tempSizeKB} max={Math.max(...tempData.queries.map(x => x.tempSizeKB))} color={sizeColor} />
+                                    <div style={{ flexShrink: 0, width: 80 }}>
+                                        <SeverityBar value={q.tempSizeKB} max={Math.max(...tempData.queries.map(x => x.tempSizeKB), 1)} color={sizeColor} />
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
             <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '8px 10px', borderRadius: 6, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}12` }}>
                 <span style={{ color: THEME.primary, fontWeight: 700 }}>Fix:</span>{' '}
                 Increase <code style={{ color: THEME.primary }}>work_mem</code> for sessions running large sorts/hashes.
@@ -1207,8 +1000,9 @@ const TempFileTracker = ({ slowQueries }) => {
 const GanttChart = ({ queries }) => {
     const now = Date.now();
     const ganttData = queries.slice(0, 8).map((q, i) => {
-        const start = now - 0 * 5000;
-        const dur = Number(q.mean_time_ms || 100);
+        const dur = Number(q.mean_time_ms || 0);
+        // Spread queries across the timeline proportionally based on their execution time
+        const start = now - dur - (queries.length - i) * 100;
         return { ...q, start, end: start + dur, duration: dur, lane: i };
     });
     const minTime = Math.min(...ganttData.map(d => d.start));
@@ -1256,17 +1050,17 @@ const GanttChart = ({ queries }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    LOCK WAIT DETAILS (original panel, kept)
    ═══════════════════════════════════════════════════════════════════════════ */
-const LockWaitDetails = ({ locks, conns }) => {
+const LockWaitDetails = ({ lockBlocking }) => {
     const waitChains = useMemo(() => {
-        const holders = conns.filter(c => c.state === 'active').slice(0, 3);
-        const waiters = locks.slice(0, 5);
-        return waiters.map((w, i) => ({
-            waiter: { pid: w.pid || 8800 + i, query: w.query || 'SELECT FOR UPDATE...', waitTime: Math.round(0 * 30) + 's' },
-            holder: holders[i % holders.length] || { pid: 9000 + i, query: '', application_name: '' },
-            lockType: ['RowExclusiveLock', 'ShareLock', 'ExclusiveLock', 'RowShareLock'][i % 4],
-            relation: ['orders', 'users', 'products', 'inventory', 'sessions'][i % 5]
+        // Use real lock blocking data from the API
+        if (!lockBlocking?.length) return [];
+        return lockBlocking.map((row, i) => ({
+            waiter: { pid: row.blocked_pid, query: row.blocked_query || '', waitTime: row.wait_sec ? `${row.wait_sec}s` : '' },
+            holder: { pid: row.blocking_pid, query: row.blocking_query || '', application_name: row.blocking_app || '' },
+            lockType: row.wait_event || 'Lock',
+            relation: ''
         }));
-    }, [locks, conns]);
+    }, [lockBlocking]);
 
     if (!waitChains.length) return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
@@ -1365,11 +1159,10 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
     const explainTree = generateExplainTree(queryData.query);
     const currentTag = tags?.[queryData.id];
 
-    const trendData = Array.from({ length: 12 }, (_, i) => ({
-        t: `${i * 5}m ago`,
-        ms: Number(queryData.mean_time_ms) * (0.7 + Math.sin(i / 3) * 0.3 + 0 * 0.2),
-        calls: Math.round(Number(queryData.calls || 10) * (0.8 + 0 * 0.4))
-    })).reverse();
+    /* No historical trend data available from pg_stat_statements — show single current point */
+    const meanMs = Number(queryData.mean_time_ms) || 0;
+    const totalCalls = Number(queryData.calls) || 0;
+    const trendData = [{ t: 'Current', ms: meanMs, calls: totalCalls }];
 
     const handleApply = () => {
         setIsApplying(true);
@@ -1403,9 +1196,9 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                     )}
                                 </div>
                                 <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                                    <span>PID <span style={{ color: THEME.textMain, fontWeight: 600, fontFamily: THEME.fontMono }}>{queryData.pid || 8821}</span></span>
+                                    <span>PID <span style={{ color: THEME.textMain, fontWeight: 600, fontFamily: THEME.fontMono }}>{queryData.pid || '—'}</span></span>
                                     <span>Duration <span style={{ color: THEME.danger, fontWeight: 600 }}>{Number(queryData.mean_time_ms).toFixed(1)}ms</span></span>
-                                    <span>Cache Hit <span style={{ color: THEME.success, fontWeight: 600 }}>{queryData.cacheHit || '94.2'}%</span></span>
+                                    <span>Cache Hit <span style={{ color: THEME.success, fontWeight: 600 }}>{queryData.cache_hit_pct || '—'}%</span></span>
                                     <span>Temp Files <span style={{ color: queryData.tempFiles > 0 ? THEME.warning : THEME.textDim, fontWeight: 600 }}>{queryData.tempFiles || 0}</span></span>
                                 </div>
                             </div>
@@ -1526,7 +1319,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                 <div>
                                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Performance Metrics</div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                                        <StatChip label="Cache Hit" value={`${queryData.cacheHit || 94.2}%`} color={THEME.success} icon={Database} small />
+                                        <StatChip label="Cache Hit" value={`${queryData.cache_hit_pct || '—'}%`} color={THEME.success} icon={Database} small />
                                         <StatChip label="Temp Files" value={queryData.tempFiles || 0} color={queryData.tempFiles > 0 ? THEME.warning : THEME.textDim} icon={HardDrive} small />
                                         <StatChip label="Category" value={opt.category} color={THEME.primary} icon={Layers} small />
                                         <StatChip label="Impact" value={opt.improvement} color={THEME.success} icon={TrendingUp} small />
@@ -1545,7 +1338,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                         <div style={{ height: 1, background: THEME.grid, margin: '0 0 10px' }} />
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span style={{ fontSize: 11, color: THEME.textDim }}>Reduction</span>
-                                            <span style={{ fontSize: 18, fontWeight: 800, color: THEME.success }}>{((1 - opt.costAfter / opt.costBefore) * 100).toFixed(0)}%</span>
+                                            <span style={{ fontSize: 18, fontWeight: 800, color: THEME.success }}>{opt.costBefore > 0 ? `${((1 - opt.costAfter / opt.costBefore) * 100).toFixed(0)}%` : '—'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1608,14 +1401,14 @@ const PerformanceTab = () => {
     useEffect(() => {
         const load = async () => {
             try {
-                // Use allSettled so a single failing endpoint (e.g. replication not
-                // configured, pg_stat_statements not installed) never blanks the tab.
-                const [statsRes, connsRes, locksRes, ioRes, replRes] = await Promise.allSettled([
+                // Use allSettled so a single failing endpoint never blanks the tab
+                const [statsRes, connsRes, locksRes, ioRes, replRes, deepRes] = await Promise.allSettled([
                     fetchData('/api/performance/stats'),
                     fetchData('/api/reliability/active-connections'),
                     fetchData('/api/reliability/locks'),
                     fetchData('/api/performance/table-io'),
-                    fetchData('/api/reliability/replication')
+                    fetchData('/api/reliability/replication'),
+                    fetchData('/api/performance/deep-stats')
                 ]);
                 const val = r => (r.status === 'fulfilled' ? r.value : null);
                 setData({
@@ -1624,10 +1417,10 @@ const PerformanceTab = () => {
                     locks: val(locksRes) || [],
                     io:   val(ioRes)   || [],
                     repl: val(replRes) || [],
+                    deep: val(deepRes) || { waitEvents: [], waitEventTypes: [], lockBlocking: [], dbStats: {}, slowQueries: [], locks: [], settings: {}, bgwriter: {} },
                 });
             } catch (e) {
-                // Fallback: show empty data rather than blank screen
-                setData({ stats: { available: false, slowQueries: [] }, conns: [], locks: [], io: [], repl: [] });
+                setData({ stats: { available: false, slowQueries: [] }, conns: [], locks: [], io: [], repl: [], deep: { waitEvents: [], waitEventTypes: [], lockBlocking: [], dbStats: {}, slowQueries: [], locks: [], settings: {}, bgwriter: {} } });
             } finally {
                 setLoading(false);
             }
@@ -1638,29 +1431,31 @@ const PerformanceTab = () => {
     if (loading) return <div style={{ padding: 24 }}><SkeletonLoader rows={5} height={100} /></div>;
     if (!data) return null;
 
-    const { stats, conns, locks, io, repl } = data;
+    const { stats, conns, locks, io, repl, deep } = data;
+    const { settings: pgSettings, dbStats: deepDbStats } = deep;
 
     const activeSessions = conns.filter(c => c.state === 'active');
     const idleSessions = conns.filter(c => c.state?.includes('idle'));
     const longRunning = conns.filter(c => c.is_slow);
     const totalConns = conns.length;
 
-    const sessionTimeline = Array.from({ length: 24 }, (_, i) => ({
-        t: `${i}`, active: activeSessions.length + Math.round(Math.sin(i / 3) * 4 + 0 * 3),
-        idle: idleSessions.length + Math.round(Math.cos(i / 4) * 2 + 0 * 2),
-    }));
+    // Session timeline — show current snapshot as a single data point (no fake timeline)
+    const sessionTimeline = [
+        { t: 'Now', active: activeSessions.length, idle: idleSessions.length }
+    ];
 
-    const ioSparklines = (io || []).slice(0, 6).map(t => ({ ...t, spark: Array.from({ length: 14 }, () => 0 * 100) }));
+    const ioSparklines = (io || []).slice(0, 6);
 
     const uniqueApps = [...new Set(conns.map(c => c.application_name).filter(Boolean))];
     const uniqueUsers = [...new Set(conns.map(c => c.usename || c.user).filter(Boolean))];
 
+    // Use real data from pg_stat_statements
     const rawSlowQueries = (stats?.slowQueries || []).map((q, i) => ({
         ...q,
         id: q.id || i,
-        cacheHit: (90 + 0 * 9.9).toFixed(1),
-        tempFiles: 0 > 0.7 ? Math.floor(0 * 5) : 0,
-        pid: 8800 + i,
+        cache_hit_pct: q.cache_hit_pct || '—',
+        tempFiles: Number(q.temp_blks_read || 0) + Number(q.temp_blks_written || 0),
+        pid: '—',
     }));
 
     const filteredSlowQueries = rawSlowQueries.filter(q => {
@@ -1673,23 +1468,17 @@ const PerformanceTab = () => {
     const groupedQueries = queryGroupMode ? groupByFingerprint(filteredSlowQueries) : null;
     const n1Patterns = detectN1Patterns(rawSlowQueries);
 
-    const cpuTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, total: 30 + Math.sin(i / 5) * 20 + 0 * 15,
-        core0: 40 + Math.sin(i / 4) * 25, core1: 25 + Math.cos(i / 4) * 20,
-        core2: 35 + Math.sin(i / 6) * 15, core3: 20 + Math.cos(i / 5) * 10,
-    }));
-    const memTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, used: 55 + Math.sin(i / 8) * 10, swap: 5 + 0 * 3, buffers: 20 + Math.sin(i / 10) * 5,
-    }));
-    const diskTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, read: 40 + 0 * 60, write: 20 + 0 * 40, latency: 1 + 0 * 4, queueDepth: 0 * 3,
-    }));
-    const networkTimeline = Array.from({ length: 30 }, (_, i) => ({
-        t: `${i * 2}m`, bytesIn: 500 + 0 * 800, bytesOut: 200 + 0 * 400,
-    }));
-    const bufferData = Array.from({ length: 20 }, (_, i) => ({
-        t: `${i * 3}m`, hitRatio: 97 + 0 * 2.5, dirtyPages: 5 + Math.sin(i / 4) * 3, checkpoints: 0 > 0.85 ? 1 : 0,
-    }));
+    // Deep insights data from the new API
+    const deepSlowQueries = deep?.slowQueries || [];
+
+    // Real database stats
+    const maxConnections = Number(pgSettings?.max_connections) || 100;
+    const cacheHitPct = deepDbStats?.cache_hit_pct || '—';
+    const deadlockCount = Number(deepDbStats?.deadlocks || 0);
+    const dbTempFiles = Number(deepDbStats?.temp_files || 0);
+    const dbTempBytes = Number(deepDbStats?.temp_bytes || 0);
+    const uptime = deepDbStats?.uptime || '—';
+    const tps = deepDbStats?.xact_commit ? Math.round(Number(deepDbStats.xact_commit) / 3600) : '—';
 
     const getFilteredSessionList = () => {
         if (sessionFilter === 'active') return activeSessions;
@@ -1724,8 +1513,8 @@ const PerformanceTab = () => {
         },
         { key: 'calls', label: 'Calls', align: 'right', maxWidth: 65, render: v => <span style={{ fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{Number(v || 0).toLocaleString()}</span> },
         {
-            key: 'cacheHit', label: 'Cache Hit', align: 'right', maxWidth: 75,
-            render: (v, row) => <span style={{ fontWeight: 700, color: Number(row.cacheHit) > 95 ? THEME.success : Number(row.cacheHit) > 85 ? THEME.warning : THEME.danger, fontSize: 11 }}>{row.cacheHit}%</span>
+            key: 'cache_hit_pct', label: 'Cache Hit', align: 'right', maxWidth: 75,
+            render: (v, row) => <span style={{ fontWeight: 700, color: Number(row.cache_hit_pct) > 95 ? THEME.success : Number(row.cache_hit_pct) > 85 ? THEME.warning : THEME.danger, fontSize: 11 }}>{row.cache_hit_pct}%</span>
         },
         {
             key: 'tempFiles', label: 'Tmp', align: 'center', maxWidth: 45,
@@ -1997,7 +1786,7 @@ const PerformanceTab = () => {
                                             {locks.length} blocked queries
                                         </span>
                                     </div>
-                                    <LockWaitDetails locks={locks} conns={conns} />
+                                    <LockWaitDetails lockBlocking={deep?.lockBlocking} />
                                 </div>
                             )}
 
@@ -2063,7 +1852,7 @@ const PerformanceTab = () => {
                                 <span>Live sampling</span>
                             </div>
                         }>
-                            <WaitEventBreakdown conns={conns} />
+                            <WaitEventBreakdown waitEventTypes={deep?.waitEventTypes} waitEvents={deep?.waitEvents} />
                         </GlassCard>
                     )}
 
@@ -2076,7 +1865,7 @@ const PerformanceTab = () => {
                                 </span>
                             </div>
                         }>
-                            <SlowQueryTrend24h slowQueryCount={rawSlowQueries.length} />
+                            <SlowQueryTrend24h slowQueries={deepSlowQueries} />
                         </GlassCard>
                     )}
 
@@ -2089,7 +1878,7 @@ const PerformanceTab = () => {
                                 </span>
                             </div>
                         }>
-                            <JITCompilationPanel slowQueries={rawSlowQueries} />
+                            <JITCompilationPanel slowQueries={deepSlowQueries} jitEnabled={pgSettings?.jit === 'on'} />
                         </GlassCard>
                     )}
 
@@ -2098,11 +1887,11 @@ const PerformanceTab = () => {
                         <GlassCard title="Parallel Query Utilization" rightNode={
                             <div style={{ display: 'flex', gap: 8 }}>
                                 <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono }}>
-                                    max_parallel_workers = {stats?.max_parallel_workers || 8}
+                                    max_parallel_workers = {pgSettings?.max_parallel_workers || '—'}
                                 </span>
                             </div>
                         }>
-                            <ParallelQueryPanel stats={stats} />
+                            <ParallelQueryPanel stats={stats} settings={pgSettings} />
                         </GlassCard>
                     )}
 
@@ -2116,7 +1905,7 @@ const PerformanceTab = () => {
                                 </span>
                             </div>
                         }>
-                            <LockBlockingTree locks={locks} conns={conns} />
+                            <LockBlockingTree lockBlocking={deep?.lockBlocking} />
                         </GlassCard>
                     )}
 
@@ -2125,7 +1914,7 @@ const PerformanceTab = () => {
                         <GlassCard title="Deadlock History" rightNode={
                             <span style={{ fontSize: 10, color: THEME.textDim }}>Last 7 days · Click to expand</span>
                         }>
-                            <DeadlockHistory />
+                            <DeadlockHistory dbStats={deepDbStats} />
                         </GlassCard>
                     )}
 
@@ -2134,16 +1923,16 @@ const PerformanceTab = () => {
                         <GlassCard title="Generic vs Custom Plan Ratio" rightNode={
                             <span style={{ fontSize: 10, color: THEME.textDim }}>Prepared statement health</span>
                         }>
-                            <GenericCustomPlanPanel slowQueries={rawSlowQueries} />
+                            <GenericCustomPlanPanel slowQueries={deepSlowQueries} settings={pgSettings} />
                         </GlassCard>
                     )}
 
                     {/* ── TEMP FILES ── */}
                     {insightsSubView === 'temp_files' && (
                         <GlassCard title="Temporary File Usage — Queries Spilling to Disk" rightNode={
-                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>work_mem = 4MB</span>
+                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>work_mem = {pgSettings?.work_mem || '—'}</span>
                         }>
-                            <TempFileTracker slowQueries={rawSlowQueries} />
+                            <TempFileTracker slowQueries={deepSlowQueries} dbStats={deepDbStats} settings={pgSettings} />
                         </GlassCard>
                     )}
                 </div>
@@ -2170,9 +1959,9 @@ const PerformanceTab = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
                                 {[
-                                    { title: 'CPU Usage', label: 'CPU', value: stats?.cpu_percent || 45, color: THEME.primary, chips: [{ label: 'Cores', value: stats?.cpu_cores || 8, icon: Cpu }, { label: 'Load Avg', value: stats?.load_avg || '2.4', icon: Gauge }] },
-                                    { title: 'Memory', label: 'RAM', value: stats?.memory_percent || 62, color: THEME.success, chips: [{ label: 'Used', value: stats?.memory_used || '12.4 GB', icon: HardDrive }, { label: 'Buffers', value: stats?.shared_buffers || '4 GB', icon: Database }] },
-                                    { title: 'Connections', label: 'Pool', value: Math.round((totalConns / (stats?.max_connections || 100)) * 100), color: totalConns > 80 ? THEME.warning : THEME.secondary || THEME.info, chips: [{ label: 'Active', value: totalConns, color: THEME.primary, icon: Network }, { label: 'Max', value: stats?.max_connections || 100, icon: Server }] },
+                                    { title: 'Connections', label: 'Pool', value: Math.round((totalConns / maxConnections) * 100), color: totalConns > maxConnections * 0.8 ? THEME.warning : THEME.primary, chips: [{ label: 'Active', value: totalConns, color: THEME.primary, icon: Network }, { label: 'Max', value: maxConnections, icon: Server }] },
+                                    { title: 'Cache Hit', label: 'Hit%', value: Number(cacheHitPct) || 0, color: THEME.success, chips: [{ label: 'Reads', value: Number(deepDbStats?.blks_read || 0).toLocaleString(), icon: HardDrive }, { label: 'Hits', value: Number(deepDbStats?.blks_hit || 0).toLocaleString(), icon: Database }] },
+                                    { title: 'Shared Buffers', label: 'Buf', value: 100, color: THEME.primary, chips: [{ label: 'Size', value: pgSettings?.shared_buffers || '—', icon: Database }, { label: 'work_mem', value: pgSettings?.work_mem || '—', icon: Layers }] },
                                 ].map((card, idx) => (
                                     <GlassCard key={idx} title={card.title}>
                                         <div style={{ display: 'flex', flexDirection: 'column', height: 220, gap: 0 }}>
@@ -2209,7 +1998,7 @@ const PerformanceTab = () => {
                                                 {ioSparklines.map((t, i) => {
                                                     const reads = Number(t.heap_blks_read || t.seq_scan || 0);
                                                     const writes = Number(t.heap_blks_hit || t.idx_scan || 0);
-                                                    const hitRatio = reads + writes > 0 ? ((writes / (reads + writes)) * 100).toFixed(0) : 99;
+                                                    const hitRatio = reads + writes > 0 ? ((writes / (reads + writes)) * 100).toFixed(0) : 0;
                                                     return (
                                                         <tr key={i} className="perf-row-hover">
                                                             <td style={{ padding: '10px 14px', fontSize: 12, fontWeight: 600, color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}20` }}>
@@ -2223,7 +2012,7 @@ const PerformanceTab = () => {
                                                             <td style={{ padding: '10px 14px', fontSize: 12, fontWeight: 700, color: Number(hitRatio) > 95 ? THEME.success : THEME.warning, textAlign: 'right', borderBottom: `1px solid ${THEME.grid}20` }}>{hitRatio}%</td>
                                                             <td style={{ padding: '10px 14px', borderBottom: `1px solid ${THEME.grid}20` }}>
                                                                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                                    <MiniSparkline data={t.spark} color={THEME.primary} width={60} height={18} />
+                                                                    <span style={{ fontSize: 10, color: THEME.textDim }}>—</span>
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -2269,11 +2058,11 @@ const PerformanceTab = () => {
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
                                 {[
-                                    { label: 'Cache Hit', value: `${stats?.cache_hit_ratio || 99.2}%`, color: THEME.success, icon: CheckCircle },
-                                    { label: 'Tx/sec', value: stats?.tps || '1.2k', color: THEME.primary, icon: Zap },
-                                    { label: 'Deadlocks', value: stats?.deadlocks || 0, color: stats?.deadlocks > 0 ? THEME.danger : THEME.textDim, icon: ShieldAlert },
-                                    { label: 'Temp Files', value: stats?.temp_files || '12 MB', color: THEME.warning, icon: HardDrive },
-                                    { label: 'Uptime', value: stats?.uptime || '14d 6h', color: THEME.textMain, icon: Radio },
+                                    { label: 'Cache Hit', value: `${cacheHitPct}%`, color: THEME.success, icon: CheckCircle },
+                                    { label: 'Commits', value: Number(deepDbStats?.xact_commit || 0).toLocaleString(), color: THEME.primary, icon: Zap },
+                                    { label: 'Deadlocks', value: deadlockCount, color: deadlockCount > 0 ? THEME.danger : THEME.textDim, icon: ShieldAlert },
+                                    { label: 'Temp Files', value: dbTempFiles > 0 ? dbTempFiles.toLocaleString() : '0', color: dbTempFiles > 0 ? THEME.warning : THEME.textDim, icon: HardDrive },
+                                    { label: 'Uptime', value: uptime, color: THEME.textMain, icon: Radio },
                                 ].map((s, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', height: 58, borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
                                         <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
@@ -2292,124 +2081,85 @@ const PerformanceTab = () => {
                     {healthSubView === 'cpu' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-                                <HealthMetricCard title="Total CPU" value={`${stats?.cpu_percent || 45}`} unit="%" icon={Cpu} color={THEME.primary} trend={3.2} detail={`${stats?.cpu_cores || 8} cores`} />
-                                <HealthMetricCard title="Load Avg 1m" value={stats?.load_avg || '2.4'} unit="" icon={Gauge} color={THEME.success} trend={-1.1} detail="5m: 2.1 · 15m: 1.8" />
-                                <HealthMetricCard title="User CPU" value="31.2" unit="%" icon={User} color={THEME.primary} trend={2.0} detail="Userland processes" />
-                                <HealthMetricCard title="System CPU" value="13.8" unit="%" icon={Server} color={THEME.warning} trend={1.2} detail="Kernel + interrupts" />
+                                <HealthMetricCard title="Active Sessions" value={`${activeSessions.length}`} unit="" icon={Cpu} color={THEME.primary} detail={`of ${totalConns} total connections`} />
+                                <HealthMetricCard title="Max Workers" value={pgSettings?.max_worker_processes || '—'} unit="" icon={Gauge} color={THEME.success} detail="max_worker_processes" />
+                                <HealthMetricCard title="Parallel Workers" value={pgSettings?.max_parallel_workers || '—'} unit="" icon={User} color={THEME.primary} detail="max_parallel_workers" />
+                                <HealthMetricCard title="IO Concurrency" value={pgSettings?.effective_io_concurrency || '—'} unit="" icon={Server} color={THEME.warning} detail="effective_io_concurrency" />
                             </div>
-                            <GlassCard title="CPU Usage Over Time — Per Core">
-                                <ResponsiveContainer width="100%" height={240}>
-                                    <LineChart data={cpuTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
-                                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[0, 100]} unit="%" />
-                                        <Tooltip content={<ChartTooltip />} />
-                                        <Line type="monotone" dataKey="total" stroke={THEME.primary} strokeWidth={2.5} dot={false} name="Total" />
-                                        {[['core0', THEME.success], ['core1', THEME.warning], ['core2', THEME.danger + '90'], ['core3', THEME.primary + '60']].map(([key, color]) => (
-                                            <Line key={key} type="monotone" dataKey={key} stroke={color} strokeWidth={1} dot={false} strokeDasharray="4 4" name={key} />
-                                        ))}
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </GlassCard>
+                            <div style={{ padding: 20, borderRadius: 10, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                                <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
+                                    <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
+                                    CPU/OS-level metrics require a system monitoring agent (e.g., node_exporter, pg_stat_monitor). PostgreSQL exposes database-level activity through pg_stat_activity and pg_stat_statements.
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {healthSubView === 'memory' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-                                <HealthMetricCard title="RAM Used" value={stats?.memory_used || '12.4'} unit="GB" icon={MemoryStick} color={THEME.success} trend={1.5} detail={`of ${stats?.total_memory || '32'} GB total`} />
-                                <HealthMetricCard title="Swap Used" value="0.8" unit="GB" icon={RefreshCcw} color={THEME.warning} trend={0.2} detail="Swap pressure: low" />
-                                <HealthMetricCard title="Shared Buffers" value={stats?.shared_buffers || '4'} unit="GB" icon={Database} color={THEME.primary} trend={0} detail="PostgreSQL buffer pool" />
-                                <HealthMetricCard title="Work Mem" value="64" unit="MB" icon={Layers} color={THEME.textMuted} trend={0} detail="Per-sort allocation" />
+                                <HealthMetricCard title="Shared Buffers" value={pgSettings?.shared_buffers || '—'} unit="" icon={Database} color={THEME.primary} detail="PostgreSQL buffer pool" />
+                                <HealthMetricCard title="Work Mem" value={pgSettings?.work_mem || '—'} unit="" icon={Layers} color={THEME.success} detail="Per-sort/hash allocation" />
+                                <HealthMetricCard title="Eff. Cache Size" value={pgSettings?.effective_cache_size || '—'} unit="" icon={MemoryStick} color={THEME.warning} detail="Planner estimate of OS cache" />
+                                <HealthMetricCard title="Seq Page Cost" value={pgSettings?.seq_page_cost || '—'} unit="" icon={RefreshCcw} color={THEME.textMuted} detail={`Random: ${pgSettings?.random_page_cost || '—'}`} />
                             </div>
-                            <GlassCard title="Memory Usage Trends">
-                                <ResponsiveContainer width="100%" height={220}>
-                                    <AreaChart data={memTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
-                                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="%" />
-                                        <Tooltip content={<ChartTooltip />} />
-                                        <Area type="monotone" dataKey="buffers" stroke={THEME.primary} fill="none" strokeWidth={1.5} name="Buffers %" />
-                                        <Area type="monotone" dataKey="swap" stroke={THEME.warning} fill="none" strokeWidth={1.5} name="Swap %" />
-                                        <Area type="monotone" dataKey="used" stroke={THEME.success} fill="none" strokeWidth={2} name="RAM %" />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </GlassCard>
+                            <div style={{ padding: 20, borderRadius: 10, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                                <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
+                                    <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
+                                    OS-level memory metrics require a system monitoring agent. The values above are PostgreSQL configuration settings from <code style={{ color: THEME.primary }}>pg_settings</code>.
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {healthSubView === 'disk' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-                                <HealthMetricCard title="Read Throughput" value="148" unit="MB/s" icon={HardDrive} color={THEME.primary} trend={5.2} detail="Peak: 420 MB/s" />
-                                <HealthMetricCard title="Write Throughput" value="62" unit="MB/s" icon={HardDrive} color={THEME.success} trend={-2.1} detail="Peak: 180 MB/s" />
-                                <HealthMetricCard title="Avg Latency" value="1.8" unit="ms" icon={Timer} color={THEME.warning} trend={0.3} detail="P95: 4.2ms · P99: 8ms" />
-                                <HealthMetricCard title="Queue Depth" value="1.4" unit="" icon={Layers} color={THEME.textMuted} trend={0.1} detail="Avg I/O queue" />
+                                <HealthMetricCard title="Blocks Read" value={Number(deepDbStats?.blks_read || 0).toLocaleString()} unit="" icon={HardDrive} color={THEME.primary} detail="From disk (pg_stat_database)" />
+                                <HealthMetricCard title="Blocks Hit" value={Number(deepDbStats?.blks_hit || 0).toLocaleString()} unit="" icon={HardDrive} color={THEME.success} detail="From buffer cache" />
+                                <HealthMetricCard title="Temp Files" value={dbTempFiles.toLocaleString()} unit="" icon={Timer} color={dbTempFiles > 0 ? THEME.warning : THEME.textDim} detail="Queries spilling to disk" />
+                                <HealthMetricCard title="Temp Bytes" value={dbTempBytes > 1048576 ? `${(dbTempBytes / 1048576).toFixed(1)}` : `${Math.round(dbTempBytes / 1024)}`} unit={dbTempBytes > 1048576 ? 'MB' : 'KB'} icon={Layers} color={dbTempBytes > 0 ? THEME.warning : THEME.textDim} detail="Total temp file size" />
                             </div>
-                            <GlassCard title="Disk I/O & Latency">
-                                <ResponsiveContainer width="100%" height={220}>
-                                    <ComposedChart data={diskTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
-                                        <YAxis yAxisId="throughput" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
-                                        <YAxis yAxisId="latency" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="ms" />
-                                        <Tooltip content={<ChartTooltip />} />
-                                        <Bar yAxisId="throughput" dataKey="read" fill={THEME.primary} opacity={0.6} radius={[2, 2, 0, 0]} name="Read MB/s" />
-                                        <Bar yAxisId="throughput" dataKey="write" fill={THEME.success} opacity={0.6} radius={[2, 2, 0, 0]} name="Write MB/s" />
-                                        <Line yAxisId="latency" type="monotone" dataKey="latency" stroke={THEME.warning} strokeWidth={2} dot={false} name="Latency ms" />
-                                    </ComposedChart>
-                                </ResponsiveContainer>
-                            </GlassCard>
+                            <div style={{ padding: 20, borderRadius: 10, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                                <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
+                                    <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
+                                    Disk I/O throughput and latency metrics require OS-level monitoring. The counters above are cumulative values from <code style={{ color: THEME.primary }}>pg_stat_database</code> since the last stats reset.
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {healthSubView === 'network' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-                                <HealthMetricCard title="Bytes In/s" value="820" unit="KB/s" icon={Wifi} color={THEME.primary} trend={12.0} detail="Client → Server" />
-                                <HealthMetricCard title="Bytes Out/s" value="340" unit="KB/s" icon={Wifi} color={THEME.success} trend={-4.2} detail="Server → Client" />
-                                <HealthMetricCard title="Connections/s" value="48" unit="/s" icon={Network} color={THEME.warning} trend={3.1} detail="New conn rate" />
-                                <HealthMetricCard title="Errors" value="0" unit="" icon={AlertCircle} color={THEME.textDim} trend={0} detail="Packet errors" />
+                                <HealthMetricCard title="Total Connections" value={`${totalConns}`} unit="" icon={Wifi} color={THEME.primary} detail="Active pg_stat_activity" />
+                                <HealthMetricCard title="Tuples Fetched" value={Number(deepDbStats?.tup_fetched || 0).toLocaleString()} unit="" icon={Wifi} color={THEME.success} detail="Since stats reset" />
+                                <HealthMetricCard title="Tuples Inserted" value={Number(deepDbStats?.tup_inserted || 0).toLocaleString()} unit="" icon={Network} color={THEME.warning} detail="Since stats reset" />
+                                <HealthMetricCard title="Rollbacks" value={Number(deepDbStats?.xact_rollback || 0).toLocaleString()} unit="" icon={AlertCircle} color={Number(deepDbStats?.xact_rollback || 0) > 0 ? THEME.danger : THEME.textDim} detail="Transaction rollbacks" />
                             </div>
-                            <GlassCard title="Network Throughput (KB/s)">
-                                <ResponsiveContainer width="100%" height={220}>
-                                    <AreaChart data={networkTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
-                                        <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="KB" />
-                                        <Tooltip content={<ChartTooltip />} />
-                                        <Area type="monotone" dataKey="bytesIn" stroke={THEME.primary} fill="none" strokeWidth={2} name="In KB/s" />
-                                        <Area type="monotone" dataKey="bytesOut" stroke={THEME.success} fill="none" strokeWidth={2} name="Out KB/s" />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </GlassCard>
+                            <div style={{ padding: 20, borderRadius: 10, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                                <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
+                                    <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
+                                    Network throughput metrics require OS-level monitoring. The values above are cumulative tuple/transaction counters from <code style={{ color: THEME.primary }}>pg_stat_database</code>.
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {healthSubView === 'buffer' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-                                <HealthMetricCard title="Cache Hit Ratio" value={`${stats?.cache_hit_ratio || 99.2}`} unit="%" icon={Database} color={THEME.success} trend={0.1} detail="Block-level hit rate" />
-                                <HealthMetricCard title="Dirty Pages" value="7.4" unit="%" icon={HardDrive} color={THEME.warning} trend={-0.5} detail="Awaiting flush" />
-                                <HealthMetricCard title="Bgwriter Checkpoints" value="3" unit="/hr" icon={RefreshCcw} color={THEME.primary} trend={0} detail="Scheduled checkpoints" />
-                                <HealthMetricCard title="Evictions/s" value="142" unit="/s" icon={TrendingDown} color={THEME.textMuted} trend={-8.3} detail="Buffer eviction rate" />
+                                <HealthMetricCard title="Cache Hit Ratio" value={`${cacheHitPct}`} unit="%" icon={Database} color={THEME.success} detail="Block-level hit rate" />
+                                <HealthMetricCard title="Buffers (Checkpoint)" value={Number(deep?.bgwriter?.buffers_checkpoint || 0).toLocaleString()} unit="" icon={HardDrive} color={THEME.warning} detail="Written during checkpoints" />
+                                <HealthMetricCard title="Buffers (Backend)" value={Number(deep?.bgwriter?.buffers_backend || 0).toLocaleString()} unit="" icon={RefreshCcw} color={THEME.primary} detail="Written by backends directly" />
+                                <HealthMetricCard title="Buffers (Clean)" value={Number(deep?.bgwriter?.buffers_clean || 0).toLocaleString()} unit="" icon={TrendingDown} color={THEME.textMuted} detail="Written by bgwriter" />
                             </div>
-                            <GlassCard title="Buffer Cache Efficiency Over Time">
-                                <ResponsiveContainer width="100%" height={220}>
-                                    <ComposedChart data={bufferData} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
-                                        <CartesianGrid stroke={`${THEME.grid}30`} strokeDasharray="3 3" vertical={false} />
-                                        <XAxis dataKey="t" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={3} />
-                                        <YAxis yAxisId="ratio" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} domain={[94, 100]} unit="%" />
-                                        <YAxis yAxisId="dirty" orientation="right" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} unit="%" />
-                                        <Tooltip content={<ChartTooltip />} />
-                                        <Area yAxisId="ratio" type="monotone" dataKey="hitRatio" stroke={THEME.success} fill="none" strokeWidth={2} name="Hit Ratio %" />
-                                        <Line yAxisId="dirty" type="monotone" dataKey="dirtyPages" stroke={THEME.warning} strokeWidth={1.5} dot={false} name="Dirty %" />
-                                        {bufferData.map((d, i) => d.checkpoints > 0 && (
-                                            <ReferenceLine key={i} yAxisId="ratio" x={d.t} stroke={`${THEME.primary}60`} strokeDasharray="3 3" label={{ value: '⟳', position: 'top', fontSize: 10, fill: THEME.primary }} />
-                                        ))}
-                                    </ComposedChart>
-                                </ResponsiveContainer>
-                            </GlassCard>
+                            <div style={{ padding: 20, borderRadius: 10, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                                <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
+                                    <span style={{ color: THEME.primary, fontWeight: 700 }}>Buffer stats</span> are cumulative counters from <code style={{ color: THEME.primary }}>pg_stat_bgwriter</code>.
+                                    A high "Buffers (Backend)" count relative to "Buffers (Checkpoint)" may indicate the bgwriter is not keeping up — consider tuning <code style={{ color: THEME.primary }}>bgwriter_lru_maxpages</code> and <code style={{ color: THEME.primary }}>bgwriter_delay</code>.
+                                </div>
+                            </div>
 
                             <GlassCard title="Buffer Efficiency per Table" noPad>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -2422,9 +2172,9 @@ const PerformanceTab = () => {
                                     </thead>
                                     <tbody>
                                     {ioSparklines.map((t, i) => {
-                                        const reads = Number(t.heap_blks_read || 100);
-                                        const hits = Number(t.heap_blks_hit || t.seq_scan || 900);
-                                        const ratio = (hits / (reads + hits) * 100);
+                                        const reads = Number(t.heap_blks_read || 0);
+                                        const hits = Number(t.heap_blks_hit || 0);
+                                        const ratio = (reads + hits) > 0 ? (hits / (reads + hits) * 100) : 0;
                                         return (
                                             <tr key={i} className="perf-row-hover">
                                                 <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 600, color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}20` }}>{t.table_name || t.relname || `table_${i}`}</td>
