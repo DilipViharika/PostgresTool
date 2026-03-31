@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
 import {
     Activity, AlertTriangle, Clock, Layers, Plus, RefreshCw,
-    Copy, CheckCircle, ArrowLeft, Loader2, AlertCircle
+    Copy, CheckCircle, ArrowLeft, Loader2, AlertCircle, Trash2
 } from 'lucide-react';
 
 /* ── Safe fetch helpers (avoid global auth:logout on 401) ─────────────── */
@@ -38,6 +38,22 @@ async function sdkPost(path, body) {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || d.detail || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+async function sdkDelete(path) {
+    const token = getToken();
+    const res = await fetch(path, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
     });
     if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -179,6 +195,8 @@ export default function SDKDashboardTab() {
     const [refreshing, setRefreshing] = useState(false);
     const [selectedAppId, setSelectedAppId] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
     const bg = THEME.bg || '#0a0d1e';
     const surface = THEME.surface || '#131836';
@@ -199,6 +217,20 @@ export default function SDKDashboardTab() {
         } catch (err) {
             console.error('[SDK] fetch error:', err);
             setError(err.message || 'Failed to load apps');
+        }
+    }, []);
+
+    const handleDelete = useCallback(async (appId) => {
+        setDeletingId(appId);
+        try {
+            await sdkDelete(`/api/sdk/apps/${appId}`);
+            setApps(prev => prev.filter(a => a.id !== appId));
+            setConfirmDeleteId(null);
+        } catch (err) {
+            console.error('[SDK] delete error:', err);
+            setError(err.message || 'Failed to delete app');
+        } finally {
+            setDeletingId(null);
         }
     }, []);
 
@@ -278,17 +310,40 @@ export default function SDKDashboardTab() {
             {apps.length > 0 ? (
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(340px, 1fr))', gap:20 }}>
                     {apps.map(app => (
-                        <div key={app.id} style={{ background:surface, border:`1px solid ${border}`, borderRadius:12, padding:20, cursor:'pointer', transition:'all 0.2s' }}
-                            onClick={() => setSelectedAppId(app.id)}>
+                        <div key={app.id} style={{ background:surface, border:`1px solid ${confirmDeleteId===app.id?red:border}`, borderRadius:12, padding:20, transition:'all 0.2s' }}>
                             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12, paddingBottom:12, borderBottom:`1px solid ${border}40` }}>
                                 <div>
                                     <h4 style={{ margin:'0 0 4px', color:txt, fontSize:14, fontWeight:700 }}>{app.name}</h4>
                                     <p style={{ margin:0, color:sub, fontSize:12 }}>{typeLabel(app.app_type || app.appType)}</p>
                                 </div>
-                                <span style={{ padding:'4px 10px', borderRadius:4, fontSize:11, fontWeight:700, background:`${envColor(app.environment)}20`, color:envColor(app.environment) }}>
-                                    {app.environment}
-                                </span>
+                                <div style={{ display:'flex', alignItems:'flex-start', gap:8 }}>
+                                    <span style={{ padding:'4px 10px', borderRadius:4, fontSize:11, fontWeight:700, background:`${envColor(app.environment)}20`, color:envColor(app.environment) }}>
+                                        {app.environment}
+                                    </span>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(confirmDeleteId === app.id ? null : app.id); }}
+                                        title="Delete app"
+                                        style={{ background:'transparent', border:'none', color:confirmDeleteId===app.id?red:sub, cursor:'pointer', padding:4, borderRadius:4, transition:'color 0.2s' }}>
+                                        <Trash2 size={14}/>
+                                    </button>
+                                </div>
                             </div>
+
+                            {/* Delete confirmation */}
+                            {confirmDeleteId === app.id && (
+                                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', marginBottom:12, borderRadius:8, background:`${red}10`, border:`1px solid ${red}30` }}>
+                                    <span style={{ fontSize:12, color:red, fontWeight:600 }}>Delete this app?</span>
+                                    <div style={{ display:'flex', gap:8 }}>
+                                        <button onClick={() => setConfirmDeleteId(null)}
+                                            style={{ padding:'4px 12px', borderRadius:6, border:`1px solid ${border}`, background:'transparent', color:sub, fontSize:12, fontWeight:600, cursor:'pointer' }}>Cancel</button>
+                                        <button onClick={() => handleDelete(app.id)} disabled={deletingId === app.id}
+                                            style={{ padding:'4px 12px', borderRadius:6, border:'none', background:red, color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', opacity:deletingId===app.id?0.6:1 }}>
+                                            {deletingId === app.id ? 'Deleting...' : 'Delete'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, fontSize:12 }}>
                                 <div><div style={{ color:sub, marginBottom:4 }}>Events/24h</div><div style={{ fontWeight:700, color:txt }}>{app.totalEvents24h||0}</div></div>
                                 <div><div style={{ color:sub, marginBottom:4 }}>Errors</div><div style={{ fontWeight:700, color:(app.errorCount||0)>0?red:green }}>{app.errorCount||0}</div></div>
