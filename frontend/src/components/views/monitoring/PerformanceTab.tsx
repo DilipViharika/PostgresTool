@@ -463,15 +463,22 @@ const SlowQueryTrend24h = ({ slowQueries }) => {
         }));
     }, [slowQueries]);
 
+    if (!data.length) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 160, color: THEME.textDim, fontSize: 12 }}>
+            No slow queries detected
+        </div>
+    );
+
     const maxSlow = Math.max(...data.map(d => d.slow), 1);
+    const peakQuery = data.reduce((best, d) => d.slow > best.slow ? d : best, data[0]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                 {[
-                    { label: 'Peak Hour', value: data.reduce((best, d) => d.slow > best.slow ? d : best, data[0]).label, color: THEME.danger, icon: TrendingUp },
-                    { label: 'Avg / Hour', value: Math.round(data.reduce((s, d) => s + d.slow, 0) / 24), color: THEME.warning, icon: Sigma },
-                    { label: 'Total (24h)', value: data.reduce((s, d) => s + d.slow, 0).toLocaleString(), color: THEME.primary, icon: BarChart2 },
+                    { label: 'Slowest', value: peakQuery?.label || '—', color: THEME.danger, icon: TrendingUp },
+                    { label: 'Avg Time (ms)', value: Math.round(data.reduce((s, d) => s + d.slow, 0) / data.length), color: THEME.warning, icon: Sigma },
+                    { label: 'Total (ms)', value: data.reduce((s, d) => s + d.slow, 0).toLocaleString(), color: THEME.primary, icon: BarChart2 },
                     { label: 'Critical', value: data.reduce((s, d) => s + d.critical, 0), color: THEME.danger, icon: AlertCircle },
                 ].map((s, i) => (
                     <StatChip key={i} label={s.label} value={s.value} color={s.color} icon={s.icon} small />
