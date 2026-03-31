@@ -559,17 +559,13 @@ const fmtRelTime = (isoStr) => {
     if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
     return `${Math.round(diff / 86400)}d ago`;
 };
-const genSparkline = (n = 10, base = 40, variance = 30) =>
-    Array.from({ length: n }, () => 0);
+/* sparkline removed — no historical data available from single-snapshot queries */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: ENVIRONMENT SWITCHER
    ═══════════════════════════════════════════════════════════════════════════ */
-const ENVIRONMENTS = [
-    { id: 'prod', label: 'Production', color: '#8b5cf6', icon: Globe, host: 'primary', pg: '16.2' },
-    { id: 'staging', label: 'Staging', color: '#06b6d4', icon: FlaskConical, host: 'staging', pg: '16.2' },
-    { id: 'dev', label: 'Development', color: '#22c55e', icon: Terminal, host: 'localhost', pg: '16.2' },
-];
+/* Environments are derived from the active connection — no hardcoded list */
+const ENVIRONMENTS = [];
 
 const EnvSwitcher = ({ currentEnv, onChange }) => {
     const [open, setOpen] = useState(false);
@@ -709,7 +705,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                     ))}
                     <div style={{ padding: '6px 12px 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Boxes size={10} color={THEME.textDim} />
-                        <span style={{ fontSize: 9.5, color: THEME.textDim }}>3 environments configured</span>
+                        <span style={{ fontSize: 9.5, color: THEME.textDim }}>{ENVIRONMENTS.length > 0 ? `${ENVIRONMENTS.length} environments configured` : 'No environments'}</span>
                     </div>
                 </div>
             )}
@@ -720,14 +716,14 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: NOTIFICATION BELL
    ═══════════════════════════════════════════════════════════════════════════ */
-const MOCK_ALERTS = [];
+/* Alerts are fetched from /api/overview/alerts — no mock data */
 
 const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#8b5cf6' };
 const SEVERITY_ICON = { critical: AlertCircle, warning: AlertTriangle, info: Info };
 
 const NotificationBell = () => {
     const [open, setOpen] = useState(false);
-    const [alerts, setAlerts] = useState(MOCK_ALERTS);
+    const [alerts, setAlerts] = useState([]);
     const [bellAnim, setBellAnim] = useState(false);
     const ref = useRef(null);
     const unread = alerts.filter((a) => !a.read).length;
@@ -2005,7 +2001,7 @@ const OverviewTab = () => {
     const [timeseriesData, setTimeseriesData] = useState(cachedOv?.timeseriesData ?? null);
     const [alertsData, setAlertsData] = useState(cachedOv?.alertsData ?? []);
 
-    /* ── Synthetic datasets ── */
+    /* ── Live datasets (no synthetic generation) ── */
     const velocityData = useMemo(() => {
         if (timeseriesData?.velocity && Array.isArray(timeseriesData.velocity) && timeseriesData.velocity.length > 0) {
             return timeseriesData.velocity.map(v => ({
@@ -2014,29 +2010,20 @@ const OverviewTab = () => {
                 tps: Number(v.tps || 0),
             }));
         }
-        // Fallback: generate from current stats
-        const pts = [];
-        const now = Date.now();
-        const baseQps = Number(data?.traffic?.tup_fetched || 0) > 0 ? Math.round(Number(data?.traffic?.tup_fetched || 0) / 3600) : 0;
-        const baseTps = Number(data?.traffic?.xact_commit || 0) > 0 ? Math.round(Number(data?.traffic?.xact_commit || 0) / 3600) : 0;
-        for (let i = 29; i >= 0; i--) {
-            const t = new Date(now - i * 60000);
-            pts.push({
-                time: `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`,
-                qps: baseQps > 0 ? Math.round(baseQps + (Math.random() - 0.5) * baseQps * 0.2) : 0,
-                tps: baseTps > 0 ? Math.round(baseTps + (Math.random() - 0.5) * baseTps * 0.2) : 0,
-            });
-        }
-        return pts;
-    }, [timeseriesData, data, tick]);
+        // Single current-snapshot point derived from cumulative counters
+        const baseQps = Number(data?.traffic?.tup_fetched || 0) > 0 ? Math.round(Number(data?.traffic?.tup_fetched || 0) / Math.max(Number(data?.stats?.uptimeSeconds || 3600), 1)) : 0;
+        const baseTps = Number(data?.traffic?.xact_commit || 0) > 0 ? Math.round(Number(data?.traffic?.xact_commit || 0) / Math.max(Number(data?.stats?.uptimeSeconds || 3600), 1)) : 0;
+        const now = new Date();
+        return [{ time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, qps: baseQps, tps: baseTps }];
+    }, [timeseriesData, data]);
 
     const opsPerSec = useMemo(() => {
         if (timeseriesData?.opsPerSec && Array.isArray(timeseriesData.opsPerSec) && timeseriesData.opsPerSec.length > 0) {
             return timeseriesData.opsPerSec;
         }
-        const labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'];
-        return labels.map((t) => ({ t, reads: 0, writes: 0, commits: 0 }));
-    }, [timeseriesData]);
+        // Single-point snapshot from cumulative traffic counters
+        return [{ t: 'Now', reads: Number(data?.traffic?.tup_fetched || 0), writes: Number(data?.traffic?.tup_inserted || 0) + Number(data?.traffic?.tup_updated || 0) + Number(data?.traffic?.tup_deleted || 0), commits: 0 }];
+    }, [timeseriesData, data]);
 
     const txnLatencyData = useMemo(() => {
         if (timeseriesData?.latency && Array.isArray(timeseriesData.latency) && timeseriesData.latency.length > 0) {
@@ -2047,13 +2034,11 @@ const OverviewTab = () => {
                 p99: Number(v.p99 || 0),
             }));
         }
-        return Array.from({ length: 20 }, (_, i) => ({ i, p50: 0, p95: 0, p99: 0 }));
-    }, [timeseriesData, tick]);
+        /* No latency percentile data available without pg_stat_statements histograms */
+        return [];
+    }, [timeseriesData]);
 
-    const sessionSparks = useMemo(() => genSparkline(10), [tick]);
-    const cacheSparks = useMemo(() => genSparkline(10, 98, 2), [tick]);
-    const diskSparks = useMemo(() => genSparkline(10, 40, 15), [tick]);
-    const uptimeSparks = useMemo(() => genSparkline(10, 80, 10), [tick]);
+    /* No sparkline history — single-snapshot metrics only */
 
     const load = useCallback(async (isManual = false) => {
         if (!activeConnection) { setLoading(false); return; }
@@ -2271,7 +2256,7 @@ const OverviewTab = () => {
         { name: 'Writes', value: writePct > 0 ? writePct : 1, color: THEME.secondary },
     ];
 
-    /* ── Hero metric cards (now 6 across including backup + vacuum summary) ── */
+    /* ── Hero metric cards (6 across — all real data, no sparklines or fake trends) ── */
     const metricCards = [
         {
             label: 'Active Sessions',
@@ -2279,19 +2264,17 @@ const OverviewTab = () => {
             sub: `of ${maxConns} max`,
             color: connColor,
             icon: Activity,
-            spark: sessionSparks,
-            trend: connPct < 70 ? '+2.3%' : '+8.1%',
-            trendUp: connPct < 70,
+            detail: `${connPct.toFixed(0)}% used`,
+            healthy: connPct < 70,
         },
         {
             label: 'Cache Hit Ratio',
             value: `${cacheHit}%`,
-            sub: cacheHit >= 99 ? 'Excellent' : 'Below target',
+            sub: cacheHit >= 99 ? 'Excellent' : cacheHit >= 95 ? 'Good' : 'Below target',
             color: cacheColor,
             icon: Zap,
-            spark: cacheSparks,
-            trend: cacheHit >= 99 ? '+0.1%' : '-0.4%',
-            trendUp: cacheHit >= 99,
+            detail: cacheHit >= 95 ? 'On target' : 'Needs tuning',
+            healthy: cacheHit >= 95,
         },
         {
             label: 'Database Size',
@@ -2299,39 +2282,35 @@ const OverviewTab = () => {
             sub: 'GB on disk',
             color: THEME.warning,
             icon: Database,
-            spark: diskSparks,
-            trend: '+1.2%',
-            trendUp: false,
+            detail: '',
+            healthy: true,
         },
         {
             label: 'Uptime',
             value: uptimeHrs,
             sub: 'hours',
-            color: THEME.info,
+            color: THEME.info || THEME.primary,
             icon: Clock,
-            spark: uptimeSparks,
-            trend: '99.97%',
-            trendUp: true,
+            detail: '',
+            healthy: true,
         },
         {
             label: 'Long Txns',
             value: String(longTxns.length),
             sub: '> 1 min',
-            color: THEME.warning,
+            color: longTxns.length > 0 ? THEME.warning : THEME.success,
             icon: Hourglass,
-            spark: genSparkline(10, 2, 4),
-            trend: longTxns.length > 0 ? `${longTxns.length}` : '0',
-            trendUp: false,
+            detail: longTxns.length > 0 ? `${longTxns.length} active` : 'None',
+            healthy: longTxns.length === 0,
         },
         {
             label: 'Urgent Vacuum',
             value: String(vacuumData?.urgentCount || vacuumData?.urgent || 0),
             sub: 'tables',
-            color: THEME.danger,
+            color: (vacuumData?.urgentCount || 0) > 0 ? THEME.danger : THEME.success,
             icon: Leaf,
-            spark: genSparkline(10, 4, 6),
-            trend: String(vacuumData?.warnCount || vacuumData?.warn || 0) + ' warn',
-            trendUp: false,
+            detail: `${vacuumData?.warnCount || vacuumData?.warn || 0} warn`,
+            healthy: (vacuumData?.urgentCount || 0) === 0,
         },
     ];
 
@@ -2410,7 +2389,6 @@ const OverviewTab = () => {
                             >
                                 <m.icon size={15} color={m.color} />
                             </div>
-                            <MiniSparkline data={m.spark} color={m.color} width={48} height={18} />
                         </div>
                         <div>
                             <div
@@ -2442,24 +2420,25 @@ const OverviewTab = () => {
                                 <span style={{ fontSize: 10, color: THEME.textDim }}>{m.sub}</span>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                            {m.trendUp ? (
-                                <ArrowUpRight size={10} color={THEME.success} />
-                            ) : (
-                                <ArrowDownRight size={10} color={THEME.danger} />
-                            )}
-                            <span
-                                className="ov-mono"
-                                style={{
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    color: m.trendUp ? THEME.success : THEME.danger,
-                                }}
-                            >
-                                {m.trend}
-                            </span>
-                            <span style={{ fontSize: 9.5, color: THEME.textDim, marginLeft: 2 }}>vs last hr</span>
-                        </div>
+                        {m.detail && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                {m.healthy ? (
+                                    <CheckCircle size={10} color={THEME.success} />
+                                ) : (
+                                    <AlertTriangle size={10} color={THEME.warning} />
+                                )}
+                                <span
+                                    className="ov-mono"
+                                    style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: m.healthy ? THEME.success : THEME.warning,
+                                    }}
+                                >
+                                    {m.detail}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -3452,77 +3431,18 @@ const OverviewTab = () => {
                 </Panel>
 
                 {/* WAL & Checkpoints */}
-                <Panel title="WAL & Checkpoints" icon={Gauge} accentColor={THEME.info}>
+                <Panel title="WAL & Checkpoints" icon={Gauge} accentColor={THEME.info || THEME.primary}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 14 }}>
-                            <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <span
-                                        style={{
-                                            fontSize: 9.5,
-                                            color: THEME.textDim,
-                                            fontWeight: 600,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.04em',
-                                        }}
-                                    >
-                                        WAL generation
-                                    </span>
-                                    <span
-                                        className="ov-mono"
-                                        style={{ fontSize: 12, fontWeight: 800, color: THEME.textMain }}
-                                    >
-                                        12.4 MB/s
-                                    </span>
-                                </div>
-                                <MiniSparkline data={genSparkline(16)} color={THEME.primary} width={140} height={32} />
-                                <div style={{ marginTop: 4, fontSize: 9.5, color: THEME.textDim }}>
-                                    Last 5 minutes across cluster.
-                                </div>
-                            </div>
-                            <div
-                                style={{
-                                    padding: '10px 12px',
-                                    borderRadius: 10,
-                                    background: THEME.surface,
-                                    border: `1px solid ${THEME.grid}50`,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 8,
-                                    justifyContent: 'center',
-                                    boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.08)',
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <Timer size={12} color={THEME.secondary} />
-                                    <span style={{ fontSize: 10.5, color: THEME.textMuted }}>Checkpoint avg</span>
-                                    <span
-                                        className="ov-mono"
-                                        style={{
-                                            marginLeft: 'auto',
-                                            fontSize: 12,
-                                            fontWeight: 800,
-                                            color: THEME.secondary,
-                                        }}
-                                    >
-                                        420 ms
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <AlertTriangle size={11} color={THEME.warning} />
-                                    <span style={{ fontSize: 9.5, color: THEME.textDim }}>
-                                        2 exceeded 1s in 10 min.
-                                    </span>
-                                </div>
-                            </div>
+                        <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
+                            WAL generation rate and checkpoint timing require OS-level or <code style={{ color: THEME.primary }}>pg_stat_bgwriter</code> monitoring.
+                            Visit the <strong style={{ color: THEME.textMain }}>Checkpoint Monitor</strong> tab for detailed checkpoint analysis.
                         </div>
-
                         <Divider />
-
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                            <StatusBadge label="WAL archive: OK" color={THEME.success} />
-                            <StatusBadge label="Checkpoint: Normal" color={THEME.primary} />
-                            <StatusBadge label="Autovacuum on" color={THEME.secondary} />
+                            {backupData?.role && <StatusBadge label={`Role: ${backupData.role}`} color={THEME.primary} />}
+                            {backupData?.last_archived_time && <StatusBadge label={`Last WAL archived: ${fmtRelTime(backupData.last_archived_time)}`} color={THEME.success} />}
+                            {backupData?.failed_count > 0 && <StatusBadge label={`${backupData.failed_count} archive failures`} color={THEME.danger} />}
+                            {!backupData?.role && <StatusBadge label="Connect to see WAL status" color={THEME.textDim} />}
                         </div>
                     </div>
                 </Panel>

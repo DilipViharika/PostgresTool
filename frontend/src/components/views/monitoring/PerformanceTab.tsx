@@ -126,7 +126,7 @@ const MiniSparkline = ({ data, color, width = 80, height = 24 }) => {
     const pts = data.map((v, i) =>
         `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`
     ).join(' ');
-    const id = `msp-${color.replace(/[^a-z0-9]/gi, '')}${'0000'}`;
+    const id = `msp-${color.replace(/[^a-z0-9]/gi, '')}-${width}`;
     return (
         <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
             <polygon points={`0,${height} ${pts} ${width},${height}`} fill={`url(#${id})`} />

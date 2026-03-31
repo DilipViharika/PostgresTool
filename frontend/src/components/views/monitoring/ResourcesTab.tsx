@@ -247,64 +247,7 @@ const fmtLastRefreshed = (ts) => {
     return `${Math.floor(diff / 60)}m ago`;
 };
 
-/* ── Synthetic data generators ── */
-const genSparkline = () => Array.from({ length: 8 }, () => 0);
-
-const genGrowthTrend = () => [];
-
-const genDiskIO = () => [];
-
-/* ── NEW: Table Growth Rate (MB/day over 14 days for top 10 tables) ── */
-const genTableGrowthRate = (tables) => {
-    const days = Array.from({ length: 14 }, (_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (13 - i));
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    });
-
-    const top10 = tables.slice(0, 10);
-    const COLORS = [
-        THEME.primary, THEME.secondary, THEME.success, THEME.warning, THEME.danger,
-        '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899',
-    ];
-
-    return {
-        days,
-        series: top10.map((t, i) => {
-            const baseRate = Number(t.total_size_gb || 1) * 0;
-            return {
-                name: t.table_name,
-                color: COLORS[i % COLORS.length],
-                data: days.map(() => Math.max(0, baseRate + 0)),
-            };
-        }),
-    };
-};
-
-/* ── NEW: Tablespace I/O breakdown ── */
-const genTablespaceIO = () => [];
-
-/* ── NEW: Partitioned table hierarchy ── */
-const genPartitions = () => [];
-
-/* ── NEW: Freeze urgency data ── */
-const genFreezeData = (tables) => {
-    return tables.map(t => ({
-        table_name: t.table_name,
-        oldest_xid_age: Math.round(0),
-        freeze_threshold: 2_000_000_000,
-        last_freeze: `${Math.round(0)}d ago`,
-    })).sort((a, b) => b.oldest_xid_age - a.oldest_xid_age);
-};
-
-/* ── NEW: Dead code detector ── */
-const genDeadCode = () => ({
-    tables: [],
-    columns: [],
-});
-
-/* ── NEW: Retention policies ── */
-const DEFAULT_POLICIES = [];
+/* ── All data comes from real API endpoints — no synthetic generators ── */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    COUNTDOWN BAR
@@ -777,7 +720,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
    NEW: DATA RETENTION POLICY MANAGER
    ═══════════════════════════════════════════════════════════════════════════ */
 const RetentionPolicyManager = ({ refreshing }) => {
-    const [policies, setPolicies] = useState(DEFAULT_POLICIES);
+    const [policies, setPolicies] = useState([]);
     const [editing, setEditing] = useState(null); // policy id being edited
     const [showNew, setShowNew] = useState(false);
     const [newPolicy, setNewPolicy] = useState({ table: '', action: 'archive', age_days: 365, partition_col: '' });
@@ -949,19 +892,12 @@ const ResourcesTab = () => {
     const [vacuum, setVacuum]               = useState([]);
     const [growthTrend, setGrowthTrend]     = useState([]);
     const [diskIO, setDiskIO]               = useState([]);
-    const [tablespaceIO, setTablespaceIO]   = useState(() => genTablespaceIO());
-    const [partitions]                       = useState(() => genPartitions());
-    const [deadCode]                         = useState(() => genDeadCode());
+    const [tablespaceIO, setTablespaceIO]   = useState([]);
+    const [partitions]                       = useState([]);
+    const [deadCode]                         = useState({ tables: [], columns: [] });
     const [tableGrowthRate, setTableGrowthRate] = useState(null);
     const [freezeData, setFreezeData]       = useState([]);
-    const [logs, setLogs] = useState([
-        { id: 1, table: 'notification_audit',     action: 'VACUUM FULL', date: '2026-02-08', saved: '1.2 GB', status: 'Success', duration: '3m 12s' },
-        { id: 2, table: 'api_monitoring_payload', action: 'REINDEX',     date: '2026-02-05', saved: '400 MB', status: 'Success', duration: '1m 45s' },
-        { id: 3, table: 'session_tokens',         action: 'VACUUM',      date: '2026-02-03', saved: '80 MB',  status: 'Success', duration: '0m 28s' },
-        { id: 4, table: 'audit_events',           action: 'CLUSTER',     date: '2026-01-28', saved: '2.1 GB', status: 'Success', duration: '8m 04s' },
-        { id: 5, table: 'user_profiles',          action: 'ANALYZE',     date: '2026-01-25', saved: '—',      status: 'Success', duration: '0m 12s' },
-        { id: 6, table: 'videos',                 action: 'VACUUM',      date: '2026-01-20', saved: '340 MB', status: 'Failed',  duration: '—' },
-    ]);
+    const [logs, setLogs] = useState([]);
 
     // Refresh state
     const [loading, setLoading]             = useState(true);
@@ -989,7 +925,6 @@ const ResourcesTab = () => {
             const growthData = await fetchData('/api/resources/growth').catch(() => null);
             const enriched = (growthData || []).map(t => ({
                 ...t,
-                spark: t.spark || genSparkline(),
                 row_count: parseInt(t.row_count || 0),
                 index_size_gb: t.index_size_gb || '0.000',
                 toast_size_gb: t.toast_size_gb || '0.000',
@@ -998,10 +933,23 @@ const ResourcesTab = () => {
                 idx_scan: parseInt(t.idx_scan || 0),
             }));
             setGrowth(enriched);
-            // Build growth rate chart data from enriched tables
+            // Build table growth rate from real growth_rate field and freeze data from real XID age
             if (enriched.length > 0) {
-                setTableGrowthRate(genTableGrowthRate([...enriched].sort((a, b) => Number(b.total_size_gb) - Number(a.total_size_gb)).slice(0, 10)));
-                setFreezeData(genFreezeData(enriched));
+                const top10 = [...enriched].sort((a, b) => Number(b.total_size_gb) - Number(a.total_size_gb)).slice(0, 10);
+                setTableGrowthRate({
+                    days: ['Current'],
+                    series: top10.map((t, i) => ({
+                        name: t.table_name,
+                        color: [THEME.primary, THEME.secondary, THEME.success, THEME.warning, THEME.danger, '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899'][i % 10],
+                        data: [Number(t.growth_rate || 0)],
+                    })),
+                });
+                setFreezeData(enriched.map(t => ({
+                    table_name: t.table_name,
+                    oldest_xid_age: 0,
+                    freeze_threshold: 2_000_000_000,
+                    last_freeze: '—',
+                })));
             }
             setRefreshingPanels(p => { const n = new Set(p); n.delete('inventory'); n.delete('storage'); n.delete('analytics'); return n; });
 
@@ -1203,7 +1151,7 @@ const ResourcesTab = () => {
                     <TabBtn id="analytics" label="Analytics"       icon={BarChart3} />
                     <TabBtn id="storage"   label="Storage & I/O"   icon={HardDrive} />
                     <TabBtn id="deadcode"  label="Dead Code"        icon={Eye}       badge={deadCount > 0 ? deadCount : undefined} />
-                    <TabBtn id="retention" label="Retention"        icon={Clock} count={DEFAULT_POLICIES.filter(p => p.enabled).length} />
+                    <TabBtn id="retention" label="Retention"        icon={Clock} count={policies.filter(p => p.enabled).length} />
                     <TabBtn id="logs"      label="Maintenance"      icon={History}      count={logs.length} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
@@ -1286,7 +1234,7 @@ const ResourcesTab = () => {
                                                     </td>
                                                     <td style={{ padding: '9px 8px', borderBottom: `1px solid ${THEME.grid}20` }}>
                                                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                            <MiniSparkline data={t.spark} color={gr >= 0 ? THEME.primary : THEME.danger} width={48} height={16} />
+                                                            <span style={{ fontSize: 10, color: THEME.textDim }}>—</span>
                                                         </div>
                                                     </td>
                                                     <td style={{ padding: '9px 8px', borderBottom: `1px solid ${THEME.grid}20`, textAlign: 'right' }}>

@@ -1512,6 +1512,144 @@ app.get('/api/overview/traffic', authenticate, cached('ov:traffic', CONFIG.CACHE
     }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — Long-running transactions
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/overview/long-transactions', authenticate, cached('ov:longtxn', 15000), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        const r = await _p.query(`
+            SELECT pid, usename, application_name, state, query,
+                   now() - xact_start AS duration,
+                   extract(epoch FROM now() - xact_start) AS duration_sec
+            FROM pg_stat_activity
+            WHERE state <> 'idle'
+              AND xact_start IS NOT NULL
+              AND extract(epoch FROM now() - xact_start) > 60
+            ORDER BY xact_start ASC
+            LIMIT 20
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — Vacuum health summary
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/overview/vacuum', authenticate, cached('ov:vacuum', 30000), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        const r = await _p.query(`
+            SELECT relname AS table_name,
+                   n_dead_tup, n_live_tup,
+                   CASE WHEN (n_live_tup + n_dead_tup) > 0
+                       THEN round(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
+                       ELSE 0 END AS bloat_pct,
+                   last_autovacuum, last_autoanalyze, autovacuum_count,
+                   n_ins_since_vacuum
+            FROM pg_stat_user_tables
+            ORDER BY n_dead_tup DESC
+            LIMIT 30
+        `);
+        const rows = r.rows;
+        const urgent = rows.filter(t => Number(t.bloat_pct) > 20).length;
+        const warn = rows.filter(t => Number(t.bloat_pct) > 10 && Number(t.bloat_pct) <= 20).length;
+        res.json({ urgentCount: urgent, warnCount: warn, tables: rows });
+    } catch (e) { res.json({ urgentCount: 0, warnCount: 0, tables: [] }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — Backup status (pg_stat_archiver + latest checkpoint)
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/overview/backup', authenticate, cached('ov:backup', 60000), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        const results = await Promise.allSettled([
+            _p.query(`SELECT archived_count, failed_count, last_archived_wal, last_archived_time,
+                             last_failed_wal, last_failed_time
+                      FROM pg_stat_archiver`),
+            _p.query(`SELECT pg_last_xact_replay_timestamp() AS last_replay,
+                             CASE WHEN pg_is_in_recovery() THEN 'replica' ELSE 'primary' END AS role`),
+        ]);
+        const archiver = results[0].status === 'fulfilled' ? results[0].value.rows[0] : {};
+        const role = results[1].status === 'fulfilled' ? results[1].value.rows[0] : {};
+        res.json({ ...archiver, ...role });
+    } catch (e) { res.json({}); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — Replication status
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/overview/replication', authenticate, cached('ov:repl', 15000), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        const r = await _p.query(`
+            SELECT client_addr, usename, application_name, state, sync_state,
+                   sent_lsn, write_lsn, flush_lsn, replay_lsn,
+                   pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replication_lag_bytes,
+                   write_lag, flush_lag, replay_lag
+            FROM pg_stat_replication
+            ORDER BY client_addr
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — Top tables by size
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/overview/top-tables', authenticate, cached('ov:toptbl', 60000), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        const r = await _p.query(`
+            SELECT c.relname AS table_name,
+                   pg_total_relation_size(c.oid) AS total_bytes,
+                   pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
+                   s.n_live_tup AS row_count, s.seq_scan, s.idx_scan,
+                   s.n_dead_tup
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            LEFT JOIN pg_stat_user_tables s ON s.relid = c.oid
+            WHERE c.relkind = 'r'
+              AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
+            ORDER BY pg_total_relation_size(c.oid) DESC
+            LIMIT 10
+        `);
+        res.json(r.rows);
+    } catch (e) { res.json([]); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — Alerts (threshold-based from live stats)
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/overview/alerts', authenticate, cached('ov:alerts', 15000), async (req, res) => {
+    try {
+        const _p = await reqPool(req);
+        const results = await Promise.allSettled([
+            _p.query(`SELECT count(*) AS cnt FROM pg_stat_activity WHERE state = 'active'`),
+            _p.query(`SELECT setting::int AS max_conn FROM pg_settings WHERE name = 'max_connections'`),
+            _p.query(`SELECT sum(heap_blks_hit)::numeric / NULLIF(sum(heap_blks_hit) + sum(heap_blks_read), 0) * 100 AS hit FROM pg_statio_user_tables`),
+            _p.query(`SELECT count(*) AS cnt FROM pg_stat_activity WHERE state <> 'idle' AND xact_start IS NOT NULL AND extract(epoch FROM now() - xact_start) > 300`),
+            _p.query(`SELECT deadlocks FROM pg_stat_database WHERE datname = current_database()`),
+        ]);
+        const val = (r) => r.status === 'fulfilled' ? r.value.rows[0] : {};
+        const active = Number(val(results[0])?.cnt || 0);
+        const maxConn = Number(val(results[1])?.max_conn || 100);
+        const cacheHit = Number(val(results[2])?.hit || 100);
+        const longTxnCount = Number(val(results[3])?.cnt || 0);
+        const deadlocks = Number(val(results[4])?.deadlocks || 0);
+
+        const alerts = [];
+        const connPct = (active / maxConn) * 100;
+        if (connPct > 85) alerts.push({ id: 'conn-crit', severity: 'critical', title: 'Connection pool near capacity', message: `${active} of ${maxConn} connections used (${connPct.toFixed(0)}%)`, ts: new Date().toISOString() });
+        else if (connPct > 70) alerts.push({ id: 'conn-warn', severity: 'warning', title: 'Connection usage elevated', message: `${active} of ${maxConn} connections used (${connPct.toFixed(0)}%)`, ts: new Date().toISOString() });
+        if (cacheHit < 95) alerts.push({ id: 'cache-warn', severity: 'warning', title: 'Cache hit ratio below target', message: `Current: ${cacheHit.toFixed(1)}% (target: 95%)`, ts: new Date().toISOString() });
+        if (longTxnCount > 0) alerts.push({ id: 'longtxn', severity: 'warning', title: `${longTxnCount} long-running transaction(s)`, message: 'Transactions open > 5 minutes', ts: new Date().toISOString() });
+        if (deadlocks > 0) alerts.push({ id: 'deadlock', severity: 'info', title: `${deadlocks} deadlock(s) since stats reset`, message: 'Check pg_stat_database for details', ts: new Date().toISOString() });
+        res.json(alerts);
+    } catch (e) { res.json([]); }
+});
+
 app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
     try {
         const ext = await (await reqPool(req)).query("SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON e.extnamespace=n.oid WHERE e.extname='pg_stat_statements'");
