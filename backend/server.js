@@ -1205,7 +1205,7 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // PASSWORD MANAGEMENT — Change Password
 // ─────────────────────────────────────────────────────────────────────────────
-app.post('/api/auth/change-password', requireScreen('*'), async (req, res) => {
+app.post('/api/auth/change-password', authenticate, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user?.id;
 
