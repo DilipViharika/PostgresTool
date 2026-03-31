@@ -308,7 +308,7 @@ const LoginPage = () => {
                 alignItems: 'center', justifyContent: 'center', padding: 24,
             }}>
                 <div className="vdb-container" style={{
-                    display: 'flex', width: 980, maxWidth: '100%', maxHeight: 'calc(100vh - 48px)',
+                    display: 'flex', width: '92vw', maxWidth: 1200, maxHeight: 'calc(100vh - 48px)',
                     background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(0,0,0,0.08)',
                     borderRadius: 22, overflow: 'hidden',
                     backdropFilter: 'blur(40px) saturate(1.4)',
