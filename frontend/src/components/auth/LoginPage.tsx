@@ -106,7 +106,7 @@ const STYLES = `
   @media (max-width: 860px) {
     .vdb-container { flex-direction: column !important; max-width: 480px !important; min-height: auto !important; }
     .vdb-brand { display: none !important; }
-    .vdb-form { padding: 44px 36px !important; border-radius: 22px !important; }
+    .vdb-form { padding: 32px 28px !important; border-radius: 22px !important; }
   }
   @media (max-width: 480px) {
     .vdb-page { padding: 16px !important; }
@@ -308,7 +308,7 @@ const LoginPage = () => {
                 alignItems: 'center', justifyContent: 'center', padding: 24,
             }}>
                 <div className="vdb-container" style={{
-                    display: 'flex', width: 980, maxWidth: '100%', minHeight: 600,
+                    display: 'flex', width: 980, maxWidth: '100%', maxHeight: 'calc(100vh - 48px)',
                     background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(0,0,0,0.08)',
                     borderRadius: 22, overflow: 'hidden',
                     backdropFilter: 'blur(40px) saturate(1.4)',
@@ -318,9 +318,9 @@ const LoginPage = () => {
 
                     {/* ═══ LEFT — BRAND PANEL ═══ */}
                     <div className="vdb-brand" style={{
-                        width: 430, minWidth: 430, position: 'relative',
+                        width: 400, minWidth: 400, position: 'relative',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                        padding: '52px 44px', overflow: 'hidden', color: '#fff',
+                        padding: '36px 36px', overflow: 'hidden', color: '#fff',
                         background: 'linear-gradient(145deg, #0b2030 0%, #0e2a3e 40%, #102535 100%)',
                     }}>
                         {/* Glow overlays */}
@@ -334,21 +334,21 @@ const LoginPage = () => {
                         {/* Top content */}
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             {/* Logo */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 52 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
                                 <div style={{
-                                    width: 50, height: 50, borderRadius: 14,
+                                    width: 42, height: 42, borderRadius: 12,
                                     background: 'linear-gradient(135deg, #00e5a0, #00b87a)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     boxShadow: '0 8px 32px rgba(0,229,160,0.3)', position: 'relative',
                                 }}>
-                                    <Server size={24} color="#fff" strokeWidth={1.5} style={{ position: 'relative', zIndex: 1 }} />
+                                    <Server size={20} color="#fff" strokeWidth={1.5} style={{ position: 'relative', zIndex: 1 }} />
                                     <div style={{
-                                        position: 'absolute', inset: 0, borderRadius: 14,
+                                        position: 'absolute', inset: 0, borderRadius: 12,
                                         background: 'linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.22))',
                                     }} />
                                 </div>
                                 <span style={{
-                                    fontWeight: 800, fontSize: '1.5rem', letterSpacing: 3,
+                                    fontWeight: 800, fontSize: '1.3rem', letterSpacing: 3,
                                     background: 'linear-gradient(135deg, #00e5a0, #47b3ff)',
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 }}>VIGIL</span>
@@ -356,8 +356,8 @@ const LoginPage = () => {
 
                             {/* Headline */}
                             <h1 style={{
-                                fontSize: '2.1rem', fontWeight: 800, lineHeight: 1.2,
-                                letterSpacing: -0.5, marginBottom: 18, color: '#fff',
+                                fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2,
+                                letterSpacing: -0.5, marginBottom: 12, color: '#fff',
                                 animation: 'textIn 0.8s ease-out 0.3s both',
                             }}>
                                 Your databases,<br />
@@ -368,8 +368,8 @@ const LoginPage = () => {
                             </h1>
 
                             <p style={{
-                                fontSize: '0.92rem', color: 'rgba(255,255,255,0.55)',
-                                lineHeight: 1.7, maxWidth: 330,
+                                fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)',
+                                lineHeight: 1.6, maxWidth: 310,
                                 animation: 'textIn 0.8s ease-out 0.45s both',
                             }}>
                                 Monitor performance, track queries, and manage your entire PostgreSQL infrastructure from a single command center.
@@ -377,12 +377,12 @@ const LoginPage = () => {
 
                             {/* Testimonial */}
                             <div style={{
-                                marginTop: 36, padding: '18px 20px',
+                                marginTop: 24, padding: '14px 16px',
                                 background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
                                 borderRadius: 12, backdropFilter: 'blur(10px)',
                                 animation: 'textIn 0.8s ease-out 0.7s both',
                             }}>
-                                <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 10 }}>
+                                <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5, fontStyle: 'italic', marginBottom: 8 }}>
                                     "VIGIL cut our incident response time by 80%. We can't imagine managing our fleet without it."
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -414,8 +414,8 @@ const LoginPage = () => {
                                 { value: '12K+', label: 'Databases' },
                             ].map(s => (
                                 <div key={s.label}>
-                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.35rem', color: '#00e5a0' }}>{s.value}</div>
-                                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{s.label}</div>
+                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.15rem', color: '#00e5a0' }}>{s.value}</div>
+                                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{s.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -424,34 +424,34 @@ const LoginPage = () => {
                     {/* ═══ RIGHT — FORM PANEL ═══ */}
                     <div className="vdb-form" style={{
                         flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                        padding: '52px 56px', position: 'relative', background: '#ffffff',
+                        padding: '32px 44px', position: 'relative', background: '#ffffff', overflowY: 'auto',
                     }}>
                         {/* Title */}
                         <h2 style={{
-                            fontSize: '1.65rem', fontWeight: 800, color: '#1a1e2e',
-                            marginBottom: 6, letterSpacing: -0.3,
+                            fontSize: '1.45rem', fontWeight: 800, color: '#1a1e2e',
+                            marginBottom: 4, letterSpacing: -0.3,
                             animation: 'textIn 0.6s ease-out 0.2s both',
                         }}>Welcome back</h2>
                         <p style={{
-                            color: '#9198ae', fontSize: '0.9rem', marginBottom: 32,
+                            color: '#9198ae', fontSize: '0.85rem', marginBottom: 20,
                             animation: 'textIn 0.6s ease-out 0.3s both',
                         }}>
                             Sign in to your command center
                         </p>
 
                         {/* Server status */}
-                        <div style={{ marginBottom: 24, animation: 'textIn 0.6s ease-out 0.32s both' }}>
+                        <div style={{ marginBottom: 16, animation: 'textIn 0.6s ease-out 0.32s both' }}>
                             <ServerStatus status={serverStatus} />
                         </div>
 
                         {/* SSO row */}
                         <div className="vdb-sso-row" style={{
                             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
-                            marginBottom: 28, animation: 'textIn 0.6s ease-out 0.35s both',
+                            marginBottom: 20, animation: 'textIn 0.6s ease-out 0.35s both',
                         }}>
                             <button type="button" className="vdb-sso" onClick={() => loginWithSSO('google')} style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                padding: '12px 16px', background: '#ffffff',
+                                padding: '10px 16px', background: '#ffffff',
                                 border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 10,
                                 color: '#5a6078', fontFamily: fontDisplay, fontWeight: 600, fontSize: '0.88rem',
                                 cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
@@ -462,7 +462,7 @@ const LoginPage = () => {
                             </button>
                             <button type="button" className="vdb-sso" onClick={() => loginWithSSO('github')} style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                padding: '12px 16px', background: '#ffffff',
+                                padding: '10px 16px', background: '#ffffff',
                                 border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 10,
                                 color: '#5a6078', fontFamily: fontDisplay, fontWeight: 600, fontSize: '0.88rem',
                                 cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
@@ -476,7 +476,7 @@ const LoginPage = () => {
                         {/* Divider */}
                         <div style={{
                             display: 'flex', alignItems: 'center', gap: 16,
-                            marginBottom: 26, animation: 'textIn 0.6s ease-out 0.4s both',
+                            marginBottom: 18, animation: 'textIn 0.6s ease-out 0.4s both',
                         }}>
                             <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.08)' }} />
                             <span style={{ fontSize: '0.72rem', fontFamily: fontMono, color: '#b8bdd0', letterSpacing: 0.8, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>or continue with email</span>
@@ -498,9 +498,9 @@ const LoginPage = () => {
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                             {/* Username */}
-                            <div style={{ marginBottom: 20, animation: 'textIn 0.6s ease-out 0.42s both' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Username</label>
+                            <div style={{ marginBottom: 14, animation: 'textIn 0.6s ease-out 0.42s both' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Username</label>
                                 </div>
                                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                                     <User size={18} color="#b8bdd0" strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
@@ -508,10 +508,10 @@ const LoginPage = () => {
                                         onChange={e => setUsername(e.target.value)} placeholder="Enter username"
                                         autoComplete="username" disabled={authLoading}
                                         style={{
-                                            width: '100%', padding: '14px 16px 14px 48px',
+                                            width: '100%', padding: '11px 16px 11px 44px',
                                             background: '#f3f4f8', border: '1.5px solid rgba(0,0,0,0.08)',
                                             borderRadius: 10, color: '#1a1e2e', fontFamily: fontDisplay,
-                                            fontSize: '0.92rem', outline: 'none',
+                                            fontSize: '0.88rem', outline: 'none',
                                             transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
                                             boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
                                             opacity: authLoading ? 0.5 : 1,
@@ -521,9 +521,9 @@ const LoginPage = () => {
                             </div>
 
                             {/* Password */}
-                            <div style={{ marginBottom: 20, animation: 'textIn 0.6s ease-out 0.48s both' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Password</label>
+                            <div style={{ marginBottom: 14, animation: 'textIn 0.6s ease-out 0.48s both' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Password</label>
                                     <button type="button" className="vdb-forgot" onClick={() => setShowForgotPassword(true)}
                                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9198ae', padding: 0, fontSize: '0.72rem', fontFamily: fontMono, transition: 'color 0.3s' }}>
                                         Forgot password?
@@ -535,10 +535,10 @@ const LoginPage = () => {
                                         onChange={e => setPassword(e.target.value)} placeholder="Enter your password"
                                         autoComplete="current-password" disabled={authLoading}
                                         style={{
-                                            width: '100%', padding: '14px 44px 14px 48px',
+                                            width: '100%', padding: '11px 44px 11px 44px',
                                             background: '#f3f4f8', border: '1.5px solid rgba(0,0,0,0.08)',
                                             borderRadius: 10, color: '#1a1e2e', fontFamily: fontDisplay,
-                                            fontSize: '0.92rem', outline: 'none',
+                                            fontSize: '0.88rem', outline: 'none',
                                             transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
                                             boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
                                             opacity: authLoading ? 0.5 : 1,
@@ -560,7 +560,7 @@ const LoginPage = () => {
                             {/* Remember me */}
                             <div style={{
                                 display: 'flex', alignItems: 'center', gap: 10,
-                                marginBottom: 26, animation: 'textIn 0.6s ease-out 0.52s both',
+                                marginBottom: 18, animation: 'textIn 0.6s ease-out 0.52s both',
                             }}>
                                 <div onClick={() => setRememberMe(r => !r)} style={{
                                     width: 20, height: 20, borderRadius: 6, flexShrink: 0, cursor: 'pointer',
@@ -582,7 +582,7 @@ const LoginPage = () => {
 
                             {/* Submit */}
                             <button type="submit" className="vdb-submit" disabled={!canSubmit} style={{
-                                width: '100%', padding: 15, border: 'none', borderRadius: 10,
+                                width: '100%', padding: 12, border: 'none', borderRadius: 10,
                                 background: canSubmit ? `linear-gradient(135deg, ${accent}, ${accentHover})` : '#f3f4f8',
                                 color: canSubmit ? '#fff' : '#b8bdd0',
                                 fontFamily: fontDisplay, fontWeight: 700, fontSize: '0.95rem',
@@ -605,7 +605,7 @@ const LoginPage = () => {
 
                         {/* Footer */}
                         <div style={{
-                            textAlign: 'center', marginTop: 28, display: 'flex',
+                            textAlign: 'center', marginTop: 18, display: 'flex',
                             alignItems: 'center', justifyContent: 'center', gap: 6,
                             fontSize: '0.72rem', color: '#b8bdd0', fontFamily: fontMono,
                             animation: 'textIn 0.6s ease-out 0.65s both',
