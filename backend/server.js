@@ -1109,7 +1109,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
         res.json({
             token,
             user: payload,
-            mustChangePassword: user.must_change_password || false
+            mustChangePassword: user.must_change_password || (user.password_changed_at == null) || false
         });
 
     } catch (err) {
@@ -1259,19 +1259,8 @@ app.post('/api/auth/change-password', requireScreen('*'), async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PASSWORD MANAGEMENT — Forgot Password (Request Reset)
+// PASSWORD MANAGEMENT — Forgot Password (Request Reset) — DB-backed tokens
 // ─────────────────────────────────────────────────────────────────────────────
-const resetTokens = new Map(); // In-memory store: token -> { userId, expiresAt }
-
-// Cleanup expired reset tokens every 5 minutes (skip on Vercel — stateless)
-if (process.env.VERCEL !== '1') {
-    setInterval(() => {
-        const now = Date.now();
-        for (const [token, data] of resetTokens) {
-            if (now > data.expiresAt.getTime()) resetTokens.delete(token);
-        }
-    }, 300_000);
-}
 
 app.post('/api/auth/forgot-password', async (req, res) => {
     const { email, username } = req.body;
@@ -1299,19 +1288,22 @@ app.post('/api/auth/forgot-password', async (req, res) => {
             return res.json({ success: true, message: 'If the account exists, a reset link has been sent.' });
         }
 
-        // Generate reset token
+        // Generate reset token and persist to DB
         const token = uuid();
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-        resetTokens.set(token, { userId: user.id, expiresAt });
+        await pool.query(
+            `INSERT INTO pgmonitoringtool.password_reset_tokens (user_id, token, expires_at)
+             VALUES ($1, $2, $3)`,
+            [user.id, token, expiresAt]
+        );
 
-        log('INFO', 'Password reset token generated', { userId: user.id, username: user.username });
+        log('INFO', 'Password reset token generated (DB)', { userId: user.id, username: user.username });
 
         // In production, send email here with reset link
-        // For now, just store in-memory token
         res.json({
             success: true,
             message: 'If the account exists, a reset link has been sent.',
-            // Debug only - remove in production
+            // Debug only — remove in production
             ...(process.env.NODE_ENV !== 'production' && { resetToken: token })
         });
 
@@ -1322,7 +1314,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PASSWORD MANAGEMENT — Reset Password (Using Token)
+// PASSWORD MANAGEMENT — Reset Password (Using DB-backed Token)
 // ─────────────────────────────────────────────────────────────────────────────
 app.post('/api/auth/reset-password', async (req, res) => {
     const { token, newPassword } = req.body;
@@ -1340,16 +1332,26 @@ app.post('/api/auth/reset-password', async (req, res) => {
     }
 
     try {
-        const tokenData = resetTokens.get(token);
+        // Look up token in DB (unused + not expired)
+        const tokenResult = await pool.query(
+            `SELECT id, user_id, expires_at FROM pgmonitoringtool.password_reset_tokens
+             WHERE token = $1 AND used = false`,
+            [token]
+        );
+        const tokenData = tokenResult.rows[0];
 
         if (!tokenData) {
             log('WARN', 'Invalid password reset token', {});
             return res.status(400).json({ error: 'Invalid or expired reset token' });
         }
 
-        if (new Date() > tokenData.expiresAt) {
-            resetTokens.delete(token);
-            log('WARN', 'Password reset token expired', { userId: tokenData.userId });
+        if (new Date() > new Date(tokenData.expires_at)) {
+            // Mark as used so it can't be retried
+            await pool.query(
+                'UPDATE pgmonitoringtool.password_reset_tokens SET used = true WHERE id = $1',
+                [tokenData.id]
+            );
+            log('WARN', 'Password reset token expired', { userId: tokenData.user_id });
             return res.status(400).json({ error: 'Reset token has expired' });
         }
 
@@ -1357,19 +1359,22 @@ app.post('/api/auth/reset-password', async (req, res) => {
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
         const result = await pool.query(
             'UPDATE pgmonitoringtool.users SET password_hash = $1, must_change_password = false, password_changed_at = NOW() WHERE id = $2 RETURNING id, username',
-            [newPasswordHash, tokenData.userId]
+            [newPasswordHash, tokenData.user_id]
         );
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Invalidate token
-        resetTokens.delete(token);
+        // Invalidate token in DB
+        await pool.query(
+            'UPDATE pgmonitoringtool.password_reset_tokens SET used = true WHERE id = $1',
+            [tokenData.id]
+        );
 
-        log('INFO', 'Password reset completed', { userId: tokenData.userId, username: result.rows[0].username });
+        log('INFO', 'Password reset completed', { userId: tokenData.user_id, username: result.rows[0].username });
         await writeAudit(pool, {
-            actorId:       tokenData.userId,
+            actorId:       tokenData.user_id,
             actorUsername: result.rows[0].username,
             action:        'PASSWORD_RESET',
             level:         'info',

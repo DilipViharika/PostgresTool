@@ -11,6 +11,7 @@ import { DS_DARK, DS_LIGHT, DS_ACCENTS, setDS, getDS } from './config/designToke
 import { registerComponents, buildTabConfig, getTabsOnly, getSectionGroups, STORAGE_KEYS } from './config/tabConfig';
 
 import LoginPage from './components/auth/LoginPage';
+import ForcePasswordChangeModal from './components/auth/ForcePasswordChangeModal';
 import { ToastProvider, useToast, Breadcrumbs, ProgressBar } from './components/ui/SharedComponents';
 
 // Enterprise context providers and components
@@ -4701,6 +4702,11 @@ const AuthConsumer = () => {
     const { currentUser, loading, logout } = useAuth();
     const { isDemo, enterDemo, exitDemo } = useDemo();
 
+    // ── Force password change state ──────────────────────────────
+    const [mustChangePassword, setMustChangePassword] = useState(() => {
+        return localStorage.getItem('vigil_must_change_password') === 'true';
+    });
+
     // readyToEnter is true immediately when logged in — no delay needed
     // (the login-success overlay has been removed; we go straight to the dashboard)
     const [readyToEnter, setReadyToEnter] = useState(!!currentUser || isDemo);
@@ -4710,12 +4716,17 @@ const AuthConsumer = () => {
         // User just logged in or demo activated → enter immediately
         if ((!prevUser.current && currentUser) || isDemo) {
             setReadyToEnter(true);
+            // Check for must-change-password flag after login
+            if (localStorage.getItem('vigil_must_change_password') === 'true') {
+                setMustChangePassword(true);
+            }
             prevUser.current = currentUser;
             return;
         }
         // User logged out and not demo → reset gate for next login
         if (prevUser.current && !currentUser && !isDemo) {
             setReadyToEnter(false);
+            setMustChangePassword(false);
         }
         prevUser.current = currentUser;
     }, [currentUser, isDemo]);
@@ -4725,11 +4736,13 @@ const AuthConsumer = () => {
 
     const handleLogout = useCallback(() => {
         setLoggingOut(true);
+        localStorage.removeItem('vigil_must_change_password');
         // Wait for fade-out animation, then clear auth state
         setTimeout(() => {
             if (isDemo) exitDemo();
             logout();
             setLoggingOut(false);
+            setMustChangePassword(false);
         }, 400);
     }, [logout, isDemo, exitDemo]);
 
@@ -4768,6 +4781,16 @@ const AuthConsumer = () => {
                         element={
                             (currentUser || isDemo) && readyToEnter ? (
                                 <ErrorBoundary>
+                                    {/* Force password change modal — blocks dashboard access */}
+                                    {mustChangePassword && !isDemo && (
+                                        <ForcePasswordChangeModal
+                                            onSuccess={() => {
+                                                localStorage.removeItem('vigil_must_change_password');
+                                                setMustChangePassword(false);
+                                            }}
+                                            onLogout={handleLogout}
+                                        />
+                                    )}
                                     {/* Full-screen fade overlay shown during logout */}
                                     {loggingOut && (
                                         <div
