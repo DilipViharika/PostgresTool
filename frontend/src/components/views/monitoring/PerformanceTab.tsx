@@ -537,16 +537,16 @@ const JITCompilationPanel = ({ slowQueries, jitEnabled }) => {
         }));
     }, [slowQueries]);
 
-    const jitEnabled = jitData.filter(q => q.hasJit);
-    const totalSavings = jitEnabled.reduce((s, q) => s + q.savings, 0);
-    const totalCost = jitEnabled.reduce((s, q) => s + q.compileMs, 0);
+    const jitQueries = jitData.filter(q => q.hasJit);
+    const totalSavings = jitQueries.reduce((s, q) => s + q.savings, 0);
+    const totalCost = jitQueries.reduce((s, q) => s + q.compileMs, 0);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Summary strip */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
                 {[
-                    { label: 'JIT Queries', value: jitEnabled.length, color: THEME.primary, icon: BrainCircuit },
+                    { label: 'JIT Queries', value: jitQueries.length, color: THEME.primary, icon: BrainCircuit },
                     { label: 'Compile Time', value: `${totalCost}ms`, color: THEME.warning, icon: Timer },
                     { label: 'Exec Savings', value: `${totalSavings}ms`, color: THEME.success, icon: TrendingDown },
                     { label: 'Net Benefit', value: `${totalSavings - totalCost}ms`, color: totalSavings > totalCost ? THEME.success : THEME.danger, icon: Zap },
