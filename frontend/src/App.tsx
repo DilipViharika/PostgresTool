@@ -3098,15 +3098,6 @@ const Sidebar = ({
                             }}>
                                 {label}
                             </span>
-                            {/* Tab count badge */}
-                            {!isOpen && (
-                                <span style={{
-                                    fontSize: 9, fontWeight: 600, color: `${DS.sidebarText}80`,
-                                    fontFamily: DS.fontMono, minWidth: 16, textAlign: 'center',
-                                }}>
-                                    {tabCount}
-                                </span>
-                            )}
                         </button>
                     );
 
