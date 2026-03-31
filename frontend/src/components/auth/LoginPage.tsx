@@ -375,29 +375,6 @@ const LoginPage = () => {
                                 Monitor performance, track queries, and manage your entire PostgreSQL infrastructure from a single command center.
                             </p>
 
-                            {/* Testimonial */}
-                            <div style={{
-                                marginTop: 24, padding: '14px 16px',
-                                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
-                                borderRadius: 12, backdropFilter: 'blur(10px)',
-                                animation: 'textIn 0.8s ease-out 0.7s both',
-                            }}>
-                                <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5, fontStyle: 'italic', marginBottom: 8 }}>
-                                    "VIGIL cut our incident response time by 80%. We can't imagine managing our fleet without it."
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <div style={{
-                                        width: 28, height: 28, borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #00e5a0, #47b3ff)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontWeight: 700, fontSize: '0.6rem', color: '#fff',
-                                    }}>SR</div>
-                                    <div>
-                                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Sarah Rivera</div>
-                                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', fontFamily: fontMono }}>VP Engineering</div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         {/* Decorative rings */}
