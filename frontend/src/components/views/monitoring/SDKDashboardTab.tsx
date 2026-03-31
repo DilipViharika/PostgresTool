@@ -433,7 +433,7 @@ const RegisterAppModal = ({ isOpen, onClose, onSuccess, isSubmitting }) => {
                             <select
                                 className="sdk-select"
                                 value={formData.appType}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, appType: e.target.value })}
                             >
                                 <option value="salesforce">Salesforce</option>
                                 <option value="mulesoft">MuleSoft</option>
@@ -805,6 +805,7 @@ export default function SDKDashboardTab() {
     const [apps, setApps] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [renderError, setRenderError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedAppId, setSelectedAppId] = useState(null);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -826,18 +827,37 @@ export default function SDKDashboardTab() {
 
     // Initial load and auto-refresh
     useEffect(() => {
-        fetchApps().finally(() => setLoading(false));
+        let mounted = true;
+        fetchApps().finally(() => { if (mounted) setLoading(false); });
 
         // Auto-refresh every 30 seconds
         refreshTimer.current = setInterval(() => {
-            setRefreshing(true);
-            fetchApps().finally(() => setRefreshing(false));
+            if (mounted) setRefreshing(true);
+            fetchApps().finally(() => { if (mounted) setRefreshing(false); });
         }, 30000);
 
         return () => {
+            mounted = false;
             if (refreshTimer.current) clearInterval(refreshTimer.current);
         };
     }, [fetchApps]);
+
+    // Internal error catch — prevents ErrorBoundary crash
+    if (renderError) {
+        return (
+            <div style={{ padding: '40px 20px', textAlign: 'center', minHeight: '100vh', background: THEME.bg || '#0a0d1e' }}>
+                <div style={{ maxWidth: 480, margin: '0 auto', padding: 32, borderRadius: 12, background: THEME.surface || '#131836', border: `1px solid ${THEME.grid || '#333'}` }}>
+                    <AlertTriangle size={40} color={THEME.danger || '#ef4444'} style={{ marginBottom: 16 }} />
+                    <h3 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 700, color: THEME.textMain || '#fff' }}>SDK Dashboard Error</h3>
+                    <p style={{ margin: '0 0 16px', fontSize: 13, color: THEME.textMuted || '#999' }}>{String(renderError)}</p>
+                    <button onClick={() => { setRenderError(null); setError(null); setLoading(true); fetchApps().finally(() => setLoading(false)); }}
+                        style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: THEME.primary || '#6366f1', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+                        <RefreshCw size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} /> Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     // Manual refresh
     const handleRefresh = useCallback(async () => {
@@ -852,29 +872,38 @@ export default function SDKDashboardTab() {
         setShowRegisterModal(false);
     }, [apps]);
 
-    // Calculate aggregate stats
-    const stats = useMemo(() => ({
-        totalApps: apps.length,
-        activeApps: apps.filter(a => a.lastHeartbeat && Date.now() - new Date(a.lastHeartbeat).getTime() < 60000).length,
-        totalEvents24h: apps.reduce((sum, a) => sum + (a.totalEvents24h || 0), 0),
-        errorRate: apps.length > 0 ? Math.round(apps.reduce((sum, a) => sum + (a.errorCount || 0), 0) / (apps.reduce((sum, a) => sum + (a.totalEvents24h || 1), 0) / 100)) : 0,
-        avgLatency: apps.length > 0 ? Math.round(apps.reduce((sum, a) => sum + (a.avgLatency || 0), 0) / apps.length) : 0,
-    }), [apps]);
+    // Calculate aggregate stats (with safe defaults)
+    const stats = useMemo(() => {
+        try {
+            const safeApps = Array.isArray(apps) ? apps : [];
+            return {
+                totalApps: safeApps.length,
+                activeApps: safeApps.filter(a => a?.lastHeartbeat && Date.now() - new Date(a.lastHeartbeat).getTime() < 60000).length,
+                totalEvents24h: safeApps.reduce((sum, a) => sum + (a?.totalEvents24h || 0), 0),
+                errorRate: safeApps.length > 0 ? Math.round(safeApps.reduce((sum, a) => sum + (a?.errorCount || 0), 0) / Math.max(safeApps.reduce((sum, a) => sum + (a?.totalEvents24h || 1), 0) / 100, 1)) : 0,
+                avgLatency: safeApps.length > 0 ? Math.round(safeApps.reduce((sum, a) => sum + (a?.avgLatency || 0), 0) / safeApps.length) : 0,
+            };
+        } catch (e) {
+            console.error('[SDKDashboardTab] stats computation error:', e);
+            return { totalApps: 0, activeApps: 0, totalEvents24h: 0, errorRate: 0, avgLatency: 0 };
+        }
+    }, [apps]);
 
-    const selectedApp = apps.find(a => a.id === selectedAppId);
+    const selectedApp = Array.isArray(apps) ? apps.find(a => a?.id === selectedAppId) : null;
 
     if (loading) {
         return (
-            <div style={{ padding: '40px 20px', textAlign: 'center', minHeight: '100vh', background: THEME.bg }}>
+            <div style={{ padding: '40px 20px', textAlign: 'center', minHeight: '100vh', background: THEME.bg || '#0a0d1e' }}>
                 <Styles />
-                <Loader2 size={32} color={THEME.primary} className="sdk-spinner" style={{ margin: '0 auto 16px' }} />
-                <div style={{ color: THEME.textMuted }}>Loading SDK applications...</div>
+                <Loader2 size={32} color={THEME.primary || '#6366f1'} className="sdk-spinner" style={{ margin: '0 auto 16px' }} />
+                <div style={{ color: THEME.textMuted || '#999' }}>Loading SDK applications...</div>
             </div>
         );
     }
 
-    return (
-        <div style={{ padding: '24px', minHeight: '100vh', background: THEME.bg, fontFamily: THEME.fontBody||"'DM Sans','Outfit',sans-serif" }}>
+    // Wrap render in try-catch to prevent ErrorBoundary crash
+    try { return (
+        <div style={{ padding: '24px', minHeight: '100vh', background: THEME.bg || '#0a0d1e', fontFamily: THEME.fontBody||"'DM Sans','Outfit',sans-serif" }}>
             <Styles />
 
             {selectedApp ? (
@@ -1039,5 +1068,16 @@ export default function SDKDashboardTab() {
                 isSubmitting={isSubmittingForm}
             />
         </div>
-    );
+    ); } catch (e) {
+        console.error('[SDKDashboardTab] Render error:', e);
+        // Avoid re-throwing — show inline error instead
+        if (!renderError) setTimeout(() => setRenderError(String(e?.message || e)), 0);
+        return (
+            <div style={{ padding: '40px 20px', textAlign: 'center', minHeight: '100vh', background: THEME.bg || '#0a0d1e' }}>
+                <Styles />
+                <AlertTriangle size={40} color={THEME.danger || '#ef4444'} style={{ margin: '0 auto 16px' }} />
+                <div style={{ color: THEME.textMuted || '#999', fontSize: 13 }}>Loading failed — check console for details.</div>
+            </div>
+        );
+    }
 }
