@@ -348,10 +348,10 @@ const LoginPage = () => {
                             <h1 style={{
                                 fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2,
                                 letterSpacing: -0.5, marginBottom: 12, color: '#fff',
+                                whiteSpace: 'nowrap',
                                 animation: 'textIn 0.8s ease-out 0.3s both',
                             }}>
-                                Your databases,<br />
-                                <span style={{
+                                Your databases, <span style={{
                                     background: 'linear-gradient(135deg, #00e5a0, rgba(0,229,160,0.6))',
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 }}>under control.</span>
@@ -359,7 +359,7 @@ const LoginPage = () => {
 
                             <p style={{
                                 fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)',
-                                lineHeight: 1.6, maxWidth: 310,
+                                lineHeight: 1.6, maxWidth: 420,
                                 animation: 'textIn 0.8s ease-out 0.45s both',
                             }}>
                                 Monitor performance, track queries, and manage your entire PostgreSQL infrastructure from a single command center.
@@ -375,6 +375,8 @@ const LoginPage = () => {
                                     { icon: '🔍', title: 'Query Analysis', desc: 'Identify slow queries, execution plans, and optimization opportunities' },
                                     { icon: '🛡️', title: 'Health & Alerts', desc: 'Automated health checks, deadlock detection, and threshold alerts' },
                                     { icon: '📊', title: 'Resource Insights', desc: 'Table bloat, index usage, disk I/O, and vacuum monitoring' },
+                                    { icon: '🔄', title: 'Checkpoint Tracking', desc: 'WAL activity, checkpoint frequency, buffer writes, and archive status' },
+                                    { icon: '📈', title: 'Performance Trends', desc: 'Historical query trends, cache hit ratios, and transaction throughput' },
                                 ].map((f, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                                         <div style={{
