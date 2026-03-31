@@ -1664,8 +1664,8 @@ const TableStatsPanel = ({ tableStats = [] }) => {
 
 // Compare Panel
 const ComparePanel = () => {
-    const [queryA, setQueryA] = useState(SAMPLE_QUERIES[0].sql);
-    const [queryB, setQueryB] = useState(SAMPLE_QUERIES[2].sql);
+    const [queryA, setQueryA] = useState(SAMPLE_QUERIES[0]?.sql || '');
+    const [queryB, setQueryB] = useState(SAMPLE_QUERIES[2]?.sql || '');
     const [resultA, setResultA] = useState(null);
     const [resultB, setResultB] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -1745,7 +1745,7 @@ const ComparePanel = () => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const QueryOptimizerTab = () => {
     useAdaptiveTheme();
-    const [query, setQuery] = useState(SAMPLE_QUERIES[0].sql);
+    const [query, setQuery] = useState(SAMPLE_QUERIES[0]?.sql || '');
     const [history, setHistory] = useState([]);
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState(null);
