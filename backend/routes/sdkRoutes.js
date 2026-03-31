@@ -54,7 +54,7 @@ function sdkAuthenticate(pool) {
 
 export default function sdkRoutes(pool, authenticate, requireScreen) {
     const router = Router();
-    const isAdmin = [authenticate, requireScreen('admin')];
+    const isAuth = [authenticate];
     const sdkAuth = sdkAuthenticate(pool);
 
     /* ────────────────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * Register new application
      * Body: { name, appType, environment, config }
      */
-    router.post('/sdk/apps', ...isAdmin, async (req, res) => {
+    router.post('/sdk/apps', ...isAuth, async (req, res) => {
         try {
             const { name, appType, environment, config } = req.body;
 
@@ -97,7 +97,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * List all registered apps
      * Query: status, page, limit
      */
-    router.get('/sdk/apps', ...isAdmin, async (req, res) => {
+    router.get('/sdk/apps', ...isAuth, async (req, res) => {
         try {
             const { status, page = 1, limit = 20 } = req.query;
 
@@ -118,7 +118,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * GET /sdk/apps/:appId
      * Get app details + dashboard data
      */
-    router.get('/sdk/apps/:appId', ...isAdmin, async (req, res) => {
+    router.get('/sdk/apps/:appId', ...isAuth, async (req, res) => {
         try {
             const { appId } = req.params;
 
@@ -144,7 +144,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * Update app settings
      * Body: { name, environment, status, config }
      */
-    router.put('/sdk/apps/:appId', ...isAdmin, async (req, res) => {
+    router.put('/sdk/apps/:appId', ...isAuth, async (req, res) => {
         try {
             const { appId } = req.params;
             const { name, environment, status, config } = req.body;
@@ -172,7 +172,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * DELETE /sdk/apps/:appId
      * Disable (soft-delete) app
      */
-    router.delete('/sdk/apps/:appId', ...isAdmin, async (req, res) => {
+    router.delete('/sdk/apps/:appId', ...isAuth, async (req, res) => {
         try {
             const { appId } = req.params;
 
@@ -194,7 +194,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * List events for an app
      * Query: eventType, severity, search, from, to, page, limit
      */
-    router.get('/sdk/apps/:appId/events', ...isAdmin, async (req, res) => {
+    router.get('/sdk/apps/:appId/events', ...isAuth, async (req, res) => {
         try {
             const { appId } = req.params;
             const { eventType, severity, search, from, to, page = 1, limit = 50 } = req.query;
@@ -221,7 +221,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * Get aggregated stats
      * Query: from, to, groupBy (hour|day|minute)
      */
-    router.get('/sdk/apps/:appId/stats', ...isAdmin, async (req, res) => {
+    router.get('/sdk/apps/:appId/stats', ...isAuth, async (req, res) => {
         try {
             const { appId } = req.params;
             const { from, to, groupBy = 'day' } = req.query;
@@ -249,7 +249,7 @@ export default function sdkRoutes(pool, authenticate, requireScreen) {
      * POST /sdk/apps/:appId/regenerate-key
      * Generate new API key for an app
      */
-    router.post('/sdk/apps/:appId/regenerate-key', ...isAdmin, async (req, res) => {
+    router.post('/sdk/apps/:appId/regenerate-key', ...isAuth, async (req, res) => {
         try {
             const { appId } = req.params;
 

@@ -320,19 +320,22 @@ const AppCard = ({ app, onSelect, isSelected }) => {
    REGISTER APP MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
 const RegisterAppModal = ({ isOpen, onClose, onSuccess, isSubmitting }) => {
-    const [formData, setFormData] = useState({ name: '', type: 'nodejs', environment: 'staging' });
+    const [formData, setFormData] = useState({ name: '', appType: 'nodejs', environment: 'staging' });
     const [generatedKey, setGeneratedKey] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [regError, setRegError] = useState('');
 
     const handleSubmit = async () => {
         if (!formData.name.trim()) return;
+        setRegError('');
         try {
             const result = await postData('/api/sdk/apps', formData);
-            setGeneratedKey(result.apiKey);
-            setFormData({ name: '', type: 'nodejs', environment: 'staging' });
-            if (onSuccess) onSuccess(result);
+            setGeneratedKey(result.key);
+            setFormData({ name: '', appType: 'nodejs', environment: 'staging' });
+            if (onSuccess) onSuccess(result.record || result);
         } catch (err) {
             console.error('Failed to register app:', err);
+            setRegError(err.message || 'Failed to register application');
         }
     };
 
@@ -429,7 +432,7 @@ const RegisterAppModal = ({ isOpen, onClose, onSuccess, isSubmitting }) => {
                             <label className="sdk-label">App Type</label>
                             <select
                                 className="sdk-select"
-                                value={formData.type}
+                                value={formData.appType}
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                             >
                                 <option value="salesforce">Salesforce</option>
@@ -454,6 +457,12 @@ const RegisterAppModal = ({ isOpen, onClose, onSuccess, isSubmitting }) => {
                                 <option value="production">Production</option>
                             </select>
                         </div>
+
+                        {regError && (
+                            <div style={{ padding: '10px 14px', borderRadius: '8px', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}30`, color: THEME.danger, fontSize: '12px' }}>
+                                {regError}
+                            </div>
+                        )}
 
                         <div style={{ display: 'flex', gap: '8px' }}>
                             <button
