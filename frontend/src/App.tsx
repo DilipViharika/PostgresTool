@@ -3139,229 +3139,202 @@ const Sidebar = ({
             <div
                 style={{
                     borderTop: `1px solid ${DS.border}`,
-                    backgroundImage: `linear-gradient(90deg, transparent, ${DS.cyan}30, transparent)`,
-                    backgroundSize: '100% 1px',
-                    backgroundPosition: '0 0',
-                    backgroundRepeat: 'no-repeat',
-                    padding: collapsed ? '10px 0' : '10px 8px',
+                    padding: collapsed ? '8px 6px' : '8px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 2,
+                    gap: 1,
                 }}
             >
-                {/* User info row */}
-                {!collapsed && (
-                    <button
-                        onClick={onOpenProfile}
-                        title="Edit profile"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
-                            padding: '8px 10px',
-                            marginBottom: 2,
-                            background: 'rgba(139,92,246,0.04)',
-                            borderRadius: 8,
-                            border: '1px solid rgba(139,92,246,0.1)',
-                            cursor: 'pointer',
-                            width: '100%',
-                            textAlign: 'left',
-                            transition: 'all 0.15s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(139,92,246,0.1)';
-                            e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(139,92,246,0.04)';
-                            e.currentTarget.style.borderColor = 'rgba(139,92,246,0.1)';
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: 30,
-                                height: 30,
-                                borderRadius: 8,
-                                flexShrink: 0,
-                                background: 'linear-gradient(135deg, rgba(139,92,246,0.25), rgba(129,140,248,0.25))',
-                                border: '1px solid rgba(139,92,246,0.2)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            <User size={14} color={DS.cyan} />
-                        </div>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                            <div
+                {/* ── User profile pill ── */}
+                <button
+                    onClick={onOpenProfile}
+                    title={collapsed ? (currentUser?.name || 'Profile') : 'Edit profile'}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        gap: 10,
+                        padding: collapsed ? '8px 0' : '8px 10px',
+                        marginBottom: 4,
+                        background: `${DS.cyan}08`,
+                        borderRadius: 8,
+                        border: `1px solid ${DS.cyan}12`,
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left',
+                        transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = `${DS.cyan}15`;
+                        e.currentTarget.style.borderColor = `${DS.cyan}25`;
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = `${DS.cyan}08`;
+                        e.currentTarget.style.borderColor = `${DS.cyan}12`;
+                    }}
+                >
+                    {/* Avatar */}
+                    <div style={{
+                        width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                        background: `linear-gradient(135deg, ${DS.cyan}30, ${DS.violet}25)`,
+                        border: `1px solid ${DS.cyan}20`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        <User size={13} color={DS.cyan} />
+                    </div>
+                    {!collapsed && (
+                        <>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                                <div style={{
+                                    fontSize: 11.5, fontWeight: 600, color: DS.textPrimary,
+                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                    lineHeight: '15px',
+                                }}>
+                                    {currentUser?.name || currentUser?.username || 'User'}
+                                </div>
+                                <div style={{
+                                    fontSize: 9.5, color: DS.cyan, fontFamily: DS.fontMono,
+                                    letterSpacing: '0.04em', lineHeight: '13px',
+                                }}>
+                                    Online
+                                </div>
+                            </div>
+                            <div style={{
+                                width: 6, height: 6, borderRadius: '50%',
+                                background: DS.cyan, flexShrink: 0,
+                                boxShadow: `0 0 6px ${DS.cyan}60`,
+                            }} />
+                        </>
+                    )}
+                </button>
+
+                {/* ── Quick action row ── */}
+                {collapsed ? (
+                    /* Collapsed: vertical icon stack */
+                    <>
+                        {[
+                            { icon: Users, action: () => onTabChange('UserManagement'), tip: 'User Management',
+                              active: activeTab === 'UserManagement' || activeTab === 'user-audit' },
+                            { icon: Database, action: () => onTabChange('demo-postgres'), tip: 'Demo',
+                              active: activeTab?.startsWith('demo-') },
+                            { icon: MessageSquarePlus, action: onOpenFeedback, tip: 'Feedback', active: false },
+                            { icon: LogOut, action: onLogout, tip: 'Sign Out', active: false, danger: true },
+                        ].map(({ icon: Icon, action, tip, active, danger }) => (
+                            <button
+                                key={tip}
+                                onClick={action}
+                                title={tip}
                                 style={{
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    color: DS.textPrimary,
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    padding: '7px 0', background: active ? `${DS.cyan}12` : 'transparent',
+                                    border: 'none', borderRadius: 6, cursor: 'pointer', width: '100%',
+                                    color: active ? DS.cyan : DS.sidebarText,
+                                    transition: 'all 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = danger ? DS.rose : DS.cyan;
+                                    e.currentTarget.style.background = danger ? `${DS.rose}10` : `${DS.cyan}12`;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = active ? DS.cyan : DS.sidebarText;
+                                    e.currentTarget.style.background = active ? `${DS.cyan}12` : 'transparent';
                                 }}
                             >
-                                {currentUser?.name || currentUser?.username || 'User'}
-                            </div>
-                            <div
+                                <Icon size={14} />
+                            </button>
+                        ))}
+                    </>
+                ) : (
+                    /* Expanded: compact button rows */
+                    <>
+                        {/* Nav buttons: User Management & Demo */}
+                        <div style={{ display: 'flex', gap: 4, marginBottom: 2 }}>
+                            {[
+                                { icon: Users, label: 'Users', action: () => onTabChange('UserManagement'),
+                                  active: activeTab === 'UserManagement' || activeTab === 'user-audit' },
+                                { icon: Database, label: 'Demo', action: () => onTabChange('demo-postgres'),
+                                  active: activeTab?.startsWith('demo-') },
+                            ].map(({ icon: Icon, label, action, active }) => (
+                                <button
+                                    key={label}
+                                    onClick={action}
+                                    style={{
+                                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        gap: 6, padding: '6px 8px',
+                                        background: active ? `${DS.cyan}12` : `${DS.sidebarText}06`,
+                                        border: active ? `1px solid ${DS.cyan}20` : `1px solid transparent`,
+                                        borderRadius: 6, cursor: 'pointer',
+                                        color: active ? DS.cyan : DS.sidebarText,
+                                        fontSize: 11, fontWeight: active ? 600 : 500,
+                                        fontFamily: DS.fontUI, transition: 'all 0.15s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = `${DS.cyan}15`;
+                                        e.currentTarget.style.color = DS.cyan;
+                                        e.currentTarget.style.borderColor = `${DS.cyan}20`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = active ? `${DS.cyan}12` : `${DS.sidebarText}06`;
+                                        e.currentTarget.style.color = active ? DS.cyan : DS.sidebarText;
+                                        e.currentTarget.style.borderColor = active ? `${DS.cyan}20` : 'transparent';
+                                    }}
+                                >
+                                    <Icon size={12} />
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                        {/* Utility buttons: Feedback & Sign Out */}
+                        <div style={{ display: 'flex', gap: 4 }}>
+                            <button
+                                onClick={onOpenFeedback}
                                 style={{
-                                    fontSize: 10,
-                                    color: DS.cyan,
-                                    fontFamily: DS.fontMono,
-                                    letterSpacing: '0.06em',
+                                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    gap: 6, padding: '6px 8px',
+                                    background: `${DS.sidebarText}06`, border: '1px solid transparent',
+                                    borderRadius: 6, cursor: 'pointer', color: DS.sidebarText,
+                                    fontSize: 11, fontWeight: 500, fontFamily: DS.fontUI,
+                                    transition: 'all 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = `${DS.cyan}12`;
+                                    e.currentTarget.style.color = DS.cyan;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = `${DS.sidebarText}06`;
+                                    e.currentTarget.style.color = DS.sidebarText;
                                 }}
                             >
-                                ● Online
-                            </div>
+                                <MessageSquarePlus size={12} />
+                                Feedback
+                            </button>
+                            <button
+                                onClick={onLogout}
+                                style={{
+                                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    gap: 6, padding: '6px 8px',
+                                    background: `${DS.sidebarText}06`, border: '1px solid transparent',
+                                    borderRadius: 6, cursor: 'pointer', color: DS.sidebarText,
+                                    fontSize: 11, fontWeight: 500, fontFamily: DS.fontUI,
+                                    transition: 'all 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = `${DS.rose}10`;
+                                    e.currentTarget.style.color = DS.rose;
+                                    e.currentTarget.style.borderColor = `${DS.rose}20`;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = `${DS.sidebarText}06`;
+                                    e.currentTarget.style.color = DS.sidebarText;
+                                    e.currentTarget.style.borderColor = 'transparent';
+                                }}
+                            >
+                                <LogOut size={12} />
+                                Sign Out
+                            </button>
                         </div>
-                        <Edit2 size={11} color={DS.textMuted} style={{ flexShrink: 0, opacity: 0.6 }} />
-                    </button>
+                    </>
                 )}
-
-                {/* Enterprise: Org Switcher (hidden — uncomment when ready) */}
-                {/* {!collapsed && <OrgSwitcher />} */}
-
-                {/* Enterprise: License Status (hidden — uncomment when ready) */}
-                {/* {!collapsed && <LicenseStatus />} */}
-
-                {/* User Management */}
-                <button
-                    onClick={() => onTabChange('UserManagement')}
-                    title={collapsed ? 'User Management' : undefined}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: collapsed ? 'center' : 'flex-start',
-                        gap: 10,
-                        background: activeTab === 'UserManagement' || activeTab === 'user-audit' ? 'rgba(129,140,248,0.10)' : 'transparent',
-                        border: 'none',
-                        color: activeTab === 'UserManagement' || activeTab === 'user-audit' ? DS.violet : DS.sidebarText,
-                        cursor: 'pointer',
-                        padding: collapsed ? '9px 0' : '8px 10px',
-                        fontSize: 13,
-                        fontWeight: activeTab === 'UserManagement' || activeTab === 'user-audit' ? 600 : 400,
-                        borderRadius: 8,
-                        width: '100%',
-                        fontFamily: DS.fontUI,
-                        transition: 'color 0.15s, background 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.color = DS.violet;
-                        e.currentTarget.style.background = 'rgba(129,140,248,0.08)';
-                    }}
-                    onMouseLeave={(e) => {
-                        const isActive = activeTab === 'UserManagement' || activeTab === 'user-audit';
-                        e.currentTarget.style.color = isActive ? DS.violet : DS.sidebarText;
-                        e.currentTarget.style.background = isActive ? 'rgba(129,140,248,0.10)' : 'transparent';
-                    }}
-                >
-                    <Users size={15} style={{ flexShrink: 0 }} />
-                    {!collapsed && 'User Management'}
-                </button>
-
-                {/* Demo */}
-                <button
-                    onClick={() => onTabChange('demo-postgres')}
-                    title={collapsed ? 'Demo' : undefined}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: collapsed ? 'center' : 'flex-start',
-                        gap: 10,
-                        background: activeTab?.startsWith('demo-') ? 'rgba(129,140,248,0.10)' : 'transparent',
-                        border: 'none',
-                        color: activeTab?.startsWith('demo-') ? DS.violet : DS.sidebarText,
-                        cursor: 'pointer',
-                        padding: collapsed ? '9px 0' : '8px 10px',
-                        fontSize: 13,
-                        fontWeight: activeTab?.startsWith('demo-') ? 600 : 400,
-                        borderRadius: 8,
-                        width: '100%',
-                        fontFamily: DS.fontUI,
-                        transition: 'color 0.15s, background 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.color = DS.violet;
-                        e.currentTarget.style.background = 'rgba(129,140,248,0.08)';
-                    }}
-                    onMouseLeave={(e) => {
-                        const isActive = activeTab?.startsWith('demo-');
-                        e.currentTarget.style.color = isActive ? DS.violet : DS.sidebarText;
-                        e.currentTarget.style.background = isActive ? 'rgba(129,140,248,0.10)' : 'transparent';
-                    }}
-                >
-                    <Database size={15} style={{ flexShrink: 0 }} />
-                    {!collapsed && 'Demo'}
-                </button>
-
-                {/* Feedback */}
-                <button
-                    onClick={onOpenFeedback}
-                    title={collapsed ? 'Feedback' : undefined}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: collapsed ? 'center' : 'flex-start',
-                        gap: 10,
-                        background: 'transparent',
-                        border: 'none',
-                        color: DS.sidebarText,
-                        cursor: 'pointer',
-                        padding: collapsed ? '9px 0' : '8px 10px',
-                        fontSize: 13,
-                        fontWeight: 400,
-                        borderRadius: 8,
-                        width: '100%',
-                        fontFamily: DS.fontUI,
-                        transition: 'color 0.15s, background 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.color = DS.violet;
-                        e.currentTarget.style.background = 'rgba(129,140,248,0.08)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.color = DS.sidebarText;
-                        e.currentTarget.style.background = 'transparent';
-                    }}
-                >
-                    <MessageSquarePlus size={15} style={{ flexShrink: 0 }} />
-                    {!collapsed && 'Feedback'}
-                </button>
-
-                {/* Logout */}
-                <button
-                    onClick={onLogout}
-                    title={collapsed ? 'Sign out' : undefined}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: collapsed ? 'center' : 'flex-start',
-                        gap: 10,
-                        background: 'none',
-                        border: 'none',
-                        color: DS.sidebarText,
-                        cursor: 'pointer',
-                        padding: collapsed ? '9px 0' : '8px 10px',
-                        fontSize: 13,
-                        borderRadius: 8,
-                        width: '100%',
-                        fontFamily: DS.fontUI,
-                        transition: 'color 0.15s, background 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.color = DS.rose;
-                        e.currentTarget.style.background = 'rgba(251,113,133,0.08)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.color = DS.sidebarText;
-                        e.currentTarget.style.background = 'none';
-                    }}
-                >
-                    <LogOut size={15} style={{ flexShrink: 0 }} />
-                    {!collapsed && 'Sign Out'}
-                </button>
             </div>
 
             {/* ── COLLAPSE TOGGLE ── */}
